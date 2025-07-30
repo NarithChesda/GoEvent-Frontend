@@ -31,6 +31,21 @@ npm run test:unit
 npm run test:e2e
 ```
 
+### Testing Commands
+```bash
+# Install Playwright browsers (first time only)
+npx playwright install
+
+# Run specific e2e test file
+npm run test:e2e -- tests/example.spec.ts
+
+# Run e2e tests in debug mode
+npm run test:e2e -- --debug
+
+# Run e2e tests on specific browser
+npm run test:e2e -- --project=chromium
+```
+
 ## Architecture Overview
 
 ### Technology Stack
@@ -57,6 +72,8 @@ npm run test:e2e
    - JWT authentication with Bearer tokens
    - Automatic error handling and response parsing
    - Base URL from environment variable `VITE_API_BASE_URL`
+   - Standardized `ApiResponse<T>` interface for all responses
+   - Built-in pagination support with `PaginatedResponse<T>`
 
 2. **Authentication Flow**: Managed by Pinia auth store
    - JWT tokens stored in localStorage
@@ -68,23 +85,70 @@ npm run test:e2e
    - BaseCard as foundation component
    - Specialized cards: EventCard, MediaCard, HostCard, etc.
    - Modal components for CRUD operations
-   - Tab-based organization for event details
+   - Tab-based organization with permission-controlled visibility
 
 4. **Event Management**: Core domain with rich features
-   - UUID-based event IDs
+   - UUID-based event IDs for security
    - Draft → Published → Completed/Cancelled lifecycle
-   - Collaboration system with permission levels
+   - Collaboration system with permission levels (organizer/collaborator)
    - Multi-language support for content
    - Media management (photos, videos, banners)
+   - Template system with payment workflow integration
+
+5. **Permission System**: Comprehensive tab-level access control
+   - **Public tabs**: About, Agenda, Hosts (accessible to all users)
+   - **Restricted tabs**: Attendees, Media, Collaborators, Event Texts, Template (organizer/collaborator only)
+   - Computed properties for permission checks: `canViewRestrictedTabs`, `canViewAttendees`, etc.
+   - Consistent access denied UI with lock icons and clear messaging
+
+6. **Template System**: Advanced template management
+   - Multi-API strategy: `browse_templates`, `public_template_assets`, `template_info`
+   - Template selection without immediate payment requirement
+   - Preview mode for selected templates before activation
+   - Category-based template filtering
+   - Payment workflow integration (selection → payment → admin enablement)
 
 ### Backend Integration
-- Django REST API at `http://127.0.0.1:8000` (configurable)
+- Django REST API at `http://127.0.0.1:8000` (configurable via `VITE_API_BASE_URL`)
 - JWT authentication endpoints at `/api/auth/`
 - Event endpoints at `/api/events/`
-- Comprehensive documentation in `FRONTEND.md`
+- Template endpoints at `/api/core-data/event-templates/`
+- Comprehensive API documentation in `FRONTEND.md`, `EVENT_TEMPLATE_API.md`, and other API docs
 
 ### Design System
 - Comprehensive design guides in `/DESIGN_GUIDE/` directory
-- Card-based component system
-- Consistent color and typography systems
-- Responsive patterns for mobile optimization
+- Card-based component system with consistent styling
+- Tailwind CSS configuration with custom utilities
+- Responsive patterns optimized for mobile
+- Lucide Vue icons throughout the application
+
+## Key Implementation Notes
+
+### Event Detail Architecture
+The `EventDetailView` component uses a sophisticated tab system:
+- **Tab Configuration**: Centralized in `navigationTabs` array with icon and label definitions
+- **Permission Integration**: Each tab filtered based on user permissions via `EventNavigationTabs` component
+- **Lazy Loading**: Tab content components only rendered when active
+- **State Management**: Reactive permission checks using computed properties
+
+### API Service Patterns
+- All API calls return standardized `ApiResponse<T>` objects
+- Automatic authentication header injection
+- Error handling with user-friendly messages
+- File upload utilities for media management
+- Profile picture URL resolution for relative/absolute paths
+
+### Component Communication
+- Parent-child communication via props and events
+- Reactive state updates using Vue's reactivity system
+- Event-driven updates for complex state changes (e.g., template selection)
+- Centralized error and success messaging
+
+### Template System Workflow
+1. Browse available templates (with category filtering)
+2. Select template (stored locally for preview)
+3. Payment processing (when user is ready)
+4. Admin enablement (backend process)
+5. Template activation (full feature access)
+
+Always run `npm run type-check` and `npm run lint` before committing changes to ensure code quality and TypeScript compliance.

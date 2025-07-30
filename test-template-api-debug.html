@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template API Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Template API Debug Tool</h1>
+    
+    <div class="section info">
+        <h3>Debug Steps</h3>
+        <ol>
+            <li>Open browser DevTools (F12) and go to Console tab</li>
+            <li>Click the buttons below to test each API endpoint</li>
+            <li>Check the console for detailed logs</li>
+            <li>Use the results to understand which API is working</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h3>API Tests</h3>
+        <button onclick="testBrowseTemplates()">Test Browse Templates API</button>
+        <button onclick="testPublicTemplateAssets()">Test Public Template Assets API</button>
+        <button onclick="testEventTemplateInfo()">Test Event Template Info API</button>
+        <button onclick="testTemplateSelection()">Test Template Selection Flow</button>
+    </div>
+
+    <div class="section">
+        <h3>Results</h3>
+        <div id="results">Results will appear here...</div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        const SAMPLE_EVENT_ID = 'e59d660a-3578-4fae-ad18-d37efe906dd8';
+        const SAMPLE_TEMPLATE_ID = 1;
+        
+        function log(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `section ${type}`;
+            div.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+
+        async function testBrowseTemplates() {
+            log('Testing browse_templates API...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/core-data/event-templates/browse_templates/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Add auth token if available in localStorage
+                        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`browse_templates SUCCESS: Found ${data.templates?.length || 0} templates`, 'success');
+                    console.log('Browse templates data:', data);
+                } else {
+                    log(`browse_templates FAILED: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`browse_templates ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPublicTemplateAssets() {
+            log(`Testing public_template_assets API for template ${SAMPLE_TEMPLATE_ID}...`, 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/core-data/event-templates/${SAMPLE_TEMPLATE_ID}/public_template_assets/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // No auth required for public assets
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`public_template_assets SUCCESS: Found template "${data.template_data?.name || 'Unknown'}"`, 'success');
+                    console.log('Public template assets data:', data);
+                } else {
+                    log(`public_template_assets FAILED: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`public_template_assets ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testEventTemplateInfo() {
+            log(`Testing template_info API for event ${SAMPLE_EVENT_ID}...`, 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/events/${SAMPLE_EVENT_ID}/template_info/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`template_info SUCCESS: Found template "${data.name || 'Unknown'}"`, 'success');
+                    console.log('Event template info data:', data);
+                } else {
+                    log(`template_info FAILED: ${response.status} ${response.statusText} (This is expected if template not enabled)`, 'error');
+                }
+            } catch (error) {
+                log(`template_info ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTemplateSelection() {
+            log('Testing template selection flow...', 'info');
+            
+            // Simulate the flow: 
+            // 1. Get event details
+            // 2. Check if template is selected but not enabled
+            // 3. Load template details for preview
+            
+            try {
+                // Step 1: Get event details
+                const eventResponse = await fetch(`${API_BASE}/api/events/${SAMPLE_EVENT_ID}/`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+                    }
+                });
+                
+                if (!eventResponse.ok) {
+                    log(`Event fetch FAILED: ${eventResponse.status} ${eventResponse.statusText}`, 'error');
+                    return;
+                }
+                
+                const event = await eventResponse.json();
+                log(`Event data: template=${event.event_template}, enabled=${event.event_template_enabled}`, 'info');
+                console.log('Event data:', event);
+                
+                // Step 2: Check template state
+                if (event.event_template && !event.event_template_enabled) {
+                    log('Template selected but not enabled - loading preview details...', 'info');
+                    
+                    // Try to load template details (same logic as component)
+                    await testBrowseTemplates();
+                    await testPublicTemplateAssets();
+                    
+                } else if (event.event_template && event.event_template_enabled) {
+                    log('Template is enabled - should have event_template_details in event data', 'success');
+                    if (event.event_template_details) {
+                        log(`Template details available: ${event.event_template_details.name}`, 'success');
+                    } else {
+                        log('Template enabled but no event_template_details found', 'error');
+                    }
+                } else {
+                    log('No template selected for this event', 'info');
+                }
+                
+            } catch (error) {
+                log(`Template selection test ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            log('Template API Debug Tool loaded. Click buttons to test APIs.', 'info');
+            log(`Using API base: ${API_BASE}`, 'info');
+            log(`Sample event ID: ${SAMPLE_EVENT_ID}`, 'info');
+            log(`Sample template ID: ${SAMPLE_TEMPLATE_ID}`, 'info');
+            
+            const token = localStorage.getItem('token');
+            if (token) {
+                log('Auth token found in localStorage', 'success');
+            } else {
+                log('No auth token found - some APIs may fail', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

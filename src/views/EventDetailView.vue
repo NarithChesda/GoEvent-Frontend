@@ -36,6 +36,10 @@
             :active-tab="activeTab"
             :tabs="navigationTabs"
             :can-view-attendees="canViewAttendees"
+            :can-view-media="canViewMedia"
+            :can-view-collaborators="canViewCollaborators"
+            :can-view-event-texts="canViewEventTexts"
+            :can-view-template="canViewTemplate"
             :can-edit="event.can_edit"
             @tab-change="activeTab = $event"
           />
@@ -69,11 +73,20 @@
 
             <!-- Event Texts Tab -->
             <div v-if="activeTab === 'event-texts'">
-              <div v-if="!event?.can_edit || !event?.id" class="text-center py-8">
-                <div v-if="!event?.id" class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                <span class="text-lg text-slate-600 leading-relaxed">
-                  {{ !event?.id ? 'Loading event data...' : 'You do not have permission to edit event texts.' }}
-                </span>
+              <div v-if="!canViewEventTexts || !event?.id" class="text-center py-12">
+                <div v-if="!event?.id">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                  <span class="text-lg text-slate-600 leading-relaxed">Loading event data...</span>
+                </div>
+                <div v-else>
+                  <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Lock class="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                  <p class="text-slate-600 max-w-md mx-auto">
+                    Only the event organizer and collaborators can view and manage event texts.
+                  </p>
+                </div>
               </div>
               <EventTextTab
                 v-else
@@ -82,40 +95,37 @@
             </div>
 
             <!-- Attendees Tab -->
-            <div v-if="activeTab === 'attendees' && canViewAttendees" class="space-y-8">
-              <div class="space-y-6">
-                <div
-                  v-for="registration in event.registrations_details"
-                  :key="registration.id"
-                  class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-blue-500/25 p-6 hover:shadow-2xl hover:shadow-blue-600/30 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                      <div class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        {{ getInitials(registration.user_details.first_name || '', registration.user_details.last_name || '') }}
-                      </div>
-                      <div>
-                        <h4 class="font-semibold text-slate-800 text-lg mb-1 leading-snug">
-                          {{ registration.user_details.first_name }} {{ registration.user_details.last_name }}
-                        </h4>
-                        <p class="text-base text-slate-600 leading-relaxed">@{{ registration.user_details.username }}</p>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="text-base font-semibold text-slate-800 mb-1 leading-tight">
-                        {{ registration.total_attendees }} {{ registration.total_attendees === 1 ? 'person' : 'people' }}
-                      </div>
-                      <div class="text-sm font-medium text-slate-500 tracking-wide">{{ registration.confirmation_code }}</div>
-                    </div>
-                  </div>
+            <div v-if="activeTab === 'attendees'">
+              <div v-if="!canViewAttendees" class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock class="w-8 h-8 text-slate-400" />
                 </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view attendees.
+                </p>
               </div>
+              <EventAttendeesTab
+                v-else
+                :event-id="event.id"
+                :can-edit="event.can_edit || false"
+                :registrations="event.registrations_details"
+              />
             </div>
 
             <!-- Media Tab -->
             <div v-if="activeTab === 'media'">
+              <div v-if="!canViewMedia" class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view and manage event media.
+                </p>
+              </div>
               <EventMediaTab
-                v-if="event?.id"
+                v-else-if="event?.id"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :initial-media="event.photos || []"
@@ -127,8 +137,17 @@
 
             <!-- Collaborator Tab -->
             <div v-if="activeTab === 'collaborator'">
+              <div v-if="!canViewCollaborators" class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view and manage team members.
+                </p>
+              </div>
               <EventCollaboratorsTab
-                v-if="event?.id"
+                v-else-if="event?.id"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :organizer-details="event.organizer_details"
@@ -136,52 +155,22 @@
             </div>
 
             <!-- Template Tab -->
-            <div v-if="activeTab === 'template'" class="space-y-8">
-              <div class="space-y-6">
-                <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-blue-500/25 p-6">
-                  <h3 class="text-xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">Template Information</h3>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <span class="text-lg text-slate-600 leading-relaxed">Template Enabled:</span>
-                      <span class="font-semibold text-lg leading-tight" :class="event.event_template_enabled ? 'text-emerald-600' : 'text-slate-500'">
-                        {{ event.event_template_enabled ? 'Yes' : 'No' }}
-                      </span>
-                    </div>
-                    <div v-if="event.event_template" class="flex items-center justify-between">
-                      <span class="text-lg text-slate-600 leading-relaxed">Template ID:</span>
-                      <span class="font-semibold text-lg text-slate-800 leading-tight">{{ event.event_template }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-lg text-slate-600 leading-relaxed">Event Category:</span>
-                      <div class="flex items-center space-x-2">
-                        <div
-                          v-if="event.category_color"
-                          class="w-3 h-3 rounded-full"
-                          :style="{ backgroundColor: event.category_color }"
-                        ></div>
-                        <span class="font-semibold text-lg text-slate-800 leading-tight">{{ event.category_name || 'No Category' }}</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-lg text-slate-600 leading-relaxed">Event Status:</span>
-                      <span class="font-semibold text-lg capitalize leading-tight"
-                            :class="event.status === 'published' ? 'text-emerald-600' :
-                                   event.status === 'draft' ? 'text-orange-600' :
-                                   'text-red-600'">
-                        {{ event.status }}
-                      </span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-lg text-slate-600 leading-relaxed">Privacy:</span>
-                      <span class="font-semibold text-lg capitalize leading-tight"
-                            :class="event.privacy === 'public' ? 'text-emerald-600' : 'text-purple-600'">
-                        {{ event.privacy }}
-                      </span>
-                    </div>
-                  </div>
+            <div v-if="activeTab === 'template'">
+              <div v-if="!canViewTemplate" class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock class="w-8 h-8 text-slate-400" />
                 </div>
-
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view and manage event templates.
+                </p>
               </div>
+              <EventTemplateTab
+                v-else
+                :event="event"
+                :can-edit="event.can_edit || false"
+                @template-updated="handleTemplateUpdated"
+              />
             </div>
           </div>
         </div>
@@ -275,6 +264,8 @@ import EventHostsTab from '../components/EventHostsTab.vue'
 import EventTextTab from '../components/EventTextTab.vue'
 import EventMediaTab from '../components/EventMediaTab.vue'
 import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
+import EventAttendeesTab from '../components/EventAttendeesTab.vue'
+import EventTemplateTab from '../components/EventTemplateTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import EventActionMenu from '../components/EventActionMenu.vue'
@@ -328,7 +319,31 @@ const isRegistrationClosed = computed(() => {
 
 const canViewAttendees = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
-  return event.value.can_edit || event.value.privacy === 'public'
+  // Only organizer or collaborators can view attendees (no public access)
+  return event.value.can_edit
+})
+
+// Comprehensive permission system for event tabs
+const canViewRestrictedTabs = computed(() => {
+  if (!event.value || !authStore.isAuthenticated) return false
+  // Only organizer or collaborators can view restricted tabs
+  return event.value.can_edit
+})
+
+const canViewMedia = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewCollaborators = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewEventTexts = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewTemplate = computed(() => {
+  return canViewRestrictedTabs.value
 })
 
 const canDeleteEvent = computed(() => {
@@ -453,9 +468,6 @@ const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
   return `${API_BASE_URL}/media/${bannerImage}`
 }
 
-const getInitials = (firstName: string, lastName: string): string => {
-  return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
-}
 
 
 const getMediaUrl = (mediaUrl: string | null): string | undefined => {
@@ -520,6 +532,16 @@ const handleEventUpdated = (updatedEvent: Event) => {
   }
 
   console.log('Event after update:', event.value)
+}
+
+const handleTemplateUpdated = (template: any) => {
+  if (event.value) {
+    // Update the event with the new template information
+    event.value.event_template = template.id
+    event.value.event_template_enabled = false // Template selected but not enabled yet
+    // Note: event_template_details would be populated after payment/activation by backend
+    showMessage('success', 'Template selected successfully! You can now proceed with payment.')
+  }
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {

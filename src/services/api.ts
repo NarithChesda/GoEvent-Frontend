@@ -333,6 +333,7 @@ export interface Event {
   photos?: EventPhoto[]
   collaborators_details?: EventCollaborator[]
   registrations_details?: EventRegistrationDetail[]
+  event_template_details?: EventTemplate
 }
 
 export interface HostTranslation {
@@ -480,6 +481,9 @@ export interface EventRegistrationDetail {
   guest_count: number
   total_attendees: number
   confirmation_code: string
+  registered_at?: string
+  checked_in_at?: string | null
+  notes?: string
 }
 
 export interface EventFilters {
@@ -500,9 +504,32 @@ export interface EventRegistration {
   id: number
   event: string
   user: number
-  guest_count: number
+  user_details?: {
+    id: number
+    username: string
+    email: string
+    first_name?: string
+    last_name?: string
+  }
+  status: string
   registered_at: string
-  notes: string
+  confirmation_code: string
+  guest_count: number
+  total_attendees: number
+  notes?: string
+  checked_in_at?: string | null
+  checked_in_by?: number | null
+  checked_in_by_details?: {
+    id: number
+    username: string
+    email: string
+    first_name?: string
+    last_name?: string
+  }
+  cancelled_at?: string | null
+  is_checked_in: boolean
+  can_check_in: boolean
+  attended_at?: string | null
 }
 
 export interface MyEventsResponse {
@@ -566,6 +593,31 @@ export const eventsService = {
   // Get event registrations (for organizers)
   async getEventRegistrations(eventId: string): Promise<ApiResponse<PaginatedResponse<EventRegistration>>> {
     return apiService.get<PaginatedResponse<EventRegistration>>(`/api/events/${eventId}/registrations/`)
+  },
+
+  // RSVP for an event (create or update registration)
+  async rsvpForEvent(eventId: string, data: { guest_count?: number; notes?: string }): Promise<ApiResponse<EventRegistration>> {
+    return apiService.post<EventRegistration>(`/api/events/${eventId}/rsvp/`, data)
+  },
+
+  // Unregister from an event
+  async unregisterFromEvent(eventId: string): Promise<ApiResponse<EventRegistration>> {
+    return apiService.post<EventRegistration>(`/api/events/${eventId}/unregister/`, {})
+  },
+
+  // Self check-in
+  async selfCheckin(eventId: string): Promise<ApiResponse<EventRegistration>> {
+    return apiService.post<EventRegistration>(`/api/events/${eventId}/self-checkin/`, {})
+  },
+
+  // Admin check-in using confirmation code
+  async adminCheckin(eventId: string, confirmationCode: string): Promise<ApiResponse<EventRegistration>> {
+    return apiService.post<EventRegistration>(`/api/events/${eventId}/checkin/`, { confirmation_code: confirmationCode })
+  },
+
+  // Get current user's registration for an event
+  async getMyRegistration(eventId: string): Promise<ApiResponse<EventRegistration>> {
+    return apiService.get<EventRegistration>(`/api/events/${eventId}/my-registration/`)
   },
 
   // Event photos management
@@ -832,5 +884,98 @@ export const hostsService = {
   // Bulk reorder hosts
   async bulkReorderHosts(eventId: string, data: BulkReorderHostsRequest): Promise<ApiResponse<{ status: string; count: number }>> {
     return apiService.patch<{ status: string; count: number }>(`/api/events/${eventId}/hosts/bulk-reorder/`, data)
+  }
+}
+
+// Event Template Types and Interfaces
+export interface EventTemplateFont {
+  id: number
+  name: string
+  font_file: string
+}
+
+export interface EventTemplateLanguageFont {
+  id: number
+  language: string
+  language_display: string
+  font: EventTemplateFont
+}
+
+export interface EventTemplateColor {
+  id: number
+  hex_color_code: string
+  name: string
+}
+
+export interface EventTemplatePackagePlan {
+  id: number
+  name: string
+  price: string
+  commission: string
+  features: string[]
+  category?: {
+    id: number
+    name: string
+    color: string
+  }
+}
+
+export interface EventTemplate {
+  id: number
+  name: string
+  package_plan: EventTemplatePackagePlan
+  preview_image: string
+  template_colors: EventTemplateColor[]
+  template_fonts: EventTemplateLanguageFont[]
+  open_envelope_button?: string
+  basic_decoration_photo?: string
+  basic_background_photo?: string
+  standard_cover_video?: string
+  standard_background_video?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface BrowseTemplatesResponse {
+  message: string
+  templates: EventTemplate[]
+}
+
+export interface SelectTemplateRequest {
+  template_id: number
+}
+
+export interface SelectTemplateResponse {
+  message: string
+  template: EventTemplate
+  pricing_info: {
+    plan_name: string
+    price: string
+    commission: string
+    features: string[]
+    category: string
+  }
+}
+
+// Event Template API Service
+export const eventTemplateService = {
+  // Browse available templates (requires auth)
+  async browseTemplates(): Promise<ApiResponse<BrowseTemplatesResponse>> {
+    return apiService.get<BrowseTemplatesResponse>('/api/core-data/event-templates/browse_templates/')
+  },
+
+  // Select template for event
+  async selectTemplate(eventId: string, data: SelectTemplateRequest): Promise<ApiResponse<SelectTemplateResponse>> {
+    return apiService.post<SelectTemplateResponse>(`/api/events/${eventId}/select_template/`, data)
+  },
+
+  // Get public template assets (no auth required)
+  async getPublicTemplateAssets(templateId: number): Promise<ApiResponse<any>> {
+    return apiService.get<any>(`/api/core-data/event-templates/${templateId}/public_template_assets/`)
+  },
+
+  // Get event template info
+  async getEventTemplateInfo(eventId: string): Promise<ApiResponse<EventTemplate>> {
+    return apiService.get<EventTemplate>(`/api/events/${eventId}/template_info/`)
   }
 }

@@ -151,20 +151,7 @@
 
         <!-- Gallery Content -->
         <div v-else class="space-y-6">
-          <!-- Empty State -->
-          <div v-if="media.length === 0" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
-            <ImageIcon class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">No Photos Yet</h3>
-            <p class="text-slate-600 mb-6">Start building your gallery by uploading event photos.</p>
-            <button
-              v-if="canEdit"
-              @click="openUploadModal"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2"
-            >
-              <Upload class="w-4 h-4" />
-              <span>Upload Photos</span>
-            </button>
-          </div>
+        
 
           <!-- Empty State -->
           <div v-if="!Array.isArray(media) || media.length === 0" class="text-center py-12">

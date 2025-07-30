@@ -57,6 +57,10 @@ interface Props {
   activeTab: string
   tabs: TabConfig[]
   canViewAttendees?: boolean
+  canViewMedia?: boolean
+  canViewCollaborators?: boolean
+  canViewEventTexts?: boolean
+  canViewTemplate?: boolean
   canEdit?: boolean
 }
 
@@ -69,8 +73,13 @@ defineEmits<Emits>()
 
 const visibleTabs = computed(() => {
   return props.tabs.filter(tab => {
+    // Permission-based tab visibility
     if (tab.id === 'attendees' && !props.canViewAttendees) return false
-    if (tab.id === 'event-texts' && !props.canEdit) return false
+    if (tab.id === 'media' && !props.canViewMedia) return false
+    if (tab.id === 'collaborator' && !props.canViewCollaborators) return false
+    if (tab.id === 'event-texts' && !props.canViewEventTexts) return false
+    if (tab.id === 'template' && !props.canViewTemplate) return false
+    
     return tab.visible !== false
   })
 })
