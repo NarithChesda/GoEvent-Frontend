@@ -25,17 +25,17 @@ class ApiService {
   // Utility method to get full URL for profile pictures
   getProfilePictureUrl(profilePictureUrl: string | null | undefined): string | null {
     if (!profilePictureUrl) return null
-    
+
     // If it's already a full URL (starts with http/https), return as is
     if (profilePictureUrl.startsWith('http://') || profilePictureUrl.startsWith('https://')) {
       return profilePictureUrl
     }
-    
+
     // If it's a relative URL, prepend the API base URL
     if (profilePictureUrl.startsWith('/')) {
       return `${this.baseURL}${profilePictureUrl}`
     }
-    
+
     // If it doesn't start with /, assume it needs /media/ prefix
     return `${this.baseURL}/media/${profilePictureUrl}`
   }
@@ -48,14 +48,24 @@ class ApiService {
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type')
     const isJson = contentType?.includes('application/json')
-    
+
     try {
-      const data = isJson ? await response.json() : await response.text()
-      
+      // Handle 204 No Content responses (common for DELETE requests)
+      if (response.status === 204) {
+        return {
+          success: true,
+          data: null as any
+        }
+      }
+
+      // Check if response has a body before trying to parse it
+      const text = await response.text()
+      const data = text && isJson ? JSON.parse(text) : text
+
       if (!response.ok) {
         // Handle different HTTP status codes
         let message = 'An error occurred'
-        
+
         switch (response.status) {
           case 400:
             console.error('400 Bad Request - Full error response:', data)
@@ -89,7 +99,7 @@ class ApiService {
           default:
             message = data.detail || data.message || `HTTP ${response.status} error`
         }
-        
+
         return {
           success: false,
           message,
@@ -99,7 +109,7 @@ class ApiService {
 
       return {
         success: true,
-        data
+        data: data || null
       }
     } catch (error) {
       return {
@@ -111,7 +121,7 @@ class ApiService {
 
   async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
     const url = new URL(`${this.baseURL}${endpoint}`)
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== null && value !== undefined && value !== '') {
@@ -181,7 +191,7 @@ class ApiService {
   async patch<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     try {
       const isFormData = data instanceof FormData
-      
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         method: 'PATCH',
         headers: {
@@ -432,6 +442,30 @@ export interface PaginatedResponse<T> {
   results: T[]
 }
 
+export interface EventCollaborator {
+  id: number
+  user: number | null
+  user_details?: {
+    id: number
+    email: string
+    username: string
+    first_name: string
+    last_name: string
+    profile_picture: string | null
+    bio: string
+    is_verified: boolean
+    created_at: string
+    updated_at: string
+  }
+  email: string
+  role: 'admin' | 'editor' | 'viewer'
+  invited_by: number
+  invited_by_name: string
+  invited_at: string
+  accepted_at: string | null
+  is_accepted: boolean
+}
+
 export interface EventRegistrationDetail {
   id: number
   user: number
@@ -579,21 +613,23 @@ export const eventsService = {
     return apiService.delete(`/api/events/${eventId}/photos/${photoId}/`)
   },
 
-  // Collaboration management
-  async inviteCollaborator(eventId: string, data: { user_email: string; role: 'admin' | 'editor' | 'viewer'; message?: string }): Promise<ApiResponse<any>> {
-    return apiService.post(`/api/events/${eventId}/invite-collaborator/`, data)
+ // Collaboration management
+  async inviteCollaborator(eventId: string, data: { email: string; role: 'admin' | 'editor' | 'viewer'; message?: string }): Promise<ApiResponse<EventCollaborator>> {
+    return apiService.post<EventCollaborator>(`/api/events/${eventId}/invite-collaborator/`, data)
   },
 
   async getCollaborators(eventId: string): Promise<ApiResponse<EventCollaborator[]>> {
     return apiService.get<EventCollaborator[]>(`/api/events/${eventId}/collaborators/`)
   },
 
-  async acceptCollaboration(collaborationId: string): Promise<ApiResponse<any>> {
-    return apiService.post(`/api/events/collaborations/${collaborationId}/accept/`)
+  // Update collaborator role
+  async updateCollaborator(eventId: string, collaboratorId: number, data: { role: 'admin' | 'editor' | 'viewer' }): Promise<ApiResponse<EventCollaborator>> {
+    return apiService.patch<EventCollaborator>(`/api/events/${eventId}/collaborators/${collaboratorId}/`, data)
   },
 
-  async getCollaborationInvites(): Promise<ApiResponse<EventCollaborator[]>> {
-    return apiService.get<EventCollaborator[]>('/api/events/collaboration-invites/')
+  // Remove collaborator
+  async removeCollaborator(eventId: string, collaboratorId: number): Promise<ApiResponse<any>> {
+    return apiService.delete(`/api/events/${eventId}/collaborators/${collaboratorId}/`)
   }
 }
 
@@ -606,25 +642,6 @@ export interface EventPhoto {
   order: number
   is_featured: boolean
   created_at: string
-}
-
-export interface EventCollaborator {
-  id: number
-  event: string
-  user: number
-  user_details: {
-    id: number
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-  }
-  role: 'admin' | 'editor' | 'viewer'
-  invited_by: number
-  invited_by_name: string
-  invited_at: string
-  accepted_at: string | null
-  is_accepted: boolean
 }
 
 // Event Agenda API Service

@@ -1,0 +1,89 @@
+<template>
+  <div class="w-full lg:w-64 flex-shrink-0">
+    <!-- Mobile Horizontal Navigation -->
+    <div class="lg:hidden mb-6">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-2">
+        <div class="flex overflow-x-auto scrollbar-hide space-x-1" style="scrollbar-width: none; -ms-overflow-style: none;">
+          <NavigationTab
+            v-for="tab in visibleTabs"
+            :key="tab.id"
+            :tab="tab"
+            :is-active="activeTab === tab.id"
+            :is-mobile="true"
+            @click="$emit('tab-change', tab.id)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Sidebar Navigation -->
+    <div class="sticky top-24 hidden lg:block">
+      <!-- Title -->
+      <div class="mb-8">
+        <div class="flex items-center space-x-3">
+          <div class="w-3 h-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+          <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Details</h2>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="space-y-1 px-6">
+        <NavigationTab
+          v-for="tab in visibleTabs"
+          :key="tab.id"
+          :tab="tab"
+          :is-active="activeTab === tab.id"
+          :is-mobile="false"
+          @click="$emit('tab-change', tab.id)"
+        />
+      </nav>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import NavigationTab from './NavigationTab.vue'
+
+export interface TabConfig {
+  id: string
+  label: string
+  icon: string
+  visible?: boolean
+  mobileLabel?: string
+}
+
+interface Props {
+  activeTab: string
+  tabs: TabConfig[]
+  canViewAttendees?: boolean
+  canEdit?: boolean
+}
+
+interface Emits {
+  'tab-change': [tabId: string]
+}
+
+const props = defineProps<Props>()
+defineEmits<Emits>()
+
+const visibleTabs = computed(() => {
+  return props.tabs.filter(tab => {
+    if (tab.id === 'attendees' && !props.canViewAttendees) return false
+    if (tab.id === 'event-texts' && !props.canEdit) return false
+    return tab.visible !== false
+  })
+})
+</script>
+
+<style scoped>
+/* Mobile navigation scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+</style>

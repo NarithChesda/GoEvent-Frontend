@@ -1,21 +1,82 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div>
-      <h3 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Media</h3>
-      <p class="text-lg text-slate-600 mt-1 leading-relaxed">Manage all visual content and media for your event</p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Media</h2>
+        <p class="text-sm text-slate-600 mt-1">Manage all visual content and media for your event</p>
+      </div>
+      <button
+        v-if="canEdit && activeSection === 'gallery'"
+        @click="openUploadModal"
+        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+      >
+        <Upload class="w-4 h-4 mr-2" />
+        Upload Media
+      </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+            <ImageIcon class="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-900">{{ totalPhotos }}</p>
+            <p class="text-sm text-slate-600">Photos</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+            <Star class="w-5 h-5 text-purple-600" />
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-900">{{ featuredCount }}</p>
+            <p class="text-sm text-slate-600">Featured</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <Video class="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-900">{{ videosCount }}</p>
+            <p class="text-sm text-slate-600">Videos</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+            <Layout class="w-5 h-5 text-orange-600" />
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-900">{{ hasBanner ? 1 : 0 }}</p>
+            <p class="text-sm text-slate-600">Banner</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Media Tabs -->
-    <div class="border-b border-slate-200">
-      <nav class="-mb-px flex space-x-8">
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-2">
+      <nav class="flex space-x-1">
         <button
           @click="activeSection = 'basic'"
           :class="[
-            'whitespace-nowrap pb-2 px-1 border-b-2 font-semibold text-base',
+            'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'basic'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
           ]"
         >
           Basic Media
@@ -23,10 +84,10 @@
         <button
           @click="activeSection = 'gallery'"
           :class="[
-            'whitespace-nowrap pb-2 px-1 border-b-2 font-semibold text-base',
+            'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'gallery'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
           ]"
         >
           Photo Gallery
@@ -34,10 +95,10 @@
         <button
           @click="activeSection = 'embeds'"
           :class="[
-            'whitespace-nowrap pb-2 px-1 border-b-2 font-semibold text-base',
+            'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'embeds'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
           ]"
         >
           Videos & Maps
@@ -88,15 +149,15 @@
           </div>
         </div>
 
-        <!-- Gallery Header -->
+        <!-- Gallery Content -->
         <div v-else class="space-y-6">
-          <div class="flex justify-between items-center">
-            <div>
-              <h4 class="text-xl font-bold text-slate-900 leading-tight tracking-tight">Photo Gallery</h4>
-              <p class="text-lg text-slate-600 mt-1 leading-relaxed">Upload and manage event photos with drag & drop ordering</p>
-            </div>
+          <!-- Empty State -->
+          <div v-if="media.length === 0" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+            <ImageIcon class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">No Photos Yet</h3>
+            <p class="text-slate-600 mb-6">Start building your gallery by uploading event photos.</p>
             <button
-              v-if="canEdit && eventData && props.eventId"
+              v-if="canEdit"
               @click="openUploadModal"
               class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2"
             >
@@ -178,12 +239,26 @@
       @confirm="confirmDelete"
       @cancel="showDeleteModal = false"
     />
+
+    <!-- Success/Error Messages -->
+    <Transition name="slide-up">
+      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+        <div
+          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
+          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
+        >
+          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
+          <AlertCircle v-else class="w-5 h-5 mr-2" />
+          {{ message.text }}
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, reactive } from 'vue'
-import { Upload, ImageIcon, AlertCircle } from 'lucide-vue-next'
+import { ref, onMounted, watch, computed } from 'vue'
+import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
@@ -218,12 +293,36 @@ const showDeleteModal = ref(false)
 const selectedMedia = ref<EventPhoto | null>(null)
 const mediaToDelete = ref<EventPhoto | null>(null)
 const deleting = ref(false)
+const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Local reactive eventData state
 const localEventData = ref<Event | undefined>(props.eventData ? { ...props.eventData } : undefined)
 
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)
+
+// Computed properties
+const totalPhotos = computed(() => {
+  return Array.isArray(media.value) ? media.value.length : 0
+})
+
+const featuredCount = computed(() => {
+  if (!Array.isArray(media.value)) return 0
+  return media.value.filter(item => item.is_featured).length
+})
+
+const videosCount = computed(() => {
+  // Count video embeds from eventData
+  if (!localEventData.value) return 0
+  let count = 0
+  if (localEventData.value.video_embed) count++
+  if (localEventData.value.youtube_url) count++
+  return count
+})
+
+const hasBanner = computed(() => {
+  return localEventData.value?.banner_image ? true : false
+})
 
 // Watch for prop changes
 watch(() => props.eventData, (newEventData) => {
@@ -261,11 +360,11 @@ const fetchMedia = async () => {
         media.value = []
       }
     } else {
-      error.value = response.message || 'Failed to load media'
+      showMessage('error', response.message || 'Failed to load media')
       media.value = []
     }
   } catch {
-    error.value = 'Network error while loading media'
+    showMessage('error', 'Network error while loading media')
     media.value = []
   } finally {
     loading.value = false
@@ -303,11 +402,12 @@ const confirmDelete = async () => {
       mediaToDelete.value = null
       // Emit updated media to parent
       emit('media-updated', media.value)
+      showMessage('success', 'Photo deleted successfully')
     } else {
-      error.value = response.message || 'Failed to delete media'
+      showMessage('error', response.message || 'Failed to delete media')
     }
   } catch {
-    error.value = 'Network error while deleting media'
+    showMessage('error', 'Network error while deleting media')
   } finally {
     deleting.value = false
   }
@@ -327,12 +427,13 @@ const toggleFeatured = async (mediaItem: EventPhoto) => {
         media.value[index] = response.data
         // Emit updated media to parent
         emit('media-updated', media.value)
+        showMessage('success', 'Featured status updated')
       }
     } else {
-      error.value = response.message || 'Failed to update featured status'
+      showMessage('error', response.message || 'Failed to update featured status')
     }
   } catch {
-    error.value = 'Network error while updating featured status'
+    showMessage('error', 'Network error while updating featured status')
   }
 }
 
@@ -346,6 +447,7 @@ const handleMediaUploaded = (newMedia: EventPhoto) => {
   showUploadModal.value = false
   // Emit updated media to parent
   emit('media-updated', media.value)
+  showMessage('success', 'Photo uploaded successfully')
 }
 
 const handleMediaUpdated = (updatedMedia: EventPhoto) => {
@@ -361,6 +463,7 @@ const handleMediaUpdated = (updatedMedia: EventPhoto) => {
   selectedMedia.value = null
   // Emit updated media to parent
   emit('media-updated', media.value)
+  showMessage('success', 'Photo updated successfully')
 }
 
 const handleEventUpdated = (updatedEvent: Event) => {
@@ -422,15 +525,22 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
     if (!response.success) {
       // Rollback on failure - refetch media
       await fetchMedia()
-      error.value = response.message || 'Failed to reorder media'
+      showMessage('error', response.message || 'Failed to reorder media')
     }
   } catch {
     // Rollback on failure - refetch media
     await fetchMedia()
-    error.value = 'Network error while reordering media'
+    showMessage('error', 'Network error while reordering media')
   } finally {
     draggedMedia.value = null
   }
+}
+
+const showMessage = (type: 'success' | 'error', text: string) => {
+  message.value = { type, text }
+  setTimeout(() => {
+    message.value = null
+  }, 5000)
 }
 
 // Lifecycle
@@ -451,5 +561,20 @@ onMounted(() => {
 .media-item.dragging {
   transform: rotate(2deg) scale(1.05);
   z-index: 10;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>
