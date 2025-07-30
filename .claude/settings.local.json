@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm doctor)",
+      "Bash(npm install:*)",
+      "Bash(echo $PATH)",
+      "Bash(npm config:*)",
+      "Bash(npm:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(claude migrate-installer:*)",
+      "Bash(claude update)",
+      "Bash(claude config list)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(claude config set packageManager npm-global)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
