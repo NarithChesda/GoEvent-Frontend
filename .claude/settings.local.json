@@ -14,7 +14,8 @@
       "Bash(cat:*)",
       "Bash(claude config set packageManager npm-global)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }

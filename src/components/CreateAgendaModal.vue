@@ -219,17 +219,77 @@
                       </div>
                     </div>
 
-                    <!-- Featured -->
-                    <div class="flex items-center space-x-3 pt-8">
-                      <input
-                        v-model="formData.is_featured"
-                        type="checkbox"
-                        id="is_featured"
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <label for="is_featured" class="text-sm font-medium text-slate-700">
-                        Mark as featured item
+                    <!-- Icon Selection -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Icon
                       </label>
+                      <button
+                        type="button"
+                        @click="showIconPicker = true"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between"
+                      >
+                        <div class="flex items-center space-x-3">
+                          <div v-if="getSelectedIcon()" class="w-8 h-8 flex items-center justify-center" v-html="getSelectedIcon()?.svg_code"></div>
+                          <Sparkles v-else class="w-5 h-5 text-gray-400" />
+                          <span class="text-slate-700">{{ getSelectedIcon()?.name || 'Select an icon' }}</span>
+                        </div>
+                        <ChevronDown class="w-4 h-4 text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Featured Checkbox -->
+                  <div class="flex items-center space-x-3">
+                    <input
+                      v-model="formData.is_featured"
+                      type="checkbox"
+                      id="is_featured"
+                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label for="is_featured" class="text-sm font-medium text-slate-700">
+                      Mark as featured item
+                    </label>
+                  </div>
+
+                  <!-- Icon Picker Modal -->
+                  <div v-if="showIconPicker" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-4">
+                      <h5 class="font-medium text-slate-900">Select Icon</h5>
+                      <button
+                        type="button"
+                        @click="showIconPicker = false"
+                        class="text-gray-400 hover:text-gray-600"
+                      >
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-6 gap-2 max-h-60 overflow-y-auto">
+                      <!-- No Icon Option -->
+                      <button
+                        type="button"
+                        @click="selectIcon(null)"
+                        class="p-3 rounded-lg border-2 transition-all duration-200"
+                        :class="formData.icon_id === null ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                      >
+                        <X class="w-6 h-6 mx-auto text-gray-400" />
+                        <p class="text-xs mt-1 text-gray-600">None</p>
+                      </button>
+                      
+                      <!-- Available Icons -->
+                      <button
+                        v-for="icon in availableIcons"
+                        :key="icon.id"
+                        type="button"
+                        @click="selectIcon(icon.id)"
+                        class="p-3 rounded-lg border-2 transition-all duration-200"
+                        :class="formData.icon_id === icon.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                        :title="icon.name"
+                      >
+                        <div class="w-6 h-6 mx-auto" v-html="icon.svg_code"></div>
+                        <p class="text-xs mt-1 text-gray-600 truncate">{{ icon.name }}</p>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -374,7 +434,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { 
   X, 
   Calendar, 
@@ -382,9 +442,11 @@ import {
   MapPin, 
   Palette, 
   Languages, 
-  Plus 
+  Plus,
+  Sparkles,
+  ChevronDown 
 } from 'lucide-vue-next'
-import { agendaService, type CreateAgendaRequest, type EventAgendaItem, type AgendaTranslation } from '../services/api'
+import { agendaService, coreDataService, type CreateAgendaRequest, type EventAgendaItem, type AgendaTranslation, type AgendaIcon } from '../services/api'
 
 interface Props {
   eventId: string
@@ -401,6 +463,8 @@ const emit = defineEmits<Emits>()
 // State
 const loading = ref(false)
 const showAddTranslation = ref(false)
+const availableIcons = ref<AgendaIcon[]>([])
+const showIconPicker = ref(false)
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -429,6 +493,7 @@ const formData = reactive<CreateAgendaRequest>({
   order: 0,
   is_featured: false,
   color: '#3498db',
+  icon_id: null,
   translations: []
 })
 
@@ -444,6 +509,26 @@ const newTranslation = reactive<Omit<AgendaTranslation, 'id' | 'agenda' | 'creat
 })
 
 // Methods
+const fetchIcons = async () => {
+  try {
+    const response = await coreDataService.getIcons()
+    if (response.success && response.data) {
+      availableIcons.value = response.data
+    }
+  } catch (error) {
+    console.error('Error fetching icons:', error)
+  }
+}
+
+const getSelectedIcon = () => {
+  return availableIcons.value.find(icon => icon.id === formData.icon_id)
+}
+
+const selectIcon = (iconId: number | null) => {
+  formData.icon_id = iconId
+  showIconPicker.value = false
+}
+
 const getLanguageName = (code: string) => {
   return availableLanguages.find(lang => lang.code === code)?.name || code
 }
@@ -500,6 +585,11 @@ const createAgendaItem = async () => {
     loading.value = false
   }
 }
+
+// Lifecycle
+onMounted(() => {
+  fetchIcons()
+})
 </script>
 
 <style scoped>

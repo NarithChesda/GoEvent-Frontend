@@ -6,146 +6,158 @@
     @dragover.prevent
     @dragenter.prevent
     @drop="handleDrop"
-    class="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer"
+    class="group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
     :class="[
-      item.is_featured ? 'ring-2 ring-purple-200' : '',
-      isDragging ? 'opacity-50 transform rotate-2 scale-105' : '',
-      canEdit && draggable ? 'hover:scale-[1.02]' : ''
+      item.is_featured ? 'ring-1 ring-blue-200 bg-blue-50/30' : '',
+      isDragging ? 'opacity-60 transform rotate-1 scale-105 shadow-xl' : '',
+      canEdit && draggable ? 'hover:scale-[1.01] hover:-translate-y-0.5' : ''
     ]"
   >
-    <!-- Drag Handle (only visible if can edit) -->
+    <!-- Drag Handle -->
     <div 
       v-if="canEdit"
-      class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-1 rounded-lg hover:bg-slate-100"
+      class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing p-1.5 rounded-lg bg-white/90 hover:bg-white shadow-sm"
     >
-      <GripVertical class="w-4 h-4 text-slate-400" />
+      <GripVertical class="w-3 h-3 text-slate-400" />
     </div>
 
-    <!-- Top accent bar (colored by agenda type) -->
-    <div 
-      class="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-      :style="{ backgroundColor: item.color || '#8B5CF6' }"
-    ></div>
-
-    <div class="flex items-start space-x-4">
-      <!-- Time Column -->
-      <div class="flex-shrink-0 text-center min-w-[80px]">
-        <div 
-          class="text-sm font-bold mb-1"
-          :style="{ color: item.color || '#8B5CF6' }"
-        >
-          {{ item.start_time_text || 'TBD' }}
+    <!-- Main Content Area -->
+    <div class="p-4">
+      <!-- Header Row: Time, Title, Featured -->
+      <div class="flex items-start justify-between mb-3">
+        <!-- Left Side: Time and Title -->
+        <div class="flex-1 min-w-0 pr-3">
+          <!-- Time Badge -->
+          <div 
+            class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium mb-2"
+            :style="{ 
+              backgroundColor: (item.color || '#8B5CF6') + '15',
+              color: item.color || '#8B5CF6'
+            }"
+          >
+            <Clock class="w-3 h-3 mr-1" />
+            <span>{{ item.start_time_text || 'TBD' }}</span>
+            <span v-if="item.end_time_text" class="opacity-75 ml-1">- {{ item.end_time_text }}</span>
+          </div>
+          
+          <!-- Title -->
+          <h3 class="text-sm font-semibold text-slate-900 leading-tight mb-1">
+            {{ item.title }}
+          </h3>
+          
+          <!-- Type Badge -->
+          <div 
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+            :style="{ 
+              backgroundColor: (item.color || '#8B5CF6') + '10',
+              color: item.color || '#8B5CF6'
+            }"
+          >
+            {{ getAgendaTypeLabel(item.agenda_type) }}
+          </div>
         </div>
-        <div v-if="item.end_time_text" class="text-xs text-slate-500">
-          {{ item.end_time_text }}
+
+        <!-- Right Side: Icon and Featured -->
+        <div class="flex items-start space-x-2 flex-shrink-0">
+          <!-- Icon -->
+          <div 
+            v-if="item.icon" 
+            class="w-8 h-8 rounded-lg p-1.5 flex items-center justify-center"
+            :style="{ backgroundColor: (item.color || '#8B5CF6') + '15' }"
+            v-html="item.icon.svg_code"
+          ></div>
+          
+          <!-- Featured Star -->
+          <div v-if="item.is_featured" class="flex items-center">
+            <Star class="w-4 h-4 text-yellow-500 fill-yellow-500" />
+          </div>
         </div>
       </div>
-      
-      <!-- Content Column -->
-      <div class="flex-1 min-w-0">
-        <div class="flex items-start justify-between mb-2">
-          <div class="flex items-center space-x-2 min-w-0 flex-1">
-            <h4 class="text-lg font-semibold text-slate-900 truncate">{{ item.title }}</h4>
-            
-            <!-- Featured Badge -->
-            <span
-              v-if="item.is_featured"
-              class="px-2 py-1 text-xs font-bold bg-purple-100 text-purple-700 rounded-full flex-shrink-0"
-            >
-              Featured
-            </span>
-            
-            <!-- Agenda Type Badge -->
-            <span
-              class="px-3 py-1 text-xs font-medium rounded-full bg-white/80 text-slate-600 capitalize flex-shrink-0"
-              :style="{ 
-                backgroundColor: (item.color || '#8B5CF6') + '15', 
-                color: item.color || '#8B5CF6' 
-              }"
-            >
-              {{ item.agenda_type }}
-            </span>
-          </div>
 
-          <!-- Action Buttons -->
-          <div v-if="canEdit" class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2">
-            <button
-              @click.stop="$emit('edit', item)"
-              class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-              title="Edit agenda item"
-            >
-              <Edit2 class="w-4 h-4" />
-            </button>
-            <button
-              @click.stop="$emit('delete', item)"
-              class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-              title="Delete agenda item"
-            >
-              <Trash2 class="w-4 h-4" />
-            </button>
+      <!-- Description -->
+      <p v-if="item.description" class="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-2">
+        {{ item.description }}
+      </p>
+
+      <!-- Speaker, Location, and Virtual in a balanced layout -->
+      <div class="grid grid-cols-1 gap-2 mb-3">
+        <!-- Speaker -->
+        <div v-if="item.speaker" class="flex items-center space-x-2">
+          <div 
+            class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium"
+            :style="{ backgroundColor: item.color || '#8B5CF6' }"
+          >
+            {{ getInitials(item.speaker) }}
           </div>
+          <span class="text-xs text-slate-700 font-medium">{{ item.speaker }}</span>
         </div>
-        
-        <!-- Description -->
-        <p v-if="item.description" class="text-slate-600 mb-3 leading-relaxed">
-          {{ item.description }}
-        </p>
-        
-        <!-- Metadata Row -->
-        <div class="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-          <!-- Speaker -->
-          <span v-if="item.speaker" class="flex items-center">
-            <User class="w-4 h-4 mr-1 flex-shrink-0" />
-            <span class="truncate">{{ item.speaker }}</span>
-          </span>
-          
-          <!-- Location -->
-          <span v-if="item.location" class="flex items-center">
-            <MapPin class="w-4 h-4 mr-1 flex-shrink-0" />
-            <span class="truncate">{{ item.location }}</span>
-          </span>
-          
-          <!-- Virtual Link -->
+
+        <!-- Location -->
+        <div v-if="item.location" class="flex items-center space-x-2 text-slate-600">
+          <MapPin class="w-3 h-3" :style="{ color: item.color || '#8B5CF6' }" />
+          <span class="text-xs">{{ item.location }}</span>
+        </div>
+
+        <!-- Virtual Link -->
+        <div v-if="item.virtual_link" class="flex items-center space-x-2">
+          <Monitor class="w-3 h-3 text-green-600" />
           <a 
-            v-if="item.virtual_link" 
             :href="item.virtual_link"
             target="_blank"
             rel="noopener noreferrer"
-            class="flex items-center text-blue-600 hover:text-blue-700 transition-colors duration-200"
+            class="text-xs text-blue-600 hover:text-blue-700 transition-colors"
             @click.stop
           >
-            <Monitor class="w-4 h-4 mr-1 flex-shrink-0" />
-            <span>Join Virtual</span>
-            <ExternalLink class="w-3 h-3 ml-1" />
+            Join Virtual Meeting
           </a>
         </div>
+      </div>
 
-        <!-- Translations indicator -->
-        <div v-if="item.translations && item.translations.length > 0" class="flex items-center mt-3">
-          <Languages class="w-4 h-4 text-slate-400 mr-1" />
-          <span class="text-xs text-slate-500">
-            Available in {{ item.translations.length }} language{{ item.translations.length !== 1 ? 's' : '' }}
-          </span>
+      <!-- Footer -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+        <!-- Translations and Date Text -->
+        <div class="flex items-center space-x-3 text-xs text-slate-500">
+          <div v-if="item.date_text">{{ item.date_text }}</div>
+          <div v-if="item.translations && item.translations.length > 0" class="flex items-center space-x-1">
+            <Languages class="w-3 h-3" />
+            <span>{{ item.translations.length }} lang{{ item.translations.length !== 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div v-if="canEdit" class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            @click.stop="$emit('edit', item)"
+            class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+            title="Edit agenda item"
+          >
+            <Edit2 class="w-3 h-3" />
+          </button>
+          <button
+            @click.stop="$emit('delete', item)"
+            class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+            title="Delete agenda item"
+          >
+            <Trash2 class="w-3 h-3" />
+          </button>
         </div>
       </div>
     </div>
-
-    <!-- Hover effect background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/40 group-hover:via-purple-50/20 group-hover:to-blue-50/40 rounded-2xl transition-all duration-300 -z-10 pointer-events-none"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { 
-  User, 
+  Clock,
   MapPin, 
   Monitor, 
   ExternalLink, 
   Edit2, 
   Trash2, 
   GripVertical,
-  Languages
+  Languages,
+  Star
 } from 'lucide-vue-next'
 import type { EventAgendaItem } from '../services/api'
 
@@ -170,6 +182,29 @@ const emit = defineEmits<Emits>()
 
 // Drag state
 const isDragging = ref(false)
+
+// Helper functions
+const getAgendaTypeLabel = (type: string): string => {
+  const labels: Record<string, string> = {
+    'session': 'Session',
+    'break': 'Break',
+    'networking': 'Networking',
+    'keynote': 'Keynote',
+    'workshop': 'Workshop',
+    'panel': 'Panel Discussion',
+    'other': 'Other'
+  }
+  return labels[type] || type
+}
+
+const getInitials = (name: string): string => {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0))
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
 
 // Drag handlers
 const handleDragStart = (event: DragEvent) => {
@@ -214,5 +249,12 @@ const handleDragEnd = (event: DragEvent) => {
 
 .cursor-grabbing {
   cursor: grabbing;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 </style>

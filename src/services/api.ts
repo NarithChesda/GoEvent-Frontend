@@ -94,7 +94,8 @@ class ApiService {
             message = 'Validation failed'
             break
           case 500:
-            message = 'Server error. Please try again later'
+            console.error('500 Internal Server Error - Response:', data)
+            message = data.detail || data.message || data.error || 'Server error. Please try again later'
             break
           default:
             message = data.detail || data.message || `HTTP ${response.status} error`
@@ -232,6 +233,24 @@ class ApiService {
 }
 
 export const apiService = new ApiService()
+
+// Core Data Service
+export const coreDataService = {
+  // Get available icons
+  async getIcons(): Promise<ApiResponse<AgendaIcon[]>> {
+    const response = await apiService.get<{ results: AgendaIcon[] }>('/api/core-data/custom-icons/')
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data.results
+      }
+    }
+    return {
+      success: false,
+      message: response.message
+    }
+  }
+}
 
 // Team Member Types
 export interface TeamMember {
@@ -397,6 +416,12 @@ export interface AgendaTranslation {
   updated_at?: string
 }
 
+export interface AgendaIcon {
+  id: number
+  name: string
+  svg_code: string
+}
+
 export interface EventAgendaItem {
   id: number
   title: string
@@ -408,6 +433,7 @@ export interface EventAgendaItem {
   end_time_text: string
   speaker: string
   location: string
+  icon?: AgendaIcon | null
   virtual_link: string
   order: number
   is_featured: boolean
@@ -426,6 +452,7 @@ export interface CreateAgendaRequest {
   speaker?: string
   location?: string
   virtual_link?: string
+  icon_id?: number | null
   order?: number
   is_featured?: boolean
   color?: string
