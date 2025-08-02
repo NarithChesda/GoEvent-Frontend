@@ -40,6 +40,7 @@
             :can-view-collaborators="canViewCollaborators"
             :can-view-event-texts="canViewEventTexts"
             :can-view-template="canViewTemplate"
+            :can-view-payment="canViewPayment"
             :can-edit="event.can_edit"
             @tab-change="activeTab = $event"
           />
@@ -154,6 +155,26 @@
               />
             </div>
 
+            <!-- Payment Tab -->
+            <div v-if="activeTab === 'payment'">
+              <div v-if="!canViewPayment" class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view and manage payments.
+                </p>
+              </div>
+              <EventPaymentTab
+                v-else-if="event?.id"
+                :event-id="event.id"
+                :event="event"
+                :can-edit="event.can_edit || false"
+                @tab-change="activeTab = $event"
+              />
+            </div>
+
             <!-- Template Tab -->
             <div v-if="activeTab === 'template'">
               <div v-if="!canViewTemplate" class="text-center py-12">
@@ -172,6 +193,7 @@
                 @template-updated="handleTemplateUpdated"
               />
             </div>
+
           </div>
         </div>
       </div>
@@ -266,6 +288,7 @@ import EventMediaTab from '../components/EventMediaTab.vue'
 import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
 import EventAttendeesTab from '../components/EventAttendeesTab.vue'
 import EventTemplateTab from '../components/EventTemplateTab.vue'
+import EventPaymentTab from '../components/EventPaymentTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import EventActionMenu from '../components/EventActionMenu.vue'
@@ -294,6 +317,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'media', label: 'Media', icon: 'image' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'event-texts', label: 'Event Texts', icon: 'file-text', mobileLabel: 'Texts' },
+  { id: 'payment', label: 'Payment', icon: 'credit-card' },
   { id: 'template', label: 'Template', icon: 'monitor' }
 ])
 
@@ -345,6 +369,11 @@ const canViewEventTexts = computed(() => {
 const canViewTemplate = computed(() => {
   return canViewRestrictedTabs.value
 })
+
+const canViewPayment = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
 
 const canDeleteEvent = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
@@ -538,9 +567,9 @@ const handleTemplateUpdated = (template: any) => {
   if (event.value) {
     // Update the event with the new template information
     event.value.event_template = template.id
-    event.value.event_template_enabled = false // Template selected but not enabled yet
-    // Note: event_template_details would be populated after payment/activation by backend
-    showMessage('success', 'Template selected successfully! You can now proceed with payment.')
+    event.value.event_template_details = template // Set template details for immediate use
+    event.value.event_template_enabled = false // Keep for backward compatibility
+    showMessage('success', 'Template selected successfully!')
   }
 }
 

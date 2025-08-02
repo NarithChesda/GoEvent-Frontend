@@ -61,6 +61,7 @@ interface Props {
   canViewCollaborators?: boolean
   canViewEventTexts?: boolean
   canViewTemplate?: boolean
+  canViewPayment?: boolean
   canEdit?: boolean
 }
 
@@ -79,6 +80,7 @@ const visibleTabs = computed(() => {
     if (tab.id === 'collaborator' && !props.canViewCollaborators) return false
     if (tab.id === 'event-texts' && !props.canViewEventTexts) return false
     if (tab.id === 'template' && !props.canViewTemplate) return false
+    if (tab.id === 'payment' && !props.canViewPayment) return false
     
     return tab.visible !== false
   })

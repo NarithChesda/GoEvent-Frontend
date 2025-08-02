@@ -204,7 +204,7 @@ Authorization: Bearer <your_jwt_token>
 
 **Authentication:** Required (View event permissions)
 
-**Description:** Retrieve template information for events that have templates enabled.
+**Description:** Retrieve template info for event selected template.
 
 **Response:**
 ```json

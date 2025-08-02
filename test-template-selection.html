@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Selection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { 
+            background-color: #6c757d; 
+            cursor: not-allowed; 
+        }
+        .template-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .template-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .template-card:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .template-card.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Template Selection API Test</h1>
+        
+        <div class="status info">
+            <strong>Test Status:</strong> <span id="status">Ready</span>
+        </div>
+
+        <div>
+            <h3>Step 1: Load Templates</h3>
+            <button id="loadTemplates" onclick="loadTemplates()">Load Available Templates</button>
+        </div>
+
+        <div id="templatesSection" style="display: none;">
+            <h3>Step 2: Select a Template</h3>
+            <div id="templateList" class="template-list"></div>
+        </div>
+
+        <div id="selectionSection" style="display: none;">
+            <h3>Step 3: Test Template Selection</h3>
+            <input type="text" id="eventId" placeholder="Enter Event ID" value="72ae834e-0f44-41e7-bb75-c417a0fc1b80" style="width: 300px; padding: 8px; margin: 5px;">
+            <button id="selectTemplate" onclick="selectTemplate()" disabled>Select Template</button>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        let templates = [];
+        let selectedTemplateId = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusClass = type === 'error' ? 'color: red;' : type === 'success' ? 'color: green;' : '';
+            logElement.innerHTML += `<div style="${statusClass}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.parentElement.className = `status ${type}`;
+        }
+
+        async function loadTemplates() {
+            try {
+                updateStatus('Loading templates...', 'info');
+                log('Fetching templates from API...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/core-data/event-templates/browse_templates/`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                log(`API Response: ${JSON.stringify(data, null, 2)}`);
+
+                if (data.templates && data.templates.length > 0) {
+                    templates = data.templates;
+                    displayTemplates();
+                    updateStatus(`Loaded ${templates.length} templates`, 'success');
+                    document.getElementById('templatesSection').style.display = 'block';
+                } else {
+                    log('No templates found in response', 'error');
+                    updateStatus('No templates available', 'error');
+                }
+
+            } catch (error) {
+                log(`Error loading templates: ${error.message}`, 'error');
+                updateStatus('Failed to load templates', 'error');
+                
+                // Fallback to mock data
+                log('Using mock data for testing', 'info');
+                templates = [
+                    {
+                        id: 1,
+                        name: "Elegant Wedding Template",
+                        package_plan: {
+                            name: "Premium Plan",
+                            price: "299.00",
+                            category: { name: "Wedding", color: "#ff6b6b" }
+                        }
+                    },
+                    {
+                        id: 2,
+                        name: "Corporate Conference Template",
+                        package_plan: {
+                            name: "Business Plan",
+                            price: "199.00",
+                            category: { name: "Business", color: "#4ecdc4" }
+                        }
+                    }
+                ];
+                displayTemplates();
+                updateStatus('Using mock templates for testing', 'info');
+                document.getElementById('templatesSection').style.display = 'block';
+            }
+        }
+
+        function displayTemplates() {
+            const listElement = document.getElementById('templateList');
+            listElement.innerHTML = '';
+
+            templates.forEach(template => {
+                const card = document.createElement('div');
+                card.className = 'template-card';
+                card.onclick = () => selectTemplateForTesting(template.id);
+                card.innerHTML = `
+                    <h4>${template.name}</h4>
+                    <p><strong>Plan:</strong> ${template.package_plan.name}</p>
+                    <p><strong>Price:</strong> $${template.package_plan.price}</p>
+                    <p><strong>Category:</strong> ${template.package_plan.category?.name || 'General'}</p>
+                `;
+                listElement.appendChild(card);
+            });
+        }
+
+        function selectTemplateForTesting(templateId) {
+            // Remove previous selection
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selection to clicked card
+            event.target.closest('.template-card').classList.add('selected');
+            
+            selectedTemplateId = templateId;
+            log(`Selected template ID: ${templateId}`);
+            
+            document.getElementById('selectTemplate').disabled = false;
+            document.getElementById('selectionSection').style.display = 'block';
+        }
+
+        async function selectTemplate() {
+            const eventId = document.getElementById('eventId').value.trim();
+            
+            if (!eventId) {
+                alert('Please enter an Event ID');
+                return;
+            }
+
+            if (!selectedTemplateId) {
+                alert('Please select a template first');
+                return;
+            }
+
+            try {
+                updateStatus('Selecting template...', 'info');
+                log(`Attempting to select template ${selectedTemplateId} for event ${eventId}`);
+
+                const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_template: selectedTemplateId
+                    })
+                });
+
+                log(`Response status: ${response.status}`);
+                const responseText = await response.text();
+                log(`Response body: ${responseText}`);
+
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    log('Template selection successful!', 'success');
+                    updateStatus('Template selected successfully!', 'success');
+                    
+                    if (data.event_template) {
+                        log(`Event template updated to: ${data.event_template}`);
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+
+            } catch (error) {
+                log(`Error selecting template: ${error.message}`, 'error');
+                updateStatus('Template selection failed', 'error');
+            }
+        }
+
+        // Initialize
+        log('Template Selection Test initialized');
+    </script>
+</body>
+</html>

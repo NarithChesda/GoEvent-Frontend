@@ -212,6 +212,46 @@ class ApiService {
     }
   }
 
+  async postFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          // Don't set Content-Type for FormData, let the browser handle it
+          ...this.getAuthHeaders()
+        },
+        body: data
+      })
+
+      return this.handleResponse<T>(response)
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Network error'
+      }
+    }
+  }
+
+  async patchFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PATCH',
+        headers: {
+          // Don't set Content-Type for FormData, let the browser handle it
+          ...this.getAuthHeaders()
+        },
+        body: data
+      })
+
+      return this.handleResponse<T>(response)
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Network error'
+      }
+    }
+  }
+
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -952,6 +992,7 @@ export interface EventTemplate {
   name: string
   package_plan: EventTemplatePackagePlan
   preview_image: string
+  youtube_preview_url?: string
   template_colors: EventTemplateColor[]
   template_fonts: EventTemplateLanguageFont[]
   open_envelope_button?: string
@@ -968,32 +1009,12 @@ export interface BrowseTemplatesResponse {
   templates: EventTemplate[]
 }
 
-export interface SelectTemplateRequest {
-  template_id: number
-}
-
-export interface SelectTemplateResponse {
-  message: string
-  template: EventTemplate
-  pricing_info: {
-    plan_name: string
-    price: string
-    commission: string
-    features: string[]
-    category: string
-  }
-}
 
 // Event Template API Service
 export const eventTemplateService = {
   // Browse available templates (requires auth)
   async browseTemplates(): Promise<ApiResponse<BrowseTemplatesResponse>> {
     return apiService.get<BrowseTemplatesResponse>('/api/core-data/event-templates/browse_templates/')
-  },
-
-  // Select template for event
-  async selectTemplate(eventId: string, data: SelectTemplateRequest): Promise<ApiResponse<SelectTemplateResponse>> {
-    return apiService.post<SelectTemplateResponse>(`/api/events/${eventId}/select_template/`, data)
   },
 
   // Get public template assets (no auth required)
@@ -1004,5 +1025,13 @@ export const eventTemplateService = {
   // Get event template info
   async getEventTemplateInfo(eventId: string): Promise<ApiResponse<EventTemplate>> {
     return apiService.get<EventTemplate>(`/api/events/${eventId}/template_info/`)
+  },
+
+  // Select template for event (using event update endpoint since select_template doesn't exist)
+  async selectEventTemplate(eventId: string, templateId: number): Promise<ApiResponse<any>> {
+    return apiService.patch<any>(`/api/events/${eventId}/`, {
+      event_template: templateId
+    })
   }
 }
+

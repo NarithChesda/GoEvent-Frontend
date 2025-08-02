@@ -23,11 +23,12 @@ async function testBrowseTemplates() {
   }
 }
 
-// Test get event template info (replace with actual event ID)
+// Test get event template info (replace with actual event ID) 
 async function testEventTemplateInfo(eventId) {
   console.log(`\nTesting event template info for event ${eventId}...`);
   try {
-    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/template_info/`, {
+    // Test corrected endpoint URL with hyphen
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/template-info/`, {
       headers: {
         'Authorization': `Bearer ${AUTH_TOKEN}`,
         'Content-Type': 'application/json'
@@ -37,6 +38,13 @@ async function testEventTemplateInfo(eventId) {
     const data = await response.json();
     console.log('Response status:', response.status);
     console.log('Response data:', JSON.stringify(data, null, 2));
+    
+    // Check for youtube_preview_url field
+    if (data.youtube_preview_url) {
+      console.log('✅ YouTube preview URL found:', data.youtube_preview_url);
+    } else {
+      console.log('ℹ️ YouTube preview URL not available for this template');
+    }
   } catch (error) {
     console.error('Error:', error);
   }

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(npm doctor)",
@@ -15,7 +16,11 @@
       "Bash(claude config set packageManager npm-global)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(curl:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
