@@ -6,26 +6,30 @@
         
         <div class="flex min-h-full items-center justify-center p-4">
           <div 
-            class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
             <!-- Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-100">
-              <div>
-                <h3 class="text-xl font-bold text-slate-900">Create Agenda Item</h3>
-                <p class="text-sm text-slate-600 mt-1">Add a new item to your event schedule</p>
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Calendar class="w-5 h-5" />
+                  </div>
+                  <h2 class="text-2xl font-bold">Create Agenda Item</h2>
+                </div>
+                <button
+                  @click="$emit('close')"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                >
+                  <X class="w-4 h-4" />
+                </button>
               </div>
-              <button
-                @click="$emit('close')"
-                class="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-              >
-                <X class="w-5 h-5 text-gray-500" />
-              </button>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="createAgendaItem" class="overflow-y-auto max-h-[calc(90vh-120px)]">
-              <div class="p-6 space-y-6">
+            <form @submit.prevent="createAgendaItem" class="p-8 space-y-6">
+              <div class="space-y-6">
                 <!-- Basic Information -->
                 <div class="space-y-4">
                   <h4 class="font-semibold text-slate-900 flex items-center">
@@ -35,40 +39,40 @@
                   
                   <!-- Title -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
                       Title <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="formData.title"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="Enter agenda item title"
                     />
                   </div>
 
                   <!-- Description -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
                       Description
                     </label>
                     <textarea
                       v-model="formData.description"
                       rows="3"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 resize-none"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Describe this agenda item"
                     ></textarea>
                   </div>
 
                   <!-- Agenda Type -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
                       Type <span class="text-red-500">*</span>
                     </label>
                     <select
                       v-model="formData.agenda_type"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="session">Session</option>
                       <option value="keynote">Keynote</option>
@@ -91,38 +95,38 @@
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Date -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         Date
                       </label>
                       <input
                         v-model="formData.date"
                         type="date"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       />
                     </div>
 
                     <!-- Start Time -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         Start Time
                       </label>
                       <input
                         v-model="formData.start_time_text"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., 9:00 AM"
                       />
                     </div>
 
                     <!-- End Time -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         End Time
                       </label>
                       <input
                         v-model="formData.end_time_text"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., 10:00 AM"
                       />
                     </div>
@@ -130,13 +134,13 @@
 
                   <!-- Date Text -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
                       Date Display Text
                     </label>
                     <input
                       v-model="formData.date_text"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="e.g., Day 1 - Monday"
                     />
                   </div>
@@ -152,26 +156,26 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Physical Location -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         Physical Location
                       </label>
                       <input
                         v-model="formData.location"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., Conference Room A"
                       />
                     </div>
 
                     <!-- Virtual Link -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         Virtual Link
                       </label>
                       <input
                         v-model="formData.virtual_link"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="https://zoom.us/j/..."
                       />
                     </div>
@@ -179,13 +183,13 @@
 
                   <!-- Speaker -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
                       Speaker(s)
                     </label>
                     <input
                       v-model="formData.speaker"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="e.g., Dr. Jane Smith, CEO of TechCorp"
                     />
                   </div>
@@ -201,7 +205,7 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Color -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         Theme Color
                       </label>
                       <div class="flex items-center space-x-3">
@@ -213,7 +217,7 @@
                         <input
                           v-model="formData.color"
                           type="text"
-                          class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                          class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                           placeholder="#3498db"
                         />
                       </div>
@@ -221,7 +225,7 @@
 
                     <!-- Icon Selection -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-sm font-semibold text-slate-700 mb-2">
                         Icon
                       </label>
                       <button
@@ -407,21 +411,22 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Footer -->
-              <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-100 bg-gray-50">
+              
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="px-6 py-3 text-slate-600 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl font-medium transition-colors duration-200"
+                  class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="loading || !formData.title"
-                  class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
+                  <span v-if="loading" class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
                   {{ loading ? 'Creating...' : 'Create Agenda Item' }}
                 </button>
               </div>
@@ -595,11 +600,30 @@ onMounted(() => {
 <style scoped>
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Custom scrollbar for modal content */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>

@@ -21,33 +21,44 @@
       <GripVertical class="w-3 h-3 text-slate-400" />
     </div>
 
-    <!-- Main Content Area -->
-    <div class="p-4">
-      <!-- Header Row: Time, Title, Featured -->
-      <div class="flex items-start justify-between mb-3">
-        <!-- Left Side: Time and Title -->
-        <div class="flex-1 min-w-0 pr-3">
-          <!-- Time Badge -->
-          <div 
-            class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium mb-2"
-            :style="{ 
-              backgroundColor: (item.color || '#8B5CF6') + '15',
-              color: item.color || '#8B5CF6'
-            }"
-          >
-            <Clock class="w-3 h-3 mr-1" />
-            <span>{{ item.start_time_text || 'TBD' }}</span>
-            <span v-if="item.end_time_text" class="opacity-75 ml-1">- {{ item.end_time_text }}</span>
-          </div>
-          
-          <!-- Title -->
-          <h3 class="text-sm font-semibold text-slate-900 leading-tight mb-1">
+    <!-- Modern Minimalist Horizontal Layout -->
+    <div class="flex items-center gap-4 p-4">
+      <!-- Icon Section -->
+      <div class="flex-shrink-0">
+        <div 
+          v-if="item.icon" 
+          class="w-10 h-10 rounded-lg flex items-center justify-center"
+          :style="{ backgroundColor: (item.color || '#8B5CF6') + '15' }"
+          v-html="item.icon.svg_code"
+        ></div>
+        <div 
+          v-else
+          class="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100"
+        >
+          <Clock class="w-5 h-5 text-slate-500" />
+        </div>
+      </div>
+
+      <!-- Time Section -->
+      <div class="flex-shrink-0 text-center min-w-[60px]">
+        <div class="text-sm font-semibold text-slate-900">
+          {{ item.start_time_text || 'TBD' }}
+        </div>
+        <div v-if="item.end_time_text" class="text-xs text-slate-500">
+          {{ item.end_time_text }}
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0">
+        <!-- Title Row -->
+        <div class="flex items-center gap-2 mb-1">
+          <h3 class="text-sm font-semibold text-slate-900 truncate">
             {{ item.title }}
           </h3>
-          
-          <!-- Type Badge -->
+          <Star v-if="item.is_featured" class="w-4 h-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
           <div 
-            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+            class="px-2 py-0.5 rounded text-xs font-medium flex-shrink-0"
             :style="{ 
               backgroundColor: (item.color || '#8B5CF6') + '10',
               color: item.color || '#8B5CF6'
@@ -57,90 +68,55 @@
           </div>
         </div>
 
-        <!-- Right Side: Icon and Featured -->
-        <div class="flex items-start space-x-2 flex-shrink-0">
-          <!-- Icon -->
-          <div 
-            v-if="item.icon" 
-            class="w-8 h-8 rounded-lg p-1.5 flex items-center justify-center"
-            :style="{ backgroundColor: (item.color || '#8B5CF6') + '15' }"
-            v-html="item.icon.svg_code"
-          ></div>
-          
-          <!-- Featured Star -->
-          <div v-if="item.is_featured" class="flex items-center">
-            <Star class="w-4 h-4 text-yellow-500 fill-yellow-500" />
+        <!-- Details Row -->
+        <div class="flex items-center gap-4 text-xs text-slate-600">
+          <!-- Speaker -->
+          <div v-if="item.speaker" class="flex items-center gap-1.5">
+            <div 
+              class="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-medium"
+              :style="{ backgroundColor: item.color || '#8B5CF6' }"
+            >
+              {{ getInitials(item.speaker) }}
+            </div>
+            <span class="font-medium truncate max-w-[120px]">{{ item.speaker }}</span>
+          </div>
+
+          <!-- Location -->
+          <div v-if="item.location" class="flex items-center gap-1">
+            <MapPin class="w-3 h-3 text-slate-400" />
+            <span class="truncate max-w-[100px]">{{ item.location }}</span>
+          </div>
+
+          <!-- Virtual -->
+          <div v-if="item.virtual_link" class="flex items-center gap-1">
+            <Monitor class="w-3 h-3 text-green-500" />
+            <span class="text-green-600">Virtual</span>
+          </div>
+
+          <!-- Languages -->
+          <div v-if="item.translations && item.translations.length > 0" class="flex items-center gap-1">
+            <Languages class="w-3 h-3 text-slate-400" />
+            <span>{{ item.translations.length }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Description -->
-      <p v-if="item.description" class="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-2">
-        {{ item.description }}
-      </p>
-
-      <!-- Speaker, Location, and Virtual in a balanced layout -->
-      <div class="grid grid-cols-1 gap-2 mb-3">
-        <!-- Speaker -->
-        <div v-if="item.speaker" class="flex items-center space-x-2">
-          <div 
-            class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium"
-            :style="{ backgroundColor: item.color || '#8B5CF6' }"
-          >
-            {{ getInitials(item.speaker) }}
-          </div>
-          <span class="text-xs text-slate-700 font-medium">{{ item.speaker }}</span>
-        </div>
-
-        <!-- Location -->
-        <div v-if="item.location" class="flex items-center space-x-2 text-slate-600">
-          <MapPin class="w-3 h-3" :style="{ color: item.color || '#8B5CF6' }" />
-          <span class="text-xs">{{ item.location }}</span>
-        </div>
-
-        <!-- Virtual Link -->
-        <div v-if="item.virtual_link" class="flex items-center space-x-2">
-          <Monitor class="w-3 h-3 text-green-600" />
-          <a 
-            :href="item.virtual_link"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-            @click.stop
-          >
-            Join Virtual Meeting
-          </a>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-        <!-- Translations and Date Text -->
-        <div class="flex items-center space-x-3 text-xs text-slate-500">
-          <div v-if="item.date_text">{{ item.date_text }}</div>
-          <div v-if="item.translations && item.translations.length > 0" class="flex items-center space-x-1">
-            <Languages class="w-3 h-3" />
-            <span>{{ item.translations.length }} lang{{ item.translations.length !== 1 ? 's' : '' }}</span>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div v-if="canEdit" class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <button
-            @click.stop="$emit('edit', item)"
-            class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-            title="Edit agenda item"
-          >
-            <Edit2 class="w-3 h-3" />
-          </button>
-          <button
-            @click.stop="$emit('delete', item)"
-            class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-            title="Delete agenda item"
-          >
-            <Trash2 class="w-3 h-3" />
-          </button>
-        </div>
+      <!-- Action Buttons -->
+      <div v-if="canEdit" class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          @click.stop="$emit('edit', item)"
+          class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+          title="Edit"
+        >
+          <Edit2 class="w-3.5 h-3.5" />
+        </button>
+        <button
+          @click.stop="$emit('delete', item)"
+          class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          title="Delete"
+        >
+          <Trash2 class="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   </div>
@@ -152,7 +128,6 @@ import {
   Clock,
   MapPin, 
   Monitor, 
-  ExternalLink, 
   Edit2, 
   Trash2, 
   GripVertical,
@@ -233,7 +208,7 @@ const handleDrop = (event: DragEvent) => {
   isDragging.value = false
 }
 
-const handleDragEnd = (event: DragEvent) => {
+const handleDragEnd = () => {
   // Reset dragging state when drag operation ends
   isDragging.value = false
   

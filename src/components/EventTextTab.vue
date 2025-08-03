@@ -1,125 +1,132 @@
 <template>
-  <div class="event-text-tab">
-    <!-- Header with Add Button -->
-    <div class="flex items-center justify-between mb-6">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Text Content</h2>
-        <p class="text-lg text-slate-600 mt-1 leading-relaxed">Manage multi-language text content for your event</p>
+        <p class="text-sm text-slate-600 mt-1">Manage multi-language text content for your event</p>
       </div>
       <button
         @click="showCreateModal = true"
-        class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 shadow-lg shadow-blue-500/25 flex items-center space-x-2"
+        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
       >
-        <Plus class="w-4 h-4" />
-        <span>Add Text Content</span>
+        <Plus class="w-4 h-4 mr-2" />
+        Add Text Content
       </button>
     </div>
 
     <!-- Filters -->
-    <div class="mb-6 flex flex-wrap gap-4">
-      <div class="flex items-center space-x-2">
-        <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Type:</label>
-        <select
-          v-model="filters.textType"
-          @change="applyFilters"
-          class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-        >
-          <option value="">All Types</option>
-          <option value="welcome_message">Welcome Message</option>
-          <option value="instructions">Instructions</option>
-          <option value="description">Description</option>
-          <option value="short_description">Short Description</option>
-          <option value="date_text">Date Text</option>
-          <option value="time_text">Time Text</option>
-          <option value="location_text">Location Text</option>
-          <option value="thank_you_message">Thank You Message</option>
-          <option value="custom">Custom</option>
-        </select>
-      </div>
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+        <FileText class="w-5 h-5 text-blue-600 mr-2" />
+        Content Filters
+      </h3>
+      <div class="flex flex-wrap gap-4">
+        <div class="flex items-center space-x-2">
+          <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Type:</label>
+          <select
+            v-model="filters.textType"
+            @change="applyFilters"
+            class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
+          >
+            <option value="">All Types</option>
+            <option value="welcome_message">Welcome Message</option>
+            <option value="instructions">Instructions</option>
+            <option value="description">Description</option>
+            <option value="short_description">Short Description</option>
+            <option value="date_text">Date Text</option>
+            <option value="time_text">Time Text</option>
+            <option value="location_text">Location Text</option>
+            <option value="thank_you_message">Thank You Message</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
 
-      <div class="flex items-center space-x-2">
-        <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Language:</label>
-        <select
-          v-model="filters.language"
-          @change="applyFilters"
-          class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-        >
-          <option value="">All Languages</option>
-          <option value="en">English</option>
-          <option value="kh">Khmer</option>
-          <option value="fr">French</option>
-          <option value="ja">Japanese</option>
-          <option value="ko">Korean</option>
-          <option value="zh-cn">Chinese (Simplified)</option>
-          <option value="th">Thai</option>
-          <option value="vn">Vietnamese</option>
-        </select>
-      </div>
+        <div class="flex items-center space-x-2">
+          <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Language:</label>
+          <select
+            v-model="filters.language"
+            @change="applyFilters"
+            class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
+          >
+            <option value="">All Languages</option>
+            <option value="en">English</option>
+            <option value="kh">Khmer</option>
+            <option value="fr">French</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="zh-cn">Chinese (Simplified)</option>
+            <option value="th">Thai</option>
+            <option value="vn">Vietnamese</option>
+          </select>
+        </div>
 
-      <div class="flex items-center space-x-2">
-        <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Status:</label>
-        <select
-          v-model="filters.isActive"
-          @change="applyFilters"
-          class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-        >
-          <option value="">All</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
+        <div class="flex items-center space-x-2">
+          <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Status:</label>
+          <select
+            v-model="filters.isActive"
+            @change="applyFilters"
+            class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
+          >
+            <option value="">All</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <div class="flex items-center space-x-3">
+    <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+      <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="text-lg text-slate-600 leading-relaxed">Loading text content...</span>
+        <span class="ml-3 text-slate-600">Loading text content...</span>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-      <div class="text-lg text-red-600 font-semibold leading-relaxed mb-2">{{ error }}</div>
+    <div v-else-if="error" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 text-center">
+      <div class="text-lg text-red-600 font-semibold mb-4">{{ error }}</div>
       <button
         @click="fetchTexts"
-        class="text-red-700 hover:text-red-800 font-medium"
+        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-red-500/25"
       >
         Try again
       </button>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="filteredTexts.length === 0" class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
-      <FileText class="w-16 h-16 text-slate-400 mx-auto mb-4" />
-      <h3 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
-        {{ allTexts.length === 0 ? 'No text content yet' : 'No matching text content' }}
+    <div v-else-if="filteredTexts.length === 0" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+      <FileText class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+      <h3 class="text-lg font-semibold text-slate-900 mb-2">
+        {{ allTexts.length === 0 ? 'No Text Content Yet' : 'No Matching Text Content' }}
       </h3>
-      <p class="text-lg text-slate-600 mb-4 leading-relaxed">
+      <p class="text-slate-600 mb-6">
         {{ allTexts.length === 0 
-          ? 'Create your first text content to manage event information' 
-          : 'Try adjusting your filters to see more content' 
+          ? 'Start building your event content by adding your first text content.' 
+          : 'Try adjusting your filters to see more content.' 
         }}
       </p>
       <button
         v-if="allTexts.length === 0"
         @click="showCreateModal = true"
-        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
+        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center mx-auto"
       >
-        Add Text Content
+        <Plus class="w-4 h-4 mr-2" />
+        Add Your First Text Content
       </button>
     </div>
 
     <!-- Text Content List -->
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-6">
       <!-- Group by text type -->
       <div
         v-for="(group, textType) in groupedTexts"
         :key="textType"
-        class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
-        <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
-          <h3 class="text-lg font-semibold text-slate-900 leading-snug tracking-tight flex items-center">
+        <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-white/20">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center">
             <component :is="getTextTypeIcon(textType)" class="w-5 h-5 mr-2 text-blue-600" />
             {{ getTextTypeLabel(textType) }}
             <span class="ml-2 text-sm text-slate-500">({{ group.length }} item{{ group.length !== 1 ? 's' : '' }})</span>
@@ -160,7 +167,7 @@
       :show="showDeleteModal"
       :loading="deleteLoading"
       title="Delete Text Content"
-      :item-name="textToDelete?.title || textToDelete?.content.substring(0, 50) + (textToDelete?.content.length > 50 ? '...' : '')"
+      :item-name="textToDelete?.title || (textToDelete?.content ? textToDelete.content.substring(0, 50) + (textToDelete.content.length > 50 ? '...' : '') : '')"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />

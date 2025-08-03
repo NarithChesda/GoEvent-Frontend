@@ -308,17 +308,17 @@ const activeTab = ref('about')
 const showActionMenu = ref(false)
 const actionMenuRef = ref<InstanceType<typeof EventActionMenu> | null>(null)
 
-// Navigation tabs configuration
+// Navigation tabs configuration - optimized for user flow
 const navigationTabs = ref<TabConfig[]>([
   { id: 'about', label: 'About', icon: 'file-text' },
   { id: 'agenda', label: 'Agenda', icon: 'calendar' },
   { id: 'hosts', label: 'Hosts & Speakers', icon: 'users', mobileLabel: 'Hosts' },
   { id: 'attendees', label: 'Attendees', icon: 'user-plus' },
   { id: 'media', label: 'Media', icon: 'image' },
-  { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'event-texts', label: 'Event Texts', icon: 'file-text', mobileLabel: 'Texts' },
-  { id: 'payment', label: 'Payment', icon: 'credit-card' },
-  { id: 'template', label: 'Template', icon: 'monitor' }
+  { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
+  { id: 'template', label: 'Template', icon: 'monitor' },
+  { id: 'payment', label: 'Payment', icon: 'credit-card' }
 ])
 
 // Computed properties

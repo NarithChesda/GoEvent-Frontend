@@ -1,210 +1,195 @@
 <template>
-  <BaseCard
-    variant="interactive"
-    size="md"
-    :interactive="true"
+  <div 
+    class="group relative bg-white rounded-2xl border border-gray-200/60 hover:border-gray-300/80 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/40 cursor-pointer overflow-hidden"
     role="article"
     :aria-label="`Event: ${event.title}`"
-    class="cursor-pointer"
     @click="$emit('view', event)"
   >
-    <!-- Top accent bar -->
-    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out"></div>
-    
-    <!-- Registration Status Banner -->
-    <div v-if="event.is_registered" class="absolute top-1 left-0 right-0 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-center text-xs font-bold py-2 z-10">
-      <div class="flex items-center justify-center space-x-1">
-        <div class="w-2 h-2 bg-white rounded-full"></div>
-        <span>✓ You're Registered</span>
+    <!-- Registration Status Badge -->
+    <div v-if="event.is_registered" class="absolute top-3 left-3 z-10">
+      <div class="inline-flex items-center bg-green-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg shadow-sm">
+        <div class="w-1.5 h-1.5 bg-white rounded-full mr-1.5"></div>
+        Registered
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div class="flex space-x-1">
+        <button
+          v-if="event.can_edit"
+          @click="handleAction('edit', $event)"
+          class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
+          title="Edit Event"
+        >
+          <Edit2 class="w-4 h-4 text-gray-600" />
+        </button>
+        <button
+          v-if="event.can_delete"
+          @click="handleAction('delete', $event)"
+          class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
+          title="Delete Event"
+        >
+          <Trash2 class="w-4 h-4 text-gray-600 hover:text-red-500" />
+        </button>
       </div>
     </div>
 
     <!-- Banner Image -->
-    <div class="relative h-48 overflow-hidden rounded-t-2xl">
+    <div class="relative h-44 overflow-hidden">
       <img 
         v-if="event.banner_image"
         :src="getBannerImageUrl(event.banner_image)"
         :alt="event.title"
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       <div 
         v-else
-        class="w-full h-full bg-gradient-to-br from-blue-100 via-white to-purple-100 flex items-center justify-center"
+        class="w-full h-full relative overflow-hidden"
+        :class="getFallbackBgClass()"
       >
-        <div class="text-center">
-          <Calendar class="w-12 h-12 text-blue-400 mx-auto mb-2" />
-          <p class="text-sm text-blue-500 font-medium">Event Image</p>
+        <!-- Geometric Pattern Background -->
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute top-4 left-4 w-8 h-8 rounded-full" :style="{ backgroundColor: event.category_color || '#3B82F6' }"></div>
+          <div class="absolute top-12 right-8 w-4 h-4 rounded-full" :style="{ backgroundColor: event.category_color || '#3B82F6' }"></div>
+          <div class="absolute bottom-8 left-12 w-6 h-6 rounded-full" :style="{ backgroundColor: event.category_color || '#3B82F6' }"></div>
+          <div class="absolute bottom-4 right-4 w-3 h-3 rounded-full" :style="{ backgroundColor: event.category_color || '#3B82F6' }"></div>
         </div>
+        
+        <!-- Central Content -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+          <div 
+            class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-lg"
+            :style="{ backgroundColor: `${event.category_color || '#3B82F6'}20` }"
+          >
+            <component 
+              :is="getFallbackIcon()" 
+              class="w-6 h-6"
+              :style="{ color: event.category_color || '#3B82F6' }"
+            />
+          </div>
+          <h4 
+            class="text-sm font-semibold mb-1 line-clamp-2"
+            :style="{ color: event.category_color || '#3B82F6' }"
+          >
+            {{ event.title }}
+          </h4>
+          <p class="text-xs text-gray-500 line-clamp-1">
+            {{ event.category_name || 'Event' }}
+          </p>
+        </div>
+
+        <!-- Decorative Elements -->
+        <div class="absolute top-0 right-0 w-16 h-16 opacity-5" :style="{ backgroundColor: event.category_color || '#3B82F6' }"></div>
+        <div class="absolute bottom-0 left-0 w-12 h-12 opacity-5" :style="{ backgroundColor: event.category_color || '#3B82F6' }"></div>
       </div>
-      
-      <!-- Enhanced Status Badge -->
-      <div class="absolute top-4 left-4">
+
+      <!-- Status Badge -->
+      <div class="absolute bottom-3 left-3">
         <span 
           v-if="event.is_ongoing"
-          class="inline-flex items-center bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-green-500/25"
+          class="inline-flex items-center bg-green-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg shadow-sm"
         >
-          <div class="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
-          Live Now
+          <div class="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse"></div>
+          Live
         </span>
         <span 
           v-else-if="event.is_upcoming"
-          class="inline-flex items-center bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-blue-500/25"
+          class="inline-flex items-center bg-blue-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg shadow-sm"
         >
           Upcoming
         </span>
         <span 
           v-else-if="event.is_past"
-          class="inline-flex items-center bg-gradient-to-r from-slate-500 to-slate-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg"
+          class="inline-flex items-center bg-gray-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg shadow-sm"
         >
-          Past Event
+          Past
         </span>
       </div>
 
-      <!-- Badges Row -->
-      <div class="absolute top-4 right-4 flex space-x-2">
-        <!-- Privacy Badge -->
+      <!-- Type Badges -->
+      <div class="absolute bottom-3 right-3 flex space-x-1.5">
         <span 
           v-if="event.privacy === 'private'"
-          class="inline-flex items-center bg-purple-500/90 backdrop-blur-sm text-white text-xs font-medium px-2.5 py-1 rounded-full shadow-lg"
+          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-purple-700 text-xs font-medium px-2 py-1 rounded-lg border border-purple-200/50"
         >
           <Lock class="w-3 h-3 mr-1" />
           Private
         </span>
-        
-        <!-- Virtual Badge -->
         <span 
           v-if="event.is_virtual"
-          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-blue-600 text-xs font-medium px-2.5 py-1 rounded-full shadow-lg border border-blue-200"
+          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-medium px-2 py-1 rounded-lg border border-blue-200/50"
         >
           <Monitor class="w-3 h-3 mr-1" />
           Virtual
         </span>
       </div>
-
-      <!-- Gradient overlay for better text readability -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
     </div>
 
     <!-- Content -->
-    <div class="p-6 space-y-4">
-      <!-- Category and Action Buttons Row -->
-      <div class="flex items-center justify-between">
-        <div v-if="event.category_name" class="flex items-center space-x-2">
+    <div class="p-5">
+      <!-- Category -->
+      <div v-if="event.category_name" class="mb-3">
+        <span 
+          class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-lg"
+          :style="{ 
+            backgroundColor: `${event.category_color || '#3B82F6'}15`,
+            color: event.category_color || '#3B82F6' 
+          }"
+        >
           <div 
-            class="w-3 h-3 rounded-full shadow-sm"
+            class="w-1.5 h-1.5 rounded-full mr-1.5"
             :style="{ backgroundColor: event.category_color || '#3B82F6' }"
           ></div>
-          <span 
-            class="text-sm font-semibold"
-            :style="{ color: event.category_color || '#3B82F6' }"
-          >
-            {{ event.category_name }}
-          </span>
-        </div>
-        
-        <!-- Action Buttons -->
-        <CardActions visibility="hover" align="right">
-          <CardActionButton
-            v-if="event.can_edit"
-            :icon="Edit2"
-            variant="edit"
-            title="Edit Event"
-            @click="handleAction('edit', $event)"
-          />
-          <CardActionButton
-            v-if="event.can_delete"
-            :icon="Trash2"
-            variant="delete"
-            title="Delete Event"
-            @click="handleAction('delete', $event)"
-          />
-        </CardActions>
+          {{ event.category_name }}
+        </span>
       </div>
 
       <!-- Title -->
-      <h3 class="text-xl font-bold text-slate-900 leading-tight group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300 line-clamp-2">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
         {{ event.title }}
       </h3>
 
       <!-- Description -->
-      <p class="text-slate-600 text-sm leading-relaxed line-clamp-3">
+      <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
         {{ event.short_description || 'No description available' }}
       </p>
 
       <!-- Date and Location -->
-      <div class="space-y-2.5">
-        <div class="flex items-center text-slate-500 text-sm">
-          <div class="w-5 h-5 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
-            <Calendar class="w-3 h-3 text-blue-600" />
-          </div>
-          <span class="font-medium">{{ formatDate(event.start_date) }}</span>
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center text-sm text-gray-600">
+          <Calendar class="w-4 h-4 mr-2.5 text-gray-500" />
+          <span>{{ formatDate(event.start_date) }}</span>
         </div>
-        <div v-if="!event.is_virtual && event.location" class="flex items-center text-slate-500 text-sm">
-          <div class="w-5 h-5 rounded-lg bg-green-50 flex items-center justify-center mr-3">
-            <MapPin class="w-3 h-3 text-green-600" />
-          </div>
-          <span class="truncate font-medium">{{ event.location }}</span>
+        <div v-if="!event.is_virtual && event.location" class="flex items-center text-sm text-gray-600">
+          <MapPin class="w-4 h-4 mr-2.5 text-gray-500" />
+          <span class="truncate">{{ event.location }}</span>
         </div>
       </div>
 
-      <!-- Stats and Info -->
-      <div class="pt-4 border-t border-slate-100">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <!-- Attendees -->
-            <div class="flex items-center text-slate-500">
-              <div class="w-5 h-5 rounded-lg bg-purple-50 flex items-center justify-center mr-2">
-                <Users class="w-3 h-3 text-purple-600" />
-              </div>
-              <span class="text-sm font-medium">
-                {{ event.registrations_count }}
-                <span v-if="event.max_attendees" class="text-slate-400">/ {{ event.max_attendees }}</span>
-              </span>
-            </div>
-            
-            <!-- Collaborators -->
-            <div v-if="event.collaborators_count > 0" class="flex items-center text-slate-500">
-              <div class="w-5 h-5 rounded-lg bg-orange-50 flex items-center justify-center mr-2">
-                <UserPlus class="w-3 h-3 text-orange-600" />
-              </div>
-              <span class="text-sm font-medium">{{ event.collaborators_count }}</span>
-            </div>
-          </div>
-
-          <!-- Registration Status -->
-          <div class="text-right">
-            <span 
-              v-if="event.registration_required" 
-              class="inline-flex items-center bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full"
-            >
-              Registration Required
-            </span>
-            <span 
-              v-else 
-              class="inline-flex items-center bg-green-50 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full"
-            >
-              Open Event
-            </span>
-          </div>
+      <!-- Footer -->
+      <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+        <!-- Attendees -->
+        <div class="flex items-center text-sm text-gray-600">
+          <Users class="w-4 h-4 mr-1.5 text-gray-500" />
+          <span>
+            {{ event.registrations_count }}
+            <span v-if="event.max_attendees" class="text-gray-400">/ {{ event.max_attendees }}</span>
+          </span>
         </div>
 
         <!-- Organizer -->
-        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
-          <div class="flex items-center text-slate-500">
-            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mr-2">
-              <span class="text-xs font-bold text-blue-600">
-                {{ (event.organizer_name || 'U').charAt(0).toUpperCase() }}
-              </span>
-            </div>
-            <span class="text-sm">{{ event.organizer_name || 'Unknown Organizer' }}</span>
+        <div class="flex items-center text-sm text-gray-600">
+          <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center mr-2">
+            <span class="text-xs font-medium text-gray-700">
+              {{ (event.organizer_name || 'U').charAt(0).toUpperCase() }}
+            </span>
           </div>
+          <span class="truncate max-w-24">{{ event.organizer_name || 'Unknown' }}</span>
         </div>
       </div>
     </div>
-
-    <!-- Bottom shine effect -->
-    <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-  </BaseCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -212,15 +197,25 @@ import {
   Calendar, 
   MapPin, 
   Users, 
-  UserPlus, 
   Monitor, 
   Lock, 
   Edit2, 
-  Trash2 
+  Trash2,
+  Music,
+  Briefcase,
+  GraduationCap,
+  Heart,
+  Gamepad2,
+  Camera,
+  Utensils,
+  Dumbbell,
+  Palette,
+  Code,
+  Mic,
+  BookOpen,
+  Plane,
+  Gift
 } from 'lucide-vue-next'
-import BaseCard from './BaseCard.vue'
-import CardActions from './CardActions.vue'
-import CardActionButton from './CardActionButton.vue'
 import type { Event } from '../services/api'
 
 interface Props {
@@ -235,6 +230,98 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// Fallback banner image helpers
+const getFallbackBgClass = () => {
+  const categoryName = props.event.category_name?.toLowerCase() || ''
+  const gradients = [
+    'bg-gradient-to-br from-blue-50 to-blue-100',
+    'bg-gradient-to-br from-purple-50 to-purple-100',
+    'bg-gradient-to-br from-green-50 to-green-100',
+    'bg-gradient-to-br from-orange-50 to-orange-100',
+    'bg-gradient-to-br from-pink-50 to-pink-100',
+    'bg-gradient-to-br from-indigo-50 to-indigo-100',
+    'bg-gradient-to-br from-red-50 to-red-100',
+    'bg-gradient-to-br from-yellow-50 to-yellow-100',
+    'bg-gradient-to-br from-teal-50 to-teal-100',
+    'bg-gradient-to-br from-cyan-50 to-cyan-100'
+  ]
+  
+  // Use category name hash or event title hash to consistently pick a gradient
+  const text = categoryName || props.event.title
+  const hash = text.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0)
+    return a & a
+  }, 0)
+  
+  return gradients[Math.abs(hash) % gradients.length]
+}
+
+const getFallbackIcon = () => {
+  const categoryName = props.event.category_name?.toLowerCase() || ''
+  
+  // Map category names to appropriate icons
+  const iconMap: Record<string, any> = {
+    music: Music,
+    concert: Music,
+    business: Briefcase,
+    conference: Briefcase,
+    corporate: Briefcase,
+    education: GraduationCap,
+    workshop: GraduationCap,
+    training: GraduationCap,
+    wedding: Heart,
+    party: Heart,
+    celebration: Heart,
+    gaming: Gamepad2,
+    esports: Gamepad2,
+    photography: Camera,
+    photo: Camera,
+    food: Utensils,
+    dining: Utensils,
+    restaurant: Utensils,
+    fitness: Dumbbell,
+    gym: Dumbbell,
+    sports: Dumbbell,
+    art: Palette,
+    design: Palette,
+    creative: Palette,
+    tech: Code,
+    technology: Code,
+    coding: Code,
+    speaking: Mic,
+    presentation: Mic,
+    book: BookOpen,
+    reading: BookOpen,
+    literature: BookOpen,
+    travel: Plane,
+    trip: Plane,
+    vacation: Plane,
+    social: Gift,
+    networking: Gift,
+    meetup: Gift
+  }
+  
+  // Check for exact matches first
+  if (iconMap[categoryName]) {
+    return iconMap[categoryName]
+  }
+  
+  // Check for partial matches
+  for (const [key, icon] of Object.entries(iconMap)) {
+    if (categoryName.includes(key) || key.includes(categoryName)) {
+      return icon
+    }
+  }
+  
+  // Check if it's virtual to show monitor icon
+  if (props.event.is_virtual) {
+    return Monitor
+  }
+  
+  // Default fallback
+  return Calendar
+}
 
 // Handle action button clicks
 const handleAction = (action: 'edit' | 'delete', event: MouseEvent) => {

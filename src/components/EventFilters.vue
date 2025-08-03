@@ -1,7 +1,10 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl mb-8">
     <!-- Filter Header -->
-    <div class="flex items-center justify-between p-6 pb-4">
+    <div 
+      @click="showFilters = !showFilters"
+      class="flex items-center justify-between p-6 pb-4 cursor-pointer hover:bg-white/50 transition-colors duration-200 rounded-t-3xl"
+    >
       <div class="flex items-center space-x-3">
         <div class="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
           <Search class="w-3 h-3 text-white" />
@@ -11,16 +14,13 @@
           {{ activeFilterCount }} active
         </span>
       </div>
-      <button
-        @click="showFilters = !showFilters"
-        class="inline-flex items-center text-slate-600 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
-      >
+      <div class="inline-flex items-center text-slate-600 hover:text-blue-600 font-medium text-sm transition-colors duration-200">
         <ChevronDown 
           class="w-5 h-5 transition-transform duration-200"
           :class="{ 'rotate-180': showFilters }"
         />
         {{ showFilters ? 'Hide' : 'Show' }} Filters
-      </button>
+      </div>
     </div>
 
     <!-- Filters Content -->
@@ -250,7 +250,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const showFilters = ref(true)
+const showFilters = ref(false)
 const showAdvanced = ref(false)
 const localFilters = reactive<EventFilters>({ ...props.modelValue })
 

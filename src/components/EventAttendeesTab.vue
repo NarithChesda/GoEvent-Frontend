@@ -202,51 +202,70 @@
     </div>
 
     <!-- Admin Check-in Modal -->
-    <div v-if="showCheckinModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-slate-900">Check-in Attendee</h3>
-          <button
-            @click="closeCheckinModal"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showCheckinModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" @click="closeCheckinModal">
+          <div 
+            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+            @click.stop
           >
-            <X class="w-6 h-6" />
-          </button>
-        </div>
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6 text-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <UserCheck class="w-5 h-5" />
+                  </div>
+                  <h2 class="text-2xl font-bold">Check-in Attendee</h2>
+                </div>
+                <button
+                  @click="closeCheckinModal"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                >
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Confirmation Code</label>
-            <input
-              v-model="checkinCode"
-              type="text"
-              placeholder="Enter confirmation code..."
-              class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              :disabled="isChecking"
-            />
-          </div>
+            <!-- Content -->
+            <div class="p-8">
 
-          <div class="flex justify-end space-x-3">
-            <button
-              @click="closeCheckinModal"
-              class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
-              :disabled="isChecking"
-            >
-              Cancel
-            </button>
-            <button
-              @click="performCheckin"
-              class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              :disabled="!checkinCode.trim() || isChecking"
-            >
-              <UserCheck v-if="!isChecking" class="w-4 h-4 mr-2" />
-              <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              {{ isChecking ? 'Checking in...' : 'Check In' }}
-            </button>
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2">Confirmation Code</label>
+                  <input
+                    v-model="checkinCode"
+                    type="text"
+                    placeholder="Enter confirmation code..."
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    :disabled="isChecking"
+                  />
+                </div>
+
+                <div class="flex space-x-4 pt-4">
+                  <button
+                    @click="closeCheckinModal"
+                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                    :disabled="isChecking"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    @click="performCheckin"
+                    class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    :disabled="!checkinCode.trim() || isChecking"
+                  >
+                    <UserCheck v-if="!isChecking" class="w-4 h-4 mr-2" />
+                    <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {{ isChecking ? 'Checking in...' : 'Check In' }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
@@ -517,5 +536,27 @@ onMounted(() => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
 }
 </style>

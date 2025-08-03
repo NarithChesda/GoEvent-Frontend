@@ -1,28 +1,43 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="true" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <Transition name="modal-content">
-          <div v-if="true" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Transition name="modal">
+      <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="handleBackdropClick">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        
+        <!-- Modal -->
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div 
+            ref="modalRef"
+            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+            @click.stop
+          >
             <!-- Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 class="text-xl font-bold text-slate-900">Edit Media</h2>
-                <p class="text-sm text-slate-600 mt-1">Update media information and settings</p>
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Edit class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 class="text-2xl font-bold">Edit Media</h2>
+                    <p class="text-white/90 text-sm mt-1">Update media information and settings</p>
+                  </div>
+                </div>
+                <button
+                  @click="$emit('close')"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                >
+                  <X class="w-4 h-4" />
+                </button>
               </div>
-              <button
-                @click="$emit('close')"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors duration-200"
-              >
-                <X class="w-5 h-5" />
-              </button>
             </div>
 
             <!-- Content -->
-            <div class="p-6 space-y-6">
+            <div class="p-8 space-y-6">
               <!-- Image Preview -->
               <div class="space-y-4">
-                <label class="block text-sm font-medium text-slate-700">Current Image</label>
+                <label class="block text-sm font-semibold text-slate-700">Current Image</label>
                 <div class="relative w-full max-w-md mx-auto">
                   <div class="aspect-square bg-gray-100 rounded-2xl overflow-hidden">
                     <img
@@ -47,7 +62,7 @@
               <div class="space-y-4">
                 <!-- Caption -->
                 <div>
-                  <label for="caption" class="block text-sm font-medium text-slate-700 mb-2">
+                  <label for="caption" class="block text-sm font-semibold text-slate-700 mb-2">
                     Caption
                   </label>
                   <input
@@ -55,7 +70,7 @@
                     v-model="formData.caption"
                     type="text"
                     placeholder="Enter a caption for this image"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                   <p class="text-xs text-slate-500 mt-1">Describe what this image shows</p>
                 </div>
@@ -69,7 +84,7 @@
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
                   />
                   <div>
-                    <label for="is_featured" class="text-sm font-medium text-slate-700">
+                    <label for="is_featured" class="text-sm font-semibold text-slate-700">
                       Mark as featured content
                     </label>
                     <p class="text-xs text-slate-500 mt-1">Featured images are highlighted and may appear in special sections</p>
@@ -79,7 +94,7 @@
 
               <!-- Media Information -->
               <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-                <h4 class="text-sm font-medium text-slate-700">Media Information</h4>
+                <h4 class="text-sm font-semibold text-slate-700">Media Information</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span class="text-slate-500">Upload Date:</span>
@@ -115,26 +130,28 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
+            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 p-8 border-t border-gray-200">
               <button
+                type="button"
                 @click="$emit('close')"
                 :disabled="updating"
-                class="px-6 py-3 bg-white hover:bg-gray-50 text-slate-700 border border-gray-300 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50"
+                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 @click="updateMedia"
                 :disabled="updating || !hasChanges"
-                class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:hover:scale-100 flex items-center space-x-2"
+                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
               >
-                <div v-if="updating" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <Save v-else class="w-4 h-4" />
-                <span>{{ updating ? 'Updating...' : 'Save Changes' }}</span>
+                <div v-if="updating" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <Save v-else class="w-5 h-5 mr-2" />
+                {{ updating ? 'Updating...' : 'Save Changes' }}
               </button>
             </div>
           </div>
-        </Transition>
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -142,7 +159,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { X, Star, Save, AlertCircle } from 'lucide-vue-next'
+import { X, Star, Save, AlertCircle, Edit } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
 
 interface Props {
@@ -158,6 +175,9 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Refs
+const modalRef = ref<HTMLElement>()
+
 // State
 const formData = ref({
   caption: '',
@@ -167,6 +187,13 @@ const formData = ref({
 const updating = ref(false)
 const error = ref<string | null>(null)
 
+// Methods
+const handleBackdropClick = (event: MouseEvent) => {
+  if (event.target === event.currentTarget) {
+    emit('close')
+  }
+}
+
 // Computed
 const hasChanges = computed(() => {
   return (
@@ -175,7 +202,6 @@ const hasChanges = computed(() => {
   )
 })
 
-// Methods
 const handleImageError = () => {
   console.error('Failed to load media image')
 }
@@ -230,24 +256,32 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to {
-  opacity: 0;
-}
-
-.modal-content-enter-active,
-.modal-content-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: all 0.3s ease;
 }
 
-.modal-content-enter-from,
-.modal-content-leave-to {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
-  transform: scale(0.9) translateY(-20px);
+  transform: scale(0.9);
+}
+
+/* Custom scrollbar for modal content */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>

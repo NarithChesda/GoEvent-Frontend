@@ -277,30 +277,43 @@
     </div>
 
     <!-- Invite Modal -->
-    <div v-if="showInviteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-bold text-white">Invite Collaborator</h3>
-            <button
-              @click="closeInviteModal"
-              class="text-white/80 hover:text-white transition-colors"
-            >
-              <X class="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showInviteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="closeInviteModal">
+          <div 
+            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+            @click.stop
+          >
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <UserPlus class="w-5 h-5" />
+                  </div>
+                  <h2 class="text-2xl font-bold">Invite Collaborator</h2>
+                </div>
+                <button
+                  @click="closeInviteModal"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                >
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
-        <div class="p-6">
-          <form @submit.prevent="inviteCollaborator">
-            <div class="space-y-4">
+            <!-- Content -->
+            <div class="p-8">
+
+              <form @submit.prevent="inviteCollaborator">
+                <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
                 <input
                   v-model="inviteForm.email"
                   type="email"
                   required
-                  class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   placeholder="collaborator@example.com"
                 />
               </div>
@@ -309,7 +322,7 @@
                 <label class="block text-sm font-medium text-slate-700 mb-2">Role</label>
                 <select
                   v-model="inviteForm.role"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 >
                   <option value="viewer">Viewer - Read-only access</option>
                   <option value="editor">Editor - Can edit event details</option>
@@ -322,32 +335,34 @@
                 <textarea
                   v-model="inviteForm.message"
                   rows="3"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                   placeholder="Add a personal message to your invitation..."
                 ></textarea>
               </div>
             </div>
 
-            <div class="flex space-x-3 mt-6">
-              <button
-                type="button"
-                @click="closeInviteModal"
-                class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="isInviting"
-                class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ isInviting ? 'Inviting...' : 'Send Invitation' }}
-              </button>
+                <div class="flex space-x-4 pt-6">
+                  <button
+                    type="button"
+                    @click="closeInviteModal"
+                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    :disabled="isInviting"
+                    class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {{ isInviting ? 'Inviting...' : 'Send Invitation' }}
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
     <!-- Remove Confirmation Modal -->
     <DeleteConfirmModal
@@ -661,5 +676,27 @@ onMounted(() => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
 }
 </style>

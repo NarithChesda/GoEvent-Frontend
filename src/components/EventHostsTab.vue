@@ -17,43 +17,7 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Users class="w-5 h-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalHosts }}</p>
-            <p class="text-sm text-slate-600">Total Hosts</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <Shield class="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ moderatorsCount }}</p>
-            <p class="text-sm text-slate-600">Moderators</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Users class="w-5 h-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ featuredCount }}</p>
-            <p class="text-sm text-slate-600">Featured</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">

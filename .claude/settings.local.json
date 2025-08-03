@@ -20,7 +20,10 @@
       "Bash(curl:*)",
       "Bash(npx vue-tsc:*)",
       "Bash(node:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

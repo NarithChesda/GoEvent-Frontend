@@ -1,28 +1,43 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <Transition name="modal-content">
-          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Transition name="modal">
+      <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="handleBackdropClick">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        
+        <!-- Modal -->
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div 
+            ref="modalRef"
+            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+            @click.stop
+          >
             <!-- Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 class="text-xl font-bold text-slate-900">Upload Media</h2>
-                <p class="text-sm text-slate-600 mt-1">Add photos and visual content to your event</p>
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <ImagePlus class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 class="text-2xl font-bold">Upload Media</h2>
+                    <p class="text-white/90 text-sm mt-1">Add photos and visual content to your event</p>
+                  </div>
+                </div>
+                <button
+                  @click="$emit('close')"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                >
+                  <X class="w-4 h-4" />
+                </button>
               </div>
-              <button
-                @click="$emit('close')"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors duration-200"
-              >
-                <X class="w-5 h-5" />
-              </button>
             </div>
 
             <!-- Content -->
-            <div class="p-6 space-y-6">
+            <div class="p-8 space-y-6">
               <!-- File Upload Area -->
               <div class="space-y-4">
-                <label class="block text-sm font-medium text-slate-700">Select Images</label>
+                <label class="block text-sm font-semibold text-slate-700">Select Images</label>
                 
                 <!-- Drop Zone -->
                 <div
@@ -107,11 +122,11 @@
 
               <!-- Upload Options -->
               <div class="space-y-4">
-                <h4 class="text-sm font-medium text-slate-700">Upload Options</h4>
+                <h4 class="text-sm font-semibold text-slate-700">Upload Options</h4>
                 
                 <!-- Default Caption -->
                 <div>
-                  <label for="defaultCaption" class="block text-sm font-medium text-slate-700 mb-2">
+                  <label for="defaultCaption" class="block text-sm font-semibold text-slate-700 mb-2">
                     Default Caption (Optional)
                   </label>
                   <input
@@ -119,7 +134,7 @@
                     v-model="defaultCaption"
                     type="text"
                     placeholder="Enter a caption for all images"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                   <p class="text-xs text-slate-500 mt-1">This caption will be applied to all uploaded images</p>
                 </div>
@@ -132,7 +147,7 @@
                     type="checkbox"
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label for="markAsFeatured" class="text-sm font-medium text-slate-700">
+                  <label for="markAsFeatured" class="text-sm font-semibold text-slate-700">
                     Mark as featured content
                   </label>
                 </div>
@@ -167,26 +182,28 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
+            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 p-8 border-t border-gray-200">
               <button
+                type="button"
                 @click="$emit('close')"
                 :disabled="uploading"
-                class="px-6 py-3 bg-white hover:bg-gray-50 text-slate-700 border border-gray-300 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50"
+                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 @click="uploadFiles"
                 :disabled="selectedFiles.length === 0 || uploading"
-                class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:hover:scale-100 flex items-center space-x-2"
+                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
               >
-                <div v-if="uploading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <Upload v-else class="w-4 h-4" />
-                <span>{{ uploading ? 'Uploading...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}` }}</span>
+                <div v-if="uploading" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <Upload v-else class="w-5 h-5 mr-2" />
+                {{ uploading ? 'Uploading...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}` }}
               </button>
             </div>
           </div>
-        </Transition>
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -194,7 +211,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Upload, X, ImageIcon, AlertCircle } from 'lucide-vue-next'
+import { Upload, X, ImageIcon, AlertCircle, ImagePlus } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
 
 interface Props {
@@ -214,6 +231,9 @@ interface FileWithPreview {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Refs
+const modalRef = ref<HTMLElement>()
+
 // State
 const selectedFiles = ref<FileWithPreview[]>([])
 const defaultCaption = ref('')
@@ -226,6 +246,12 @@ const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
 
 // Methods
+const handleBackdropClick = (event: MouseEvent) => {
+  if (event.target === event.currentTarget) {
+    emit('close')
+  }
+}
+
 const handleFileSelect = (event: Event) => {
   const input = event.target as HTMLInputElement
   if (input.files) {
@@ -334,7 +360,7 @@ const uploadFiles = async () => {
       error.value = 'All uploads failed. Please try again.'
     }
     
-  } catch (err) {
+  } catch {
     error.value = 'Upload failed. Please try again.'
   } finally {
     uploading.value = false
@@ -345,24 +371,32 @@ const uploadFiles = async () => {
 </script>
 
 <style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to {
-  opacity: 0;
-}
-
-.modal-content-enter-active,
-.modal-content-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: all 0.3s ease;
 }
 
-.modal-content-enter-from,
-.modal-content-leave-to {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
-  transform: scale(0.9) translateY(-20px);
+  transform: scale(0.9);
+}
+
+/* Custom scrollbar for modal content */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>

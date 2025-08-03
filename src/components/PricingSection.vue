@@ -206,7 +206,7 @@ const categorizedPlans = computed(() => {
     .forEach(plan => {
       // Use category name from API if available, otherwise fallback to category ID
       let categoryName: string
-      if (typeof plan.category === 'object' && plan.category.name) {
+      if (typeof plan.category === 'object' && plan.category !== null && plan.category.name) {
         categoryName = plan.category.name
       } else {
         // Fallback for backward compatibility

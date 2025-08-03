@@ -1,37 +1,47 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
-    <!-- Background overlay -->
-    <div class="fixed inset-0 bg-black bg-opacity-50" @click="closeModal"></div>
-    
-    <!-- Modal content -->
-    <div class="flex min-h-screen items-center justify-center p-4">
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
-        <!-- Header -->
-        <div class="flex items-center justify-between p-6 border-b border-slate-200">
-          <div>
-            <h3 class="text-xl font-bold text-slate-900">Browse Templates</h3>
-            <p class="text-sm text-slate-600 mt-1">Choose a design that matches your event style</p>
-          </div>
-          <button
-            @click="closeModal"
-            class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="closeModal">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div 
+            class="relative w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden"
+            @click.stop
           >
-            <X class="w-5 h-5 text-slate-400" />
-          </button>
-        </div>
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <LayoutTemplate class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 class="text-2xl font-bold">Browse Templates</h2>
+                    <p class="text-white/80 text-sm mt-1">Choose a design that matches your event style</p>
+                  </div>
+                </div>
+                <button
+                  @click="closeModal"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                >
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
-        <!-- Filters -->
-        <div class="p-6 border-b border-slate-200 space-y-4">
+            <!-- Filters -->
+            <div class="p-8 border-b border-slate-200/20 space-y-6 bg-white/50 backdrop-blur-sm">
           <!-- Category Filter -->
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-sm font-medium text-slate-700 mr-2">Categories:</span>
             <button
               @click="selectedCategory = null"
               :class="[
-                'px-3 py-1 rounded-lg text-sm font-medium transition-colors',
+                'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
                 selectedCategory === null
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md'
               ]"
             >
               All
@@ -41,10 +51,10 @@
               :key="category.id"
               @click="selectedCategory = category.id"
               :class="[
-                'px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center gap-1',
+                'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1',
                 selectedCategory === category.id
-                  ? 'text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'text-white shadow-lg'
+                  : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md'
               ]"
               :style="selectedCategory === category.id ? { backgroundColor: category.color } : {}"
             >
@@ -59,13 +69,13 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search templates..."
-              class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
             >
           </div>
         </div>
 
-        <!-- Templates Content -->
-        <div class="flex-1 overflow-y-auto p-6" style="max-height: calc(90vh - 200px);">
+            <!-- Templates Content -->
+            <div class="flex-1 overflow-y-auto p-8 bg-white/30 backdrop-blur-sm" style="max-height: calc(90vh - 200px);">
           <!-- Loading State -->
           <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div v-for="n in 6" :key="n" class="animate-pulse">
@@ -84,10 +94,10 @@
               :key="template.id"
               @click="selectTemplate(template)"
               :class="[
-                'group cursor-pointer bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200',
+                'group cursor-pointer bg-white/80 backdrop-blur-sm border rounded-2xl overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300',
                 selectedTemplateId === template.id
-                  ? 'border-blue-500 ring-2 ring-blue-200'
-                  : 'border-slate-200 hover:border-slate-300'
+                  ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
+                  : 'border-white/40 hover:border-blue-300'
               ]"
             >
               <!-- Template Preview -->
@@ -168,7 +178,7 @@
             <button
               v-if="searchQuery || selectedCategory"
               @click="clearFilters"
-              class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              class="mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25"
             >
               Clear Filters
             </button>
@@ -184,15 +194,15 @@
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="flex items-center justify-between p-6 border-t border-slate-200">
+            <!-- Footer -->
+            <div class="flex items-center justify-between p-8 border-t border-slate-200/20 bg-white/50 backdrop-blur-sm">
           <div class="text-sm text-slate-600">
             {{ filteredTemplates.length }} template{{ filteredTemplates.length !== 1 ? 's' : '' }} found
           </div>
           <div class="flex gap-3">
             <button
               @click="closeModal"
-              class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+              class="px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-200 font-medium"
             >
               Cancel
             </button>
@@ -200,9 +210,9 @@
               @click="confirmSelection"
               :disabled="!selectedTemplateId || selecting"
               :class="[
-                'px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2',
+                'px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2',
                 selectedTemplateId && !selecting
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:scale-[1.02]'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               ]"
             >
@@ -212,9 +222,11 @@
             </button>
           </div>
         </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -225,7 +237,8 @@ import {
   Check,
   CheckCircle,
   Palette,
-  Loader2
+  Loader2,
+  LayoutTemplate
 } from 'lucide-vue-next'
 import { type EventTemplate, eventTemplateService } from '../services/api'
 
@@ -554,3 +567,27 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
+}
+</style>

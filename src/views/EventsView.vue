@@ -86,15 +86,6 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div class="flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-1 shadow-lg">
             <button
-              @click="currentView = 'all'"
-              :class="currentView === 'all' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                : 'text-slate-600 hover:text-blue-600'"
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
-            >
-              All Events
-            </button>
-            <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'my'"
               :class="currentView === 'my' 
@@ -103,6 +94,15 @@
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
               My Events
+            </button>
+            <button
+              @click="currentView = 'all'"
+              :class="currentView === 'all' 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                : 'text-slate-600 hover:text-blue-600'"
+              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+            >
+              All Events
             </button>
             <button
               v-if="authStore.isAuthenticated"
