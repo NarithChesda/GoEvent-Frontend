@@ -1,4 +1,5 @@
 import { apiService, type ApiResponse } from './api'
+import { secureStorage } from '../utils/secureStorage'
 
 export interface User {
   id: number
@@ -158,52 +159,153 @@ class AuthService {
     })
   }
 
-  // Local storage management
+  // Secure storage management
   private setTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem('access_token', accessToken)
-    localStorage.setItem('refresh_token', refreshToken)
+    // Validate token format before storing
+    if (!secureStorage.isValidTokenFormat(accessToken) || !secureStorage.isValidTokenFormat(refreshToken)) {
+      console.warn('Invalid token format detected')
+      return
+    }
+    
+    secureStorage.setItem('access_token', accessToken)
+    secureStorage.setItem('refresh_token', refreshToken)
+    
+    // Migrate existing localStorage data if present
+    secureStorage.migrateToSecureStorage(['access_token', 'refresh_token', 'user'])
   }
 
   private setAccessToken(accessToken: string): void {
-    localStorage.setItem('access_token', accessToken)
+    if (!secureStorage.isValidTokenFormat(accessToken)) {
+      console.warn('Invalid access token format detected')
+      return
+    }
+    
+    secureStorage.setItem('access_token', accessToken)
   }
 
   private setUser(user: User): void {
-    localStorage.setItem('user', JSON.stringify(user))
+    try {
+      // Sanitize user data before storing
+      const sanitizedUser = this.sanitizeUserData(user)
+      secureStorage.setItem('user', JSON.stringify(sanitizedUser))
+    } catch (error) {
+      console.error('Failed to store user data:', error)
+    }
+  }
+
+  /**
+   * Sanitize user data to prevent XSS
+   */
+  private sanitizeUserData(user: User): User {
+    const sanitize = (str: string | undefined): string | undefined => {
+      if (!str) return str
+      return str.replace(/[<>\"'&]/g, (match) => {
+        const escapeMap: Record<string, string> = {
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#x27;',
+          '&': '&amp;'
+        }
+        return escapeMap[match] || match
+      })
+    }
+
+    return {
+      ...user,
+      email: sanitize(user.email) || user.email,
+      username: sanitize(user.username) || user.username,
+      first_name: sanitize(user.first_name),
+      last_name: sanitize(user.last_name),
+      bio: sanitize(user.bio)
+    }
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token')
+    const token = secureStorage.getItem('access_token')
+    
+    // Validate token format
+    if (token && !secureStorage.isValidTokenFormat(token)) {
+      console.warn('Invalid token format in storage, clearing tokens')
+      this.clearTokens()
+      return null
+    }
+    
+    return token
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token')
+    const token = secureStorage.getItem('refresh_token')
+    
+    // Validate token format
+    if (token && !secureStorage.isValidTokenFormat(token)) {
+      console.warn('Invalid refresh token format in storage, clearing tokens')
+      this.clearTokens()
+      return null
+    }
+    
+    return token
   }
 
   getUser(): User | null {
-    const userData = localStorage.getItem('user')
-    return userData ? JSON.parse(userData) : null
+    try {
+      const userData = secureStorage.getItem('user')
+      if (!userData) return null
+      
+      const user = JSON.parse(userData)
+      
+      // Basic validation of user object
+      if (!user || typeof user !== 'object' || !user.id || !user.email) {
+        console.warn('Invalid user data in storage')
+        this.clearUser()
+        return null
+      }
+      
+      return user
+    } catch (error) {
+      console.error('Failed to parse user data:', error)
+      this.clearUser()
+      return null
+    }
   }
 
   clearTokens(): void {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    secureStorage.removeItem('access_token')
+    secureStorage.removeItem('refresh_token')
   }
 
   clearUser(): void {
-    localStorage.removeItem('user')
+    secureStorage.removeItem('user')
   }
 
   isAuthenticated(): boolean {
     return !!this.getAccessToken()
   }
 
-  isTokenExpired(token: string): boolean {
+  /**
+   * Check if we should attempt token refresh
+   * Uses a simple heuristic instead of parsing JWT client-side
+   */
+  private shouldRefreshToken(): boolean {
+    const lastRefresh = secureStorage.getItem('last_token_refresh')
+    if (!lastRefresh) return true
+    
+    const lastRefreshTime = parseInt(lastRefresh, 10)
+    const now = Date.now()
+    
+    // Refresh if more than 50 minutes have passed (assuming 60-minute token expiry)
+    return (now - lastRefreshTime) > (50 * 60 * 1000)
+  }
+
+  /**
+   * Validate token by making a server request instead of parsing JWT
+   */
+  async validateTokenWithServer(): Promise<boolean> {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      return payload.exp * 1000 < Date.now()
+      const response = await this.verifyToken()
+      return response.success
     } catch {
-      return true
+      return false
     }
   }
 
@@ -214,14 +316,29 @@ class AuthService {
       return false
     }
 
-    // If token is not expired, it's valid
-    if (!this.isTokenExpired(accessToken)) {
-      return true
+    // Check if we should attempt refresh based on time heuristic
+    if (this.shouldRefreshToken()) {
+      // First try to validate current token with server
+      const isValid = await this.validateTokenWithServer()
+      
+      if (isValid) {
+        // Update last refresh time
+        secureStorage.setItem('last_token_refresh', Date.now().toString())
+        return true
+      }
+      
+      // Token is invalid, try to refresh
+      const refreshResponse = await this.refreshToken()
+      if (refreshResponse.success) {
+        secureStorage.setItem('last_token_refresh', Date.now().toString())
+        return true
+      }
+      
+      return false
     }
-
-    // Try to refresh the token
-    const refreshResponse = await this.refreshToken()
-    return refreshResponse.success
+    
+    // Token should still be valid based on time heuristic
+    return true
   }
 }
 

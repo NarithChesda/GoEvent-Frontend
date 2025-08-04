@@ -108,7 +108,7 @@
                     </div>
                     
                     <p class="text-sm text-slate-500 mt-2">
-                      JPG, PNG or GIF. Max size 5MB. Recommended: 400x400px
+                      JPG, PNG, GIF, WebP, or AVIF. Max size 3MB. Recommended: 400x400px. Files are scanned for security.
                     </p>
                   </div>
                 </div>
@@ -281,7 +281,10 @@
                     id="currentPassword"
                     v-model="passwordForm.old_password"
                     :type="showPasswords.current ? 'text' : 'password'"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                    :class="[
+                      'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
+                      fieldErrors.old_password ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-blue-500'
+                    ]"
                     placeholder="Enter your current password"
                   />
                   <button
@@ -292,6 +295,12 @@
                     <Eye v-if="!showPasswords.current" class="w-5 h-5" />
                     <EyeOff v-else class="w-5 h-5" />
                   </button>
+                </div>
+                <!-- Current password validation errors -->
+                <div v-if="fieldErrors.old_password" class="mt-1">
+                  <p v-for="error in fieldErrors.old_password" :key="error" class="text-sm text-red-600">
+                    {{ error }}
+                  </p>
                 </div>
               </div>
 
@@ -305,7 +314,10 @@
                     id="newPassword"
                     v-model="passwordForm.new_password"
                     :type="showPasswords.new ? 'text' : 'password'"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                    :class="[
+                      'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
+                      fieldErrors.new_password ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-blue-500'
+                    ]"
                     placeholder="Enter your new password"
                   />
                   <button
@@ -316,6 +328,12 @@
                     <Eye v-if="!showPasswords.new" class="w-5 h-5" />
                     <EyeOff v-else class="w-5 h-5" />
                   </button>
+                </div>
+                <!-- New password validation errors -->
+                <div v-if="fieldErrors.new_password" class="mt-1">
+                  <p v-for="error in fieldErrors.new_password" :key="error" class="text-sm text-red-600">
+                    {{ error }}
+                  </p>
                 </div>
               </div>
 
@@ -329,7 +347,10 @@
                     id="confirmPassword"
                     v-model="passwordForm.new_password_confirm"
                     :type="showPasswords.confirm ? 'text' : 'password'"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                    :class="[
+                      'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
+                      fieldErrors.new_password_confirm ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-blue-500'
+                    ]"
                     placeholder="Confirm your new password"
                   />
                   <button
@@ -341,20 +362,45 @@
                     <EyeOff v-else class="w-5 h-5" />
                   </button>
                 </div>
+                <!-- Confirm password validation errors -->
+                <div v-if="fieldErrors.new_password_confirm" class="mt-1">
+                  <p v-for="error in fieldErrors.new_password_confirm" :key="error" class="text-sm text-red-600">
+                    {{ error }}
+                  </p>
+                </div>
               </div>
 
-              <!-- Password Strength Indicator -->
-              <div v-if="passwordForm.new_password" class="space-y-2">
+              <!-- Enhanced Password Strength Indicator -->
+              <div v-if="passwordForm.new_password" class="space-y-3">
                 <div class="flex items-center space-x-2 text-sm">
                   <div class="flex space-x-1">
                     <div 
-                      v-for="i in 4" 
+                      v-for="i in 5" 
                       :key="i"
-                      class="w-2 h-2 rounded-full"
-                      :class="passwordStrength >= i ? 'bg-green-500' : 'bg-gray-200'"
+                      class="w-3 h-3 rounded-full transition-colors duration-300"
+                      :class="passwordStrength >= i ? passwordStrengthColor : 'bg-gray-200'"
                     ></div>
                   </div>
-                  <span class="text-slate-500">{{ passwordStrengthText }}</span>
+                  <span class="font-medium" :class="passwordStrength >= 3 ? 'text-green-600' : 'text-orange-600'">
+                    {{ passwordStrengthText }}
+                  </span>
+                  <span v-if="passwordStrength >= 3" class="text-green-600 text-xs">✓ Strong enough</span>
+                  <span v-else class="text-orange-600 text-xs">⚠ Too weak</span>
+                </div>
+                
+                <!-- Password Requirements Feedback -->
+                <div v-if="passwordStrengthData.feedback.length > 0" class="text-xs space-y-1">
+                  <p class="font-medium text-slate-600">Requirements:</p>
+                  <ul class="list-disc list-inside space-y-1 text-slate-500">
+                    <li v-for="tip in passwordStrengthData.feedback" :key="tip">{{ tip }}</li>
+                  </ul>
+                </div>
+                
+                <!-- Minimum strength warning -->
+                <div v-if="passwordForm.new_password && !isPasswordStrongEnough" class="p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p class="text-sm text-orange-800">
+                    <strong>Security Notice:</strong> Password must be at least "Good" strength (3/4) for account security.
+                  </p>
                 </div>
               </div>
 
@@ -377,7 +423,7 @@
               <div class="flex justify-end">
                 <button
                   type="submit"
-                  :disabled="authStore.isLoading || !passwordsMatch"
+                  :disabled="authStore.isLoading || !passwordsMatch || !isPasswordStrongEnough || !passwordForm.old_password"
                   class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
                 >
                   <div class="flex items-center space-x-2">
@@ -403,6 +449,7 @@ import { useAuthStore } from '../stores/auth'
 import { authService } from '../services/auth'
 import { uploadService } from '../services/upload'
 import { apiService } from '../services/api'
+import { inputValidator, validationRules } from '../utils/inputValidation'
 import {
   User,
   Lock,
@@ -452,6 +499,7 @@ const passwordErrorMessage = ref('')
 const uploadLoading = ref(false)
 const fileInput = ref<HTMLInputElement>()
 const profilePicturePreview = ref<string>('')
+const fieldErrors = ref<Record<string, string[]>>({})
 
 const showPasswords = ref({
   current: false,
@@ -459,26 +507,67 @@ const showPasswords = ref({
   confirm: false
 })
 
-// Password validation
-const passwordStrength = computed(() => {
+// Enhanced password validation using input validator
+const passwordStrengthData = computed(() => {
   const password = passwordForm.value.new_password
-  let strength = 0
-  
-  if (password.length >= 8) strength++
-  if (/[A-Z]/.test(password)) strength++
-  if (/[0-9]/.test(password)) strength++
-  if (/[^A-Za-z0-9]/.test(password)) strength++
-  
-  return strength
+  if (!password) return { score: 0, feedback: [] }
+  return inputValidator.calculatePasswordStrength(password)
 })
 
+const passwordStrength = computed(() => passwordStrengthData.value.score)
+
 const passwordStrengthText = computed(() => {
-  const texts = ['Weak', 'Fair', 'Good', 'Strong']
-  return texts[passwordStrength.value - 1] || 'Too weak'
+  const texts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong']
+  return texts[passwordStrength.value] || 'Very Weak'
+})
+
+const passwordStrengthColor = computed(() => {
+  const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500']
+  return colors[passwordStrength.value] || 'bg-gray-200'
+})
+
+// Real-time validation for form fields
+const profileValidation = computed(() => {
+  if (!profileForm.value.email && !profileForm.value.username) {
+    return { isValid: true, errors: {} }
+  }
+  
+  return inputValidator.validateForm(profileForm.value, {
+    email: validationRules.email,
+    username: validationRules.username,
+    firstName: validationRules.firstName,
+    lastName: validationRules.lastName,
+    bio: validationRules.bio
+  })
+})
+
+const passwordValidation = computed(() => {
+  const form = passwordForm.value
+  if (!form.new_password && !form.new_password_confirm) {
+    return { isValid: true, errors: {} }
+  }
+  
+  const validation = inputValidator.validateForm(form, {
+    new_password: { ...validationRules.newPassword, required: false },
+    new_password_confirm: { ...validationRules.confirmPassword, required: false }
+  })
+  
+  // Add custom validation for password confirmation
+  if (form.new_password && form.new_password_confirm && form.new_password !== form.new_password_confirm) {
+    validation.errors.new_password_confirm = ['Passwords do not match']
+    validation.isValid = false
+  }
+  
+  return validation
 })
 
 const passwordsMatch = computed(() => {
   return passwordForm.value.new_password === passwordForm.value.new_password_confirm
+})
+
+// Minimum password strength requirement (increased from 2 to 3)
+const isPasswordStrongEnough = computed(() => {
+  return passwordStrength.value >= 3
 })
 
 // Initialize form with user data
@@ -503,17 +592,35 @@ onMounted(() => {
 const handleProfileUpdate = async () => {
   successMessage.value = ''
   errorMessage.value = ''
+  fieldErrors.value = {}
+  
+  // Comprehensive validation
+  const validation = inputValidator.validateForm(profileForm.value, {
+    email: validationRules.email,
+    username: validationRules.username,
+    first_name: validationRules.firstName,
+    last_name: validationRules.lastName,
+    bio: validationRules.bio
+  })
+  
+  if (!validation.isValid) {
+    fieldErrors.value = validation.errors
+    errorMessage.value = 'Please fix the validation errors below'
+    return
+  }
   
   try {
-    // Filter out empty strings to avoid sending empty values
+    // Use sanitized data
     const updateData = Object.fromEntries(
-      Object.entries(profileForm.value).filter(([key, value]) => value !== '')
+      Object.entries(validation.sanitizedData).filter(([key, value]) => value !== '')
     )
     
     const result = await authStore.updateProfile(updateData)
     
     if (result.success) {
       successMessage.value = 'Profile updated successfully!'
+      fieldErrors.value = {}
+      
       // Refresh the form with updated user data
       if (authStore.user) {
         profileForm.value = {
@@ -535,39 +642,76 @@ const handleProfileUpdate = async () => {
   }
 }
 
-// Password change handler
+// Password change handler with enhanced security
 const handlePasswordChange = async () => {
   passwordSuccessMessage.value = ''
   passwordErrorMessage.value = ''
+  fieldErrors.value = {}
   
-  if (!passwordForm.value.old_password || !passwordForm.value.new_password || !passwordForm.value.new_password_confirm) {
-    passwordErrorMessage.value = 'Please fill in all password fields'
+  // Check rate limiting for password changes
+  const clientId = navigator.userAgent + window.location.hostname
+  if (inputValidator.isRateLimited(`password_change_${clientId}`, 3, 60 * 60 * 1000)) {
+    passwordErrorMessage.value = 'Too many password change attempts. Please try again in 1 hour.'
     return
   }
   
-  if (!passwordsMatch.value) {
-    passwordErrorMessage.value = 'New passwords do not match'
-    return
+  // Comprehensive validation
+  const validation = inputValidator.validateForm(passwordForm.value, {
+    old_password: { required: true, sanitize: false },
+    new_password: { ...validationRules.newPassword, required: true },
+    new_password_confirm: { required: true, sanitize: false }
+  })
+  
+  // Additional custom validations
+  if (passwordForm.value.new_password && passwordForm.value.new_password_confirm) {
+    if (passwordForm.value.new_password !== passwordForm.value.new_password_confirm) {
+      validation.errors.new_password_confirm = ['Passwords do not match']
+      validation.isValid = false
+    }
+    
+    if (passwordForm.value.old_password === passwordForm.value.new_password) {
+      validation.errors.new_password = ['New password must be different from current password']
+      validation.isValid = false
+    }
+    
+    if (!isPasswordStrongEnough.value) {
+      validation.errors.new_password = [
+        ...validation.errors.new_password || [],
+        'Password must be at least "Good" strength (score 3/4)',
+        ...passwordStrengthData.value.feedback
+      ]
+      validation.isValid = false
+    }
   }
   
-  if (passwordStrength.value < 2) {
-    passwordErrorMessage.value = 'Password is too weak. Please choose a stronger password'
+  if (!validation.isValid) {
+    fieldErrors.value = validation.errors
+    passwordErrorMessage.value = 'Please fix the validation errors below'
     return
   }
   
   try {
-    const response = await authService.changePassword(passwordForm.value)
+    const response = await authService.changePassword({
+      old_password: validation.sanitizedData.old_password,
+      new_password: validation.sanitizedData.new_password,
+      new_password_confirm: validation.sanitizedData.new_password_confirm
+    })
     
     if (response.success) {
-      passwordSuccessMessage.value = 'Password changed successfully!'
+      // Clear rate limiting on successful password change
+      inputValidator.clearRateLimit(`password_change_${clientId}`)
+      
+      passwordSuccessMessage.value = 'Password changed successfully! Please sign in again with your new password.'
+      fieldErrors.value = {}
       passwordForm.value = {
         old_password: '',
         new_password: '',
         new_password_confirm: ''
       }
+      
       setTimeout(() => {
         passwordSuccessMessage.value = ''
-      }, 3000)
+      }, 5000)
     } else {
       passwordErrorMessage.value = response.message || 'Failed to change password'
     }
@@ -587,30 +731,19 @@ const handleFileSelect = async (event: Event) => {
   
   if (!file) return
   
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    errorMessage.value = 'Please select a valid image file'
-    return
-  }
-  
-  // Validate file size (5MB max)
-  if (file.size > 5 * 1024 * 1024) {
-    errorMessage.value = 'File size must be less than 5MB'
-    return
-  }
-  
   try {
     uploadLoading.value = true
     errorMessage.value = ''
     
-    // Create preview
+    // Enhanced file validation (will be done by uploadService)
+    // Create preview first for better UX
     const reader = new FileReader()
     reader.onload = (e) => {
       profilePicturePreview.value = e.target?.result as string
     }
     reader.readAsDataURL(file)
     
-    // Upload file
+    // Upload file with enhanced security validation
     const response = await uploadService.uploadProfilePicture(file)
     
     if (response.success && response.data) {
@@ -628,6 +761,7 @@ const handleFileSelect = async (event: Event) => {
       profilePicturePreview.value = ''
     }
   } catch (error) {
+    console.error('File upload error:', error)
     errorMessage.value = 'Failed to upload profile picture'
     profilePicturePreview.value = ''
   } finally {

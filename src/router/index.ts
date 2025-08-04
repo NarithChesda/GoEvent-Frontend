@@ -54,19 +54,67 @@ const router = createRouter({
   ],
 })
 
-// Route guard for authentication
+// Enhanced route guard with security checks
 router.beforeEach(async (to, from, next) => {
-  if (to.meta.requiresAuth) {
-    // Dynamically import to avoid circular dependency
-    const { useAuthStore } = await import('../stores/auth')
-    const authStore = useAuthStore()
-    
-    if (!authStore.isAuthenticated) {
-      next('/signin')
-      return
+  try {
+    if (to.meta.requiresAuth) {
+      // Dynamically import to avoid circular dependency
+      const { useAuthStore } = await import('../stores/auth')
+      const { authService } = await import('../services/auth')
+      const authStore = useAuthStore()
+      
+      // Basic authentication check
+      if (!authStore.isAuthenticated) {
+        next('/signin')
+        return
+      }
+
+      // Enhanced security: Validate token with server for sensitive routes
+      const sensitiveRoutes = ['settings', 'event-edit']
+      if (sensitiveRoutes.includes(to.name as string)) {
+        try {
+          const isTokenValid = await authService.ensureValidToken()
+          if (!isTokenValid) {
+            console.warn('Token validation failed, redirecting to sign in')
+            await authStore.logout()
+            next('/signin')
+            return
+          }
+        } catch (error) {
+          console.warn('Token validation error:', error)
+          // Continue to route but user might face API errors
+        }
+      }
+
+      // Specific checks for event editing
+      if (to.name === 'event-edit' && to.params.id) {
+        // Note: In a real application, you'd validate if user can edit this specific event
+        // This would require an API call to check permissions
+        console.info('Event edit access granted for event:', to.params.id)
+      }
     }
+
+    // Security headers simulation (would be better handled by server)
+    if (typeof document !== 'undefined') {
+      // Prevent iframe embedding on sensitive pages
+      if (to.meta.requiresAuth) {
+        // Note: This is client-side only, server should set X-Frame-Options
+        const metaTag = document.querySelector('meta[http-equiv="X-Frame-Options"]')
+        if (!metaTag) {
+          const newMetaTag = document.createElement('meta')
+          newMetaTag.setAttribute('http-equiv', 'X-Frame-Options')
+          newMetaTag.setAttribute('content', 'DENY')
+          document.head.appendChild(newMetaTag)
+        }
+      }
+    }
+    
+    next()
+  } catch (error) {
+    console.error('Route guard error:', error)
+    // Allow navigation to continue in case of errors
+    next()
   }
-  next()
 })
 
 export default router

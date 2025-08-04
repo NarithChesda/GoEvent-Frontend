@@ -1,6 +1,22 @@
 // API Base Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
+// Import secure storage for token management
+import { secureStorage } from '../utils/secureStorage'
+
+// Network state management
+interface NetworkState {
+  isOnline: boolean
+  retryQueue: (() => Promise<any>)[]
+  isRetrying: boolean
+}
+
+const networkState: NetworkState = {
+  isOnline: navigator.onLine,
+  retryQueue: [],
+  isRetrying: false
+}
+
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -20,6 +36,57 @@ class ApiService {
 
   constructor() {
     this.baseURL = API_BASE_URL
+    this.initializeNetworkListeners()
+  }
+
+  /**
+   * Initialize network state listeners
+   */
+  private initializeNetworkListeners(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        networkState.isOnline = true
+        console.info('Network connection restored')
+        this.processRetryQueue()
+      })
+
+      window.addEventListener('offline', () => {
+        networkState.isOnline = false
+        console.warn('Network connection lost')
+      })
+    }
+  }
+
+  /**
+   * Process queued requests when network is restored
+   */
+  private async processRetryQueue(): Promise<void> {
+    if (networkState.isRetrying || networkState.retryQueue.length === 0) {
+      return
+    }
+
+    networkState.isRetrying = true
+    const queue = [...networkState.retryQueue]
+    networkState.retryQueue = []
+
+    try {
+      for (const retryFn of queue) {
+        try {
+          await retryFn()
+        } catch (error) {
+          console.warn('Retry failed:', error)
+        }
+      }
+    } finally {
+      networkState.isRetrying = false
+    }
+  }
+
+  /**
+   * Check if the service is currently online
+   */
+  public isOnline(): boolean {
+    return networkState.isOnline
   }
 
   // Utility method to get full URL for profile pictures
@@ -41,8 +108,107 @@ class ApiService {
   }
 
   private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('access_token')
-    return token ? { Authorization: `Bearer ${token}` } : {}
+    const token = secureStorage.getItem('access_token')
+    const headers: Record<string, string> = {}
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    
+    // Add security headers
+    headers['X-Requested-With'] = 'XMLHttpRequest'
+    
+    return headers
+  }
+
+  /**
+   * Check network connectivity and queue requests if offline
+   */
+  private async handleNetworkRequest<T>(
+    requestFn: () => Promise<Response>
+  ): Promise<ApiResponse<T>> {
+    // Update network state
+    networkState.isOnline = navigator.onLine
+
+    if (!networkState.isOnline) {
+      return {
+        success: false,
+        message: 'You are currently offline. Please check your internet connection.'
+      }
+    }
+
+    try {
+      const response = await Promise.race([
+        requestFn(),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 30000)
+        )
+      ])
+
+      return this.handleResponse<T>(response)
+    } catch (error: any) {
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        // Network error
+        networkState.isOnline = false
+        return {
+          success: false,
+          message: 'Network error. Please check your internet connection and try again.'
+        }
+      }
+
+      if (error.message === 'Request timeout') {
+        return {
+          success: false,
+          message: 'Request timeout. Please try again.'
+        }
+      }
+
+      return {
+        success: false,
+        message: 'An unexpected error occurred'
+      }
+    }
+  }
+
+  /**
+   * Enhanced error handling with better user messages
+   */
+  private getUserFriendlyErrorMessage(status: number, data: any): string {
+    switch (status) {
+      case 400:
+        if (data?.detail) return data.detail
+        if (data?.message) return data.message
+        return 'Invalid request. Please check your input and try again.'
+      
+      case 401:
+        return 'Your session has expired. Please sign in again.'
+      
+      case 403:
+        return 'You do not have permission to perform this action.'
+      
+      case 404:
+        return 'The requested resource was not found.'
+      
+      case 409:
+        return data?.detail || data?.message || 'This action conflicts with existing data.'
+      
+      case 422:
+        return 'Please check your input and try again.'
+      
+      case 429:
+        return 'Too many requests. Please wait a moment and try again.'
+      
+      case 500:
+        return 'A server error occurred. Please try again later.'
+      
+      case 502:
+      case 503:
+      case 504:
+        return 'Service is temporarily unavailable. Please try again later.'
+      
+      default:
+        return data?.detail || data?.message || 'An unexpected error occurred.'
+    }
   }
 
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
@@ -63,48 +229,31 @@ class ApiService {
       const data = text && isJson ? JSON.parse(text) : text
 
       if (!response.ok) {
-        // Handle different HTTP status codes
-        let message = 'An error occurred'
-
-        switch (response.status) {
-          case 400:
-            console.error('400 Bad Request - Full error response:', data)
-            // Try to extract detailed validation errors
-            if (data.translations && Array.isArray(data.translations)) {
-              console.error('Translation validation errors:', data.translations)
-            }
-            if (typeof data === 'object' && data !== null) {
-              console.error('All validation errors:', Object.keys(data).map(key => `${key}: ${JSON.stringify(data[key])}`))
-            }
-            message = data.detail || data.message || 'Invalid request data'
-            break
-          case 401:
-            message = 'Authentication required'
-            break
-          case 403:
-            message = 'You do not have permission to perform this action'
-            break
-          case 404:
-            message = 'Resource not found'
-            break
-          case 409:
-            message = data.detail || data.message || 'Conflict with existing data'
-            break
-          case 422:
-            message = 'Validation failed'
-            break
-          case 500:
-            console.error('500 Internal Server Error - Response:', data)
-            message = data.detail || data.message || data.error || 'Server error. Please try again later'
-            break
-          default:
-            message = data.detail || data.message || `HTTP ${response.status} error`
+        // Log detailed error information for debugging
+        if (response.status === 400 && typeof data === 'object' && data !== null) {
+          console.error('400 Bad Request - Full error response:', data)
+          if (data.translations && Array.isArray(data.translations)) {
+            console.error('Translation validation errors:', data.translations)
+          }
+          console.error('All validation errors:', Object.keys(data).map(key => `${key}: ${JSON.stringify(data[key])}`))
+        } else if (response.status >= 500) {
+          console.error(`${response.status} Server Error - Response:`, data)
         }
+
+        // Handle 401 specifically for auth token issues
+        if (response.status === 401) {
+          // Clear potentially invalid tokens
+          secureStorage.removeItem('access_token')
+          secureStorage.removeItem('refresh_token')
+          secureStorage.removeItem('user')
+        }
+
+        const message = this.getUserFriendlyErrorMessage(response.status, data)
 
         return {
           success: false,
           message,
-          errors: data.errors || (isJson ? data : undefined)
+          errors: data?.errors || (isJson ? data : undefined)
         }
       }
 
@@ -131,27 +280,20 @@ class ApiService {
       })
     }
 
-    try {
-      const response = await fetch(url.toString(), {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(url.toString(), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           ...this.getAuthHeaders()
         }
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(`${this.baseURL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,19 +301,12 @@ class ApiService {
         },
         body: data ? JSON.stringify(data) : undefined
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 
   async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(`${this.baseURL}${endpoint}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -179,21 +314,14 @@ class ApiService {
         },
         body: data ? JSON.stringify(data) : undefined
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 
   async patch<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    try {
+    return this.handleNetworkRequest<T>(async () => {
       const isFormData = data instanceof FormData
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      return fetch(`${this.baseURL}${endpoint}`, {
         method: 'PATCH',
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
@@ -202,19 +330,12 @@ class ApiService {
         },
         body: data ? (isFormData ? data : JSON.stringify(data)) : undefined
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 
   async postFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(`${this.baseURL}${endpoint}`, {
         method: 'POST',
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
@@ -222,19 +343,12 @@ class ApiService {
         },
         body: data
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 
   async patchFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(`${this.baseURL}${endpoint}`, {
         method: 'PATCH',
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
@@ -242,33 +356,19 @@ class ApiService {
         },
         body: data
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(`${this.baseURL}${endpoint}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           ...this.getAuthHeaders()
         }
       })
-
-      return this.handleResponse<T>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error'
-      }
-    }
+    })
   }
 }
 

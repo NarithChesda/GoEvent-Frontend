@@ -39,9 +39,20 @@
                 autocomplete="email"
                 required
                 v-model="form.email"
-                class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+                :class="[
+                  'w-full px-4 py-3 border rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium',
+                  (!emailValidation.isValid && form.email.length > 0) || fieldErrors.email 
+                    ? 'border-red-300 focus:ring-red-500' 
+                    : 'border-slate-200 focus:ring-blue-500'
+                ]"
                 placeholder="Enter your email address"
               />
+            </div>
+            <!-- Email validation errors -->
+            <div v-if="(!emailValidation.isValid && form.email.length > 0) || fieldErrors.email" class="mt-1">
+              <p v-for="error in fieldErrors.email || emailValidation.errors" :key="error" class="text-sm text-red-600">
+                {{ error }}
+              </p>
             </div>
           </div>
 
@@ -58,7 +69,12 @@
                 autocomplete="current-password"
                 required
                 v-model="form.password"
-                class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium pr-12"
+                :class="[
+                  'w-full px-4 py-3 border rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium pr-12',
+                  (!passwordValidation.isValid && form.password.length > 0) || fieldErrors.password 
+                    ? 'border-red-300 focus:ring-red-500' 
+                    : 'border-slate-200 focus:ring-blue-500'
+                ]"
                 placeholder="Enter your password"
               />
               <button
@@ -69,6 +85,12 @@
                 <Eye v-if="!showPassword" class="h-5 w-5" />
                 <EyeOff v-else class="h-5 w-5" />
               </button>
+            </div>
+            <!-- Password validation errors -->
+            <div v-if="(!passwordValidation.isValid && form.password.length > 0) || fieldErrors.password" class="mt-1">
+              <p v-for="error in fieldErrors.password || passwordValidation.errors" :key="error" class="text-sm text-red-600">
+                {{ error }}
+              </p>
             </div>
           </div>
 
@@ -101,12 +123,12 @@
           <!-- Sign In Button -->
           <button
             type="submit"
-            :disabled="authStore.isLoading"
+            :disabled="authStore.isLoading || isSubmitting || !isFormValid"
             class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
           >
             <div class="flex items-center justify-center">
-              <Loader2 v-if="authStore.isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5" />
-              {{ authStore.isLoading ? 'Signing in...' : 'Sign in to your account' }}
+              <Loader2 v-if="authStore.isLoading || isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5" />
+              {{ (authStore.isLoading || isSubmitting) ? 'Signing in...' : 'Sign in to your account' }}
             </div>
           </button>
 
@@ -163,11 +185,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { CalendarDays, Eye, EyeOff, Loader2, Github, AlertCircle } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
+import { inputValidator, validationRules } from '../utils/inputValidation'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -182,25 +205,65 @@ const showPassword = ref(false)
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
 const isGoogleLoading = ref(false)
+const isSubmitting = ref(false)
+
+// Real-time validation
+const emailValidation = computed(() => {
+  if (!form.value.email) return { isValid: true, errors: [] }
+  return inputValidator.validateEmail(form.value.email)
+})
+
+const passwordValidation = computed(() => {
+  if (!form.value.password) return { isValid: true, errors: [] }
+  return inputValidator.validatePassword(form.value.password)
+})
+
+// Check if form is valid
+const isFormValid = computed(() => {
+  return emailValidation.value.isValid && 
+         passwordValidation.value.isValid && 
+         form.value.email.length > 0 && 
+         form.value.password.length > 0
+})
 
 const handleSignIn = async () => {
+  // Prevent double submission
+  if (isSubmitting.value) return
+  
   // Clear previous errors
   errorMessage.value = ''
   fieldErrors.value = {}
   
-  // Basic validation
-  if (!form.value.email || !form.value.password) {
-    errorMessage.value = 'Please fill in all required fields'
+  // Check rate limiting
+  const clientId = navigator.userAgent + window.location.hostname
+  if (inputValidator.isRateLimited(`signin_${clientId}`, 5, 15 * 60 * 1000)) {
+    errorMessage.value = 'Too many login attempts. Please try again in 15 minutes.'
     return
   }
   
+  // Comprehensive validation
+  const validation = inputValidator.validateForm(form.value, {
+    email: validationRules.email,
+    password: validationRules.password
+  })
+  
+  if (!validation.isValid) {
+    fieldErrors.value = validation.errors
+    errorMessage.value = 'Please fix the errors below'
+    return
+  }
+  
+  isSubmitting.value = true
+  
   try {
     const result = await authStore.login({
-      email: form.value.email,
-      password: form.value.password
+      email: validation.sanitizedData.email,
+      password: validation.sanitizedData.password
     })
     
     if (result.success) {
+      // Clear rate limiting on successful login
+      inputValidator.clearRateLimit(`signin_${clientId}`)
       // Redirect to home page after successful sign in
       router.push('/')
     } else {
@@ -209,6 +272,8 @@ const handleSignIn = async () => {
   } catch (error) {
     console.error('Sign in error:', error)
     errorMessage.value = 'An unexpected error occurred'
+  } finally {
+    isSubmitting.value = false
   }
 }
 
