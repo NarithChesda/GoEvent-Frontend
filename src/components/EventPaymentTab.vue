@@ -59,6 +59,14 @@
       </div>
     </div>
 
+    <!-- Referrer Section -->
+    <EventReferrerSection
+      :event-id="eventId"
+      :can-edit="canEdit"
+      :referrer-details="event?.referrer_details"
+      :organizer-email="event?.organizer_details?.email"
+      @referrer-updated="handleReferrerUpdated"
+    />
 
     <!-- Template-Based Package Selection -->
     <div v-if="!hasSelectedTemplate" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
@@ -615,26 +623,25 @@ import {
   Clock,
   DollarSign,
   Package,
-  Shield,
   FileText,
   CheckCircle,
   AlertCircle,
   X,
   ExternalLink,
-  Copy,
-  Check,
   FileSignature,
   History,
   Pencil,
   ChevronLeft
 } from 'lucide-vue-next'
-import { apiService, type ApiResponse } from '../services/api'
+import { apiService } from '../services/api'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useNotifications } from '../composables/useNotifications'
+import EventReferrerSection from './EventReferrerSection.vue'
 
 // Define emits
 const emit = defineEmits<{
   'tab-change': [tabId: string]
+  'event-updated': [event: Event]
 }>()
 
 // Proper TypeScript interfaces
@@ -658,6 +665,22 @@ interface Event {
     }
   } | null
   event_template_enabled?: boolean
+  referrer?: number | null
+  referrer_details?: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+  } | null
+  organizer_details?: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+    profile_picture?: string | null
+  } | null
 }
 
 interface PaymentMethod {
@@ -960,39 +983,6 @@ const openPaymentLink = (paymentLink: string): void => {
   }
 }
 
-const copyPaymentLink = async (paymentLink: string): Promise<void> => {
-  if (!paymentLink || typeof paymentLink !== 'string') {
-    console.warn('Invalid payment link provided')
-    return
-  }
-
-  try {
-    await navigator.clipboard.writeText(paymentLink)
-    showMessage('success', 'Payment link copied to clipboard')
-  } catch (err) {
-    console.error('Failed to copy payment link:', err)
-    // Secure fallback for older browsers
-    try {
-      const textArea = document.createElement('textarea')
-      textArea.value = paymentLink
-      textArea.style.position = 'fixed'
-      textArea.style.left = '-999999px'
-      textArea.style.top = '-999999px'
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      const successful = document.execCommand('copy')
-      document.body.removeChild(textArea)
-      if (!successful) {
-        throw new Error('Copy command failed')
-      }
-      showMessage('success', 'Payment link copied to clipboard')
-    } catch (fallbackErr) {
-      console.error('Fallback copy also failed:', fallbackErr)
-      showMessage('error', 'Failed to copy payment link')
-    }
-  }
-}
 
 const handleImageError = (event: Event): void => {
   const img = event.target as HTMLImageElement
@@ -1250,6 +1240,18 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   setTimeout(() => {
     message.value = null
   }, 5000)
+}
+
+const handleReferrerUpdated = (updatedEvent: unknown) => {
+  // Update the event data with the new referrer information
+  console.log('handleReferrerUpdated called with:', updatedEvent)
+  
+  if (props.event && updatedEvent && typeof updatedEvent === 'object') {
+    const eventData = updatedEvent as Event
+    console.log('Emitting event-updated with:', eventData)
+    // Emit the updated event to parent component
+    emit('event-updated', eventData)
+  }
 }
 
 // Watchers for reactive updates
