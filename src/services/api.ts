@@ -1135,3 +1135,85 @@ export const eventTemplateService = {
   }
 }
 
+// Event Guest Management Types and Interfaces
+export interface EventGuest {
+  id: number
+  name: string
+  invitation_status: 'not_sent' | 'sent' | 'viewed'
+  invitation_status_display: string
+  showcase_link: string
+  added_by?: number
+  added_by_details?: {
+    id: number
+    username: string
+    email: string
+    profile?: {
+      full_name: string
+      profile_picture: string | null
+    }
+  }
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateGuestRequest {
+  name: string
+}
+
+export interface GuestListFilters {
+  search?: string
+  invitation_status?: 'not_sent' | 'sent' | 'viewed'
+  ordering?: string
+  page?: number
+}
+
+export interface GuestStats {
+  total_guests: number
+  not_sent: number
+  sent: number
+  viewed: number
+}
+
+// Event Guest Management API Service
+export const guestService = {
+  // List all guests for an event
+  async getGuests(eventId: string, filters?: GuestListFilters): Promise<ApiResponse<PaginatedResponse<EventGuest>>> {
+    return apiService.get<PaginatedResponse<EventGuest>>(`/api/events/${eventId}/guests/`, filters)
+  },
+
+  // Get guest statistics
+  async getGuestStats(eventId: string): Promise<ApiResponse<GuestStats>> {
+    return apiService.get<GuestStats>(`/api/events/${eventId}/guests/stats/`)
+  },
+
+  // Get a specific guest
+  async getGuest(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
+    return apiService.get<EventGuest>(`/api/events/${eventId}/guests/${guestId}/`)
+  },
+
+  // Add a new guest
+  async createGuest(eventId: string, data: CreateGuestRequest): Promise<ApiResponse<EventGuest>> {
+    return apiService.post<EventGuest>(`/api/events/${eventId}/guests/`, data)
+  },
+
+  // Update a guest (name)
+  async updateGuest(eventId: string, guestId: number, data: Partial<CreateGuestRequest>): Promise<ApiResponse<EventGuest>> {
+    return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/`, data)
+  },
+
+  // Delete a guest
+  async deleteGuest(eventId: string, guestId: number): Promise<ApiResponse<void>> {
+    return apiService.delete(`/api/events/${eventId}/guests/${guestId}/`)
+  },
+
+  // Mark invitation as sent
+  async markInvitationSent(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
+    return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-sent/`, {})
+  },
+
+  // Mark invitation as viewed
+  async markInvitationViewed(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
+    return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-viewed/`, {})
+  }
+}
+

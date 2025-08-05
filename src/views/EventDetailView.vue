@@ -41,6 +41,7 @@
             :can-view-event-texts="canViewEventTexts"
             :can-view-template="canViewTemplate"
             :can-view-payment="canViewPayment"
+            :can-view-invitation="canViewInvitation"
             :can-edit="event.can_edit"
             @tab-change="activeTab = $event"
           />
@@ -176,6 +177,26 @@
               />
             </div>
 
+            <!-- Invitation Tab -->
+            <div v-if="activeTab === 'invitation'">
+              <div v-if="!canViewInvitation" class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view and manage invitations.
+                </p>
+              </div>
+              <EventInvitationTab
+                v-else-if="event?.id"
+                :event-id="event.id"
+                :event="event"
+                :can-edit="event.can_edit || false"
+                @tab-change="activeTab = $event"
+              />
+            </div>
+
             <!-- Template Tab -->
             <div v-if="activeTab === 'template'">
               <div v-if="!canViewTemplate" class="text-center py-12">
@@ -272,10 +293,7 @@ import {
   Pencil,
   CheckCircle,
   AlertCircle,
-  AlertTriangle,
-  ChevronDown,
-  UserPlus,
-  Users
+  AlertTriangle
 } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
 import Footer from '../components/Footer.vue'
@@ -290,6 +308,7 @@ import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
 import EventAttendeesTab from '../components/EventAttendeesTab.vue'
 import EventTemplateTab from '../components/EventTemplateTab.vue'
 import EventPaymentTab from '../components/EventPaymentTab.vue'
+import EventInvitationTab from '../components/EventInvitationTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import EventActionMenu from '../components/EventActionMenu.vue'
@@ -319,7 +338,8 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'event-texts', label: 'Event Texts', icon: 'file-text', mobileLabel: 'Texts' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'template', label: 'Template', icon: 'monitor' },
-  { id: 'payment', label: 'Payment', icon: 'credit-card' }
+  { id: 'payment', label: 'Payment', icon: 'credit-card' },
+  { id: 'invitation', label: 'Invitations', icon: 'mail' }
 ])
 
 // Computed properties
@@ -372,6 +392,10 @@ const canViewTemplate = computed(() => {
 })
 
 const canViewPayment = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewInvitation = computed(() => {
   return canViewRestrictedTabs.value
 })
 

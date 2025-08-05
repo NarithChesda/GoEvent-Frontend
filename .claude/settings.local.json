@@ -23,7 +23,11 @@
       "Bash(rm:*)",
       "Bash(pkill:*)",
       "Bash(true)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(timeout 10 npm run dev)"
     ],
     "deny": []
   }
