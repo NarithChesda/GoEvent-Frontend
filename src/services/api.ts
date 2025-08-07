@@ -849,6 +849,11 @@ export const eventsService = {
   // Remove collaborator
   async removeCollaborator(eventId: string, collaboratorId: number): Promise<ApiResponse<any>> {
     return apiService.delete(`/api/events/${eventId}/collaborators/${collaboratorId}/`)
+  },
+
+  // Get event showcase data (public endpoint for invitations)
+  async getEventShowcase(eventId: string, params?: { lang?: string; guest_name?: string }): Promise<ApiResponse<any>> {
+    return apiService.get<any>(`/api/events/${eventId}/showcase/`, params)
   }
 }
 
@@ -970,8 +975,8 @@ export const eventTextsService = {
 // Event Media API Service
 export const mediaService = {
   // List all media/photos for an event
-  async getEventMedia(eventId: string): Promise<ApiResponse<EventPhoto[]>> {
-    return apiService.get<EventPhoto[]>(`/api/events/${eventId}/photos/`)
+  async getEventMedia(eventId: string): Promise<ApiResponse<PaginatedResponse<EventPhoto>>> {
+    return apiService.get<PaginatedResponse<EventPhoto>>(`/api/events/${eventId}/photos/`)
   },
 
   // Upload new media/photo

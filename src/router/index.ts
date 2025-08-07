@@ -41,6 +41,11 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/events/:id/showcase',
+      name: 'event-showcase',
+      component: () => import('../views/EventShowcase.vue'),
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),

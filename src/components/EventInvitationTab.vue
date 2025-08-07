@@ -122,6 +122,13 @@
             Add First Guest
           </button>
           <button
+            @click="viewEventShowcase"
+            class="bg-white/80 backdrop-blur-sm border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold py-3 px-6 rounded-xl transition-all duration-200 inline-flex items-center"
+          >
+            <ExternalLink class="w-5 h-5 mr-2" />
+            View Showcase
+          </button>
+          <button
             @click="sendInvitations"
             class="bg-white/80 backdrop-blur-sm border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 px-6 rounded-xl transition-all duration-200 inline-flex items-center"
           >
@@ -218,12 +225,19 @@
                       <Send class="w-4 h-4" />
                     </button>
                     <button
+                      @click="viewGuestShowcase(guest)"
+                      class="text-green-600 hover:text-green-700"
+                      :title="'View personalized showcase'"
+                    >
+                      <ExternalLink class="w-4 h-4" />
+                    </button>
+                    <button
                       @click="copyShowcaseLink(guest)"
                       class="text-purple-600 hover:text-purple-700 relative group"
                       :title="`Copy link: ${getShowcaseUrl(guest.showcase_link)}`"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
                     </button>
                     <button
@@ -339,7 +353,8 @@ import {
   UserPlus,
   X,
   AlertCircle,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
@@ -410,8 +425,13 @@ const redirectToTemplateTab = () => {
   emit('tab-change', 'template')
 }
 
+const viewEventShowcase = () => {
+  const showcaseUrl = `/events/${props.eventId}/showcase`
+  window.open(showcaseUrl, '_blank')
+}
+
 const sendInvitations = () => {
-  showMessage('info', 'Bulk invitation sending will be available soon')
+  showMessage('success', 'Bulk invitation sending will be available soon')
 }
 
 const sendIndividualInvitation = async (guest: EventGuest) => {
@@ -540,6 +560,11 @@ const getShowcaseUrl = (showcaseLink: string) => {
   return `${baseUrl}${showcaseLink}`
 }
 
+const viewGuestShowcase = (guest: EventGuest) => {
+  const url = getShowcaseUrl(guest.showcase_link)
+  window.open(url, '_blank')
+}
+
 const copyShowcaseLink = (guest: EventGuest) => {
   const url = getShowcaseUrl(guest.showcase_link)
   navigator.clipboard.writeText(url).then(() => {
@@ -550,7 +575,7 @@ const copyShowcaseLink = (guest: EventGuest) => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type: type === 'info' ? 'success' : type, text }
+  message.value = { type, text }
   setTimeout(() => {
     message.value = null
   }, 5000)
