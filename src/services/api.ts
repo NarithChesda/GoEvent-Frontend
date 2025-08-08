@@ -291,6 +291,32 @@ class ApiService {
     })
   }
 
+  /**
+   * Public GET request without authentication headers
+   * Used for endpoints that should work without authentication
+   */
+  async getPublic<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+    const url = new URL(`${this.baseURL}${endpoint}`)
+
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          url.searchParams.append(key, String(value))
+        }
+      })
+    }
+
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest' // Only add security header, no auth
+        }
+      })
+    })
+  }
+
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     return this.handleNetworkRequest<T>(async () => {
       return fetch(`${this.baseURL}${endpoint}`, {
@@ -853,7 +879,7 @@ export const eventsService = {
 
   // Get event showcase data (public endpoint for invitations)
   async getEventShowcase(eventId: string, params?: { lang?: string; guest_name?: string }): Promise<ApiResponse<any>> {
-    return apiService.get<any>(`/api/events/${eventId}/showcase/`, params)
+    return apiService.getPublic<any>(`/api/events/${eventId}/showcase/`, params)
   }
 }
 

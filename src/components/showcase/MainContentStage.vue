@@ -25,6 +25,27 @@
             
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
+              <!-- Language Toggle (Fixed Position) -->
+              <div v-if="availableLanguages && availableLanguages.length > 1" class="absolute top-4 right-4 z-20">
+                <div class="glass-section p-2 rounded-lg">
+                  <select 
+                    :value="currentLanguage" 
+                    @change="$emit('changeLanguage', ($event.target as HTMLSelectElement).value)"
+                    class="bg-transparent text-white text-sm border-none outline-none cursor-pointer"
+                    :style="{ color: primaryColor }"
+                  >
+                    <option 
+                      v-for="lang in availableLanguages" 
+                      :key="lang.language" 
+                      :value="lang.language"
+                      class="bg-black text-white"
+                    >
+                      {{ lang.language_display }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
               <div class="p-8">
                 <!-- Welcome Header -->
                 <div class="text-center mb-8">
@@ -99,7 +120,6 @@
 
                 <!-- Photo Gallery Section -->
                 <PhotoGallery
-                  v-if="eventPhotos.length > 0"
                   :photos="eventPhotos"
                   :show-all="showAllPhotos"
                   :primary-color="primaryColor"
@@ -200,6 +220,8 @@ interface Props {
   isEventPast: boolean
   showAllPhotos: boolean
   getMediaUrl: (url: string) => string
+  availableLanguages?: Array<{ id: number; language: string; language_display: string }>
+  currentLanguage?: string
 }
 
 const props = defineProps<Props>()
@@ -209,6 +231,7 @@ defineEmits<{
   openPhoto: [EventPhoto]
   register: []
   togglePhotos: []
+  changeLanguage: [string]
 }>()
 
 const welcomeMessage = computed(() => 

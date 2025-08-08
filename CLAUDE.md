@@ -151,4 +151,27 @@ The `EventDetailView` component uses a sophisticated tab system:
 4. Admin enablement (backend process)
 5. Template activation (full feature access)
 
+7. **Event Showcase System**: Public invitation pages
+   - **Showcase Route**: `/events/:id/showcase` - Public route for wedding invitations
+   - **Component Architecture**: Refactored into 10+ specialized showcase components:
+     - `CoverStage`, `EventVideoStage`, `MainContentStage` for different presentation phases
+     - `AgendaSection`, `PhotoGallery`, `HostInfo`, `EventInfo` for content sections
+     - `LoadingSpinner`, `ErrorDisplay` for state management
+   - **useEventShowcase Composable**: Centralized business logic for showcase functionality
+     - Handles template color processing and SVG icon manipulation
+     - Manages video playback, envelope opening animations
+     - Processes paginated API responses gracefully
+   - **Authentication Handling**: Public showcases work without authentication
+     - Photos require authentication but showcase degrades gracefully without them
+     - Template assets and colors are publicly accessible
+   - **Template Integration**: Dynamic theming with template colors and fonts
+     - SVG icon color processing via regex replacement to match template colors
+     - Custom font loading from template assets
+     - Glass morphism UI effects with backdrop filters
+
+8. **Guest Management System**
+   - **Invitation Tab**: Comprehensive guest management with personalized showcase links
+   - **Bulk Operations**: Send invitations, view personalized showcases
+   - **Guest Showcase Links**: Each guest gets unique showcase URL with personalized data
+
 Always run `npm run type-check` and `npm run lint` before committing changes to ensure code quality and TypeScript compliance.

@@ -105,6 +105,8 @@ export interface EventData {
   hosts?: Host[]
   agenda_items?: AgendaItem[]
   event_photos?: EventPhoto[]
+  photos?: EventPhoto[]
+  available_languages?: Array<{ id: number; language: string; language_display: string }>
 }
 
 export interface ShowcaseData {
@@ -112,7 +114,8 @@ export interface ShowcaseData {
   meta: {
     language?: string
     guest_name?: string
-    available_languages?: string[]
+    available_languages?: Array<{ code: string; display: string }>
+    template_enabled?: boolean
   }
 }
 
@@ -146,7 +149,12 @@ export function useEventShowcase() {
   const eventTexts = computed(() => event.value?.event_texts || [] as EventText[])
   const hosts = computed(() => event.value?.hosts || [] as Host[])
   const agendaItems = computed(() => event.value?.agenda_items || [] as AgendaItem[])
-  const eventPhotos = computed(() => event.value?.event_photos?.sort((a, b) => a.order - b.order) || [] as EventPhoto[])
+  const eventPhotos = computed(() => {
+    // Use photos field from API response (new format) or event_photos (legacy)
+    const photos = event.value?.photos || event.value?.event_photos || []
+    return photos.sort((a, b) => a.order - b.order)
+  })
+  const availableLanguages = computed(() => event.value?.available_languages || [])
   
   const primaryColor = computed(() => {
     const color = templateColors.value[0]
@@ -202,21 +210,14 @@ export function useEventShowcase() {
         params.guest_name = guestName.value as string
       }
 
-      // First, fetch the showcase data
+      // Fetch the showcase data
       const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
 
       if (showcaseResponse.success && showcaseResponse.data) {
         showcaseData.value = showcaseResponse.data
         
-        // Photos are not included in the public showcase endpoint
-        // They require authentication via /api/events/{id}/photos/
-        // For now, showcase will work without photos for unauthenticated users
-        // This is the expected behavior for public showcases
-        
-        // Initialize empty photos array if not present
-        if (!showcaseData.value.event.event_photos) {
-          showcaseData.value.event.event_photos = []
-        }
+        // Photos are now included in the showcase API response
+        // The API returns photos in the 'photos' field
         
         // Set current language from meta
         if (showcaseResponse.data.meta?.language) {
@@ -323,6 +324,13 @@ export function useEventShowcase() {
     window.open(getMediaUrl(photo.image), '_blank')
   }
 
+  const changeLanguage = async (newLanguage: string) => {
+    if (currentLanguage.value === newLanguage) return
+    
+    currentLanguage.value = newLanguage
+    await loadShowcase()
+  }
+
   return {
     // State
     loading,
@@ -352,6 +360,7 @@ export function useEventShowcase() {
     currentFont,
     isEventPast,
     eventVideoUrl,
+    availableLanguages,
 
     // Methods
     loadShowcase,
@@ -362,6 +371,7 @@ export function useEventShowcase() {
     onEventVideoError,
     getMediaUrl,
     openGoogleMap,
-    openPhotoModal
+    openPhotoModal,
+    changeLanguage
   }
 }

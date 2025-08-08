@@ -21,7 +21,7 @@
       <CoverStage
         v-if="!isEnvelopeOpened"
         :template-assets="templateAssets"
-        :guest-name="guestName"
+        :guest-name="guestName as string"
         :event-title="event.title"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -37,7 +37,7 @@
         :event-video-url="eventVideoUrl"
         :video-loading="videoLoading"
         :primary-color="primaryColor"
-        :event-video-ref="eventVideoRef"
+        :event-video-ref="eventVideoRef as any"
         @video-can-play="onVideoCanPlay"
         @video-ended="onEventVideoEnded"
         @video-error="onEventVideoError"
@@ -59,10 +59,13 @@
         :is-event-past="isEventPast"
         :show-all-photos="showAllPhotos"
         :get-media-url="getMediaUrl"
+        :available-languages="availableLanguages"
+        :current-language="currentLanguage"
         @open-map="openGoogleMap"
         @open-photo="openPhotoModal"
         @register="registerForEvent"
         @toggle-photos="showAllPhotos = !showAllPhotos"
+        @change-language="changeLanguage"
       />
     </div>
   </div>
@@ -92,6 +95,7 @@ const {
   videoLoading,
   eventVideoRef,
   showAllPhotos,
+  currentLanguage,
   
   // Computed
   event,
@@ -107,6 +111,7 @@ const {
   currentFont,
   isEventPast,
   eventVideoUrl,
+  availableLanguages,
   
   // Methods
   loadShowcase,
@@ -116,7 +121,8 @@ const {
   onEventVideoError,
   getMediaUrl,
   openGoogleMap,
-  openPhotoModal
+  openPhotoModal,
+  changeLanguage
 } = useEventShowcase()
 
 // Additional methods specific to this view
