@@ -13,7 +13,7 @@
     </h2>
     
     <!-- No Photos Placeholder -->
-    <div v-if="photos.length === 0" class="glass-section p-8 rounded-xl text-center">
+    <div v-if="photos.length === 0" class="p-8 rounded-xl text-center">
       <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" :style="{ backgroundColor: primaryColor + '20' }">
         <svg class="w-8 h-8" :style="{ color: primaryColor }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -31,11 +31,12 @@
     <div v-else>
       <!-- Featured Photo -->
       <div v-if="featuredPhoto" class="mb-4">
-        <div class="glass-section p-2 rounded-xl">
+        <div class="rounded-xl overflow-hidden">
           <img 
             :src="getMediaUrl(featuredPhoto.image)"
             :alt="featuredPhoto.caption || 'Featured Event Photo'"
-            class="w-full h-48 object-cover rounded-lg"
+            class="w-full h-48 object-cover cursor-pointer transition-transform hover:scale-105"
+            @click="$emit('openPhoto', featuredPhoto)"
             loading="lazy"
           />
           <p 
@@ -53,12 +54,12 @@
         <div 
           v-for="photo in displayedPhotos" 
           :key="photo.id"
-          class="glass-section p-2 rounded-xl"
+          class="rounded-xl overflow-hidden"
         >
           <img 
             :src="getMediaUrl(photo.image)"
             :alt="photo.caption || 'Event Photo'"
-            class="w-full h-24 object-cover rounded-lg cursor-pointer transition-transform hover:scale-105"
+            class="w-full h-24 object-cover cursor-pointer transition-transform hover:scale-105"
             loading="lazy"
             @click="$emit('openPhoto', photo)"
           />

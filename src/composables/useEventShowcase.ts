@@ -82,6 +82,14 @@ export interface EventPhoto {
   created_at: string
 }
 
+export interface EventComment {
+  id: number
+  event_id: string
+  guest_name: string
+  message: string
+  created_at: string
+}
+
 export interface EventData {
   id: string
   title: string
@@ -97,6 +105,7 @@ export interface EventData {
   logo_two?: string
   event_video?: string
   google_map_embed_link?: string
+  youtube_embed_link?: string
   registration_required?: boolean
   template_assets?: TemplateAssets
   template_colors?: TemplateColor[]
@@ -132,6 +141,8 @@ export function useEventShowcase() {
   const videoLoading = ref(false)
   const eventVideoRef = ref<HTMLVideoElement | null>(null)
   const showAllPhotos = ref(false)
+  const isPhotoModalOpen = ref(false)
+  const currentModalPhoto = ref<EventPhoto | null>(null)
 
   // Computed properties
   const event = computed(() => showcaseData.value?.event || {} as EventData)
@@ -319,9 +330,17 @@ export function useEventShowcase() {
   }
 
   const openPhotoModal = (photo: EventPhoto) => {
-    // Simple image viewer - opens image in new tab
-    // In a real implementation, you might want to use a modal/lightbox
-    window.open(getMediaUrl(photo.image), '_blank')
+    currentModalPhoto.value = photo
+    isPhotoModalOpen.value = true
+  }
+
+  const closePhotoModal = () => {
+    isPhotoModalOpen.value = false
+    currentModalPhoto.value = null
+  }
+
+  const navigateToPhoto = (photo: EventPhoto) => {
+    currentModalPhoto.value = photo
   }
 
   const changeLanguage = async (newLanguage: string) => {
@@ -342,6 +361,8 @@ export function useEventShowcase() {
     videoLoading,
     eventVideoRef,
     showAllPhotos,
+    isPhotoModalOpen,
+    currentModalPhoto,
 
     // Computed
     event,
@@ -372,6 +393,8 @@ export function useEventShowcase() {
     getMediaUrl,
     openGoogleMap,
     openPhotoModal,
+    closePhotoModal,
+    navigateToPhoto,
     changeLanguage
   }
 }

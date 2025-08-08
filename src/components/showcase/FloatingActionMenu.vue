@@ -115,6 +115,18 @@
           </button>
         </div>
 
+        <!-- Video -->
+        <div class="menu-item">
+          <button
+            @click="handleVideo"
+            class="menu-button glass-section"
+            :style="{ borderColor: primaryColor }"
+          >
+            <Play :size="20" :color="primaryColor" />
+            <span class="menu-text">Video</span>
+          </button>
+        </div>
+
         <!-- Gallery -->
         <div class="menu-item">
           <button
@@ -186,6 +198,7 @@ import {
   Gift, 
   Calendar, 
   MapPin, 
+  Play, 
   Image, 
   MessageCircle 
 } from 'lucide-vue-next'
@@ -218,6 +231,7 @@ const emit = defineEmits<{
   gift: []
   agenda: []
   location: []
+  video: []
   gallery: []
   comment: []
 }>()
@@ -305,6 +319,11 @@ const handleLocation = () => {
   isMenuOpen.value = false
 }
 
+const handleVideo = () => {
+  emit('video')
+  isMenuOpen.value = false
+}
+
 const handleGallery = () => {
   emit('gallery')
   isMenuOpen.value = false
@@ -379,6 +398,7 @@ const handleComment = () => {
 .menu-item:nth-child(7) { animation-delay: 0.14s; }
 .menu-item:nth-child(8) { animation-delay: 0.16s; }
 .menu-item:nth-child(9) { animation-delay: 0.18s; }
+.menu-item:nth-child(10) { animation-delay: 0.20s; }
 
 .menu-button {
   display: flex;

@@ -61,11 +61,23 @@
         :get-media-url="getMediaUrl"
         :available-languages="availableLanguages"
         :current-language="currentLanguage"
+        :guest-name="guestName as string"
         @open-map="openGoogleMap"
         @open-photo="openPhotoModal"
         @register="registerForEvent"
         @toggle-photos="showAllPhotos = !showAllPhotos"
         @change-language="changeLanguage"
+        @comment-submitted="handleCommentSubmitted"
+      />
+
+      <!-- Photo Modal -->
+      <PhotoModal
+        :is-open="isPhotoModalOpen"
+        :photos="eventPhotos"
+        :current-photo="currentModalPhoto"
+        :get-media-url="getMediaUrl"
+        @close="closePhotoModal"
+        @navigate="navigateToPhoto"
       />
     </div>
   </div>
@@ -82,6 +94,7 @@ import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import CoverStage from '../components/showcase/CoverStage.vue'
 import EventVideoStage from '../components/showcase/EventVideoStage.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
+import PhotoModal from '../components/showcase/PhotoModal.vue'
 
 const router = useRouter()
 
@@ -96,6 +109,8 @@ const {
   eventVideoRef,
   showAllPhotos,
   currentLanguage,
+  isPhotoModalOpen,
+  currentModalPhoto,
   
   // Computed
   event,
@@ -122,12 +137,20 @@ const {
   getMediaUrl,
   openGoogleMap,
   openPhotoModal,
+  closePhotoModal,
+  navigateToPhoto,
   changeLanguage
 } = useEventShowcase()
 
 // Additional methods specific to this view
 const registerForEvent = () => {
   router.push(`/events/${event.value.id}`)
+}
+
+const handleCommentSubmitted = (comment: any) => {
+  console.log('Comment submitted in showcase:', comment)
+  // In real implementation, you might want to show a success message
+  // or refresh comments from the server
 }
 
 // Lifecycle

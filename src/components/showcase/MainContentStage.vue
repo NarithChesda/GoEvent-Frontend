@@ -27,6 +27,7 @@
       @gift="handleGift"
       @agenda="handleAgenda"
       @location="handleLocation"
+      @video="handleVideo"
       @gallery="handleGallery"
       @comment="handleComment"
     />
@@ -44,7 +45,7 @@
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div class="p-8 md:p-8">
                 <!-- Welcome Header -->
-                <div class="text-center mt-6 mb-12">
+                <div class="text-center mb-8">
                   <h1
                     class="welcome-header font-medium mb-2 uppercase"
                     :style="{
@@ -88,24 +89,29 @@
                 </div>
 
                 <!-- RSVP Section -->
-                <RSVPSection
+                <div id="rsvp-section">
+                  <RSVPSection
                   :event-start-date="event.start_date"
                   :event-end-date="event.end_date"
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   :is-event-past="isEventPast"
-                />
+                  />
+                </div>
 
                 <!-- Agenda Section -->
-                <AgendaSection
+                <div id="agenda-section">
+                  <AgendaSection
                   :agenda-items="agendaItems"
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
-                />
+                  />
+                </div>
 
                 <!-- Map Section -->
+                <div id="location-section">
                 <div v-if="event.google_map_embed_link" class="mb-8">
                   <h2
                     class="text-xl font-semibold mb-4 text-center"
@@ -118,12 +124,12 @@
                   >
                     Location
                   </h2>
-                  <div class="glass-section p-2 rounded-xl">
+                  <div class="aspect-video rounded-xl overflow-hidden">
                     <iframe
                       :src="event.google_map_embed_link"
                       width="100%"
-                      height="200"
-                      style="border:0; border-radius: 0.75rem;"
+                      height="100%"
+                      style="border:0;"
                       :allowfullscreen="false"
                       loading="lazy"
                       referrerpolicy="no-referrer-when-downgrade"
@@ -135,9 +141,21 @@
                     <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
                   </div>
                 </div>
+                </div>
+
+                <!-- YouTube Video Section -->
+                <div id="video-section">
+                  <YouTubeVideoSection
+                  :youtube-embed-link="event.youtube_embed_link"
+                  :primary-color="primaryColor"
+                  :secondary-color="secondaryColor"
+                  :accent-color="accentColor"
+                  />
+                </div>
 
                 <!-- Photo Gallery Section -->
-                <PhotoGallery
+                <div id="gallery-section">
+                  <PhotoGallery
                   :photos="eventPhotos"
                   :show-all="showAllPhotos"
                   :primary-color="primaryColor"
@@ -146,7 +164,20 @@
                   :get-media-url="getMediaUrl"
                   @open-photo="$emit('openPhoto', $event)"
                   @toggle-show-all="$emit('togglePhotos')"
-                />
+                  />
+                </div>
+
+                <!-- Comment Section -->
+                <div id="comment-section">
+                  <CommentSection
+                  :event-id="event.id"
+                  :guest-name="guestName as string"
+                  :primary-color="primaryColor"
+                  :secondary-color="secondaryColor"
+                  :accent-color="accentColor"
+                  @comment-submitted="handleCommentSubmitted"
+                  />
+                </div>
 
                 <!-- Registration Button -->
                 <div v-if="event.registration_required && !isEventPast" class="mb-6">
@@ -203,6 +234,7 @@
                     </div>
                   </div>
                 </div>
+                
               </div>
             </div>
           </div>
@@ -218,9 +250,11 @@ import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
+import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
+import CommentSection from './CommentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
-import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
+import type { EventData, EventText, Host, AgendaItem, EventPhoto, EventComment } from '../../composables/useEventShowcase'
 
 interface TemplateAssets {
   standard_background_video?: string
@@ -242,6 +276,7 @@ interface Props {
   getMediaUrl: (url: string) => string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   currentLanguage?: string
+  guestName?: string
 }
 
 const props = defineProps<Props>()
@@ -252,6 +287,7 @@ const emit = defineEmits<{
   register: []
   togglePhotos: []
   changeLanguage: [string]
+  commentSubmitted: [EventComment]
 }>()
 
 const welcomeMessage = computed(() =>
@@ -282,7 +318,10 @@ const handleMusicToggle = (isPlaying: boolean) => {
 
 const handleRSVP = () => {
   console.log('RSVP clicked')
-  // TODO: Implement RSVP functionality
+  const rsvpElement = document.getElementById('rsvp-section')
+  if (rsvpElement) {
+    rsvpElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 }
 
 const handleReminder = () => {
@@ -297,31 +336,47 @@ const handleGift = () => {
 
 const handleAgenda = () => {
   console.log('Agenda clicked')
-  // TODO: Scroll to agenda section or show agenda modal
-  const agendaElement = document.querySelector('.agenda-section')
+  const agendaElement = document.getElementById('agenda-section')
   if (agendaElement) {
-    agendaElement.scrollIntoView({ behavior: 'smooth' })
+    agendaElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
 
 const handleLocation = () => {
   console.log('Location clicked')
-  // TODO: Open Google Maps or scroll to map section
-  emit('openMap')
+  const locationElement = document.getElementById('location-section')
+  if (locationElement) {
+    locationElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 }
 
 const handleGallery = () => {
   console.log('Gallery clicked')
-  // TODO: Open gallery modal or scroll to gallery section
-  const galleryElement = document.querySelector('[class*="gallery"]')
+  const galleryElement = document.getElementById('gallery-section')
   if (galleryElement) {
-    galleryElement.scrollIntoView({ behavior: 'smooth' })
+    galleryElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
 
 const handleComment = () => {
   console.log('Comment clicked')
-  // TODO: Implement comment functionality
+  const commentElement = document.getElementById('comment-section')
+  if (commentElement) {
+    commentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+const handleVideo = () => {
+  console.log('Video clicked')
+  const videoElement = document.getElementById('video-section')
+  if (videoElement) {
+    videoElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+const handleCommentSubmitted = (comment: EventComment) => {
+  console.log('Comment submitted:', comment)
+  emit('commentSubmitted', comment)
 }
 </script>
 
@@ -368,11 +423,11 @@ const handleComment = () => {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.45) 0%,
-    rgba(255, 255, 255, 0.35) 50%,
-    rgba(255, 255, 255, 0.45) 100%
+    rgba(255, 255, 255, 0.50) 0%,
+    rgba(255, 255, 255, 0.39) 50%,
+    rgba(255, 255, 255, 0.50) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.61);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -386,7 +441,7 @@ const handleComment = () => {
   height: 200%;
   background: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.11) 0%,
     transparent 70%
   );
   animation: liquid-rotate 30s linear infinite;
