@@ -1,7 +1,7 @@
 <template>
-  <div v-if="agendaItems.length > 0" class="mb-6">
+  <div v-if="agendaItems.length > 0" class="mb-8">
     <h2 
-      class="text-xl font-semibold mb-4" 
+      class="text-xl font-semibold mb-6 text-center" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -13,7 +13,7 @@
     </h2>
     
     <!-- Tab Navigation -->
-    <div v-if="agendaTabs.length > 1" class="flex flex-wrap gap-2 mb-4">
+    <div v-if="agendaTabs.length > 1" class="flex flex-wrap gap-2 mb-6 justify-center">
       <button
         v-for="date in agendaTabs"
         :key="date"
@@ -35,14 +35,23 @@
     </div>
     
     <!-- Tab Content -->
-    <div class="space-y-3">
-      <AgendaItem
+    <div class="space-y-4">
+      <div
         v-for="item in agendaByDate[activeAgendaDate] || []"
         :key="item.id"
-        :item="item"
-        :primary-color="primaryColor"
-        :accent-color="accentColor"
-      />
+        class="ml-4 md:ml-12"
+      >
+        <AgendaItem
+          :item="item"
+          :primary-color="primaryColor"
+          :accent-color="accentColor"
+        />
+      </div>
+    </div>
+    
+    <!-- Agenda Section Endline -->
+    <div class="flex justify-center mt-6">
+      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </div>
 </template>

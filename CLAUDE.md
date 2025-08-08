@@ -159,7 +159,7 @@ The `EventDetailView` component uses a sophisticated tab system:
      - `LoadingSpinner`, `ErrorDisplay` for state management
    - **useEventShowcase Composable**: Centralized business logic for showcase functionality
      - Handles template color processing and SVG icon manipulation
-     - Manages video playback, envelope opening animations
+     - Manages video playbook, envelope opening animations
      - Processes paginated API responses gracefully
    - **Authentication Handling**: Public showcases work without authentication
      - Photos require authentication but showcase degrades gracefully without them
@@ -173,5 +173,35 @@ The `EventDetailView` component uses a sophisticated tab system:
    - **Invitation Tab**: Comprehensive guest management with personalized showcase links
    - **Bulk Operations**: Send invitations, view personalized showcases
    - **Guest Showcase Links**: Each guest gets unique showcase URL with personalized data
+
+## Additional Development Guidelines
+
+### Composables Architecture
+The application leverages Vue 3 composables for shared business logic:
+- `useEventShowcase` - Event showcase functionality with template processing
+- `useNotifications` - Application-wide notification system
+- `useNavbarScroll` - Navigation scroll behavior
+- `useTypingAnimation` and `useDelayedTypingAnimation` - Text animations
+- `useScrollAnimations` - Scroll-triggered animations
+- `usePaymentTemplateIntegration` - Template payment workflow
+
+### Component Organization
+- **Base Components**: `BaseCard` serves as the foundation for all card-based UI
+- **Modal Components**: Standardized CRUD modals following consistent patterns
+- **Showcase Components**: Specialized `/showcase/` directory for invitation pages
+- **Template Components**: `/template/` directory for template selection UI
+- **Icon Components**: Custom icon components in `/icons/` directory
+
+### Security Implementation
+- **Route Guards**: Enhanced authentication checks with token validation
+- **Secure Storage**: Custom `secureStorage` utility for token management
+- **API Security**: Automatic auth header injection and error handling
+- **Input Validation**: Client-side validation utilities in `utils/inputValidation.ts`
+
+### Performance Considerations
+- **Lazy Loading**: Route-based code splitting for optimal bundle sizes
+- **Image Optimization**: Proper media URL resolution and responsive images
+- **Font Loading**: Dynamic font loading for template customization
+- **Network Handling**: Offline detection and request retry mechanisms
 
 Always run `npm run type-check` and `npm run lint` before committing changes to ensure code quality and TypeScript compliance.

@@ -1,74 +1,142 @@
 <template>
-  <div class="grid grid-cols-3 gap-6 mb-8 items-center">
-    <!-- Left: First Host -->
-    <div v-if="hosts.length > 0" class="text-center">
-      <div class="space-y-2">
-        <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
-          {{ hosts[0].parent_a_name || 'Father Name' }}
-        </p>
-        <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
-          {{ hosts[0].parent_b_name || 'Mother Name' }}
-        </p>
-        <h3 
-          class="text-lg font-bold" 
-          :style="{ 
-            background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontFamily: currentFont
-          }"
-        >
-          {{ hosts[0].name }}
-        </h3>
+  <div class="host-info-container mb-12 px-4 md:px-8">
+    <!-- Top Section: Parents Names -->
+    <div v-if="hosts.length > 0" class="mt-4 mb-2">
+      <div class="flex justify-center gap-8 md:gap-16">
+        <!-- Host 1 Parents -->
+        <div class="text-center flex-1" style="max-width: 180px;">
+          <p
+            class="parent-name"
+            :style="{
+              color: primaryColor,
+              fontFamily: currentFont
+            }"
+          >
+            {{ hosts[0].parent_a_name || 'Father Name' }}
+          </p>
+          <p
+            class="parent-name"
+            :style="{
+              color: primaryColor,
+              fontFamily: currentFont
+            }"
+          >
+            {{ hosts[0].parent_b_name || 'Mother Name' }}
+          </p>
+        </div>
+
+        <!-- Spacer for heart alignment -->
+        <div v-if="hosts.length > 1" class="flex items-center">
+          <span class="text-3xl md:text-4xl font-light opacity-70"></span>
+        </div>
+
+        <!-- Host 2 Parents -->
+        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 180px;">
+          <p
+            class="parent-name"
+            :style="{
+              color: primaryColor,
+              fontFamily: currentFont
+            }"
+          >
+            {{ hosts[1].parent_a_name || 'Father Name' }}
+          </p>
+          <p
+            class="parent-name"
+            :style="{
+              color: primaryColor,
+              fontFamily: currentFont
+            }"
+          >
+            {{ hosts[1].parent_b_name || 'Mother Name' }}
+          </p>
+        </div>
       </div>
     </div>
-    
-    <!-- Center: Event Logo -->
-    <div class="flex items-center justify-center">
-      <img 
-        v-if="logoUrl" 
-        :src="logoUrl" 
-        alt="Event Logo"
-        class="h-20 w-auto max-w-full drop-shadow-lg mx-auto"
-      />
-      <div 
-        v-else 
-        class="w-16 h-16 rounded-full flex items-center justify-center mx-auto" 
-        :style="{ 
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})` 
-        }"
-      >
-        <span class="text-white font-bold text-lg">{{ eventInitial }}</span>
+
+    <!-- Middle Section: Logo (Highlight) -->
+    <div class="logo-section my-4 px-4 md:px-12">
+      <div class="flex justify-center">
+        <div class="logo-container p-4 md:p-6">
+          <img
+            v-if="logoUrl"
+            :src="logoUrl"
+            alt="Event Logo"
+            class="h-32 md:h-40 w-auto max-w-full object-contain drop-shadow-2xl mx-auto"
+          />
+          <div
+            v-else
+            class="w-32 h-32 md:w-40 md:h-40 rounded-full flex items-center justify-center mx-auto shadow-2xl"
+            :style="{
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+            }"
+          >
+            <span class="text-white font-bold text-4xl md:text-5xl" :style="{ fontFamily: currentFont }">
+              {{ eventInitial }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <!-- Right: Second Host -->
-    <div v-if="hosts.length > 1" class="text-center">
-      <div class="space-y-2">
-        <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
-          {{ hosts[1].parent_a_name || 'Father Name' }}
-        </p>
-        <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
-          {{ hosts[1].parent_b_name || 'Mother Name' }}
-        </p>
-        <h3 
-          class="text-lg font-bold" 
-          :style="{ 
-            background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontFamily: currentFont
-          }"
-        >
-          {{ hosts[1].name }}
-        </h3>
+
+    <!-- Bottom Section: Bride & Groom Labels and Names -->
+    <div v-if="hosts.length > 0" class="hosts-section">
+      <div class="flex justify-center gap-8 md:gap-16">
+        <!-- Host 1 (Bride/Groom) -->
+        <div class="text-center flex-1" style="max-width: 180px;">
+          <p
+            class="text-sm md:text-base font-medium mb-2 opacity-80"
+            :style="{ color: primaryColor }"
+          >
+            {{ hosts.length === 2 ? 'Bride' : hosts.length === 1 ? 'Host' : 'Host 1' }}
+          </p>
+          <h3
+            class="host-name font-bold"
+            :style="{
+              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontFamily: currentFont
+            }"
+          >
+            {{ hosts[0].name }}
+          </h3>
+        </div>
+
+        <!-- Divider (Heart or &) - Only show if two hosts -->
+        <div v-if="hosts.length > 1" class="flex items-center">
+          <span
+            class="text-3xl md:text-4xl font-light opacity-70"
+            :style="{ color: primaryColor }"
+          >
+            ♥
+          </span>
+        </div>
+
+        <!-- Host 2 (Bride/Groom) -->
+        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 180px;">
+          <p
+            class="text-sm md:text-base font-medium mb-2 opacity-80"
+            :style="{ color: primaryColor }"
+          >
+            {{ 'Groom' }}
+          </p>
+          <h3
+            class="host-name font-bold"
+            :style="{
+              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontFamily: currentFont
+            }"
+          >
+            {{ hosts[1].name }}
+          </h3>
+        </div>
       </div>
     </div>
-    
-    <!-- Fallback for single host - center the host info -->
-    <div v-else-if="hosts.length === 1" class="col-span-1"></div>
   </div>
 </template>
 
@@ -87,3 +155,62 @@ interface Props {
 
 defineProps<Props>()
 </script>
+
+<style scoped>
+/* Single line name handling */
+.parent-name,
+.host-name {
+  white-space: nowrap;
+  display: block;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+/* Parent name styling - match bride/groom label sizes */
+.parent-name {
+  font-size: 0.875rem; /* Same as text-sm */
+  line-height: 1.2;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .parent-name {
+    font-size: 1rem; /* Same as md:text-base */
+    line-height: 1.3;
+  }
+}
+
+/* Host name styling - maintain current ideal positioning */
+.host-name {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+  .host-name {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .host-name {
+    font-size: clamp(1.7rem, 4vw, 2.55rem); /* Reduced by 15% from original */
+    line-height: 1.2;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .host-info-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .logo-section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+</style>

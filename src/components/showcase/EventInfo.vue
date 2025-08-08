@@ -1,7 +1,7 @@
 <template>
   <div class="text-center mb-8 space-y-3">
     <!-- Date Text -->
-    <div v-if="dateText" class="flex items-center justify-center gap-2">
+    <div class="flex items-center justify-center gap-2">
       <Calendar class="w-4 h-4" :style="{ color: primaryColor }" />
       <span 
         class="text-sm font-medium" 
@@ -12,12 +12,12 @@
           backgroundClip: 'text'
         }"
       >
-        {{ dateText }}
+        {{ dateText || 'Date to be announced' }}
       </span>
     </div>
     
     <!-- Time Text -->
-    <div v-if="timeText" class="flex items-center justify-center gap-2">
+    <div class="flex items-center justify-center gap-2">
       <Clock class="w-4 h-4" :style="{ color: primaryColor }" />
       <span 
         class="text-sm font-medium" 
@@ -28,43 +28,24 @@
           backgroundClip: 'text'
         }"
       >
-        {{ timeText }}
+        {{ timeText || 'Time to be announced' }}
       </span>
     </div>
     
     <!-- Location Text -->
-    <div v-if="locationText" class="space-y-2">
-      <div class="flex items-center justify-center gap-2">
-        <MapPin class="w-4 h-4" :style="{ color: primaryColor }" />
-        <span 
-          class="text-sm font-medium" 
-          :style="{ 
-            background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }"
-        >
-          {{ locationText }}
-        </span>
-      </div>
-      
-      <!-- Google Map Button -->
-      <div v-if="hasGoogleMap" class="flex justify-center">
-        <button
-          @click="$emit('openMap')"
-          class="px-4 py-2 rounded-full text-xs font-medium glass-section flex items-center gap-2 transition-all hover:scale-[1.02]"
-          :style="{ 
-            borderColor: primaryColor,
-            color: primaryColor,
-            borderWidth: '1px',
-            borderStyle: 'solid'
-          }"
-        >
-          <MapPin class="w-3 h-3" />
-          View on Map
-        </button>
-      </div>
+    <div class="flex items-center justify-center gap-2">
+      <MapPin class="w-4 h-4" :style="{ color: primaryColor }" />
+      <span 
+        class="text-sm font-medium" 
+        :style="{ 
+          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }"
+      >
+        {{ locationText || 'Location to be announced' }}
+      </span>
     </div>
   </div>
 </template>

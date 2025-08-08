@@ -19,6 +19,7 @@
       
       <!-- Video without controls (non-interactive) -->
       <video
+        v-if="eventVideoRef"
         :ref="eventVideoRef"
         :src="eventVideoUrl"
         autoplay
@@ -27,7 +28,18 @@
         @canplay="$emit('videoCanPlay')"
         @ended="$emit('videoEnded')"
         @error="$emit('videoError', $event)"
-        class="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        class="absolute inset-0 w-full h-full object-cover md:object-contain pointer-events-none"
+      />
+      <video
+        v-else
+        :src="eventVideoUrl"
+        autoplay
+        playsinline
+        @loadstart="() => {}"
+        @canplay="$emit('videoCanPlay')"
+        @ended="$emit('videoEnded')"
+        @error="$emit('videoError', $event)"
+        class="absolute inset-0 w-full h-full object-cover md:object-contain pointer-events-none"
       />
     </template>
     
@@ -52,7 +64,7 @@ interface Props {
   eventVideoUrl?: string | null
   videoLoading: boolean
   primaryColor: string
-  eventVideoRef: Ref<HTMLVideoElement | null>
+  eventVideoRef?: any
 }
 
 defineProps<Props>()

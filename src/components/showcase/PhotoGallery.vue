@@ -1,7 +1,7 @@
 <template>
-  <div class="mb-6">
+  <div class="mb-8">
     <h2 
-      class="text-xl font-semibold mb-4" 
+      class="text-xl font-semibold mb-4 text-center" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -87,6 +87,11 @@
           {{ showAll ? 'Show Less' : `View All ${photos.length} Photos` }}
         </button>
       </div>
+    </div>
+    
+    <!-- Photo Gallery Section Endline -->
+    <div class="flex justify-center mt-6">
+      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </div>
 </template>

@@ -10,48 +10,44 @@
       playsinline
       class="absolute inset-0 w-full h-full object-cover"
     />
-    
+
     <!-- Fallback Background - Plain Black -->
     <div v-else class="absolute inset-0 bg-black"></div>
+
+    <!-- Floating Action Menu -->
+    <FloatingActionMenu
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :current-language="currentLanguage"
+      :available-languages="availableLanguages"
+      @language-change="handleLanguageChange"
+      @music-toggle="handleMusicToggle"
+      @rsvp="handleRSVP"
+      @reminder="handleReminder"
+      @gift="handleGift"
+      @agenda="handleAgenda"
+      @location="handleLocation"
+      @gallery="handleGallery"
+      @comment="handleComment"
+    />
 
     <!-- Liquid Glass Floating Box Container -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-        <div class="min-h-full py-12 px-6 flex items-start justify-center">
+        <div class="min-h-full py-8 px-4 md:py-12 md:px-12 flex items-start justify-center">
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card animate-slideUp">
             <!-- Glass Background Effects -->
             <div class="glass-background"></div>
-            
+
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
-              <!-- Language Toggle (Fixed Position) -->
-              <div v-if="availableLanguages && availableLanguages.length > 1" class="absolute top-4 right-4 z-20">
-                <div class="glass-section p-2 rounded-lg">
-                  <select 
-                    :value="currentLanguage" 
-                    @change="$emit('changeLanguage', ($event.target as HTMLSelectElement).value)"
-                    class="bg-transparent text-white text-sm border-none outline-none cursor-pointer"
-                    :style="{ color: primaryColor }"
-                  >
-                    <option 
-                      v-for="lang in availableLanguages" 
-                      :key="lang.language" 
-                      :value="lang.language"
-                      class="bg-black text-white"
-                    >
-                      {{ lang.language_display }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="p-8">
+              <div class="p-8 md:p-8">
                 <!-- Welcome Header -->
-                <div class="text-center mb-8">
-                  <h1 
-                    class="text-xl font-medium mb-2" 
-                    :style="{ 
+                <div class="text-center mt-6 mb-12">
+                  <h1
+                    class="welcome-header font-medium mb-2 uppercase"
+                    :style="{
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -74,14 +70,31 @@
                 />
 
                 <!-- Event Information -->
-                <EventInfo
-                  :date-text="dateText"
-                  :time-text="timeText"
-                  :location-text="locationText"
-                  :has-google-map="!!event.google_map_embed_link"
+                <div class="mb-8">
+                  <EventInfo
+                    :date-text="dateText"
+                    :time-text="timeText"
+                    :location-text="locationText"
+                    :has-google-map="!!event.google_map_embed_link"
+                    :primary-color="primaryColor"
+                    :accent-color="accentColor"
+                    @open-map="$emit('openMap')"
+                  />
+                  
+                  <!-- Event Info Endline -->
+                  <div class="flex justify-center mt-4">
+                    <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
+                  </div>
+                </div>
+
+                <!-- RSVP Section -->
+                <RSVPSection
+                  :event-start-date="event.start_date"
+                  :event-end-date="event.end_date"
                   :primary-color="primaryColor"
+                  :secondary-color="secondaryColor"
                   :accent-color="accentColor"
-                  @open-map="$emit('openMap')"
+                  :is-event-past="isEventPast"
                 />
 
                 <!-- Agenda Section -->
@@ -93,10 +106,10 @@
                 />
 
                 <!-- Map Section -->
-                <div v-if="event.google_map_embed_link" class="mb-6">
-                  <h2 
-                    class="text-xl font-semibold mb-4" 
-                    :style="{ 
+                <div v-if="event.google_map_embed_link" class="mb-8">
+                  <h2
+                    class="text-xl font-semibold mb-4 text-center"
+                    :style="{
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -115,6 +128,11 @@
                       loading="lazy"
                       referrerpolicy="no-referrer-when-downgrade"
                     />
+                  </div>
+                  
+                  <!-- Location Section Endline -->
+                  <div class="flex justify-center mt-6">
+                    <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
                   </div>
                 </div>
 
@@ -135,8 +153,8 @@
                   <button
                     @click="$emit('register')"
                     class="w-full py-3 rounded-xl font-semibold text-white transform hover:scale-[1.02] transition-all shadow-lg"
-                    :style="{ 
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || primaryColor})` 
+                    :style="{
+                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || primaryColor})`
                     }"
                   >
                     Register Now
@@ -147,9 +165,9 @@
                 <div class="mt-8 pt-6 border-t border-white/10">
                   <div class="text-center space-y-4">
                     <!-- Thank You Message -->
-                    <p 
-                      class="text-sm font-medium" 
-                      :style="{ 
+                    <p
+                      class="text-sm font-medium"
+                      :style="{
                         background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
@@ -158,12 +176,12 @@
                     >
                       Thank you
                     </p>
-                    
+
                     <!-- GoEvent Logo/Branding -->
                     <div class="flex items-center justify-center gap-2">
-                      <span 
-                        class="text-lg font-bold" 
-                        :style="{ 
+                      <span
+                        class="text-lg font-bold"
+                        :style="{
                           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
                           WebkitBackgroundClip: 'text',
                           WebkitTextFillColor: 'transparent',
@@ -173,7 +191,7 @@
                         GoEvent
                       </span>
                     </div>
-                    
+
                     <!-- Contact Info -->
                     <div class="space-y-1">
                       <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
@@ -198,8 +216,10 @@
 import { computed } from 'vue'
 import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
+import RSVPSection from './RSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
+import FloatingActionMenu from './FloatingActionMenu.vue'
 import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
 
 interface TemplateAssets {
@@ -226,7 +246,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   openMap: []
   openPhoto: [EventPhoto]
   register: []
@@ -234,21 +254,75 @@ defineEmits<{
   changeLanguage: [string]
 }>()
 
-const welcomeMessage = computed(() => 
+const welcomeMessage = computed(() =>
   props.eventTexts.find(text => text.text_type === 'welcome_message')?.content
 )
 
-const dateText = computed(() => 
+const dateText = computed(() =>
   props.eventTexts.find(text => text.text_type === 'date_text')?.content
 )
 
-const timeText = computed(() => 
+const timeText = computed(() =>
   props.eventTexts.find(text => text.text_type === 'time_text')?.content
 )
 
-const locationText = computed(() => 
+const locationText = computed(() =>
   props.eventTexts.find(text => text.text_type === 'location_text')?.content
 )
+
+// Floating Action Menu Handlers
+const handleLanguageChange = (language: string) => {
+  emit('changeLanguage', language)
+}
+
+const handleMusicToggle = (isPlaying: boolean) => {
+  console.log('Music toggle:', isPlaying)
+  // TODO: Implement music functionality
+}
+
+const handleRSVP = () => {
+  console.log('RSVP clicked')
+  // TODO: Implement RSVP functionality
+}
+
+const handleReminder = () => {
+  console.log('Reminder clicked')
+  // TODO: Implement reminder functionality
+}
+
+const handleGift = () => {
+  console.log('Gift clicked')
+  // TODO: Implement gift functionality
+}
+
+const handleAgenda = () => {
+  console.log('Agenda clicked')
+  // TODO: Scroll to agenda section or show agenda modal
+  const agendaElement = document.querySelector('.agenda-section')
+  if (agendaElement) {
+    agendaElement.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+const handleLocation = () => {
+  console.log('Location clicked')
+  // TODO: Open Google Maps or scroll to map section
+  emit('openMap')
+}
+
+const handleGallery = () => {
+  console.log('Gallery clicked')
+  // TODO: Open gallery modal or scroll to gallery section
+  const galleryElement = document.querySelector('[class*="gallery"]')
+  if (galleryElement) {
+    galleryElement.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+const handleComment = () => {
+  console.log('Comment clicked')
+  // TODO: Implement comment functionality
+}
 </script>
 
 <style scoped>
@@ -274,9 +348,19 @@ const locationText = computed(() =>
   border-radius: 1.5rem;
   overflow: hidden;
   width: calc(100vw - 60px);
-  height: calc(100vh - 60px);
+  height: calc(100vh - 70px);
   max-width: calc(100vw - 60px);
-  max-height: calc(100vh - 60px);
+  max-height: calc(100vh - 70px);
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .liquid-glass-card {
+    width: calc(100vw - 60px);
+    height: calc(100vh - 60px);
+    max-width: calc(100vw - 60px);
+    max-height: calc(100vh - 60px);
+  }
 }
 
 .glass-background {
@@ -284,11 +368,11 @@ const locationText = computed(() =>
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0.18) 50%,
-    rgba(255, 255, 255, 0.25) 100%
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.45) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -318,8 +402,8 @@ const locationText = computed(() =>
 }
 
 .glass-section {
-  background: rgba(255, 255, 255, 0.20);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -346,5 +430,19 @@ const locationText = computed(() =>
 .custom-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+/* Welcome Header - Responsive sizing */
+.welcome-header {
+  font-size: 1.25rem; /* Mobile size */
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .welcome-header {
+    font-size: 1.75rem; /* Desktop size */
+    margin-bottom: 1.5rem;
+  }
 }
 </style>
