@@ -498,6 +498,7 @@ export interface Event {
   logo_one?: string | null
   logo_two?: string | null
   event_video?: string | null
+  music?: string | null
   google_map_embed_link?: string | null
   youtube_embed_link?: string | null
   event_template?: number | null
@@ -1245,6 +1246,157 @@ export const guestService = {
   // Mark invitation as viewed
   async markInvitationViewed(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
     return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-viewed/`, {})
+  }
+}
+
+// Event Comment Types and Interfaces
+export interface EventComment {
+  id: number
+  event: string
+  user: number
+  user_info?: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    profile_picture: string
+  }
+  comment_text: string
+  created_at: string
+}
+
+export interface CreateCommentRequest {
+  event: string
+  comment_text: string
+  // User ID is automatically added from authenticated user
+}
+
+export interface CommentFilters {
+  event?: string
+  page?: number
+  page_size?: number
+}
+
+// Event Comments API Service
+export const commentsService = {
+  // List all comments (with optional filtering)
+  async getComments(filters?: CommentFilters): Promise<ApiResponse<PaginatedResponse<EventComment>>> {
+    return apiService.get<PaginatedResponse<EventComment>>('/api/feedback/comments/', filters)
+  },
+
+  // Get comments for a specific event
+  async getEventComments(eventId: string, page?: number, pageSize?: number): Promise<ApiResponse<PaginatedResponse<EventComment>>> {
+    const params: CommentFilters = {
+      event: eventId,
+      page: page || 1,
+      page_size: pageSize || 20
+    }
+    return apiService.get<PaginatedResponse<EventComment>>('/api/feedback/comments/', params)
+  },
+
+  // Get a specific comment
+  async getComment(commentId: number): Promise<ApiResponse<EventComment>> {
+    return apiService.get<EventComment>(`/api/feedback/comments/${commentId}/`)
+  },
+
+  // Create a new comment
+  async createComment(eventId: string, commentText: string): Promise<ApiResponse<EventComment>> {
+    const authStore = await import('../stores/auth').then(m => m.useAuthStore())
+    const userId = authStore.user?.id
+    
+    if (!userId) {
+      return {
+        success: false,
+        message: 'User not authenticated'
+      }
+    }
+
+    const data = {
+      event: eventId,
+      user: userId,
+      comment_text: commentText
+    }
+    
+    return apiService.post<EventComment>('/api/feedback/comments/', data)
+  },
+
+  // Update a comment (partial update)
+  async updateComment(commentId: number, commentText: string): Promise<ApiResponse<EventComment>> {
+    return apiService.patch<EventComment>(`/api/feedback/comments/${commentId}/`, {
+      comment_text: commentText
+    })
+  },
+
+  // Delete a comment
+  async deleteComment(commentId: number): Promise<ApiResponse<void>> {
+    return apiService.delete(`/api/feedback/comments/${commentId}/`)
+  },
+
+  // Check if user has already commented on an event
+  async hasUserCommented(eventId: string): Promise<boolean> {
+    try {
+      const response = await this.getEventComments(eventId)
+      if (response.success && response.data) {
+        const authStore = await import('../stores/auth').then(m => m.useAuthStore())
+        const userId = authStore.user?.id
+        if (userId) {
+          return response.data.results.some(comment => comment.user === userId)
+        }
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+}
+
+// User Details API Service
+export const userService = {
+  // Simple cache to avoid repeated API calls for the same user
+  userCache: new Map<number, { data: any, timestamp: number }>(),
+  
+  // Cache duration: 5 minutes
+  CACHE_DURATION: 5 * 60 * 1000,
+
+  // Try to get user details from potential /api/users/ endpoint
+  async getUserDetails(userId: number): Promise<{ username?: string; first_name?: string; last_name?: string; profile_picture?: string } | null> {
+    // Check cache first
+    const cached = this.userCache.get(userId)
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      return cached.data
+    }
+
+    try {
+      // Try to fetch user details from a potential users API
+      const response = await apiService.get<any>(`/api/users/${userId}/`)
+      
+      if (response.success && response.data) {
+        const userDetails = {
+          username: response.data.username,
+          first_name: response.data.first_name,
+          last_name: response.data.last_name,
+          profile_picture: response.data.profile_picture
+        }
+        
+        // Cache the result
+        this.userCache.set(userId, {
+          data: userDetails,
+          timestamp: Date.now()
+        })
+        
+        return userDetails
+      }
+    } catch (error) {
+      // If the API doesn't exist or fails, silently fail
+      console.debug('Failed to fetch user details for user', userId, '- API might not be available')
+    }
+    
+    return null
+  },
+
+  // Clear cache (useful for testing or when needed)
+  clearCache() {
+    this.userCache.clear()
   }
 }
 

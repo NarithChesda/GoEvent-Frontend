@@ -137,6 +137,8 @@ The `EventDetailView` component uses a sophisticated tab system:
 - Error handling with user-friendly messages
 - File upload utilities for media management
 - Profile picture URL resolution for relative/absolute paths
+- **Caching Strategy**: User service implements 5-minute memory cache for user details
+- **Graceful Degradation**: APIs handle missing endpoints gracefully with fallback data
 
 ### Component Communication
 - Parent-child communication via props and events
@@ -174,6 +176,13 @@ The `EventDetailView` component uses a sophisticated tab system:
    - **Bulk Operations**: Send invitations, view personalized showcases
    - **Guest Showcase Links**: Each guest gets unique showcase URL with personalized data
 
+9. **Comment System**: Interactive commenting on event showcases
+   - **User-First Ordering**: Authenticated user's own comment always appears at top for easy editing/deletion
+   - **Authentication Flow**: Seamless login redirect back to comment section with visual feedback
+   - **Real-time Updates**: Comments display actual user info with profile pictures from backend `user_info`
+   - **Visual Distinction**: User's own comment highlighted with theme colors and "You" badge
+   - **Smooth Scrolling**: Automatic scroll to comment section after login with highlight animation
+
 ## Additional Development Guidelines
 
 ### Composables Architecture
@@ -197,6 +206,13 @@ The application leverages Vue 3 composables for shared business logic:
 - **Secure Storage**: Custom `secureStorage` utility for token management
 - **API Security**: Automatic auth header injection and error handling
 - **Input Validation**: Client-side validation utilities in `utils/inputValidation.ts`
+
+### Comment System Implementation
+- **Backend Integration**: Comments use `user_info` structure with complete user data and profile pictures
+- **Sorting Logic**: `sortCommentsWithUserFirst()` ensures user's own comment appears at top
+- **Redirect Handling**: Login redirects use both hash (`#comment-section`) and query parameters (`scrollTo=comment-section`) for reliability
+- **Visual Feedback**: Theme-consistent highlighting and smooth scrolling animations
+- **URL Management**: Automatic cleanup of redirect parameters after successful navigation
 
 ### Performance Considerations
 - **Lazy Loading**: Route-based code splitting for optimal bundle sizes
