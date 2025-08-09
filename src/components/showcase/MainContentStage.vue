@@ -36,7 +36,7 @@
     <!-- Liquid Glass Floating Box Container -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-        <div class="min-h-full py-4 px-3 sm:py-6 sm:px-4 md:py-8 md:px-6 laptop-sm:py-6 laptop-sm:px-8 laptop-md:py-8 laptop-md:px-10 laptop-lg:py-10 laptop-lg:px-12 desktop:py-12 desktop:px-12 flex items-start justify-center">
+        <div class="min-h-full py-10 sm:py-6 sm:px-4 md:py-8 md:px-6 laptop-sm:py-6 laptop-sm:px-8 laptop-md:py-8 laptop-md:px-10 laptop-lg:py-10 laptop-lg:px-12 desktop:py-12 desktop:px-12 flex items-center justify-center">
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card animate-slideUp">
             <!-- Glass Background Effects -->
@@ -44,11 +44,11 @@
 
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
-              <div class="p-4 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
+              <div class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
                 <!-- Welcome Header -->
                 <div class="text-center mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                   <h1
-                    class="welcome-header font-medium mb-2 uppercase"
+                    class="text-lg sm:text-xl md:text-2xl font-medium mb-3 sm:mb-4 md:mb-6 uppercase"
                     :style="{
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
                       WebkitBackgroundClip: 'text',
@@ -82,7 +82,7 @@
                     :accent-color="accentColor"
                     @open-map="$emit('openMap')"
                   />
-                  
+
                   <!-- Event Info Endline -->
                   <div class="flex justify-center mt-4">
                     <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
@@ -137,7 +137,7 @@
                       referrerpolicy="no-referrer-when-downgrade"
                     />
                   </div>
-                  
+
                   <!-- Location Section Endline -->
                   <div class="flex justify-center mt-6">
                     <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
@@ -236,7 +236,7 @@
                     </div>
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>
@@ -406,29 +406,29 @@ const handleCommentSubmitted = (comment: EventComment) => {
   position: relative;
   border-radius: 1.5rem;
   overflow: hidden;
-  width: calc(100vw - 24px);
-  height: calc(100vh - 32px);
-  max-width: calc(100vw - 24px);
-  max-height: calc(100vh - 32px);
+  width: 85vw;
+  height: 85vh;
+  max-width: 85vw;
+  max-height: 85vh;
 }
 
 /* Small mobile phones only - minimal padding */
 @media (max-width: 480px) and (max-height: 800px) {
   .liquid-glass-card {
-    width: calc(100vw - 32px);
-    height: calc(100vh - 48px);
-    max-width: calc(100vw - 32px);
-    max-height: calc(100vh - 48px);
+    width: 85vw;
+    height: 85vh;
+    max-width: 85vw;
+    max-height: 85vh;
   }
 }
 
 /* All other devices - consistent desktop padding */
 @media (min-width: 481px), (min-height: 801px) {
   .liquid-glass-card {
-    width: calc(100vw - 96px);
-    height: calc(100vh - 96px);
-    max-width: calc(100vw - 96px);
-    max-height: calc(100vh - 96px);
+    width: 85vw;
+    height: 85vh;
+    max-width: 85vw;
+    max-height: 85vh;
   }
 }
 
@@ -501,26 +501,5 @@ const handleCommentSubmitted = (comment: EventComment) => {
   -ms-overflow-style: none;
 }
 
-/* Welcome Header - Responsive sizing */
-.welcome-header {
-  font-size: 1.125rem;
-  line-height: 1.2;
-  margin-bottom: 0.75rem;
-}
-
-/* Small mobile phones only - smaller text */
-@media (max-width: 480px) and (max-height: 800px) {
-  .welcome-header {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-  }
-}
-
-/* All other devices - consistent desktop typography */
-@media (min-width: 481px), (min-height: 801px) {
-  .welcome-header {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
-  }
-}
+/* Welcome Header styles are now handled by Tailwind responsive classes */
 </style>

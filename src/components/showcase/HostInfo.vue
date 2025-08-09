@@ -6,7 +6,7 @@
         <!-- Host 1 Parents -->
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="parent-name"
+            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: currentFont
@@ -15,7 +15,7 @@
             {{ hosts[0].parent_a_name || 'Father Name' }}
           </p>
           <p
-            class="parent-name"
+            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: currentFont
@@ -33,7 +33,7 @@
         <!-- Host 2 Parents -->
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="parent-name"
+            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: currentFont
@@ -42,7 +42,7 @@
             {{ hosts[1].parent_a_name || 'Father Name' }}
           </p>
           <p
-            class="parent-name"
+            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: currentFont
@@ -91,7 +91,7 @@
             {{ hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1' }}
           </p>
           <h3
-            class="host-name font-bold"
+            class="text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
             :style="{
               background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
               WebkitBackgroundClip: 'text',
@@ -123,7 +123,7 @@
             {{ 'Bride' }}
           </p>
           <h3
-            class="host-name font-bold"
+            class="text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
             :style="{
               background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
               WebkitBackgroundClip: 'text',
@@ -157,129 +157,7 @@ defineProps<Props>()
 </script>
 
 <style scoped>
-/* Parent name handling */
-.parent-name {
-  white-space: nowrap;
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Host name handling - single line with auto font scaling */
-.host-name {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: center;
-  max-width: 100%;
-}
-
-/* Parent name styling - match bride/groom label sizes */
-.parent-name {
-  font-size: 0.75rem; /* text-xs */
-  line-height: 1.2;
-  font-weight: 500;
-  margin-bottom: 0.125rem;
-}
-
-@media (min-width: 640px) {
-  .parent-name {
-    font-size: 0.875rem; /* text-sm */
-    margin-bottom: 0.25rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .parent-name {
-    font-size: 1rem; /* text-base */
-    line-height: 1.3;
-  }
-}
-
-/* 13" Laptops - Refined typography */
-@media (min-width: 1280px) and (max-width: 1439px) {
-  .parent-name {
-    font-size: 1.0625rem; /* text-lg */
-    line-height: 1.4;
-  }
-}
-
-/* 15" Laptops - Optimal typography */
-@media (min-width: 1440px) and (max-width: 1679px) {
-  .parent-name {
-    font-size: 1.125rem; /* text-lg */
-    line-height: 1.4;
-  }
-}
-
-/* 17" Laptops - Enhanced typography */
-@media (min-width: 1680px) and (max-width: 1919px) {
-  .parent-name {
-    font-size: 1.1875rem; /* between lg and xl */
-    line-height: 1.4;
-  }
-}
-
-/* Desktop - Original size */
-@media (min-width: 1920px) {
-  .parent-name {
-    font-size: 1rem; /* text-base */
-    line-height: 1.3;
-  }
-}
-
-/* Host name styling - responsive sizing for better hierarchy */
-.host-name {
-  font-size: 1rem; /* text-base */
-  line-height: 1.1;
-}
-
-@media (min-width: 640px) {
-  .host-name {
-    font-size: 1.125rem; /* text-lg */
-    line-height: 1.2;
-  }
-}
-
-@media (min-width: 768px) {
-  .host-name {
-    font-size: 1.25rem; /* text-xl */
-    line-height: 1.2;
-  }
-}
-
-/* 13" Laptops - Refined typography */
-@media (min-width: 1280px) and (max-width: 1439px) {
-  .host-name {
-    font-size: 1.375rem; /* between xl and 2xl */
-    line-height: 1.2;
-  }
-}
-
-/* 15" Laptops - Optimal typography */
-@media (min-width: 1440px) and (max-width: 1679px) {
-  .host-name {
-    font-size: 1.5rem; /* text-2xl */
-    line-height: 1.2;
-  }
-}
-
-/* 17" Laptops - Enhanced typography */
-@media (min-width: 1680px) and (max-width: 1919px) {
-  .host-name {
-    font-size: 1.625rem; /* between 2xl and 3xl */
-    line-height: 1.2;
-  }
-}
-
-/* Desktop - Original clamp sizing */
-@media (min-width: 1920px) {
-  .host-name {
-    font-size: clamp(1.02rem, 2.12vw, 1.28rem);
-    line-height: 1.2;
-  }
-}
+/* Typography styles are now handled by Tailwind responsive classes */
 
 /* Mobile optimizations */
 @media (max-width: 768px) {

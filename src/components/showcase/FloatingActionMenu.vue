@@ -401,8 +401,8 @@ const handleComment = () => {
 }
 
 .fab-button {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -411,18 +411,18 @@ const handleComment = () => {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Responsive FAB button sizing */
+/* Responsive FAB button sizing - mobile-first approach */
 @media (min-width: 640px) {
   .fab-button {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
   }
 }
 
 @media (min-width: 768px) {
   .fab-button {
-    width: 64px;
-    height: 64px;
+    width: 56px;
+    height: 56px;
   }
 }
 
@@ -552,30 +552,31 @@ const handleComment = () => {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.625rem 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid;
-  border-radius: 0.625rem;
+  border-radius: 0.75rem;
   cursor: pointer;
   transition: all 0.15s ease;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  min-height: 44px;
 }
 
-/* Responsive menu button sizing */
+/* Responsive menu button sizing - mobile-first approach */
 @media (min-width: 640px) {
   .menu-button {
     gap: 0.625rem;
-    padding: 0.6875rem 0.875rem;
-    border-radius: 0.6875rem;
+    padding: 0.8125rem 1.125rem;
+    border-radius: 0.8125rem;
   }
 }
 
 @media (min-width: 768px) {
   .menu-button {
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.875rem;
   }
 }
 
@@ -626,21 +627,21 @@ const handleComment = () => {
 
 .menu-text {
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
 }
 
-/* Responsive menu text sizing */
+/* Responsive menu text sizing - mobile-first approach */
 @media (min-width: 640px) {
   .menu-text {
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
   }
 }
 
 @media (min-width: 768px) {
   .menu-text {
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
 }
 

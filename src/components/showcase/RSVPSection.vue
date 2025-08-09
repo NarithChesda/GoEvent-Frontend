@@ -2,7 +2,7 @@
   <div id="rsvp" class="mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
     <!-- RSVP Section Header -->
     <h2 
-      class="text-base sm:text-lg laptop-sm:text-xl laptop-md:text-2xl laptop-lg:text-3xl desktop:text-xl font-semibold mb-2 sm:mb-4 laptop-sm:mb-4 laptop-md:mb-5 laptop-lg:mb-6 desktop:mb-6 text-center px-4 sm:px-0" 
+      class="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 md:mb-6 text-center px-4 sm:px-0" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -17,40 +17,40 @@
     <div class="rsvp-container" :style="{ borderColor: `${primaryColor}60` }">
       <!-- Event Date & Time Information -->
       <div class="text-center py-2 sm:py-3 laptop-sm:py-3 laptop-md:py-4 laptop-lg:py-5 desktop:py-4 border-b px-3 sm:px-0" :style="{ borderColor: `${primaryColor}20` }">
-        <div class="mb-1 sm:mb-2 laptop-sm:mb-2 laptop-md:mb-3 laptop-lg:mb-3 desktop:mb-3">
-          <div class="text-xs sm:text-sm laptop-sm:text-base laptop-md:text-lg laptop-lg:text-xl desktop:text-base font-medium mb-1" :style="{ color: primaryColor }">
+        <div class="mb-2 sm:mb-3 md:mb-4">
+          <div class="text-sm sm:text-base md:text-lg font-medium mb-1" :style="{ color: primaryColor }">
             {{ formatEventDate }}
           </div>
-          <div class="text-2xs sm:text-xs laptop-sm:text-sm laptop-md:text-base laptop-lg:text-lg desktop:text-sm opacity-80" :style="{ color: primaryColor }">
+          <div class="text-xs sm:text-sm md:text-base opacity-80" :style="{ color: primaryColor }">
             {{ formatEventTime }}
           </div>
         </div>
         
         <!-- Countdown or Status Display -->
-        <div v-if="eventStatus === 'upcoming'" class="flex justify-center items-baseline gap-1 sm:gap-2 laptop-sm:gap-3 laptop-md:gap-4 laptop-lg:gap-5 desktop:gap-3">
+        <div v-if="eventStatus === 'upcoming'" class="flex justify-center items-baseline gap-2 sm:gap-3 md:gap-4">
           <div class="text-center">
-            <span class="text-2xl sm:text-3xl laptop-sm:text-4xl laptop-md:text-5xl laptop-lg:text-6xl desktop:text-4xl font-normal" :style="{ color: primaryColor }">
+            <span class="text-xl sm:text-2xl md:text-3xl font-normal" :style="{ color: primaryColor }">
               {{ timeLeft.days.toString().padStart(2, '0') }}
             </span>
-            <span class="text-2xs sm:text-xs laptop-sm:text-sm laptop-md:text-base laptop-lg:text-lg desktop:text-sm ml-1 font-medium opacity-70" :style="{ color: primaryColor }">days</span>
+            <span class="text-xs sm:text-sm md:text-base ml-1 font-medium opacity-70" :style="{ color: primaryColor }">days</span>
           </div>
           
-          <span class="text-xl sm:text-2xl laptop-sm:text-3xl laptop-md:text-4xl laptop-lg:text-5xl desktop:text-3xl font-normal opacity-50" :style="{ color: primaryColor }">:</span>
+          <span class="text-lg sm:text-xl md:text-2xl font-normal opacity-50" :style="{ color: primaryColor }">:</span>
           
           <div class="text-center">
-            <span class="text-2xl sm:text-3xl laptop-sm:text-4xl laptop-md:text-5xl laptop-lg:text-6xl desktop:text-4xl font-normal" :style="{ color: primaryColor }">
+            <span class="text-xl sm:text-2xl md:text-3xl font-normal" :style="{ color: primaryColor }">
               {{ timeLeft.hours.toString().padStart(2, '0') }}
             </span>
-            <span class="text-2xs sm:text-xs laptop-sm:text-sm laptop-md:text-base laptop-lg:text-lg desktop:text-sm ml-1 font-medium opacity-70" :style="{ color: primaryColor }">hrs</span>
+            <span class="text-xs sm:text-sm md:text-base ml-1 font-medium opacity-70" :style="{ color: primaryColor }">hrs</span>
           </div>
           
-          <span class="text-xl sm:text-2xl laptop-sm:text-3xl laptop-md:text-4xl laptop-lg:text-5xl desktop:text-3xl font-normal opacity-50" :style="{ color: primaryColor }">:</span>
+          <span class="text-lg sm:text-xl md:text-2xl font-normal opacity-50" :style="{ color: primaryColor }">:</span>
           
           <div class="text-center">
-            <span class="text-2xl sm:text-3xl laptop-sm:text-4xl laptop-md:text-5xl laptop-lg:text-6xl desktop:text-4xl font-normal" :style="{ color: primaryColor }">
+            <span class="text-xl sm:text-2xl md:text-3xl font-normal" :style="{ color: primaryColor }">
               {{ timeLeft.minutes.toString().padStart(2, '0') }}
             </span>
-            <span class="text-2xs sm:text-xs laptop-sm:text-sm laptop-md:text-base laptop-lg:text-lg desktop:text-sm ml-1 font-medium opacity-70" :style="{ color: primaryColor }">min</span>
+            <span class="text-xs sm:text-sm md:text-base ml-1 font-medium opacity-70" :style="{ color: primaryColor }">min</span>
           </div>
         </div>
         

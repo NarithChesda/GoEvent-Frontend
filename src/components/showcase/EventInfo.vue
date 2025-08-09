@@ -1,10 +1,10 @@
 <template>
-  <div class="text-center mb-8 space-y-3">
+  <div class="text-center mb-6 sm:mb-8 space-y-2 sm:space-y-3">
     <!-- Date Text -->
-    <div class="flex items-center justify-center gap-2">
-      <Calendar class="w-4 h-4" :style="{ color: primaryColor }" />
+    <div class="flex items-center justify-center gap-2 sm:gap-3">
+      <Calendar class="w-4 h-4 sm:w-5 sm:h-5" :style="{ color: primaryColor }" />
       <span 
-        class="text-sm font-medium" 
+        class="text-sm sm:text-base md:text-lg font-medium" 
         :style="{ 
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
@@ -17,10 +17,10 @@
     </div>
     
     <!-- Time Text -->
-    <div class="flex items-center justify-center gap-2">
-      <Clock class="w-4 h-4" :style="{ color: primaryColor }" />
+    <div class="flex items-center justify-center gap-2 sm:gap-3">
+      <Clock class="w-4 h-4 sm:w-5 sm:h-5" :style="{ color: primaryColor }" />
       <span 
-        class="text-sm font-medium" 
+        class="text-sm sm:text-base md:text-lg font-medium" 
         :style="{ 
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
@@ -33,10 +33,10 @@
     </div>
     
     <!-- Location Text -->
-    <div class="flex items-center justify-center gap-2">
-      <MapPin class="w-4 h-4" :style="{ color: primaryColor }" />
+    <div class="flex items-center justify-center gap-2 sm:gap-3">
+      <MapPin class="w-4 h-4 sm:w-5 sm:h-5" :style="{ color: primaryColor }" />
       <span 
-        class="text-sm font-medium" 
+        class="text-sm sm:text-base md:text-lg font-medium" 
         :style="{ 
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
