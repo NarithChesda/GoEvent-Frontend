@@ -104,6 +104,7 @@ export interface EventData {
   logo_one?: string
   logo_two?: string
   event_video?: string
+  music?: string
   google_map_embed_link?: string
   youtube_embed_link?: string
   registration_required?: boolean
@@ -143,6 +144,8 @@ export function useEventShowcase() {
   const showAllPhotos = ref(false)
   const isPhotoModalOpen = ref(false)
   const currentModalPhoto = ref<EventPhoto | null>(null)
+  const isMusicPlaying = ref(false)
+  const audioRef = ref<HTMLAudioElement | null>(null)
 
   // Computed properties
   const event = computed(() => showcaseData.value?.event || {} as EventData)
@@ -197,6 +200,14 @@ export function useEventShowcase() {
     // Use the event's own video
     if (event.value?.event_video) {
       return getMediaUrl(event.value.event_video)
+    }
+    return null
+  })
+
+  // Event music URL - comes from the event data
+  const eventMusicUrl = computed(() => {
+    if (event.value?.music) {
+      return getMediaUrl(event.value.music)
     }
     return null
   })
@@ -261,12 +272,53 @@ export function useEventShowcase() {
     })
   }
 
+  const initializeAudio = () => {
+    if (eventMusicUrl.value && !audioRef.value) {
+      audioRef.value = new Audio(eventMusicUrl.value)
+      audioRef.value.loop = true
+      audioRef.value.volume = 0.35
+    }
+  }
+
+  const playMusic = async () => {
+    if (!audioRef.value || !eventMusicUrl.value) return
+
+    try {
+      await audioRef.value.play()
+      isMusicPlaying.value = true
+    } catch (err) {
+      console.error('Failed to play music:', err)
+      isMusicPlaying.value = false
+    }
+  }
+
+  const pauseMusic = () => {
+    if (audioRef.value) {
+      audioRef.value.pause()
+      isMusicPlaying.value = false
+    }
+  }
+
+  const toggleMusic = () => {
+    if (isMusicPlaying.value) {
+      pauseMusic()
+    } else {
+      playMusic()
+    }
+  }
+
   const openEnvelope = async () => {
     isEnvelopeOpened.value = true
     
     // If we have an event video, play it
     if (eventVideoUrl.value) {
       isPlayingEventVideo.value = true
+      
+      // Initialize and auto-play music at Stage 2 (alongside video)
+      initializeAudio()
+      if (eventMusicUrl.value) {
+        playMusic()
+      }
       
       await nextTick()
       if (eventVideoRef.value) {
@@ -285,6 +337,11 @@ export function useEventShowcase() {
       // No event video, wait a moment then go to info screen
       setTimeout(() => {
         isPlayingEventVideo.value = false
+        // Initialize and auto-play music when going directly to main content
+        initializeAudio()
+        if (eventMusicUrl.value) {
+          playMusic()
+        }
       }, 1000)
     }
   }
@@ -295,13 +352,22 @@ export function useEventShowcase() {
 
   const onEventVideoEnded = () => {
     // Video finished, show the info screen with background video
+    // Music should already be playing from Stage 2
     isPlayingEventVideo.value = false
   }
 
   const onEventVideoError = (error: Event) => {
     console.error('Event video error:', error)
-    // If video fails to load, skip to info screen
+    // If video fails to load, skip to info screen but ensure music starts
     isPlayingEventVideo.value = false
+    
+    // Ensure music is initialized and playing even if video fails
+    if (!audioRef.value) {
+      initializeAudio()
+      if (eventMusicUrl.value) {
+        playMusic()
+      }
+    }
   }
 
   const getMediaUrl = (url: string): string => {
@@ -363,6 +429,8 @@ export function useEventShowcase() {
     showAllPhotos,
     isPhotoModalOpen,
     currentModalPhoto,
+    isMusicPlaying,
+    audioRef,
 
     // Computed
     event,
@@ -381,6 +449,7 @@ export function useEventShowcase() {
     currentFont,
     isEventPast,
     eventVideoUrl,
+    eventMusicUrl,
     availableLanguages,
 
     // Methods
@@ -395,6 +464,10 @@ export function useEventShowcase() {
     openPhotoModal,
     closePhotoModal,
     navigateToPhoto,
-    changeLanguage
+    changeLanguage,
+    initializeAudio,
+    playMusic,
+    pauseMusic,
+    toggleMusic
   }
 }

@@ -20,6 +20,7 @@
       :accent-color="accentColor"
       :current-language="currentLanguage"
       :available-languages="availableLanguages"
+      :is-music-playing="isMusicPlaying"
       @language-change="handleLanguageChange"
       @music-toggle="handleMusicToggle"
       @rsvp="handleRSVP"
@@ -91,6 +92,7 @@
                 <!-- RSVP Section -->
                 <div id="rsvp-section">
                   <RSVPSection
+                  :event-id="event.id"
                   :event-start-date="event.start_date"
                   :event-end-date="event.end_date"
                   :primary-color="primaryColor"
@@ -277,6 +279,7 @@ interface Props {
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   currentLanguage?: string
   guestName?: string
+  isMusicPlaying?: boolean
 }
 
 const props = defineProps<Props>()
@@ -288,6 +291,7 @@ const emit = defineEmits<{
   togglePhotos: []
   changeLanguage: [string]
   commentSubmitted: [EventComment]
+  musicToggle: []
 }>()
 
 const welcomeMessage = computed(() =>
@@ -313,7 +317,7 @@ const handleLanguageChange = (language: string) => {
 
 const handleMusicToggle = (isPlaying: boolean) => {
   console.log('Music toggle:', isPlaying)
-  // TODO: Implement music functionality
+  emit('musicToggle')
 }
 
 const handleRSVP = () => {

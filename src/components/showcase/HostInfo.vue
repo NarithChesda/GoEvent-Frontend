@@ -2,9 +2,9 @@
   <div class="host-info-container mb-12 px-4 md:px-8">
     <!-- Top Section: Parents Names -->
     <div v-if="hosts.length > 0" class="mt-4 mb-2">
-      <div class="flex justify-center gap-8 md:gap-16">
+      <div class="flex justify-center gap-6 md:gap-10">
         <!-- Host 1 Parents -->
-        <div class="text-center flex-1" style="max-width: 180px;">
+        <div class="text-center flex-1" style="max-width: 220px;">
           <p
             class="parent-name"
             :style="{
@@ -26,12 +26,12 @@
         </div>
 
         <!-- Spacer for heart alignment -->
-        <div v-if="hosts.length > 1" class="flex items-center">
-          <span class="text-3xl md:text-4xl font-light opacity-70"></span>
+        <div v-if="hosts.length > 1" class="flex items-center px-2">
+          <span class="text-2xl md:text-3xl font-light opacity-0"></span>
         </div>
 
         <!-- Host 2 Parents -->
-        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 180px;">
+        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
             class="parent-name"
             :style="{
@@ -81,14 +81,14 @@
 
     <!-- Bottom Section: Bride & Groom Labels and Names -->
     <div v-if="hosts.length > 0" class="hosts-section">
-      <div class="flex justify-center gap-8 md:gap-16">
+      <div class="flex justify-center gap-6 md:gap-10">
         <!-- Host 1 (Bride/Groom) -->
-        <div class="text-center flex-1" style="max-width: 180px;">
+        <div class="text-center flex-1" style="max-width: 220px;">
           <p
             class="text-sm md:text-base font-medium mb-2 opacity-80"
             :style="{ color: primaryColor }"
           >
-            {{ hosts.length === 2 ? 'Bride' : hosts.length === 1 ? 'Host' : 'Host 1' }}
+            {{ hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1' }}
           </p>
           <h3
             class="host-name font-bold"
@@ -105,9 +105,9 @@
         </div>
 
         <!-- Divider (Heart or &) - Only show if two hosts -->
-        <div v-if="hosts.length > 1" class="flex items-center">
+        <div v-if="hosts.length > 1" class="flex items-center px-2">
           <span
-            class="text-3xl md:text-4xl font-light opacity-70"
+            class="text-2xl md:text-3xl font-light opacity-70"
             :style="{ color: primaryColor }"
           >
             ♥
@@ -115,12 +115,12 @@
         </div>
 
         <!-- Host 2 (Bride/Groom) -->
-        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 180px;">
+        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
             class="text-sm md:text-base font-medium mb-2 opacity-80"
             :style="{ color: primaryColor }"
           >
-            {{ 'Groom' }}
+            {{ 'Bride' }}
           </p>
           <h3
             class="host-name font-bold"
@@ -157,13 +157,22 @@ defineProps<Props>()
 </script>
 
 <style scoped>
-/* Single line name handling */
-.parent-name,
-.host-name {
+/* Parent name handling */
+.parent-name {
   white-space: nowrap;
   display: block;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
+}
+
+/* Host name handling - single line with auto font scaling */
+.host-name {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  max-width: 100%;
 }
 
 /* Parent name styling - match bride/groom label sizes */
@@ -181,22 +190,22 @@ defineProps<Props>()
   }
 }
 
-/* Host name styling - maintain current ideal positioning */
+/* Host name styling - 15% smaller and centered layout */
 .host-name {
-  font-size: clamp(1.5rem, 6vw, 2rem);
+  font-size: clamp(0.85rem, 3.4vw, 1.06rem); /* 15% reduction */
   line-height: 1.1;
 }
 
 @media (min-width: 768px) {
   .host-name {
-    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-size: clamp(0.94rem, 2.55vw, 1.19rem); /* 15% reduction */
     line-height: 1.2;
   }
 }
 
 @media (min-width: 1024px) {
   .host-name {
-    font-size: clamp(1.7rem, 4vw, 2.55rem); /* Reduced by 15% from original */
+    font-size: clamp(1.02rem, 2.12vw, 1.28rem); /* 15% reduction */
     line-height: 1.2;
   }
 }

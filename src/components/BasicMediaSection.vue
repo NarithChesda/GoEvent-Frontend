@@ -215,6 +215,60 @@
       </div>
     </div>
 
+    <!-- Event Music -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h5 class="font-semibold text-slate-900">Event Music</h5>
+          <p class="text-sm text-slate-600">Upload background music or audio content (Max 50MB)</p>
+        </div>
+        <div class="flex space-x-2">
+          <input
+            ref="musicInput"
+            type="file"
+            accept="audio/*"
+            @change="handleMusicUpload"
+            class="hidden"
+          />
+          <button
+            v-if="canEdit"
+            @click="($refs.musicInput as HTMLInputElement)?.click()"
+            :disabled="uploading.music"
+            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Upload class="w-4 h-4" />
+            <span>{{ uploading.music ? 'Uploading...' : 'Upload Music' }}</span>
+          </button>
+          <button
+            v-if="eventData?.music && canEdit"
+            @click="confirmRemoveMusic"
+            :disabled="uploading.music"
+            class="text-slate-400 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      
+      <div v-if="eventData?.music" class="relative group">
+        <audio
+          :src="getMediaUrl(eventData.music)"
+          controls
+          class="w-full rounded-2xl bg-slate-50"
+        >
+          Your browser does not support the audio tag.
+        </audio>
+        <div class="mt-2 text-center">
+          <p class="text-sm text-slate-600">Event Music</p>
+        </div>
+      </div>
+      <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
+        <Music class="w-12 h-12 text-slate-400 mx-auto mb-2" />
+        <p class="text-slate-600">No music uploaded</p>
+        <p class="text-sm text-slate-500 mt-1">Upload audio files for background music</p>
+      </div>
+    </div>
+
     <!-- Error Display -->
     <div v-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-4">
       <div class="flex items-center space-x-2">
@@ -237,7 +291,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { Upload, ImageIcon, Play, X, AlertCircle } from 'lucide-vue-next'
+import { Upload, ImageIcon, Play, Music, X, AlertCircle } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -258,7 +312,8 @@ const uploading = ref({
   banner_image: false,
   logo_one: false,
   logo_two: false,
-  event_video: false
+  event_video: false,
+  music: false
 })
 
 const error = ref<string | null>(null)
@@ -289,7 +344,7 @@ const getMediaUrl = (mediaUrl: string | null): string | undefined => {
   return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
-const validateFile = (file: File, type: 'image' | 'video'): boolean => {
+const validateFile = (file: File, type: 'image' | 'video' | 'audio'): boolean => {
   error.value = null
   
   if (type === 'image') {
@@ -316,6 +371,19 @@ const validateFile = (file: File, type: 'image' | 'video'): boolean => {
     
     if (file.size > maxSize) {
       error.value = 'File too large. Maximum size is 100MB.'
+      return false
+    }
+  } else if (type === 'audio') {
+    const validTypes = ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/flac', 'audio/mpeg']
+    const maxSize = 50 * 1024 * 1024 // 50MB
+    
+    if (!validTypes.includes(file.type)) {
+      error.value = 'Invalid file type. Please upload MP3, WAV, OGG, AAC, or FLAC audio files.'
+      return false
+    }
+    
+    if (file.size > maxSize) {
+      error.value = 'File too large. Maximum size is 50MB.'
       return false
     }
   }
@@ -374,7 +442,7 @@ const removeMedia = async (field: string) => {
 }
 
 // File upload handlers
-const handleBannerUpload = (event: InputEvent) => {
+const handleBannerUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'image')) {
@@ -383,7 +451,7 @@ const handleBannerUpload = (event: InputEvent) => {
   target.value = '' // Reset input
 }
 
-const handleLogoOneUpload = (event: InputEvent) => {
+const handleLogoOneUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'image')) {
@@ -392,7 +460,7 @@ const handleLogoOneUpload = (event: InputEvent) => {
   target.value = '' // Reset input
 }
 
-const handleLogoTwoUpload = (event: InputEvent) => {
+const handleLogoTwoUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'image')) {
@@ -401,11 +469,20 @@ const handleLogoTwoUpload = (event: InputEvent) => {
   target.value = '' // Reset input
 }
 
-const handleVideoUpload = (event: InputEvent) => {
+const handleVideoUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'video')) {
     uploadMedia('event_video', file)
+  }
+  target.value = '' // Reset input
+}
+
+const handleMusicUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file && validateFile(file, 'audio')) {
+    uploadMedia('music', file)
   }
   target.value = '' // Reset input
 }
@@ -447,15 +524,19 @@ const confirmRemoveVideo = () => {
   showDeleteModal.value = true
 }
 
+const confirmRemoveMusic = () => {
+  deleteModalData.value = {
+    title: 'Delete Event Music',
+    itemName: 'Event Music',
+    fieldToDelete: 'music'
+  }
+  showDeleteModal.value = true
+}
+
 const handleDeleteConfirm = () => {
   removeMedia(deleteModalData.value.fieldToDelete)
 }
 
-// Remove media handlers (kept for backward compatibility)
-const removeBanner = () => removeMedia('banner_image')
-const removeLogoOne = () => removeMedia('logo_one')
-const removeLogoTwo = () => removeMedia('logo_two')
-const removeVideo = () => removeMedia('event_video')
 
 // Clear error when eventData changes
 watch(() => props.eventData, () => {

@@ -62,12 +62,14 @@
         :available-languages="availableLanguages"
         :current-language="currentLanguage"
         :guest-name="guestName as string"
+        :is-music-playing="isMusicPlaying"
         @open-map="openGoogleMap"
         @open-photo="openPhotoModal"
         @register="registerForEvent"
         @toggle-photos="showAllPhotos = !showAllPhotos"
         @change-language="changeLanguage"
         @comment-submitted="handleCommentSubmitted"
+        @music-toggle="toggleMusic"
       />
 
       <!-- Photo Modal -->
@@ -84,9 +86,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
+import { useAuthStore } from '../stores/auth'
 
 // Components
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
@@ -97,6 +100,7 @@ import MainContentStage from '../components/showcase/MainContentStage.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // Use the composable for all showcase logic
 const {
@@ -111,6 +115,7 @@ const {
   currentLanguage,
   isPhotoModalOpen,
   currentModalPhoto,
+  isMusicPlaying,
   
   // Computed
   event,
@@ -139,13 +144,47 @@ const {
   openPhotoModal,
   closePhotoModal,
   navigateToPhoto,
-  changeLanguage
+  changeLanguage,
+  toggleMusic
 } = useEventShowcase()
 
 // Additional methods specific to this view
 const registerForEvent = () => {
   router.push(`/events/${event.value.id}`)
 }
+
+// Handle redirect from login - skip stages when returning with hash
+const handleLoginRedirect = () => {
+  const hash = window.location.hash
+  
+  if (hash && event.value?.id) {
+    // Skip stages 1 and 2 by setting states directly for any hash redirect
+    isEnvelopeOpened.value = true
+    isPlayingEventVideo.value = false
+    
+    // Wait for the main content to render, then scroll to the appropriate section
+    setTimeout(() => {
+      let targetElement = null
+      
+      if (hash === '#rsvp') {
+        targetElement = document.getElementById('rsvp')
+      } else if (hash === '#comment-section') {
+        targetElement = document.getElementById('comment-section')
+      }
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 300)
+  }
+}
+
+// Watch for event data to be loaded, then handle redirect
+watch(event, (newEvent) => {
+  if (newEvent?.id) {
+    handleLoginRedirect()
+  }
+})
 
 const handleCommentSubmitted = (comment: any) => {
   console.log('Comment submitted in showcase:', comment)
@@ -154,7 +193,10 @@ const handleCommentSubmitted = (comment: any) => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Initialize auth state for RSVP functionality
+  await authStore.initializeAuth()
+  // Load showcase content
   loadShowcase()
 })
 </script>

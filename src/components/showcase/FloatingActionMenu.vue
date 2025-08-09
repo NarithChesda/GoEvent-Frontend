@@ -43,15 +43,15 @@
           <button
             @click="handleMusicToggle"
             class="menu-button glass-section"
-            :class="{ 'active': isMusicPlaying }"
+            :class="{ 'active': props.isMusicPlaying }"
             :style="{ borderColor: primaryColor }"
           >
             <component 
-              :is="isMusicPlaying ? VolumeX : Volume2" 
+              :is="props.isMusicPlaying ? VolumeX : Volume2" 
               :size="20" 
               :color="primaryColor" 
             />
-            <span class="menu-text">{{ isMusicPlaying ? 'Music Off' : 'Music On' }}</span>
+            <span class="menu-text">{{ props.isMusicPlaying ? 'Music Off' : 'Music On' }}</span>
           </button>
         </div>
 
@@ -208,6 +208,7 @@ interface Props {
   accentColor?: string
   currentLanguage?: string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
+  isMusicPlaying?: boolean
 }
 
 interface Language {
@@ -220,7 +221,8 @@ const props = withDefaults(defineProps<Props>(), {
   primaryColor: '#3B82F6',
   accentColor: '#8B5CF6',
   currentLanguage: 'en',
-  availableLanguages: () => []
+  availableLanguages: () => [],
+  isMusicPlaying: false
 })
 
 const emit = defineEmits<{
@@ -237,7 +239,6 @@ const emit = defineEmits<{
 }>()
 
 const isMenuOpen = ref(false)
-const isMusicPlaying = ref(false)
 const showLanguageModal = ref(false)
 
 const languageFlags: Record<string, string> = {
@@ -289,8 +290,7 @@ const selectLanguage = (language: string) => {
 }
 
 const handleMusicToggle = () => {
-  isMusicPlaying.value = !isMusicPlaying.value
-  emit('musicToggle', isMusicPlaying.value)
+  emit('musicToggle', !props.isMusicPlaying)
   isMenuOpen.value = false
 }
 

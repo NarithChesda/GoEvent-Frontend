@@ -186,13 +186,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { CalendarDays, Eye, EyeOff, Loader2, Github, AlertCircle } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
 import { inputValidator, validationRules } from '../utils/inputValidation'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const form = ref({
@@ -225,6 +226,17 @@ const isFormValid = computed(() => {
          form.value.email.length > 0 && 
          form.value.password.length > 0
 })
+
+// Helper function to handle redirect after login
+const handleRedirectAfterLogin = () => {
+  const redirectPath = route.query.redirect as string
+  if (redirectPath) {
+    // Use replace to avoid login page in history
+    router.replace(redirectPath)
+  } else {
+    router.push('/')
+  }
+}
 
 const handleSignIn = async () => {
   // Prevent double submission
@@ -264,8 +276,8 @@ const handleSignIn = async () => {
     if (result.success) {
       // Clear rate limiting on successful login
       inputValidator.clearRateLimit(`signin_${clientId}`)
-      // Redirect to home page after successful sign in
-      router.push('/')
+      // Redirect after successful sign in
+      handleRedirectAfterLogin()
     } else {
       errorMessage.value = result.error || 'Login failed'
     }
@@ -288,7 +300,7 @@ const handleGoogleLogin = async () => {
       const result = await authStore.googleLogin(response.access_token)
       
       if (result.success) {
-        router.push('/')
+        handleRedirectAfterLogin()
       } else {
         errorMessage.value = result.error || 'Google login failed'
         console.error('Backend error:', result)

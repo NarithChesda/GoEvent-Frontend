@@ -172,19 +172,39 @@ class ApiService {
 
   /**
    * Enhanced error handling with better user messages
+   * Handles documented API error formats including field-specific errors and authentication errors
    */
   private getUserFriendlyErrorMessage(status: number, data: any): string {
     switch (status) {
       case 400:
+        // Handle documented field-specific error format: { "field_name": ["Error message"] }
+        if (data && typeof data === 'object' && !data.detail && !data.message) {
+          const fieldErrors = Object.entries(data)
+            .filter(([key, value]) => Array.isArray(value) && value.length > 0)
+            .map(([field, errors]: [string, any]) => `${field}: ${errors[0]}`)
+          
+          if (fieldErrors.length > 0) {
+            return fieldErrors.join(', ')
+          }
+        }
+        
         if (data?.detail) return data.detail
         if (data?.message) return data.message
         return 'Invalid request. Please check your input and try again.'
       
       case 401:
-        return 'Your session has expired. Please sign in again.'
+        // Handle documented auth error format: { "detail": "Authentication credentials were not provided." }
+        // or token errors: { "detail": "Token is invalid or expired", "code": "token_not_valid" }
+        if (data?.detail) {
+          if (data.code === 'token_not_valid') {
+            return 'Your session has expired. Please sign in again.'
+          }
+          return data.detail
+        }
+        return 'Authentication required. Please sign in.'
       
       case 403:
-        return 'You do not have permission to perform this action.'
+        return data?.detail || 'You do not have permission to perform this action.'
       
       case 404:
         return 'The requested resource was not found.'
@@ -226,7 +246,52 @@ class ApiService {
 
       // Check if response has a body before trying to parse it
       const text = await response.text()
-      const data = text && isJson ? JSON.parse(text) : text
+      
+      // DEBUG: Log response details for authentication requests
+      if (response.url.includes('/api/auth/')) {
+        console.debug('Auth API Response Debug:', {
+          url: response.url,
+          status: response.status,
+          ok: response.ok,
+          contentType: contentType,
+          isJson: isJson,
+          textLength: text?.length,
+          textPreview: text?.substring(0, 200)
+        })
+      }
+      
+      let data
+      
+      // Enhanced JSON parsing for auth responses
+      if (text) {
+        if (isJson) {
+          try {
+            data = JSON.parse(text)
+          } catch (parseError) {
+            // If JSON parsing fails on an auth request, log the error and raw response
+            if (response.url.includes('/api/auth/')) {
+              console.error('JSON Parse Error for Auth Response:', {
+                error: parseError.message,
+                rawText: text,
+                contentType: contentType
+              })
+            }
+            throw parseError // Re-throw to be caught by outer catch block
+          }
+        } else {
+          // For non-JSON responses, check if it's actually JSON despite wrong content-type
+          try {
+            data = JSON.parse(text)
+            if (response.url.includes('/api/auth/')) {
+              console.warn('Auth response had wrong content-type but contained valid JSON')
+            }
+          } catch {
+            data = text // Use as plain text if not JSON
+          }
+        }
+      } else {
+        data = null
+      }
 
       if (!response.ok) {
         // Log detailed error information for debugging
@@ -257,11 +322,31 @@ class ApiService {
         }
       }
 
+      // DEBUG: Log successful auth responses
+      if (response.url.includes('/api/auth/')) {
+        console.debug('Auth Success Response:', {
+          dataType: typeof data,
+          dataKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A',
+          hasTokens: data && typeof data === 'object' && 'tokens' in data,
+          hasUser: data && typeof data === 'object' && 'user' in data
+        })
+      }
+
       return {
         success: true,
         data: data || null
       }
     } catch (error) {
+      // Enhanced error logging for auth requests
+      if (response.url.includes('/api/auth/')) {
+        console.error('Auth API Response Parsing Error:', {
+          error: error.message,
+          url: response.url,
+          status: response.status,
+          contentType: contentType
+        })
+      }
+      
       return {
         success: false,
         message: 'Network error or invalid response format'
