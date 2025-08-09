@@ -1,5 +1,8 @@
 <template>
-  <div class="showcase-wrapper">
+  <div 
+    class="showcase-wrapper"
+    :style="{ backgroundColor: primaryColor || '#000' }"
+  >
     <!-- Loading State -->
     <LoadingSpinner 
       v-if="loading" 
@@ -16,7 +19,11 @@
     />
 
     <!-- Showcase Content -->
-    <div v-else-if="event.id" class="showcase-container relative bg-black">
+    <div 
+      v-else-if="event.id" 
+      class="showcase-container relative"
+      :style="{ backgroundColor: primaryColor || '#000' }"
+    >
       <!-- Stage 1: Cover Video with Overlay -->
       <CoverStage
         v-if="!isEnvelopeOpened"
@@ -209,26 +216,31 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: #000; /* Fallback */
   overflow: hidden;
 }
 
 .showcase-container {
   width: 100%;
-  max-width: 1080px;
   height: 100vh;
-  max-height: 1920px;
   position: relative;
   overflow: hidden;
-  background: #000;
   margin: 0 auto;
 }
 
-/* For desktop screens, maintain aspect ratio */
-@media (min-aspect-ratio: 1080/1920) {
+/* Small mobile phones only - full width */
+@media (max-width: 480px) and (max-height: 800px) {
   .showcase-container {
-    width: calc(100vh * 1080 / 1920);
-    height: 100vh;
+    max-width: 480px;
+    max-height: 1920px;
+  }
+}
+
+/* All other devices - consistent desktop sizing with 100% height priority */
+@media (min-width: 481px), (min-height: 801px) {
+  .showcase-container {
+    width: calc(100vh * (1080/1920));
+    max-width: calc(100vh * (1080/1920));
   }
 }
 </style>

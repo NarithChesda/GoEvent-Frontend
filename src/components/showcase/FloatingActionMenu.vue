@@ -338,9 +338,56 @@ const handleComment = () => {
 <style scoped>
 .floating-action-menu {
   position: absolute;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: 1rem;
+  right: 1rem;
   z-index: 9999;
+}
+
+/* Responsive positioning for different screen sizes */
+@media (min-width: 640px) {
+  .floating-action-menu {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .floating-action-menu {
+    bottom: 2rem;
+    right: 2rem;
+  }
+}
+
+/* 13" Laptops - Optimized positioning */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .floating-action-menu {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
+/* 15" Laptops - Balanced positioning */
+@media (min-width: 1440px) and (max-width: 1679px) {
+  .floating-action-menu {
+    bottom: 2rem;
+    right: 2rem;
+  }
+}
+
+/* 17" Laptops - Enhanced positioning */
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .floating-action-menu {
+    bottom: 2.5rem;
+    right: 2.5rem;
+  }
+}
+
+/* Desktop - Original positioning */
+@media (min-width: 1920px) {
+  .floating-action-menu {
+    bottom: 2rem;
+    right: 2rem;
+  }
 }
 
 .blur-overlay {
@@ -354,14 +401,61 @@ const handleComment = () => {
 }
 
 .fab-button {
-  width: 64px;
-  height: 64px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive FAB button sizing */
+@media (min-width: 640px) {
+  .fab-button {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (min-width: 768px) {
+  .fab-button {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* 13" Laptops - Compact FAB */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .fab-button {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* 15" Laptops - Balanced FAB */
+@media (min-width: 1440px) and (max-width: 1679px) {
+  .fab-button {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+/* 17" Laptops - Enhanced FAB */
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .fab-button {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+/* Desktop - Original size */
+@media (min-width: 1920px) {
+  .fab-button {
+    width: 64px;
+    height: 64px;
+  }
 }
 
 .fab-button:hover {
@@ -375,12 +469,65 @@ const handleComment = () => {
 
 .menu-container {
   position: absolute;
-  bottom: 72px;
+  bottom: 60px;
   right: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  min-width: 200px;
+  gap: 0.5rem;
+  min-width: 180px;
+}
+
+/* Responsive menu container positioning */
+@media (min-width: 640px) {
+  .menu-container {
+    bottom: 64px;
+    gap: 0.625rem;
+    min-width: 190px;
+  }
+}
+
+@media (min-width: 768px) {
+  .menu-container {
+    bottom: 72px;
+    gap: 0.75rem;
+    min-width: 200px;
+  }
+}
+
+/* 13" Laptops - Compact menu */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .menu-container {
+    bottom: 68px;
+    gap: 0.625rem;
+    min-width: 200px;
+  }
+}
+
+/* 15" Laptops - Balanced menu */
+@media (min-width: 1440px) and (max-width: 1679px) {
+  .menu-container {
+    bottom: 76px;
+    gap: 0.75rem;
+    min-width: 220px;
+  }
+}
+
+/* 17" Laptops - Enhanced menu */
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .menu-container {
+    bottom: 80px;
+    gap: 0.875rem;
+    min-width: 240px;
+  }
+}
+
+/* Desktop - Original positioning */
+@media (min-width: 1920px) {
+  .menu-container {
+    bottom: 72px;
+    gap: 0.75rem;
+    min-width: 200px;
+  }
 }
 
 .menu-item {
@@ -403,16 +550,69 @@ const handleComment = () => {
 .menu-button {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid;
-  border-radius: 0.75rem;
+  border-radius: 0.625rem;
   cursor: pointer;
   transition: all 0.15s ease;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* Responsive menu button sizing */
+@media (min-width: 640px) {
+  .menu-button {
+    gap: 0.625rem;
+    padding: 0.6875rem 0.875rem;
+    border-radius: 0.6875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .menu-button {
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+  }
+}
+
+/* 13" Laptops - Compact buttons */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .menu-button {
+    gap: 0.625rem;
+    padding: 0.6875rem 0.875rem;
+    border-radius: 0.6875rem;
+  }
+}
+
+/* 15" Laptops - Balanced buttons */
+@media (min-width: 1440px) and (max-width: 1679px) {
+  .menu-button {
+    gap: 0.75rem;
+    padding: 0.8125rem 1.125rem;
+    border-radius: 0.8125rem;
+  }
+}
+
+/* 17" Laptops - Enhanced buttons */
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .menu-button {
+    gap: 0.875rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.875rem;
+  }
+}
+
+/* Desktop - Original sizing */
+@media (min-width: 1920px) {
+  .menu-button {
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+  }
 }
 
 .menu-button:hover {
@@ -426,9 +626,50 @@ const handleComment = () => {
 
 .menu-text {
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* Responsive menu text sizing */
+@media (min-width: 640px) {
+  .menu-text {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .menu-text {
+    font-size: 0.875rem;
+  }
+}
+
+/* 13" Laptops - Compact text */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .menu-text {
+    font-size: 0.8125rem;
+  }
+}
+
+/* 15" Laptops - Balanced text */
+@media (min-width: 1440px) and (max-width: 1679px) {
+  .menu-text {
+    font-size: 0.9375rem;
+  }
+}
+
+/* 17" Laptops - Enhanced text */
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .menu-text {
+    font-size: 1rem;
+  }
+}
+
+/* Desktop - Original size */
+@media (min-width: 1920px) {
+  .menu-text {
+    font-size: 0.875rem;
+  }
 }
 
 .modal-overlay {

@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 z-10">
+  <div class="absolute inset-0 z-10" :style="{ backgroundColor: primaryColor }">
     <!-- Standard Cover Video Loop -->
     <video
       v-if="templateAssets?.standard_cover_video"
@@ -8,7 +8,7 @@
       loop
       muted
       playsinline
-      class="absolute inset-0 w-full h-full object-cover"
+      class="absolute inset-0 w-full h-full desktop-video-sizing"
     />
     
     <!-- Fallback Background Image -->
@@ -135,5 +135,36 @@ const gradientStyle = computed(() =>
 
 .animation-delay-200 {
   animation-delay: 200ms;
+}
+
+/* Responsive video sizing */
+.desktop-video-sizing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  object-position: center;
+}
+
+/* Mobile devices - stretch height, crop width, center video */
+@media (max-width: 768px) {
+  .desktop-video-sizing {
+    width: 100% !important;
+    height: 100vh !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Desktop and tablet landscape - consistent desktop treatment with 100% height */
+@media (min-width: 769px) {
+  .desktop-video-sizing {
+    width: 100%;
+    object-fit: contain;
+  }
 }
 </style>

@@ -36,7 +36,7 @@
     <!-- Liquid Glass Floating Box Container -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-        <div class="min-h-full py-8 px-4 md:py-12 md:px-12 flex items-start justify-center">
+        <div class="min-h-full py-4 px-3 sm:py-6 sm:px-4 md:py-8 md:px-6 laptop-sm:py-6 laptop-sm:px-8 laptop-md:py-8 laptop-md:px-10 laptop-lg:py-10 laptop-lg:px-12 desktop:py-12 desktop:px-12 flex items-start justify-center">
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card animate-slideUp">
             <!-- Glass Background Effects -->
@@ -44,9 +44,9 @@
 
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
-              <div class="p-8 md:p-8">
+              <div class="p-4 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
                 <!-- Welcome Header -->
-                <div class="text-center mb-8">
+                <div class="text-center mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                   <h1
                     class="welcome-header font-medium mb-2 uppercase"
                     :style="{
@@ -72,7 +72,7 @@
                 />
 
                 <!-- Event Information -->
-                <div class="mb-8">
+                <div class="mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                   <EventInfo
                     :date-text="dateText"
                     :time-text="timeText"
@@ -406,19 +406,29 @@ const handleCommentSubmitted = (comment: EventComment) => {
   position: relative;
   border-radius: 1.5rem;
   overflow: hidden;
-  width: calc(100vw - 60px);
-  height: calc(100vh - 70px);
-  max-width: calc(100vw - 60px);
-  max-height: calc(100vh - 70px);
+  width: calc(100vw - 24px);
+  height: calc(100vh - 32px);
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 32px);
 }
 
-/* Desktop adjustments */
-@media (min-width: 768px) {
+/* Small mobile phones only - minimal padding */
+@media (max-width: 480px) and (max-height: 800px) {
   .liquid-glass-card {
-    width: calc(100vw - 60px);
-    height: calc(100vh - 60px);
-    max-width: calc(100vw - 60px);
-    max-height: calc(100vh - 60px);
+    width: calc(100vw - 32px);
+    height: calc(100vh - 48px);
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 48px);
+  }
+}
+
+/* All other devices - consistent desktop padding */
+@media (min-width: 481px), (min-height: 801px) {
+  .liquid-glass-card {
+    width: calc(100vw - 96px);
+    height: calc(100vh - 96px);
+    max-width: calc(100vw - 96px);
+    max-height: calc(100vh - 96px);
   }
 }
 
@@ -493,14 +503,23 @@ const handleCommentSubmitted = (comment: EventComment) => {
 
 /* Welcome Header - Responsive sizing */
 .welcome-header {
-  font-size: 1.25rem; /* Mobile size */
+  font-size: 1.125rem;
   line-height: 1.2;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-@media (min-width: 768px) {
+/* Small mobile phones only - smaller text */
+@media (max-width: 480px) and (max-height: 800px) {
   .welcome-header {
-    font-size: 1.75rem; /* Desktop size */
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* All other devices - consistent desktop typography */
+@media (min-width: 481px), (min-height: 801px) {
+  .welcome-header {
+    font-size: 1.75rem;
     margin-bottom: 1.5rem;
   }
 }

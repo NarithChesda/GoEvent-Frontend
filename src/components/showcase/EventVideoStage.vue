@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 z-20 bg-black">
+  <div class="absolute inset-0 z-20" :style="{ backgroundColor: primaryColor || '#000' }">
     <template v-if="eventVideoUrl">
       <!-- Loading indicator while video loads -->
       <div v-if="videoLoading" class="absolute inset-0 flex items-center justify-center">
@@ -28,7 +28,7 @@
         @canplay="$emit('videoCanPlay')"
         @ended="$emit('videoEnded')"
         @error="$emit('videoError', $event)"
-        class="absolute inset-0 w-full h-full object-cover md:object-contain pointer-events-none"
+        class="absolute inset-0 w-full h-full desktop-video-sizing pointer-events-none"
       />
       <video
         v-else
@@ -39,7 +39,7 @@
         @canplay="$emit('videoCanPlay')"
         @ended="$emit('videoEnded')"
         @error="$emit('videoError', $event)"
-        class="absolute inset-0 w-full h-full object-cover md:object-contain pointer-events-none"
+        class="absolute inset-0 w-full h-full desktop-video-sizing pointer-events-none"
       />
     </template>
     
@@ -75,3 +75,36 @@ defineEmits<{
   videoError: [Event]
 }>()
 </script>
+
+<style scoped>
+/* Responsive video sizing */
+.desktop-video-sizing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  object-position: center;
+}
+
+/* Mobile devices - stretch height, crop width, center video */
+@media (max-width: 768px) {
+  .desktop-video-sizing {
+    width: 100% !important;
+    height: 100vh !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Desktop and tablet landscape - consistent desktop treatment with 100% height */
+@media (min-width: 769px) {
+  .desktop-video-sizing {
+    width: 100%;
+    object-fit: contain;
+  }
+}
+</style>
