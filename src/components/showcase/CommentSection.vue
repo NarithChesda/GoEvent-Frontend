@@ -161,7 +161,7 @@
                   <Edit class="w-3.5 h-3.5" />
                 </button>
                 <button
-                  @click="deleteComment(comment.id)"
+                  @click="openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')"
                   class="p-1.5 rounded-lg bg-black/20 hover:bg-red-600/80 text-white/70 hover:text-white transition-all"
                   title="Delete comment"
                   :disabled="isDeletingComment === comment.id"
@@ -239,6 +239,16 @@
       <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </div>
+  
+  <!-- Delete Confirmation Modal -->
+  <DeleteConfirmModal
+    :show="showDeleteModal"
+    title="Delete Comment"
+    :item-name="`${commentToDeleteName}'s comment`"
+    :loading="isDeletingComment !== null"
+    @confirm="handleDeleteConfirm"
+    @cancel="handleDeleteCancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -247,6 +257,7 @@ import { MessageCircle, Edit, Trash2 } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
+import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 
 interface Props {
   eventId: string
@@ -291,6 +302,11 @@ const editingCommentId = ref<number | null>(null)
 const editCommentText = ref('')
 const isUpdatingComment = ref(false)
 const isDeletingComment = ref<number | null>(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const commentToDelete = ref<number | null>(null)
+const commentToDeleteName = ref<string>('')
 
 // Avatar error tracking
 const avatarErrors = ref<Set<number>>(new Set())
@@ -458,35 +474,52 @@ const updateComment = async (commentId: number) => {
   }
 }
 
-const deleteComment = async (commentId: number) => {
-  if (!confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
-    return
-  }
+const openDeleteModal = (commentId: number, userName: string) => {
+  commentToDelete.value = commentId
+  commentToDeleteName.value = userName
+  showDeleteModal.value = true
+}
 
-  isDeletingComment.value = commentId
+const handleDeleteConfirm = async () => {
+  if (!commentToDelete.value) return
+
+  isDeletingComment.value = commentToDelete.value
   errorMessage.value = ''
 
   try {
-    const response = await commentsService.deleteComment(commentId)
+    const response = await commentsService.deleteComment(commentToDelete.value)
 
     if (response.success) {
       // Remove comment from local array
-      comments.value = comments.value.filter(c => c.id !== commentId)
+      comments.value = comments.value.filter(c => c.id !== commentToDelete.value)
       totalComments.value--
       
       // Reset already commented state if this was the user's comment
       if (authStore.isAuthenticated) {
         hasAlreadyCommented.value = false
       }
+      
+      // Close modal
+      showDeleteModal.value = false
+      commentToDelete.value = null
+      commentToDeleteName.value = ''
     } else {
       errorMessage.value = response.message || 'Failed to delete comment. Please try again.'
+      showDeleteModal.value = false
     }
   } catch (error) {
     console.error('Failed to delete comment:', error)
     errorMessage.value = 'An error occurred while deleting your comment. Please try again.'
+    showDeleteModal.value = false
   } finally {
     isDeletingComment.value = null
   }
+}
+
+const handleDeleteCancel = () => {
+  showDeleteModal.value = false
+  commentToDelete.value = null
+  commentToDeleteName.value = ''
 }
 
 const formatCommentDate = (dateString: string): string => {

@@ -10,11 +10,11 @@
       playsinline
       class="absolute inset-0 w-full h-full desktop-video-sizing"
     />
-    
+
     <!-- Fallback Background Image -->
     <div v-else-if="templateAssets?.basic_background_photo" class="absolute inset-0">
-      <img 
-        :src="getMediaUrl(templateAssets.basic_background_photo)" 
+      <img
+        :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
         class="w-full h-full object-cover"
       />
@@ -24,13 +24,18 @@
     <div class="absolute inset-0 bg-black/30"></div>
 
     <!-- Content Overlay -->
-    <div class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+    <div class="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 text-center">
       <!-- Guest Name -->
-      <div v-if="guestName" class="mb-8 animate-fadeIn">
-        <p class="text-2xl mb-3" :style="{ color: 'rgba(255, 255, 255, 0.8)' }">Dear</p>
-        <h2 
-          class="text-5xl font-bold" 
-          :style="{ 
+      <div v-if="guestName" class="mb-4 sm:mb-6 md:mb-8 lg:mb-10 animate-fadeIn max-w-4xl mx-auto">
+        <p
+          class="text-sm sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-1 sm:mb-2 md:mb-3"
+          :style="{ color: 'rgba(255, 255, 255, 0.8)' }"
+        >
+          Dear
+        </p>
+        <h2
+          class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"
+          :style="{
             fontFamily: currentFont,
             background: gradientStyle,
             WebkitBackgroundClip: 'text',
@@ -43,11 +48,16 @@
       </div>
 
       <!-- Welcome Text -->
-      <div class="mb-12 animate-fadeIn animation-delay-200">
-        <p class="text-2xl mb-2" :style="{ color: 'rgba(255, 255, 255, 0.9)' }">You're Invited to</p>
-        <h1 
-          class="text-6xl font-bold" 
-          :style="{ 
+      <div class="mb-6 sm:mb-8 md:mb-10 lg:mb-12 xl:mb-14 animate-fadeIn animation-delay-200 max-w-5xl mx-auto">
+        <p
+          class="text-sm sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-2 sm:mb-3 md:mb-4"
+          :style="{ color: 'rgba(255, 255, 255, 0.9)' }"
+        >
+          You're Invited to
+        </p>
+        <h1
+          class="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-bold leading-tight"
+          :style="{
             fontFamily: currentFont,
             background: gradientStyle,
             WebkitBackgroundClip: 'text',
@@ -64,21 +74,23 @@
         @click="$emit('openEnvelope')"
         class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
       >
-        <img 
+        <img
           v-if="templateAssets?.open_envelope_button"
-          :src="getMediaUrl(templateAssets.open_envelope_button)" 
+          :src="getMediaUrl(templateAssets.open_envelope_button)"
           alt="Open Invitation"
-          class="w-72 h-auto cursor-pointer drop-shadow-2xl"
+          class="envelope-button-size h-auto cursor-pointer drop-shadow-2xl"
         />
-        <div 
-          v-else 
-          class="px-12 py-6 rounded-full shadow-2xl transition-all hover:scale-105" 
-          :style="{ 
+        <div
+          v-else
+          class="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 lg:py-6 rounded-full shadow-2xl transition-all hover:scale-105"
+          :style="{
             background: gradientStyle,
             backdropFilter: 'blur(10px)'
           }"
         >
-          <span class="text-2xl font-bold text-white">Open Invitation</span>
+          <span class="text-base sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white">
+            Open Invitation
+          </span>
         </div>
       </button>
     </div>
@@ -111,7 +123,7 @@ defineEmits<{
   openEnvelope: []
 }>()
 
-const gradientStyle = computed(() => 
+const gradientStyle = computed(() =>
   `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`
 )
 </script>
@@ -137,6 +149,13 @@ const gradientStyle = computed(() =>
   animation-delay: 200ms;
 }
 
+/* Extra small screens adjustment */
+@media (max-width: 375px) and (max-height: 700px) {
+  /* Reduce spacing for very small mobile screens */
+  .mb-4 { margin-bottom: 0.75rem !important; }
+  .mb-6 { margin-bottom: 1rem !important; }
+}
+
 /* Responsive video sizing */
 .desktop-video-sizing {
   position: absolute;
@@ -144,6 +163,41 @@ const gradientStyle = computed(() =>
   left: 0;
   height: 100vh;
   object-position: center;
+}
+
+/* Responsive envelope button sizing */
+.envelope-button-size {
+  width: 180px; /* Mobile default - slightly smaller for better proportion */
+}
+
+@media (min-width: 640px) {
+  .envelope-button-size {
+    width: 200px;
+  }
+}
+
+@media (min-width: 768px) {
+  .envelope-button-size {
+    width: 220px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .envelope-button-size {
+    width: 240px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .envelope-button-size {
+    width: 260px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .envelope-button-size {
+    width: 280px;
+  }
 }
 
 /* Mobile devices - stretch height, crop width, center video */
