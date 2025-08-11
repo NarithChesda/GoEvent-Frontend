@@ -3,43 +3,37 @@
     <Navigation />
     
     <!-- Hero Section -->
-    <section id="hero" class="relative h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
-      <!-- Enhanced Background Elements -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
+      <!-- Optimized Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
         <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"></div>
         
-        <!-- Animated background shapes -->
-        <div class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"></div>
-        <div class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"></div>
-        <div class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-indigo-400/30 to-blue-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/10 to-purple-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"></div>
-        
-        <!-- Geometric patterns -->
-        <div class="absolute top-32 right-32 w-4 h-4 bg-blue-500/30 rounded-full animate-pulse delay-300"></div>
-        <div class="absolute bottom-32 left-32 w-6 h-6 bg-purple-500/30 rounded-full animate-pulse delay-900"></div>
-        <div class="absolute top-64 left-64 w-3 h-3 bg-indigo-500/40 rounded-full animate-pulse delay-1200"></div>
+        <!-- Reduced animated background shapes for better performance -->
+        <div class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full mix-blend-multiply hero-blur-shape animate-float"></div>
+        <div class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/15 to-pink-400/15 rounded-full mix-blend-multiply hero-blur-shape animate-float-delayed"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-blue-300/8 to-purple-300/8 rounded-full mix-blend-multiply hero-blur-large"></div>
       </div>
       
-      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+      <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
             <div class="space-y-4 sm:space-y-6">
               <div class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-blue-200/30">
                 <Sparkles class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 #1 Event Management Platform
               </div>
-              <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500">
+              <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500">
                 <span class="typing-text">
                   {{ displayText }}<span v-if="!isComplete" class="typing-cursor">|</span>
                 </span>
               </h1>
-              <p class="text-lg sm:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000">
+              <p class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000">
                 Transform your event planning experience with our cutting-edge platform. From intimate gatherings to large-scale conferences, we make event management effortless and engaging.
               </p>
             </div>
             
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-6 animate-fade-in animation-delay-1200">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200">
               <RouterLink 
                 to="/signup"
                 class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
@@ -79,25 +73,25 @@
           </div>
           
           <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
-            <div class="relative">
+            <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main Dashboard Card -->
-              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-8 border border-white/50">
-                <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-                  <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Event Dashboard</h3>
+              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50">
+                <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
+                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">Event Dashboard</h3>
                   <div class="flex items-center space-x-2">
                     <div class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
                     <span class="text-xs sm:text-sm text-gray-600 font-medium">Live</span>
                   </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
-                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 border border-blue-200/50">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">1,247</div>
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
+                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50">
+                    <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">1,247</div>
                     <div class="text-xs sm:text-sm text-blue-700 font-medium">Total Attendees</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ +23% this week</div>
                   </div>
-                  <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 border border-emerald-200/50">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2">98.5%</div>
+                  <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-emerald-200/50">
+                    <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2">98.5%</div>
                     <div class="text-xs sm:text-sm text-emerald-700 font-medium">Satisfaction</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ +5.2% this month</div>
                   </div>
@@ -124,7 +118,7 @@
               </div>
               
               <!-- Floating Cards -->
-              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden sm:block">
+              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
                   <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                     <Bell class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
@@ -136,7 +130,7 @@
                 </div>
               </div>
               
-              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden sm:block">
+              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
                   <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                     <Calendar class="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
@@ -173,7 +167,7 @@
             <Star class="w-4 h-4" />
             Features That Matter
           </div>
-          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
             Everything You Need to
             <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Succeed</span>
           </h2>
@@ -182,7 +176,7 @@
           </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
           <div 
             v-for="(feature, index) in features" 
             :key="feature.title"
@@ -236,7 +230,7 @@
             <MessageCircle class="h-4 w-4" />
             Client Success Stories
           </div>
-          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
             Loved by <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">10,000+</span> organizers
           </h2>
           <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
@@ -245,7 +239,7 @@
         </div>
         
         <!-- Testimonials Grid -->
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
           <div v-for="(testimonial, index) in testimonials" :key="testimonial.name" 
                class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
                :class="index === 1 ? 'md:scale-105 md:z-10' : ''">
@@ -317,7 +311,7 @@
             <HelpCircle class="h-4 w-4" />
             Frequently Asked Questions
           </div>
-          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
             Got Questions? We've Got
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"> Answers</span>
           </h2>
@@ -393,8 +387,8 @@
       
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
-        <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-8 lg:p-10 xl:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10">
+        <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
           <!-- Left side - Content -->
           <div class="text-left">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6">
@@ -402,7 +396,7 @@
               Start Your Journey Today
             </div>
             
-            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight tracking-tight">
+            <h2 class="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 leading-tight tracking-tight">
               Ready to Transform Your
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"> Event Management?</span>
             </h2>
@@ -412,17 +406,17 @@
             </p>
             
             <!-- Stats -->
-            <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-3 gap-4 lg:gap-6 mb-8">
               <div class="text-center lg:text-left">
-                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">10K+</div>
+                <div class="text-lg sm:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white mb-1">10K+</div>
                 <div class="text-xs sm:text-sm text-slate-400">Events Created</div>
               </div>
               <div class="text-center lg:text-left">
-                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">99.9%</div>
+                <div class="text-lg sm:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white mb-1">99.9%</div>
                 <div class="text-xs sm:text-sm text-slate-400">Uptime</div>
               </div>
               <div class="text-center lg:text-left">
-                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">24/7</div>
+                <div class="text-lg sm:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white mb-1">24/7</div>
                 <div class="text-xs sm:text-sm text-slate-400">Support</div>
               </div>
             </div>
@@ -449,7 +443,7 @@
           <div class="relative lg:pl-8">
             <div class="relative">
               <!-- Main feature card -->
-              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl border border-white/50 transform hover:scale-105 transition-all duration-500">
+              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-6 xl:p-8 shadow-2xl border border-white/50 transform hover:scale-105 transition-all duration-500">
                 <div class="flex items-center justify-between mb-4 sm:mb-6">
                   <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">GoEvent Dashboard</h3>
                   <div class="flex items-center space-x-2">
@@ -487,11 +481,11 @@
               </div>
               
               <!-- Floating elements -->
-              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden sm:block">
+              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
                 <Star class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
               
-              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-br from-purple-500 to-pink-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden sm:block">
+              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-br from-purple-500 to-pink-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
                 <Bell class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
@@ -517,7 +511,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
 import Footer from '../components/Footer.vue'
@@ -588,7 +582,8 @@ onMounted(() => {
   }
 })
 
-const features = [
+// Computed properties for static data to optimize memory usage
+const features = computed(() => [
   {
     icon: Calendar,
     title: "Smart Event Planning",
@@ -631,9 +626,9 @@ const features = [
     bgColor: "bg-gradient-to-br from-teal-100 to-teal-200",
     iconColor: "text-teal-600",
   },
-]
+])
 
-const testimonials = [
+const testimonials = computed(() => [
   {
     name: "Sarah Johnson",
     role: "Corporate Event Manager",
@@ -649,9 +644,9 @@ const testimonials = [
     role: "Non-profit Director",
     content: "We've organized 50+ charity events using GoEvent. The platform scales beautifully and saves us countless hours.",
   },
-]
+])
 
-const faqs = [
+const faqs = computed(() => [
   {
     question: "How much does GoEvent cost?",
     answer: "GoEvent offers flexible pricing plans to suit different needs. We have a free tier for small events, and paid plans starting at $29/month for professional features. Enterprise solutions are available with custom pricing. All plans include a 14-day free trial with no credit card required."
@@ -676,7 +671,7 @@ const faqs = [
     question: "Can I customize the registration forms and event pages?",
     answer: "Definitely! GoEvent offers extensive customization options including custom registration forms, branded event pages, custom domains, personalized email templates, and white-label solutions. You can match your organization's branding and create a seamless experience for your attendees."
   }
-]
+])
 
 </script>
 
@@ -698,7 +693,47 @@ const faqs = [
   background: linear-gradient(to bottom, #ffffff, #dbeafe1a, #ffffff);
 }
 
-/* Hero animations */
+/* Optimized hero blur effects using will-change for better performance */
+.hero-blur-shape {
+  filter: blur(40px);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.hero-blur-large {
+  filter: blur(80px);
+  will-change: auto;
+}
+
+/* Optimized animations using transform3d for GPU acceleration */
+@keyframes float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(10px, -20px, 0) scale(1.05);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-15px, 15px, 0) scale(0.95);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+/* Hero animations using transform3d for GPU acceleration */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -711,33 +746,33 @@ const faqs = [
 @keyframes slideInLeft {
   from {
     opacity: 0;
-    transform: translateX(-50px);
+    transform: translate3d(-50px, 0, 0);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(50px);
+    transform: translate3d(50px, 0, 0);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translate3d(0, 30px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 

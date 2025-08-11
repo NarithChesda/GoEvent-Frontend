@@ -1,8 +1,14 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { TimeoutManager } from '../utils/performance'
 
 export function useTypingAnimation(text: string, speed: number = 100) {
   const displayText = ref('')
   const isComplete = ref(false)
+  const timeoutManager = new TimeoutManager()
+  
+  const cleanup = () => {
+    timeoutManager.clearAll()
+  }
   
   onMounted(() => {
     let currentIndex = 0
@@ -11,18 +17,23 @@ export function useTypingAnimation(text: string, speed: number = 100) {
       if (currentIndex < text.length) {
         displayText.value += text[currentIndex]
         currentIndex++
-        setTimeout(typeNextCharacter, speed)
+        timeoutManager.setTimeout(typeNextCharacter, speed)
       } else {
         isComplete.value = true
       }
     }
     
     // Start typing after a short delay
-    setTimeout(typeNextCharacter, 500)
+    timeoutManager.setTimeout(typeNextCharacter, 500)
+  })
+  
+  onUnmounted(() => {
+    cleanup()
   })
   
   return {
     displayText,
-    isComplete
+    isComplete,
+    cleanup
   }
 }

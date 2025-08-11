@@ -3,7 +3,7 @@
     <Navigation />
     
     <!-- Hero Section -->
-    <section id="hero" class="relative h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
+    <section id="hero" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
       <!-- Enhanced Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
@@ -21,15 +21,15 @@
         <div class="absolute top-64 left-64 w-3 h-3 bg-indigo-500/40 rounded-full animate-pulse delay-1200"></div>
       </div>
       
-      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+      <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
             <div class="space-y-4 sm:space-y-6">
               <div class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-blue-200/30">
                 <Heart class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Our Story
               </div>
-              <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500">
+              <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500">
                 <span class="typing-text-about">{{ aboutText }}</span><span 
                   v-if="aboutComplete" 
                   class="typing-text-goevent"
@@ -38,7 +38,7 @@
                   class="typing-cursor"
                 >|</span>
               </h1>
-              <p class="text-lg sm:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000">
+              <p class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000">
                 We're on a mission to revolutionize event management by making it simple, 
                 efficient, and accessible for everyone. From intimate gatherings to large-scale 
                 conferences, we provide the tools you need to create 
@@ -46,7 +46,7 @@
               </p>
             </div>
             
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-6 animate-fade-in animation-delay-1200">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200">
               <RouterLink 
                 to="/events"
                 class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
@@ -75,25 +75,25 @@
           </div>
           
           <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
-            <div class="relative">
+            <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main About Card -->
-              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-8 border border-white/50">
-                <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-                  <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Our Journey</h3>
+              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50">
+                <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
+                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">Our Journey</h3>
                   <div class="flex items-center space-x-2">
                     <div class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
                     <span class="text-xs sm:text-sm text-gray-600 font-medium">Since 2023</span>
                   </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
-                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 border border-blue-200/50">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">50K+</div>
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
+                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50">
+                    <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">50K+</div>
                     <div class="text-xs sm:text-sm text-blue-700 font-medium">Events Created</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ Growing daily</div>
                   </div>
-                  <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 border border-emerald-200/50">
-                    <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2">150+</div>
+                  <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-emerald-200/50">
+                    <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2">150+</div>
                     <div class="text-xs sm:text-sm text-emerald-700 font-medium">Countries</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ Global reach</div>
                   </div>
@@ -120,7 +120,7 @@
               </div>
               
               <!-- Floating Cards -->
-              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden sm:block">
+              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
                   <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                     <Award class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
@@ -132,7 +132,7 @@
                 </div>
               </div>
               
-              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden sm:block">
+              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
                   <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                     <Users class="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
@@ -175,7 +175,7 @@
             <Target class="w-4 h-4" />
             Our Purpose
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
             Mission & <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Vision</span>
           </h2>
           <p class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
@@ -184,10 +184,10 @@
         </div>
 
         <!-- Mission & Vision Cards -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 xl:gap-12">
           <!-- Mission Card -->
           <div class="group relative">
-            <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10 hover:scale-105 transition-all duration-500">
+            <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10 hover:scale-105 transition-all duration-500">
               <!-- Floating icon -->
               <div class="absolute -top-4 sm:-top-6 left-6 sm:left-8">
                 <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300">
@@ -196,7 +196,7 @@
               </div>
               
               <div class="pt-6 sm:pt-8">
-                <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-4 sm:mb-6">Our Mission</h3>
+                <h3 class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-white mb-4 sm:mb-6">Our Mission</h3>
                 <p class="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed">
                   To empower event organizers worldwide with innovative technology that transforms 
                   complex event management into seamless, enjoyable experiences. We believe every 
@@ -212,7 +212,7 @@
 
           <!-- Vision Card -->
           <div class="group relative">
-            <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl shadow-slate-500/10 border border-slate-200 hover:scale-105 transition-all duration-500">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-slate-500/10 border border-slate-200 hover:scale-105 transition-all duration-500">
               <!-- Floating icon -->
               <div class="absolute -top-4 sm:-top-6 left-6 sm:left-8">
                 <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300">
@@ -221,7 +221,7 @@
               </div>
               
               <div class="pt-6 sm:pt-8">
-                <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">Our Vision</h3>
+                <h3 class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">Our Vision</h3>
                 <p class="text-sm sm:text-base lg:text-lg text-slate-600 leading-relaxed">
                   To become the world's most trusted event management platform, where creativity 
                   meets technology. We envision a future where organizing events is so intuitive 
@@ -252,7 +252,7 @@
             <BarChart3 class="h-4 w-4" />
             Our Impact
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6">
             GoEvent by the <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Numbers</span>
           </h2>
           <p class="text-base sm:text-lg lg:text-xl text-slate-300 px-4">
@@ -285,7 +285,7 @@
             <Star class="w-4 h-4" />
             Our Core Values
           </div>
-          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
             What Drives Us to
             <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Succeed</span>
           </h2>
@@ -294,7 +294,7 @@
           </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
           <div 
             v-for="(value, index) in values" 
             :key="value.title"
@@ -348,7 +348,7 @@
             <Users class="w-4 h-4" />
             Our Amazing Team
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight">
             Meet the <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Innovators</span>
           </h2>
           <p class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4">
@@ -378,7 +378,7 @@
         </div>
 
         <!-- Team Members Grid -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
           <div 
             v-for="(member, index) in teamMembers" 
             :key="member.id"
@@ -490,7 +490,7 @@
               Join Our Team
             </div>
             
-            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight">
               Be Part of the
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200"> Future</span>
             </h2>

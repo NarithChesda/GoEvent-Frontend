@@ -1,11 +1,16 @@
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useThrottleFn } from '../utils/performance'
 
 export function useScrollAnimations() {
   const isVisible = ref<{ [key: string]: boolean }>({})
-  
   const observer = ref<IntersectionObserver | null>(null)
+  const observedElements = ref<Set<Element>>(new Set())
   
   const createObserver = () => {
+    if (observer.value) {
+      observer.value.disconnect()
+    }
+    
     observer.value = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -29,7 +34,16 @@ export function useScrollAnimations() {
     if (domElement && domElement.setAttribute) {
       domElement.setAttribute('data-scroll-id', id)
       observer.value?.observe(domElement)
+      observedElements.value.add(domElement)
     }
+  }
+  
+  const cleanup = () => {
+    if (observer.value) {
+      observer.value.disconnect()
+      observer.value = null
+    }
+    observedElements.value.clear()
   }
   
   onMounted(() => {
@@ -37,21 +51,22 @@ export function useScrollAnimations() {
   })
   
   onUnmounted(() => {
-    observer.value?.disconnect()
+    cleanup()
   })
   
   return {
     isVisible,
-    observeElement
+    observeElement,
+    cleanup
   }
 }
 
 export function useScrollToTop() {
   const showScrollTop = ref(false)
   
-  const handleScroll = () => {
+  const handleScroll = useThrottleFn(() => {
     showScrollTop.value = window.scrollY > 300
-  }
+  })
   
   const scrollToTop = () => {
     window.scrollTo({
@@ -60,16 +75,21 @@ export function useScrollToTop() {
     })
   }
   
+  const cleanup = () => {
+    window.removeEventListener('scroll', handleScroll)
+  }
+  
   onMounted(() => {
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
   })
   
   onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
+    cleanup()
   })
   
   return {
     showScrollTop,
-    scrollToTop
+    scrollToTop,
+    cleanup
   }
 }

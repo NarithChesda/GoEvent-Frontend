@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative overflow-hidden">
     <!-- Background Elements -->
     <div class="absolute inset-0">
       <div class="absolute top-0 right-0 w-96 h-96 bg-purple-300/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -15,18 +15,18 @@
           </div>
           <span class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">GoEvent</span>
         </RouterLink>
-        <h2 class="text-4xl font-bold text-slate-900 mb-2">
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
           Create account
         </h2>
-        <p class="text-slate-600">
+        <p class="text-sm sm:text-base lg:text-lg text-slate-600">
           Start organizing amazing events today
         </p>
       </div>
 
       <!-- Main Form Card -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl p-8">
-        <form class="space-y-6" @submit.prevent="handleSignUp">
-          <div class="grid grid-cols-2 gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8">
+        <form class="space-y-4 sm:space-y-6" @submit.prevent="handleSignUp">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label for="first-name" class="block text-sm font-semibold text-slate-700">
                 First name
@@ -204,7 +204,7 @@
               </div>
             </div>
 
-            <div class="mt-6 grid grid-cols-2 gap-3">
+            <div class="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"
                 class="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 group"
@@ -230,8 +230,8 @@
         </form>
         
         <!-- Footer Link -->
-        <div class="mt-8 text-center">
-          <p class="text-sm text-slate-600">
+        <div class="mt-6 sm:mt-8 text-center">
+          <p class="text-xs sm:text-sm text-slate-600">
             Already have an account? 
             <RouterLink to="/signin" class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
               Sign in here

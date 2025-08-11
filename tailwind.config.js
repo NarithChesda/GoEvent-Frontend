@@ -24,10 +24,9 @@ export default {
         },
       },
       screens: {
-        'laptop-sm': '1280px',  // 13" laptops (1280x720)
-        'laptop-md': '1440px',  // 15" laptops (1440x900)
-        'laptop-lg': '1680px',  // 17" laptops (1680x1050)
-        'desktop': '1920px',    // 27" desktops (1920x1080+)
+        '2xl': '1536px',
+        '3xl': '1920px',
+        '4xl': '2560px',
       },
       spacing: {
         '18': '4.5rem',

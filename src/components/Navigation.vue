@@ -5,7 +5,7 @@
       ? 'bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-xl shadow-blue-500/10' 
       : 'bg-transparent border-b border-transparent'"
   >
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
         <!-- Logo -->
         <button @click="handleLogoClick" class="flex items-center space-x-3 group cursor-pointer">
@@ -94,7 +94,7 @@
             </RouterLink>
             <RouterLink
               to="/signup"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105"
+              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105"
             >
               Get Started
             </RouterLink>
@@ -112,6 +112,8 @@
                     :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''" 
                     :alt="authStore.user.first_name || authStore.user.username"
                     class="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div
                     v-else
@@ -142,6 +144,8 @@
                           :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''" 
                           :alt="authStore.user.first_name || authStore.user.username"
                           class="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <div
                           v-else
@@ -266,6 +270,8 @@
                     :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''" 
                     :alt="authStore.user.first_name || authStore.user.username"
                     class="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div
                     v-else

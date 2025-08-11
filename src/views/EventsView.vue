@@ -3,7 +3,7 @@
     <Navigation />
     
     <!-- Hero Section (Mobile-Optimized) -->
-    <section class="relative h-[80vh] sm:h-[85vh] lg:h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-50 to-purple-100 overflow-hidden -mt-20">
+    <section class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-50 to-purple-100 overflow-hidden -mt-20">
       <!-- Enhanced Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
@@ -21,24 +21,24 @@
         <div class="absolute top-64 left-64 w-3 h-3 bg-purple-500/40 rounded-full animate-pulse delay-1200"></div>
       </div>
       
-      <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-8 pt-28">
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
         <div class="text-center">
-          <div class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-sm font-medium px-6 py-3 rounded-full mb-8 shadow-lg shadow-blue-200/30">
+          <div class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-6 sm:mb-8 shadow-lg shadow-blue-200/30">
             <Calendar class="w-4 h-4 mr-2" />
             Discover Amazing Events
           </div>
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-6 sm:mb-8 leading-tight">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-slate-900 mb-6 sm:mb-8 leading-tight tracking-tight">
             <span class="typing-text">
               {{ displayText }}<span v-if="!isComplete" class="typing-cursor">|</span>
             </span>
           </h1>
-          <p class="text-lg text-slate-600 leading-relaxed max-w-4xl mx-auto mb-12">
+          <p class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-600 leading-relaxed max-w-4xl mx-auto mb-8 sm:mb-12">
             Explore public events, manage your created events, and discover events you've registered for all in one place. Join thousands of event enthusiasts in creating unforgettable experiences.
           </p>
         </div>
 
         <!-- Enhanced Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-8">
           <div class="group relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-blue-500/20 p-8 border border-white/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
             <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-3xl"></div>
             <div class="text-center">
@@ -80,10 +80,10 @@
     </section>
 
     <!-- Main Content -->
-    <section class="py-24 bg-gradient-to-b from-slate-50/50 to-white">
-      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- View Toggle -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div class="flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-1 shadow-lg">
             <button
               v-if="authStore.isAuthenticated"
@@ -135,7 +135,7 @@
         />
 
         <!-- Loading State -->
-        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           <div 
             v-for="i in 6" 
             :key="i"
@@ -155,8 +155,8 @@
         </div>
 
         <!-- Events Grid -->
-        <div v-else-if="hasEvents" class="space-y-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             <EventCard
               v-for="event in safeEvents"
               :key="event.id"
@@ -169,7 +169,7 @@
           </div>
 
           <!-- Pagination -->
-          <div v-if="pagination.totalPages > 1" class="flex justify-center pt-8">
+          <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
             <div class="flex items-center space-x-2">
               <button
                 @click="loadPage(pagination.currentPage - 1)"
@@ -205,14 +205,14 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="isEmpty" class="text-center py-16">
+        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16">
           <div class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
             <Calendar class="w-32 h-32 text-blue-400" />
           </div>
-          <h3 class="text-2xl font-bold text-slate-900 mb-4">
+          <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-4">
             {{ getEmptyStateTitle() }}
           </h3>
-          <p class="text-slate-600 mb-8 max-w-md mx-auto">
+          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto">
             {{ getEmptyStateMessage() }}
           </p>
           <button

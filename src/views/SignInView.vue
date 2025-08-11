@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative overflow-hidden">
     <!-- Background Elements -->
     <div class="absolute inset-0">
       <div class="absolute top-0 left-0 w-96 h-96 bg-blue-300/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -15,17 +15,17 @@
           </div>
           <span class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">GoEvent</span>
         </RouterLink>
-        <h2 class="text-4xl font-bold text-slate-900 mb-2">
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
           Welcome back
         </h2>
-        <p class="text-slate-600">
+        <p class="text-sm sm:text-base lg:text-lg text-slate-600">
           Sign in to continue to your account
         </p>
       </div>
 
       <!-- Main Form Card -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl p-8">
-        <form class="space-y-6" @submit.prevent="handleSignIn">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8">
+        <form class="space-y-4 sm:space-y-6" @submit.prevent="handleSignIn">
           <!-- Email Field -->
           <div class="space-y-2">
             <label for="email" class="block text-sm font-semibold text-slate-700">
@@ -45,7 +45,7 @@
                     ? 'border-red-300 focus:ring-red-500' 
                     : 'border-slate-200 focus:ring-blue-500'
                 ]"
-                placeholder="Enter your email address"
+                placeholder="Enter your email"
               />
             </div>
             <!-- Email validation errors -->
@@ -95,7 +95,7 @@
           </div>
 
           <!-- Remember Me & Forgot Password -->
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
             <label class="flex items-center space-x-3 cursor-pointer">
               <input
                 id="remember-me"
@@ -133,7 +133,7 @@
           </button>
 
           <!-- Divider -->
-          <div class="relative my-8">
+          <div class="relative my-6 sm:my-8">
             <div class="absolute inset-0 flex items-center">
               <div class="w-full border-t border-slate-200" />
             </div>
@@ -143,7 +143,7 @@
           </div>
 
           <!-- Social Login Buttons -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <button
               type="button"
               @click="handleGoogleLogin"
@@ -171,8 +171,8 @@
         </form>
         
         <!-- Footer Link -->
-        <div class="mt-8 text-center">
-          <p class="text-sm text-slate-600">
+        <div class="mt-6 sm:mt-8 text-center">
+          <p class="text-xs sm:text-sm text-slate-600">
             Don't have an account? 
             <RouterLink to="/signup" class="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
               Create one now
