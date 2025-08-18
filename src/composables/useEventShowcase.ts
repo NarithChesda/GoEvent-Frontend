@@ -136,7 +136,7 @@ export function useEventShowcase() {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const showcaseData = ref<ShowcaseData | null>(null)
-  const currentLanguage = ref('en')
+  const currentLanguage = ref('kh')
   const isEnvelopeOpened = ref(false)
   const isPlayingEventVideo = ref(false)
   const videoLoading = ref(false)
