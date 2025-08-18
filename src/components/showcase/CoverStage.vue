@@ -24,75 +24,97 @@
     <div class="absolute inset-0 bg-black/30"></div>
 
     <!-- Content Overlay -->
-    <div class="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 text-center">
-      <!-- Guest Name -->
-      <div v-if="guestName" class="mb-4 sm:mb-6 md:mb-8 lg:mb-10 animate-fadeIn max-w-4xl mx-auto">
-        <p
-          class="text-sm sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-1 sm:mb-2 md:mb-3"
-          :style="{ color: 'rgba(255, 255, 255, 0.8)' }"
-        >
-          Dear
-        </p>
-        <h2
-          class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"
-          :style="{
-            fontFamily: currentFont,
-            background: gradientStyle,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }"
-        >
-          {{ guestName }}
-        </h2>
-      </div>
-
-      <!-- Welcome Text -->
-      <div class="mb-6 sm:mb-8 md:mb-10 lg:mb-12 xl:mb-14 animate-fadeIn animation-delay-200 max-w-5xl mx-auto">
-        <p
-          class="text-sm sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-2 sm:mb-3 md:mb-4"
-          :style="{ color: 'rgba(255, 255, 255, 0.9)' }"
-        >
-          You're Invited to
-        </p>
-        <h1
-          class="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-bold leading-tight"
-          :style="{
-            fontFamily: currentFont,
-            background: gradientStyle,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }"
-        >
-          {{ eventTitle }}
-        </h1>
-      </div>
-
-      <!-- Open Envelope Button -->
-      <button
-        @click="$emit('openEnvelope')"
-        class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
-      >
-        <img
-          v-if="templateAssets?.open_envelope_button"
-          :src="getMediaUrl(templateAssets.open_envelope_button)"
-          alt="Open Invitation"
-          class="envelope-button-size h-auto cursor-pointer drop-shadow-2xl"
-        />
-        <div
-          v-else
-          class="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 lg:py-6 rounded-full shadow-2xl transition-all hover:scale-105"
-          :style="{
-            background: gradientStyle,
-            backdropFilter: 'blur(10px)'
-          }"
-        >
-          <span class="text-base sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white">
-            Open Invitation
-          </span>
+    <div class="absolute inset-0 flex flex-col px-4 sm:px-6 md:px-8 text-center">
+      <!-- Main Content Container -->
+      <div class="flex-1 flex flex-col items-center justify-center max-w-5xl mx-auto pt-8 pb-40">
+        
+        <!-- Event Title (Top) -->
+        <div class="mb-6 sm:mb-8 md:mb-10 animate-fadeIn">
+          <h1
+            class="text-4xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-bold leading-tight"
+            :style="{
+              fontFamily: currentFont,
+              background: gradientStyle,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }"
+          >
+            {{ eventTitle }}
+          </h1>
         </div>
-      </button>
+
+        <!-- Event Logo -->
+        <div 
+          v-if="eventLogo" 
+          class="mb-8 sm:mb-10 md:mb-12 animate-fadeIn animation-delay-200"
+        >
+          <img
+            :src="getMediaUrl(eventLogo)"
+            :alt="eventTitle + ' logo'"
+            class="event-logo-showcase mx-auto drop-shadow-2xl"
+          />
+        </div>
+
+        <!-- Invite Text -->
+        <div class="mb-6 sm:mb-8 md:mb-10 animate-fadeIn animation-delay-400">
+          <p
+            class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl"
+            :style="{ color: 'rgba(255, 255, 255, 0.9)' }"
+          >
+            You're Invited
+          </p>
+        </div>
+
+        <!-- Guest Name -->
+        <div v-if="guestName" class="animate-fadeIn animation-delay-600 max-w-4xl mx-auto">
+          <p
+            class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-1 sm:mb-2 md:mb-3"
+            :style="{ color: 'rgba(255, 255, 255, 0.8)' }"
+          >
+            Dear
+          </p>
+          <h2
+            class="text-3xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"
+            :style="{
+              fontFamily: currentFont,
+              background: gradientStyle,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }"
+          >
+            {{ guestName }}
+          </h2>
+        </div>
+      </div>
+
+      <!-- Open Envelope Button (10% from bottom) -->
+      <div class="absolute bottom-[10%] left-0 right-0 flex justify-center animate-fadeIn animation-delay-800">
+        <button
+          @click="$emit('openEnvelope')"
+          class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
+        >
+          <img
+            v-if="templateAssets?.open_envelope_button"
+            :src="getMediaUrl(templateAssets.open_envelope_button)"
+            alt="Open Invitation"
+            class="envelope-button-size h-auto cursor-pointer drop-shadow-2xl"
+          />
+          <div
+            v-else
+            class="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 lg:py-6 rounded-full shadow-2xl transition-all hover:scale-105"
+            :style="{
+              background: gradientStyle,
+              backdropFilter: 'blur(10px)'
+            }"
+          >
+            <span class="text-lg sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white">
+              Open Invitation
+            </span>
+          </div>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -110,6 +132,7 @@ interface Props {
   templateAssets?: TemplateAssets | null
   guestName: string
   eventTitle: string
+  eventLogo?: string | null
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -149,6 +172,18 @@ const gradientStyle = computed(() =>
   animation-delay: 200ms;
 }
 
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animation-delay-800 {
+  animation-delay: 800ms;
+}
+
 /* Extra small screens adjustment */
 @media (max-width: 375px) and (max-height: 700px) {
   /* Reduce spacing for very small mobile screens */
@@ -167,7 +202,7 @@ const gradientStyle = computed(() =>
 
 /* Responsive envelope button sizing */
 .envelope-button-size {
-  width: 180px; /* Mobile default - slightly smaller for better proportion */
+  width: 198px; /* Mobile default - increased by 10% from 180px */
 }
 
 @media (min-width: 640px) {
@@ -219,6 +254,57 @@ const gradientStyle = computed(() =>
   .desktop-video-sizing {
     width: 100%;
     object-fit: contain;
+  }
+}
+
+/* Event Logo Responsive Sizing */
+.event-logo-showcase {
+  height: auto;
+  max-height: 132px; /* Increased by 10% from 120px */
+  width: auto;
+  max-width: 330px; /* Increased by 10% from 300px */
+  object-fit: contain;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.event-logo-showcase:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive adjustments for logo */
+@media (min-width: 640px) {
+  .event-logo-showcase {
+    max-height: 140px;
+    max-width: 350px;
+  }
+}
+
+@media (min-width: 768px) {
+  .event-logo-showcase {
+    max-height: 160px;
+    max-width: 400px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .event-logo-showcase {
+    max-height: 180px;
+    max-width: 450px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .event-logo-showcase {
+    max-height: 200px;
+    max-width: 500px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .event-logo-showcase {
+    max-height: 220px;
+    max-width: 550px;
   }
 }
 </style>

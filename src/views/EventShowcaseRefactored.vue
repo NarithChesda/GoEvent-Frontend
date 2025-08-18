@@ -30,6 +30,7 @@
         :template-assets="templateAssets"
         :guest-name="guestName as string"
         :event-title="event.title"
+        :event-logo="event.logo_one"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
