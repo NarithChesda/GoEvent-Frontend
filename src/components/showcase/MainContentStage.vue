@@ -50,6 +50,7 @@
                   <h1
                     class="text-lg sm:text-xl md:text-2xl font-medium mb-3 sm:mb-4 md:mb-6 uppercase"
                     :style="{
+                      fontFamily: primaryFont || currentFont,
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -69,6 +70,8 @@
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   :current-font="currentFont"
+                  :primary-font="primaryFont"
+                  :secondary-font="secondaryFont"
                 />
 
                 <!-- Event Information -->
@@ -118,6 +121,7 @@
                   <h2
                     class="text-xl font-semibold mb-4 text-center"
                     :style="{
+                      fontFamily: primaryFont || currentFont,
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -273,6 +277,8 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
   isEventPast: boolean
   showAllPhotos: boolean
   getMediaUrl: (url: string) => string

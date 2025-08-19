@@ -136,7 +136,9 @@ export function useEventShowcase() {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const showcaseData = ref<ShowcaseData | null>(null)
-  const currentLanguage = ref('kh')
+  // Default language to 'kh' but check URL params first
+  const urlLang = route.query.lang as string || 'kh'
+  const currentLanguage = ref(urlLang)
   const isEnvelopeOpened = ref(false)
   const isPlayingEventVideo = ref(false)
   const videoLoading = ref(false)
@@ -159,7 +161,58 @@ export function useEventShowcase() {
     return colors
   })
   
-  const templateFonts = computed(() => event.value?.template_fonts || event.value?.template_assets?.fonts || [] as TemplateFont[])
+  const templateFonts = computed(() => {
+    // Support both array format and object format from API
+    const fonts = event.value?.template_fonts || event.value?.template_assets?.fonts
+    
+    // If fonts is an object (language-keyed), convert to array
+    if (fonts && !Array.isArray(fonts)) {
+      return Object.entries(fonts).map(([lang, font]: [string, any]) => ({
+        ...font,
+        language: lang
+      }))
+    }
+    
+    return fonts || [] as TemplateFont[]
+  })
+  
+  // Get fonts for current language with primary/secondary support
+  const getLanguageFonts = computed(() => {
+    const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
+    
+    // Sort fonts to ensure consistent primary/secondary assignment
+    // Priority: 1. font_name containing 'primary', 2. font_name containing 'secondary', 3. by order/id
+    const sortedFonts = [...langFonts].sort((a, b) => {
+      const aName = (a.font_name || '').toLowerCase()
+      const bName = (b.font_name || '').toLowerCase()
+      
+      // Check for explicit primary/secondary naming
+      if (aName.includes('primary')) return -1
+      if (bName.includes('primary')) return 1
+      if (aName.includes('secondary')) return 1
+      if (bName.includes('secondary')) return -1
+      
+      // Fallback to ID or original order
+      return (a.id || 0) - (b.id || 0)
+    })
+    
+    return {
+      primary: sortedFonts[0] || null,
+      secondary: sortedFonts[1] || sortedFonts[0] || null // Fallback to primary if no secondary
+    }
+  })
+  
+  // Primary font for headings and important text
+  const primaryFont = computed(() => {
+    const font = getLanguageFonts.value.primary
+    return font?.font_name || 'inherit'
+  })
+  
+  // Secondary font for body text and descriptions
+  const secondaryFont = computed(() => {
+    const font = getLanguageFonts.value.secondary
+    return font?.font_name || primaryFont.value || 'inherit'
+  })
   const eventTexts = computed(() => event.value?.event_texts || [] as EventText[])
   const hosts = computed(() => event.value?.hosts || [] as Host[])
   const agendaItems = computed(() => event.value?.agenda_items || [] as AgendaItem[])
@@ -185,10 +238,8 @@ export function useEventShowcase() {
     return color?.hex_color_code || color?.hex_code || primaryColor.value
   })
   
-  const currentFont = computed(() => {
-    const font = templateFonts.value.find(f => f.language === currentLanguage.value)
-    return font?.font_name || 'inherit'
-  })
+  // Deprecated: Use primaryFont and secondaryFont instead
+  const currentFont = computed(() => primaryFont.value)
   
   const isEventPast = computed(() => {
     if (!event.value?.end_date) return false
@@ -224,6 +275,10 @@ export function useEventShowcase() {
     error.value = null
 
     try {
+      // Check URL for language parameter first
+      const urlLanguage = route.query.lang as string || currentLanguage.value
+      currentLanguage.value = urlLanguage
+      
       const params: { lang?: string; guest_name?: string } = {
         lang: currentLanguage.value
       }
@@ -260,14 +315,23 @@ export function useEventShowcase() {
   }
 
   const loadCustomFonts = () => {
-    templateFonts.value.forEach((font: TemplateFont) => {
-      if (font.font_file) {
-        const fontFace = new FontFace(font.font_name, `url(${getMediaUrl(font.font_file)})`)
-        fontFace.load().then(loadedFont => {
-          document.fonts.add(loadedFont)
-        }).catch(err => {
-          console.error('Failed to load font:', font.font_name, err)
-        })
+    // Load fonts for current language only
+    const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
+    
+    langFonts.forEach((font: TemplateFont) => {
+      if (font.font_file && font.font_name) {
+        // Check if font is already loaded
+        const fontExists = document.fonts.check(`12px "${font.font_name}"`)
+        
+        if (!fontExists) {
+          const fontFace = new FontFace(font.font_name, `url(${getMediaUrl(font.font_file)})`)
+          fontFace.load().then(loadedFont => {
+            document.fonts.add(loadedFont)
+            console.log(`Loaded font: ${font.font_name} for language: ${currentLanguage.value}`)
+          }).catch(err => {
+            console.error('Failed to load font:', font.font_name, err)
+          })
+        }
       }
     })
   }
@@ -446,7 +510,9 @@ export function useEventShowcase() {
     primaryColor,
     secondaryColor,
     accentColor,
-    currentFont,
+    currentFont, // Deprecated: use primaryFont/secondaryFont
+    primaryFont,
+    secondaryFont,
     isEventPast,
     eventVideoUrl,
     eventMusicUrl,

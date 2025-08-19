@@ -9,7 +9,7 @@
             class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
-              fontFamily: currentFont
+              fontFamily: secondaryFont || currentFont
             }"
           >
             {{ hosts[0].parent_a_name || 'Father Name' }}
@@ -18,7 +18,7 @@
             class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
-              fontFamily: currentFont
+              fontFamily: secondaryFont || currentFont
             }"
           >
             {{ hosts[0].parent_b_name || 'Mother Name' }}
@@ -36,7 +36,7 @@
             class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
-              fontFamily: currentFont
+              fontFamily: secondaryFont || currentFont
             }"
           >
             {{ hosts[1].parent_a_name || 'Father Name' }}
@@ -45,7 +45,7 @@
             class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
-              fontFamily: currentFont
+              fontFamily: secondaryFont || currentFont
             }"
           >
             {{ hosts[1].parent_b_name || 'Mother Name' }}
@@ -71,7 +71,7 @@
               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
             }"
           >
-            <span class="text-white font-bold text-2xl sm:text-3xl md:text-4xl laptop-sm:text-5xl laptop-md:text-6xl laptop-lg:text-7xl desktop:text-5xl" :style="{ fontFamily: currentFont }">
+            <span class="text-white font-bold text-2xl sm:text-3xl md:text-4xl laptop-sm:text-5xl laptop-md:text-6xl laptop-lg:text-7xl desktop:text-5xl" :style="{ fontFamily: primaryFont || currentFont }">
               {{ eventInitial }}
             </span>
           </div>
@@ -86,7 +86,10 @@
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
             class="text-sm md:text-base font-medium mb-2 opacity-80"
-            :style="{ color: primaryColor }"
+            :style="{ 
+              color: primaryColor,
+              fontFamily: secondaryFont || currentFont
+            }"
           >
             {{ hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1' }}
           </p>
@@ -97,7 +100,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              fontFamily: currentFont
+              fontFamily: primaryFont || currentFont
             }"
           >
             {{ hosts[0].name }}
@@ -118,7 +121,10 @@
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
             class="text-sm md:text-base font-medium mb-2 opacity-80"
-            :style="{ color: primaryColor }"
+            :style="{ 
+              color: primaryColor,
+              fontFamily: secondaryFont || currentFont
+            }"
           >
             {{ 'Bride' }}
           </p>
@@ -129,7 +135,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              fontFamily: currentFont
+              fontFamily: primaryFont || currentFont
             }"
           >
             {{ hosts[1].name }}
@@ -151,6 +157,8 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 defineProps<Props>()

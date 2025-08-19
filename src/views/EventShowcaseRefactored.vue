@@ -35,6 +35,8 @@
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
         :current-font="currentFont"
+        :primary-font="primaryFont"
+        :secondary-font="secondaryFont"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
       />
@@ -64,6 +66,8 @@
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
         :current-font="currentFont"
+        :primary-font="primaryFont"
+        :secondary-font="secondaryFont"
         :is-event-past="isEventPast"
         :show-all-photos="showAllPhotos"
         :get-media-url="getMediaUrl"
@@ -137,6 +141,8 @@ const {
   secondaryColor,
   accentColor,
   currentFont,
+  primaryFont,
+  secondaryFont,
   isEventPast,
   eventVideoUrl,
   availableLanguages,

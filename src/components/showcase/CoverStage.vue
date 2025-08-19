@@ -33,7 +33,7 @@
           <h1
             class="text-4xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-bold leading-tight"
             :style="{
-              fontFamily: currentFont,
+              fontFamily: primaryFont || currentFont,
               background: gradientStyle,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -60,7 +60,10 @@
         <div class="mb-6 sm:mb-8 md:mb-10 animate-fadeIn animation-delay-400">
           <p
             class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl"
-            :style="{ color: 'rgba(255, 255, 255, 0.9)' }"
+            :style="{ 
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontFamily: secondaryFont || currentFont
+            }"
           >
             You're Invited
           </p>
@@ -70,14 +73,17 @@
         <div v-if="guestName" class="animate-fadeIn animation-delay-600 max-w-4xl mx-auto">
           <p
             class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-1 sm:mb-2 md:mb-3"
-            :style="{ color: 'rgba(255, 255, 255, 0.8)' }"
+            :style="{ 
+              color: 'rgba(255, 255, 255, 0.8)',
+              fontFamily: secondaryFont || currentFont
+            }"
           >
             Dear
           </p>
           <h2
             class="text-3xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"
             :style="{
-              fontFamily: currentFont,
+              fontFamily: primaryFont || currentFont,
               background: gradientStyle,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -109,7 +115,10 @@
               backdropFilter: 'blur(10px)'
             }"
           >
-            <span class="text-lg sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white">
+            <span 
+              class="text-lg sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white"
+              :style="{ fontFamily: primaryFont || currentFont }"
+            >
               Open Invitation
             </span>
           </div>
@@ -137,6 +146,8 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
   getMediaUrl: (url: string) => string
 }
 
