@@ -111,22 +111,40 @@
           <button
             @click="setRSVPStatus('coming')"
             :disabled="isSubmitting"
-            class="rsvp-btn flex-1 max-w-[140px]"
+            class="liquid-glass-btn flex-1 max-w-[140px]"
             :class="{ 
-              'rsvp-btn-active': rsvpStatus === 'coming',
-              'opacity-60 cursor-not-allowed': isSubmitting
+              'liquid-glass-btn--active': rsvpStatus === 'coming',
+              'liquid-glass-btn--disabled': isSubmitting
             }"
             :style="{
-              borderColor: rsvpStatus === 'coming' ? primaryColor : `${primaryColor}60`,
-              backgroundColor: rsvpStatus === 'coming' ? `${primaryColor}20` : 'transparent',
-              color: primaryColor
+              background: rsvpStatus === 'coming' 
+                ? `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}30)`
+                : `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+              backdropFilter: rsvpStatus === 'coming' ? 'blur(20px) saturate(180%)' : 'blur(16px) saturate(120%)',
+              boxShadow: rsvpStatus === 'coming'
+                ? `
+                  0 8px 32px ${primaryColor}35,
+                  0 4px 16px ${primaryColor}25,
+                  inset 0 2px 4px rgba(255, 255, 255, 0.25),
+                  inset 0 -2px 4px ${primaryColor}20
+                `
+                : `
+                  0 4px 16px ${primaryColor}15,
+                  0 2px 8px ${primaryColor}10,
+                  inset 0 1px 2px rgba(255, 255, 255, 0.1),
+                  inset 0 -1px 2px ${primaryColor}08
+                `,
+              color: rsvpStatus === 'coming' ? '#ffffff' : primaryColor,
+              border: rsvpStatus === 'coming' 
+                ? `1px solid rgba(255, 255, 255, 0.3)`
+                : `1px solid ${primaryColor}20`
             }"
           >
-            <span v-if="!isSubmitting || rsvpStatus !== 'coming'" class="whitespace-nowrap">
+            <span v-if="!isSubmitting || rsvpStatus !== 'coming'" class="whitespace-nowrap font-semibold">
               {{ rsvpStatus === 'coming' ? 'Attending' : 'Yes, I\'ll attend' }}
             </span>
-            <span v-else class="whitespace-nowrap flex items-center justify-center">
-              <div class="animate-spin rounded-full h-4 w-4 mr-2" :style="{ borderColor: `${primaryColor}30`, borderTopColor: primaryColor, border: '2px solid' }"></div>
+            <span v-else class="whitespace-nowrap flex items-center justify-center font-semibold">
+              <div class="animate-spin rounded-full h-4 w-4 mr-2" :style="{ borderColor: 'rgba(255, 255, 255, 0.3)', borderTopColor: '#ffffff', border: '2px solid' }"></div>
               Registering...
             </span>
           </button>
@@ -135,22 +153,40 @@
           <button
             @click="setRSVPStatus('not_coming')"
             :disabled="isSubmitting"
-            class="rsvp-btn flex-1 max-w-[140px]"
+            class="liquid-glass-btn flex-1 max-w-[140px]"
             :class="{ 
-              'rsvp-btn-active': rsvpStatus === 'not_coming',
-              'opacity-60 cursor-not-allowed': isSubmitting
+              'liquid-glass-btn--active': rsvpStatus === 'not_coming',
+              'liquid-glass-btn--disabled': isSubmitting
             }"
             :style="{
-              borderColor: rsvpStatus === 'not_coming' ? primaryColor : `${primaryColor}60`,
-              backgroundColor: rsvpStatus === 'not_coming' ? `${primaryColor}10` : 'transparent',
-              color: primaryColor
+              background: rsvpStatus === 'not_coming' 
+                ? `linear-gradient(135deg, ${primaryColor}35, ${primaryColor}25)`
+                : `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+              backdropFilter: rsvpStatus === 'not_coming' ? 'blur(20px) saturate(180%)' : 'blur(16px) saturate(120%)',
+              boxShadow: rsvpStatus === 'not_coming'
+                ? `
+                  0 8px 32px ${primaryColor}30,
+                  0 4px 16px ${primaryColor}20,
+                  inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                  inset 0 -2px 4px ${primaryColor}15
+                `
+                : `
+                  0 4px 16px ${primaryColor}15,
+                  0 2px 8px ${primaryColor}10,
+                  inset 0 1px 2px rgba(255, 255, 255, 0.1),
+                  inset 0 -1px 2px ${primaryColor}08
+                `,
+              color: rsvpStatus === 'not_coming' ? '#ffffff' : primaryColor,
+              border: rsvpStatus === 'not_coming' 
+                ? `1px solid rgba(255, 255, 255, 0.25)`
+                : `1px solid ${primaryColor}20`
             }"
           >
-            <span v-if="!isSubmitting || rsvpStatus !== 'not_coming'" class="whitespace-nowrap">
+            <span v-if="!isSubmitting || rsvpStatus !== 'not_coming'" class="whitespace-nowrap font-semibold">
               {{ rsvpStatus === 'not_coming' ? 'Can\'t attend' : 'Can\'t attend' }}
             </span>
-            <span v-else class="whitespace-nowrap flex items-center justify-center">
-              <div class="animate-spin rounded-full h-4 w-4 mr-2" :style="{ borderColor: `${primaryColor}30`, borderTopColor: primaryColor, border: '2px solid' }"></div>
+            <span v-else class="whitespace-nowrap flex items-center justify-center font-semibold">
+              <div class="animate-spin rounded-full h-4 w-4 mr-2" :style="{ borderColor: 'rgba(255, 255, 255, 0.3)', borderTopColor: '#ffffff', border: '2px solid' }"></div>
               Updating...
             </span>
           </button>
@@ -856,30 +892,67 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* RSVP Buttons */
-.rsvp-btn {
-  padding: 0.75rem 1.5rem;
-  border: 2px solid;
-  border-radius: 1rem;
+/* Apple-inspired Liquid Glass Buttons */
+.liquid-glass-btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 1.25rem;
   font-weight: 600;
   text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid;
 }
 
-.rsvp-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+/* Add subtle glass reflection */
+.liquid-glass-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+  pointer-events: none;
+  border-radius: inherit;
 }
 
-.rsvp-btn:active {
+/* Active state - crisp and bright */
+.liquid-glass-btn--active {
   transform: translateY(-1px);
 }
 
-.rsvp-btn-active {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+/* Inactive state - softened with blur */
+.liquid-glass-btn:not(.liquid-glass-btn--active) {
+  opacity: 0.85;
+}
+
+/* Hover interactions with subtle glow */
+.liquid-glass-btn:not(.liquid-glass-btn--disabled):hover {
+  transform: translateY(-2px) scale(1.02);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+}
+
+/* Active interactions with enhanced glow */
+.liquid-glass-btn:not(.liquid-glass-btn--disabled):active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Disabled state with reduced opacity */
+.liquid-glass-btn--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Enhanced hover effect for active buttons */
+.liquid-glass-btn--active:not(.liquid-glass-btn--disabled):hover {
+  backdrop-filter: blur(24px) saturate(220%);
+  -webkit-backdrop-filter: blur(24px) saturate(220%);
 }
 
 /* Compact RSVP Toggle Switch */
@@ -1123,9 +1196,10 @@ onUnmounted(() => {
     width: 1.75rem;
   }
   
-  .rsvp-btn {
-    padding: 0.625rem 1.25rem;
+  .liquid-glass-btn {
+    padding: 0.75rem 1.25rem;
     font-size: 0.875rem;
+    border-radius: 1rem;
   }
 }
 
