@@ -2,7 +2,7 @@
   <div id="rsvp" class="mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
     <!-- RSVP Section Header -->
     <h2 
-      class="text-xl font-semibold mb-4 text-center px-4 sm:px-0" 
+      class="text-xl font-semibold mb-4 text-center" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -10,7 +10,7 @@
         backgroundClip: 'text'
       }"
     >
-      Will you be attending?
+      Will you attend our wedding?
     </h2>
 
     <!-- Liquid Glass RSVP Container -->
@@ -18,9 +18,119 @@
       backgroundColor: `${primaryColor}06`,
       boxShadow: `0 8px 32px -4px ${primaryColor}15, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
     }">
-      <!-- Event Info Header -->
-      <div class="rsvp-section-tight">
-        <div class="py-2">
+      <!-- Collapsible Header -->
+      <div class="rsvp-header" @click="toggleRSVP" :style="{
+        cursor: 'pointer',
+        padding: '1rem 1.25rem'
+      }">
+        <div class="rsvp-header-content" :class="{ 'rsvp-header-content--expanded': isExpanded }">
+          <!-- Mobile/Collapsed Layout -->
+          <div v-if="!isExpanded" class="flex items-center justify-between w-full">
+            <!-- Left: RSVP Title & Status -->
+            <div class="flex items-center space-x-3">
+              <h2 class="text-lg font-semibold" :style="{ color: primaryColor }">
+                RSVP
+              </h2>
+              
+              <!-- Compact Status Indicator -->
+              <div v-if="rsvpStatus" class="flex items-center space-x-2">
+                <div v-if="rsvpStatus === 'coming'" class="status-indicator" :style="{
+                  background: `linear-gradient(135deg, ${primaryColor}20, ${primaryColor}10)`,
+                  color: primaryColor
+                }">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span class="text-xs font-medium">Attending ({{ totalAttendees }})</span>
+                </div>
+                <div v-else-if="rsvpStatus === 'not_coming'" class="status-indicator" :style="{
+                  background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(107, 114, 128, 0.1))',
+                  color: '#6b7280'
+                }">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  <span class="text-xs font-medium">Can't attend</span>
+                </div>
+              </div>
+              
+              <!-- Event Date (collapsed only) -->
+              <div class="text-sm font-medium opacity-75" :style="{ color: primaryColor }">
+                {{ formatEventDateCompact }}
+              </div>
+              
+              <!-- Event Status Badge (desktop only, collapsed only) -->
+              <div class="hidden md:flex items-center">
+                <div v-if="eventStatus === 'upcoming'" class="status-badge-compact" :style="{
+                  background: `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
+                  color: primaryColor,
+                  boxShadow: `0 2px 8px ${primaryColor}20`
+                }">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="font-medium text-xs">{{ timeLeft.days }}d {{ timeLeft.hours }}h</span>
+                </div>
+                <div v-else-if="eventStatus === 'ongoing'" class="status-badge-compact" :style="{
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.08))',
+                  color: '#10b981',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)'
+                }">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/>
+                  </svg>
+                  <span class="font-medium text-xs">Live</span>
+                </div>
+                <div v-else-if="eventStatus === 'ended'" class="status-badge-compact" :style="{
+                  background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(107, 114, 128, 0.08))',
+                  color: '#6b7280',
+                  boxShadow: '0 2px 8px rgba(107, 114, 128, 0.2)'
+                }">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="font-medium text-xs">Ended</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right: Expand/Collapse Icon -->
+            <div class="expand-icon" :style="{ 
+              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              color: primaryColor
+            }">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Expanded/Centered Layout -->
+          <div v-else class="expanded-header-layout">
+            <div class="flex items-center justify-center">
+              <h2 class="text-xl font-bold" :style="{ color: primaryColor }">
+                RSVP
+              </h2>
+            </div>
+
+            <!-- Collapse Icon (positioned absolutely) -->
+            <div class="expand-icon expand-icon--centered" :style="{ 
+              transform: 'rotate(180deg)',
+              color: primaryColor
+            }">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Collapsible Content -->
+      <div class="rsvp-content" :class="{ 'rsvp-content--expanded': isExpanded }">
+        <!-- Event Info Header -->
+        <div class="rsvp-section-tight">
+          <div class="py-2">
           <!-- Event Header - Two Row Layout -->
           <div class="text-center space-y-2">
             <!-- Row 1: Event Date -->
@@ -66,11 +176,11 @@
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
 
-      <!-- Main RSVP Actions -->
-      <div class="rsvp-section-tight">
+        <!-- Main RSVP Actions -->
+        <div class="rsvp-section-tight">
         <!-- Sign In Prompt for Unauthenticated Users -->
         <div v-if="eventStatus !== 'ended' && !isUserAuthenticated" class="text-center py-2">
           <p class="text-sm mb-3" :style="{ color: primaryColor, opacity: 0.8 }">
@@ -191,55 +301,57 @@
             </span>
           </button>
         </div>
-      </div>
+        </div>
 
-      <!-- Guest Management Section -->
-      <div v-if="rsvpStatus === 'coming'" class="rsvp-section-tight" @mouseleave="handleGuestCounterLeave">
-        <div class="guest-management-container" :style="{
-          background: `linear-gradient(135deg, ${primaryColor}08, ${primaryColor}04)`,
-          boxShadow: `0 4px 16px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`
-        }">
+        <!-- Guest Management Section -->
+        <div v-if="rsvpStatus === 'coming'" class="rsvp-section-tight" @mouseleave="handleGuestCounterLeave">
+          <div class="guest-management-container" :style="{
+            background: `linear-gradient(135deg, ${primaryColor}08, ${primaryColor}04)`,
+            boxShadow: `0 4px 16px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`
+          }">
           <!-- Guest Counter -->
           <div class="glass-content-section py-2">
-            <div class="flex items-center justify-between max-w-sm mx-auto mb-2">
+            <!-- Guest Counter Label (centered) -->
+            <div class="text-center mb-3">
               <span class="text-base font-semibold" :style="{ color: primaryColor }">
                 Additional guests
               </span>
+            </div>
+            
+            <!-- Guest Counter Controls (centered, matching RSVP buttons) -->
+            <div class="flex items-center justify-center gap-4 mb-2">
+              <button
+                @click="decreaseGuestCount"
+                :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
+                class="counter-btn"
+                :style="{
+                  background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
+                  color: primaryColor,
+                  boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
+                  opacity: additionalGuests <= 0 || isUpdatingGuestCount ? '0.4' : '1'
+                }"
+              >
+                −
+              </button>
               
-              <div class="flex items-center gap-4">
-                <button
-                  @click="decreaseGuestCount"
-                  :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
-                  class="counter-btn"
-                  :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
-                    color: primaryColor,
-                    boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-                    opacity: additionalGuests <= 0 || isUpdatingGuestCount ? '0.4' : '1'
-                  }"
-                >
-                  −
-                </button>
-                
-                <div class="text-2xl font-bold min-w-[3ch] text-center flex items-center justify-center" :style="{ color: primaryColor }">
-                  <span v-if="!isUpdatingGuestCount">{{ additionalGuests }}</span>
-                  <div v-else class="animate-spin rounded-full h-6 w-6" :style="{ borderColor: `${primaryColor}30`, borderTopColor: primaryColor, border: '3px solid' }"></div>
-                </div>
-                
-                <button
-                  @click="increaseGuestCount"
-                  :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
-                  class="counter-btn"
-                  :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
-                    color: primaryColor,
-                    boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-                    opacity: additionalGuests >= 10 || isUpdatingGuestCount ? '0.4' : '1'
-                  }"
-                >
-                  +
-                </button>
+              <div class="text-2xl font-bold min-w-[3ch] text-center flex items-center justify-center" :style="{ color: primaryColor }">
+                <span v-if="!isUpdatingGuestCount">{{ additionalGuests }}</span>
+                <div v-else class="animate-spin rounded-full h-6 w-6" :style="{ borderColor: `${primaryColor}30`, borderTopColor: primaryColor, border: '3px solid' }"></div>
               </div>
+              
+              <button
+                @click="increaseGuestCount"
+                :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
+                class="counter-btn"
+                :style="{
+                  background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
+                  color: primaryColor,
+                  boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
+                  opacity: additionalGuests >= 10 || isUpdatingGuestCount ? '0.4' : '1'
+                }"
+              >
+                +
+              </button>
             </div>
             
             <!-- Total Summary -->
@@ -291,58 +403,59 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Status Message -->
-      <div v-if="rsvpStatus === 'not_coming' && !successMessage" class="rsvp-section-tight">
-        <div class="text-center py-2">
-          <div class="status-message-glass p-4" :style="{ 
-            backgroundColor: `${primaryColor}06`,
-            boxShadow: `0 4px 16px ${primaryColor}12, inset 0 1px 2px rgba(255, 255, 255, 0.08)`
-          }">
-            <span class="text-base font-semibold" :style="{ color: primaryColor, opacity: 0.9 }">
-              Thank you for your response
-            </span>
-          </div>
         </div>
-      </div>
 
-      <!-- Success Message -->
-      <div v-if="successMessage" class="rsvp-section-tight">
-        <div class="text-center py-2">
-          <div class="success-message-glass p-4" :style="{ 
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            boxShadow: '0 4px 16px rgba(16, 185, 129, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
-          }">
-            <div class="flex items-center justify-center mb-2">
-              <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <p class="text-emerald-800 font-semibold">{{ successMessage }}</p>
+        <!-- Status Message -->
+        <div v-if="rsvpStatus === 'not_coming' && !successMessage" class="rsvp-section-tight">
+          <div class="text-center py-2">
+            <div class="status-message-glass p-4" :style="{ 
+              backgroundColor: `${primaryColor}06`,
+              boxShadow: `0 4px 16px ${primaryColor}12, inset 0 1px 2px rgba(255, 255, 255, 0.08)`
+            }">
+              <span class="text-base font-semibold" :style="{ color: primaryColor, opacity: 0.9 }">
+                Thank you for your response
+              </span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Error Message -->
-      <div v-if="errorMessage" class="rsvp-section-tight">
-        <div class="text-center py-2">
-          <div class="error-message-glass p-4" :style="{ 
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
-          }">
-            <div class="flex items-center justify-center mb-2">
-              <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <p class="text-red-800 font-semibold">{{ errorMessage }}</p>
+        <!-- Success Message -->
+        <div v-if="successMessage" class="rsvp-section-tight">
+          <div class="text-center py-2">
+            <div class="success-message-glass p-4" :style="{ 
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
+            }">
+              <div class="flex items-center justify-center mb-2">
+                <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <p class="text-emerald-800 font-semibold">{{ successMessage }}</p>
+              </div>
             </div>
-            <button 
-              @click="errorMessage = ''"
-              class="text-red-600 hover:text-red-800 text-sm mt-1 underline font-medium"
-            >
-              Dismiss
-            </button>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="rsvp-section-tight">
+          <div class="text-center py-2">
+            <div class="error-message-glass p-4" :style="{ 
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
+            }">
+              <div class="flex items-center justify-center mb-2">
+                <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-red-800 font-semibold">{{ errorMessage }}</p>
+              </div>
+              <button 
+                @click="errorMessage = ''"
+                class="text-red-600 hover:text-red-800 text-sm mt-1 underline font-medium"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -377,9 +490,10 @@ const authStore = useAuthStore()
 // State
 const rsvpStatus = ref<'coming' | 'not_coming' | null>(null)
 const additionalGuests = ref(0)
-const showConfirmationMessage = ref(false)
+// const showConfirmationMessage = ref(false) // Unused
 
-// No more collapsible state needed
+// Collapsible state
+const isExpanded = ref(false)
 
 // API Registration State
 const currentRegistration = ref<EventRegistration | null>(null)
@@ -405,10 +519,10 @@ const timeLeft = ref({
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 
 // Computed Properties
-const showRSVPSection = computed(() => {
-  // Show RSVP section if event hasn't ended
-  return eventStatus.value !== 'ended'
-})
+// const showRSVPSection = computed(() => {
+//   // Show RSVP section if event hasn't ended
+//   return eventStatus.value !== 'ended'
+// }) // Unused
 
 const isUserAuthenticated = computed(() => {
   return authStore.isAuthenticated
@@ -467,14 +581,31 @@ const formatEventTime = computed(() => {
   }
 })
 
-const countdownLabel = computed(() => {
-  if (eventStatus.value === 'ongoing') return 'Event in progress'
-  if (eventStatus.value === 'ended') return 'Event has ended'
-  return 'Time remaining'
+const formatEventDateCompact = computed(() => {
+  if (!props.eventStartDate) return 'Date TBD'
+  
+  try {
+    const date = new Date(props.eventStartDate)
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch {
+    return props.eventStartDate
+  }
 })
 
+// const countdownLabel = computed(() => {
+//   if (eventStatus.value === 'ongoing') return 'Event in progress'
+//   if (eventStatus.value === 'ended') return 'Event has ended'
+//   return 'Time remaining'
+// }) // Unused
 
-// No more collapsible methods needed since guest section shows directly when attending
+
+// Collapsible methods
+const toggleRSVP = () => {
+  isExpanded.value = !isExpanded.value
+}
 
 // API Methods
 const loadCurrentRegistration = async () => {
@@ -730,17 +861,17 @@ const handleBeforeUnload = () => {
   }
 }
 
-const hexToRgb = (hex: string): string => {
-  // Remove # if present
-  hex = hex.replace('#', '')
-  
-  // Parse hex to RGB
-  const r = parseInt(hex.substr(0, 2), 16)
-  const g = parseInt(hex.substr(2, 2), 16)
-  const b = parseInt(hex.substr(4, 2), 16)
-  
-  return `${r}, ${g}, ${b}`
-}
+// const hexToRgb = (hex: string): string => {
+//   // Remove # if present
+//   hex = hex.replace('#', '')
+//   
+//   // Parse hex to RGB
+//   const r = parseInt(hex.substr(0, 2), 16)
+//   const g = parseInt(hex.substr(2, 2), 16)
+//   const b = parseInt(hex.substr(4, 2), 16)
+//   
+//   return `${r}, ${g}, ${b}`
+// } // Unused
 
 // Watchers
 watch(() => authStore.isAuthenticated, (isAuth) => {
@@ -800,7 +931,7 @@ onUnmounted(() => {
 <style scoped>
 /* Liquid Glass Container - Seamless unified surface */
 .liquid-glass-container {
-  border-radius: 2rem;
+  border-radius: 1.5rem;
   overflow: hidden;
   backdrop-filter: blur(20px);
   position: relative;
@@ -815,6 +946,89 @@ onUnmounted(() => {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   pointer-events: none;
+}
+
+/* RSVP Header - Collapsible trigger */
+.rsvp-header {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.rsvp-header:hover {
+  backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rsvp-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Expand/Collapse Icon */
+.expand-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+}
+
+.rsvp-header:hover .expand-icon {
+  opacity: 1;
+}
+
+/* Header Content Layouts */
+.rsvp-header-content {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rsvp-header-content--expanded {
+  /* Additional styling for expanded state if needed */
+}
+
+/* Expanded Header Layout */
+.expanded-header-layout {
+  position: relative;
+  text-align: center;
+}
+
+/* Centered expand icon for expanded state */
+.expand-icon--centered {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%) rotate(180deg);
+  opacity: 0.8;
+}
+
+.rsvp-header:hover .expand-icon--centered {
+  opacity: 1;
+}
+
+/* Collapsible Content */
+.rsvp-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+
+.rsvp-content--expanded {
+  max-height: 1000px; /* Large enough to accommodate all content */
+  opacity: 1;
 }
 
 /* RSVP Sections - Flowing divisions */
