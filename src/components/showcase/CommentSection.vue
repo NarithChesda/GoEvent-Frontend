@@ -13,17 +13,27 @@
     </h2>
     
     <!-- Comment Form -->
-    <div class="mb-4 p-4 rounded-xl bg-black/30 backdrop-blur-sm border border-white/20">
+    <div class="comment-form-liquid mb-4" :style="{ 
+      backgroundColor: `${primaryColor}06`,
+      boxShadow: `0 8px 32px -4px ${primaryColor}15, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
+    }">
       <!-- Sign In Prompt for Unauthenticated Users -->
       <div v-if="!isUserAuthenticated" class="text-center py-4">
-        <p class="text-sm mb-3" :style="{ color: 'white', opacity: 0.8 }">
+        <p class="text-sm mb-3" :style="{ color: primaryColor, opacity: 0.9 }">
           Please sign in to leave a comment
         </p>
         <button
           @click="handleSignInClick"
-          class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white transition-all hover:scale-[1.02]"
+          class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02]"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+            background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+            color: primaryColor,
+            boxShadow: `
+              0 8px 32px -4px ${primaryColor}25,
+              0 4px 16px -2px ${primaryColor}15,
+              inset 0 2px 4px rgba(255, 255, 255, 0.1),
+              inset 0 -1px 2px ${primaryColor}10
+            `
           }"
         >
           Sign In to Comment
@@ -32,7 +42,7 @@
 
       <!-- Already Commented Message -->
       <div v-else-if="hasAlreadyCommented" class="text-center py-4">
-        <p class="text-sm mb-2" :style="{ color: 'white', opacity: 0.8 }">
+        <p class="text-sm mb-2" :style="{ color: primaryColor, opacity: 0.9 }">
           You have already left a comment for this event
         </p>
         <p class="text-xs" :style="{ color: primaryColor, opacity: 0.7 }">
@@ -49,8 +59,13 @@
             placeholder="Share your thoughts, wishes, or congratulations..."
             rows="3"
             maxlength="500"
-            class="w-full px-3 py-2 rounded-lg bg-black/30 border border-white/40 text-white placeholder-white/80 text-sm focus:outline-none focus:ring-2 focus:border-transparent resize-none"
-            :style="{ '--tw-ring-color': primaryColor + '60' }"
+            class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
+            :style="{ 
+              backgroundColor: `${primaryColor}08`,
+              boxShadow: `inset 0 2px 4px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
+              '--tw-ring-color': primaryColor + '60',
+              color: primaryColor
+            }"
             required
           />
           <div class="text-xs text-right mt-1" :style="{ color: primaryColor, opacity: '0.9' }">
@@ -62,9 +77,16 @@
         <button
           type="submit"
           :disabled="isSubmittingComment || !newComment.message.trim()"
-          class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+            background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+            color: primaryColor,
+            boxShadow: `
+              0 8px 32px -4px ${primaryColor}25,
+              0 4px 16px -2px ${primaryColor}15,
+              inset 0 2px 4px rgba(255, 255, 255, 0.1),
+              inset 0 -1px 2px ${primaryColor}10
+            `
           }"
         >
           {{ isSubmittingComment ? 'Posting...' : 'Post Comment' }}
@@ -80,19 +102,25 @@
         @scroll="handleScroll"
       >
         <!-- Loading State -->
-        <div v-if="loadingComments" class="text-center py-8">
-          <div class="inline-flex items-center gap-2 text-white">
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span class="text-sm">Loading comments...</span>
+        <div v-if="loadingComments" class="liquid-glass-state text-center py-8" :style="{ 
+          backgroundColor: `${primaryColor}06`,
+          boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
+        }">
+          <div class="inline-flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
+            <span class="text-sm" :style="{ color: primaryColor, opacity: '0.8' }">Loading comments...</span>
           </div>
         </div>
 
         <!-- No Comments State -->
-        <div v-else-if="comments.length === 0" class="text-center py-8">
-          <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-white/20">
-            <MessageCircle class="w-6 h-6 text-white/80" />
+        <div v-else-if="comments.length === 0" class="liquid-glass-state text-center py-8" :style="{ 
+          backgroundColor: `${primaryColor}06`,
+          boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
+        }">
+          <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" :style="{ backgroundColor: `${primaryColor}15` }">
+            <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
           </div>
-          <p class="text-sm text-white/80">
+          <p class="text-sm" :style="{ color: primaryColor, opacity: '0.8' }">
             Be the first to leave a comment!
           </p>
         </div>
@@ -102,15 +130,23 @@
           <div 
             v-for="comment in comments" 
             :key="comment.id"
-            class="p-4 rounded-xl backdrop-blur-sm mb-3 last:mb-0"
-            :class="[
-              isUserCommentOwner(comment) 
-                ? 'bg-black/40 border-2' 
-                : 'bg-black/30 border border-white/20'
-            ]"
-            :style="isUserCommentOwner(comment) ? { 
-              borderColor: primaryColor + '60'
-            } : {}"
+            class="comment-card-liquid p-4 mb-3 last:mb-0"
+            :style="isUserCommentOwner(comment) ? {
+              backgroundColor: `${primaryColor}10`,
+              boxShadow: `
+                0 8px 32px -4px ${primaryColor}20,
+                0 4px 16px -2px ${primaryColor}15,
+                inset 0 2px 4px rgba(255, 255, 255, 0.12),
+                inset 0 -1px 2px ${primaryColor}10
+              `,
+              border: `1px solid ${primaryColor}30`
+            } : {
+              backgroundColor: `${primaryColor}06`,
+              boxShadow: `
+                0 4px 16px -2px ${primaryColor}15,
+                inset 0 1px 2px rgba(255, 255, 255, 0.08)
+              `
+            }"
           >
             <!-- Comment Header -->
             <div class="flex items-center justify-between mb-2">
@@ -134,7 +170,7 @@
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
-                    <p class="text-sm font-medium text-white">
+                    <p class="text-sm font-medium" :style="{ color: primaryColor }">
                       {{ getCommentDisplayName(comment) }}
                     </p>
                     <span 
@@ -145,7 +181,7 @@
                       You
                     </span>
                   </div>
-                  <p class="text-xs text-white/70">
+                  <p class="text-xs" :style="{ color: primaryColor, opacity: 0.7 }">
                     {{ formatCommentDate(comment.created_at) }}
                   </p>
                 </div>
@@ -155,25 +191,35 @@
               <div v-if="isUserCommentOwner(comment)" class="flex items-center gap-1">
                 <button
                   @click="startEditComment(comment)"
-                  class="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all"
+                  class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110"
+                  :style="{
+                    backgroundColor: `${primaryColor}08`,
+                    color: primaryColor,
+                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`
+                  }"
                   title="Edit comment"
                 >
                   <Edit class="w-3.5 h-3.5" />
                 </button>
                 <button
                   @click="openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')"
-                  class="p-1.5 rounded-lg bg-black/20 hover:bg-red-600/80 text-white/70 hover:text-white transition-all"
+                  class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110 group"
+                  :style="{
+                    backgroundColor: `${primaryColor}08`,
+                    color: primaryColor,
+                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`
+                  }"
                   title="Delete comment"
                   :disabled="isDeletingComment === comment.id"
                 >
-                  <Trash2 v-if="isDeletingComment !== comment.id" class="w-3.5 h-3.5" />
-                  <div v-else class="w-3.5 h-3.5 border border-white/50 border-t-white rounded-full animate-spin"></div>
+                  <Trash2 v-if="isDeletingComment !== comment.id" class="w-3.5 h-3.5 group-hover:text-red-400 transition-colors" />
+                  <div v-else class="w-3.5 h-3.5 border border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60` }"></div>
                 </button>
               </div>
             </div>
 
             <!-- Comment Message (Read Mode) -->
-            <p v-if="editingCommentId !== comment.id" class="text-sm text-white leading-relaxed">
+            <p v-if="editingCommentId !== comment.id" class="text-sm leading-relaxed" :style="{ color: primaryColor, opacity: 0.9 }">
               {{ comment.comment_text }}
             </p>
             
@@ -181,8 +227,13 @@
             <div v-else class="space-y-3">
               <textarea
                 v-model="editCommentText"
-                class="w-full px-3 py-2 rounded-lg bg-black/30 border border-white/40 text-white placeholder-white/80 text-sm focus:outline-none focus:ring-2 focus:border-transparent resize-none"
-                :style="{ '--tw-ring-color': primaryColor + '60' }"
+                class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
+                :style="{ 
+                  backgroundColor: `${primaryColor}08`,
+                  boxShadow: `inset 0 2px 4px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
+                  '--tw-ring-color': primaryColor + '60',
+                  color: primaryColor
+                }"
                 rows="3"
                 maxlength="500"
                 placeholder="Edit your comment..."
@@ -194,7 +245,13 @@
                 <div class="flex items-center gap-2">
                   <button
                     @click="cancelEditComment"
-                    class="px-3 py-1.5 text-xs rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all"
+                    class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105"
+                    :style="{
+                      backgroundColor: `${primaryColor}06`,
+                      color: primaryColor,
+                      opacity: '0.8',
+                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}10`
+                    }"
                     :disabled="isUpdatingComment"
                   >
                     Cancel
@@ -202,9 +259,15 @@
                   <button
                     @click="updateComment(comment.id)"
                     :disabled="isUpdatingComment || !editCommentText.trim() || editCommentText === comment.comment_text"
-                    class="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+                      background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+                      color: primaryColor,
+                      boxShadow: `
+                        0 4px 16px -2px ${primaryColor}20,
+                        inset 0 2px 4px rgba(255, 255, 255, 0.1),
+                        inset 0 -1px 2px ${primaryColor}10
+                      `
                     }"
                   >
                     <span v-if="!isUpdatingComment">Save</span>
@@ -219,10 +282,13 @@
           </div>
 
           <!-- Loading More Indicator -->
-          <div v-if="loadingMoreComments" class="text-center py-4 mt-2">
-            <div class="inline-flex items-center gap-2 text-white/70">
-              <div class="w-3 h-3 border-2 border-white/70 border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-xs">Loading more comments...</span>
+          <div v-if="loadingMoreComments" class="liquid-glass-state text-center py-4 mt-2" :style="{ 
+            backgroundColor: `${primaryColor}04`,
+            boxShadow: `0 2px 8px -1px ${primaryColor}10, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+          }">
+            <div class="inline-flex items-center gap-2">
+              <div class="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
+              <span class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">Loading more comments...</span>
             </div>
           </div>
         </div>
@@ -230,8 +296,12 @@
     </div>
 
     <!-- Error Message -->
-    <div v-if="errorMessage" class="mt-3 p-3 rounded-lg bg-red-500/20 border border-red-500/40">
-      <p class="text-sm text-red-300">{{ errorMessage }}</p>
+    <div v-if="errorMessage" class="liquid-glass-error mt-3 p-3" :style="{ 
+      backgroundColor: '#dc262620',
+      boxShadow: '0 4px 16px -2px #dc262615, inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+      border: '1px solid #dc262640'
+    }">
+      <p class="text-sm" :style="{ color: '#dc2626', opacity: 0.9 }">{{ errorMessage }}</p>
     </div>
     
     <!-- Comment Section Endline -->
@@ -818,6 +888,186 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Liquid Glass Container - Comment Form */
+.comment-form-liquid {
+  border-radius: 2rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.comment-form-liquid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  pointer-events: none;
+}
+
+/* Liquid Glass Button */
+.liquid-glass-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+}
+
+.liquid-glass-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  pointer-events: none;
+}
+
+.liquid-glass-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.liquid-glass-button:hover::after {
+  left: 100%;
+}
+
+.liquid-glass-button:hover {
+  transform: translateY(-1px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Liquid Glass Textarea */
+.liquid-glass-textarea {
+  border-radius: 1rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.liquid-glass-textarea::placeholder {
+  opacity: 0.6;
+}
+
+.liquid-glass-textarea:focus {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transform: translateY(-1px);
+}
+
+/* Comment Card Liquid Glass */
+.comment-card-liquid {
+  border-radius: 1.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.comment-card-liquid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  pointer-events: none;
+}
+
+/* Liquid Glass Action Buttons */
+.liquid-glass-action-button {
+  border-radius: 0.75rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.liquid-glass-action-button:hover {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Liquid Glass Edit Buttons */
+.liquid-glass-edit-button {
+  border-radius: 0.75rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.liquid-glass-edit-button:hover {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Liquid Glass State Containers */
+.liquid-glass-state {
+  border-radius: 1.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass-state::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+/* Liquid Glass Error Container */
+.liquid-glass-error {
+  border-radius: 1rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass-error::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
 /* Focus ring color */
 input:focus,
 textarea:focus {

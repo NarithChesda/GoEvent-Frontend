@@ -46,7 +46,7 @@
                       fontFamily: primaryFont || currentFont,
                       color: primaryColor
                     }">
-                  {{ method.bank_name || method.name }}
+                  {{ capitalizeText(method.bank_name || method.name) }}
                 </h3>
                 <div class="flex items-center space-x-2 text-sm mt-1" 
                      :style="{ color: primaryColor, opacity: '0.7' }">
@@ -162,7 +162,7 @@
                       <svg class="w-4 h-4 mr-2 flex-shrink-0" :style="{ color: primaryColor }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                       </svg>
-                      <span class="truncate">{{ method.account_name }}</span>
+                      <span class="truncate">{{ capitalizeText(method.account_name) }}</span>
                     </div>
                   </div>
 
@@ -343,6 +343,11 @@ const copyToClipboard = async (text: string) => {
 const onImageError = (event: Event) => {
   console.error('Failed to load QR code image:', event)
   // You could set a fallback or emit an error event
+}
+
+const capitalizeText = (text: string | undefined): string => {
+  if (!text) return ''
+  return text.toUpperCase()
 }
 </script>
 
