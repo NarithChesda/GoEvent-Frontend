@@ -331,10 +331,6 @@
       <p class="text-sm" :style="{ color: '#dc2626', opacity: 0.9 }">{{ errorMessage }}</p>
     </div>
     
-    <!-- Comment Section Endline -->
-    <div class="flex justify-center mt-6">
-      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-    </div>
   </div>
   
   <!-- Delete Confirmation Modal -->

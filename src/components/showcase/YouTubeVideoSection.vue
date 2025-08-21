@@ -24,10 +24,6 @@
       />
     </div>
     
-    <!-- Video Section Endline -->
-    <div class="flex justify-center mt-6">
-      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-    </div>
   </div>
 </template>
 

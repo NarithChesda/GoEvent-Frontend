@@ -3,7 +3,7 @@
     <!-- Payment Section Header - First Payment Method Name + Type -->
     <h2 
       v-if="paymentMethods.length > 0"
-      class="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 md:mb-5 text-center" 
+      class="text-xl font-semibold mb-4 text-center" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -239,10 +239,6 @@
       </p>
     </div>
 
-    <!-- Section Endline -->
-    <div class="flex justify-center mt-4">
-      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-    </div>
   </div>
 </template>
 

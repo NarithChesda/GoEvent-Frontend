@@ -74,8 +74,13 @@
                   :secondary-font="secondaryFont"
                 />
 
+                <!-- Host Section Divider -->
+                <WeddingSectionDivider
+                  :primary-color="primaryColor"
+                />
+
                 <!-- Event Information -->
-                <div class="mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+                <div class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10">
                   <EventInfo
                     :date-text="dateText"
                     :time-text="timeText"
@@ -86,14 +91,14 @@
                     @open-map="$emit('openMap')"
                   />
 
-                  <!-- Event Info Endline -->
-                  <div class="flex justify-center mt-4">
-                    <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-                  </div>
+                  <!-- Event Info Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- RSVP Section -->
-                <div id="rsvp-section">
+                <div id="rsvp-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                   <RSVPSection
                   :event-id="event.id"
                   :event-start-date="event.start_date"
@@ -103,21 +108,31 @@
                   :accent-color="accentColor"
                   :is-event-past="isEventPast"
                   />
+
+                  <!-- RSVP Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- Agenda Section -->
-                <div id="agenda-section">
+                <div id="agenda-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                   <AgendaSection
                   :agenda-items="agendaItems"
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   />
+
+                  <!-- Agenda Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- Map Section -->
-                <div id="location-section">
-                <div v-if="event.google_map_embed_link" class="mb-8">
+                <div id="location-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div v-if="event.google_map_embed_link" class="mb-6">
                   <h2
                     class="text-xl font-semibold mb-4 text-center"
                     :style="{
@@ -142,25 +157,30 @@
                     />
                   </div>
 
-                  <!-- Location Section Endline -->
-                  <div class="flex justify-center mt-6">
-                    <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-                  </div>
+                  <!-- Location Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
                 </div>
 
                 <!-- YouTube Video Section -->
-                <div id="video-section">
+                <div id="video-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                   <YouTubeVideoSection
                   :youtube-embed-link="event.youtube_embed_link"
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   />
+
+                  <!-- Video Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- Photo Gallery Section -->
-                <div id="gallery-section">
+                <div id="gallery-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                   <PhotoGallery
                   :photos="eventPhotos"
                   :show-all="showAllPhotos"
@@ -171,10 +191,15 @@
                   @open-photo="$emit('openPhoto', $event)"
                   @toggle-show-all="$emit('togglePhotos')"
                   />
+
+                  <!-- Gallery Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- Payment Section -->
-                <div v-if="paymentMethods.length > 0" id="payment-section">
+                <div v-if="paymentMethods.length > 0" id="payment-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                   <PaymentSection
                     :payment-methods="paymentMethods"
                     :primary-color="primaryColor"
@@ -185,10 +210,15 @@
                     :secondary-font="secondaryFont || currentFont"
                     :get-media-url="getMediaUrl"
                   />
+
+                  <!-- Payment Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- Comment Section -->
-                <div id="comment-section">
+                <div id="comment-section" class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14">
                   <CommentSection
                   :event-id="event.id"
                   :guest-name="guestName as string"
@@ -196,6 +226,11 @@
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   @comment-submitted="handleCommentSubmitted"
+                  />
+
+                  <!-- Comment Section Divider -->
+                  <WeddingSectionDivider
+                    :primary-color="primaryColor"
                   />
                 </div>
 
@@ -306,6 +341,7 @@ import PhotoGallery from './PhotoGallery.vue'
 import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
+import WeddingSectionDivider from './WeddingSectionDivider.vue'
 import type { EventData, EventText, Host, AgendaItem, EventPhoto, EventComment } from '../../composables/useEventShowcase'
 import type { EventPaymentMethod } from '../../services/api'
 

@@ -1,7 +1,7 @@
 <template>
   <div v-if="agendaItems.length > 0" class="mb-8">
     <h2 
-      class="text-xl font-semibold mb-6 text-center" 
+      class="text-xl font-semibold mb-4 text-center" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -49,10 +49,6 @@
       </div>
     </div>
     
-    <!-- Agenda Section Endline -->
-    <div class="flex justify-center mt-6">
-      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-    </div>
   </div>
 </template>
 

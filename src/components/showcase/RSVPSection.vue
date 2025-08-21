@@ -2,7 +2,7 @@
   <div id="rsvp" class="mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
     <!-- RSVP Section Header -->
     <h2 
-      class="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 md:mb-6 text-center px-4 sm:px-0" 
+      class="text-xl font-semibold mb-4 text-center px-4 sm:px-0" 
       :style="{ 
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -348,10 +348,6 @@
       </div>
     </div>
     
-    <!-- RSVP Section Endline -->
-    <div class="flex justify-center mt-6">
-      <div class="w-16 h-px opacity-30" :style="{ backgroundColor: primaryColor }"></div>
-    </div>
   </div>
 </template>
 
