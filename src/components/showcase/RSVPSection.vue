@@ -117,9 +117,13 @@
               'opacity-60 cursor-not-allowed': isSubmitting
             }"
             :style="{
-              borderColor: rsvpStatus === 'coming' ? primaryColor : `${primaryColor}60`,
-              backgroundColor: rsvpStatus === 'coming' ? `${primaryColor}20` : 'transparent',
-              color: primaryColor
+              background: rsvpStatus === 'coming' 
+                ? `linear-gradient(135deg, ${primaryColor}60, ${primaryColor}40)` 
+                : `linear-gradient(135deg, ${primaryColor}08, ${primaryColor}04)`,
+              boxShadow: rsvpStatus === 'coming'
+                ? `0 8px 32px -4px ${primaryColor}50, 0 4px 16px -2px ${primaryColor}30, inset 0 2px 4px rgba(255, 255, 255, 0.2), inset 0 -1px 2px ${primaryColor}20`
+                : `0 4px 16px -2px ${primaryColor}10, inset 0 1px 2px rgba(255, 255, 255, 0.05)`,
+              color: rsvpStatus === 'coming' ? '#ffffff' : primaryColor
             }"
           >
             <span v-if="!isSubmitting || rsvpStatus !== 'coming'" class="whitespace-nowrap">
@@ -141,9 +145,13 @@
               'opacity-60 cursor-not-allowed': isSubmitting
             }"
             :style="{
-              borderColor: rsvpStatus === 'not_coming' ? primaryColor : `${primaryColor}60`,
-              backgroundColor: rsvpStatus === 'not_coming' ? `${primaryColor}10` : 'transparent',
-              color: primaryColor
+              background: rsvpStatus === 'not_coming' 
+                ? `linear-gradient(135deg, ${primaryColor}60, ${primaryColor}40)` 
+                : `linear-gradient(135deg, ${primaryColor}08, ${primaryColor}04)`,
+              boxShadow: rsvpStatus === 'not_coming'
+                ? `0 8px 32px -4px ${primaryColor}50, 0 4px 16px -2px ${primaryColor}30, inset 0 2px 4px rgba(255, 255, 255, 0.2), inset 0 -1px 2px ${primaryColor}20`
+                : `0 4px 16px -2px ${primaryColor}10, inset 0 1px 2px rgba(255, 255, 255, 0.05)`,
+              color: rsvpStatus === 'not_coming' ? '#ffffff' : primaryColor
             }"
           >
             <span v-if="!isSubmitting || rsvpStatus !== 'not_coming'" class="whitespace-nowrap">
@@ -856,10 +864,10 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* RSVP Buttons */
+/* RSVP Buttons - Liquid Glass Design */
 .rsvp-btn {
   padding: 0.75rem 1.5rem;
-  border: 2px solid;
+  border: none;
   border-radius: 1rem;
   font-weight: 600;
   text-align: center;
@@ -867,11 +875,22 @@ onUnmounted(() => {
   backdrop-filter: blur(12px);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.rsvp-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  pointer-events: none;
 }
 
 .rsvp-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .rsvp-btn:active {
@@ -879,7 +898,7 @@ onUnmounted(() => {
 }
 
 .rsvp-btn-active {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Compact RSVP Toggle Switch */

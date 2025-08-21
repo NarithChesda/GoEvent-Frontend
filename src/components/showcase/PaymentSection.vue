@@ -14,41 +14,47 @@
       {{ paymentMethods[0].name }} {{ paymentMethods[0].payment_type.charAt(0).toUpperCase() + paymentMethods[0].payment_type.slice(1) }}
     </h2>
 
-    <!-- Liquid Glass Payment Container -->
-    <div class="liquid-glass-container" :style="{ 
-      backgroundColor: `${primaryColor}06`,
-      boxShadow: `0 8px 32px -4px ${primaryColor}15, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
-    }">
-      <!-- Payment Methods -->
-      <div v-for="method in paymentMethods" :key="method.id" class="payment-method-section mb-3">
+    <!-- Payment Methods -->
+    <div class="space-y-3">
+      <div v-for="method in paymentMethods" :key="method.id" class="payment-method-section mb-3 last:mb-0">
         
-        <!-- Collapsible Card Header - Always Visible -->
+        <!-- Payment Method Card - Unified Design -->
         <div 
-          class="payment-card-header cursor-pointer transition-all duration-300 hover:scale-[1.01] rounded-2xl"
+          class="payment-card-container transition-all duration-300"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}08, ${primaryColor}04)`,
-            boxShadow: `0 2px 12px ${primaryColor}15`,
-            backdropFilter: 'blur(12px)'
+            backgroundColor: `${primaryColor}15`,
+            boxShadow: `
+              0 12px 36px -6px ${primaryColor}25,
+              0 6px 24px -3px ${primaryColor}20,
+              0 3px 12px -1px ${primaryColor}15,
+              inset 0 1px 2px rgba(255, 255, 255, 0.12)
+            `,
+            border: `1px solid ${primaryColor}40`,
+            backdropFilter: 'blur(16px)'
           }"
-          @click="toggleCard(method)"
         >
-          <div class="flex items-center justify-between p-3 sm:p-4">
+          <!-- Collapsible Card Header - Always Visible -->
+          <div 
+            class="payment-card-header cursor-pointer transition-all duration-300 hover:translateY(-1px)"
+            @click="toggleCard(method)"
+          >
+          <div class="flex items-center justify-between p-4">
             <!-- Method Info -->
-            <div class="flex items-center space-x-4">
-              <div class="p-3 rounded-2xl" :style="{ backgroundColor: `${primaryColor}15` }">
-                <svg class="w-6 h-6" :style="{ color: primaryColor }" fill="currentColor" viewBox="0 0 20 20">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 rounded-xl" :style="{ backgroundColor: `${primaryColor}08` }">
+                <svg class="w-5 h-5" :style="{ color: primaryColor }" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v2H4V6zm0 4h12v4H4v-4z"/>
                 </svg>
               </div>
               <div>
-                <h3 class="font-semibold text-base sm:text-lg" 
+                <h3 class="font-semibold text-sm sm:text-base" 
                     :style="{ 
                       fontFamily: primaryFont || currentFont,
                       color: primaryColor
                     }">
                   {{ capitalizeText(method.bank_name || method.name) }}
                 </h3>
-                <div class="flex items-center space-x-2 text-sm mt-1" 
+                <div class="flex items-center space-x-2 text-xs mt-1" 
                      :style="{ color: primaryColor, opacity: '0.7' }">
                   <span v-if="method.currency">{{ method.currency }}</span>
                 </div>
@@ -57,14 +63,14 @@
             
             <!-- Expand/Collapse Arrow -->
             <div class="transition-transform duration-300" :class="{ 'rotate-180': isCardExpanded(method) }">
-              <svg class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.7' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5" :style="{ color: primaryColor, opacity: '0.6' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </div>
           </div>
-        </div>
+          </div>
 
-        <!-- Expandable Content -->
+          <!-- Expandable Content -->
         <div 
           class="payment-card-content overflow-hidden transition-all duration-500 ease-in-out"
           :class="isCardExpanded(method) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'"
@@ -72,27 +78,21 @@
           <div class="p-4 sm:p-6">
             <!-- Payment Method Card Content -->
 
-          <!-- QR Code & Bank Info Section -->
-          <div class="glass-content-section flex flex-col sm:flex-row items-start justify-center gap-6 mb-4">
-            <!-- QR Code - Main Focal Point -->
-            <div class="flex-shrink-0 text-center w-full sm:w-auto">
+          <!-- Single Row Payment Layout -->
+          <div class="payment-row-container flex flex-col lg:flex-row items-start lg:items-center justify-center gap-4 lg:gap-6">
+            <!-- QR Code Section -->
+            <div class="flex-shrink-0 text-center w-full lg:w-auto">
               <!-- QR Code exists -->
               <div v-if="method.qr_code_image" class="relative">
                 <!-- Seamless QR container with depth -->
-                <div class="qr-glass-container relative p-4 transition-all duration-300 hover:scale-[1.02] group"
+                <div class="qr-simple-container relative p-4 transition-all duration-300 hover:scale-[1.02] group"
                      :style="{ 
-                       backgroundColor: `${primaryColor}08`,
-                       boxShadow: `
-                         0 12px 40px -8px ${primaryColor}25,
-                         0 4px 16px -2px ${primaryColor}15,
-                         inset 0 2px 4px rgba(255, 255, 255, 0.1),
-                         inset 0 -1px 2px ${primaryColor}10
-                       `
+                       backgroundColor: `${primaryColor}04`
                      }">
                   <img 
                     :src="getMediaUrl(method.qr_code_image)" 
                     :alt="`QR Code for ${method.name}`"
-                    class="w-36 h-36 sm:w-40 sm:h-40 mx-auto rounded-2xl shadow-md transition-all duration-300"
+                    class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl shadow-md transition-all duration-300"
                     @error="onImageError"
                   />
                   <!-- Subtle scan line animation overlay -->
@@ -103,55 +103,45 @@
                        }">
                   </div>
                 </div>
-                <p class="text-xs mt-3 font-medium tracking-wide" :style="{ color: primaryColor, opacity: '0.8' }">
-                  Scan to pay instantly
+                <p class="text-xs mt-1 font-medium tracking-wide" :style="{ color: primaryColor, opacity: '0.8' }">
+                  Scan to pay
                 </p>
               </div>
               
               <!-- QR Code Fallback -->
               <div v-else class="relative">
                 <!-- Seamless fallback container -->
-                <div class="qr-glass-container relative p-4"
+                <div class="qr-simple-container relative p-4"
                      :style="{ 
                        backgroundColor: `${primaryColor}04`,
-                       boxShadow: `
-                         0 8px 24px -4px ${primaryColor}15,
-                         inset 0 2px 4px rgba(255, 255, 255, 0.05),
-                         inset 0 -1px 2px ${primaryColor}08
-                       `,
                        border: `1px dashed ${primaryColor}20`
                      }">
-                  <div class="w-36 h-36 sm:w-40 sm:h-40 mx-auto rounded-2xl flex items-center justify-center" 
+                  <div class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl flex items-center justify-center" 
                        :style="{ backgroundColor: `${primaryColor}05` }">
                     <div class="text-center">
-                      <svg class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2" :style="{ color: primaryColor, opacity: '0.4' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-2" :style="{ color: primaryColor, opacity: '0.4' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4M4 4h4m0 0V2m0 2h2m0 0V2m0 2v2M2 2h4m16 0h4M6 18H4m0 0v2m0-2h2m0 0v2m0-2h2m8 0v2m-2-2h2m0 0h2"/>
                       </svg>
-                      <div class="w-8 h-0.5 mx-auto rounded-full animate-pulse" :style="{ backgroundColor: `${primaryColor}40` }"></div>
+                      <div class="w-6 h-0.5 mx-auto rounded-full animate-pulse" :style="{ backgroundColor: `${primaryColor}40` }"></div>
                     </div>
                   </div>
                 </div>
-                <p class="text-sm mt-3 font-medium tracking-wide" :style="{ color: primaryColor, opacity: '0.6' }">
-                  QR code coming soon
+                <p class="text-xs mt-1 font-medium tracking-wide" :style="{ color: primaryColor, opacity: '0.6' }">
+                  QR coming soon
                 </p>
               </div>
             </div>
 
-            <!-- Bank Info - Integrated Panel -->
-            <div v-if="hasVisibleBankInfo(method)" class="flex-shrink-0 w-full sm:w-auto sm:max-w-xs">
-              <!-- Seamless bank info container -->
-              <div class="bank-info-glass p-4 backdrop-blur-md transition-all duration-200"
+            <!-- Payment Info Panel - Grouped Bank Info + Payment Button -->
+            <div v-if="hasVisibleBankInfo(method) || method.payment_url" class="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
+              <div class="payment-info-simple p-4 backdrop-blur-md transition-all duration-200"
                    :style="{ 
-                     backgroundColor: `${primaryColor}06`, 
-                     boxShadow: `
-                       0 8px 32px -6px ${primaryColor}20,
-                       0 2px 8px -1px ${primaryColor}10,
-                       inset 0 1px 2px rgba(255, 255, 255, 0.08)
-                     `
+                     backgroundColor: `${primaryColor}04`
                    }">
-                <div class="space-y-2">
-                  <!-- Account Name -->
-                  <div v-if="method.account_name" class="text-center sm:text-left">
+                
+                <!-- Bank Info -->
+                <div v-if="hasVisibleBankInfo(method)" class="space-y-2 mb-4">
+                  <div v-if="method.account_name" class="text-center lg:text-left">
                     <div class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-medium text-sm min-h-[32px]" 
                          :style="{ 
                            backgroundColor: `${primaryColor}08`, 
@@ -166,8 +156,7 @@
                     </div>
                   </div>
 
-                  <!-- Account Number with improved copy UX -->
-                  <div v-if="method.account_number" class="text-center sm:text-left">
+                  <div v-if="method.account_number" class="text-center lg:text-left">
                     <div class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-mono text-sm min-h-[32px] group cursor-pointer transition-all hover:shadow-lg" 
                          :style="{ 
                            backgroundColor: `${primaryColor}10`, 
@@ -187,12 +176,35 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Payment Button -->
+                <div v-if="method.payment_url" class="text-center lg:text-left">
+                  <a 
+                    :href="method.payment_url" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="payment-link-minimalist group inline-flex items-center justify-center w-full lg:w-auto"
+                    :style="{ 
+                      fontFamily: primaryFont || currentFont,
+                      background: `linear-gradient(135deg, ${primaryColor}60, ${primaryColor}40)`,
+                      color: '#ffffff',
+                      boxShadow: `
+                        0 8px 32px -4px ${primaryColor}50,
+                        0 4px 16px -2px ${primaryColor}30,
+                        inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                        inset 0 -1px 2px ${primaryColor}20
+                      `
+                    }"
+                  >
+                    <span class="font-semibold">{{ capitalizeText(method.payment_type) }}</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Description (if exists, keep minimal) -->
-          <div v-if="method.description" class="text-center mb-4 px-2">
+          <div v-if="method.description" class="text-center mt-4 px-2">
             <p class="text-xs leading-relaxed" 
                :style="{ 
                  fontFamily: secondaryFont || currentFont,
@@ -202,61 +214,16 @@
               {{ method.description }}
             </p>
           </div>
-
-          <!-- Liquid Glass Payment Button -->
-          <div class="text-center mt-4">
-            <a 
-              v-if="method.payment_url"
-              :href="method.payment_url" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="payment-link-liquid group"
-              :style="{ 
-                fontFamily: primaryFont || currentFont,
-                background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
-                color: primaryColor,
-                boxShadow: `
-                  0 8px 32px -4px ${primaryColor}25,
-                  0 4px 16px -2px ${primaryColor}15,
-                  inset 0 2px 4px rgba(255, 255, 255, 0.1),
-                  inset 0 -1px 2px ${primaryColor}10
-                `
-              }"
-            >
-              <div class="flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                <span class="font-semibold">Pay Directly</span>
-                <svg class="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                </svg>
-              </div>
-            </a>
-            
-            <!-- Liquid Glass Payment Fallback -->
-            <div v-else class="payment-fallback inline-flex items-center px-4 py-2 text-sm font-medium opacity-50"
-                 :style="{ 
-                   backgroundColor: `${primaryColor}04`,
-                   color: primaryColor,
-                   border: `1px dashed ${primaryColor}20`,
-                   boxShadow: `inset 0 1px 2px ${primaryColor}08`
-                 }">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-              </svg>
-              <span>Direct payment not available</span>
-            </div>
-            </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
 
     <!-- No Payment Methods Message -->
-    <div v-if="paymentMethods.length === 0" class="liquid-glass-container text-center py-8 sm:py-12" :style="{ 
-      backgroundColor: `${primaryColor}04`,
-      boxShadow: `0 8px 32px -4px ${primaryColor}10, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+    <div v-if="paymentMethods.length === 0" class="text-center py-8 sm:py-12 rounded-2xl" :style="{ 
+      backgroundColor: `${primaryColor}08`,
+      border: `1px solid ${primaryColor}20`
     }">
       <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" :style="{ backgroundColor: `${primaryColor}20` }">
         <svg class="w-8 h-8" :style="{ color: primaryColor }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,9 +338,8 @@ const capitalizeText = (text: string | undefined): string => {
   pointer-events: none;
 }
 
-/* Payment method sections - Flowing divisions */
+/* Payment method sections - No horizontal padding to match comment section */
 .payment-method-section {
-  padding: 1.5rem 1rem;
   position: relative;
 }
 
@@ -387,26 +353,38 @@ const capitalizeText = (text: string | undefined): string => {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
-/* QR Code glass container - Central focal point */
-.qr-glass-container {
-  border-radius: 2rem;
-  backdrop-filter: blur(16px);
+/* QR Code simple container - Clean design */
+.qr-simple-container {
+  border-radius: 1.5rem;
   position: relative;
   overflow: hidden;
 }
 
-.qr-glass-container::before {
+/* Payment info simple panel - Clean design */
+.payment-info-simple {
+  border-radius: 1.5rem;
+  position: relative;
+}
+
+/* Legacy payment info glass panel */
+.payment-info-glass {
+  border-radius: 1.5rem;
+  backdrop-filter: blur(16px);
+  position: relative;
+}
+
+.payment-info-glass::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
   pointer-events: none;
 }
 
-/* Bank info glass panel - Integrated surface */
+/* Legacy bank info glass panel */
 .bank-info-glass {
   border-radius: 1.5rem;
   backdrop-filter: blur(16px);
@@ -436,7 +414,45 @@ const capitalizeText = (text: string | undefined): string => {
   transform: translateY(-1px);
 }
 
-/* Liquid glass payment button */
+/* Minimalist payment button */
+.payment-link-minimalist {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  min-height: 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-link-minimalist::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  pointer-events: none;
+}
+
+.payment-link-minimalist:hover {
+  transform: translateY(-1px);
+  backdrop-filter: blur(16px);
+}
+
+.payment-link-minimalist:active {
+  transform: translateY(0);
+  transition: transform 0.1s ease;
+}
+
+/* Legacy liquid glass payment button */
 .payment-link-liquid {
   display: inline-flex;
   align-items: center;
@@ -508,7 +524,13 @@ const capitalizeText = (text: string | undefined): string => {
   }
 }
 
-/* Glass content section - Unified spacing */
+/* Payment row container - Single row layout */
+.payment-row-container {
+  padding: 0.5rem;
+  align-items: center;
+}
+
+/* Glass content section - Legacy unified spacing */
 .glass-content-section {
   padding: 0.5rem;
 }
@@ -516,15 +538,34 @@ const capitalizeText = (text: string | undefined): string => {
 /* Mobile-first responsive design */
 @media (max-width: 639px) {
   .payment-method-section {
-    padding: 1rem 0.75rem;
+    /* No padding - matches comment section */
   }
   
-  .qr-glass-container {
+  .payment-row-container {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+  
+  .qr-simple-container {
     padding: 1rem;
+  }
+  
+  .payment-info-simple {
+    padding: 0.75rem;
+  }
+  
+  .payment-info-glass {
+    padding: 0.75rem;
   }
   
   .bank-info-glass {
     padding: 0.75rem;
+  }
+  
+  .payment-link-minimalist {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.825rem;
+    min-height: 34px;
   }
   
   .payment-link-liquid {
@@ -537,7 +578,24 @@ const capitalizeText = (text: string | undefined): string => {
 /* Tablet adjustments */
 @media (min-width: 640px) and (max-width: 1023px) {
   .payment-method-section {
-    padding: 1.25rem 1rem;
+    /* No padding - matches comment section */
+  }
+  
+  .payment-row-container {
+    gap: 1.5rem;
+  }
+  
+  .payment-info-simple {
+    padding: 1rem;
+  }
+  
+  .payment-info-glass {
+    padding: 1rem;
+  }
+  
+  .payment-link-minimalist {
+    padding: 0.625rem 1rem;
+    min-height: 38px;
   }
   
   .payment-link-liquid {
@@ -546,16 +604,32 @@ const capitalizeText = (text: string | undefined): string => {
   }
 }
 
-/* Collapsible card styles */
+/* Unified payment card container */
+.payment-card-container {
+  border-radius: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-card-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  pointer-events: none;
+}
+
+/* Payment card header - no separate styling */
 .payment-card-header {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .payment-card-header:hover {
-  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .payment-card-content {
@@ -568,7 +642,25 @@ const capitalizeText = (text: string | undefined): string => {
 /* Desktop refinements */
 @media (min-width: 1024px) {
   .payment-method-section {
-    padding: 1.5rem 1.5rem;
+    /* No padding - matches comment section */
+  }
+  
+  .payment-row-container {
+    padding: 0.75rem;
+    gap: 2rem;
+  }
+  
+  .payment-info-simple {
+    padding: 1.25rem;
+  }
+  
+  .payment-info-glass {
+    padding: 1.25rem;
+  }
+  
+  .payment-link-minimalist {
+    padding: 0.75rem 1.25rem;
+    min-height: 40px;
   }
   
   .glass-content-section {

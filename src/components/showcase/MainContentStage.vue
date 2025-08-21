@@ -213,44 +213,75 @@
                 </div>
 
                 <!-- Footer Section -->
-                <div class="mt-8 pt-6 border-t border-white/10">
-                  <div class="text-center space-y-4">
-                    <!-- Thank You Message -->
-                    <p
-                      class="text-sm font-medium"
-                      :style="{
-                        background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
+                <div class="mt-8 -mx-6 sm:-mx-6 md:-mx-6 laptop-sm:-mx-8 laptop-md:-mx-10 laptop-lg:-mx-12 desktop:-mx-8 -mb-6 sm:-mb-6 md:-mb-6 laptop-sm:-mb-8 laptop-md:-mb-10 laptop-lg:-mb-12 desktop:-mb-8">
+                  <!-- Footer Card with Reverse Colors -->
+                  <div 
+                    class="footer-card-container rounded-none sm:rounded-t-2xl px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
+                    :style="{
+                      background: `linear-gradient(135deg, ${primaryColor}90, ${primaryColor}70)`,
+                      boxShadow: `
+                        0 12px 36px -6px ${primaryColor}25,
+                        0 6px 24px -3px ${primaryColor}20,
+                        0 3px 12px -1px ${primaryColor}15,
+                        inset 0 1px 2px rgba(255, 255, 255, 0.2)
+                      `
+                    }"
+                  >
+                    <!-- Top Highlight Line -->
+                    <div 
+                      class="absolute top-0 left-0 right-0 h-px"
+                      :style="{ 
+                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent)'
                       }"
-                    >
-                      Thank you
-                    </p>
-
-                    <!-- GoEvent Logo/Branding -->
-                    <div class="flex items-center justify-center gap-2">
-                      <span
-                        class="text-lg font-bold"
-                        :style="{
-                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text'
-                        }"
+                    ></div>
+                    
+                    <div class="space-y-4">
+                      <!-- Thank You Message -->
+                      <p
+                        class="text-lg font-semibold text-white"
                       >
-                        GoEvent
-                      </span>
-                    </div>
+                        Thank you for celebrating with us
+                      </p>
 
-                    <!-- Contact Info -->
-                    <div class="space-y-1">
-                      <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
-                        Contact us: info@goevent.com
-                      </p>
-                      <p class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">
-                        www.goevent.com
-                      </p>
+                      <!-- GoEvent Logo/Branding -->
+                      <div class="space-y-2">
+                        <div class="inline-flex items-center justify-center">
+                          <span
+                            class="text-xl font-bold text-white"
+                          >
+                            GoEvent
+                          </span>
+                        </div>
+                        <p class="text-sm text-white opacity-90">
+                          Create beautiful event invitations
+                        </p>
+                      </div>
+
+                      <!-- Contact Info -->
+                      <div class="space-y-2">
+                        <div 
+                          class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm text-white"
+                          :style="{ 
+                            backgroundColor: 'rgba(255, 255, 255, 0.12)'
+                          }"
+                        >
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                          </svg>
+                          info@goevent.com
+                        </div>
+                        <div 
+                          class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm text-white"
+                          :style="{ 
+                            backgroundColor: 'rgba(255, 255, 255, 0.12)'
+                          }"
+                        >
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"/>
+                          </svg>
+                          www.goevent.com
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
