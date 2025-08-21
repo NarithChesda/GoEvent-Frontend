@@ -62,6 +62,7 @@
         :hosts="hosts"
         :agenda-items="agendaItems"
         :event-photos="eventPhotos"
+        :payment-methods="paymentMethods"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
@@ -93,6 +94,7 @@
         @close="closePhotoModal"
         @navigate="navigateToPhoto"
       />
+
     </div>
   </div>
 </template>
@@ -137,6 +139,7 @@ const {
   hosts,
   agendaItems,
   eventPhotos,
+  paymentMethods,
   primaryColor,
   secondaryColor,
   accentColor,
@@ -161,6 +164,7 @@ const {
   changeLanguage,
   toggleMusic
 } = useEventShowcase()
+
 
 // Additional methods specific to this view
 const registerForEvent = () => {
@@ -205,6 +209,7 @@ const handleCommentSubmitted = (comment: any) => {
   // In real implementation, you might want to show a success message
   // or refresh comments from the server
 }
+
 
 // Lifecycle
 onMounted(async () => {

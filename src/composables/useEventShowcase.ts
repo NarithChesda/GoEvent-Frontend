@@ -1,6 +1,6 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { eventsService, mediaService } from '../services/api'
+import { eventsService, mediaService, type EventPaymentMethod } from '../services/api'
 
 // Interfaces
 export interface Host {
@@ -116,6 +116,7 @@ export interface EventData {
   agenda_items?: AgendaItem[]
   event_photos?: EventPhoto[]
   photos?: EventPhoto[]
+  payment_methods?: EventPaymentMethod[]
   available_languages?: Array<{ id: number; language: string; language_display: string }>
 }
 
@@ -221,6 +222,15 @@ export function useEventShowcase() {
     const photos = event.value?.photos || event.value?.event_photos || []
     return photos.sort((a, b) => a.order - b.order)
   })
+
+  const paymentMethods = computed(() => {
+    // Use payment_methods field from API response
+    const methods = event.value?.payment_methods || []
+    return methods
+      .filter(method => method.is_active)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+  })
+
   const availableLanguages = computed(() => event.value?.available_languages || [])
   
   const primaryColor = computed(() => {
@@ -264,7 +274,7 @@ export function useEventShowcase() {
   })
 
   // Methods
-  const loadShowcase = async () => {
+  const loadShowcase = async (forceLanguage?: string) => {
     const eventId = route.params.id as string
     if (!eventId) {
       error.value = 'Invalid event ID'
@@ -275,9 +285,15 @@ export function useEventShowcase() {
     error.value = null
 
     try {
-      // Check URL for language parameter first
-      const urlLanguage = route.query.lang as string || currentLanguage.value
-      currentLanguage.value = urlLanguage
+      // If forceLanguage is provided, use it. Otherwise check URL, then fall back to current
+      if (forceLanguage) {
+        currentLanguage.value = forceLanguage
+      } else {
+        const urlLanguage = route.query.lang as string
+        if (urlLanguage) {
+          currentLanguage.value = urlLanguage
+        }
+      }
       
       const params: { lang?: string; guest_name?: string } = {
         lang: currentLanguage.value
@@ -476,8 +492,7 @@ export function useEventShowcase() {
   const changeLanguage = async (newLanguage: string) => {
     if (currentLanguage.value === newLanguage) return
     
-    currentLanguage.value = newLanguage
-    await loadShowcase()
+    await loadShowcase(newLanguage)
   }
 
   return {
@@ -507,6 +522,7 @@ export function useEventShowcase() {
     hosts,
     agendaItems,
     eventPhotos,
+    paymentMethods,
     primaryColor,
     secondaryColor,
     accentColor,

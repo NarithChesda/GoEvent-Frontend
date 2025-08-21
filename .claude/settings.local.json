@@ -30,8 +30,13 @@
       "Bash(timeout 10 npm run dev)",
       "Bash(-H \"Content-Type: application/json\")",
       "Bash(git rm:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\narit\\Code"
+    ]
   }
 }

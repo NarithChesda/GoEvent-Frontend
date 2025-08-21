@@ -173,6 +173,20 @@
                   />
                 </div>
 
+                <!-- Payment Section -->
+                <div v-if="paymentMethods.length > 0" id="payment-section">
+                  <PaymentSection
+                    :payment-methods="paymentMethods"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont || currentFont"
+                    :secondary-font="secondaryFont || currentFont"
+                    :get-media-url="getMediaUrl"
+                  />
+                </div>
+
                 <!-- Comment Section -->
                 <div id="comment-section">
                   <CommentSection
@@ -259,8 +273,10 @@ import AgendaSection from './AgendaSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
 import CommentSection from './CommentSection.vue'
+import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
 import type { EventData, EventText, Host, AgendaItem, EventPhoto, EventComment } from '../../composables/useEventShowcase'
+import type { EventPaymentMethod } from '../../services/api'
 
 interface TemplateAssets {
   standard_background_video?: string
@@ -273,6 +289,7 @@ interface Props {
   hosts: Host[]
   agendaItems: AgendaItem[]
   eventPhotos: EventPhoto[]
+  paymentMethods: EventPaymentMethod[]
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -340,8 +357,7 @@ const handleReminder = () => {
 }
 
 const handleGift = () => {
-  console.log('Gift clicked')
-  // TODO: Implement gift functionality
+  console.log('Gift functionality not implemented')
 }
 
 const handleAgenda = () => {
