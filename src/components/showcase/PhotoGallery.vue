@@ -1,8 +1,8 @@
 <template>
   <div class="mb-6 sm:mb-8">
-    <h2 
-      class="text-xl font-semibold mb-4 text-center" 
-      :style="{ 
+    <h2
+      class="text-xl font-semibold mb-4 text-center"
+      :style="{
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
@@ -11,7 +11,7 @@
     >
       Gallery
     </h2>
-    
+
     <!-- No Photos Placeholder -->
     <div v-if="photos.length === 0" class="p-6 sm:p-8 rounded-xl text-center">
       <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" :style="{ backgroundColor: primaryColor + '20' }">
@@ -32,53 +32,173 @@
       <!-- Featured Photo -->
       <div v-if="featuredPhoto" class="mb-4 sm:mb-6">
         <div class="rounded-xl overflow-hidden">
-          <img 
+          <img
             :src="getMediaUrl(featuredPhoto.image)"
             :alt="featuredPhoto.caption || 'Featured Event Photo'"
             class="w-full h-48 sm:h-56 md:h-64 object-cover cursor-pointer transition-transform hover:scale-105"
             @click="$emit('openPhoto', featuredPhoto)"
             loading="lazy"
           />
-          <p 
-            v-if="featuredPhoto.caption" 
-            class="text-xs sm:text-sm mt-2 text-center" 
+          <p
+            v-if="featuredPhoto.caption"
+            class="text-xs sm:text-sm mt-2 text-center"
             :style="{ color: primaryColor, opacity: '0.8' }"
           >
             {{ featuredPhoto.caption }}
           </p>
         </div>
       </div>
-      
-      <!-- Photo Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        <div 
-          v-for="photo in displayedPhotos" 
-          :key="photo.id"
-          class="rounded-xl overflow-hidden"
-        >
-          <img 
-            :src="getMediaUrl(photo.image)"
-            :alt="photo.caption || 'Event Photo'"
-            class="w-full h-24 sm:h-28 md:h-32 object-cover cursor-pointer transition-transform hover:scale-105"
-            loading="lazy"
-            @click="$emit('openPhoto', photo)"
-          />
-          <p 
-            v-if="photo.caption" 
-            class="text-xs sm:text-sm mt-1 text-center truncate" 
-            :style="{ color: primaryColor, opacity: '0.7' }"
+
+      <!-- Clean Photo Gallery -->
+      <div class="clean-gallery-container overflow-hidden" style="margin-bottom: 0px">
+        <!-- Photo strip with infinite scroll -->
+        <div class="photo-strip-wrapper overflow-hidden flex items-center">
+          <div
+            class="photo-strip flex animate-infinite-scroll items-center"
+            style="gap: var(--gallery-spacing, 16px)"
+            :style="{
+              '--strip-width': `${stripWidth}px`,
+              animationDuration: `${animationDuration}s`
+            }"
           >
-            {{ photo.caption }}
-          </p>
+            <!-- First set of photos -->
+            <div
+              v-for="photo in allPhotosForStrip"
+              :key="`first-${photo.id}`"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              :data-photo-id="photo.id"
+              :style="{
+                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
+                width: `${getPhotoWidth(photo)}px`
+              }"
+              @click="$emit('openPhoto', photo)"
+            >
+              <img
+                :src="getMediaUrl(photo.image)"
+                :alt="photo.caption || 'Event Photo'"
+                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                loading="lazy"
+                @load="onImageLoad"
+              />
+
+              <!-- Caption overlay -->
+              <div
+                v-if="photo.caption"
+                class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {{ photo.caption }}
+              </div>
+            </div>
+
+            <!-- Duplicate set for seamless infinite scroll -->
+            <div
+              v-for="photo in allPhotosForStrip"
+              :key="`second-${photo.id}`"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              :data-photo-id="photo.id"
+              :style="{
+                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
+                width: `${getPhotoWidth(photo)}px`
+              }"
+              @click="$emit('openPhoto', photo)"
+            >
+              <img
+                :src="getMediaUrl(photo.image)"
+                :alt="photo.caption || 'Event Photo'"
+                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                loading="lazy"
+              />
+
+              <!-- Caption overlay -->
+              <div
+                v-if="photo.caption"
+                class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {{ photo.caption }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      
+
+      <!-- Reverse Scroll Gallery -->
+      <div class="clean-gallery-reverse overflow-hidden" style="margin-top: 0px">
+        <!-- Photo strip with reverse infinite scroll -->
+        <div class="photo-strip-wrapper overflow-hidden flex items-center">
+          <div
+            class="photo-strip flex animate-infinite-scroll-reverse items-center"
+            style="gap: var(--gallery-spacing, 16px)"
+            :style="{
+              '--strip-width': `${stripWidth}px`,
+              animationDuration: `${reverseAnimationDuration}s`
+            }"
+          >
+            <!-- First set of photos (reversed order) -->
+            <div
+              v-for="photo in reversePhotosForStrip"
+              :key="`reverse-first-${photo.id}`"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              :data-photo-id="photo.id"
+              :style="{
+                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
+                width: `${getPhotoWidth(photo)}px`
+              }"
+              @click="$emit('openPhoto', photo)"
+            >
+              <img
+                :src="getMediaUrl(photo.image)"
+                :alt="photo.caption || 'Event Photo'"
+                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                loading="lazy"
+                @load="onImageLoad"
+              />
+
+              <!-- Caption overlay -->
+              <div
+                v-if="photo.caption"
+                class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {{ photo.caption }}
+              </div>
+            </div>
+
+            <!-- Duplicate set for seamless infinite scroll (reversed) -->
+            <div
+              v-for="photo in reversePhotosForStrip"
+              :key="`reverse-second-${photo.id}`"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              :data-photo-id="photo.id"
+              :style="{
+                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
+                width: `${getPhotoWidth(photo)}px`
+              }"
+              @click="$emit('openPhoto', photo)"
+            >
+              <img
+                :src="getMediaUrl(photo.image)"
+                :alt="photo.caption || 'Event Photo'"
+                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                loading="lazy"
+              />
+
+              <!-- Caption overlay -->
+              <div
+                v-if="photo.caption"
+                class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {{ photo.caption }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- View More Button -->
       <div v-if="hasMorePhotos" class="mt-4 sm:mt-6 text-center">
         <button
           @click="$emit('toggleShowAll')"
           class="px-4 py-2 sm:px-6 sm:py-3 rounded-full text-sm sm:text-base font-medium glass-section flex items-center gap-2 mx-auto transition-all hover:scale-[1.02] min-h-[44px]"
-          :style="{ 
+          :style="{
             borderColor: primaryColor,
             color: primaryColor,
             borderWidth: '1px',
@@ -89,12 +209,12 @@
         </button>
       </div>
     </div>
-    
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 
 interface Props {
@@ -113,28 +233,223 @@ defineEmits<{
   toggleShowAll: []
 }>()
 
-const featuredPhoto = computed(() => 
+// Gallery spacing constant - must match CSS custom property
+const GALLERY_SPACING = 16
+
+const featuredPhoto = computed(() =>
   props.photos.find(photo => photo.is_featured)
 )
 
-const nonFeaturedPhotos = computed(() => 
+const nonFeaturedPhotos = computed(() =>
   props.photos.filter(photo => !photo.is_featured)
 )
 
-const displayedPhotos = computed(() => 
-  props.showAll ? nonFeaturedPhotos.value : nonFeaturedPhotos.value.slice(0, 4)
-)
-
-const hasMorePhotos = computed(() => 
+const hasMorePhotos = computed(() =>
   nonFeaturedPhotos.value.length > 4
 )
+
+// Image dimensions cache for aspect ratio calculations
+const imageDimensions = ref<Record<string, { width: number; height: number }>>({})
+
+// Track window width for responsive calculations
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+
+// Update window width on resize
+const updateWindowWidth = () => {
+  if (typeof window !== 'undefined') {
+    windowWidth.value = window.innerWidth
+  }
+}
+
+// Photos for infinite scroll - use all photos if we have enough, otherwise repeat them
+const allPhotosForStrip = computed(() => {
+  const photos = nonFeaturedPhotos.value
+  if (photos.length === 0) return []
+
+  // If we have less than 8 photos, repeat them to ensure smooth scrolling
+  if (photos.length < 8) {
+    const repeats = Math.ceil(8 / photos.length)
+    return Array(repeats).fill(photos).flat()
+  }
+
+  return photos
+})
+
+// Calculate photo width based on aspect ratio, maintaining fixed height
+const getPhotoWidth = (photo: EventPhoto): number => {
+  // Use responsive height based on container size
+  let fixedHeight = 188 // Default desktop height (25% increase from 150px)
+
+  if (windowWidth.value < 640) {
+    fixedHeight = 188 // Mobile height (88% total increase)
+  } else if (windowWidth.value < 768) {
+    fixedHeight = 150 // Tablet height (25% increase)
+  }
+
+  const dimensions = imageDimensions.value[photo.id]
+
+  if (dimensions) {
+    const aspectRatio = dimensions.width / dimensions.height
+    // Ensure minimum and maximum widths for better layout
+    const calculatedWidth = Math.round(fixedHeight * aspectRatio)
+    return Math.min(Math.max(calculatedWidth, fixedHeight * 0.6), fixedHeight * 2.5)
+  }
+
+  // Default width for square aspect ratio while loading
+  return fixedHeight
+}
+
+// Calculate strip width for animation
+const stripWidth = computed((): number => {
+  let totalWidth = 0
+  allPhotosForStrip.value.forEach(photo => {
+    totalWidth += getPhotoWidth(photo) + GALLERY_SPACING // Consistent spacing throughout gallery
+  })
+  return totalWidth
+})
+
+// Animation duration based on number of photos (faster animation)
+const animationDuration = computed((): number => {
+  const baseSpeed = 60 // pixels per second (doubled for faster scroll)
+  return Math.max(stripWidth.value / baseSpeed, 8) // minimum 8 seconds
+})
+
+// Reverse photos for the second film strip (reversed order)
+const reversePhotosForStrip = computed(() => {
+  const photos = [...allPhotosForStrip.value].reverse()
+  return photos
+})
+
+// Reverse animation duration (slightly different speed for visual variety)
+const reverseAnimationDuration = computed((): number => {
+  const baseSpeed = 55 // slightly slower than the first strip for variety
+  return Math.max(stripWidth.value / baseSpeed, 9) // minimum 9 seconds
+})
+
+// Handle image load to get actual dimensions
+const onImageLoad = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  const photoId = img.closest('.floating-photo-card')?.getAttribute('data-photo-id') ||
+                 img.closest('.photo-card')?.getAttribute('data-photo-id')
+
+  if (photoId && img.naturalWidth && img.naturalHeight) {
+    imageDimensions.value[photoId] = {
+      width: img.naturalWidth,
+      height: img.naturalHeight
+    }
+  }
+}
+
+// Preload image dimensions on mount
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', updateWindowWidth)
+    updateWindowWidth()
+  }
+
+  // Preload dimensions for all photos
+  allPhotosForStrip.value.forEach(photo => {
+    const img = new Image()
+    img.onload = () => {
+      imageDimensions.value[photo.id] = {
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      }
+    }
+    img.src = props.getMediaUrl(photo.image)
+  })
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', updateWindowWidth)
+  }
+})
 </script>
 
 <style scoped>
+:root {
+  --gallery-spacing: 16px;
+}
+
 .glass-section {
   background: rgba(255, 255, 255, 0.20);
   border: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+/* ===== CLEAN GALLERY DESIGN ===== */
+
+/* Infinite Scroll Keyframes */
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50%));
+  }
+}
+
+@keyframes infinite-scroll-reverse {
+  0% {
+    transform: translateX(calc(-50%));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll linear infinite;
+  will-change: transform;
+}
+
+.animate-infinite-scroll-reverse {
+  animation: infinite-scroll-reverse linear infinite;
+  will-change: transform;
+}
+
+/* Pause animation on hover */
+.clean-gallery-container:hover .animate-infinite-scroll,
+.clean-gallery-reverse:hover .animate-infinite-scroll-reverse {
+  animation-play-state: paused;
+}
+
+/* Clean Gallery Styles */
+.clean-gallery-container, .clean-gallery-reverse {
+  height: 208px;
+}
+
+/* Photo strip wrapper for clean design */
+.photo-strip-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+/* Clean photo card styling - minimal effects only */
+.photo-card {
+  overflow: hidden;
+}
+
+/* Responsive gallery heights */
+@media (max-width: 768px) {
+  .clean-gallery-container, .clean-gallery-reverse {
+    height: 190px;
+  }
+}
+
+@media (max-width: 640px) {
+  .clean-gallery-container, .clean-gallery-reverse {
+    height: 208px;
+  }
+}
+
+/* Removed all blur effects for clean photo display */
+
+
+
+
+
+
 </style>
