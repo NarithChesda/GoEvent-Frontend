@@ -193,21 +193,6 @@
         </div>
       </div>
 
-      <!-- View More Button -->
-      <div v-if="hasMorePhotos" class="mt-4 sm:mt-6 text-center">
-        <button
-          @click="$emit('toggleShowAll')"
-          class="px-4 py-2 sm:px-6 sm:py-3 rounded-full text-sm sm:text-base font-medium glass-section flex items-center gap-2 mx-auto transition-all hover:scale-[1.02] min-h-[44px]"
-          :style="{
-            borderColor: primaryColor,
-            color: primaryColor,
-            borderWidth: '1px',
-            borderStyle: 'solid'
-          }"
-        >
-          {{ showAll ? 'Show Less' : `View All ${photos.length} Photos` }}
-        </button>
-      </div>
     </div>
 
   </div>
@@ -219,7 +204,6 @@ import type { EventPhoto } from '../../composables/useEventShowcase'
 
 interface Props {
   photos: EventPhoto[]
-  showAll: boolean
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -230,7 +214,6 @@ const props = defineProps<Props>()
 
 defineEmits<{
   openPhoto: [EventPhoto]
-  toggleShowAll: []
 }>()
 
 // Gallery spacing constant - must match CSS custom property
@@ -244,9 +227,6 @@ const nonFeaturedPhotos = computed(() =>
   props.photos.filter(photo => !photo.is_featured)
 )
 
-const hasMorePhotos = computed(() =>
-  nonFeaturedPhotos.value.length > 4
-)
 
 // Image dimensions cache for aspect ratio calculations
 const imageDimensions = ref<Record<string, { width: number; height: number }>>({})
@@ -372,12 +352,6 @@ onUnmounted(() => {
   --gallery-spacing: 16px;
 }
 
-.glass-section {
-  background: rgba(255, 255, 255, 0.20);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
 
 /* ===== CLEAN GALLERY DESIGN ===== */
 

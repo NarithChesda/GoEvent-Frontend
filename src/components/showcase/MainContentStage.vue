@@ -183,13 +183,11 @@
                 <div id="gallery-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                   <PhotoGallery
                   :photos="eventPhotos"
-                  :show-all="showAllPhotos"
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   :get-media-url="getMediaUrl"
                   @open-photo="$emit('openPhoto', $event)"
-                  @toggle-show-all="$emit('togglePhotos')"
                   />
 
                   <!-- Gallery Section Divider -->
@@ -364,7 +362,6 @@ interface Props {
   primaryFont?: string
   secondaryFont?: string
   isEventPast: boolean
-  showAllPhotos: boolean
   getMediaUrl: (url: string) => string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   currentLanguage?: string
@@ -378,7 +375,6 @@ const emit = defineEmits<{
   openMap: []
   openPhoto: [EventPhoto]
   register: []
-  togglePhotos: []
   changeLanguage: [string]
   commentSubmitted: [EventComment]
   musicToggle: []

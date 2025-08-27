@@ -151,7 +151,6 @@ export function useEventShowcase() {
   const isPlayingEventVideo = ref(false)
   const videoLoading = ref(false)
   const eventVideoRef = ref<HTMLVideoElement | null>(null)
-  const showAllPhotos = ref(false)
   const fontsLoaded = ref(false)
   const fontsLoadedCount = ref(0)
   const isPhotoModalOpen = ref(false)
@@ -729,7 +728,6 @@ export function useEventShowcase() {
     isPlayingEventVideo,
     videoLoading,
     eventVideoRef,
-    showAllPhotos,
     isPhotoModalOpen,
     currentModalPhoto,
     isMusicPlaying,

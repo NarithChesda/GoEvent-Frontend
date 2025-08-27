@@ -70,7 +70,6 @@
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
         :is-event-past="isEventPast"
-        :show-all-photos="showAllPhotos"
         :get-media-url="getMediaUrl"
         :available-languages="availableLanguages"
         :current-language="currentLanguage"
@@ -79,7 +78,6 @@
         @open-map="openGoogleMap"
         @open-photo="openPhotoModal"
         @register="registerForEvent"
-        @toggle-photos="showAllPhotos = !showAllPhotos"
         @change-language="changeLanguage"
         @comment-submitted="handleCommentSubmitted"
         @music-toggle="toggleMusic"
@@ -125,7 +123,6 @@ const {
   isPlayingEventVideo,
   videoLoading,
   eventVideoRef,
-  showAllPhotos,
   currentLanguage,
   isPhotoModalOpen,
   currentModalPhoto,

@@ -16,9 +16,8 @@
     <div class="comment-form-liquid mb-4" :style="{ 
       backgroundColor: `${primaryColor}20`,
       boxShadow: `
-        0 20px 60px -8px ${primaryColor}30,
-        0 8px 32px -4px ${primaryColor}25,
-        0 4px 16px -2px ${primaryColor}20,
+        0 8px 16px -4px ${primaryColor}25,
+        0 4px 8px -2px ${primaryColor}20,
         inset 0 2px 4px rgba(255, 255, 255, 0.15),
         inset 0 -2px 4px ${primaryColor}10
       `,
@@ -150,15 +149,15 @@
         <!-- Comments -->
         <div v-else>
           <div 
-            v-for="comment in comments" 
+            v-for="(comment, index) in comments" 
             :key="comment.id"
             class="comment-card-liquid p-4 mb-3 last:mb-0"
+            :class="{ 'mt-6': index === 0 }"
             :style="isUserCommentOwner(comment) ? {
               backgroundColor: `${primaryColor}25`,
               boxShadow: `
-                0 16px 48px -8px ${primaryColor}35,
-                0 8px 32px -4px ${primaryColor}25,
-                0 4px 16px -2px ${primaryColor}20,
+                0 6px 16px -4px ${primaryColor}30,
+                0 3px 8px -2px ${primaryColor}25,
                 inset 0 2px 4px rgba(255, 255, 255, 0.2),
                 inset 0 -2px 4px ${primaryColor}15
               `,
@@ -167,9 +166,8 @@
             } : {
               backgroundColor: `${primaryColor}15`,
               boxShadow: `
-                0 12px 36px -6px ${primaryColor}25,
-                0 6px 24px -3px ${primaryColor}20,
-                0 3px 12px -1px ${primaryColor}15,
+                0 4px 12px -2px ${primaryColor}20,
+                0 2px 6px -1px ${primaryColor}15,
                 inset 0 1px 2px rgba(255, 255, 255, 0.12)
               `,
               border: `1px solid ${primaryColor}40`
