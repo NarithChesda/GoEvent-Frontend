@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Font Reactivity Test</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .font-demo {
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .font-sample {
+            font-size: 24px;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            transition: font-family 0.3s ease;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Vue 3 Font Reactivity Test</h1>
+        
+        <div class="status" :class="statusClass">
+            {{ statusMessage }}
+        </div>
+        
+        <div class="controls">
+            <button @click="loadFonts" :disabled="loading">
+                {{ loading ? 'Loading...' : 'Load Tom Template 3 Fonts' }}
+            </button>
+            <button @click="toggleLanguage" :disabled="loading">
+                Switch to {{ currentLang === 'en' ? 'Khmer' : 'English' }}
+            </button>
+            <button @click="forceUpdate">Force Re-render</button>
+        </div>
+        
+        <div class="font-demo">
+            <h3>Current Language: {{ currentLang === 'en' ? 'English' : 'Khmer' }}</h3>
+            <h3>Fonts Loaded: {{ fontsLoaded }} (Count: {{ fontsLoadedCount }})</h3>
+            
+            <div class="font-sample" :style="{ fontFamily: primaryFontFamily }">
+                <strong>Primary Font:</strong><br>
+                {{ currentLang === 'en' ? 'Beautiful Wedding Invitation' : 'ការអញ្ជើញមកការមង្គលការ' }}
+                <br><small>Font: {{ primaryFontFamily }}</small>
+            </div>
+            
+            <div class="font-sample" :style="{ fontFamily: secondaryFontFamily }">
+                <strong>Secondary Font:</strong><br>
+                {{ currentLang === 'en' ? 'Modern and clean body text for invitations' : 'អក្សរសម្រាប់ខ្លឹមសារ' }}
+                <br><small>Font: {{ secondaryFontFamily }}</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, nextTick } = Vue;
+        
+        createApp({
+            setup() {
+                const loading = ref(false);
+                const fontsLoaded = ref(false);
+                const fontsLoadedCount = ref(0);
+                const currentLang = ref('en');
+                const forceRenderKey = ref(0);
+                
+                const API_BASE_URL = 'http://127.0.0.1:8000';
+                
+                // Tom Template 3 fonts
+                const fonts = [
+                    {
+                        name: 'KhmerOSMoulPali',
+                        file: '/media/fonts/KhmerOSMoulpali.ttf',
+                        language: 'kh',
+                        type: 'primary'
+                    },
+                    {
+                        name: 'BrushScript',
+                        file: '/media/fonts/Brush_Script.ttf',
+                        language: 'en',
+                        type: 'primary'
+                    },
+                    {
+                        name: 'Poppins-Regular',
+                        file: '/media/fonts/Poppins-Regular.ttf',
+                        language: 'en',
+                        type: 'secondary'
+                    }
+                ];
+                
+                const primaryFontFamily = computed(() => {
+                    // Make reactive to font loading
+                    fontsLoaded.value;
+                    forceRenderKey.value;
+                    
+                    const langFonts = fonts.filter(f => f.language === currentLang.value);
+                    const primaryFont = langFonts.find(f => f.type === 'primary');
+                    return primaryFont ? `"${primaryFont.name}", serif` : '"Inter", "Helvetica Neue", "Arial", sans-serif';
+                });
+                
+                const secondaryFontFamily = computed(() => {
+                    // Make reactive to font loading  
+                    fontsLoaded.value;
+                    forceRenderKey.value;
+                    
+                    const langFonts = fonts.filter(f => f.language === currentLang.value);
+                    const secondaryFont = langFonts.find(f => f.type === 'secondary');
+                    return secondaryFont ? `"${secondaryFont.name}", sans-serif` : primaryFontFamily.value;
+                });
+                
+                const statusMessage = computed(() => {
+                    if (loading.value) return 'Loading fonts...';
+                    if (fontsLoaded.value) return `✅ Fonts loaded successfully! (${fontsLoadedCount.value} fonts)`;
+                    return 'Click "Load Fonts" to test font loading';
+                });
+                
+                const statusClass = computed(() => {
+                    if (loading.value) return 'loading';
+                    if (fontsLoaded.value) return 'success';
+                    return 'info';
+                });
+                
+                const loadSingleFont = async (font) => {
+                    const url = `${API_BASE_URL}${font.file}`;
+                    console.log(`🔗 Loading font: ${font.name} from ${url}`);
+                    
+                    try {
+                        const fontFace = new FontFace(font.name, `url(${url})`);
+                        const loadedFont = await fontFace.load();
+                        document.fonts.add(loadedFont);
+                        
+                        // Wait for fonts to be ready
+                        await document.fonts.ready;
+                        
+                        console.log(`✅ Successfully loaded: ${font.name}`);
+                        fontsLoadedCount.value++;
+                        
+                        // Small delay for browser to apply
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        return true;
+                    } catch (error) {
+                        console.error(`❌ Failed to load font: ${font.name}`, error);
+                        return false;
+                    }
+                };
+                
+                const loadFonts = async () => {
+                    loading.value = true;
+                    fontsLoaded.value = false;
+                    fontsLoadedCount.value = 0;
+                    
+                    console.log('🎨 Starting font loading test...');
+                    
+                    try {
+                        // Load all fonts in parallel
+                        const loadPromises = fonts.map(font => loadSingleFont(font));
+                        await Promise.all(loadPromises);
+                        
+                        fontsLoaded.value = true;
+                        console.log('🎉 All fonts loaded successfully!');
+                        
+                        // Force Vue reactivity
+                        await nextTick();
+                        forceRenderKey.value++;
+                        
+                    } catch (error) {
+                        console.error('Font loading failed:', error);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const toggleLanguage = () => {
+                    currentLang.value = currentLang.value === 'en' ? 'kh' : 'en';
+                    console.log(`Switched to: ${currentLang.value}`);
+                    forceRenderKey.value++;
+                };
+                
+                const forceUpdate = () => {
+                    forceRenderKey.value++;
+                    console.log('Forced re-render');
+                };
+                
+                return {
+                    loading,
+                    fontsLoaded,
+                    fontsLoadedCount,
+                    currentLang,
+                    primaryFontFamily,
+                    secondaryFontFamily,
+                    statusMessage,
+                    statusClass,
+                    loadFonts,
+                    toggleLanguage,
+                    forceUpdate
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

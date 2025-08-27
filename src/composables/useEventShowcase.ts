@@ -53,6 +53,13 @@ export interface TemplateFont {
   language: string
   font_name: string
   font_file?: string
+  // New font type fields for backward compatibility
+  font_type?: string // 'primary', 'secondary', 'accent', 'decorative'
+  font_type_display?: string // 'Primary', 'Secondary', 'Accent', 'Decorative'
+  font?: {
+    name: string
+    font_file: string
+  }
 }
 
 export interface TemplateAssets {
@@ -145,6 +152,8 @@ export function useEventShowcase() {
   const videoLoading = ref(false)
   const eventVideoRef = ref<HTMLVideoElement | null>(null)
   const showAllPhotos = ref(false)
+  const fontsLoaded = ref(false)
+  const fontsLoadedCount = ref(0)
   const isPhotoModalOpen = ref(false)
   const currentModalPhoto = ref<EventPhoto | null>(null)
   const isMusicPlaying = ref(false)
@@ -174,46 +183,169 @@ export function useEventShowcase() {
       }))
     }
     
-    return fonts || [] as TemplateFont[]
+    const fontList = fonts || [] as TemplateFont[]
+    
+    // TEST: If no fonts available, inject Tom Template 3 fonts for testing
+    if (fontList.length === 0) {
+      console.log('🧪 No template fonts in API, using Tom Template 3 test fonts')
+      return [
+        {
+          id: 5,
+          language: 'kh',
+          font_type: 'primary',
+          font: {
+            id: 3,
+            name: 'KhmerOSMoulPali',
+            font_file: '/media/fonts/KhmerOSMoulpali.ttf'
+          }
+        },
+        {
+          id: 6,
+          language: 'en',
+          font_type: 'primary',
+          font: {
+            id: 4,
+            name: 'BrushScript',
+            font_file: '/media/fonts/Brush_Script.ttf'
+          }
+        },
+        {
+          id: 11,
+          language: 'en',
+          font_type: 'secondary',
+          font: {
+            id: 8,
+            name: 'Poppins-Regular',
+            font_file: '/media/fonts/Poppins-Regular.ttf'
+          }
+        }
+      ] as TemplateFont[]
+    }
+    
+    return fontList
   })
   
-  // Get fonts for current language with primary/secondary support
+  // Get fonts for current language with comprehensive font type support
   const getLanguageFonts = computed(() => {
     const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
     
-    // Sort fonts to ensure consistent primary/secondary assignment
-    // Priority: 1. font_name containing 'primary', 2. font_name containing 'secondary', 3. by order/id
-    const sortedFonts = [...langFonts].sort((a, b) => {
+    // Create font type mapping
+    const fontTypeMap = {
+      primary: null as TemplateFont | null,
+      secondary: null as TemplateFont | null,
+      accent: null as TemplateFont | null,
+      decorative: null as TemplateFont | null
+    }
+    
+    // First pass: Use new font_type field if available
+    langFonts.forEach(font => {
+      if (font.font_type) {
+        const type = font.font_type.toLowerCase() as keyof typeof fontTypeMap
+        if (type in fontTypeMap) {
+          fontTypeMap[type] = font
+        }
+      }
+    })
+    
+    // Second pass: Backward compatibility with name-based detection for missing types
+    const remainingFonts = langFonts.filter(font => {
+      // Skip fonts already assigned by font_type
+      return !font.font_type || !Object.values(fontTypeMap).includes(font)
+    })
+    
+    // Sort remaining fonts for backward compatibility
+    const sortedFonts = [...remainingFonts].sort((a, b) => {
       const aName = (a.font_name || '').toLowerCase()
       const bName = (b.font_name || '').toLowerCase()
       
-      // Check for explicit primary/secondary naming
+      // Check for explicit naming patterns
       if (aName.includes('primary')) return -1
       if (bName.includes('primary')) return 1
       if (aName.includes('secondary')) return 1
       if (bName.includes('secondary')) return -1
+      if (aName.includes('accent')) return 1
+      if (bName.includes('accent')) return -1
+      if (aName.includes('decorative')) return 1
+      if (bName.includes('decorative')) return -1
       
       // Fallback to ID or original order
       return (a.id || 0) - (b.id || 0)
     })
     
-    return {
-      primary: sortedFonts[0] || null,
-      secondary: sortedFonts[1] || sortedFonts[0] || null // Fallback to primary if no secondary
+    // Fill in missing font types from sorted fonts
+    let fontIndex = 0
+    if (!fontTypeMap.primary && sortedFonts[fontIndex]) {
+      fontTypeMap.primary = sortedFonts[fontIndex++]
     }
+    if (!fontTypeMap.secondary && sortedFonts[fontIndex]) {
+      fontTypeMap.secondary = sortedFonts[fontIndex++]
+    }
+    if (!fontTypeMap.accent && sortedFonts[fontIndex]) {
+      fontTypeMap.accent = sortedFonts[fontIndex++]
+    }
+    if (!fontTypeMap.decorative && sortedFonts[fontIndex]) {
+      fontTypeMap.decorative = sortedFonts[fontIndex++]
+    }
+    
+    // Ensure fallbacks for essential font types
+    fontTypeMap.secondary = fontTypeMap.secondary || fontTypeMap.primary
+    fontTypeMap.accent = fontTypeMap.accent || fontTypeMap.primary
+    fontTypeMap.decorative = fontTypeMap.decorative || fontTypeMap.secondary || fontTypeMap.primary
+    
+    return fontTypeMap
   })
   
   // Primary font for headings and important text
   const primaryFont = computed(() => {
+    // Include fontsLoaded in dependency to trigger reactivity
+    fontsLoaded.value // This makes the computed reactive to font loading
     const font = getLanguageFonts.value.primary
-    return font?.font_name || 'inherit'
+    return getFontName(font) || '"Inter", "Helvetica Neue", "Arial", sans-serif'
   })
   
   // Secondary font for body text and descriptions
   const secondaryFont = computed(() => {
+    // Include fontsLoaded in dependency to trigger reactivity
+    fontsLoaded.value // This makes the computed reactive to font loading
     const font = getLanguageFonts.value.secondary
-    return font?.font_name || primaryFont.value || 'inherit'
+    return getFontName(font) || primaryFont.value
   })
+  
+  // Accent font for special highlights
+  const accentFont = computed(() => {
+    fontsLoaded.value // Reactive to font loading
+    const font = getLanguageFonts.value.accent
+    return getFontName(font) || primaryFont.value
+  })
+  
+  // Decorative font for artistic elements
+  const decorativeFont = computed(() => {
+    fontsLoaded.value // Reactive to font loading
+    const font = getLanguageFonts.value.decorative
+    return getFontName(font) || primaryFont.value
+  })
+  
+  // Helper function to get font name with backward compatibility
+  const getFontName = (font: TemplateFont | null): string => {
+    if (!font) return ''
+    // New nested structure takes precedence
+    if (font.font?.name) {
+      return font.font.name
+    }
+    // Fallback to legacy font_name
+    return font.font_name || ''
+  }
+  
+  // Helper function to get font file with backward compatibility
+  const getFontFile = (font: TemplateFont | null): string => {
+    if (!font) return ''
+    // New nested structure takes precedence
+    if (font.font?.font_file) {
+      return font.font.font_file
+    }
+    // Fallback to legacy font_file
+    return font.font_file || ''
+  }
   const eventTexts = computed(() => event.value?.event_texts || [] as EventText[])
   const hosts = computed(() => event.value?.hosts || [] as Host[])
   const agendaItems = computed(() => event.value?.agenda_items || [] as AgendaItem[])
@@ -317,8 +449,10 @@ export function useEventShowcase() {
           currentLanguage.value = showcaseResponse.data.meta.language
         }
 
-        // Load custom fonts
-        loadCustomFonts()
+        // Load custom fonts asynchronously
+        loadCustomFonts().catch(err => {
+          console.error('Font loading failed:', err)
+        })
       } else {
         error.value = showcaseResponse.message || 'Failed to load event invitation'
       }
@@ -330,26 +464,116 @@ export function useEventShowcase() {
     }
   }
 
-  const loadCustomFonts = () => {
+  const loadCustomFonts = async () => {
+    // Reset font loading state
+    fontsLoaded.value = false
+    fontsLoadedCount.value = 0
+    
     // Load fonts for current language only
     const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
     
-    langFonts.forEach((font: TemplateFont) => {
-      if (font.font_file && font.font_name) {
-        // Check if font is already loaded
-        const fontExists = document.fonts.check(`12px "${font.font_name}"`)
-        
-        if (!fontExists) {
-          const fontFace = new FontFace(font.font_name, `url(${getMediaUrl(font.font_file)})`)
-          fontFace.load().then(loadedFont => {
-            document.fonts.add(loadedFont)
-            console.log(`Loaded font: ${font.font_name} for language: ${currentLanguage.value}`)
-          }).catch(err => {
-            console.error('Failed to load font:', font.font_name, err)
-          })
+    console.log(`🎨 Loading fonts for language: ${currentLanguage.value}`)
+    console.log('Available fonts:', langFonts)
+    
+    // TEST: If no fonts available, inject Tom Template 3 fonts for testing
+    if (langFonts.length === 0) {
+      console.log('🧪 No template fonts found, injecting Tom Template 3 fonts for testing...')
+      const testFonts = [
+        {
+          id: 5,
+          language: 'kh',
+          font_type: 'primary',
+          font: {
+            id: 3,
+            name: 'KhmerOSMoulPali',
+            font_file: '/media/fonts/KhmerOSMoulpali.ttf'
+          }
+        },
+        {
+          id: 6,
+          language: 'en',
+          font_type: 'primary',
+          font: {
+            id: 4,
+            name: 'BrushScript',
+            font_file: '/media/fonts/Brush_Script.ttf'
+          }
+        },
+        {
+          id: 11,
+          language: 'en',
+          font_type: 'secondary',
+          font: {
+            id: 8,
+            name: 'Poppins-Regular',
+            font_file: '/media/fonts/Poppins-Regular.ttf'
+          }
         }
+      ]
+      
+      // Filter for current language
+      const testLangFonts = testFonts.filter(f => f.language === currentLanguage.value)
+      
+      // Load fonts in parallel
+      const loadPromises = testLangFonts.map(font => loadSingleFont(font))
+      await Promise.all(loadPromises)
+      
+      fontsLoaded.value = true
+      console.log('🎉 All test fonts loaded successfully!')
+      
+      // Force DOM update to apply new fonts
+      await nextTick()
+      return
+    }
+    
+    // Load actual template fonts in parallel
+    const loadPromises = langFonts.map(font => loadSingleFont(font))
+    await Promise.all(loadPromises)
+    
+    fontsLoaded.value = true
+    console.log('🎉 All template fonts loaded successfully!')
+    
+    // Force DOM update to apply new fonts
+    await nextTick()
+  }
+  
+  const loadSingleFont = async (font: any) => {
+    const fontName = getFontName(font)
+    const fontFile = getFontFile(font)
+    
+    console.log(`📝 Font: "${fontName}", File: "${fontFile}", Type: ${font.font_type || 'legacy'}`)
+    
+    if (fontFile && fontName) {
+      const fullUrl = getMediaUrl(fontFile)
+      console.log(`🔗 Attempting to load font from: ${fullUrl}`)
+      
+      try {
+        // Always try to load the font, don't rely on document.fonts.check
+        const fontFace = new FontFace(fontName, `url(${fullUrl})`)
+        const loadedFont = await fontFace.load()
+        document.fonts.add(loadedFont)
+        
+        // Force font to be ready by triggering a document.fonts.ready check
+        await document.fonts.ready
+        
+        console.log(`✅ Successfully loaded font: ${fontName} (${font.font_type || 'legacy'}) for language: ${currentLanguage.value}`)
+        
+        // Update loaded count to trigger Vue reactivity
+        fontsLoadedCount.value++
+        
+        // Small delay to ensure browser has applied the font
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        return true
+      } catch (err) {
+        console.error(`❌ Failed to load font: ${fontName}`, err)
+        console.error(`Font URL: ${fullUrl}`)
+        return false
       }
-    })
+    } else {
+      console.warn(`⚠️  Skipping font - missing data: name="${fontName}", file="${fontFile}"`)
+      return false
+    }
   }
 
   const initializeAudio = () => {
@@ -529,6 +753,9 @@ export function useEventShowcase() {
     currentFont, // Deprecated: use primaryFont/secondaryFont
     primaryFont,
     secondaryFont,
+    accentFont,
+    decorativeFont,
+    getLanguageFonts, // Expose font type mapping
     isEventPast,
     eventVideoUrl,
     eventMusicUrl,
@@ -550,6 +777,8 @@ export function useEventShowcase() {
     initializeAudio,
     playMusic,
     pauseMusic,
-    toggleMusic
+    toggleMusic,
+    fontsLoaded,
+    fontsLoadedCount
   }
 }
