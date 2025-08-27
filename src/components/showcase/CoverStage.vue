@@ -26,12 +26,12 @@
     <!-- Content Overlay -->
     <div class="absolute inset-0 flex flex-col px-4 sm:px-6 md:px-8 text-center">
       <!-- Main Content Container -->
-      <div class="flex-1 flex flex-col items-center justify-center max-w-5xl mx-auto pt-8 pb-40">
-        
+      <div class="absolute top-[25%] left-0 right-0 flex flex-col items-center max-w-5xl mx-auto">
+
         <!-- Event Title (Top) -->
-        <div class="mb-6 sm:mb-8 md:mb-10 animate-fadeIn">
+        <div class="px-12 mb-6 sm:mb-8 md:mb-10 animate-fadeIn">
           <h1
-            class="text-4xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-bold leading-tight"
+            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl xl:text-3xl 2xl:text-3xl font-bold leading-relaxed py-2"
             :style="{
               fontFamily: primaryFont || currentFont,
               background: gradientStyle,
@@ -45,9 +45,9 @@
         </div>
 
         <!-- Event Logo -->
-        <div 
-          v-if="eventLogo" 
-          class="mb-8 sm:mb-10 md:mb-12 animate-fadeIn animation-delay-200"
+        <div
+          v-if="eventLogo"
+          class="py-8 sm:mb-10 md:mb-12 animate-fadeIn animation-delay-200"
         >
           <img
             :src="getMediaUrl(eventLogo)"
@@ -59,8 +59,8 @@
         <!-- Invite Text -->
         <div class="mb-6 sm:mb-8 md:mb-10 animate-fadeIn animation-delay-400">
           <p
-            class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl"
-            :style="{ 
+            class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl leading-relaxed py-1"
+            :style="{
               color: 'rgba(255, 255, 255, 0.9)',
               fontFamily: secondaryFont || currentFont
             }"
@@ -70,59 +70,53 @@
         </div>
 
         <!-- Guest Name -->
-        <div v-if="guestName" class="animate-fadeIn animation-delay-600 max-w-4xl mx-auto">
-          <p
-            class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl mb-1 sm:mb-2 md:mb-3"
-            :style="{ 
-              color: 'rgba(255, 255, 255, 0.8)',
-              fontFamily: secondaryFont || currentFont
-            }"
-          >
-            Dear
-          </p>
+        <div v-if="guestName" class="px-12 animate-fadeIn animation-delay-600">
+
           <h2
-            class="text-3xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"
+            class="text-xl sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl font-bold leading-relaxed whitespace-normal break-words py-2"
             :style="{
               fontFamily: primaryFont || currentFont,
               background: gradientStyle,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              backgroundClip: 'text',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word'
             }"
           >
             {{ guestName }}
           </h2>
         </div>
-      </div>
 
-      <!-- Open Envelope Button (10% from bottom) -->
-      <div class="absolute bottom-[10%] left-0 right-0 flex justify-center animate-fadeIn animation-delay-800">
-        <button
-          @click="$emit('openEnvelope')"
-          class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
-        >
-          <img
-            v-if="templateAssets?.open_envelope_button"
-            :src="getMediaUrl(templateAssets.open_envelope_button)"
-            alt="Open Invitation"
-            class="envelope-button-size h-auto cursor-pointer drop-shadow-2xl"
-          />
-          <div
-            v-else
-            class="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 lg:py-6 rounded-full shadow-2xl transition-all hover:scale-105"
-            :style="{
-              background: gradientStyle,
-              backdropFilter: 'blur(10px)'
-            }"
+        <!-- Open Envelope Button (Below Guest Name) -->
+        <div class="mt-4 sm:mt-10 md:mt-12 lg:mt-14 xl:mt-16 flex justify-center animate-fadeIn animation-delay-800">
+          <button
+            @click="$emit('openEnvelope')"
+            class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
           >
-            <span 
-              class="text-lg sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white"
-              :style="{ fontFamily: primaryFont || currentFont }"
+            <img
+              v-if="templateAssets?.open_envelope_button"
+              :src="getMediaUrl(templateAssets.open_envelope_button)"
+              alt="Open Invitation"
+              class="envelope-button-size h-auto cursor-pointer drop-shadow-2xl"
+            />
+            <div
+              v-else
+              class="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 lg:py-6 rounded-full shadow-2xl transition-all hover:scale-105"
+              :style="{
+                background: gradientStyle,
+                backdropFilter: 'blur(10px)'
+              }"
             >
-              Open Invitation
-            </span>
-          </div>
-        </button>
+              <span
+                class="text-lg sm:text-lg md:text-lg lg:text-xl xl:text-xl 2xl:text-2xl font-bold text-white"
+                :style="{ fontFamily: primaryFont || currentFont }"
+              >
+                Open Invitation
+              </span>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -266,6 +260,16 @@ const gradientStyle = computed(() =>
     width: 100%;
     object-fit: contain;
   }
+}
+
+/* Text rendering improvements to prevent cut-off */
+h1, h2, p {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: visible;
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
 }
 
 /* Event Logo Responsive Sizing */
