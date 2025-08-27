@@ -1,47 +1,47 @@
 <template>
-  <div class="text-center mb-6 sm:mb-8 space-y-2 sm:space-y-3">
+  <div class="text-center py-6 mb-6 sm:mb-8 -space-y-2 sm:-space-y-2">
     <!-- Date Text -->
     <div class="flex items-center justify-center gap-2 sm:gap-3">
-      <Calendar class="w-4 h-4 sm:w-5 sm:h-5" :style="{ color: primaryColor }" />
-      <span 
-        class="text-sm sm:text-base md:text-lg font-medium" 
-        :style="{ 
+      <span
+        class="text-xs sm:text-base md:text-lg font-medium leading-relaxed py-2"
+        :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          backgroundClip: 'text',
+          fontFamily: secondaryFont || currentFont
         }"
       >
         {{ dateText || 'Date to be announced' }}
       </span>
     </div>
-    
+
     <!-- Time Text -->
     <div class="flex items-center justify-center gap-2 sm:gap-3">
-      <Clock class="w-4 h-4 sm:w-5 sm:h-5" :style="{ color: primaryColor }" />
-      <span 
-        class="text-sm sm:text-base md:text-lg font-medium" 
-        :style="{ 
+      <span
+        class="text-xs sm:text-base md:text-lg font-medium leading-relaxed py-2"
+        :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          backgroundClip: 'text',
+          fontFamily: secondaryFont || currentFont
         }"
       >
         {{ timeText || 'Time to be announced' }}
       </span>
     </div>
-    
+
     <!-- Location Text -->
     <div class="flex items-center justify-center gap-2 sm:gap-3">
-      <MapPin class="w-4 h-4 sm:w-5 sm:h-5" :style="{ color: primaryColor }" />
-      <span 
-        class="text-sm sm:text-base md:text-lg font-medium" 
-        :style="{ 
+      <span
+        class="text-xs sm:text-base md:text-lg font-medium leading-relaxed py-2"
+        :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          backgroundClip: 'text',
+          fontFamily: secondaryFont || currentFont
         }"
       >
         {{ locationText || 'Location to be announced' }}
@@ -60,6 +60,9 @@ interface Props {
   hasGoogleMap?: boolean
   primaryColor: string
   accentColor: string
+  currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 defineProps<Props>()

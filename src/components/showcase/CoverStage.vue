@@ -47,7 +47,7 @@
         <!-- Event Logo -->
         <div
           v-if="eventLogo"
-          class="py-8 sm:mb-10 md:mb-12 animate-fadeIn animation-delay-200"
+          class="py-4 sm:mb-10 md:mb-12 animate-fadeIn animation-delay-200"
         >
           <img
             :src="getMediaUrl(eventLogo)"
@@ -275,7 +275,7 @@ h1, h2, p {
 /* Event Logo Responsive Sizing */
 .event-logo-showcase {
   height: auto;
-  max-height: 132px; /* Increased by 10% from 120px */
+  max-height: 180px; /* Increased by 10% from 120px */
   width: auto;
   max-width: 330px; /* Increased by 10% from 300px */
   object-fit: contain;

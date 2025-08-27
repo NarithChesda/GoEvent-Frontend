@@ -46,9 +46,9 @@
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
                 <!-- Welcome Header -->
-                <div class="text-center mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+                <div class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                   <h1
-                    class="text-lg sm:text-xl md:text-2xl font-medium mb-3 sm:mb-4 md:mb-6 uppercase"
+                    class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
                     :style="{
                       fontFamily: primaryFont || currentFont,
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -74,10 +74,7 @@
                   :secondary-font="secondaryFont"
                 />
 
-                <!-- Host Section Divider -->
-                <WeddingSectionDivider
-                  :primary-color="primaryColor"
-                />
+
 
                 <!-- Event Information -->
                 <div class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10">
@@ -88,6 +85,9 @@
                     :has-google-map="!!event.google_map_embed_link"
                     :primary-color="primaryColor"
                     :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
                     @open-map="$emit('openMap')"
                   />
 
@@ -248,7 +248,7 @@
                 <!-- Footer Section -->
                 <div class="mt-8 -mx-6 sm:-mx-6 md:-mx-6 laptop-sm:-mx-8 laptop-md:-mx-10 laptop-lg:-mx-12 desktop:-mx-8 -mb-6 sm:-mb-6 md:-mb-6 laptop-sm:-mb-8 laptop-md:-mb-10 laptop-lg:-mb-12 desktop:-mb-8">
                   <!-- Footer Card with Reverse Colors -->
-                  <div 
+                  <div
                     class="footer-card-container rounded-none sm:rounded-t-2xl px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
                     :style="{
                       background: `linear-gradient(135deg, ${primaryColor}90, ${primaryColor}70)`,
@@ -261,13 +261,13 @@
                     }"
                   >
                     <!-- Top Highlight Line -->
-                    <div 
+                    <div
                       class="absolute top-0 left-0 right-0 h-px"
-                      :style="{ 
+                      :style="{
                         background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent)'
                       }"
                     ></div>
-                    
+
                     <div class="space-y-4">
                       <!-- Thank You Message -->
                       <p
@@ -292,9 +292,9 @@
 
                       <!-- Contact Info -->
                       <div class="space-y-2">
-                        <div 
+                        <div
                           class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm text-white"
-                          :style="{ 
+                          :style="{
                             backgroundColor: 'rgba(255, 255, 255, 0.12)'
                           }"
                         >
@@ -303,9 +303,9 @@
                           </svg>
                           info@goevent.com
                         </div>
-                        <div 
+                        <div
                           class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm text-white"
-                          :style="{ 
+                          :style="{
                             backgroundColor: 'rgba(255, 255, 255, 0.12)'
                           }"
                         >

@@ -1,12 +1,12 @@
 <template>
-  <div class="host-info-container mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-12 px-2 sm:px-4 md:px-6 laptop-sm:px-8 laptop-md:px-10 laptop-lg:px-12 desktop:px-8">
+  <div class="host-info-container mb-10 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-12 px-2 sm:px-4 md:px-6 laptop-sm:px-8 laptop-md:px-10 laptop-lg:px-12 desktop:px-8">
     <!-- Top Section: Parents Names -->
     <div v-if="hosts.length > 0" class="mt-2 sm:mt-3 laptop-sm:mt-4 mb-1 sm:mb-2">
-      <div class="flex justify-center gap-4 sm:gap-6 md:gap-8 laptop-sm:gap-10 laptop-md:gap-12 laptop-lg:gap-14 desktop:gap-10">
+      <div class="flex justify-center gap-12 sm:gap-6 md:gap-8 laptop-sm:gap-10 laptop-md:gap-12 laptop-lg:gap-14 desktop:gap-10">
         <!-- Host 1 Parents -->
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -15,7 +15,7 @@
             {{ hosts[0].parent_a_name || 'Father Name' }}
           </p>
           <p
-            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -25,15 +25,12 @@
           </p>
         </div>
 
-        <!-- Spacer for heart alignment -->
-        <div v-if="hosts.length > 1" class="flex items-center px-2">
-          <span class="text-2xl md:text-3xl font-light opacity-0"></span>
-        </div>
+
 
         <!-- Host 2 Parents -->
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -42,7 +39,7 @@
             {{ hosts[1].parent_a_name || 'Father Name' }}
           </p>
           <p
-            class="text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -55,14 +52,14 @@
     </div>
 
     <!-- Middle Section: Logo (Highlight) -->
-    <div class="logo-section my-2 sm:my-3 laptop-sm:my-4 laptop-md:my-5 laptop-lg:my-6 desktop:my-4 px-2 sm:px-4 md:px-8 laptop-sm:px-10 laptop-md:px-12 laptop-lg:px-16 desktop:px-12">
+    <div class="logo-section py-6 my-2 sm:my-3 laptop-sm:my-4 laptop-md:my-5 laptop-lg:my-6 desktop:my-4 px-2 sm:px-4 md:px-8 laptop-sm:px-10 laptop-md:px-12 laptop-lg:px-16 desktop:px-12">
       <div class="flex justify-center">
         <div class="logo-container p-2 sm:p-3 md:p-4 laptop-sm:p-5 laptop-md:p-6 laptop-lg:p-7 desktop:p-6">
           <img
             v-if="logoUrl"
             :src="logoUrl"
             alt="Event Logo"
-            class="h-24 sm:h-28 md:h-32 laptop-sm:h-36 laptop-md:h-40 laptop-lg:h-44 desktop:h-40 w-auto max-w-full object-contain drop-shadow-2xl mx-auto"
+            class="h-36 sm:h-28 md:h-32 laptop-sm:h-36 laptop-md:h-40 laptop-lg:h-44 desktop:h-40 w-auto max-w-full object-contain drop-shadow-2xl mx-auto"
           />
           <div
             v-else
@@ -85,8 +82,8 @@
         <!-- Host 1 (Bride/Groom) -->
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-sm md:text-base font-medium mb-2 opacity-80"
-            :style="{ 
+            class="text-sm md:text-base font-medium opacity-80"
+            :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
             }"
@@ -94,9 +91,9 @@
             {{ hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1' }}
           </p>
           <h3
-            class="text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
+            class="leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+              background: `linear-gradient(295deg, ${primaryColor}, ${secondaryColor})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -109,19 +106,14 @@
 
         <!-- Divider (Heart or &) - Only show if two hosts -->
         <div v-if="hosts.length > 1" class="flex items-center px-2">
-          <span
-            class="text-2xl md:text-3xl font-light opacity-70"
-            :style="{ color: primaryColor }"
-          >
-            ♥
-          </span>
+
         </div>
 
         <!-- Host 2 (Bride/Groom) -->
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-sm md:text-base font-medium mb-2 opacity-80"
-            :style="{ 
+            class="text-sm md:text-base font-medium opacity-80"
+            :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
             }"
@@ -129,9 +121,9 @@
             {{ 'Bride' }}
           </p>
           <h3
-            class="text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
+            class="leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
