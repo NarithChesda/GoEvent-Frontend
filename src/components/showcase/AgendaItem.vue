@@ -23,7 +23,8 @@
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          backgroundClip: 'text',
+          fontFamily: primaryFont || currentFont
         }"
       >
         {{ item.title || 'Event Activity' }}
@@ -32,7 +33,7 @@
       <!-- Time (Bottom Right) -->
       <div 
         class="text-xs mt-1" 
-        :style="{ color: primaryColor, opacity: '0.7' }"
+        :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }"
       >
         <span v-if="timeText">{{ timeText }}</span>
         <span v-else>Time TBD</span>
@@ -67,6 +68,9 @@ interface Props {
   item: AgendaItemData
   primaryColor: string
   accentColor: string
+  currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 const props = defineProps<Props>()

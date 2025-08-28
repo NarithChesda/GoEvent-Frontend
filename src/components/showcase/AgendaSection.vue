@@ -6,7 +6,8 @@
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text'
+        backgroundClip: 'text',
+        fontFamily: primaryFont || currentFont
       }"
     >
       Event Schedule
@@ -47,12 +48,13 @@
                 <div>
                   <h3 class="font-semibold text-sm sm:text-base" 
                       :style="{ 
-                        color: primaryColor
+                        color: primaryColor,
+                        fontFamily: primaryFont || currentFont
                       }">
                     {{ formatAgendaDate(date) }}
                   </h3>
                   <div class="flex items-center space-x-2 text-xs mt-1" 
-                       :style="{ color: primaryColor, opacity: '0.7' }">
+                       :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }">
                     <span>{{ agendaByDate[date]?.length || 0 }} {{ agendaByDate[date]?.length === 1 ? 'activity' : 'activities' }}</span>
                   </div>
                 </div>
@@ -83,6 +85,9 @@
                     :item="item"
                     :primary-color="primaryColor"
                     :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
                   />
                 </div>
               </div>
@@ -122,6 +127,9 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 const props = defineProps<Props>()

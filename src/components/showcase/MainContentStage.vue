@@ -127,6 +127,9 @@
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
+                  :current-font="currentFont"
+                  :primary-font="primaryFont"
+                  :secondary-font="secondaryFont"
                   />
 
                   <!-- Agenda Section Divider -->
