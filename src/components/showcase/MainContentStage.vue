@@ -141,18 +141,21 @@
                 <!-- Map Section -->
                 <div id="location-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
                 <div v-if="event.google_map_embed_link" class="mb-6">
-                  <h2
-                    class="text-xl font-semibold mb-4 text-center"
-                    :style="{
-                      fontFamily: primaryFont || currentFont,
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text'
-                    }"
-                  >
-                    Location
-                  </h2>
+                  <!-- Location Header -->
+                  <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+                    <h2
+                      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+                      :style="{
+                        fontFamily: primaryFont || currentFont,
+                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                      }"
+                    >
+                      Location
+                    </h2>
+                  </div>
                   <div class="aspect-video rounded-xl overflow-hidden">
                     <iframe
                       :src="event.google_map_embed_link"
@@ -179,6 +182,9 @@
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
+                  :current-font="currentFont"
+                  :primary-font="primaryFont"
+                  :secondary-font="secondaryFont"
                   />
 
                   <!-- Video Section Divider -->
@@ -195,6 +201,9 @@
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   :get-media-url="getMediaUrl"
+                  :current-font="currentFont"
+                  :primary-font="primaryFont"
+                  :secondary-font="secondaryFont"
                   @open-photo="$emit('openPhoto', $event)"
                   />
 
@@ -231,6 +240,9 @@
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
+                  :current-font="currentFont"
+                  :primary-font="primaryFont"
+                  :secondary-font="secondaryFont"
                   @comment-submitted="handleCommentSubmitted"
                   />
 
@@ -280,6 +292,7 @@
                       <!-- Thank You Message -->
                       <p
                         class="text-lg font-semibold text-white"
+                        :style="{ fontFamily: primaryFont || currentFont }"
                       >
                         Thank you for celebrating with us
                       </p>
@@ -289,11 +302,12 @@
                         <div class="inline-flex items-center justify-center">
                           <span
                             class="text-xl font-bold text-white"
+                            :style="{ fontFamily: primaryFont || currentFont }"
                           >
                             GoEvent
                           </span>
                         </div>
-                        <p class="text-sm text-white opacity-90">
+                        <p class="text-sm text-white opacity-90" :style="{ fontFamily: secondaryFont || currentFont }">
                           Create beautiful event invitations
                         </p>
                       </div>
@@ -301,9 +315,9 @@
                       <!-- Contact Info -->
                       <div class="space-y-2">
                         <div
-                          class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm text-white"
+                          class="inline-flex items-center justify-center text-sm text-white px-2"
                           :style="{
-                            backgroundColor: 'rgba(255, 255, 255, 0.12)'
+                            fontFamily: secondaryFont || currentFont
                           }"
                         >
                           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,9 +326,9 @@
                           info@goevent.com
                         </div>
                         <div
-                          class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm text-white"
+                          class="inline-flex items-center justify-center text-sm text-white px-2"
                           :style="{
-                            backgroundColor: 'rgba(255, 255, 255, 0.12)'
+                            fontFamily: secondaryFont || currentFont
                           }"
                         >
                           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,16 +1,20 @@
 <template>
   <div v-if="youtubeEmbedLink" class="mb-8">
-    <h2
-      class="text-xl font-semibold mb-4 text-center"
-      :style="{
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text'
-      }"
-    >
-      Video
-    </h2>
+    <!-- Video Header -->
+    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+      <h2
+        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+        :style="{
+          fontFamily: primaryFont || currentFont,
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }"
+      >
+        Video
+      </h2>
+    </div>
     <div class="aspect-video rounded-xl overflow-hidden">
       <iframe
         :src="youtubeEmbedLink"
@@ -33,6 +37,9 @@ interface Props {
   primaryColor: string
   secondaryColor?: string
   accentColor: string
+  currentFont?: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 defineProps<Props>()

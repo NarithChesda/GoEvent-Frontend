@@ -1,24 +1,27 @@
 <template>
   <div v-if="agendaItems.length > 0" class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
-    <h2 
-      class="text-xl font-semibold mb-4 text-center" 
-      :style="{ 
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        fontFamily: primaryFont || currentFont
-      }"
-    >
-      Event Schedule
-    </h2>
-    
+    <!-- Welcome Header -->
+    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+      <h2
+        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+        :style="{
+          fontFamily: primaryFont || currentFont,
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }"
+      >
+        Event Schedule
+      </h2>
+    </div>
+
     <!-- Agenda Collapse Cards -->
     <div class="space-y-3">
       <div v-for="date in agendaTabs" :key="date" class="agenda-date-section mb-3 last:mb-0">
-        
+
         <!-- Agenda Date Card - Unified Design -->
-        <div 
+        <div
           class="agenda-card-container transition-all duration-300"
           :style="{
             backgroundColor: `${primaryColor}15`,
@@ -33,7 +36,7 @@
           }"
         >
           <!-- Collapsible Card Header - Always Visible -->
-          <div 
+          <div
             class="agenda-card-header cursor-pointer transition-all duration-300 hover:translateY(-1px)"
             @click="toggleCard(date)"
           >
@@ -46,20 +49,20 @@
                   </svg>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-sm sm:text-base" 
-                      :style="{ 
+                  <h3 class="font-semibold text-sm sm:text-base"
+                      :style="{
                         color: primaryColor,
                         fontFamily: primaryFont || currentFont
                       }">
                     {{ formatAgendaDate(date) }}
                   </h3>
-                  <div class="flex items-center space-x-2 text-xs mt-1" 
+                  <div class="flex items-center space-x-2 text-xs mt-1"
                        :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }">
                     <span>{{ agendaByDate[date]?.length || 0 }} {{ agendaByDate[date]?.length === 1 ? 'activity' : 'activities' }}</span>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Expand/Collapse Arrow -->
               <div class="transition-transform duration-300" :class="{ 'rotate-180': isCardExpanded(date) }">
                 <svg class="w-5 h-5" :style="{ color: primaryColor, opacity: '0.6' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +73,7 @@
           </div>
 
           <!-- Expandable Content -->
-          <div 
+          <div
             class="agenda-card-content overflow-hidden transition-all duration-500 ease-in-out"
             :class="isCardExpanded(date) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'"
           >
@@ -96,7 +99,7 @@
         </div>
       </div>
     </div>
-    
+
   </div>
 </template>
 
@@ -140,7 +143,7 @@ const expandedCards = ref<Set<string>>(new Set())
 // Group agenda items by date
 const agendaByDate = computed(() => {
   const grouped: Record<string, AgendaItemData[]> = {}
-  
+
   props.agendaItems.forEach(item => {
     const date = item.date || 'No Date'
     if (!grouped[date]) {
@@ -148,12 +151,12 @@ const agendaByDate = computed(() => {
     }
     grouped[date].push(item)
   })
-  
+
   // Sort items within each date by order
   Object.keys(grouped).forEach(date => {
     grouped[date].sort((a, b) => (a.order || 0) - (b.order || 0))
   })
-  
+
   return grouped
 })
 
@@ -182,7 +185,7 @@ const toggleCard = (date: string) => {
 
 const formatAgendaDate = (dateString: string): string => {
   if (dateString === 'No Date') return 'TBD'
-  
+
   try {
     const date = new Date(dateString)
     return date.toLocaleDateString([], {
@@ -241,7 +244,7 @@ const formatAgendaDate = (dateString: string): string => {
 }
 
 .agenda-card-content {
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.3s ease-in-out;
   will-change: max-height, opacity;
   transform-origin: top;

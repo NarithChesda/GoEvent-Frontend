@@ -1,8 +1,9 @@
 <template>
   <div id="comment-section" class="mb-8">
     <h2 
-      class="text-xl font-semibold mb-4 text-center" 
+      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase text-center" 
       :style="{ 
+        fontFamily: primaryFont || currentFont,
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
@@ -25,7 +26,7 @@
     }">
       <!-- Sign In Prompt for Unauthenticated Users -->
       <div v-if="!isUserAuthenticated" class="text-center py-4">
-        <p class="text-sm mb-3" :style="{ color: primaryColor }">
+        <p class="text-sm mb-3" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
           Please sign in to leave a comment
         </p>
         <button
@@ -43,16 +44,16 @@
             border: `1px solid ${primaryColor}60`
           }"
         >
-          Sign In to Comment
+          <span :style="{ fontFamily: secondaryFont || currentFont }">Sign In to Comment</span>
         </button>
       </div>
 
       <!-- Already Commented Message -->
       <div v-else-if="hasAlreadyCommented" class="text-center py-4">
-        <p class="text-sm mb-2" :style="{ color: primaryColor }">
+        <p class="text-sm mb-2" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
           You have already left a comment for this event
         </p>
-        <p class="text-xs" :style="{ color: primaryColor, opacity: 0.8 }">
+        <p class="text-xs" :style="{ color: primaryColor, opacity: 0.8, fontFamily: secondaryFont || currentFont }">
           Each user can only comment once per event
         </p>
       </div>
@@ -72,11 +73,12 @@
               boxShadow: `inset 0 2px 4px ${primaryColor}40, 0 2px 8px ${primaryColor}30`,
               '--tw-ring-color': primaryColor + '80',
               color: primaryColor,
-              border: `1px solid ${primaryColor}30`
+              border: `1px solid ${primaryColor}30`,
+              fontFamily: secondaryFont || currentFont
             }"
             required
           />
-          <div class="text-xs text-right mt-1" :style="{ color: primaryColor }">
+          <div class="text-xs text-right mt-1" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
             {{ newComment.message.length }}/500
           </div>
         </div>
@@ -98,7 +100,7 @@
             border: `1px solid ${primaryColor}60`
           }"
         >
-          {{ isSubmittingComment ? 'Posting...' : 'Post Comment' }}
+          <span :style="{ fontFamily: secondaryFont || currentFont }">{{ isSubmittingComment ? 'Posting...' : 'Post Comment' }}</span>
         </button>
       </form>
     </div>
@@ -123,7 +125,7 @@
         }">
           <div class="inline-flex items-center gap-2">
             <div class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
-            <span class="text-sm" :style="{ color: primaryColor, opacity: '0.8' }">Loading comments...</span>
+            <span class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">Loading comments...</span>
           </div>
         </div>
 
@@ -141,7 +143,7 @@
           <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" :style="{ backgroundColor: `${primaryColor}15` }">
             <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
           </div>
-          <p class="text-sm" :style="{ color: primaryColor, opacity: '0.8' }">
+          <p class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">
             Be the first to leave a comment!
           </p>
         </div>
@@ -195,18 +197,18 @@
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
-                    <p class="text-sm font-medium" :style="{ color: primaryColor }">
+                    <p class="text-sm font-medium" :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }">
                       {{ getCommentDisplayName(comment) }}
                     </p>
                     <span 
                       v-if="isUserCommentOwner(comment)"
                       class="text-xs px-2 py-0.5 rounded-full text-white font-medium"
-                      :style="{ backgroundColor: primaryColor + '80' }"
+                      :style="{ backgroundColor: primaryColor + '80', fontFamily: secondaryFont || currentFont }"
                     >
                       You
                     </span>
                   </div>
-                  <p class="text-xs" :style="{ color: primaryColor, opacity: 0.7 }">
+                  <p class="text-xs" :style="{ color: primaryColor, opacity: 0.7, fontFamily: secondaryFont || currentFont }">
                     {{ formatCommentDate(comment.created_at) }}
                   </p>
                 </div>
@@ -244,8 +246,8 @@
             </div>
 
             <!-- Comment Message (Read Mode) -->
-            <p v-if="editingCommentId !== comment.id" class="text-sm leading-relaxed" :style="{ color: primaryColor, opacity: 0.9 }">
-              {{ comment.comment_text }}
+            <p v-if="editingCommentId !== comment.id" class="text-sm leading-relaxed" :style="{ color: primaryColor, opacity: 0.9, fontFamily: secondaryFont || currentFont }">
+              {{ capitalizeFirstLetter(comment.comment_text) }}
             </p>
             
             <!-- Comment Message (Edit Mode) -->
@@ -257,14 +259,15 @@
                   backgroundColor: `${primaryColor}08`,
                   boxShadow: `inset 0 2px 4px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
                   '--tw-ring-color': primaryColor + '60',
-                  color: primaryColor
+                  color: primaryColor,
+                  fontFamily: secondaryFont || currentFont
                 }"
                 rows="3"
                 maxlength="500"
                 placeholder="Edit your comment..."
               />
               <div class="flex items-center justify-between">
-                <div class="text-xs" :style="{ color: primaryColor }">
+                <div class="text-xs" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
                   {{ editCommentText.length }}/500
                 </div>
                 <div class="flex items-center gap-2">
@@ -275,7 +278,8 @@
                       backgroundColor: `${primaryColor}06`,
                       color: primaryColor,
                       opacity: '0.8',
-                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}10`
+                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}10`,
+                      fontFamily: secondaryFont || currentFont
                     }"
                     :disabled="isUpdatingComment"
                   >
@@ -292,7 +296,8 @@
                         0 4px 16px -2px ${primaryColor}20,
                         inset 0 2px 4px rgba(255, 255, 255, 0.1),
                         inset 0 -1px 2px ${primaryColor}10
-                      `
+                      `,
+                      fontFamily: secondaryFont || currentFont
                     }"
                   >
                     <span v-if="!isUpdatingComment">Save</span>
@@ -313,7 +318,7 @@
           }">
             <div class="inline-flex items-center gap-2">
               <div class="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
-              <span class="text-xs" :style="{ color: primaryColor, opacity: '0.7' }">Loading more comments...</span>
+              <span class="text-xs" :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }">Loading more comments...</span>
             </div>
           </div>
         </div>
@@ -326,7 +331,7 @@
       boxShadow: '0 4px 16px -2px #dc262615, inset 0 1px 0 rgba(255, 255, 255, 0.08)',
       border: '1px solid #dc262640'
     }">
-      <p class="text-sm" :style="{ color: '#dc2626', opacity: 0.9 }">{{ errorMessage }}</p>
+      <p class="text-sm" :style="{ color: '#dc2626', opacity: 0.9, fontFamily: secondaryFont || currentFont }">{{ errorMessage }}</p>
     </div>
     
   </div>
@@ -356,6 +361,9 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  currentFont?: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 const props = defineProps<Props>()
@@ -519,6 +527,11 @@ const setAvatarError = (commentId: number) => {
 const isUserCommentOwner = (comment: EventComment): boolean => {
   if (!authStore.isAuthenticated || !authStore.user) return false
   return comment.user === authStore.user.id
+}
+
+const capitalizeFirstLetter = (text: string): string => {
+  if (!text) return text
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 const startEditComment = (comment: EventComment) => {
