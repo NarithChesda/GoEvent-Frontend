@@ -82,13 +82,13 @@
         <!-- Host 1 (Bride/Groom) -->
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-sm md:text-base font-medium opacity-80"
+            class="text-xs md:text-base font-medium opacity-80"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
             }"
           >
-            {{ hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1' }}
+            {{ hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1') }}
           </p>
           <h3
             class="leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
@@ -112,13 +112,13 @@
         <!-- Host 2 (Bride/Groom) -->
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-sm md:text-base font-medium opacity-80"
+            class="text-xs md:text-base font-medium opacity-80"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
             }"
           >
-            {{ 'Bride' }}
+            {{ hosts[1].title || 'Bride' }}
           </p>
           <h3
             class="leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
