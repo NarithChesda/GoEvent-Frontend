@@ -12,7 +12,7 @@
           backgroundClip: 'text'
         }"
       >
-        Event Schedule
+        {{ agendaHeaderText }}
       </h2>
     </div>
 
@@ -58,7 +58,7 @@
                   </h3>
                   <div class="flex items-center space-x-2 text-xs mt-1"
                        :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }">
-                    <span>{{ agendaByDate[date]?.length || 0 }} {{ agendaByDate[date]?.length === 1 ? 'activity' : 'activities' }}</span>
+                    <span>{{ agendaByDate[date]?.length || 0 }} {{ getActivityCountText(agendaByDate[date]?.length || 0) }}</span>
                   </div>
                 </div>
               </div>
@@ -106,6 +106,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import AgendaItem from './AgendaItem.vue'
+import {
+  translateRSVP,
+  formatDateLocalized,
+  type SupportedLanguage
+} from '../../utils/translations'
 
 interface AgendaItemIcon {
   id: number
@@ -133,9 +138,47 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  eventTexts?: EventText[]
+  currentLanguage?: string
+}
+
+interface EventText {
+  text_type: string
+  language: string
+  content: string
 }
 
 const props = defineProps<Props>()
+
+// Enhanced translation function that combines database content with frontend translations
+const getTextContent = (textType: string, fallback = ''): string => {
+  // First, try to get content from database (eventTexts)
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(text =>
+      text.text_type === textType && text.language === props.currentLanguage
+    )
+    if (text?.content) {
+      return text.content
+    }
+  }
+
+  // Fallback to frontend translation system
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+
+  // Map text types to translation keys
+  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    'agenda_header': 'agenda_header',
+    'agenda_activity': 'agenda_activity',
+    'agenda_activities': 'agenda_activities'
+  }
+
+  const translationKey = keyMap[textType]
+  if (translationKey) {
+    return translateRSVP(translationKey, currentLang)
+  }
+
+  return fallback
+}
 
 // State for expanded cards
 const expandedCards = ref<Set<string>>(new Set())
@@ -170,6 +213,19 @@ const agendaTabs = computed(() => {
   })
 })
 
+// Translatable text computed properties
+const agendaHeaderText = computed(() =>
+  getTextContent('agenda_header', 'Event Schedule')
+)
+
+const getActivityCountText = (count: number): string => {
+  if (count === 1) {
+    return getTextContent('agenda_activity', 'activity')
+  } else {
+    return getTextContent('agenda_activities', 'activities')
+  }
+}
+
 // Methods for collapse functionality
 const isCardExpanded = (date: string): boolean => {
   return expandedCards.value.has(date)
@@ -187,12 +243,8 @@ const formatAgendaDate = (dateString: string): string => {
   if (dateString === 'No Date') return 'TBD'
 
   try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString([], {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    })
+    const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+    return formatDateLocalized(dateString, 'compact', currentLang)
   } catch {
     return dateString
   }

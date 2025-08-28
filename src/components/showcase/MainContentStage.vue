@@ -127,6 +127,8 @@
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
+                  :event-texts="eventTexts"
+                  :current-language="currentLanguage"
                   :current-font="currentFont"
                   :primary-font="primaryFont"
                   :secondary-font="secondaryFont"

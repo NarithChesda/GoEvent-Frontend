@@ -59,6 +59,11 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   rsvp_unregister_success: string
   rsvp_guest_update_success: string
   rsvp_thank_you_simple: string
+
+  // Agenda section
+  agenda_header: string
+  agenda_activity: string
+  agenda_activities: string
 }> = {
   en: {
     // Main headers
@@ -116,7 +121,12 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: 'Great! You\'re registered with {count} {unit}.',
     rsvp_unregister_success: 'We\'re sorry you can\'t make it. Thank you for letting us know.',
     rsvp_guest_update_success: 'Updated guest count to {count} {unit}',
-    rsvp_thank_you_simple: 'Thank you for your response.'
+    rsvp_thank_you_simple: 'Thank you for your response.',
+
+    // Agenda section
+    agenda_header: 'Event Schedule',
+    agenda_activity: 'activity',
+    agenda_activities: 'activities'
   },
 
   kh: {
@@ -175,7 +185,12 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: 'អស្ចារ្យ! អ្នកបានចុះឈ្មោះជាមួយ {count} {unit}។',
     rsvp_unregister_success: 'យើងសោកស្តាយដែលអ្នកមិនអាចមកបាន។ សូមអរគុណដែលបានជូនដំណឹង។',
     rsvp_guest_update_success: 'បានកែប្រែចំនួនភ្ញៀវទៅ {count} {unit}',
-    rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។'
+    rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។',
+
+    // Agenda section
+    agenda_header: 'កាលវិភាគព្រឹត្តិការណ៍',
+    agenda_activity: 'សកម្មភាព',
+    agenda_activities: 'សកម្មភាព'
   },
 
   fr: {
@@ -234,7 +249,12 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: 'Parfait ! Vous êtes inscrit avec {count} {unit}.',
     rsvp_unregister_success: 'Nous regrettons que vous ne puissiez pas venir. Merci de nous avoir prévenus.',
     rsvp_guest_update_success: 'Nombre d\'invités mis à jour à {count} {unit}',
-    rsvp_thank_you_simple: 'Merci pour votre réponse.'
+    rsvp_thank_you_simple: 'Merci pour votre réponse.',
+
+    // Agenda section
+    agenda_header: 'Programme de l\'événement',
+    agenda_activity: 'activité',
+    agenda_activities: 'activités'
   },
 
   ja: {
@@ -293,7 +313,12 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: '素晴らしい！{count}{unit}で登録されました。',
     rsvp_unregister_success: 'ご出席いただけず残念です。お知らせいただきありがとうございます。',
     rsvp_guest_update_success: 'ゲスト数を{count}{unit}に更新しました',
-    rsvp_thank_you_simple: 'ご返答ありがとうございます。'
+    rsvp_thank_you_simple: 'ご返答ありがとうございます。',
+
+    // Agenda section
+    agenda_header: 'イベントスケジュール',
+    agenda_activity: '活動',
+    agenda_activities: '活動'
   },
 
   ko: {
