@@ -146,7 +146,7 @@
           <!-- Event Header - Two Row Layout -->
           <div class="text-center space-y-2">
             <!-- Row 1: Event Date -->
-            <div class="text-lg font-semibold" :style="{
+            <div class="text-sm" :style="{
               color: primaryColor,
               fontFamily: primaryFont || currentFont
             }">
@@ -335,7 +335,7 @@
           <div class="glass-content-section py-2">
             <!-- Guest Counter Label (centered) -->
             <div class="text-center mb-3">
-              <span class="text-base font-semibold" :style="{
+              <span class="text-sm" :style="{
                 color: primaryColor,
                 fontFamily: primaryFont || currentFont
               }">
@@ -385,7 +385,7 @@
                 backgroundColor: `${primaryColor}06`,
                 boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08)`
               }">
-                <span class="text-sm font-semibold" :style="{
+                <span class="text-xs" :style="{
                   color: primaryColor,
                   fontFamily: secondaryFont || currentFont
                 }">

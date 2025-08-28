@@ -29,7 +29,7 @@
         <!-- Event Title (Top) -->
         <div class="px-12 mb-6 sm:mb-8 md:mb-10 animate-fadeIn">
           <h1
-            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl xl:text-3xl 2xl:text-3xl font-bold leading-relaxed py-2"
+            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl xl:text-3xl 2xl:text-3xl font-bold leading-relaxed py-4 uppercase khmer-text-fix"
             :style="{
               fontFamily: primaryFont || currentFont,
               background: gradientStyle,
@@ -38,7 +38,7 @@
               backgroundClip: 'text'
             }"
           >
-            {{ eventTitle }}
+            {{ coverHeader || eventTitle }}
           </h1>
         </div>
 
@@ -71,7 +71,7 @@
         <div v-if="guestName" class="px-12 animate-fadeIn animation-delay-600">
 
           <h2
-            class="text-xl sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl font-bold leading-relaxed whitespace-normal break-words py-2"
+            class="text-xl sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl font-bold leading-relaxed whitespace-normal break-words py-4 uppercase khmer-text-fix"
             :style="{
               fontFamily: primaryFont || currentFont,
               background: gradientStyle,
@@ -178,7 +178,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
   // Fallback to frontend translation system
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
   console.log(`CoverStage: Using frontend translation for ${textType} in language:`, currentLang)
-  
+
   if (textType === 'invite_text') {
     const translation = translateRSVP('invite_text', currentLang)
     console.log(`CoverStage: Translated invite_text to:`, translation)
@@ -187,6 +187,10 @@ const getTextContent = (textType: string, fallback = ''): string => {
 
   return fallback
 }
+
+const coverHeader = computed(() =>
+  props.eventTexts?.find(text => text.text_type === 'cover_header')?.content
+)
 
 const inviteText = computed(() =>
   getTextContent('invite_text', "You're Invited")
@@ -307,6 +311,19 @@ h1, h2, p {
   overflow: visible;
   padding-top: 0.1em;
   padding-bottom: 0.1em;
+}
+
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  overflow: visible !important;
+  text-overflow: visible !important;
+  /* Ensure proper space for Khmer ascenders and descenders */
+  min-height: 1.8em;
 }
 
 /* Event Logo Responsive Sizing */
