@@ -107,6 +107,11 @@
                   :secondary-color="secondaryColor"
                   :accent-color="accentColor"
                   :is-event-past="isEventPast"
+                  :event-texts="eventTexts"
+                  :current-language="currentLanguage"
+                  :current-font="currentFont"
+                  :primary-font="primaryFont"
+                  :secondary-font="secondaryFont"
                   />
 
                   <!-- RSVP Section Divider -->
