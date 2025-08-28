@@ -20,8 +20,6 @@
       />
     </div>
 
-    <!-- Dark Overlay -->
-    <div class="absolute inset-0 bg-black/30"></div>
 
     <!-- Content Overlay -->
     <div class="absolute inset-0 flex flex-col px-4 sm:px-6 md:px-8 text-center">
@@ -57,15 +55,15 @@
         </div>
 
         <!-- Invite Text -->
-        <div class="mb-6 sm:mb-8 md:mb-10 animate-fadeIn animation-delay-400">
+        <div class="mb-3 sm:mb-4 md:mb-5 animate-fadeIn animation-delay-400">
           <p
             class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl leading-relaxed py-1"
             :style="{
-              color: 'rgba(255, 255, 255, 0.9)',
+              color: primaryColor || 'rgba(255, 255, 255, 0.9)',
               fontFamily: secondaryFont || currentFont
             }"
           >
-            You're Invited
+            {{ inviteText }}
           </p>
         </div>
 
@@ -124,11 +122,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
   standard_cover_video?: string
   basic_background_photo?: string
   open_envelope_button?: string
+}
+
+interface EventText {
+  text_type: string
+  language: string
+  content: string
 }
 
 interface Props {
@@ -142,6 +147,8 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  eventTexts?: EventText[]
+  currentLanguage?: string
   getMediaUrl: (url: string) => string
 }
 
@@ -153,6 +160,36 @@ defineEmits<{
 
 const gradientStyle = computed(() =>
   `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`
+)
+
+// Translation function similar to RSVP section
+const getTextContent = (textType: string, fallback = ''): string => {
+  // First, try to get content from database (eventTexts)
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(text =>
+      text.text_type === textType && text.language === props.currentLanguage
+    )
+    if (text?.content) {
+      console.log(`CoverStage: Found database text for ${textType}:`, text.content)
+      return text.content
+    }
+  }
+
+  // Fallback to frontend translation system
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  console.log(`CoverStage: Using frontend translation for ${textType} in language:`, currentLang)
+  
+  if (textType === 'invite_text') {
+    const translation = translateRSVP('invite_text', currentLang)
+    console.log(`CoverStage: Translated invite_text to:`, translation)
+    return translation
+  }
+
+  return fallback
+}
+
+const inviteText = computed(() =>
+  getTextContent('invite_text', "You're Invited")
 )
 </script>
 

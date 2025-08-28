@@ -3,9 +3,9 @@
     <Transition name="modal">
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="$emit('close')">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
@@ -46,6 +46,7 @@
                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="">Select type</option>
+                      <option value="cover_header">Cover Header</option>
                       <option value="welcome_message">Welcome Message</option>
                       <option value="instructions">Instructions</option>
                       <option value="description">Description</option>
@@ -215,15 +216,15 @@ const formData = reactive<CreateEventTextRequest>({
 // Methods
 const createText = async () => {
   loading.value = true
-  
+
   try {
     const requestData = { ...formData }
-    
+
     // Clean up empty title
     if (!requestData.title?.trim()) {
       requestData.title = ''
     }
-    
+
     const response = await eventTextsService.createEventText(props.eventId, requestData)
     if (response.success && response.data) {
       emit('created', response.data)

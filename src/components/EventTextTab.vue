@@ -30,6 +30,7 @@
             class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Types</option>
+            <option value="cover_header">Cover Header</option>
             <option value="welcome_message">Welcome Message</option>
             <option value="instructions">Instructions</option>
             <option value="description">Description</option>
@@ -102,9 +103,9 @@
         {{ allTexts.length === 0 ? 'No Text Content Yet' : 'No Matching Text Content' }}
       </h3>
       <p class="text-slate-600 mb-6">
-        {{ allTexts.length === 0 
-          ? 'Start building your event content by adding your first text content.' 
-          : 'Try adjusting your filters to see more content.' 
+        {{ allTexts.length === 0
+          ? 'Start building your event content by adding your first text content.'
+          : 'Try adjusting your filters to see more content.'
         }}
       </p>
       <button
@@ -219,7 +220,7 @@ const filteredTexts = computed(() => {
 
 const groupedTexts = computed(() => {
   const groups: Record<string, EventText[]> = {}
-  
+
   filteredTexts.value.forEach(text => {
     if (!groups[text.text_type]) {
       groups[text.text_type] = []
@@ -243,10 +244,10 @@ const groupedTexts = computed(() => {
 const fetchTexts = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     const response = await eventTextsService.getEventTexts(props.eventId)
-    
+
     if (response.success && response.data) {
       if (response.data.results && Array.isArray(response.data.results)) {
         allTexts.value = response.data.results
@@ -275,19 +276,19 @@ const editText = (text: EventText) => {
 const deleteText = (textId: number) => {
   const text = allTexts.value.find(t => t.id === textId)
   if (!text) return
-  
+
   textToDelete.value = text
   showDeleteModal.value = true
 }
 
 const confirmDelete = async () => {
   if (!textToDelete.value) return
-  
+
   deleteLoading.value = true
-  
+
   try {
     const response = await eventTextsService.deleteEventText(props.eventId, textToDelete.value.id)
-    
+
     if (response.success) {
       allTexts.value = allTexts.value.filter(t => t.id !== textToDelete.value!.id)
       showDeleteModal.value = false

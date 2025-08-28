@@ -5,6 +5,7 @@ export type SupportedLanguage = 'en' | 'kh' | 'fr' | 'ja' | 'ko' | 'zh-cn' | 'th
 export const rsvpTranslations: Record<SupportedLanguage, {
   // Main headers
   rsvp_header: string
+  invite_text: string
 
   // Buttons
   rsvp_yes_button: string
@@ -62,6 +63,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   en: {
     // Main headers
     rsvp_header: 'Will you attend our wedding?',
+    invite_text: 'You\'re Invited',
 
     // Buttons
     rsvp_yes_button: "Yes, I'll attend",
@@ -120,6 +122,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   kh: {
     // Main headers
     rsvp_header: 'តើអ្នកនឹងចូលរួមពិធីរៀបការរបស់យើងទេ?',
+    invite_text: 'អ្នកត្រូវបានអញ្ជើញ',
 
     // Buttons
     rsvp_yes_button: 'ខ្ញុំនឹងចូលរួម',
@@ -178,6 +181,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   fr: {
     // Main headers
     rsvp_header: 'Assisterez-vous à notre mariage ?',
+    invite_text: 'Vous êtes invité',
 
     // Buttons
     rsvp_yes_button: 'Oui, je viendrai',
@@ -236,6 +240,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   ja: {
     // Main headers
     rsvp_header: '結婚式にご出席いただけますか？',
+    invite_text: 'ご招待',
 
     // Buttons
     rsvp_yes_button: 'はい、出席します',
@@ -294,6 +299,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   ko: {
     // Main headers
     rsvp_header: '저희 결혼식에 참석하실 예정인가요?',
+    invite_text: '초대합니다',
 
     // Buttons
     rsvp_yes_button: '네, 참석하겠습니다',
@@ -352,6 +358,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   'zh-cn': {
     // Main headers
     rsvp_header: '您会参加我们的婚礼吗？',
+    invite_text: '诚邀您',
 
     // Buttons
     rsvp_yes_button: '是的，我会参加',
@@ -410,6 +417,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   th: {
     // Main headers
     rsvp_header: 'คุณจะเข้าร่วมงานแต่งงานของเราไหม?',
+    invite_text: 'คุณได้รับเชิญ',
 
     // Buttons
     rsvp_yes_button: 'ใช่ ฉันจะเข้าร่วม',
@@ -468,6 +476,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   vn: {
     // Main headers
     rsvp_header: 'Bạn có tham dự đám cưới của chúng tôi không?',
+    invite_text: 'Bạn được mời',
 
     // Buttons
     rsvp_yes_button: 'Có, tôi sẽ tham dự',

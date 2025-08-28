@@ -37,6 +37,8 @@
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
+        :event-texts="eventTexts"
+        :current-language="currentLanguage"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
       />
