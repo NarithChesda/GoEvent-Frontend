@@ -1,7 +1,7 @@
 <template>
   <div class="floating-action-menu">
     <!-- Blur Overlay -->
-    <div 
+    <div
       v-if="isMenuOpen || showLanguageModal"
       class="blur-overlay"
       @click="closeAllMenus"
@@ -12,12 +12,16 @@
       @click="toggleMenu"
       class="fab-button"
       :class="{ 'active': isMenuOpen }"
-      style="background: white; border: 2px solid #333; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);"
+      :style="{
+        background: primaryColor,
+        border: `2px solid ${primaryColor}`,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+      }"
     >
-      <component 
-        :is="isMenuOpen ? X : Menu" 
-        :size="24" 
-        color="#333"
+      <component
+        :is="isMenuOpen ? X : Menu"
+        :size="24"
+        color="white"
         class="transition-transform duration-150"
         :class="{ 'rotate-90': isMenuOpen }"
       />
@@ -46,10 +50,10 @@
             :class="{ 'active': props.isMusicPlaying }"
             :style="{ borderColor: primaryColor }"
           >
-            <component 
-              :is="props.isMusicPlaying ? VolumeX : Volume2" 
-              :size="20" 
-              :color="primaryColor" 
+            <component
+              :is="props.isMusicPlaying ? VolumeX : Volume2"
+              :size="20"
+              :color="primaryColor"
             />
             <span class="menu-text">{{ props.isMusicPlaying ? 'Music Off' : 'Music On' }}</span>
           </button>
@@ -79,17 +83,6 @@
           </button>
         </div>
 
-        <!-- Gift -->
-        <div class="menu-item">
-          <button
-            @click="handleGift"
-            class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
-          >
-            <Gift :size="20" :color="primaryColor" />
-            <span class="menu-text">Gift</span>
-          </button>
-        </div>
 
         <!-- Agenda -->
         <div class="menu-item">
@@ -139,6 +132,18 @@
           </button>
         </div>
 
+        <!-- Gift -->
+        <div class="menu-item">
+          <button
+            @click="handleGift"
+            class="menu-button glass-section"
+            :style="{ borderColor: primaryColor }"
+          >
+            <Gift :size="20" :color="primaryColor" />
+            <span class="menu-text">Gift</span>
+          </button>
+        </div>
+
         <!-- Comment -->
         <div class="menu-item">
           <button
@@ -170,7 +175,7 @@
               @click="selectLanguage(lang.code)"
               class="language-option glass-inner"
               :class="{ 'active': currentLanguage === lang.code }"
-              :style="{ 
+              :style="{
                 borderColor: currentLanguage === lang.code ? primaryColor : 'transparent',
                 color: currentLanguage === lang.code ? primaryColor : 'white'
               }"
@@ -187,20 +192,20 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { 
-  Menu, 
-  X, 
-  Languages, 
-  Volume2, 
-  VolumeX, 
-  UserCheck, 
-  Bell, 
-  Gift, 
-  Calendar, 
-  MapPin, 
-  Play, 
-  Image, 
-  MessageCircle 
+import {
+  Menu,
+  X,
+  Languages,
+  Volume2,
+  VolumeX,
+  UserCheck,
+  Bell,
+  Gift,
+  Calendar,
+  MapPin,
+  Play,
+  Image,
+  MessageCircle
 } from 'lucide-vue-next'
 
 interface Props {
@@ -243,7 +248,7 @@ const showLanguageModal = ref(false)
 
 const languageFlags: Record<string, string> = {
   'en': '🇺🇸',
-  'kh': '🇰🇭', 
+  'kh': '🇰🇭',
   'fr': '🇫🇷',
   'ja': '🇯🇵',
   'ko': '🇰🇷',
@@ -256,7 +261,7 @@ const displayLanguages = computed(() => {
   if (!props.availableLanguages || props.availableLanguages.length === 0) {
     return []
   }
-  
+
   return props.availableLanguages.map(lang => ({
     code: lang.language,
     name: lang.language_display,
@@ -393,9 +398,9 @@ const handleComment = () => {
 .blur-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: -1;
   animation: fadeIn 0.3s ease-out;
 }

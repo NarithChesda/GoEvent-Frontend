@@ -519,7 +519,7 @@ const handleRSVP = () => {
   console.log('RSVP clicked')
   const rsvpElement = document.getElementById('rsvp-section')
   if (rsvpElement) {
-    rsvpElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    rsvpElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
 
@@ -529,14 +529,18 @@ const handleReminder = () => {
 }
 
 const handleGift = () => {
-  console.log('Gift functionality not implemented')
+  console.log('Gift clicked')
+  const paymentElement = document.getElementById('payment-section')
+  if (paymentElement) {
+    paymentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 }
 
 const handleAgenda = () => {
   console.log('Agenda clicked')
   const agendaElement = document.getElementById('agenda-section')
   if (agendaElement) {
-    agendaElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    agendaElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
 
@@ -544,7 +548,7 @@ const handleLocation = () => {
   console.log('Location clicked')
   const locationElement = document.getElementById('location-section')
   if (locationElement) {
-    locationElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    locationElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
 
@@ -552,7 +556,7 @@ const handleGallery = () => {
   console.log('Gallery clicked')
   const galleryElement = document.getElementById('gallery-section')
   if (galleryElement) {
-    galleryElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    galleryElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
 
@@ -560,7 +564,7 @@ const handleComment = () => {
   console.log('Comment clicked')
   const commentElement = document.getElementById('comment-section')
   if (commentElement) {
-    commentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
 
@@ -568,7 +572,7 @@ const handleVideo = () => {
   console.log('Video clicked')
   const videoElement = document.getElementById('video-section')
   if (videoElement) {
-    videoElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
 

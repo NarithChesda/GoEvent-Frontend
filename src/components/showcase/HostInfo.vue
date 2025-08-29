@@ -59,16 +59,16 @@
             v-if="logoUrl"
             :src="logoUrl"
             alt="Event Logo"
-            class="h-36 sm:h-28 md:h-32 laptop-sm:h-36 laptop-md:h-40 laptop-lg:h-44 desktop:h-40 w-auto max-w-full object-contain drop-shadow-2xl mx-auto"
+            class="host-logo-showcase mx-auto"
           />
           <div
             v-else
-            class="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 laptop-sm:w-36 laptop-sm:h-36 laptop-md:w-40 laptop-md:h-40 laptop-lg:w-44 laptop-lg:h-44 desktop:w-40 desktop:h-40 rounded-full flex items-center justify-center mx-auto shadow-2xl"
+            class="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 laptop-sm:w-36 laptop-sm:h-36 laptop-md:w-40 laptop-md:h-40 laptop-lg:w-44 laptop-lg:h-44 desktop:w-52 desktop:h-52 rounded-full flex items-center justify-center mx-auto shadow-2xl"
             :style="{
               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
             }"
           >
-            <span class="text-white font-bold text-2xl sm:text-3xl md:text-4xl laptop-sm:text-5xl laptop-md:text-6xl laptop-lg:text-7xl desktop:text-5xl" :style="{ fontFamily: primaryFont || currentFont }">
+            <span class="text-white font-bold text-2xl sm:text-3xl md:text-4xl laptop-sm:text-5xl laptop-md:text-6xl laptop-lg:text-7xl desktop:text-6xl" :style="{ fontFamily: primaryFont || currentFont }">
               {{ eventInitial }}
             </span>
           </div>
@@ -98,7 +98,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              fontFamily: primaryFont || currentFont
+              fontFamily: primaryFont || secondaryFont || currentFont
             }"
           >
             {{ hosts[0].name }}
@@ -129,7 +129,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              fontFamily: primaryFont || currentFont
+              fontFamily: primaryFont || secondaryFont || currentFont
             }"
           >
             {{ hosts[1].name }}
@@ -173,6 +173,56 @@ defineProps<Props>()
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+/* Host Logo Responsive Sizing - Matching CoverStage */
+.host-logo-showcase {
+  height: auto;
+  max-height: 144px; /* Base mobile size */
+  width: auto;
+  max-width: 300px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.host-logo-showcase:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive adjustments for logo - matching CoverStage breakpoints */
+@media (min-width: 640px) {
+  .host-logo-showcase {
+    max-height: 140px;
+    max-width: 350px;
+  }
+}
+
+@media (min-width: 768px) {
+  .host-logo-showcase {
+    max-height: 150px;
+    max-width: 375px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .host-logo-showcase {
+    max-height: 140px;
+    max-width: 350px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .host-logo-showcase {
+    max-height: 160px;
+    max-width: 400px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .host-logo-showcase {
+    max-height: 180px;
+    max-width: 450px;
   }
 }
 
