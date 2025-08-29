@@ -41,6 +41,7 @@
         :current-language="currentLanguage"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
+        @cover-stage-ready="handleCoverStageReady"
       />
 
       <!-- Stage 2: Event Video -->
@@ -102,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
@@ -163,7 +164,11 @@ const {
   closePhotoModal,
   navigateToPhoto,
   changeLanguage,
-  toggleMusic
+  toggleMusic,
+  handleCoverStageReady,
+  
+  // Preloading methods
+  cancelPreloading
 } = useEventShowcase()
 
 
@@ -205,7 +210,7 @@ watch(event, (newEvent) => {
   }
 })
 
-const handleCommentSubmitted = (comment: any) => {
+const handleCommentSubmitted = (comment: unknown) => {
   console.log('Comment submitted in showcase:', comment)
   // In real implementation, you might want to show a success message
   // or refresh comments from the server
@@ -231,6 +236,18 @@ onMounted(async () => {
   await authStore.initializeAuth()
   // Load showcase content
   loadShowcase()
+})
+
+// Cleanup preloading when component unmounts or user navigates away
+onUnmounted(() => {
+  console.log('🎭 EventShowcase: Component unmounting, cancelling preloading')
+  cancelPreloading()
+})
+
+// Also cancel preloading when user navigates away
+onBeforeUnmount(() => {
+  console.log('🎭 EventShowcase: Before unmount, cancelling preloading')
+  cancelPreloading()
 })
 </script>
 

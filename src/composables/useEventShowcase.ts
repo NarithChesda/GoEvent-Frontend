@@ -1,6 +1,7 @@
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { eventsService, mediaService, type EventPaymentMethod } from '../services/api'
+import { useBackgroundPreloader } from './useBackgroundPreloader'
 
 // Interfaces
 export interface Host {
@@ -140,6 +141,16 @@ export interface ShowcaseData {
 export function useEventShowcase() {
   const route = useRoute()
 
+  // Initialize background preloader
+  const {
+    isPreloading,
+    preloadProgress,
+    startPreloading,
+    cancelPreloading,
+    isContentPreloaded,
+    getStats
+  } = useBackgroundPreloader()
+
   // State
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -157,6 +168,7 @@ export function useEventShowcase() {
   const currentModalPhoto = ref<EventPhoto | null>(null)
   const isMusicPlaying = ref(false)
   const audioRef = ref<HTMLAudioElement | null>(null)
+  const coverStageReady = ref(false)
 
   // Computed properties
   const event = computed(() => showcaseData.value?.event || {} as EventData)
@@ -191,9 +203,9 @@ export function useEventShowcase() {
         {
           id: 5,
           language: 'kh',
+          font_name: 'KhmerOSMoulPali',
           font_type: 'primary',
           font: {
-            id: 3,
             name: 'KhmerOSMoulPali',
             font_file: '/media/fonts/KhmerOSMoulpali.ttf'
           }
@@ -201,9 +213,9 @@ export function useEventShowcase() {
         {
           id: 6,
           language: 'en',
+          font_name: 'BrushScript',
           font_type: 'primary',
           font: {
-            id: 4,
             name: 'BrushScript',
             font_file: '/media/fonts/Brush_Script.ttf'
           }
@@ -211,9 +223,9 @@ export function useEventShowcase() {
         {
           id: 11,
           language: 'en',
+          font_name: 'Poppins-Regular',
           font_type: 'secondary',
           font: {
-            id: 8,
             name: 'Poppins-Regular',
             font_file: '/media/fonts/Poppins-Regular.ttf'
           }
@@ -481,9 +493,9 @@ export function useEventShowcase() {
         {
           id: 5,
           language: 'kh',
+          font_name: 'KhmerOSMoulPali',
           font_type: 'primary',
           font: {
-            id: 3,
             name: 'KhmerOSMoulPali',
             font_file: '/media/fonts/KhmerOSMoulpali.ttf'
           }
@@ -491,9 +503,9 @@ export function useEventShowcase() {
         {
           id: 6,
           language: 'en',
+          font_name: 'BrushScript',
           font_type: 'primary',
           font: {
-            id: 4,
             name: 'BrushScript',
             font_file: '/media/fonts/Brush_Script.ttf'
           }
@@ -501,9 +513,9 @@ export function useEventShowcase() {
         {
           id: 11,
           language: 'en',
+          font_name: 'Poppins-Regular',
           font_type: 'secondary',
           font: {
-            id: 8,
             name: 'Poppins-Regular',
             font_file: '/media/fonts/Poppins-Regular.ttf'
           }
@@ -718,6 +730,29 @@ export function useEventShowcase() {
     await loadShowcase(newLanguage)
   }
 
+  // Background preloading integration
+  const handleCoverStageReady = () => {
+    console.log('🎭 Cover stage ready, starting background preloading...')
+    coverStageReady.value = true
+    
+    // Start preloading stage 2+ content in the background
+    if (event.value?.id) {
+      startPreloading(event.value, getMediaUrl).catch(error => {
+        console.warn('⚡ Background preloading failed:', error)
+      })
+    }
+  }
+
+  // Watch for event data changes to trigger preloading if cover stage is already ready
+  watch(event, (newEvent) => {
+    if (newEvent?.id && coverStageReady.value && !isPreloading.value) {
+      console.log('🎭 Event data loaded and cover stage ready, starting preloading...')
+      startPreloading(newEvent, getMediaUrl).catch(error => {
+        console.warn('⚡ Background preloading failed:', error)
+      })
+    }
+  })
+
   return {
     // State
     loading,
@@ -732,6 +767,7 @@ export function useEventShowcase() {
     currentModalPhoto,
     isMusicPlaying,
     audioRef,
+    coverStageReady,
 
     // Computed
     event,
@@ -759,6 +795,10 @@ export function useEventShowcase() {
     eventMusicUrl,
     availableLanguages,
 
+    // Preloading state
+    isPreloading,
+    preloadProgress,
+
     // Methods
     loadShowcase,
     loadCustomFonts,
@@ -776,7 +816,13 @@ export function useEventShowcase() {
     playMusic,
     pauseMusic,
     toggleMusic,
+    handleCoverStageReady,
     fontsLoaded,
-    fontsLoadedCount
+    fontsLoadedCount,
+
+    // Preloading methods
+    cancelPreloading,
+    isContentPreloaded,
+    getStats: getStats // Preload statistics
   }
 }

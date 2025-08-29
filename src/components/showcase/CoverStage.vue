@@ -9,6 +9,8 @@
       muted
       playsinline
       class="absolute inset-0 w-full h-full desktop-video-sizing"
+      @loadeddata="handleCoverVideoLoaded"
+      @error="handleCoverVideoError"
     />
 
     <!-- Fallback Background Image -->
@@ -17,6 +19,8 @@
         :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
         class="w-full h-full object-cover"
+        @load="handleBackgroundImageLoaded"
+        @error="handleBackgroundImageError"
       />
     </div>
 
@@ -52,6 +56,8 @@
             :src="getMediaUrl(eventLogo)"
             :alt="eventTitle + ' logo'"
             class="event-logo-showcase mx-auto drop-shadow-2xl"
+            @load="handleEventLogoLoaded"
+            @error="handleEventLogoError"
           />
         </div>
 
@@ -99,6 +105,8 @@
               :src="getMediaUrl(templateAssets.open_envelope_button)"
               alt="Open Invitation"
               class="envelope-button-size h-auto cursor-pointer drop-shadow-2xl"
+              @load="handleOpenEnvelopeButtonLoaded"
+              @error="handleOpenEnvelopeButtonError"
             />
             <div
               v-else
@@ -123,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
@@ -156,8 +164,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   openEnvelope: []
+  coverStageReady: []
 }>()
 
 const gradientStyle = computed(() =>
@@ -197,6 +206,130 @@ const coverHeader = computed(() =>
 const inviteText = computed(() =>
   getTextContent('invite_text', "You're Invited")
 )
+
+// Completion detection state
+const assetsLoaded = ref({
+  coverVideo: false,
+  backgroundImage: false,
+  eventLogo: false,
+  openEnvelopeButton: false,
+  fonts: false
+})
+
+const isStageReady = computed(() => {
+  // Check if all critical assets are loaded
+  const requiredAssets = []
+  
+  // Cover video or background image
+  if (props.templateAssets?.standard_cover_video) {
+    requiredAssets.push(assetsLoaded.value.coverVideo)
+  } else if (props.templateAssets?.basic_background_photo) {
+    requiredAssets.push(assetsLoaded.value.backgroundImage)
+  } else {
+    requiredAssets.push(true) // No background asset required
+  }
+  
+  // Event logo (if present)
+  if (props.eventLogo) {
+    requiredAssets.push(assetsLoaded.value.eventLogo)
+  } else {
+    requiredAssets.push(true) // No logo required
+  }
+  
+  // Open envelope button (if custom image is used)
+  if (props.templateAssets?.open_envelope_button) {
+    requiredAssets.push(assetsLoaded.value.openEnvelopeButton)
+  } else {
+    requiredAssets.push(true) // Using default button, no asset required
+  }
+  
+  // Fonts are always important
+  requiredAssets.push(assetsLoaded.value.fonts)
+  
+  return requiredAssets.every(loaded => loaded)
+})
+
+// Watch for completion and emit event
+watch(isStageReady, (ready) => {
+  if (ready) {
+    console.log('🎭 CoverStage: All assets loaded, stage ready for preloading')
+    emit('coverStageReady')
+  }
+}, { immediate: true })
+
+// Asset loading handlers
+const handleCoverVideoLoaded = () => {
+  console.log('🎭 CoverStage: Cover video loaded')
+  assetsLoaded.value.coverVideo = true
+}
+
+const handleCoverVideoError = () => {
+  console.warn('🎭 CoverStage: Cover video failed to load')
+  assetsLoaded.value.coverVideo = true // Consider it "loaded" to prevent blocking
+}
+
+const handleBackgroundImageLoaded = () => {
+  console.log('🎭 CoverStage: Background image loaded')
+  assetsLoaded.value.backgroundImage = true
+}
+
+const handleBackgroundImageError = () => {
+  console.warn('🎭 CoverStage: Background image failed to load')
+  assetsLoaded.value.backgroundImage = true // Consider it "loaded" to prevent blocking
+}
+
+const handleEventLogoLoaded = () => {
+  console.log('🎭 CoverStage: Event logo loaded')
+  assetsLoaded.value.eventLogo = true
+}
+
+const handleEventLogoError = () => {
+  console.warn('🎭 CoverStage: Event logo failed to load')
+  assetsLoaded.value.eventLogo = true // Consider it "loaded" to prevent blocking
+}
+
+const handleOpenEnvelopeButtonLoaded = () => {
+  console.log('🎭 CoverStage: Open envelope button loaded')
+  assetsLoaded.value.openEnvelopeButton = true
+}
+
+const handleOpenEnvelopeButtonError = () => {
+  console.warn('🎭 CoverStage: Open envelope button failed to load')
+  assetsLoaded.value.openEnvelopeButton = true // Consider it "loaded" to prevent blocking
+}
+
+// Font loading detection
+const checkFontsLoaded = async () => {
+  // Wait for fonts to be applied to the DOM
+  await nextTick()
+  
+  try {
+    // Check if custom fonts are loaded by comparing with fallback fonts
+    await document.fonts.ready
+    console.log('🎭 CoverStage: Fonts are ready')
+    assetsLoaded.value.fonts = true
+  } catch (error) {
+    console.warn('🎭 CoverStage: Font loading check failed', error)
+    assetsLoaded.value.fonts = true // Don't block on font loading issues
+  }
+}
+
+// Initialize completion detection
+onMounted(() => {
+  console.log('🎭 CoverStage: Initializing completion detection')
+  
+  // Check fonts after a short delay to allow font loading
+  setTimeout(checkFontsLoaded, 500)
+  
+  // If no assets need loading, mark as ready immediately
+  if (!props.templateAssets?.standard_cover_video && 
+      !props.templateAssets?.basic_background_photo && 
+      !props.eventLogo && 
+      !props.templateAssets?.open_envelope_button) {
+    console.log('🎭 CoverStage: No assets to load, marking as ready')
+    // Will be handled by watcher when fonts are ready
+  }
+})
 </script>
 
 <style scoped>
