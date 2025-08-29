@@ -27,9 +27,9 @@
       <div class="absolute top-[25%] left-0 right-0 flex flex-col items-center max-w-5xl mx-auto">
 
         <!-- Event Title (Top) -->
-        <div class="px-12 mb-6 sm:mb-8 md:mb-10 animate-fadeIn">
+        <div class="px-12 mb-6 sm:mb-8 animate-fadeIn lg:mt-4">
           <h1
-            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl xl:text-3xl 2xl:text-3xl font-bold py-4 uppercase khmer-text-fix single-line-text"
+            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl  xl:text-3xl 2xl:text-3xl font-bold py-4 uppercase khmer-text-fix single-line-text"
             :style="{
               fontFamily: primaryFont || currentFont,
               background: gradientStyle,
@@ -45,7 +45,7 @@
         <!-- Event Logo -->
         <div
           v-if="eventLogo"
-          class="py-4 sm:mb-10 md:mb-12 animate-fadeIn animation-delay-200"
+          class="sm:mb-10 lg:mb-4 animate-fadeIn animation-delay-200  "
         >
           <img
             :src="getMediaUrl(eventLogo)"
@@ -55,9 +55,9 @@
         </div>
 
         <!-- Invite Text -->
-        <div class="mb-3 sm:mb-4 md:mb-5 animate-fadeIn animation-delay-400">
+        <div class="mb-2 sm:mb-3 lg:mb-1 animate-fadeIn animation-delay-400">
           <p
-            class="text-base sm:text-base md:text-base lg:text-lg xl:text-lg 2xl:text-xl leading-relaxed py-1"
+            class="text-base sm:text-base md:text-base lg:text-base xl:text-base 2xl:text-lg leading-relaxed py-1"
             :style="{
               color: primaryColor || 'rgba(255, 255, 255, 0.9)',
               fontFamily: secondaryFont || currentFont
@@ -87,7 +87,7 @@
         </div>
 
         <!-- Open Envelope Button (Below Guest Name) -->
-        <div class="mt-4 sm:mt-10 md:mt-12 lg:mt-14 xl:mt-16 flex justify-center animate-fadeIn animation-delay-800">
+        <div class="mt-4 sm:mt-10 md:mt-12 lg:mt-8 xl:mt-8 flex justify-center animate-fadeIn animation-delay-800">
           <button
             @click="$emit('openEnvelope')"
             class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
@@ -265,19 +265,19 @@ const inviteText = computed(() =>
 
 @media (min-width: 1024px) {
   .envelope-button-size {
-    width: 240px;
+    width: 200px;
   }
 }
 
 @media (min-width: 1280px) {
   .envelope-button-size {
-    width: 260px;
+    width: 220px;
   }
 }
 
 @media (min-width: 1536px) {
   .envelope-button-size {
-    width: 280px;
+    width: 240px;
   }
 }
 
@@ -376,22 +376,22 @@ h1, h2, p {
 
 @media (min-width: 1024px) {
   .event-logo-showcase {
-    max-height: 180px;
-    max-width: 450px;
+    max-height: 140px;
+    max-width: 350px;
   }
 }
 
 @media (min-width: 1280px) {
   .event-logo-showcase {
-    max-height: 200px;
-    max-width: 500px;
+    max-height: 160px;
+    max-width: 400px;
   }
 }
 
 @media (min-width: 1536px) {
   .event-logo-showcase {
-    max-height: 220px;
-    max-width: 550px;
+    max-height: 180px;
+    max-width: 450px;
   }
 }
 </style>
