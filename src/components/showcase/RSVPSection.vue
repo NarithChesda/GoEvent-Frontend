@@ -16,14 +16,19 @@
       </h1>
     </div>
 
-    <!-- Liquid Glass RSVP Container -->
+    <!-- Liquid Glass RSVP Container - Enhanced with Agenda Card Styling -->
     <div class="liquid-glass-container" :style="{
-      backgroundColor: `${primaryColor}06`,
-      boxShadow: `0 8px 32px -4px ${primaryColor}15, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
+      backgroundColor: `${primaryColor}15`,
+      boxShadow: `
+        0 12px 36px -6px ${primaryColor}25,
+        0 6px 24px -3px ${primaryColor}20,
+        0 3px 12px -1px ${primaryColor}15,
+        inset 0 1px 2px rgba(255, 255, 255, 0.12)
+      `,
+      border: `1px solid ${primaryColor}40`
     }">
       <!-- Collapsible Header -->
-      <div class="rsvp-header" @click="toggleRSVP" :style="{
-        cursor: 'pointer',
+      <div class="rsvp-header cursor-pointer transition-all duration-300 hover:translateY(-1px)" @click="toggleRSVP" :style="{
         padding: '1rem 1.25rem'
       }">
         <div class="rsvp-header-content" :class="{ 'rsvp-header-content--expanded': isExpanded }">
@@ -139,7 +144,7 @@
       </div>
 
       <!-- Collapsible Content -->
-      <div class="rsvp-content" :class="{ 'rsvp-content--expanded': isExpanded }">
+      <div class="rsvp-content overflow-hidden transition-all duration-500 ease-in-out" :class="isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'">
         <!-- Event Info Header -->
         <div class="rsvp-section-tight">
           <div class="py-2">
@@ -1141,12 +1146,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Liquid Glass Container - Seamless unified surface */
+/* Liquid Glass Container - Enhanced unified surface with agenda card styling */
 .liquid-glass-container {
   border-radius: 1.5rem;
   overflow: hidden;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(16px);
   position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .liquid-glass-container::before {
@@ -1156,19 +1162,19 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
   pointer-events: none;
 }
 
-/* RSVP Header - Collapsible trigger */
+/* RSVP Header - Enhanced collapsible trigger */
 .rsvp-header {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .rsvp-header:hover {
-  backdrop-filter: blur(24px);
-  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .rsvp-header::after {
@@ -1230,17 +1236,12 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-/* Collapsible Content */
+/* Enhanced collapsible content - matching agenda section animation */
 .rsvp-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  opacity: 0;
-}
-
-.rsvp-content--expanded {
-  max-height: 1000px; /* Large enough to accommodate all content */
-  opacity: 1;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease-in-out;
+  will-change: max-height, opacity;
+  transform-origin: top;
 }
 
 /* RSVP Sections - Flowing divisions */

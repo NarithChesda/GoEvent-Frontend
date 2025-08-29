@@ -29,10 +29,11 @@
         <!-- Event Title (Top) -->
         <div class="px-12 mb-6 sm:mb-8 md:mb-8 lg:mt-4 animate-fadeIn">
           <h1
-            class="text-2xl sm:text-3xl md:text-2xl lg:text-2xl  xl:text-3xl 2xl:text-3xl font-bold py-4 uppercase khmer-text-fix single-line-text"
+            class="gleam-animation text-2xl sm:text-3xl md:text-2xl lg:text-2xl  xl:text-3xl 2xl:text-3xl font-bold py-4 uppercase khmer-text-fix single-line-text"
             :style="{
               fontFamily: primaryFont || currentFont,
-              background: gradientStyle,
+              background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
+              backgroundSize: '200% 200%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -71,10 +72,11 @@
         <div v-if="guestName" class="px-12 animate-fadeIn animation-delay-600">
 
           <h2
-            class="text-xl sm:text-2xl md:text-xl lg:text-xl xl:text-2xl 2xl:text-2xl font-bold leading-relaxed whitespace-normal break-words py-4 uppercase khmer-text-fix"
+            class="gleam-animation text-xl sm:text-2xl md:text-xl lg:text-xl xl:text-2xl 2xl:text-2xl font-bold leading-relaxed whitespace-normal break-words py-4 uppercase khmer-text-fix"
             :style="{
               fontFamily: primaryFont || currentFont,
-              background: gradientStyle,
+              background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
+              backgroundSize: '200% 200%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -199,6 +201,23 @@ const inviteText = computed(() =>
 
 <style scoped>
 /* Animations */
+/* Gleam Animation Styles */
+.gleam-animation {
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

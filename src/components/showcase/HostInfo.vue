@@ -161,7 +161,7 @@ defineProps<Props>()
 <style scoped>
 /* Gleam Animation Styles - Shared */
 .gleam-animation {
-  animation: gradientShift 5s ease-in-out infinite;
+  animation: gradientShift 3s ease-in-out infinite;
 }
 
 @keyframes gradientShift {

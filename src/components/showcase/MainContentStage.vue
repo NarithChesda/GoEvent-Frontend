@@ -710,7 +710,7 @@ const handleLogout = () => {
 
 /* Gleam Animation Styles - Reusable */
 .gleam-animation {
-  animation: gradientShift 5s ease-in-out infinite;
+  animation: gradientShift 3s ease-in-out infinite;
 }
 
 @keyframes gradientShift {
