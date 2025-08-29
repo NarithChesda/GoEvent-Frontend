@@ -1,8 +1,8 @@
 <template>
   <div id="comment-section" class="mb-8">
-    <h2 
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase text-center" 
-      :style="{ 
+    <h2
+      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase text-center"
+      :style="{
         fontFamily: primaryFont || currentFont,
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -10,24 +10,18 @@
         backgroundClip: 'text'
       }"
     >
-      Comments & Wishes
+      {{ commentHeaderText }}
     </h2>
-    
+
     <!-- Comment Form -->
-    <div class="comment-form-liquid mb-4" :style="{ 
+    <div class="comment-form-liquid mb-4" :style="{
       backgroundColor: `${primaryColor}20`,
-      boxShadow: `
-        0 8px 16px -4px ${primaryColor}25,
-        0 4px 8px -2px ${primaryColor}20,
-        inset 0 2px 4px rgba(255, 255, 255, 0.15),
-        inset 0 -2px 4px ${primaryColor}10
-      `,
       border: `1px solid ${primaryColor}50`
     }">
       <!-- Sign In Prompt for Unauthenticated Users -->
       <div v-if="!isUserAuthenticated" class="text-center py-4">
         <p class="text-sm mb-3" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
-          Please sign in to leave a comment
+          {{ commentSigninPromptText }}
         </p>
         <button
           @click="handleSignInClick"
@@ -35,26 +29,17 @@
           :style="{
             background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
             color: '#ffffff',
-            boxShadow: `
-              0 8px 32px -4px ${primaryColor}80,
-              0 4px 16px -2px ${primaryColor}60,
-              inset 0 2px 4px rgba(255, 255, 255, 0.25),
-              inset 0 -1px 2px ${primaryColor}40
-            `,
             border: `1px solid ${primaryColor}60`
           }"
         >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">Sign In to Comment</span>
+          <span :style="{ fontFamily: secondaryFont || currentFont }">{{ commentSigninButtonText }}</span>
         </button>
       </div>
 
       <!-- Already Commented Message -->
       <div v-else-if="hasAlreadyCommented" class="text-center py-4">
-        <p class="text-sm mb-2" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
-          You have already left a comment for this event
-        </p>
-        <p class="text-xs" :style="{ color: primaryColor, opacity: 0.8, fontFamily: secondaryFont || currentFont }">
-          Each user can only comment once per event
+        <p class="text-sm" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+          {{ commentAlreadyCommentedText }}
         </p>
       </div>
 
@@ -64,13 +49,12 @@
         <div class="mb-3">
           <textarea
             v-model="newComment.message"
-            placeholder="Share your thoughts, wishes, or congratulations..."
+            :placeholder="commentPlaceholderText"
             rows="3"
             maxlength="500"
             class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
-            :style="{ 
+            :style="{
               backgroundColor: `${primaryColor}25`,
-              boxShadow: `inset 0 2px 4px ${primaryColor}40, 0 2px 8px ${primaryColor}30`,
               '--tw-ring-color': primaryColor + '80',
               color: primaryColor,
               border: `1px solid ${primaryColor}30`,
@@ -91,87 +75,58 @@
           :style="{
             background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
             color: '#ffffff',
-            boxShadow: `
-              0 8px 32px -4px ${primaryColor}80,
-              0 4px 16px -2px ${primaryColor}60,
-              inset 0 2px 4px rgba(255, 255, 255, 0.25),
-              inset 0 -1px 2px ${primaryColor}40
-            `,
             border: `1px solid ${primaryColor}60`
           }"
         >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{ isSubmittingComment ? 'Posting...' : 'Post Comment' }}</span>
+          <span :style="{ fontFamily: secondaryFont || currentFont }">{{ isSubmittingComment ? commentPostingButtonText : commentPostButtonText }}</span>
         </button>
       </form>
     </div>
 
     <!-- Comments List -->
     <div class="relative">
-      <div 
+      <div
         ref="commentsContainer"
-        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar"
+        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar px-1"
         @scroll="handleScroll"
       >
         <!-- Loading State -->
-        <div v-if="loadingComments" class="liquid-glass-state text-center py-8" :style="{ 
+        <div v-if="loadingComments" class="liquid-glass-state text-center py-8" :style="{
           backgroundColor: `${primaryColor}18`,
-          boxShadow: `
-            0 12px 36px -6px ${primaryColor}25,
-            0 6px 24px -3px ${primaryColor}20,
-            0 3px 12px -1px ${primaryColor}15,
-            inset 0 2px 4px rgba(255, 255, 255, 0.12)
-          `,
           border: `1px solid ${primaryColor}40`
         }">
           <div class="inline-flex items-center gap-2">
             <div class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
-            <span class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">Loading comments...</span>
+            <span class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">{{ commentLoadingText }}</span>
           </div>
         </div>
 
         <!-- No Comments State -->
-        <div v-else-if="comments.length === 0" class="liquid-glass-state text-center py-8" :style="{ 
+        <div v-else-if="comments.length === 0" class="liquid-glass-state text-center py-8" :style="{
           backgroundColor: `${primaryColor}18`,
-          boxShadow: `
-            0 12px 36px -6px ${primaryColor}25,
-            0 6px 24px -3px ${primaryColor}20,
-            0 3px 12px -1px ${primaryColor}15,
-            inset 0 2px 4px rgba(255, 255, 255, 0.12)
-          `,
           border: `1px solid ${primaryColor}40`
         }">
           <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" :style="{ backgroundColor: `${primaryColor}15` }">
             <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
           </div>
           <p class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">
-            Be the first to leave a comment!
+            {{ commentNoCommentsText }}
           </p>
         </div>
 
         <!-- Comments -->
         <div v-else>
-          <div 
-            v-for="(comment, index) in comments" 
+          <div
+            v-for="(comment, index) in comments"
             :key="comment.id"
             class="comment-card-liquid p-4 mb-3 last:mb-0"
             :class="{ 'mt-6': index === 0 }"
             :style="isUserCommentOwner(comment) ? {
               backgroundColor: `${primaryColor}25`,
-              boxShadow: `
-                0 6px 16px -4px ${primaryColor}30,
-                0 3px 8px -2px ${primaryColor}25,
-                inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                inset 0 -2px 4px ${primaryColor}15
-              `,
               border: `1px solid ${primaryColor}60`,
               transform: 'translateY(-2px)'
             } : {
               backgroundColor: `${primaryColor}15`,
-              boxShadow: `
-                0 4px 12px -2px ${primaryColor}20,
-                0 2px 6px -1px ${primaryColor}15,
-                inset 0 1px 2px rgba(255, 255, 255, 0.12)
-              `,
               border: `1px solid ${primaryColor}40`
             }"
           >
@@ -180,14 +135,14 @@
               <div class="flex items-center gap-2">
                 <!-- User Avatar -->
                 <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center relative">
-                  <img 
-                    v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)" 
-                    :src="getCommentAvatarUrl(comment)!" 
+                  <img
+                    v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
+                    :src="getCommentAvatarUrl(comment)!"
                     :alt="getCommentDisplayName(comment)"
                     class="w-full h-full object-cover"
                     @error="() => setAvatarError(comment.id)"
                   />
-                  <div 
+                  <div
                     v-else
                     class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
                     :style="{ backgroundColor: primaryColor }"
@@ -200,12 +155,12 @@
                     <p class="text-sm font-medium" :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }">
                       {{ getCommentDisplayName(comment) }}
                     </p>
-                    <span 
+                    <span
                       v-if="isUserCommentOwner(comment)"
                       class="text-xs px-2 py-0.5 rounded-full text-white font-medium"
                       :style="{ backgroundColor: primaryColor + '80', fontFamily: secondaryFont || currentFont }"
                     >
-                      You
+                      {{ commentYouBadgeText }}
                     </span>
                   </div>
                   <p class="text-xs" :style="{ color: primaryColor, opacity: 0.7, fontFamily: secondaryFont || currentFont }">
@@ -213,7 +168,7 @@
                   </p>
                 </div>
               </div>
-              
+
               <!-- Action Buttons (only for comment owner) -->
               <div v-if="isUserCommentOwner(comment)" class="flex items-center gap-1">
                 <button
@@ -249,13 +204,13 @@
             <p v-if="editingCommentId !== comment.id" class="text-sm leading-relaxed" :style="{ color: primaryColor, opacity: 0.9, fontFamily: secondaryFont || currentFont }">
               {{ capitalizeFirstLetter(comment.comment_text) }}
             </p>
-            
+
             <!-- Comment Message (Edit Mode) -->
             <div v-else class="space-y-3">
               <textarea
                 v-model="editCommentText"
                 class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
-                :style="{ 
+                :style="{
                   backgroundColor: `${primaryColor}08`,
                   boxShadow: `inset 0 2px 4px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
                   '--tw-ring-color': primaryColor + '60',
@@ -312,9 +267,8 @@
           </div>
 
           <!-- Loading More Indicator -->
-          <div v-if="loadingMoreComments" class="liquid-glass-state text-center py-4 mt-2" :style="{ 
-            backgroundColor: `${primaryColor}04`,
-            boxShadow: `0 2px 8px -1px ${primaryColor}10, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+          <div v-if="loadingMoreComments" class="liquid-glass-state text-center py-4 mt-2" :style="{
+            backgroundColor: `${primaryColor}04`
           }">
             <div class="inline-flex items-center gap-2">
               <div class="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
@@ -326,16 +280,16 @@
     </div>
 
     <!-- Error Message -->
-    <div v-if="errorMessage" class="liquid-glass-error mt-3 p-3" :style="{ 
+    <div v-if="errorMessage" class="liquid-glass-error mt-3 p-3" :style="{
       backgroundColor: '#dc262620',
       boxShadow: '0 4px 16px -2px #dc262615, inset 0 1px 0 rgba(255, 255, 255, 0.08)',
       border: '1px solid #dc262640'
     }">
       <p class="text-sm" :style="{ color: '#dc2626', opacity: 0.9, fontFamily: secondaryFont || currentFont }">{{ errorMessage }}</p>
     </div>
-    
+
   </div>
-  
+
   <!-- Delete Confirmation Modal -->
   <DeleteConfirmModal
     :show="showDeleteModal"
@@ -354,6 +308,16 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
+import {
+  translateRSVP,
+  type SupportedLanguage
+} from '../../utils/translations'
+
+interface EventText {
+  text_type: string
+  language: string
+  content: string
+}
 
 interface Props {
   eventId: string
@@ -364,6 +328,8 @@ interface Props {
   currentFont?: string
   primaryFont?: string
   secondaryFont?: string
+  eventTexts?: EventText[]
+  currentLanguage?: string
 }
 
 const props = defineProps<Props>()
@@ -371,6 +337,57 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   commentSubmitted: [EventComment]
 }>()
+
+// Enhanced translation function that combines database content with frontend translations
+const getTextContent = (textType: string, fallback = ''): string => {
+  // First, try to get content from database (eventTexts)
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(text =>
+      text.text_type === textType && text.language === props.currentLanguage
+    )
+    if (text?.content) {
+      return text.content
+    }
+  }
+
+  // Fallback to frontend translation system
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+
+  // Map text types to translation keys
+  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    'comment_header': 'comment_header',
+    'comment_placeholder': 'comment_placeholder',
+    'comment_signin_prompt': 'comment_signin_prompt',
+    'comment_signin_button': 'comment_signin_button',
+    'comment_post_button': 'comment_post_button',
+    'comment_posting_button': 'comment_posting_button',
+    'comment_no_comments': 'comment_no_comments',
+    'comment_loading': 'comment_loading',
+    'comment_already_commented': 'comment_already_commented',
+    'comment_one_per_user': 'comment_one_per_user',
+    'comment_you_badge': 'comment_you_badge'
+  }
+
+  const translationKey = keyMap[textType]
+  if (translationKey) {
+    return translateRSVP(translationKey, currentLang)
+  }
+
+  return fallback
+}
+
+// Computed properties for all translatable text
+const commentHeaderText = computed(() => getTextContent('comment_header', 'Comments & Wishes'))
+const commentPlaceholderText = computed(() => getTextContent('comment_placeholder', 'Share your thoughts, wishes, or congratulations...'))
+const commentSigninPromptText = computed(() => getTextContent('comment_signin_prompt', 'Please sign in to leave a comment'))
+const commentSigninButtonText = computed(() => getTextContent('comment_signin_button', 'Sign In to Comment'))
+const commentPostButtonText = computed(() => getTextContent('comment_post_button', 'Post Comment'))
+const commentPostingButtonText = computed(() => getTextContent('comment_posting_button', 'Posting...'))
+const commentNoCommentsText = computed(() => getTextContent('comment_no_comments', 'Be the first to leave a comment!'))
+const commentLoadingText = computed(() => getTextContent('comment_loading', 'Loading comments...'))
+const commentAlreadyCommentedText = computed(() => getTextContent('comment_already_commented', 'You have already left a comment for this event'))
+const commentOnePerUserText = computed(() => getTextContent('comment_one_per_user', 'Each user can only comment once per event'))
+const commentYouBadgeText = computed(() => getTextContent('comment_you_badge', 'You'))
 
 // Router and Auth
 const router = useRouter()
@@ -429,7 +446,7 @@ const processComments = (comments: EventComment[]): EventComment[] => {
     }
     return comment
   })
-  
+
   // Sort comments to show user's own comment at the top
   return sortCommentsWithUserFirst(processedComments)
 }
@@ -439,16 +456,16 @@ const sortCommentsWithUserFirst = (comments: EventComment[]): EventComment[] => 
   if (!authStore.isAuthenticated || !authStore.user) {
     return comments
   }
-  
+
   const currentUserId = authStore.user.id
   const userComment = comments.find(comment => comment.user === currentUserId)
   const otherComments = comments.filter(comment => comment.user !== currentUserId)
-  
+
   // If user has a comment, put it first, otherwise return original order
   if (userComment) {
     return [userComment, ...otherComments]
   }
-  
+
   return comments
 }
 
@@ -460,11 +477,11 @@ const isUserAuthenticated = computed(() => {
 const handleSignInClick = () => {
   // Store the current route with hash for comment section
   const currentPath = route.fullPath + '#comment-section'
-  
+
   // Navigate to sign-in with redirect parameter
   router.push({
     path: '/signin',
-    query: { 
+    query: {
       redirect: currentPath,
       scrollTo: 'comment-section' // Extra parameter to ensure we scroll to comments
     }
@@ -481,16 +498,16 @@ const getCommentDisplayName = (comment: EventComment): string => {
       return authStore.user.username
     }
   }
-  
+
   // Use user_info from the API response (updated backend)
   if (comment.user_info?.first_name && comment.user_info?.last_name) {
     return `${comment.user_info.first_name} ${comment.user_info.last_name}`
   }
-  
+
   if (comment.user_info?.username) {
     return comment.user_info.username
   }
-  
+
   // Fallback for cases where user_info is missing
   return `Guest User ${comment.user}`
 }
@@ -507,12 +524,12 @@ const getCommentAvatarUrl = (comment: EventComment): string | null => {
       return apiService.getProfilePictureUrl(authStore.user.profile_picture)
     }
   }
-  
+
   // Use user_info profile picture if available (backend now provides full URLs)
   if (comment.user_info?.profile_picture) {
     return comment.user_info.profile_picture
   }
-  
+
   return null
 }
 
@@ -564,7 +581,7 @@ const updateComment = async (commentId: number) => {
           ...response.data
         }
       }
-      
+
       // Exit edit mode
       cancelEditComment()
     } else {
@@ -597,12 +614,12 @@ const handleDeleteConfirm = async () => {
       // Remove comment from local array
       comments.value = comments.value.filter(c => c.id !== commentToDelete.value)
       totalComments.value--
-      
+
       // Reset already commented state if this was the user's comment
       if (authStore.isAuthenticated) {
         hasAlreadyCommented.value = false
       }
-      
+
       // Close modal
       showDeleteModal.value = false
       commentToDelete.value = null
@@ -631,7 +648,7 @@ const formatCommentDate = (dateString: string): string => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
       return diffInMinutes < 1 ? 'Just now' : `${diffInMinutes} min ago`
@@ -652,7 +669,7 @@ const formatCommentDate = (dateString: string): string => {
 
 const submitComment = async () => {
   if (!newComment.value.message.trim()) return
-  
+
   // Double-check authentication
   if (!authStore.isAuthenticated) {
     handleSignInClick()
@@ -668,7 +685,7 @@ const submitComment = async () => {
 
   isSubmittingComment.value = true
   errorMessage.value = ''
-  
+
   try {
     // Call the actual API
     const response = await commentsService.createComment(
@@ -688,16 +705,16 @@ const submitComment = async () => {
           profile_picture: authStore.user?.profile_picture || ''
         }
       }
-      
+
       // Since user can only comment once per event, just add to beginning
       // The backend constraint ensures there won't be duplicates
       comments.value.unshift(commentWithUserInfo)
       totalComments.value++
       hasAlreadyCommented.value = true
-      
+
       // Reset form
       newComment.value.message = ''
-      
+
       emit('commentSubmitted', commentWithUserInfo)
     } else {
       // Handle API errors
@@ -721,7 +738,7 @@ const loadComments = async () => {
   errorMessage.value = ''
   // Clear avatar errors when loading fresh comments
   avatarErrors.value.clear()
-  
+
   try {
     // Load comments from API
     const response = await commentsService.getEventComments(
@@ -729,15 +746,15 @@ const loadComments = async () => {
       1,
       commentsPerPage
     )
-    
+
     if (response.success && response.data) {
       // Process comments (backend now provides user_info directly)
       comments.value = processComments(response.data.results)
-      
+
       totalComments.value = response.data.count
       hasMoreComments.value = response.data.next !== null
       currentPage.value = 1
-      
+
       // Check if current user has already commented
       if (authStore.isAuthenticated) {
         hasAlreadyCommented.value = await commentsService.hasUserCommented(props.eventId)
@@ -759,10 +776,10 @@ const loadComments = async () => {
 
 const loadMoreComments = async () => {
   if (!canLoadMore.value) return
-  
+
   loadingMoreComments.value = true
   const nextPage = currentPage.value + 1
-  
+
   try {
     // Load more comments from API
     const response = await commentsService.getEventComments(
@@ -770,9 +787,9 @@ const loadMoreComments = async () => {
       nextPage,
       commentsPerPage
     )
-    
+
     if (response.success && response.data) {
-      // Process new comments (backend now provides user_info directly)  
+      // Process new comments (backend now provides user_info directly)
       const processedNewComments = response.data.results.map(comment => {
         // Backend now provides user_info, so we just return the comment as is
         // If for some reason user_info is missing, we can add minimal fallback
@@ -787,7 +804,7 @@ const loadMoreComments = async () => {
         }
         return comment
       })
-      
+
       // For pagination, we don't want to re-sort everything, just append
       // But we need to make sure user's comment stays at the top if it exists
       const currentUserId = authStore.user?.id
@@ -795,7 +812,7 @@ const loadMoreComments = async () => {
         // Check if any of the new comments belongs to current user
         const userCommentFromNewPage = processedNewComments.find(comment => comment.user === currentUserId)
         const otherNewComments = processedNewComments.filter(comment => comment.user !== currentUserId)
-        
+
         if (userCommentFromNewPage) {
           // Remove user's comment from existing comments if it exists there
           const existingCommentsWithoutUser = comments.value.filter(comment => comment.user !== currentUserId)
@@ -809,7 +826,7 @@ const loadMoreComments = async () => {
         // User not authenticated, just append normally
         comments.value.push(...processedNewComments)
       }
-      
+
       hasMoreComments.value = response.data.next !== null
       currentPage.value = nextPage
     } else {
@@ -826,13 +843,13 @@ const loadMoreComments = async () => {
 // Handle infinite scroll
 const handleScroll = () => {
   if (!commentsContainer.value) return
-  
+
   // Only trigger load more if we can load more
   if (canLoadMore.value) {
     const container = commentsContainer.value
     const scrollPosition = container.scrollTop + container.clientHeight
     const scrollHeight = container.scrollHeight
-    
+
     // Load more when user is within 100px of bottom
     if (scrollPosition >= scrollHeight - 100) {
       loadMoreComments()
@@ -845,10 +862,10 @@ watch(() => authStore.isAuthenticated, async (isAuth, wasAuth) => {
   if (isAuth && !wasAuth) {
     // User just logged in, check if they have already commented
     hasAlreadyCommented.value = await commentsService.hasUserCommented(props.eventId)
-    
+
     // Reload comments to get proper sorting with user's comment at top
     await loadComments()
-    
+
     // Check if we should scroll to comment section (after login redirect)
     checkForCommentRedirect()
   } else if (!isAuth) {
@@ -856,7 +873,7 @@ watch(() => authStore.isAuthenticated, async (isAuth, wasAuth) => {
     hasAlreadyCommented.value = false
     newComment.value.message = ''
     errorMessage.value = ''
-    
+
     // Cancel any ongoing edit
     cancelEditComment()
   }
@@ -866,15 +883,15 @@ watch(() => authStore.isAuthenticated, async (isAuth, wasAuth) => {
 const scrollToCommentSection = () => {
   const commentSection = document.getElementById('comment-section')
   if (commentSection) {
-    commentSection.scrollIntoView({ 
-      behavior: 'smooth', 
+    commentSection.scrollIntoView({
+      behavior: 'smooth',
       block: 'center'
     })
-    
+
     // Add a gentle highlight animation using the event's primary color
     commentSection.style.boxShadow = `0 0 20px ${props.primaryColor}40`
     commentSection.style.transition = 'box-shadow 0.5s ease-out'
-    
+
     // Remove the highlight after animation
     setTimeout(() => {
       commentSection.style.boxShadow = 'none'
@@ -886,7 +903,7 @@ const scrollToCommentSection = () => {
 const checkForCommentRedirect = () => {
   const hash = window.location.hash
   const queryParams = new URLSearchParams(window.location.search)
-  
+
   if (hash === '#comment-section' || queryParams.get('scrollTo') === 'comment-section') {
     // Small delay to ensure DOM is ready and comments are loaded
     setTimeout(() => {
@@ -905,7 +922,7 @@ onMounted(async () => {
   await loadComments()
   // Check if user should be redirected to comment section (after login)
   checkForCommentRedirect()
-  
+
   // Ensure container is scrollable if there's not much content
   await nextTick()
   if (commentsContainer.value) {
@@ -931,6 +948,8 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0.5rem;
+  box-sizing: border-box;
 }
 
 .comment-form-liquid:hover {
@@ -964,6 +983,7 @@ onUnmounted(() => {
   overflow: hidden;
   border: none;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .liquid-glass-button::before {
@@ -1007,6 +1027,7 @@ onUnmounted(() => {
   border: none;
   position: relative;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .liquid-glass-textarea::placeholder {
@@ -1028,6 +1049,9 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  box-sizing: border-box;
 }
 
 .comment-card-liquid:hover {

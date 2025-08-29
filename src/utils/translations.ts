@@ -64,6 +64,36 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   agenda_header: string
   agenda_activity: string
   agenda_activities: string
+
+  // Location section
+  location_header: string
+
+  // Video section
+  video_header: string
+
+  // Gallery section
+  gallery_header: string
+
+  // Comment section
+  comment_header: string
+  comment_placeholder: string
+  comment_signin_prompt: string
+  comment_signin_button: string
+  comment_post_button: string
+  comment_posting_button: string
+  comment_no_comments: string
+  comment_loading: string
+  comment_already_commented: string
+  comment_one_per_user: string
+  comment_you_badge: string
+
+  // Payment section
+  payment_wedding_gift: string
+  payment_birthday_gift: string
+
+  // Footer section
+  footer_thank_you: string
+  footer_create_invitations: string
 }> = {
   en: {
     // Main headers
@@ -126,7 +156,37 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     // Agenda section
     agenda_header: 'Event Schedule',
     agenda_activity: 'activity',
-    agenda_activities: 'activities'
+    agenda_activities: 'activities',
+
+    // Location section
+    location_header: 'Location',
+
+    // Video section
+    video_header: 'Video',
+
+    // Gallery section
+    gallery_header: 'Photo Gallery',
+
+    // Comment section
+    comment_header: 'Comments & Wishes',
+    comment_placeholder: 'Share your thoughts, wishes, or congratulations...',
+    comment_signin_prompt: 'Please sign in to leave a comment',
+    comment_signin_button: 'Sign In to Comment',
+    comment_post_button: 'Post Comment',
+    comment_posting_button: 'Posting...',
+    comment_no_comments: 'Be the first to leave a comment!',
+    comment_loading: 'Loading comments...',
+    comment_already_commented: 'You have already left a comment for this event',
+    comment_one_per_user: 'Each user can only comment once per event',
+    comment_you_badge: 'You',
+
+    // Payment section
+    payment_wedding_gift: 'Wedding Gift',
+    payment_birthday_gift: 'Birthday Gift',
+
+    // Footer section
+    footer_thank_you: 'Thank you for celebrating with us',
+    footer_create_invitations: 'Create beautiful event invitations'
   },
 
   kh: {
@@ -190,7 +250,37 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     // Agenda section
     agenda_header: 'កាលវិភាគព្រឹត្តិការណ៍',
     agenda_activity: 'សកម្មភាព',
-    agenda_activities: 'សកម្មភាព'
+    agenda_activities: 'សកម្មភាព',
+
+    // Location section
+    location_header: 'ទីតាំង',
+
+    // Video section
+    video_header: 'វីដេអូ',
+
+    // Gallery section
+    gallery_header: 'រូបថត',
+
+    // Comment section
+    comment_header: 'សារជូនពរ',
+    comment_placeholder: 'ចាំរូបការគិត, ប្រារ្ថនា, ឬ សំឌើងអារម្មណ៍របស់អ្នក...',
+    comment_signin_prompt: 'សូមចូលគណនី ដើម្បីដាក់មតិយោបល់',
+    comment_signin_button: 'ចូលគណនី ដើម្បីមតិយោបល់',
+    comment_post_button: 'ប៉ុព្វមតិយោបល់',
+    comment_posting_button: 'កំពុងប៉ុព្វ...',
+    comment_no_comments: 'ក្លាយជាអ្នកដំបូងក្នុងការដាក់មតិយោបល់!',
+    comment_loading: 'កំពុងនីមតិយោបល់...',
+    comment_already_commented: 'អ្នកបានបញ្ចេញមតិរួចហើយ',
+    comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់ព្រឹត្តិការណ៍មួយ',
+    comment_you_badge: 'You',
+
+    // Payment section
+    payment_wedding_gift: 'ចងដៃ',
+    payment_birthday_gift: 'អំណោយ',
+
+    // Footer section
+    footer_thank_you: 'អរគុណសម្រាប់ការចូលរួមអបអរសាទរជាមួយយើង',
+    footer_create_invitations: 'ងាយស្រួលពេលមានកម្មវិធី'
   },
 
   fr: {
@@ -254,7 +344,37 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     // Agenda section
     agenda_header: 'Programme de l\'événement',
     agenda_activity: 'activité',
-    agenda_activities: 'activités'
+    agenda_activities: 'activités',
+
+    // Location section
+    location_header: 'Lieu',
+
+    // Video section
+    video_header: 'Vidéo',
+
+    // Gallery section
+    gallery_header: 'Galerie de photos',
+
+    // Comment section
+    comment_header: 'Commentaires et souhaits',
+    comment_placeholder: 'Partagez vos pensées, souhaits ou félicitations...',
+    comment_signin_prompt: 'Veuillez vous connecter pour laisser un commentaire',
+    comment_signin_button: 'Se connecter pour commenter',
+    comment_post_button: 'Publier le commentaire',
+    comment_posting_button: 'Publication...',
+    comment_no_comments: 'Soyez le premier à laisser un commentaire !',
+    comment_loading: 'Chargement des commentaires...',
+    comment_already_commented: 'Vous avez déjà laissé un commentaire pour cet événement',
+    comment_one_per_user: 'Chaque utilisateur ne peut commenter qu\'une seule fois par événement',
+    comment_you_badge: 'Vous',
+
+    // Payment section
+    payment_wedding_gift: 'Cadeau de mariage',
+    payment_birthday_gift: 'Cadeau d\'anniversaire',
+
+    // Footer section
+    footer_thank_you: 'Merci de célébrer avec nous',
+    footer_create_invitations: 'Créer de belles invitations d\'événement'
   },
 
   ja: {
@@ -318,7 +438,37 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     // Agenda section
     agenda_header: 'イベントスケジュール',
     agenda_activity: '活動',
-    agenda_activities: '活動'
+    agenda_activities: '活動',
+
+    // Location section
+    location_header: '場所',
+
+    // Video section
+    video_header: 'ビデオ',
+
+    // Gallery section
+    gallery_header: 'フォトギャラリー',
+
+    // Comment section
+    comment_header: 'コメントとお祖い',
+    comment_placeholder: 'ご想い、お祖い、お祐いの言葉をお寄せください...',
+    comment_signin_prompt: 'コメントを残すにはサインインしてください',
+    comment_signin_button: 'サインインしてコメント',
+    comment_post_button: 'コメントを投稿',
+    comment_posting_button: '投稿中...',
+    comment_no_comments: '最初のコメントを残しましょう！',
+    comment_loading: 'コメントを読み込み中...',
+    comment_already_commented: 'このイベントに既にコメントを残しています',
+    comment_one_per_user: '各ユーザーはイベントごとに一度だけコメントできます',
+    comment_you_badge: 'あなた',
+
+    // Payment section
+    payment_wedding_gift: '結婚祁い金',
+    payment_birthday_gift: '誕生日ギフト',
+
+    // Footer section
+    footer_thank_you: 'ご一緒にお祝いいただき、ありがとうございます',
+    footer_create_invitations: '美しいイベント招待状を作成'
   },
 
   ko: {
@@ -377,7 +527,42 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: '훌륭합니다! {count}{unit}으로 등록되었습니다.',
     rsvp_unregister_success: '참석하실 수 없어 아쉽습니다. 알려주셔서 감사합니다.',
     rsvp_guest_update_success: '게스트 수를 {count}{unit}으로 업데이트했습니다',
-    rsvp_thank_you_simple: '답변해 주셔서 감사합니다.'
+    rsvp_thank_you_simple: '답변해 주셔서 감사합니다.',
+
+    // Agenda section
+    agenda_header: '이벤트 일정',
+    agenda_activity: '활동',
+    agenda_activities: '활동',
+
+    // Location section
+    location_header: '장소',
+
+    // Video section
+    video_header: '비디오',
+
+    // Gallery section
+    gallery_header: '포토 갤러리',
+
+    // Comment section
+    comment_header: '댓글과 축하',
+    comment_placeholder: '생각, 축하, 축하 말샀을 공유해주세요...',
+    comment_signin_prompt: '댓글을 남기려면 로그인해 주세요',
+    comment_signin_button: '로그인하여 댓글 남기기',
+    comment_post_button: '댓글 게시',
+    comment_posting_button: '게시 중...',
+    comment_no_comments: '첫 번째 댓글을 남겨보세요!',
+    comment_loading: '댓글 로딩 중...',
+    comment_already_commented: '이 이벤트에 이미 댓글을 남겼습니다',
+    comment_one_per_user: '각 사용자는 이벤트당 한 번만 댓글을 남길 수 있습니다',
+    comment_you_badge: '당신',
+
+    // Payment section
+    payment_wedding_gift: '결혼 선물',
+    payment_birthday_gift: '생일 선물',
+
+    // Footer section
+    footer_thank_you: '함께 축하해 주셔서 감사합니다',
+    footer_create_invitations: '아름다운 이벤트 초대장 만들기'
   },
 
   'zh-cn': {
@@ -436,7 +621,42 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: '太好了！您已注册{count}{unit}。',
     rsvp_unregister_success: '很遗憾您无法参加。感谢您告知我们。',
     rsvp_guest_update_success: '已将客人数量更新为{count}{unit}',
-    rsvp_thank_you_simple: '谢谢您的回复。'
+    rsvp_thank_you_simple: '谢谢您的回复。',
+
+    // Agenda section
+    agenda_header: '活动日程',
+    agenda_activity: '活动',
+    agenda_activities: '活动',
+
+    // Location section
+    location_header: '位置',
+
+    // Video section
+    video_header: '视频',
+
+    // Gallery section
+    gallery_header: '照片库',
+
+    // Comment section
+    comment_header: '评论与祈愿',
+    comment_placeholder: '分享您的想法、祈愿或祝贺...',
+    comment_signin_prompt: '请登录后留言',
+    comment_signin_button: '登录评论',
+    comment_post_button: '发表评论',
+    comment_posting_button: '发表中...',
+    comment_no_comments: '成为第一个留言的人吧！',
+    comment_loading: '加载评论中...',
+    comment_already_commented: '您已经为此活动留言了',
+    comment_one_per_user: '每个用户每个活动只能评论一次',
+    comment_you_badge: '您',
+
+    // Payment section
+    payment_wedding_gift: '结婚礼品',
+    payment_birthday_gift: '生日礼品',
+
+    // Footer section
+    footer_thank_you: '感谢您与我们一同庆祝',
+    footer_create_invitations: '创建精美的活动邀请函'
   },
 
   th: {
@@ -495,7 +715,42 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: 'ยอดเยี่ยม! คุณได้ลงทะเบียนแล้วจำนวน {count} {unit}',
     rsvp_unregister_success: 'เสียใจที่คุณไม่สามารถมาได้ ขอบคุณที่แจ้งให้เราทราบ',
     rsvp_guest_update_success: 'อัปเดตจำนวนแขกเป็น {count} {unit}',
-    rsvp_thank_you_simple: 'ขอบคุณสำหรับการตอบกลับ'
+    rsvp_thank_you_simple: 'ขอบคุณสำหรับการตอบกลับ',
+
+    // Agenda section
+    agenda_header: 'กำหนดการกิจกรรม',
+    agenda_activity: 'กิจกรรม',
+    agenda_activities: 'กิจกรรม',
+
+    // Location section
+    location_header: 'สถานที่',
+
+    // Video section
+    video_header: 'วีดีโอ',
+
+    // Gallery section
+    gallery_header: 'แกลเลอรี่รูปภาพ',
+
+    // Comment section
+    comment_header: 'คำคิดเห็นและคำอวยพร',
+    comment_placeholder: 'แบ่งปันความคิด คำอวยพร หรือคำอุ่นพร...',
+    comment_signin_prompt: 'กรุณาเข้าสู่ระบบเพื่อแสดงความคิดเห็น',
+    comment_signin_button: 'เข้าสู่ระบบเพื่อแสดงความคิดเห็น',
+    comment_post_button: 'โพสต์ความคิดเห็น',
+    comment_posting_button: 'กำลังโพสต์...',
+    comment_no_comments: 'เป็นคนแรกที่แสดงความคิดเห็น!',
+    comment_loading: 'กำลังโหลดความคิดเห็น...',
+    comment_already_commented: 'คุณได้แสดงความคิดเห็นในกิจกรรมนี้แล้ว',
+    comment_one_per_user: 'ผู้ใช้แต่ละคนสามารถแสดงความคิดเห็นได้เพียงครั้งเดียวต่อกิจกรรม',
+    comment_you_badge: 'คุณ',
+
+    // Payment section
+    payment_wedding_gift: 'ของขวัญงานแต่งงาน',
+    payment_birthday_gift: 'ของขวัญวันเกิด',
+
+    // Footer section
+    footer_thank_you: 'ขอบคุณที่ร่วมเฉลิมฉลองกับเรา',
+    footer_create_invitations: 'สร้างการเชิญงานที่สวยงาม'
   },
 
   vn: {
@@ -554,7 +809,42 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_registration_success: 'Tuyệt vời! Bạn đã đăng ký với {count} {unit}.',
     rsvp_unregister_success: 'Chúng tôi rất tiếc vì bạn không thể tham dự. Cảm ơn bạn đã thông báo.',
     rsvp_guest_update_success: 'Đã cập nhật số lượng khách thành {count} {unit}',
-    rsvp_thank_you_simple: 'Cảm ơn phản hồi của bạn.'
+    rsvp_thank_you_simple: 'Cảm ơn phản hồi của bạn.',
+
+    // Agenda section
+    agenda_header: 'Lịch trình sự kiện',
+    agenda_activity: 'hoạt động',
+    agenda_activities: 'hoạt động',
+
+    // Location section
+    location_header: 'Địa điểm',
+
+    // Video section
+    video_header: 'Video',
+
+    // Gallery section
+    gallery_header: 'Thư viện ảnh',
+
+    // Comment section
+    comment_header: 'Bình luận và lời chúc',
+    comment_placeholder: 'Chia sẻ suy nghĩ, lời chúc, hoặc lời chúc mừng của bạn...',
+    comment_signin_prompt: 'Vui lòng đăng nhập để để lại bình luận',
+    comment_signin_button: 'Đăng nhập để bình luận',
+    comment_post_button: 'Đăng bình luận',
+    comment_posting_button: 'Đang đăng...',
+    comment_no_comments: 'Hãy là người đầu tiên để lại bình luận!',
+    comment_loading: 'Đang tải bình luận...',
+    comment_already_commented: 'Bạn đã để lại bình luận cho sự kiện này rồi',
+    comment_one_per_user: 'Mỗi người dùng chỉ có thể bình luận một lần cho mỗi sự kiện',
+    comment_you_badge: 'Bạn',
+
+    // Payment section
+    payment_wedding_gift: 'Quà cưới',
+    payment_birthday_gift: 'Quà sinh nhật',
+
+    // Footer section
+    footer_thank_you: 'Cảm ơn bạn đã ăn mừng cùng chúng tôi',
+    footer_create_invitations: 'Tạo thiệp mời sự kiện đẹp'
   }
 }
 

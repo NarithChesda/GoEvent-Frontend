@@ -48,7 +48,7 @@
                 <!-- Welcome Header -->
                 <div class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                   <h1
-                    class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+                    class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
                     :style="{
                       fontFamily: primaryFont || currentFont,
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -74,16 +74,22 @@
                   :secondary-font="secondaryFont"
                 />
 
-
+                <!-- Host Info Divider -->
+                <WeddingSectionDivider
+                  :primary-color="primaryColor"
+                />
 
                 <!-- Event Information -->
                 <div class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10">
                   <EventInfo
+                    :description-title="descriptionTitle"
+                    :description-text="descriptionText"
                     :date-text="dateText"
                     :time-text="timeText"
                     :location-text="locationText"
                     :has-google-map="!!event.google_map_embed_link"
                     :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
                     :accent-color="accentColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
@@ -146,7 +152,7 @@
                   <!-- Location Header -->
                   <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                     <h2
-                      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+                      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
                       :style="{
                         fontFamily: primaryFont || currentFont,
                         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -155,7 +161,7 @@
                         backgroundClip: 'text'
                       }"
                     >
-                      Location
+                      {{ locationHeaderText }}
                     </h2>
                   </div>
                   <div class="aspect-video rounded-xl overflow-hidden">
@@ -187,6 +193,8 @@
                   :current-font="currentFont"
                   :primary-font="primaryFont"
                   :secondary-font="secondaryFont"
+                  :event-texts="eventTexts"
+                  :current-language="currentLanguage"
                   />
 
                   <!-- Video Section Divider -->
@@ -206,6 +214,8 @@
                   :current-font="currentFont"
                   :primary-font="primaryFont"
                   :secondary-font="secondaryFont"
+                  :event-texts="eventTexts"
+                  :current-language="currentLanguage"
                   @open-photo="$emit('openPhoto', $event)"
                   />
 
@@ -226,6 +236,9 @@
                     :primary-font="primaryFont || currentFont"
                     :secondary-font="secondaryFont || currentFont"
                     :get-media-url="getMediaUrl"
+                    :event-category="(event as any).category"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
                   />
 
                   <!-- Payment Section Divider -->
@@ -245,6 +258,8 @@
                   :current-font="currentFont"
                   :primary-font="primaryFont"
                   :secondary-font="secondaryFont"
+                  :event-texts="eventTexts"
+                  :current-language="currentLanguage"
                   @comment-submitted="handleCommentSubmitted"
                   />
 
@@ -293,24 +308,24 @@
                     <div class="space-y-4">
                       <!-- Thank You Message -->
                       <p
-                        class="text-lg font-semibold text-white"
+                        class="text-small text-white"
                         :style="{ fontFamily: primaryFont || currentFont }"
                       >
-                        Thank you for celebrating with us
+                        {{ footerThankYouText }}
                       </p>
 
                       <!-- GoEvent Logo/Branding -->
                       <div class="space-y-2">
                         <div class="inline-flex items-center justify-center">
                           <span
-                            class="text-xl font-bold text-white"
+                            class="text-6xl font-bold text-white"
                             :style="{ fontFamily: primaryFont || currentFont }"
                           >
                             GoEvent
                           </span>
                         </div>
-                        <p class="text-sm text-white opacity-90" :style="{ fontFamily: secondaryFont || currentFont }">
-                          Create beautiful event invitations
+                        <p class="text-xs text-white opacity-90" :style="{ fontFamily: secondaryFont || currentFont }">
+                          {{ footerCreateInvitationsText }}
                         </p>
                       </div>
 
@@ -366,6 +381,10 @@ import FloatingActionMenu from './FloatingActionMenu.vue'
 import WeddingSectionDivider from './WeddingSectionDivider.vue'
 import type { EventData, EventText, Host, AgendaItem, EventPhoto, EventComment } from '../../composables/useEventShowcase'
 import type { EventPaymentMethod } from '../../services/api'
+import {
+  translateRSVP,
+  type SupportedLanguage
+} from '../../utils/translations'
 
 interface TemplateAssets {
   standard_background_video?: string
@@ -404,6 +423,51 @@ const emit = defineEmits<{
   musicToggle: []
 }>()
 
+// Enhanced translation function that combines database content with frontend translations
+const getTextContent = (textType: string, fallback = ''): string => {
+  // First, try to get content from database (eventTexts)
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(text =>
+      text.text_type === textType && text.language === props.currentLanguage
+    )
+    if (text?.content) {
+      return text.content
+    }
+  }
+
+  // Fallback to frontend translation system
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+
+  // Map text types to translation keys
+  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    'location_header': 'location_header',
+    'video_header': 'video_header',
+    'gallery_header': 'gallery_header',
+    'comment_header': 'comment_header',
+    'comment_placeholder': 'comment_placeholder',
+    'comment_signin_prompt': 'comment_signin_prompt',
+    'comment_signin_button': 'comment_signin_button',
+    'comment_post_button': 'comment_post_button',
+    'comment_posting_button': 'comment_posting_button',
+    'comment_no_comments': 'comment_no_comments',
+    'comment_loading': 'comment_loading',
+    'comment_already_commented': 'comment_already_commented',
+    'comment_one_per_user': 'comment_one_per_user',
+    'comment_you_badge': 'comment_you_badge',
+    'payment_wedding_gift': 'payment_wedding_gift',
+    'payment_birthday_gift': 'payment_birthday_gift',
+    'footer_thank_you': 'footer_thank_you',
+    'footer_create_invitations': 'footer_create_invitations'
+  }
+
+  const translationKey = keyMap[textType]
+  if (translationKey) {
+    return translateRSVP(translationKey, currentLang)
+  }
+
+  return fallback
+}
+
 const welcomeMessage = computed(() =>
   props.eventTexts.find(text => text.text_type === 'welcome_message')?.content
 )
@@ -418,6 +482,26 @@ const timeText = computed(() =>
 
 const locationText = computed(() =>
   props.eventTexts.find(text => text.text_type === 'location_text')?.content
+)
+
+const descriptionText = computed(() =>
+  props.eventTexts.find(text => text.text_type === 'description')?.content
+)
+
+const descriptionTitle = computed(() =>
+  props.eventTexts.find(text => text.text_type === 'description')?.title
+)
+
+const locationHeaderText = computed(() =>
+  getTextContent('location_header', 'Location')
+)
+
+const footerThankYouText = computed(() =>
+  getTextContent('footer_thank_you', 'Thank you for celebrating with us')
+)
+
+const footerCreateInvitationsText = computed(() =>
+  getTextContent('footer_create_invitations', 'Create beautiful event invitations')
 )
 
 // Floating Action Menu Handlers

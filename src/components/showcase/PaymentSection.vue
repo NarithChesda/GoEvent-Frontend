@@ -1,10 +1,10 @@
 <template>
   <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Payment Section Header - First Payment Method Name + Type -->
-    <h2 
+    <h2
       v-if="paymentMethods.length > 0"
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase text-center" 
-      :style="{ 
+      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase text-center"
+      :style="{
         fontFamily: primaryFont || currentFont,
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
@@ -12,15 +12,15 @@
         backgroundClip: 'text'
       }"
     >
-      {{ paymentMethods[0].name }} {{ paymentMethods[0].payment_type.charAt(0).toUpperCase() + paymentMethods[0].payment_type.slice(1) }}
+      {{ paymentSectionTitle }}
     </h2>
 
     <!-- Payment Methods -->
     <div class="space-y-3">
       <div v-for="method in paymentMethods" :key="method.id" class="payment-method-section mb-3 last:mb-0">
-        
+
         <!-- Payment Method Card - Unified Design -->
-        <div 
+        <div
           class="payment-card-container transition-all duration-300"
           :style="{
             backgroundColor: `${primaryColor}15`,
@@ -35,7 +35,7 @@
           }"
         >
           <!-- Collapsible Card Header - Always Visible -->
-          <div 
+          <div
             class="payment-card-header cursor-pointer transition-all duration-300 hover:translateY(-1px)"
             @click="toggleCard(method)"
           >
@@ -48,20 +48,20 @@
                 </svg>
               </div>
               <div>
-                <h3 class="font-semibold text-sm sm:text-base" 
-                    :style="{ 
+                <h3 class="font-semibold text-sm sm:text-base"
+                    :style="{
                       fontFamily: primaryFont || currentFont,
                       color: primaryColor
                     }">
                   {{ capitalizeText(method.bank_name || method.name) }}
                 </h3>
-                <div class="flex items-center space-x-2 text-xs mt-1" 
+                <div class="flex items-center space-x-2 text-xs mt-1"
                      :style="{ color: primaryColor, opacity: '0.7' }">
                   <span v-if="method.currency">{{ method.currency }}</span>
                 </div>
               </div>
             </div>
-            
+
             <!-- Expand/Collapse Arrow -->
             <div class="transition-transform duration-300" :class="{ 'rotate-180': isCardExpanded(method) }">
               <svg class="w-5 h-5" :style="{ color: primaryColor, opacity: '0.6' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +72,7 @@
           </div>
 
           <!-- Expandable Content -->
-        <div 
+        <div
           class="payment-card-content overflow-hidden transition-all duration-500 ease-in-out"
           :class="isCardExpanded(method) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'"
         >
@@ -87,18 +87,18 @@
               <div v-if="method.qr_code_image" class="relative">
                 <!-- Seamless QR container with depth -->
                 <div class="qr-simple-container relative p-4 transition-all duration-300 hover:scale-[1.02] group"
-                     :style="{ 
+                     :style="{
                        backgroundColor: `${primaryColor}04`
                      }">
-                  <img 
-                    :src="getMediaUrl(method.qr_code_image)" 
+                  <img
+                    :src="getMediaUrl(method.qr_code_image)"
                     :alt="`QR Code for ${method.name}`"
                     class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl shadow-md transition-all duration-300"
                     @error="onImageError"
                   />
                   <!-- Subtle scan line animation overlay -->
                   <div class="absolute inset-4 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                       :style="{ 
+                       :style="{
                          background: `linear-gradient(90deg, transparent 0%, ${primaryColor}20 50%, transparent 100%)`,
                          animation: 'scan-line 2s ease-in-out infinite'
                        }">
@@ -108,16 +108,16 @@
                   Scan to pay
                 </p>
               </div>
-              
+
               <!-- QR Code Fallback -->
               <div v-else class="relative">
                 <!-- Seamless fallback container -->
                 <div class="qr-simple-container relative p-4"
-                     :style="{ 
+                     :style="{
                        backgroundColor: `${primaryColor}04`,
                        border: `1px dashed ${primaryColor}20`
                      }">
-                  <div class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl flex items-center justify-center" 
+                  <div class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl flex items-center justify-center"
                        :style="{ backgroundColor: `${primaryColor}05` }">
                     <div class="text-center">
                       <svg class="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-2" :style="{ color: primaryColor, opacity: '0.4' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,16 +136,16 @@
             <!-- Payment Info Panel - Grouped Bank Info + Payment Button -->
             <div v-if="hasVisibleBankInfo(method) || method.payment_url" class="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
               <div class="payment-info-simple p-4 backdrop-blur-md transition-all duration-200"
-                   :style="{ 
+                   :style="{
                      backgroundColor: `${primaryColor}04`
                    }">
-                
+
                 <!-- Bank Info -->
                 <div v-if="hasVisibleBankInfo(method)" class="space-y-2 mb-4">
                   <div v-if="method.account_name" class="text-center lg:text-left">
-                    <div class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-medium text-sm min-h-[32px]" 
-                         :style="{ 
-                           backgroundColor: `${primaryColor}08`, 
+                    <div class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-medium text-sm min-h-[32px]"
+                         :style="{
+                           backgroundColor: `${primaryColor}08`,
                            color: primaryColor,
                            opacity: '0.9',
                            boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}12`
@@ -158,9 +158,9 @@
                   </div>
 
                   <div v-if="method.account_number" class="text-center lg:text-left">
-                    <div class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-mono text-sm min-h-[32px] group cursor-pointer transition-all hover:shadow-lg" 
-                         :style="{ 
-                           backgroundColor: `${primaryColor}10`, 
+                    <div class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-mono text-sm min-h-[32px] group cursor-pointer transition-all hover:shadow-lg"
+                         :style="{
+                           backgroundColor: `${primaryColor}10`,
                            color: primaryColor,
                            opacity: '0.9',
                            boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}12`
@@ -180,12 +180,12 @@
 
                 <!-- Payment Button -->
                 <div v-if="method.payment_url" class="text-center lg:text-left">
-                  <a 
-                    :href="method.payment_url" 
-                    target="_blank" 
+                  <a
+                    :href="method.payment_url"
+                    target="_blank"
                     rel="noopener noreferrer"
                     class="payment-link-minimalist group inline-flex items-center justify-center w-full lg:w-auto"
-                    :style="{ 
+                    :style="{
                       fontFamily: primaryFont || currentFont,
                       background: `linear-gradient(135deg, ${primaryColor}60, ${primaryColor}40)`,
                       color: '#ffffff',
@@ -206,8 +206,8 @@
 
           <!-- Description (if exists, keep minimal) -->
           <div v-if="method.description" class="text-center mt-4 px-2">
-            <p class="text-xs leading-relaxed" 
-               :style="{ 
+            <p class="text-xs leading-relaxed"
+               :style="{
                  fontFamily: secondaryFont || currentFont,
                  color: primaryColor,
                  opacity: '0.6'
@@ -222,7 +222,7 @@
     </div>
 
     <!-- No Payment Methods Message -->
-    <div v-if="paymentMethods.length === 0" class="text-center py-8 sm:py-12 rounded-2xl" :style="{ 
+    <div v-if="paymentMethods.length === 0" class="text-center py-8 sm:py-12 rounded-2xl" :style="{
       backgroundColor: `${primaryColor}08`,
       border: `1px solid ${primaryColor}20`
     }">
@@ -231,7 +231,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
         </svg>
       </div>
-      <p class="text-base font-medium" :style="{ 
+      <p class="text-base font-medium" :style="{
         fontFamily: secondaryFont || currentFont,
         color: primaryColor,
         opacity: '0.8'
@@ -246,6 +246,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { EventPaymentMethod } from '../../services/api'
+import {
+  translateRSVP,
+  type SupportedLanguage
+} from '../../utils/translations'
+
+interface EventText {
+  text_type: string
+  language: string
+  content: string
+}
 
 interface Props {
   paymentMethods: EventPaymentMethod[]
@@ -256,24 +266,68 @@ interface Props {
   primaryFont: string
   secondaryFont: string
   getMediaUrl: (url: string) => string
+  eventCategory?: string | number
+  eventTexts?: EventText[]
+  currentLanguage?: string
 }
 
 const props = defineProps<Props>()
+
+// Enhanced translation function that combines database content with frontend translations
+const getTextContent = (textType: string, fallback = ''): string => {
+  // First, try to get content from database (eventTexts)
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(text =>
+      text.text_type === textType && text.language === props.currentLanguage
+    )
+    if (text?.content) {
+      return text.content
+    }
+  }
+
+  // Fallback to frontend translation system
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+
+  // Map text types to translation keys
+  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    'payment_wedding_gift': 'payment_wedding_gift',
+    'payment_birthday_gift': 'payment_birthday_gift'
+  }
+
+  const translationKey = keyMap[textType]
+  if (translationKey) {
+    return translateRSVP(translationKey, currentLang)
+  }
+
+  return fallback
+}
 
 // State
 const expandedCards = ref<Set<string>>(new Set())
 
 // Computed
 const paymentSectionTitle = computed(() => {
-  const hasGifts = props.paymentMethods.some(m => m.payment_type === 'gift')
-  const hasDonations = props.paymentMethods.some(m => m.payment_type === 'donation')
-  const hasSponsorships = props.paymentMethods.some(m => m.payment_type === 'sponsorship')
-  
-  if (hasGifts && hasDonations) return 'Gifts & Donations'
-  if (hasGifts) return 'Wedding Gifts'
-  if (hasDonations) return 'Donations'
-  if (hasSponsorships) return 'Sponsorships'
-  return 'Support'
+  // Convert eventCategory to string and normalize for comparison
+  const categoryStr = String(props.eventCategory || '').toLowerCase()
+
+  // Check event category first for specific translations
+  // Handle both string names and common numeric IDs for wedding categories
+  if (categoryStr === 'wedding' || categoryStr === '1' || categoryStr === '7') {
+    return getTextContent('payment_wedding_gift', 'Wedding Gift')
+  }
+
+  // Handle both string names and common numeric IDs for birthday categories
+  if (categoryStr === 'birthday' || categoryStr === '2') {
+    return getTextContent('payment_birthday_gift', 'Birthday Gift')
+  }
+
+  // For other categories, use the current logic (first payment name + type)
+  if (props.paymentMethods.length > 0) {
+    const firstMethod = props.paymentMethods[0]
+    return `${firstMethod.name} ${firstMethod.payment_type.charAt(0).toUpperCase() + firstMethod.payment_type.slice(1)}`
+  }
+
+  return 'Payment'
 })
 
 // Methods
@@ -537,34 +591,34 @@ const capitalizeText = (text: string | undefined): string => {
   .payment-method-section {
     /* No padding - matches comment section */
   }
-  
+
   .payment-row-container {
     padding: 0.5rem;
     gap: 1rem;
   }
-  
+
   .qr-simple-container {
     padding: 1rem;
   }
-  
+
   .payment-info-simple {
     padding: 0.75rem;
   }
-  
+
   .payment-info-glass {
     padding: 0.75rem;
   }
-  
+
   .bank-info-glass {
     padding: 0.75rem;
   }
-  
+
   .payment-link-minimalist {
     padding: 0.5rem 0.875rem;
     font-size: 0.825rem;
     min-height: 34px;
   }
-  
+
   .payment-link-liquid {
     padding: 0.875rem 1.5rem;
     font-size: 0.925rem;
@@ -577,24 +631,24 @@ const capitalizeText = (text: string | undefined): string => {
   .payment-method-section {
     /* No padding - matches comment section */
   }
-  
+
   .payment-row-container {
     gap: 1.5rem;
   }
-  
+
   .payment-info-simple {
     padding: 1rem;
   }
-  
+
   .payment-info-glass {
     padding: 1rem;
   }
-  
+
   .payment-link-minimalist {
     padding: 0.625rem 1rem;
     min-height: 38px;
   }
-  
+
   .payment-link-liquid {
     padding: 1rem 1.75rem;
     min-height: 50px;
@@ -630,7 +684,7 @@ const capitalizeText = (text: string | undefined): string => {
 }
 
 .payment-card-content {
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.3s ease-in-out;
   will-change: max-height, opacity;
   transform-origin: top;
@@ -641,25 +695,25 @@ const capitalizeText = (text: string | undefined): string => {
   .payment-method-section {
     /* No padding - matches comment section */
   }
-  
+
   .payment-row-container {
     padding: 0.75rem;
     gap: 2rem;
   }
-  
+
   .payment-info-simple {
     padding: 1.25rem;
   }
-  
+
   .payment-info-glass {
     padding: 1.25rem;
   }
-  
+
   .payment-link-minimalist {
     padding: 0.75rem 1.25rem;
     min-height: 40px;
   }
-  
+
   .glass-content-section {
     padding: 0.75rem;
   }

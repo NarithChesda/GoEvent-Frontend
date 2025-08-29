@@ -3,7 +3,7 @@
     <!-- Welcome Header -->
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
-        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
         :style="{
           fontFamily: primaryFont || currentFont,
           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,

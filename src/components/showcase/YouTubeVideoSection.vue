@@ -3,7 +3,7 @@
     <!-- Video Header -->
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
-        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-medium sm:mb-4 md:mb-6 uppercase"
+        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
         :style="{
           fontFamily: primaryFont || currentFont,
           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -12,7 +12,7 @@
           backgroundClip: 'text'
         }"
       >
-        Video
+        {{ videoHeaderText }}
       </h2>
     </div>
     <div class="aspect-video rounded-xl overflow-hidden">
@@ -27,11 +27,23 @@
         referrerpolicy="strict-origin-when-cross-origin"
       />
     </div>
-    
+
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import {
+  translateRSVP,
+  type SupportedLanguage
+} from '../../utils/translations'
+
+interface EventText {
+  text_type: string
+  language: string
+  content: string
+}
+
 interface Props {
   youtubeEmbedLink?: string | null | undefined
   primaryColor: string
@@ -40,9 +52,43 @@ interface Props {
   currentFont?: string
   primaryFont?: string
   secondaryFont?: string
+  eventTexts?: EventText[]
+  currentLanguage?: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+// Enhanced translation function that combines database content with frontend translations
+const getTextContent = (textType: string, fallback = ''): string => {
+  // First, try to get content from database (eventTexts)
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(text =>
+      text.text_type === textType && text.language === props.currentLanguage
+    )
+    if (text?.content) {
+      return text.content
+    }
+  }
+
+  // Fallback to frontend translation system
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+
+  // Map text types to translation keys
+  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    'video_header': 'video_header'
+  }
+
+  const translationKey = keyMap[textType]
+  if (translationKey) {
+    return translateRSVP(translationKey, currentLang)
+  }
+
+  return fallback
+}
+
+const videoHeaderText = computed(() =>
+  getTextContent('video_header', 'Video')
+)
 </script>
 
 <style scoped>
