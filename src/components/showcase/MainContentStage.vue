@@ -21,6 +21,7 @@
       :current-language="currentLanguage"
       :available-languages="availableLanguages"
       :is-music-playing="isMusicPlaying"
+      :is-authenticated="isAuthenticated"
       @language-change="handleLanguageChange"
       @music-toggle="handleMusicToggle"
       @rsvp="handleRSVP"
@@ -31,6 +32,7 @@
       @video="handleVideo"
       @gallery="handleGallery"
       @comment="handleComment"
+      @logout="handleLogout"
     />
 
     <!-- Liquid Glass Floating Box Container -->
@@ -411,6 +413,7 @@ interface Props {
   currentLanguage?: string
   guestName?: string
   isMusicPlaying?: boolean
+  isAuthenticated?: boolean
 }
 
 const props = defineProps<Props>()
@@ -422,6 +425,7 @@ const emit = defineEmits<{
   changeLanguage: [string]
   commentSubmitted: [EventComment]
   musicToggle: []
+  logout: []
 }>()
 
 // Enhanced translation function that combines database content with frontend translations
@@ -579,6 +583,11 @@ const handleVideo = () => {
 const handleCommentSubmitted = (comment: EventComment) => {
   console.log('Comment submitted:', comment)
   emit('commentSubmitted', comment)
+}
+
+const handleLogout = () => {
+  console.log('Logout clicked')
+  emit('logout')
 }
 </script>
 

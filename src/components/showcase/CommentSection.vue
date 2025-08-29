@@ -476,7 +476,9 @@ const isUserAuthenticated = computed(() => {
 // Methods
 const handleSignInClick = () => {
   // Store the current route with hash for comment section
-  const currentPath = route.fullPath + '#comment-section'
+  // Remove any existing hash first, then add the desired hash
+  const currentPathWithoutHash = route.fullPath.split('#')[0]
+  const currentPath = currentPathWithoutHash + '#comment-section'
 
   // Navigate to sign-in with redirect parameter
   router.push({

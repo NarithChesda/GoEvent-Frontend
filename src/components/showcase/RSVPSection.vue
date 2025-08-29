@@ -946,7 +946,9 @@ const updateCountdown = () => {
 
 const handleSignInClick = () => {
   // Store the current route with hash for RSVP section
-  const currentPath = route.fullPath + '#rsvp'
+  // Remove any existing hash first, then add the desired hash
+  const currentPathWithoutHash = route.fullPath.split('#')[0]
+  const currentPath = currentPathWithoutHash + '#rsvp'
 
   // Navigate to sign-in with redirect parameter
   router.push({

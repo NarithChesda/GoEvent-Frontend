@@ -77,12 +77,14 @@
         :current-language="currentLanguage"
         :guest-name="guestName as string"
         :is-music-playing="isMusicPlaying"
+        :is-authenticated="authStore.isAuthenticated"
         @open-map="openGoogleMap"
         @open-photo="openPhotoModal"
         @register="registerForEvent"
         @change-language="changeLanguage"
         @comment-submitted="handleCommentSubmitted"
         @music-toggle="toggleMusic"
+        @logout="handleLogout"
       />
 
       <!-- Photo Modal -->
@@ -207,6 +209,19 @@ const handleCommentSubmitted = (comment: any) => {
   console.log('Comment submitted in showcase:', comment)
   // In real implementation, you might want to show a success message
   // or refresh comments from the server
+}
+
+const handleLogout = async () => {
+  console.log('Logout from showcase')
+  
+  // Remove hash from URL to prevent auto-redirect to section on re-login
+  if (window.location.hash) {
+    const urlWithoutHash = window.location.href.split('#')[0]
+    window.history.replaceState(null, '', urlWithoutHash)
+  }
+  
+  await authStore.logout()
+  // Stay on the showcase page after logout - no redirect
 }
 
 

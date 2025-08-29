@@ -191,7 +191,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
 
   kh: {
     // Main headers
-    rsvp_header: 'តើអ្នកនឹងចូលរួមពិធីរៀបការរបស់យើងទេ?',
+    rsvp_header: 'តើអ្នកនឹងបានចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
 
     // Buttons

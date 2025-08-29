@@ -6,7 +6,7 @@
         <!-- Host 1 Parents -->
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="host-parent-name leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -15,7 +15,7 @@
             {{ hosts[0].parent_a_name || 'Father Name' }}
           </p>
           <p
-            class="leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="host-parent-name leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -30,7 +30,7 @@
         <!-- Host 2 Parents -->
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="host-parent-name leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -39,7 +39,7 @@
             {{ hosts[1].parent_a_name || 'Father Name' }}
           </p>
           <p
-            class="leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            class="host-parent-name leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -82,7 +82,7 @@
         <!-- Host 1 (Bride/Groom) -->
         <div class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-xs md:text-base font-medium opacity-80"
+            class="host-title text-xs md:text-base font-medium opacity-80"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -91,7 +91,7 @@
             {{ hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1') }}
           </p>
           <h3
-            class="gleam-animation leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
+            class="host-name gleam-animation leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
             :style="{
               background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
               backgroundSize: '200% 200%',
@@ -113,7 +113,7 @@
         <!-- Host 2 (Bride/Groom) -->
         <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
           <p
-            class="text-xs md:text-base font-medium opacity-80"
+            class="host-title text-xs md:text-base font-medium opacity-80"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont
@@ -122,7 +122,7 @@
             {{ hosts[1].title || 'Bride' }}
           </p>
           <h3
-            class="gleam-animation leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
+            class="host-name gleam-animation leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
             :style="{
               background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
               backgroundSize: '200% 200%',
@@ -238,6 +238,24 @@ defineProps<Props>()
   .logo-section {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+}
+
+/* Extra small phones - smaller font sizes for all text elements */
+@media (max-width: 374px) {
+  .host-name {
+    font-size: 0.75rem !important; /* 12px - made even smaller */
+    line-height: 1.2 !important;
+  }
+  
+  .host-parent-name {
+    font-size: 0.625rem !important; /* 10px */
+    line-height: 1.2 !important;
+  }
+  
+  .host-title {
+    font-size: 0.625rem !important; /* 10px */
+    line-height: 1.2 !important;
   }
 }
 </style>

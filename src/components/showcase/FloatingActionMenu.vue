@@ -155,6 +155,18 @@
             <span class="menu-text">Comment</span>
           </button>
         </div>
+
+        <!-- Logout (only show if authenticated) -->
+        <div v-if="props.isAuthenticated" class="menu-item">
+          <button
+            @click="handleLogout"
+            class="menu-button glass-section logout-button"
+            :style="{ borderColor: '#ef4444' }"
+          >
+            <LogOut :size="20" color="#ef4444" />
+            <span class="menu-text logout-text">Logout</span>
+          </button>
+        </div>
       </div>
     </Transition>
 
@@ -205,7 +217,8 @@ import {
   MapPin,
   Play,
   Image,
-  MessageCircle
+  MessageCircle,
+  LogOut
 } from 'lucide-vue-next'
 
 interface Props {
@@ -214,6 +227,7 @@ interface Props {
   currentLanguage?: string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   isMusicPlaying?: boolean
+  isAuthenticated?: boolean
 }
 
 interface Language {
@@ -227,7 +241,8 @@ const props = withDefaults(defineProps<Props>(), {
   accentColor: '#8B5CF6',
   currentLanguage: 'en',
   availableLanguages: () => [],
-  isMusicPlaying: false
+  isMusicPlaying: false,
+  isAuthenticated: false
 })
 
 const emit = defineEmits<{
@@ -241,6 +256,7 @@ const emit = defineEmits<{
   video: []
   gallery: []
   comment: []
+  logout: []
 }>()
 
 const isMenuOpen = ref(false)
@@ -336,6 +352,11 @@ const handleGallery = () => {
 
 const handleComment = () => {
   emit('comment')
+  isMenuOpen.value = false
+}
+
+const handleLogout = () => {
+  emit('logout')
   isMenuOpen.value = false
 }
 </script>
@@ -864,6 +885,16 @@ const handleComment = () => {
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* Logout button specific styles */
+.logout-button:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444 !important;
+}
+
+.logout-text {
+  color: #fecaca;
 }
 
 .glass-inner {
