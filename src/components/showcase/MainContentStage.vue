@@ -48,13 +48,14 @@
                 <!-- Welcome Header -->
                 <div class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
                   <h1
-                    class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
+                    class="welcome-header gleam-animation leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
                     :style="{
                       fontFamily: primaryFont || currentFont,
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+                      background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text'
+                      backgroundClip: 'text',
+                      backgroundSize: '200% 200%',
                     }"
                   >
                     {{ welcomeMessage || 'Welcome to Our Event' }}
@@ -694,5 +695,21 @@ const handleCommentSubmitted = (comment: EventComment) => {
   -ms-overflow-style: none;
 }
 
-/* Welcome Header styles are now handled by Tailwind responsive classes */
+/* Gleam Animation Styles - Reusable */
+.gleam-animation {
+  animation: gradientShift 5s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 </style>

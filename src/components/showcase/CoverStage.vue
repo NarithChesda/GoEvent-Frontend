@@ -29,7 +29,7 @@
         <!-- Event Title (Top) -->
         <div class="px-12 mb-6 sm:mb-8 md:mb-10 animate-fadeIn">
           <h1
-            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl xl:text-3xl 2xl:text-3xl font-bold leading-relaxed py-4 uppercase khmer-text-fix"
+            class="text-2xl sm:text-3xl md:text-3xl lg:text-3xl xl:text-3xl 2xl:text-3xl font-bold py-4 uppercase khmer-text-fix single-line-text"
             :style="{
               fontFamily: primaryFont || currentFont,
               background: gradientStyle,
@@ -313,6 +313,17 @@ h1, h2, p {
   padding-bottom: 0.1em;
 }
 
+/* Single line text forcing */
+.single-line-text {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: visible !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  width: max-content !important;
+  max-width: 100% !important;
+}
+
 /* Enhanced Khmer font rendering */
 .khmer-text-fix {
   line-height: 1.8 !important;
@@ -324,6 +335,13 @@ h1, h2, p {
   text-overflow: visible !important;
   /* Ensure proper space for Khmer ascenders and descenders */
   min-height: 1.8em;
+}
+
+/* Override for single line Khmer text */
+.khmer-text-fix.single-line-text {
+  line-height: 1.4 !important;
+  min-height: 1.4em !important;
+  white-space: nowrap !important;
 }
 
 /* Event Logo Responsive Sizing */
