@@ -92,7 +92,7 @@
                     :location-text="locationText"
                     :has-google-map="!!event.google_map_embed_link"
                     :primary-color="primaryColor"
-                    :secondary-color="secondaryColor"
+                    :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
@@ -191,7 +191,7 @@
                   <YouTubeVideoSection
                   :youtube-embed-link="event.youtube_embed_link"
                   :primary-color="primaryColor"
-                  :secondary-color="secondaryColor"
+                  :secondary-color="secondaryColor || undefined"
                   :accent-color="accentColor"
                   :current-font="currentFont"
                   :primary-font="primaryFont"
@@ -233,13 +233,15 @@
                   <PaymentSection
                     :payment-methods="paymentMethods"
                     :primary-color="primaryColor"
-                    :secondary-color="secondaryColor"
+                    :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont || currentFont"
                     :secondary-font="secondaryFont || currentFont"
                     :get-media-url="getMediaUrl"
-                    :event-category="(event as any).category"
+                    :event-category="event.category"
+                    :event-category-name="event.category_name || undefined"
+                    :event-category-details="event.category_details"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
                   />
@@ -263,7 +265,7 @@
                   :secondary-font="secondaryFont"
                   :event-texts="eventTexts"
                   :current-language="currentLanguage"
-                  @comment-submitted="handleCommentSubmitted"
+                  @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
                   />
 
                   <!-- Comment Section Divider -->

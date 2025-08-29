@@ -1,6 +1,6 @@
 import { ref, computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { eventsService, mediaService, type EventPaymentMethod } from '../services/api'
+import { eventsService, type EventPaymentMethod } from '../services/api'
 import { useBackgroundPreloader } from './useBackgroundPreloader'
 
 // Interfaces
@@ -116,6 +116,17 @@ export interface EventData {
   google_map_embed_link?: string
   youtube_embed_link?: string
   registration_required?: boolean
+  // Category fields for proper payment method translation
+  category?: number | null
+  category_name?: string | null
+  category_color?: string | null
+  category_details?: {
+    id: number
+    name: string
+    description: string
+    color: string
+    icon: string
+  }
   template_assets?: TemplateAssets
   template_colors?: TemplateColor[]
   template_fonts?: TemplateFont[]
@@ -188,8 +199,8 @@ export function useEventShowcase() {
     
     // If fonts is an object (language-keyed), convert to array
     if (fonts && !Array.isArray(fonts)) {
-      return Object.entries(fonts).map(([lang, font]: [string, any]) => ({
-        ...font,
+      return Object.entries(fonts).map(([lang, font]) => ({
+        ...(font as TemplateFont),
         language: lang
       }))
     }
@@ -309,31 +320,35 @@ export function useEventShowcase() {
   // Primary font for headings and important text
   const primaryFont = computed(() => {
     // Include fontsLoaded in dependency to trigger reactivity
-    fontsLoaded.value // This makes the computed reactive to font loading
+    const isLoaded = fontsLoaded.value // This makes the computed reactive to font loading
     const font = getLanguageFonts.value.primary
-    return getFontName(font) || '"Inter", "Helvetica Neue", "Arial", sans-serif'
+    const fontName = getFontName(font) || '"Inter", "Helvetica Neue", "Arial", sans-serif'
+    return isLoaded ? fontName : fontName // Ensure reactivity
   })
   
   // Secondary font for body text and descriptions
   const secondaryFont = computed(() => {
     // Include fontsLoaded in dependency to trigger reactivity
-    fontsLoaded.value // This makes the computed reactive to font loading
+    const isLoaded = fontsLoaded.value // This makes the computed reactive to font loading
     const font = getLanguageFonts.value.secondary
-    return getFontName(font) || primaryFont.value
+    const fontName = getFontName(font) || primaryFont.value
+    return isLoaded ? fontName : fontName // Ensure reactivity
   })
   
   // Accent font for special highlights
   const accentFont = computed(() => {
-    fontsLoaded.value // Reactive to font loading
+    const isLoaded = fontsLoaded.value // Reactive to font loading
     const font = getLanguageFonts.value.accent
-    return getFontName(font) || primaryFont.value
+    const fontName = getFontName(font) || primaryFont.value
+    return isLoaded ? fontName : fontName // Ensure reactivity
   })
   
   // Decorative font for artistic elements
   const decorativeFont = computed(() => {
-    fontsLoaded.value // Reactive to font loading
+    const isLoaded = fontsLoaded.value // Reactive to font loading
     const font = getLanguageFonts.value.decorative
-    return getFontName(font) || primaryFont.value
+    const fontName = getFontName(font) || primaryFont.value
+    return isLoaded ? fontName : fontName // Ensure reactivity
   })
   
   // Helper function to get font name with backward compatibility
@@ -548,7 +563,7 @@ export function useEventShowcase() {
     await nextTick()
   }
   
-  const loadSingleFont = async (font: any) => {
+  const loadSingleFont = async (font: TemplateFont) => {
     const fontName = getFontName(font)
     const fontFile = getFontFile(font)
     

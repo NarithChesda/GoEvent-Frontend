@@ -266,7 +266,15 @@ interface Props {
   primaryFont: string
   secondaryFont: string
   getMediaUrl: (url: string) => string
-  eventCategory?: string | number
+  eventCategory?: string | number | null
+  eventCategoryName?: string | null
+  eventCategoryDetails?: {
+    id: number
+    name: string
+    description: string
+    color: string
+    icon: string
+  } | null
   eventTexts?: EventText[]
   currentLanguage?: string
 }
@@ -307,26 +315,68 @@ const expandedCards = ref<Set<string>>(new Set())
 
 // Computed
 const paymentSectionTitle = computed(() => {
-  // Convert eventCategory to string and normalize for comparison
-  const categoryStr = String(props.eventCategory || '').toLowerCase()
-
-  // Check event category first for specific translations
-  // Handle both string names and common numeric IDs for wedding categories
-  if (categoryStr === 'wedding' || categoryStr === '1' || categoryStr === '7') {
+  // Helper function to determine category for translation
+  const getCategoryForTranslation = () => {
+    // First, try category_details.name (most reliable)
+    if (props.eventCategoryDetails?.name) {
+      return props.eventCategoryDetails.name.toLowerCase()
+    }
+    
+    // Second, try category_name string field
+    if (props.eventCategoryName) {
+      return props.eventCategoryName.toLowerCase()
+    }
+    
+    // Third, try eventCategory as string
+    if (props.eventCategory && typeof props.eventCategory === 'string') {
+      return props.eventCategory.toLowerCase()
+    }
+    
+    // Finally, try numeric category ID mapping (common category IDs)
+    if (props.eventCategory && typeof props.eventCategory === 'number') {
+      const numericCategory = props.eventCategory
+      // Common category ID mappings based on typical database structure
+      if (numericCategory === 1 || numericCategory === 7) return 'wedding'
+      if (numericCategory === 2) return 'birthday'
+    }
+    
+    return null
+  }
+  
+  const categoryName = getCategoryForTranslation()
+  
+  // Handle specific category translations
+  if (categoryName === 'wedding') {
     return getTextContent('payment_wedding_gift', 'Wedding Gift')
   }
-
-  // Handle both string names and common numeric IDs for birthday categories
-  if (categoryStr === 'birthday' || categoryStr === '2') {
+  
+  if (categoryName === 'birthday') {
     return getTextContent('payment_birthday_gift', 'Birthday Gift')
   }
-
-  // For other categories, use the current logic (first payment name + type)
-  if (props.paymentMethods.length > 0) {
-    const firstMethod = props.paymentMethods[0]
-    return `${firstMethod.name} ${firstMethod.payment_type.charAt(0).toUpperCase() + firstMethod.payment_type.slice(1)}`
+  
+  // For other recognized categories, create a generic gift translation
+  // This allows for extensibility if more categories are added
+  if (categoryName) {
+    // Try to find a specific translation first, fallback to generic pattern
+    const specificKey = `payment_${categoryName}_gift`
+    const specificTranslation = getTextContent(specificKey, '')
+    if (specificTranslation) {
+      return specificTranslation
+    }
+    
+    // Fallback to category name with "Gift" suffix
+    const capitalizedCategory = categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
+    return `${capitalizedCategory} Gift`
   }
 
+  // Fallback to first payment method name + type (existing logic)
+  if (props.paymentMethods.length > 0) {
+    const firstMethod = props.paymentMethods[0]
+    const paymentType = firstMethod.payment_type.charAt(0).toUpperCase() + firstMethod.payment_type.slice(1)
+    return `${firstMethod.name} ${paymentType}`
+  }
+
+  // Final fallback
   return 'Payment'
 })
 
