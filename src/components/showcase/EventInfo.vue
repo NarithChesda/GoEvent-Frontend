@@ -37,11 +37,20 @@
     <!-- Event Details Block -->
     <div class="space-y-3">
       <div
-        class="inline-block px-4 py-3 rounded-lg backdrop-blur-sm space-y-2"
+        class="inline-block relative gradient-stroke-container"
         :style="{
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+          padding: '2px',
+          borderRadius: '2rem'
         }"
       >
+        <div
+          class="px-4 py-3 backdrop-blur-sm space-y-2 relative"
+          style="border-radius: calc(2rem - 2px); border: 2px solid white;"
+          :style="{
+            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+          }"
+        >
         <!-- Date Text -->
         <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
           <span
@@ -76,6 +85,7 @@
           >
             {{ locationText }}
           </span>
+        </div>
         </div>
       </div>
     </div>
