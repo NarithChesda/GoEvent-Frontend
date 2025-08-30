@@ -1,0 +1,340 @@
+/* 
+ * Enhanced Showcase Animations
+ * Modern, smooth animations for the GoEvent showcase system
+ * Optimized for performance and accessibility
+ */
+
+/* Animation Constants */
+:root {
+  --animation-duration-fast: 300ms;
+  --animation-duration-normal: 500ms;
+  --animation-duration-slow: 800ms;
+  --animation-duration-extra-slow: 1200ms;
+  
+  --animation-easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --animation-easing-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --animation-easing-expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Global Animation Base Classes */
+.animate-enhanced-fadeIn {
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  transition: all var(--animation-duration-slow) var(--animation-easing-expo);
+  will-change: opacity, transform;
+}
+
+.animate-enhanced-fadeIn.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.animate-enhanced-slideLeft {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: all var(--animation-duration-normal) var(--animation-easing-expo);
+  will-change: opacity, transform;
+}
+
+.animate-enhanced-slideLeft.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.animate-enhanced-slideRight {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: all var(--animation-duration-normal) var(--animation-easing-expo);
+  will-change: opacity, transform;
+}
+
+.animate-enhanced-slideRight.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.animate-enhanced-scaleIn {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--animation-duration-normal) var(--animation-easing-elastic);
+  will-change: opacity, transform;
+}
+
+.animate-enhanced-scaleIn.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Enhanced Particle System */
+.particle-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.2) 70%, transparent 100%);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+  animation-duration: 8s;
+}
+
+.particle-2 {
+  top: 40%;
+  left: 85%;
+  animation-delay: 1s;
+  animation-duration: 6s;
+}
+
+.particle-3 {
+  top: 60%;
+  left: 20%;
+  animation-delay: 2s;
+  animation-duration: 7s;
+}
+
+.particle-4 {
+  top: 80%;
+  left: 70%;
+  animation-delay: 3s;
+  animation-duration: 9s;
+}
+
+.particle-5 {
+  top: 30%;
+  left: 50%;
+  animation-delay: 4s;
+  animation-duration: 5s;
+}
+
+.particle-6 {
+  top: 70%;
+  left: 90%;
+  animation-delay: 5s;
+  animation-duration: 8s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+/* Enhanced Logo Animations */
+.enhanced-logo {
+  transition: all var(--animation-duration-normal) var(--animation-easing-smooth);
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+.enhanced-logo:hover {
+  transform: scale(1.05) rotate(2deg);
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.4));
+}
+
+/* Enhanced Text Animations */
+.enhanced-text {
+  transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
+}
+
+.enhanced-text:hover {
+  transform: translateY(-2px);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.enhanced-guest-name {
+  position: relative;
+  overflow: hidden;
+}
+
+.enhanced-guest-name::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Performance Optimizations */
+.performance-optimized {
+  contain: layout style paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Scroll-driven Animation Base */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all var(--animation-duration-normal) var(--animation-easing-expo);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger Animation Utilities */
+.stagger-delay-1 { animation-delay: 0.1s; }
+.stagger-delay-2 { animation-delay: 0.2s; }
+.stagger-delay-3 { animation-delay: 0.3s; }
+.stagger-delay-4 { animation-delay: 0.4s; }
+.stagger-delay-5 { animation-delay: 0.5s; }
+.stagger-delay-6 { animation-delay: 0.6s; }
+
+/* Micro-interactions */
+.interactive-element {
+  transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
+  cursor: pointer;
+}
+
+.interactive-element:hover {
+  transform: translateY(-2px);
+}
+
+.interactive-element:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Glass morphism enhancements */
+.enhanced-glass {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
+}
+
+.enhanced-glass:hover {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Responsive Motion Adjustments */
+@media (max-width: 640px) {
+  .animate-enhanced-fadeIn {
+    transform: translateY(20px) scale(0.98);
+  }
+  
+  .animate-enhanced-slideLeft,
+  .animate-enhanced-slideRight {
+    transform: translateX(0) translateY(20px);
+  }
+  
+  .particle {
+    width: 3px;
+    height: 3px;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translateY(-10px);
+      opacity: 0.8;
+    }
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-enhanced-fadeIn,
+  .animate-enhanced-slideLeft,
+  .animate-enhanced-slideRight,
+  .animate-enhanced-scaleIn,
+  .scroll-reveal {
+    transition: opacity 0.3s ease;
+    transform: none !important;
+  }
+  
+  .animate-enhanced-fadeIn.is-visible,
+  .animate-enhanced-slideLeft.is-visible,
+  .animate-enhanced-slideRight.is-visible,
+  .animate-enhanced-scaleIn.is-visible,
+  .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: none !important;
+  }
+  
+  .particle {
+    display: none;
+  }
+  
+  .enhanced-logo:hover,
+  .enhanced-text:hover,
+  .interactive-element:hover,
+  .interactive-element:active {
+    transform: none !important;
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .particle {
+    background: currentColor;
+  }
+  
+  .enhanced-glass {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid currentColor;
+  }
+}
+
+/* Print styles */
+@media print {
+  .animate-enhanced-fadeIn,
+  .animate-enhanced-slideLeft,
+  .animate-enhanced-slideRight,
+  .animate-enhanced-scaleIn,
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  .particle-container {
+    display: none;
+  }
+}

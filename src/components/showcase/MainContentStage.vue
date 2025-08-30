@@ -48,7 +48,10 @@
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
                 <!-- Welcome Header -->
-                <div class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+                <div 
+                  ref="welcomeHeaderRef"
+                  class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 animate-reveal"
+                >
                   <h1
                     class="welcome-header gleam-animation leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
                     :style="{
@@ -65,17 +68,19 @@
                 </div>
 
                 <!-- Host Information -->
-                <HostInfo
-                  :hosts="hosts"
-                  :logo-url="event.logo_one ? getMediaUrl(event.logo_one) : undefined"
-                  :event-initial="event.title?.charAt(0) || 'E'"
-                  :primary-color="primaryColor"
-                  :secondary-color="secondaryColor"
-                  :accent-color="accentColor"
-                  :current-font="currentFont"
-                  :primary-font="primaryFont"
-                  :secondary-font="secondaryFont"
-                />
+                <div ref="hostInfoRef" class="animate-reveal">
+                  <HostInfo
+                    :hosts="hosts"
+                    :logo-url="event.logo_one ? getMediaUrl(event.logo_one) : undefined"
+                    :event-initial="event.title?.charAt(0) || 'E'"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                  />
+                </div>
 
                 <!-- Host Info Divider -->
                 <WeddingSectionDivider
@@ -83,7 +88,10 @@
                 />
 
                 <!-- Event Information -->
-                <div class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10">
+                <div 
+                  ref="eventInfoRef"
+                  class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
+                >
                   <EventInfo
                     :description-title="descriptionTitle"
                     :description-text="descriptionText"
@@ -107,7 +115,11 @@
                 </div>
 
                 <!-- RSVP Section -->
-                <div id="rsvp-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div 
+                  id="rsvp-section" 
+                  ref="rsvpSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
                   <RSVPSection
                   :event-id="event.id"
                   :event-start-date="event.start_date"
@@ -130,7 +142,11 @@
                 </div>
 
                 <!-- Agenda Section -->
-                <div id="agenda-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div 
+                  id="agenda-section" 
+                  ref="agendaSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
                   <AgendaSection
                   :agenda-items="agendaItems"
                   :primary-color="primaryColor"
@@ -150,7 +166,11 @@
                 </div>
 
                 <!-- Map Section -->
-                <div id="location-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div 
+                  id="location-section" 
+                  ref="locationSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
                 <div v-if="event.google_map_embed_link" class="mb-6">
                   <!-- Location Header -->
                   <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
@@ -187,7 +207,11 @@
                 </div>
 
                 <!-- YouTube Video Section -->
-                <div id="video-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div 
+                  id="video-section" 
+                  ref="videoSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
                   <YouTubeVideoSection
                   :youtube-embed-link="event.youtube_embed_link"
                   :primary-color="primaryColor"
@@ -207,7 +231,11 @@
                 </div>
 
                 <!-- Photo Gallery Section -->
-                <div id="gallery-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div 
+                  id="gallery-section" 
+                  ref="gallerySectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
                   <PhotoGallery
                   :photos="eventPhotos"
                   :primary-color="primaryColor"
@@ -229,7 +257,12 @@
                 </div>
 
                 <!-- Payment Section -->
-                <div v-if="paymentMethods.length > 0" id="payment-section" class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12">
+                <div 
+                  v-if="paymentMethods.length > 0" 
+                  id="payment-section" 
+                  ref="paymentSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
                   <PaymentSection
                     :payment-methods="paymentMethods"
                     :primary-color="primaryColor"
@@ -253,7 +286,11 @@
                 </div>
 
                 <!-- Comment Section -->
-                <div id="comment-section" class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14">
+                <div 
+                  id="comment-section" 
+                  ref="commentSectionRef"
+                  class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal"
+                >
                   <CommentSection
                   :event-id="event.id"
                   :guest-name="guestName as string"
@@ -288,7 +325,10 @@
                 </div>
 
                 <!-- Footer Section -->
-                <div class="mt-8 -mx-6 sm:-mx-6 md:-mx-6 laptop-sm:-mx-8 laptop-md:-mx-10 laptop-lg:-mx-12 desktop:-mx-8 -mb-6 sm:-mb-6 md:-mb-6 laptop-sm:-mb-8 laptop-md:-mb-10 laptop-lg:-mb-12 desktop:-mb-8">
+                <div 
+                  ref="footerSectionRef"
+                  class="mt-8 -mx-6 sm:-mx-6 md:-mx-6 laptop-sm:-mx-8 laptop-md:-mx-10 laptop-lg:-mx-12 desktop:-mx-8 -mb-6 sm:-mb-6 md:-mb-6 laptop-sm:-mb-8 laptop-md:-mb-10 laptop-lg:-mb-12 desktop:-mb-8 animate-reveal"
+                >
                   <!-- Footer Card with Reverse Colors -->
                   <div
                     class="footer-card-container rounded-none sm:rounded-t-2xl px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
@@ -373,7 +413,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref, nextTick } from 'vue'
 import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
@@ -390,6 +430,8 @@ import {
   translateRSVP,
   type SupportedLanguage
 } from '../../utils/translations'
+import { useRevealAnimations, ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
+import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
 
 interface TemplateAssets {
   standard_background_video?: string
@@ -429,6 +471,64 @@ const emit = defineEmits<{
   musicToggle: []
   logout: []
 }>()
+
+// Animation setup
+const { observeRevealElement, cleanup: cleanupReveal } = useRevealAnimations({
+  animationType: 'slideUp',
+  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+  easing: ANIMATION_CONSTANTS.EASING.EXPO,
+  threshold: 0.1,
+  rootMargin: '0px 0px -100px 0px'
+})
+
+const { createScrollAnimation } = useScrollDrivenAnimations()
+
+// Refs for animated elements
+const welcomeHeaderRef = ref<HTMLElement>()
+const hostInfoRef = ref<HTMLElement>()
+const eventInfoRef = ref<HTMLElement>()
+const rsvpSectionRef = ref<HTMLElement>()
+const agendaSectionRef = ref<HTMLElement>()
+const locationSectionRef = ref<HTMLElement>()
+const videoSectionRef = ref<HTMLElement>()
+const gallerySectionRef = ref<HTMLElement>()
+const paymentSectionRef = ref<HTMLElement>()
+const commentSectionRef = ref<HTMLElement>()
+const footerSectionRef = ref<HTMLElement>()
+
+// Setup animations on mount
+onMounted(() => {
+  nextTick(() => {
+    // Observe sections for reveal animations
+    if (welcomeHeaderRef.value) observeRevealElement(welcomeHeaderRef.value, 'welcome-header')
+    if (hostInfoRef.value) observeRevealElement(hostInfoRef.value, 'host-info')
+    if (eventInfoRef.value) observeRevealElement(eventInfoRef.value, 'event-info')
+    if (rsvpSectionRef.value) observeRevealElement(rsvpSectionRef.value, 'rsvp-section')
+    if (agendaSectionRef.value) observeRevealElement(agendaSectionRef.value, 'agenda-section')
+    if (locationSectionRef.value) observeRevealElement(locationSectionRef.value, 'location-section')
+    if (videoSectionRef.value) observeRevealElement(videoSectionRef.value, 'video-section')
+    if (gallerySectionRef.value) observeRevealElement(gallerySectionRef.value, 'gallery-section')
+    if (paymentSectionRef.value) observeRevealElement(paymentSectionRef.value, 'payment-section')
+    if (commentSectionRef.value) observeRevealElement(commentSectionRef.value, 'comment-section')
+    if (footerSectionRef.value) observeRevealElement(footerSectionRef.value, 'footer-section')
+    
+    // Add subtle parallax to background elements
+    const liquidGlassCard = document.querySelector('.liquid-glass-card')
+    if (liquidGlassCard) {
+      createScrollAnimation(
+        liquidGlassCard,
+        [
+          { transform: 'translateY(0px)' },
+          { transform: 'translateY(-20px)' }
+        ],
+        {
+          duration: 1000,
+          easing: 'ease-out'
+        }
+      )
+    }
+  })
+})
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -708,6 +808,84 @@ const handleLogout = () => {
 .custom-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+/* Reveal Animation Base Styles */
+.animate-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1),
+              transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: opacity, transform;
+}
+
+.animate-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive reveal distance adjustments */
+@media (max-width: 640px) {
+  .animate-reveal {
+    transform: translateY(20px);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-reveal {
+    transition: opacity 0.3s ease;
+    transform: none !important;
+  }
+}
+
+/* Enhanced liquid glass animations */
+.liquid-glass-card {
+  position: relative;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  width: 85vw;
+  height: 85vh;
+  max-width: 85vw;
+  max-height: 85vh;
+  will-change: transform;
+  transition: transform 0.3s ease-out;
+}
+
+.liquid-glass-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Optimized glass background with containment */
+.glass-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.50) 0%,
+    rgba(255, 255, 255, 0.39) 50%,
+    rgba(255, 255, 255, 0.50) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.61);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  contain: layout style paint;
+}
+
+.glass-background::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.11) 0%,
+    transparent 70%
+  );
+  animation: liquid-rotate 30s linear infinite;
+  contain: layout style paint;
 }
 
 /* Gleam Animation Styles - Reusable */

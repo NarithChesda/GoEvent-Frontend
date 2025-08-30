@@ -133,6 +133,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import { useEntranceAnimation } from '../../composables/useAdvancedAnimations'
+import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 
 interface TemplateAssets {
   standard_cover_video?: string
@@ -168,6 +170,21 @@ const emit = defineEmits<{
   openEnvelope: []
   coverStageReady: []
 }>()
+
+// Enhanced entrance animations
+const { triggerEntrance, triggerSequence } = useEntranceAnimation({
+  type: 'elastic',
+  duration: ANIMATION_CONSTANTS.DURATION.SLOW,
+  easing: ANIMATION_CONSTANTS.EASING.ELASTIC,
+  direction: 'up'
+})
+
+// Refs for animated elements
+const eventTitleRef = ref<HTMLElement>()
+const eventLogoRef = ref<HTMLElement>()
+const inviteTextRef = ref<HTMLElement>()
+const guestNameRef = ref<HTMLElement>()
+const envelopeButtonRef = ref<HTMLElement>()
 
 const gradientStyle = computed(() =>
   `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`
@@ -314,7 +331,21 @@ const checkFontsLoaded = async () => {
   }
 }
 
-// Initialize completion detection
+// Enhanced open envelope with animation
+const handleOpenEnvelope = () => {
+  if (envelopeButtonRef.value) {
+    envelopeButtonRef.value.style.transform = 'scale(0.95)'
+    setTimeout(() => {
+      if (envelopeButtonRef.value) {
+        envelopeButtonRef.value.style.transform = 'scale(1)'
+      }
+      emit('openEnvelope')
+    }, 150)
+  } else {
+    emit('openEnvelope')
+  }
+}
+
 onMounted(() => {
   console.log('🎭 CoverStage: Initializing completion detection')
   

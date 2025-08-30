@@ -14,10 +14,14 @@
     </h2>
 
     <!-- Comment Form -->
-    <div class="comment-form-liquid mb-4" :style="{
-      backgroundColor: `${primaryColor}20`,
-      border: `1px solid ${primaryColor}50`
-    }">
+    <div 
+      ref="commentFormRef"
+      class="comment-form-liquid mb-4 animate-form-reveal" 
+      :style="{
+        backgroundColor: `${primaryColor}20`,
+        border: `1px solid ${primaryColor}50`
+      }"
+    >
       <!-- Sign In Prompt for Unauthenticated Users -->
       <div v-if="!isUserAuthenticated" class="text-center py-4">
         <p class="text-sm mb-3" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
@@ -119,7 +123,8 @@
           <div
             v-for="(comment, index) in comments"
             :key="comment.id"
-            class="comment-card-liquid p-4 mb-3 last:mb-0"
+            :ref="el => setupCommentAnimation(el, `comment-${comment.id}`, index)"
+            class="comment-card-liquid p-4 mb-3 last:mb-0 animate-comment-reveal"
             :class="{ 'mt-6': index === 0 }"
             :style="isUserCommentOwner(comment) ? {
               backgroundColor: `${primaryColor}25`,
@@ -312,6 +317,8 @@ import {
   translateRSVP,
   type SupportedLanguage
 } from '../../utils/translations'
+import { useStaggerAnimation, useEntranceAnimation } from '../../composables/useAdvancedAnimations'
+import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 
 interface EventText {
   text_type: string
@@ -337,6 +344,22 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   commentSubmitted: [EventComment]
 }>()
+
+// Animation setup for comment reveals
+const { observeStaggerElement } = useStaggerAnimation({
+  animationType: 'slideLeft',
+  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+  staggerDelay: 100,
+  easing: ANIMATION_CONSTANTS.EASING.EXPO,
+  threshold: 0.2
+})
+
+// Entrance animation for form interactions
+const { triggerEntrance } = useEntranceAnimation({
+  type: 'elastic',
+  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+  easing: ANIMATION_CONSTANTS.EASING.ELASTIC
+})
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -409,6 +432,7 @@ const totalComments = ref(0)
 const currentPage = ref(1)
 const commentsPerPage = 20 // Match API default
 const commentsContainer = ref<HTMLElement | null>(null)
+const commentFormRef = ref<HTMLElement | null>(null)
 const hasMoreComments = ref(true)
 const errorMessage = ref('')
 const hasAlreadyCommented = ref(false)
@@ -919,6 +943,15 @@ const checkForCommentRedirect = () => {
   }
 }
 
+// Setup comment animation for staggered reveals
+const setupCommentAnimation = (el: any, id: string, index: number) => {
+  if (el && typeof el === 'object' && 'tagName' in el) {
+    nextTick(() => {
+      observeStaggerElement(el, id, 'comments')
+    })
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   await loadComments()
@@ -1191,5 +1224,49 @@ textarea::-webkit-scrollbar-thumb {
 
 textarea::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.6);
+}
+/* Animation Styles for Comments - Start visible, let animations enhance */
+.animate-form-reveal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: opacity, transform;
+}
+
+.animate-comment-reveal {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: opacity, transform;
+}
+
+/* Enhanced form interactions */
+.liquid-glass-textarea:focus {
+  transform: scale(1.01);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.liquid-glass-button:active {
+  transform: scale(0.98);
+}
+
+/* Reduce motion for accessibility - Let useAdvancedAnimations handle this */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass-textarea:focus,
+  .liquid-glass-button:active {
+    transform: none !important;
+  }
+}
+
+/* Performance optimizations */
+.comment-card-liquid {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+.liquid-glass-button,
+.liquid-glass-textarea {
+  backface-visibility: hidden;
 }
 </style>

@@ -18,7 +18,12 @@
 
     <!-- Agenda Collapse Cards -->
     <div class="space-y-3">
-      <div v-for="date in agendaTabs" :key="date" class="agenda-date-section mb-3 last:mb-0">
+      <div 
+        v-for="(date, dateIndex) in agendaTabs" 
+        :key="date" 
+        class="agenda-date-section mb-3 last:mb-0 agenda-card-animated"
+        :ref="el => setupCardAnimation(el, `agenda-card-${date}`, dateIndex)"
+      >
 
         <!-- Agenda Date Card - Unified Design -->
         <div
@@ -104,13 +109,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import AgendaItem from './AgendaItem.vue'
 import {
   translateRSVP,
   formatDateLocalized,
   type SupportedLanguage
 } from '../../utils/translations'
+import { useStaggerAnimation } from '../../composables/useAdvancedAnimations'
+import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 
 interface AgendaItemIcon {
   id: number
@@ -149,6 +156,15 @@ interface EventText {
 }
 
 const props = defineProps<Props>()
+
+// Animation setup for staggered card reveals
+const { observeStaggerElement, cleanup: cleanupStagger } = useStaggerAnimation({
+  animationType: 'slideUp',
+  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+  staggerDelay: ANIMATION_CONSTANTS.DELAY.SHORT,
+  easing: ANIMATION_CONSTANTS.EASING.EXPO,
+  threshold: 0.2
+})
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -249,12 +265,51 @@ const formatAgendaDate = (dateString: string): string => {
     return dateString
   }
 }
+
+// Setup card animations
+const setupCardAnimation = (el: any, id: string, index: number) => {
+  if (el && typeof el === 'object' && 'tagName' in el) {
+    // This is a DOM element, set up the stagger animation
+    nextTick(() => {
+      observeStaggerElement(el, id, 'agenda-cards')
+    })
+  }
+}
+
+// Setup animations on mount
+onMounted(() => {
+  nextTick(() => {
+    // Cards will be observed individually through setupCardAnimation
+    
+    // Fallback: Ensure cards are visible after a short delay if animation system fails
+    setTimeout(() => {
+      const animatedCards = document.querySelectorAll('.agenda-card-animated')
+      animatedCards.forEach((card) => {
+        const htmlCard = card as HTMLElement
+        // Only apply fallback if the element is still hidden (animation didn't trigger)
+        if (htmlCard.style.opacity === '0' || (!htmlCard.style.opacity && window.getComputedStyle(htmlCard).opacity === '0')) {
+          htmlCard.style.opacity = '1'
+          htmlCard.style.transform = 'translateY(0)'
+          htmlCard.style.transition = 'all 0.6s cubic-bezier(0.19, 1, 0.22, 1)'
+        }
+      })
+    }, 1000) // Give animation system time to work first
+  })
+})
 </script>
 
 <style scoped>
 /* Agenda date sections - No horizontal padding to match payment section */
 .agenda-date-section {
   position: relative;
+}
+
+/* Stagger animation base styles - Start visible, let animations enhance */
+.agenda-card-animated {
+  opacity: 1;
+  transform: translateY(0);
+  will-change: opacity, transform;
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .agenda-date-section:not(:last-child)::after {
@@ -296,10 +351,54 @@ const formatAgendaDate = (dateString: string): string => {
 }
 
 .agenda-card-content {
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.3s ease-in-out;
-  will-change: max-height, opacity;
+  transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s ease-in-out,
+              transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: max-height, opacity, transform;
   transform-origin: top;
+}
+
+/* Reduce motion for accessibility - Let useAdvancedAnimations handle this */
+@media (prefers-reduced-motion: reduce) {
+  .agenda-card-animated {
+    /* useAdvancedAnimations will handle reduced motion preferences */
+  }
+}
+
+/* Enhanced card hover effects */
+.agenda-card-container {
+  transform: translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agenda-card-container:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 
+    0 20px 40px -8px var(--primary-color, #4f46e5)25,
+    0 8px 32px -4px var(--primary-color, #4f46e5)20,
+    0 4px 16px -2px var(--primary-color, #4f46e5)15,
+    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+/* Enhanced smooth expansion animation */
+.agenda-card-content {
+  transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s ease-in-out,
+              transform 0.6s cubic-bezier(0.19, 1, 0.22, 1),
+              padding 0.3s ease;
+  will-change: max-height, opacity, transform;
+  transform-origin: top;
+  contain: layout style;
+}
+
+/* Add subtle scale effect when expanding */
+.agenda-card-content:not([style*="max-height: 0px"]) {
+  transform: scaleY(1);
+}
+
+/* Collapsed state has slightly compressed appearance */
+.agenda-card-content[style*="max-height: 0px"] {
+  transform: scaleY(0.95);
 }
 
 /* Mobile-first responsive design */

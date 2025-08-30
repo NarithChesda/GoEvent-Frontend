@@ -31,18 +31,22 @@
     <!-- Photos Content -->
     <div v-else>
       <!-- Featured Photo -->
-      <div v-if="featuredPhoto" class="mb-4 sm:mb-6">
-        <div class="rounded-xl overflow-hidden">
+      <div 
+        v-if="featuredPhoto" 
+        class="mb-4 sm:mb-6 featured-photo-container"
+        :ref="el => setupPhotoAnimation(el, 'featured-photo', 0)"
+      >
+        <div class="rounded-xl overflow-hidden photo-reveal-container">
           <img
             :src="getMediaUrl(featuredPhoto.image)"
             :alt="featuredPhoto.caption || 'Featured Event Photo'"
-            class="w-full h-48 sm:h-56 md:h-64 object-cover cursor-pointer transition-transform hover:scale-105"
-            @click="$emit('openPhoto', featuredPhoto)"
+            class="w-full h-48 sm:h-56 md:h-64 object-cover cursor-pointer transition-all duration-500 hover:scale-105 hover:brightness-110"
+            @click="handlePhotoClick(featuredPhoto)"
             loading="lazy"
           />
           <p
             v-if="featuredPhoto.caption"
-            class="text-xs sm:text-sm mt-2 text-center"
+            class="text-xs sm:text-sm mt-2 text-center transition-all duration-300"
             :style="{ color: primaryColor, opacity: '0.8' }"
           >
             {{ featuredPhoto.caption }}
@@ -51,9 +55,13 @@
       </div>
 
       <!-- Clean Photo Gallery -->
-      <div class="clean-gallery-container overflow-hidden" style="margin-bottom: 0px">
+      <div 
+        class="clean-gallery-container overflow-hidden momentum-scroll-container" 
+        style="margin-bottom: 0px"
+        :ref="el => setupPhotoAnimation(el, 'photo-gallery', 1)"
+      >
         <!-- Photo strip with infinite scroll -->
-        <div class="photo-strip-wrapper overflow-hidden flex items-center">
+        <div class="photo-strip-wrapper overflow-hidden flex items-center enhanced-scroll">
           <div
             class="photo-strip flex animate-infinite-scroll items-center"
             style="gap: var(--gallery-spacing, 16px)"
@@ -66,18 +74,18 @@
             <div
               v-for="photo in allPhotosForStrip"
               :key="`first-${photo.id}`"
-              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
                 width: `${getPhotoWidth(photo)}px`
               }"
-              @click="$emit('openPhoto', photo)"
+              @click="handlePhotoClick(photo)"
             >
               <img
                 :src="getMediaUrl(photo.image)"
                 :alt="photo.caption || 'Event Photo'"
-                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
                 @load="onImageLoad"
               />
@@ -95,18 +103,18 @@
             <div
               v-for="photo in allPhotosForStrip"
               :key="`second-${photo.id}`"
-              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
                 width: `${getPhotoWidth(photo)}px`
               }"
-              @click="$emit('openPhoto', photo)"
+              @click="handlePhotoClick(photo)"
             >
               <img
                 :src="getMediaUrl(photo.image)"
                 :alt="photo.caption || 'Event Photo'"
-                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
               />
 
@@ -123,9 +131,13 @@
       </div>
 
       <!-- Reverse Scroll Gallery -->
-      <div class="clean-gallery-reverse overflow-hidden" style="margin-top: 0px">
+      <div 
+        class="clean-gallery-reverse overflow-hidden momentum-scroll-container" 
+        style="margin-top: 0px"
+        :ref="el => setupPhotoAnimation(el, 'reverse-gallery', 2)"
+      >
         <!-- Photo strip with reverse infinite scroll -->
-        <div class="photo-strip-wrapper overflow-hidden flex items-center">
+        <div class="photo-strip-wrapper overflow-hidden flex items-center enhanced-scroll">
           <div
             class="photo-strip flex animate-infinite-scroll-reverse items-center"
             style="gap: var(--gallery-spacing, 16px)"
@@ -138,18 +150,18 @@
             <div
               v-for="photo in reversePhotosForStrip"
               :key="`reverse-first-${photo.id}`"
-              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
                 width: `${getPhotoWidth(photo)}px`
               }"
-              @click="$emit('openPhoto', photo)"
+              @click="handlePhotoClick(photo)"
             >
               <img
                 :src="getMediaUrl(photo.image)"
                 :alt="photo.caption || 'Event Photo'"
-                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
                 @load="onImageLoad"
               />
@@ -167,18 +179,18 @@
             <div
               v-for="photo in reversePhotosForStrip"
               :key="`reverse-second-${photo.id}`"
-              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group"
+              class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
                 width: `${getPhotoWidth(photo)}px`
               }"
-              @click="$emit('openPhoto', photo)"
+              @click="handlePhotoClick(photo)"
             >
               <img
                 :src="getMediaUrl(photo.image)"
                 :alt="photo.caption || 'Event Photo'"
-                class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
               />
 
@@ -200,12 +212,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, getCurrentInstance, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import {
   translateRSVP,
   type SupportedLanguage
 } from '../../utils/translations'
+import { useStaggerAnimation } from '../../composables/useAdvancedAnimations'
+import { useMomentumScroll } from '../../composables/useAdvancedAnimations'
+import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 
 interface EventText {
   text_type: string
@@ -231,6 +246,22 @@ const props = defineProps<Props>()
 defineEmits<{
   openPhoto: [EventPhoto]
 }>()
+
+// Animation setup for staggered photo reveals
+const { observeStaggerElement } = useStaggerAnimation({
+  animationType: 'scaleIn',
+  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+  staggerDelay: 80,
+  easing: ANIMATION_CONSTANTS.EASING.EXPO,
+  threshold: 0.3
+})
+
+// Enhanced momentum scrolling for smoother gallery experience
+const { scrollToElement, isScrolling } = useMomentumScroll({
+  friction: 0.95,
+  acceleration: 0.08,
+  maxVelocity: 30
+})
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -368,6 +399,29 @@ const onImageLoad = (event: Event) => {
   }
 }
 
+// Enhanced photo click with momentum scroll
+const handlePhotoClick = (photo: EventPhoto) => {
+  // Add a subtle scroll animation before opening photo
+  if (!isScrolling.value) {
+    const instance = getCurrentInstance()
+    const emit = instance?.emit
+    if (emit) {
+      setTimeout(() => {
+        emit('openPhoto', photo)
+      }, 50) // Small delay for better UX
+    }
+  }
+}
+
+// Setup photo animation for staggered reveals
+const setupPhotoAnimation = (el: any, id: string, index: number) => {
+  if (el && typeof el === 'object' && 'tagName' in el) {
+    nextTick(() => {
+      observeStaggerElement(el, id, 'photo-gallery')
+    })
+  }
+}
+
 // Preload image dimensions on mount
 onMounted(() => {
   if (typeof window !== 'undefined') {
@@ -385,6 +439,11 @@ onMounted(() => {
       }
     }
     img.src = props.getMediaUrl(photo.image)
+  })
+
+  // Setup gallery animations after mount
+  nextTick(() => {
+    // Additional animation setup can go here
   })
 })
 
@@ -432,10 +491,62 @@ onUnmounted(() => {
   will-change: transform;
 }
 
-/* Pause animation on hover */
+/* Enhanced Gallery Animation Styles */
+.featured-photo-container,
+.momentum-scroll-container {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: opacity, transform;
+}
+
+.featured-photo-container.is-visible,
+.momentum-scroll-container.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enhanced photo reveal with scale animation */
+.photo-reveal-container {
+  transform: scale(0.95);
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.featured-photo-container.is-visible .photo-reveal-container {
+  transform: scale(1);
+}
+
+/* Enhanced photo cards with micro-interactions */
+.enhanced-photo-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.enhanced-photo-card:hover {
+  transform: translateY(-4px) translateZ(0);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.15);
+}
+
+/* Smooth momentum scrolling */
+.enhanced-scroll {
+  scroll-behavior: smooth;
+  overflow-scrolling: touch;
+}
+
+/* Pause animation on hover with smooth transition */
 .clean-gallery-container:hover .animate-infinite-scroll,
 .clean-gallery-reverse:hover .animate-infinite-scroll-reverse {
   animation-play-state: paused;
+  transition: filter 0.3s ease;
+  filter: brightness(1.1);
+}
+
+/* Enhanced gallery containers */
+.momentum-scroll-container {
+  contain: layout style paint;
+  height: 208px;
 }
 
 /* Clean Gallery Styles */
@@ -454,20 +565,77 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+/* Responsive motion adjustments */
+@media (max-width: 640px) {
+  .featured-photo-container,
+  .momentum-scroll-container {
+    transform: translateY(20px);
+  }
+  
+  .enhanced-photo-card:hover {
+    transform: translateY(-2px) translateZ(0);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .featured-photo-container,
+  .momentum-scroll-container {
+    transition: opacity 0.3s ease;
+    transform: none !important;
+  }
+  
+  .featured-photo-container.is-visible,
+  .momentum-scroll-container.is-visible {
+    opacity: 1;
+    transform: none !important;
+  }
+  
+  .photo-reveal-container {
+    transform: none !important;
+    transition: none;
+  }
+  
+  .enhanced-photo-card {
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .enhanced-photo-card:hover {
+    transform: none !important;
+  }
+  
+  .animate-infinite-scroll,
+  .animate-infinite-scroll-reverse {
+    animation-duration: 60s !important; /* Slower for reduced motion */
+  }
+}
+
+/* Enhanced performance optimizations */
+.photo-strip {
+  contain: layout style paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.enhanced-photo-card img {
+  will-change: transform, filter;
+  backface-visibility: hidden;
+}
+
 /* Responsive gallery heights */
 @media (max-width: 768px) {
-  .clean-gallery-container, .clean-gallery-reverse {
+  .clean-gallery-container, .clean-gallery-reverse,
+  .momentum-scroll-container {
     height: 190px;
   }
 }
 
 @media (max-width: 640px) {
-  .clean-gallery-container, .clean-gallery-reverse {
+  .clean-gallery-container, .clean-gallery-reverse,
+  .momentum-scroll-container {
     height: 208px;
   }
 }
-
-/* Removed all blur effects for clean photo display */
 
 
 

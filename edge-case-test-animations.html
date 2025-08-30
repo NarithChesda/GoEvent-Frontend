@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoEvent Animation Edge Case Testing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #f44336;
+            z-index: 10000;
+            max-width: 350px;
+            max-height: 90vh;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .test-panel h3 {
+            color: #f44336;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .test-category {
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+        
+        .test-category h4 {
+            color: #ff9800;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .test-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 3px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .test-name {
+            flex: 1;
+            font-size: 10px;
+        }
+        
+        .test-status {
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+        .warning { color: #ff9800; }
+        .error { color: #e91e63; }
+        
+        .controls {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 10px;
+            width: 100%;
+            margin-bottom: 3px;
+        }
+        
+        .control-button:hover {
+            background: #d32f2f;
+        }
+        
+        .container {
+            padding: 20px;
+            margin-left: 380px;
+        }
+        
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 300px;
+        }
+        
+        .edge-case-element {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .edge-case-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .zero-size {
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .negative-margin {
+            margin: -50px;
+        }
+        
+        .complex-transform {
+            transform: rotate(45deg) scale(0.5) translateX(100px) skew(30deg);
+        }
+        
+        .deep-nesting {
+            position: relative;
+        }
+        
+        .deep-nesting > div {
+            position: relative;
+            margin: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+        
+        .hidden-element {
+            display: none;
+        }
+        
+        .invisible-element {
+            visibility: hidden;
+        }
+        
+        .overflow-hidden {
+            overflow: hidden;
+            height: 50px;
+        }
+        
+        .rapid-change {
+            background: #ff0000;
+            transition: background-color 0.1s;
+        }
+        
+        .error-simulation {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Test Panel -->
+    <div class="test-panel">
+        <h3>🚨 Edge Case Tests</h3>
+        <div id="test-results"></div>
+        
+        <div class="controls">
+            <button class="control-button" onclick="edgeCaseTest.runAllTests()">Run All Tests</button>
+            <button class="control-button" onclick="edgeCaseTest.stressTestObservers()">Stress Test Observers</button>
+            <button class="control-button" onclick="edgeCaseTest.testMemoryLeaks()">Test Memory Leaks</button>
+            <button class="control-button" onclick="edgeCaseTest.simulateErrors()">Simulate Errors</button>
+            <button class="control-button" onclick="edgeCaseTest.testRapidChanges()">Test Rapid Changes</button>
+            <button class="control-button" onclick="edgeCaseTest.generateErrorReport()">Generate Report</button>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div>
+            <h1>Animation Edge Case Testing</h1>
+            <p>Testing error conditions and edge cases for scroll animations</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Normal Element -->
+        <div class="test-section">
+            <h2>Normal Elements (Control Group)</h2>
+            <div class="edge-case-element" data-test="normal-1">Normal element 1</div>
+            <div class="edge-case-element" data-test="normal-2">Normal element 2</div>
+        </div>
+
+        <!-- Zero Size Elements -->
+        <div class="test-section">
+            <h2>Zero Size Elements</h2>
+            <div class="edge-case-element zero-size" data-test="zero-size-1">Zero size element</div>
+            <div class="edge-case-element" style="width: 0px; height: 1px;" data-test="zero-width">Zero width element</div>
+            <div class="edge-case-element" style="width: 1px; height: 0px;" data-test="zero-height">Zero height element</div>
+        </div>
+
+        <!-- Hidden Elements -->
+        <div class="test-section">
+            <h2>Hidden Elements</h2>
+            <div class="edge-case-element hidden-element" data-test="hidden-display">Display none element</div>
+            <div class="edge-case-element invisible-element" data-test="hidden-visibility">Visibility hidden element</div>
+            <div class="edge-case-element" style="opacity: 0;" data-test="hidden-opacity">Opacity 0 element</div>
+        </div>
+
+        <!-- Elements Outside Viewport -->
+        <div class="test-section">
+            <h2>Viewport Edge Cases</h2>
+            <div class="edge-case-element negative-margin" data-test="negative-margin">Negative margin element</div>
+            <div class="edge-case-element" style="position: absolute; left: -1000px;" data-test="off-screen">Off-screen element</div>
+            <div class="overflow-hidden">
+                <div class="edge-case-element" data-test="overflow-hidden">Element in overflow hidden container</div>
+                <div class="edge-case-element" data-test="overflow-hidden-2">More content below fold</div>
+            </div>
+        </div>
+
+        <!-- Complex Transform Elements -->
+        <div class="test-section">
+            <h2>Complex Transforms</h2>
+            <div class="edge-case-element complex-transform" data-test="complex-transform">Complex transformed element</div>
+            <div class="edge-case-element" style="transform: matrix(1, 0.5, -0.5, 1, 10, 10);" data-test="matrix-transform">Matrix transform element</div>
+        </div>
+
+        <!-- Deep Nesting -->
+        <div class="test-section">
+            <h2>Deep Nesting</h2>
+            <div class="deep-nesting" data-test="deep-1">
+                <div data-test="deep-2">
+                    <div data-test="deep-3">
+                        <div data-test="deep-4">
+                            <div data-test="deep-5">
+                                <div class="edge-case-element" data-test="deep-nested">Deeply nested element</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Elements -->
+        <div class="test-section">
+            <h2>Dynamic Elements</h2>
+            <div id="dynamic-container">
+                <!-- Elements will be added/removed dynamically -->
+            </div>
+            <button onclick="edgeCaseTest.addDynamicElement()">Add Dynamic Element</button>
+            <button onclick="edgeCaseTest.removeDynamicElement()">Remove Dynamic Element</button>
+        </div>
+
+        <!-- Error Simulation -->
+        <div class="test-section">
+            <h2>Error Conditions</h2>
+            <div class="error-simulation">
+                <h3>Simulated Error Scenarios</h3>
+                <div class="edge-case-element" data-test="error-null" id="error-element-1">Element for null reference test</div>
+                <div class="edge-case-element" data-test="error-dom" id="error-element-2">Element for DOM manipulation errors</div>
+            </div>
+        </div>
+
+        <!-- Performance Stress Test -->
+        <div class="test-section" id="stress-test-section">
+            <h2>Performance Stress Test</h2>
+            <p>This section will be populated with many elements for stress testing</p>
+        </div>
+    </div>
+
+    <script>
+        class EdgeCaseTest {
+            constructor() {
+                this.testResults = [];
+                this.observers = new Map();
+                this.observerCount = 0;
+                this.errorLog = [];
+                this.memoryBaseline = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🚨 Edge case testing initialized');
+                this.setupErrorHandling();
+                this.measureMemoryBaseline();
+                this.runInitialTests();
+            }
+            
+            setupErrorHandling() {
+                // Capture JavaScript errors
+                window.addEventListener('error', (event) => {
+                    this.errorLog.push({
+                        type: 'JavaScript Error',
+                        message: event.message,
+                        filename: event.filename,
+                        lineno: event.lineno,
+                        colno: event.colno,
+                        timestamp: new Date().toISOString()
+                    });
+                    console.error('Captured error:', event);
+                });
+                
+                // Capture unhandled promise rejections
+                window.addEventListener('unhandledrejection', (event) => {
+                    this.errorLog.push({
+                        type: 'Unhandled Promise Rejection',
+                        message: event.reason.toString(),
+                        timestamp: new Date().toISOString()
+                    });
+                    console.error('Captured unhandled rejection:', event);
+                });
+            }
+            
+            measureMemoryBaseline() {
+                if (performance.memory) {
+                    this.memoryBaseline = performance.memory.usedJSHeapSize;
+                    console.log(`📊 Memory baseline: ${(this.memoryBaseline / 1024 / 1024).toFixed(2)} MB`);
+                }
+            }
+            
+            runInitialTests() {
+                this.runBrowserCompatibilityTests();
+                this.runDOMManipulationTests();
+                this.runObserverTests();
+                this.updateTestResults();
+            }
+            
+            runBrowserCompatibilityTests() {
+                const compatibilityTests = [
+                    {
+                        name: 'IntersectionObserver Support',
+                        test: () => 'IntersectionObserver' in window,
+                        category: 'compatibility'
+                    },
+                    {
+                        name: 'Web Animations API',
+                        test: () => 'animate' in document.createElement('div'),
+                        category: 'compatibility'
+                    },
+                    {
+                        name: 'CSS Custom Properties',
+                        test: () => window.CSS && CSS.supports('color', 'var(--test)'),
+                        category: 'compatibility'
+                    },
+                    {
+                        name: 'Backdrop Filter Support',
+                        test: () => CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'),
+                        category: 'compatibility'
+                    },
+                    {
+                        name: 'Transform 3D Support',
+                        test: () => CSS.supports('transform', 'translate3d(0, 0, 0)'),
+                        category: 'compatibility'
+                    }
+                ];
+                
+                compatibilityTests.forEach(({ name, test, category }) => {
+                    try {
+                        const result = test();
+                        this.testResults.push({ name, passed: result, category });
+                    } catch (error) {
+                        this.testResults.push({ name, passed: false, category, error: error.message });
+                        this.errorLog.push({
+                            type: 'Compatibility Test Error',
+                            test: name,
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+            }
+            
+            runDOMManipulationTests() {
+                const domTests = [
+                    {
+                        name: 'Null Element Reference',
+                        test: () => {
+                            try {
+                                const observer = new IntersectionObserver(() => {});
+                                observer.observe(null); // Should throw error
+                                return false;
+                            } catch (error) {
+                                return true; // Expected to throw
+                            }
+                        },
+                        category: 'dom'
+                    },
+                    {
+                        name: 'Non-Element Object',
+                        test: () => {
+                            try {
+                                const observer = new IntersectionObserver(() => {});
+                                observer.observe({}); // Should throw error
+                                return false;
+                            } catch (error) {
+                                return true; // Expected to throw
+                            }
+                        },
+                        category: 'dom'
+                    },
+                    {
+                        name: 'Detached Element',
+                        test: () => {
+                            try {
+                                const element = document.createElement('div');
+                                const observer = new IntersectionObserver(() => {});
+                                observer.observe(element); // Should not throw
+                                observer.disconnect();
+                                return true;
+                            } catch (error) {
+                                return false;
+                            }
+                        },
+                        category: 'dom'
+                    },
+                    {
+                        name: 'Element Removal During Observation',
+                        test: () => {
+                            try {
+                                const element = document.createElement('div');
+                                document.body.appendChild(element);
+                                
+                                const observer = new IntersectionObserver(() => {});
+                                observer.observe(element);
+                                
+                                document.body.removeChild(element); // Remove while observing
+                                observer.disconnect();
+                                return true;
+                            } catch (error) {
+                                return false;
+                            }
+                        },
+                        category: 'dom'
+                    }
+                ];
+                
+                domTests.forEach(({ name, test, category }) => {
+                    try {
+                        const result = test();
+                        this.testResults.push({ name, passed: result, category });
+                    } catch (error) {
+                        this.testResults.push({ name, passed: false, category, error: error.message });
+                        this.errorLog.push({
+                            type: 'DOM Test Error',
+                            test: name,
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+            }
+            
+            runObserverTests() {
+                const observerTests = [
+                    {
+                        name: 'Multiple Observers Same Element',
+                        test: () => {
+                            try {
+                                const element = document.createElement('div');
+                                document.body.appendChild(element);
+                                
+                                const observer1 = new IntersectionObserver(() => {});
+                                const observer2 = new IntersectionObserver(() => {});
+                                
+                                observer1.observe(element);
+                                observer2.observe(element); // Should work
+                                
+                                observer1.disconnect();
+                                observer2.disconnect();
+                                document.body.removeChild(element);
+                                
+                                return true;
+                            } catch (error) {
+                                return false;
+                            }
+                        },
+                        category: 'observer'
+                    },
+                    {
+                        name: 'Observer Double Disconnect',
+                        test: () => {
+                            try {
+                                const observer = new IntersectionObserver(() => {});
+                                observer.disconnect();
+                                observer.disconnect(); // Should not throw
+                                return true;
+                            } catch (error) {
+                                return false;
+                            }
+                        },
+                        category: 'observer'
+                    },
+                    {
+                        name: 'Observer Invalid Threshold',
+                        test: () => {
+                            try {
+                                const observer = new IntersectionObserver(() => {}, {
+                                    threshold: [-1, 2] // Invalid values
+                                });
+                                return false; // Should throw
+                            } catch (error) {
+                                return true; // Expected to throw
+                            }
+                        },
+                        category: 'observer'
+                    }
+                ];
+                
+                observerTests.forEach(({ name, test, category }) => {
+                    try {
+                        const result = test();
+                        this.testResults.push({ name, passed: result, category });
+                    } catch (error) {
+                        this.testResults.push({ name, passed: false, category, error: error.message });
+                        this.errorLog.push({
+                            type: 'Observer Test Error',
+                            test: name,
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+            }
+            
+            runAllTests() {
+                console.log('🧪 Running comprehensive edge case tests...');
+                
+                this.testZeroSizeElements();
+                this.testHiddenElements();
+                this.testComplexTransforms();
+                this.testRapidDOMChanges();
+                this.testViewportEdgeCases();
+                this.testAnimationConflicts();
+                
+                setTimeout(() => {
+                    this.updateTestResults();
+                }, 2000);
+            }
+            
+            testZeroSizeElements() {
+                console.log('📏 Testing zero size elements...');
+                
+                const zeroSizeElements = document.querySelectorAll('[data-test^="zero"]');
+                let successCount = 0;
+                
+                zeroSizeElements.forEach((element, index) => {
+                    try {
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                console.log(`Zero size element intersection:`, {
+                                    isIntersecting: entry.isIntersecting,
+                                    intersectionRatio: entry.intersectionRatio,
+                                    boundingClientRect: entry.boundingClientRect
+                                });
+                            });
+                        }, { threshold: [0, 0.1, 1] });
+                        
+                        observer.observe(element);
+                        this.observers.set(`zero-size-${index}`, observer);
+                        successCount++;
+                    } catch (error) {
+                        this.errorLog.push({
+                            type: 'Zero Size Element Error',
+                            element: element.getAttribute('data-test'),
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+                
+                this.testResults.push({
+                    name: 'Zero Size Elements Observation',
+                    passed: successCount === zeroSizeElements.length,
+                    category: 'edge-case'
+                });
+            }
+            
+            testHiddenElements() {
+                console.log('👻 Testing hidden elements...');
+                
+                const hiddenElements = document.querySelectorAll('[data-test^="hidden"]');
+                let testsPassed = 0;
+                
+                hiddenElements.forEach((element, index) => {
+                    try {
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                console.log(`Hidden element intersection:`, {
+                                    element: entry.target.getAttribute('data-test'),
+                                    isIntersecting: entry.isIntersecting,
+                                    intersectionRatio: entry.intersectionRatio
+                                });
+                            });
+                        });
+                        
+                        observer.observe(element);
+                        this.observers.set(`hidden-${index}`, observer);
+                        testsPassed++;
+                    } catch (error) {
+                        this.errorLog.push({
+                            type: 'Hidden Element Error',
+                            element: element.getAttribute('data-test'),
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+                
+                this.testResults.push({
+                    name: 'Hidden Elements Observation',
+                    passed: testsPassed === hiddenElements.length,
+                    category: 'edge-case'
+                });
+            }
+            
+            testComplexTransforms() {
+                console.log('🔄 Testing complex transforms...');
+                
+                const transformElements = document.querySelectorAll('[data-test*="transform"]');
+                let successCount = 0;
+                
+                transformElements.forEach((element, index) => {
+                    try {
+                        // Test that animations don't conflict with existing transforms
+                        const originalTransform = getComputedStyle(element).transform;
+                        
+                        element.style.transition = 'transform 0.3s ease';
+                        element.style.transform = originalTransform + ' scale(1.1)';
+                        
+                        setTimeout(() => {
+                            element.style.transform = originalTransform;
+                        }, 300);
+                        
+                        successCount++;
+                    } catch (error) {
+                        this.errorLog.push({
+                            type: 'Complex Transform Error',
+                            element: element.getAttribute('data-test'),
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+                
+                this.testResults.push({
+                    name: 'Complex Transform Compatibility',
+                    passed: successCount === transformElements.length,
+                    category: 'edge-case'
+                });
+            }
+            
+            testRapidDOMChanges() {
+                console.log('⚡ Testing rapid DOM changes...');
+                
+                const container = document.getElementById('dynamic-container');
+                let elementsCreated = 0;
+                let errorsOccurred = 0;
+                
+                // Create and remove elements rapidly
+                const rapidTest = () => {
+                    for (let i = 0; i < 10; i++) {
+                        setTimeout(() => {
+                            try {
+                                const element = document.createElement('div');
+                                element.className = 'edge-case-element rapid-change';
+                                element.textContent = `Rapid element ${i}`;
+                                element.setAttribute('data-test', `rapid-${i}`);
+                                
+                                container.appendChild(element);
+                                elementsCreated++;
+                                
+                                // Observe immediately
+                                const observer = new IntersectionObserver(() => {});
+                                observer.observe(element);
+                                
+                                // Remove after short delay
+                                setTimeout(() => {
+                                    try {
+                                        observer.disconnect();
+                                        if (element.parentNode) {
+                                            container.removeChild(element);
+                                        }
+                                    } catch (error) {
+                                        errorsOccurred++;
+                                        this.errorLog.push({
+                                            type: 'Rapid DOM Change Error',
+                                            operation: 'remove',
+                                            error: error.message,
+                                            timestamp: new Date().toISOString()
+                                        });
+                                    }
+                                }, 100);
+                                
+                            } catch (error) {
+                                errorsOccurred++;
+                                this.errorLog.push({
+                                    type: 'Rapid DOM Change Error',
+                                    operation: 'create',
+                                    error: error.message,
+                                    timestamp: new Date().toISOString()
+                                });
+                            }
+                        }, i * 50);
+                    }
+                };
+                
+                rapidTest();
+                
+                setTimeout(() => {
+                    this.testResults.push({
+                        name: 'Rapid DOM Changes',
+                        passed: errorsOccurred === 0,
+                        category: 'edge-case',
+                        details: `Created: ${elementsCreated}, Errors: ${errorsOccurred}`
+                    });
+                    this.updateTestResults();
+                }, 2000);
+            }
+            
+            testViewportEdgeCases() {
+                console.log('🖼️ Testing viewport edge cases...');
+                
+                // Test elements at viewport boundaries
+                const testElement = document.createElement('div');
+                testElement.style.cssText = `
+                    position: fixed;
+                    top: -50px;
+                    left: -50px;
+                    width: 100px;
+                    height: 100px;
+                    background: red;
+                `;
+                document.body.appendChild(testElement);
+                
+                try {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            console.log('Viewport edge element:', entry.isIntersecting);
+                        });
+                    });
+                    
+                    observer.observe(testElement);
+                    
+                    // Move element into view
+                    setTimeout(() => {
+                        testElement.style.top = '50px';
+                        testElement.style.left = '50px';
+                    }, 100);
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        observer.disconnect();
+                        document.body.removeChild(testElement);
+                    }, 500);
+                    
+                    this.testResults.push({
+                        name: 'Viewport Edge Cases',
+                        passed: true,
+                        category: 'edge-case'
+                    });
+                    
+                } catch (error) {
+                    this.testResults.push({
+                        name: 'Viewport Edge Cases',
+                        passed: false,
+                        category: 'edge-case',
+                        error: error.message
+                    });
+                }
+            }
+            
+            testAnimationConflicts() {
+                console.log('⚔️ Testing animation conflicts...');
+                
+                const testElement = document.createElement('div');
+                testElement.style.cssText = `
+                    width: 100px;
+                    height: 100px;
+                    background: blue;
+                    transition: all 0.3s ease;
+                    animation: spin 2s linear infinite;
+                `;
+                
+                // Add keyframes
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes spin {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(testElement);
+                
+                try {
+                    // Test that intersection observer animations don't conflict with CSS animations
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                // Apply additional transform
+                                entry.target.style.transform += ' scale(1.2)';
+                            }
+                        });
+                    });
+                    
+                    observer.observe(testElement);
+                    
+                    setTimeout(() => {
+                        observer.disconnect();
+                        document.body.removeChild(testElement);
+                        document.head.removeChild(style);
+                    }, 1000);
+                    
+                    this.testResults.push({
+                        name: 'Animation Conflicts',
+                        passed: true,
+                        category: 'edge-case'
+                    });
+                    
+                } catch (error) {
+                    this.testResults.push({
+                        name: 'Animation Conflicts',
+                        passed: false,
+                        category: 'edge-case',
+                        error: error.message
+                    });
+                }
+            }
+            
+            stressTestObservers() {
+                console.log('💥 Running observer stress test...');
+                
+                const stressContainer = document.getElementById('stress-test-section');
+                const observers = [];
+                let elementsCreated = 0;
+                
+                try {
+                    // Create many elements and observers
+                    for (let i = 0; i < 500; i++) {
+                        const element = document.createElement('div');
+                        element.className = 'edge-case-element';
+                        element.textContent = `Stress test element ${i}`;
+                        element.setAttribute('data-test', `stress-${i}`);
+                        
+                        stressContainer.appendChild(element);
+                        elementsCreated++;
+                        
+                        const observer = new IntersectionObserver((entries) => {
+                            // Minimal processing to avoid performance issues
+                        }, { threshold: 0.1 });
+                        
+                        observer.observe(element);
+                        observers.push(observer);
+                    }
+                    
+                    console.log(`Created ${elementsCreated} elements with observers`);
+                    
+                    // Clean up after test
+                    setTimeout(() => {
+                        observers.forEach(observer => observer.disconnect());
+                        stressContainer.innerHTML = '<h2>Performance Stress Test</h2><p>Stress test completed and cleaned up</p>';
+                        
+                        this.testResults.push({
+                            name: 'Observer Stress Test',
+                            passed: true,
+                            category: 'performance',
+                            details: `Created ${elementsCreated} observers`
+                        });
+                        
+                        this.updateTestResults();
+                    }, 3000);
+                    
+                } catch (error) {
+                    this.testResults.push({
+                        name: 'Observer Stress Test',
+                        passed: false,
+                        category: 'performance',
+                        error: error.message
+                    });
+                    
+                    this.errorLog.push({
+                        type: 'Stress Test Error',
+                        error: error.message,
+                        elementsCreated,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+            
+            testMemoryLeaks() {
+                console.log('🧠 Testing memory leaks...');
+                
+                if (!performance.memory) {
+                    this.testResults.push({
+                        name: 'Memory Leak Test',
+                        passed: false,
+                        category: 'performance',
+                        error: 'Performance.memory not available'
+                    });
+                    return;
+                }
+                
+                const initialMemory = performance.memory.usedJSHeapSize;
+                const observers = [];
+                const elements = [];
+                
+                // Create many observers and elements
+                for (let i = 0; i < 200; i++) {
+                    const element = document.createElement('div');
+                    document.body.appendChild(element);
+                    elements.push(element);
+                    
+                    const observer = new IntersectionObserver(() => {});
+                    observer.observe(element);
+                    observers.push(observer);
+                }
+                
+                const peakMemory = performance.memory.usedJSHeapSize;
+                
+                // Clean up
+                observers.forEach(observer => observer.disconnect());
+                elements.forEach(element => {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                });
+                
+                // Force garbage collection if available
+                if (window.gc) {
+                    window.gc();
+                }
+                
+                setTimeout(() => {
+                    const finalMemory = performance.memory.usedJSHeapSize;
+                    const memoryIncrease = finalMemory - initialMemory;
+                    const memoryIncreasePercent = (memoryIncrease / initialMemory) * 100;
+                    
+                    console.log(`Memory test: Initial: ${(initialMemory/1024/1024).toFixed(2)}MB, Peak: ${(peakMemory/1024/1024).toFixed(2)}MB, Final: ${(finalMemory/1024/1024).toFixed(2)}MB`);
+                    
+                    this.testResults.push({
+                        name: 'Memory Leak Test',
+                        passed: memoryIncreasePercent < 10, // Less than 10% increase is acceptable
+                        category: 'performance',
+                        details: `Memory increase: ${(memoryIncrease/1024/1024).toFixed(2)}MB (${memoryIncreasePercent.toFixed(1)}%)`
+                    });
+                    
+                    this.updateTestResults();
+                }, 2000);
+            }
+            
+            simulateErrors() {
+                console.log('🔥 Simulating error conditions...');
+                
+                const errorTests = [
+                    {
+                        name: 'Invalid Element',
+                        test: () => {
+                            const observer = new IntersectionObserver(() => {});
+                            observer.observe("not an element");
+                        }
+                    },
+                    {
+                        name: 'Null Observer Callback',
+                        test: () => {
+                            const observer = new IntersectionObserver(null);
+                        }
+                    },
+                    {
+                        name: 'Invalid Threshold Array',
+                        test: () => {
+                            const observer = new IntersectionObserver(() => {}, {
+                                threshold: [0.5, 1.5, -0.5] // Invalid values
+                            });
+                        }
+                    },
+                    {
+                        name: 'Circular Reference',
+                        test: () => {
+                            const obj = {};
+                            obj.self = obj;
+                            const observer = new IntersectionObserver(() => {
+                                console.log(obj); // Potential circular reference issue
+                            });
+                        }
+                    }
+                ];
+                
+                errorTests.forEach(({ name, test }) => {
+                    try {
+                        test();
+                        // If we reach here, the test didn't throw an error (unexpected for some tests)
+                        this.testResults.push({
+                            name: `Error Simulation: ${name}`,
+                            passed: false,
+                            category: 'error',
+                            details: 'Expected error but none occurred'
+                        });
+                    } catch (error) {
+                        // Expected for most error simulation tests
+                        this.testResults.push({
+                            name: `Error Simulation: ${name}`,
+                            passed: true,
+                            category: 'error',
+                            details: `Correctly caught: ${error.message}`
+                        });
+                    }
+                });
+                
+                this.updateTestResults();
+            }
+            
+            testRapidChanges() {
+                console.log('🏃‍♂️ Testing rapid changes...');
+                
+                const rapidElements = document.querySelectorAll('.rapid-change');
+                let changeCount = 0;
+                
+                const rapidChangeTest = setInterval(() => {
+                    rapidElements.forEach(element => {
+                        try {
+                            // Rapid style changes
+                            element.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+                            element.style.transform = `scale(${0.8 + Math.random() * 0.4})`;
+                            changeCount++;
+                        } catch (error) {
+                            this.errorLog.push({
+                                type: 'Rapid Change Error',
+                                error: error.message,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    });
+                }, 50);
+                
+                setTimeout(() => {
+                    clearInterval(rapidChangeTest);
+                    
+                    this.testResults.push({
+                        name: 'Rapid Style Changes',
+                        passed: this.errorLog.filter(e => e.type === 'Rapid Change Error').length === 0,
+                        category: 'performance',
+                        details: `Applied ${changeCount} rapid changes`
+                    });
+                    
+                    this.updateTestResults();
+                }, 2000);
+            }
+            
+            addDynamicElement() {
+                const container = document.getElementById('dynamic-container');
+                const element = document.createElement('div');
+                element.className = 'edge-case-element';
+                element.textContent = `Dynamic element ${Date.now()}`;
+                element.setAttribute('data-test', `dynamic-${Date.now()}`);
+                
+                container.appendChild(element);
+                
+                // Immediately observe
+                const observer = new IntersectionObserver(() => {
+                    console.log('Dynamic element intersected');
+                });
+                observer.observe(element);
+                
+                // Store reference for cleanup
+                element._observer = observer;
+            }
+            
+            removeDynamicElement() {
+                const container = document.getElementById('dynamic-container');
+                const elements = container.querySelectorAll('.edge-case-element');
+                
+                if (elements.length > 0) {
+                    const element = elements[elements.length - 1];
+                    if (element._observer) {
+                        element._observer.disconnect();
+                    }
+                    container.removeChild(element);
+                }
+            }
+            
+            updateTestResults() {
+                const resultsContainer = document.getElementById('test-results');
+                const categories = ['compatibility', 'dom', 'observer', 'edge-case', 'performance', 'error'];
+                
+                let html = '';
+                
+                categories.forEach(category => {
+                    const categoryTests = this.testResults.filter(test => test.category === category);
+                    if (categoryTests.length === 0) return;
+                    
+                    const categoryPassed = categoryTests.filter(test => test.passed).length;
+                    const categoryTotal = categoryTests.length;
+                    
+                    html += `
+                        <div class="test-category">
+                            <h4>${category.charAt(0).toUpperCase() + category.slice(1)} (${categoryPassed}/${categoryTotal})</h4>
+                            ${categoryTests.map(test => `
+                                <div class="test-result">
+                                    <span class="test-name" title="${test.details || test.error || ''}">${test.name}</span>
+                                    <span class="test-status ${test.passed ? 'pass' : test.error ? 'error' : 'fail'}">
+                                        ${test.passed ? '✓' : '✗'}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                });
+                
+                // Add error summary
+                if (this.errorLog.length > 0) {
+                    html += `
+                        <div class="test-category">
+                            <h4>Errors (${this.errorLog.length})</h4>
+                            <div class="test-result">
+                                <span class="test-name">Total Errors Captured</span>
+                                <span class="test-status error">${this.errorLog.length}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                resultsContainer.innerHTML = html;
+            }
+            
+            generateErrorReport() {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    testResults: this.testResults,
+                    errorLog: this.errorLog,
+                    summary: {
+                        totalTests: this.testResults.length,
+                        passedTests: this.testResults.filter(r => r.passed).length,
+                        failedTests: this.testResults.filter(r => !r.passed).length,
+                        totalErrors: this.errorLog.length
+                    },
+                    performance: {
+                        memoryBaseline: this.memoryBaseline,
+                        currentMemory: performance.memory ? performance.memory.usedJSHeapSize : 'N/A',
+                        observerCount: this.observers.size
+                    },
+                    browser: {
+                        userAgent: navigator.userAgent,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        cookieEnabled: navigator.cookieEnabled,
+                        onLine: navigator.onLine
+                    }
+                };
+                
+                console.group('🚨 Edge Case Test Report');
+                console.log(report);
+                console.groupEnd();
+                
+                // Download report
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `edge-case-test-report-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                alert('Edge case test report generated and downloaded!');
+            }
+            
+            cleanup() {
+                this.observers.forEach(observer => observer.disconnect());
+                this.observers.clear();
+                console.log('🧹 Edge case test cleanup completed');
+            }
+        }
+        
+        // Initialize edge case test
+        const edgeCaseTest = new EdgeCaseTest();
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            edgeCaseTest.cleanup();
+        });
+        
+        console.log('🚨 Edge Case Test Suite Loaded');
+        console.log('Use the control panel to run specific tests');
+    </script>
+</body>
+</html>
