@@ -161,10 +161,13 @@
           <button
             @click="handleLogout"
             class="menu-button glass-section logout-button"
-            :style="{ borderColor: '#ef4444' }"
+            :style="{ 
+              borderColor: primaryColor,
+              background: primaryColor 
+            }"
           >
-            <LogOut :size="20" color="#ef4444" />
-            <span class="menu-text logout-text">Logout</span>
+            <LogOut :size="20" color="white" />
+            <span class="menu-text">Logout</span>
           </button>
         </div>
       </div>
@@ -572,6 +575,7 @@ const handleLogout = () => {
 .menu-item:nth-child(8) { animation-delay: 0.16s; }
 .menu-item:nth-child(9) { animation-delay: 0.18s; }
 .menu-item:nth-child(10) { animation-delay: 0.20s; }
+.menu-item:nth-child(11) { animation-delay: 0.22s; }
 
 .menu-button {
   display: flex;
@@ -888,13 +892,19 @@ const handleLogout = () => {
 }
 
 /* Logout button specific styles */
-.logout-button:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: #ef4444 !important;
+.logout-button {
+  /* Reverse style - filled background instead of transparent */
 }
 
-.logout-text {
-  color: #fecaca;
+.logout-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: currentColor !important;
+  transform: translateX(-4px);
+}
+
+.logout-button .menu-text {
+  color: white;
+  font-weight: 600;
 }
 
 .glass-inner {
