@@ -102,18 +102,16 @@
 
         <!-- Open Envelope Button Row: 20% -->
         <div class="content-row-button flex items-center justify-center animate-fadeIn animation-delay-800" style="height: 20%;">
-          <div class="flex items-center justify-center h-full px-4 w-full">
+          <div class="flex items-center justify-center h-full w-full">
             <button
               @click="$emit('openEnvelope')"
-              class="animate-pulse hover:animate-none transform hover:scale-110 transition-all duration-300"
+              class="flex items-center justify-center h-full"
             >
-
-
               <img
                 v-if="templateAssets?.open_envelope_button"
                 :src="getMediaUrl(templateAssets.open_envelope_button)"
                 alt="Open Invitation"
-                class="scaled-envelope-button h-full w-auto object-contain cursor-pointer"
+                class="scaled-envelope-button cursor-pointer"
                 @load="handleOpenEnvelopeButtonLoaded"
                 @error="handleOpenEnvelopeButtonError"
               />
@@ -696,13 +694,27 @@ h1, h2, p {
 
 
 .content-row-button .scaled-envelope-button {
-  max-height: 100%;
-  max-width: 50%;
-  width: auto;
+  max-height: 80%;
+  max-width: 80%;
   height: auto;
+  width: auto;
   object-fit: contain;
-  display: block;
-  margin: 0 auto;
+  transition: transform 0.3s ease;
+  animation: pulse 2s infinite;
+}
+
+.content-row-button .scaled-envelope-button:hover {
+  transform: scale(1.1);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .content-row-button .scaled-button-fallback {
