@@ -693,19 +693,17 @@ h1, h2, p {
   box-sizing: content-box;
 }
 
+
+
 .content-row-button .scaled-envelope-button {
-  max-height: 100%;  /* Never taller than row */
-  max-width: 60%;   /* Never wider than row */
+  max-height: 100%;
+  max-width: 50%;
   width: auto;
   height: auto;
-  padding: 1rem;
   object-fit: contain;
-  object-position: center;
   display: block;
-  margin: 0 auto;    /* Center horizontally */
+  margin: 0 auto;
 }
-
-
 
 .content-row-button .scaled-button-fallback {
   /* Scale fallback button to match envelope button proportions */
