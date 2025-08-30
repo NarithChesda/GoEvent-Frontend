@@ -21,7 +21,7 @@
       <!-- Description Text -->
       <div v-if="descriptionText">
         <p
-          class="text-sm px-4 sm:text-base md:text-lg leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 khmer-text-fix"
+          class="text-xs px-4 sm:text-sm md:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 khmer-text-fix"
           :style="{
             fontFamily: secondaryFont || currentFont,
             color: primaryColor,
@@ -37,21 +37,16 @@
     <!-- Event Details Block -->
     <div class="space-y-3">
       <div
-        class="inline-block px-4 py-3 rounded-lg backdrop-blur-sm border border-opacity-20 space-y-2"
+        class="inline-block px-4 py-3 rounded-lg backdrop-blur-sm space-y-2"
         :style="{
-          backgroundColor: `${primaryColor}10`,
-          borderColor: primaryColor
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
         }"
       >
         <!-- Date Text -->
         <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
           <span
-            class="khmer-text-fix"
+            class="khmer-text-fix text-white"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
               fontFamily: secondaryFont || currentFont
             }"
           >
@@ -62,12 +57,8 @@
         <!-- Time Text -->
         <div class="text-sm sm:text-base font-medium leading-snug" v-if="timeText">
           <span
-            class="khmer-text-fix"
+            class="khmer-text-fix text-white"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
               fontFamily: secondaryFont || currentFont
             }"
           >
@@ -78,12 +69,8 @@
         <!-- Location Text -->
         <div class="text-sm sm:text-base font-medium leading-snug" v-if="locationText">
           <span
-            class="khmer-text-fix"
+            class="khmer-text-fix text-white"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
               fontFamily: secondaryFont || currentFont
             }"
           >

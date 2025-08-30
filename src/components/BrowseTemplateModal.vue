@@ -4,26 +4,26 @@
       <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="closeModal">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
         
-        <div class="flex min-h-full items-center justify-center p-4">
+        <div class="flex min-h-full items-center justify-center p-2 sm:p-4">
           <div 
-            class="relative w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden"
+            class="relative w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-8 py-4 sm:py-6 text-white flex-shrink-0">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <LayoutTemplate class="w-5 h-5" />
+                <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <LayoutTemplate class="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <h2 class="text-2xl font-bold">Browse Templates</h2>
-                    <p class="text-white/80 text-sm mt-1">Choose a design that matches your event style</p>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg sm:text-2xl font-bold truncate">Browse Templates</h2>
+                    <p class="text-white/80 text-xs sm:text-sm mt-1 hidden sm:block">Choose a design that matches your event style</p>
                   </div>
                 </div>
                 <button
                   @click="closeModal"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
                 >
                   <X class="w-4 h-4" />
                 </button>
@@ -31,14 +31,14 @@
             </div>
 
             <!-- Filters -->
-            <div class="p-8 border-b border-slate-200/20 space-y-6 bg-white/50 backdrop-blur-sm">
+            <div class="p-4 sm:p-8 border-b border-slate-200/20 space-y-4 sm:space-y-6 bg-white/50 backdrop-blur-sm flex-shrink-0">
           <!-- Category Filter -->
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-sm font-medium text-slate-700 mr-2">Categories:</span>
+            <span class="text-xs sm:text-sm font-medium text-slate-700 mr-1 sm:mr-2 flex-shrink-0">Categories:</span>
             <button
               @click="selectedCategory = null"
               :class="[
-                'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
+                'px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0',
                 selectedCategory === null
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
                   : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md'
@@ -51,33 +51,33 @@
               :key="category.id"
               @click="selectedCategory = category.id"
               :class="[
-                'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1',
+                'px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 flex-shrink-0',
                 selectedCategory === category.id
                   ? 'text-white shadow-lg'
                   : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md'
               ]"
               :style="selectedCategory === category.id ? { backgroundColor: category.color } : {}"
             >
-              <span>{{ category.name }}</span>
+              <span class="truncate">{{ category.name }}</span>
             </button>
           </div>
 
           <!-- Search -->
-          <div class="relative max-w-md">
+          <div class="relative w-full sm:max-w-md">
             <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search templates..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+              class="w-full pl-10 pr-4 py-2 sm:py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
             >
           </div>
         </div>
 
             <!-- Templates Content -->
-            <div class="flex-1 overflow-y-auto p-8 bg-white/30 backdrop-blur-sm" style="max-height: calc(90vh - 200px);">
+            <div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-white/30 backdrop-blur-sm min-h-0">
           <!-- Loading State -->
-          <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div v-for="n in 6" :key="n" class="animate-pulse">
               <div class="bg-slate-200 rounded-lg h-48"></div>
               <div class="mt-2 space-y-1">
@@ -88,7 +88,7 @@
           </div>
 
           <!-- Templates Grid -->
-          <div v-else-if="filteredTemplates.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-else-if="filteredTemplates.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div
               v-for="template in filteredTemplates"
               :key="template.id"
@@ -101,7 +101,7 @@
               ]"
             >
               <!-- Template Preview -->
-              <div class="relative h-40 overflow-hidden">
+              <div class="relative h-32 sm:h-40 overflow-hidden">
                 <img 
                   :src="template.preview_image || '/api/placeholder/400/300'" 
                   :alt="template.name"
@@ -126,32 +126,32 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                 
                 <!-- Template title overlay -->
-                <div class="absolute bottom-2 left-2 right-2">
-                  <h4 class="font-semibold text-white text-sm truncate">{{ template.name }}</h4>
-                  <p class="text-xs text-white/80 truncate">{{ template.package_plan.name }}</p>
+                <div class="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 right-1 sm:right-2">
+                  <h4 class="font-semibold text-white text-xs sm:text-sm truncate">{{ template.name }}</h4>
+                  <p class="text-xs text-white/80 truncate hidden sm:block">{{ template.package_plan.name }}</p>
                 </div>
               </div>
               
               <!-- Template Details -->
-              <div class="p-3">
+              <div class="p-2 sm:p-3">
                 <div class="flex items-center justify-between mb-2">
                   <span 
                     v-if="template.package_plan.category"
-                    class="text-xs px-2 py-1 rounded text-white"
+                    class="text-xs px-2 py-1 rounded text-white truncate flex-shrink-0"
                     :style="{ backgroundColor: template.package_plan.category.color || '#64748b' }"
                   >
                     {{ template.package_plan.category.name }}
                   </span>
-                  <span class="text-lg font-bold text-slate-900">${{ template.package_plan.price }}</span>
+                  <span class="text-sm sm:text-lg font-bold text-slate-900 ml-2">${{ template.package_plan.price }}</span>
                 </div>
                 
                 <!-- Features Preview -->
-                <div v-if="template.package_plan.features && template.package_plan.features.length > 0">
+                <div v-if="template.package_plan.features && template.package_plan.features.length > 0" class="hidden sm:block">
                   <div class="flex flex-wrap gap-1">
                     <span
                       v-for="feature in template.package_plan.features.slice(0, 2)"
                       :key="feature"
-                      class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded"
+                      class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded truncate"
                     >
                       {{ feature }}
                     </span>
@@ -195,14 +195,14 @@
         </div>
 
             <!-- Footer -->
-            <div class="flex items-center justify-between p-8 border-t border-slate-200/20 bg-white/50 backdrop-blur-sm">
-          <div class="text-sm text-slate-600">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-8 border-t border-slate-200/20 bg-white/50 backdrop-blur-sm flex-shrink-0 gap-4 sm:gap-0">
+          <div class="text-xs sm:text-sm text-slate-600 text-center sm:text-left">
             {{ filteredTemplates.length }} template{{ filteredTemplates.length !== 1 ? 's' : '' }} found
           </div>
-          <div class="flex gap-3">
+          <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
               @click="closeModal"
-              class="px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-200 font-medium"
+              class="px-4 sm:px-6 py-2 sm:py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-200 font-medium text-sm sm:text-base order-2 sm:order-1"
             >
               Cancel
             </button>
@@ -210,7 +210,7 @@
               @click="confirmSelection"
               :disabled="!selectedTemplateId || selecting"
               :class="[
-                'px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2',
+                'px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2',
                 selectedTemplateId && !selecting
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:scale-[1.02]'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'

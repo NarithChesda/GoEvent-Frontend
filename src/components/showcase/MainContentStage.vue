@@ -57,7 +57,7 @@
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
-                      backgroundSize: '200% 200%',
+                      backgroundSize: '200% 200%'
                     }"
                   >
                     {{ welcomeMessage || 'Welcome to Our Event' }}
