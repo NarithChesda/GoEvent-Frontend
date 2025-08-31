@@ -84,7 +84,7 @@
         <div class="hidden lg:flex items-center space-x-4">
           <template v-if="!authStore.isAuthenticated">
             <RouterLink
-              to="/signin"
+              :to="signinLink"
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
               :class="isScrolled 
                 ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50' 
@@ -245,7 +245,7 @@
           <template v-if="!authStore.isAuthenticated">
             <div class="space-y-3">
               <RouterLink
-                to="/signin"
+                :to="signinLink"
                 @click="mobileMenuOpen = false"
                 class="block text-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
               >
@@ -315,8 +315,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   CalendarDays,
   Menu,
@@ -332,7 +332,18 @@ import { useNavbarScroll } from '../composables/useNavbarScroll'
 const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+
+// Computed property for signin link with redirect
+const signinLink = computed(() => {
+  const currentPath = route.fullPath
+  // Don't redirect if already on signin or signup pages
+  if (currentPath === '/signin' || currentPath === '/signup') {
+    return '/signin'
+  }
+  return `/signin?redirect=${encodeURIComponent(currentPath)}`
+})
 
 // Scroll detection for seamless navbar
 const { isScrolled } = useNavbarScroll()

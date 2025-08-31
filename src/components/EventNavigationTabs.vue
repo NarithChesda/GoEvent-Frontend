@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full lg:w-64 flex-shrink-0">
+  <div class="w-full md:w-56 lg:w-64 xl:w-72 flex-shrink-0">
     <!-- Mobile Horizontal Navigation -->
-    <div class="lg:hidden mb-6">
+    <div class="md:hidden mb-6">
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-2">
         <div class="flex overflow-x-auto scrollbar-hide space-x-1" style="scrollbar-width: none; -ms-overflow-style: none;">
           <NavigationTab
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Desktop Sidebar Navigation -->
-    <div class="sticky top-24 hidden lg:block">
+    <div class="sticky top-24 hidden md:block">
       <!-- Title -->
       <div class="mb-8">
         <div class="flex items-center space-x-3">
@@ -27,7 +27,7 @@
       </div>
 
       <!-- Navigation -->
-      <nav class="space-y-1 px-6">
+      <nav class="space-y-1 px-4 md:px-5 lg:px-6">
         <NavigationTab
           v-for="tab in visibleTabs"
           :key="tab.id"

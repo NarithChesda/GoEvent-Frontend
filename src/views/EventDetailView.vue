@@ -4,7 +4,7 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="pt-24 pb-16">
-      <div class="max-w-4xl mx-auto px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="animate-pulse">
           <div class="h-64 bg-slate-200 rounded-3xl mb-8"></div>
           <div class="h-8 bg-slate-200 rounded mb-4"></div>
@@ -29,8 +29,8 @@
       />
 
       <!-- Main Content Section -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex flex-col lg:flex-row gap-8">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div class="flex flex-col md:flex-row gap-6 lg:gap-8">
           <!-- Navigation Tabs -->
           <EventNavigationTabs
             :active-tab="activeTab"
@@ -253,7 +253,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="pt-24 pb-16">
-      <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-blue-500/25 p-12">
           <AlertTriangle class="w-16 h-16 text-red-600 mx-auto mb-6" />
           <h1 class="text-2xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">Event Not Found</h1>

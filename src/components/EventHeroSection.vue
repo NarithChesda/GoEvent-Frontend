@@ -1,5 +1,5 @@
 <template>
-  <div class="relative min-h-[500px] lg:min-h-[550px] overflow-hidden">
+  <div class="relative min-h-[400px] md:min-h-[450px] lg:min-h-[500px] xl:min-h-[550px] overflow-hidden">
     <!-- Banner Image with Fallback -->
     <div class="absolute inset-0">
       <img 
@@ -21,8 +21,8 @@
     <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
 
     <!-- Hero Content -->
-    <div class="relative z-10 w-full py-16 lg:py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative z-10 w-full py-12 md:py-14 lg:py-16 xl:py-20">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 gap-8 items-start">
           <!-- Main Event Info -->
           <div class="space-y-8 max-w-5xl">
@@ -55,12 +55,12 @@
             </div>
 
             <!-- Title -->
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight tracking-tight">
               {{ event.title }}
             </h1>
 
             <!-- Key Details Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               <!-- Date & Time -->
               <div class="flex items-center space-x-4 text-white/90">
                 <div class="flex-shrink-0">
@@ -123,7 +123,7 @@
             </div>
 
             <!-- Primary Action Buttons -->
-            <div class="flex flex-wrap gap-4 pt-4">
+            <div class="flex flex-wrap gap-3 md:gap-4 pt-4">
               <!-- Main Registration CTA -->
               <button
                 v-if="canRegister"

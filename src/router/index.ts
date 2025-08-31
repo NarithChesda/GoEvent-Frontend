@@ -70,7 +70,8 @@ router.beforeEach(async (to, from, next) => {
       
       // Basic authentication check
       if (!authStore.isAuthenticated) {
-        next('/signin')
+        // Redirect to signin with the current path as a query parameter
+        next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
         return
       }
 
@@ -82,7 +83,7 @@ router.beforeEach(async (to, from, next) => {
           if (!isTokenValid) {
             console.warn('Token validation failed, redirecting to sign in')
             await authStore.logout()
-            next('/signin')
+            next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
             return
           }
         } catch (error) {
