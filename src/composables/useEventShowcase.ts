@@ -2,6 +2,7 @@ import { ref, computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { eventsService, type EventPaymentMethod } from '../services/api'
 import { useBackgroundPreloader } from './useBackgroundPreloader'
+import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
 
 // Interfaces
 export interface Host {
@@ -475,6 +476,9 @@ export function useEventShowcase() {
           currentLanguage.value = showcaseResponse.data.meta.language
         }
 
+        // Update meta tags for social sharing
+        updateEventMetaTags(showcaseResponse.data.event)
+
         // Load custom fonts asynchronously
         loadCustomFonts().catch(err => {
           console.error('Font loading failed:', err)
@@ -488,6 +492,42 @@ export function useEventShowcase() {
     } finally {
       loading.value = false
     }
+  }
+
+  // Helper function to update meta tags for social sharing
+  const updateEventMetaTags = (event: Record<string, unknown>) => {
+    if (!event) return
+
+    const eventImage = getBestEventImage(event)
+    const eventDescription = createEventDescription(event)
+    const eventTitle = `${event.title as string} - GoEvent`
+    
+    // Format date for structured data
+    const startDate = event.start_date ? new Date(event.start_date as string).toISOString() : undefined
+    
+    // Get organizer name
+    const organizerDetails = event.organizer_details as { first_name?: string; last_name?: string; username?: string } | undefined
+    const organizerName = organizerDetails
+      ? `${organizerDetails.first_name || ''} ${organizerDetails.last_name || ''}`.trim() || organizerDetails.username || 'GoEvent'
+      : 'GoEvent'
+
+    const metaData = {
+      title: eventTitle,
+      description: eventDescription,
+      image: eventImage,
+      url: `${window.location.origin}/events/${event.id as string}/showcase`,
+      siteName: 'GoEvent',
+      type: 'website',
+      locale: currentLanguage.value === 'kh' ? 'kh_KH' : 'en_US',
+      author: organizerName,
+      publishedTime: startDate,
+      location: (event.location as string) || undefined
+    }
+
+    console.log('🏷️ Updating meta tags for event:', event.title as string)
+    console.log('📊 Meta data:', metaData)
+    
+    updateMetaTags(metaData)
   }
 
   const loadCustomFonts = async () => {

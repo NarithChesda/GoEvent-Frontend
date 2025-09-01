@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { resetMetaTags } from '../utils/metaUtils'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,53 +9,61 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { title: 'Home - GoEvent' }
     },
     {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue'),
+      meta: { title: 'About - GoEvent' }
     },
     {
       path: '/signin',
       name: 'signin',
       component: () => import('../views/SignInView.vue'),
+      meta: { title: 'Sign In - GoEvent' }
     },
     {
       path: '/signup',
       name: 'signup',
       component: () => import('../views/SignUpView.vue'),
+      meta: { title: 'Sign Up - GoEvent' }
     },
     {
       path: '/events',
       name: 'events',
       component: () => import('../views/EventsView.vue'),
+      meta: { title: 'Events - GoEvent' }
     },
     {
       path: '/events/:id',
       name: 'event-detail',
       component: () => import('../views/EventDetailView.vue'),
+      meta: { title: 'Event Details - GoEvent' }
     },
     {
       path: '/events/:id/edit',
       name: 'event-edit',
       component: () => import('../views/EventEditView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, title: 'Edit Event - GoEvent' }
     },
     {
       path: '/events/:id/showcase',
       name: 'event-showcase',
       component: () => import('../views/EventShowcaseRefactored.vue'),
+      meta: { title: 'Event Showcase - GoEvent' }
     },
     {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, title: 'Settings - GoEvent' }
     },
     {
       path: '/contact',
       name: 'contact',
       component: () => import('../views/AboutView.vue'), // Redirect to about page for now
+      meta: { title: 'Contact - GoEvent' }
     },
   ],
 })
@@ -113,6 +122,17 @@ router.beforeEach(async (to, from, next) => {
           document.head.appendChild(newMetaTag)
         }
       }
+    }
+
+    // Update document title based on route meta
+    if (to.meta.title) {
+      document.title = to.meta.title as string
+    }
+
+    // Reset meta tags when leaving showcase pages (but not when entering)
+    if (from.name === 'event-showcase' && to.name !== 'event-showcase') {
+      console.log('🏷️ Leaving showcase page, resetting meta tags')
+      resetMetaTags()
     }
     
     next()
