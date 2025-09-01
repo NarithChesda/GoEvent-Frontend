@@ -83,6 +83,18 @@
             :class="isCardExpanded(date) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'"
           >
             <div class="p-4 sm:p-6">
+              <!-- First agenda description at top center -->
+              <div v-if="getFirstAgendaDescription(date)" 
+                   class="text-center mb-3 px-2">
+                <h4 class="font-semibold text-sm sm:text-base"
+                   :style="{
+                     color: primaryColor,
+                     fontFamily: primaryFont || currentFont
+                   }">
+                  {{ getFirstAgendaDescription(date) }}
+                </h4>
+              </div>
+
               <!-- Agenda Items for this date -->
               <div class="space-y-4">
                 <div
@@ -196,8 +208,8 @@ const getTextContent = (textType: string, fallback = ''): string => {
   return fallback
 }
 
-// State for expanded cards
-const expandedCards = ref<Set<string>>(new Set())
+// State for expanded card (only one at a time)
+const expandedCard = ref<string | null>(null)
 
 // Group agenda items by date
 const agendaByDate = computed(() => {
@@ -242,16 +254,18 @@ const getActivityCountText = (count: number): string => {
   }
 }
 
-// Methods for collapse functionality
+// Methods for accordion functionality
 const isCardExpanded = (date: string): boolean => {
-  return expandedCards.value.has(date)
+  return expandedCard.value === date
 }
 
 const toggleCard = (date: string) => {
-  if (expandedCards.value.has(date)) {
-    expandedCards.value.delete(date)
+  // If clicking the same card that's already expanded, close it
+  if (expandedCard.value === date) {
+    expandedCard.value = null
   } else {
-    expandedCards.value.add(date)
+    // Otherwise, open this card (automatically closes any other open card)
+    expandedCard.value = date
   }
 }
 
@@ -264,6 +278,23 @@ const formatAgendaDate = (dateString: string): string => {
   } catch {
     return dateString
   }
+}
+
+// Computed property to get first agenda description for each date
+const firstAgendaDescriptions = computed(() => {
+  const descriptions: Record<string, string> = {}
+  Object.keys(agendaByDate.value).forEach(date => {
+    const agendaItems = agendaByDate.value[date] || []
+    const firstItem = agendaItems[0]
+    descriptions[date] = firstItem?.description || ''
+  })
+  return descriptions
+})
+
+const getFirstAgendaDescription = (date: string): string => {
+  const description = firstAgendaDescriptions.value[date] || ''
+  // Capitalize first letter if description exists
+  return description ? description.charAt(0).toUpperCase() + description.slice(1) : ''
 }
 
 // Setup card animations
