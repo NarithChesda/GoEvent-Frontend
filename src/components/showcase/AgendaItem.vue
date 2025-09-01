@@ -2,10 +2,10 @@
   <div class="agenda-card p-4 flex items-center gap-4">
     <!-- Icon Section (Left) -->
     <div class="flex-shrink-0">
-      <div 
-        v-if="item.icon?.svg_code" 
+      <div
+        v-if="item.icon?.svg_code"
         class="agenda-icon-large flex items-center justify-center"
-        :style="{ 
+        :style="{
           '--icon-color': primaryColor,
           color: primaryColor
         }"
@@ -13,26 +13,30 @@
       />
       <Calendar v-else class="agenda-icon-large" :style="{ color: primaryColor }" />
     </div>
-    
+
     <!-- Content Section (Right) -->
     <div class="flex-1 flex flex-col justify-between min-h-[3rem]">
       <!-- Title (Top Right) -->
-      <h3 
-        class="text-sm font-semibold leading-tight capitalize" 
-        :style="{ 
+      <h3
+        :class="[
+          'font-medium leading-loose py-2 capitalize',
+          isKhmerText ? 'text-xs' : 'text-sm'
+        ]"
+        :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
-          fontFamily: primaryFont || currentFont
+          fontFamily: primaryFont || currentFont,
+          lineHeight: '1.8'
         }"
       >
         {{ item.title || 'Event Activity' }}
       </h3>
-      
+
       <!-- Time (Bottom Right) -->
-      <div 
-        class="text-xs mt-1" 
+      <div
+        class="text-xs mt-1"
         :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }"
       >
         <span v-if="timeText">{{ timeText }}</span>
@@ -79,7 +83,7 @@ const processedSvgCode = computed(() => {
   if (!props.item.icon?.svg_code || !props.primaryColor) {
     return props.item.icon?.svg_code || ''
   }
-  
+
   // Replace common color attributes with the primary color
   let processedSvg = props.item.icon.svg_code
     .replace(/fill="[^"]*"/g, `fill="${props.primaryColor}"`)
@@ -90,20 +94,27 @@ const processedSvgCode = computed(() => {
     .replace(/stroke:#[0-9a-fA-F]{6}/g, `stroke:${props.primaryColor}`)
     .replace(/fill:#[0-9a-fA-F]{3}/g, `fill:${props.primaryColor}`)
     .replace(/stroke:#[0-9a-fA-F]{3}/g, `stroke:${props.primaryColor}`)
-  
+
   // If no fill attribute exists, add one
   if (!processedSvg.includes('fill=') && processedSvg.includes('<svg')) {
     processedSvg = processedSvg.replace('<svg', `<svg fill="${props.primaryColor}"`)
   }
-  
+
   return processedSvg
 })
 
 // Computed time text with fallback
+// Check if the title contains Khmer characters
+const isKhmerText = computed(() => {
+  const title = props.item.title || 'Event Activity'
+  // Khmer Unicode range: U+1780-U+17FF
+  return /[\u1780-\u17FF]/.test(title)
+})
+
 const timeText = computed(() => {
   const start = props.item.start_time_text
   const end = props.item.end_time_text
-  
+
   if (start && end) {
     return `${start} - ${end}`
   } else if (start) {
@@ -111,7 +122,7 @@ const timeText = computed(() => {
   } else if (end) {
     return `Until ${end}`
   }
-  
+
   return null
 })
 </script>
