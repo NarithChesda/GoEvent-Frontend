@@ -39,6 +39,10 @@
         :secondary-font="secondaryFont"
         :event-texts="eventTexts"
         :current-language="currentLanguage"
+        :is-envelope-button-ready="isEnvelopeButtonReady"
+        :is-preloading="isPreloading"
+        :preload-progress="preloadProgress"
+        :stage2-progress="stage2Progress"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
         @cover-stage-ready="handleCoverStageReady"
@@ -151,6 +155,13 @@ const {
   isEventPast,
   eventVideoUrl,
   availableLanguages,
+  isEnvelopeButtonReady, // New: envelope button readiness
+  
+  // Preloading state
+  isPreloading,
+  preloadProgress,
+  stage2Progress,
+  // stage3Progress, // Future use for Stage 3 progress feedback
   
   // Methods
   loadShowcase,

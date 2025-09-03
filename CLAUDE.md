@@ -153,23 +153,39 @@ The `EventDetailView` component uses a sophisticated tab system:
 4. Admin enablement (backend process)
 5. Template activation (full feature access)
 
-7. **Event Showcase System**: Public invitation pages
-   - **Showcase Route**: `/events/:id/showcase` - Public route for wedding invitations
+7. Event Showcase System: Public invitation pages
+
+   - **Showcase Route**:  
+   `/events/:id/showcase` - Public route for wedding invitations
+
    - **Component Architecture**: Refactored into 10+ specialized showcase components:
-     - `CoverStage`, `EventVideoStage`, `MainContentStage` for different presentation phases
-     - `AgendaSection`, `PhotoGallery`, `HostInfo`, `EventInfo` for content sections
-     - `LoadingSpinner`, `ErrorDisplay` for state management
+   - `CoverStage`, `EventVideoStage`, `MainContentStage` for different presentation phases  
+   - `AgendaSection`, `PhotoGallery`, `HostInfo`, `EventInfo` for content sections  
+   - `LoadingSpinner`, `ErrorDisplay` for state management  
+
    - **useEventShowcase Composable**: Centralized business logic for showcase functionality
-     - Handles template color processing and SVG icon manipulation
-     - Manages video playbook, envelope opening animations
-     - Processes paginated API responses gracefully
+   - Handles template color processing and SVG icon manipulation  
+   - Manages video playbook, envelope opening animations  
+   - Processes paginated API responses gracefully  
+
+   - **Stage Loading & Preload Strategy**: Optimized staged experience  
+   - **Stage 1 (Cover Stage)**:  
+      - After all cover assets load, background-preload Stage 2 (`Event Video > Event Music`)  
+      - Open Envelope button is **disabled until Stage 2 video finishes loading**, ensuring smooth playback  
+   - **Stage 2 (Event Video Stage)**:  
+      - While the video plays, background-preload Stage 3 content, prioritizing the standard background video  
+   - **Stage 3 (Main Content Stage)**:  
+      - Display event information, galleries, and agenda once background-preload is completed  
+
    - **Authentication Handling**: Public showcases work without authentication
-     - Photos require authentication but showcase degrades gracefully without them
-     - Template assets and colors are publicly accessible
+   - Photos require authentication but showcase degrades gracefully without them  
+   - Template assets and colors are publicly accessible  
+
    - **Template Integration**: Dynamic theming with template colors and fonts
-     - SVG icon color processing via regex replacement to match template colors
-     - Custom font loading from template assets
-     - Glass morphism UI effects with backdrop filters
+   - SVG icon color processing via regex replacement to match template colors  
+   - Custom font loading from template assets  
+   - Glass morphism UI effects with backdrop filters  
+
 
 8. **Guest Management System**
    - **Invitation Tab**: Comprehensive guest management with personalized showcase links
@@ -221,3 +237,5 @@ The application leverages Vue 3 composables for shared business logic:
 - **Network Handling**: Offline detection and request retry mechanisms
 
 Always run `npm run type-check` and `npm run lint` before committing changes to ensure code quality and TypeScript compliance.
+
+- Event Showcase page divide into 3 stage, stage 1 cover stage, stage 2 event video stage, stage 3 main content stage. at stage 1, after loading all the cover stage content, it needs to run a background pre load for stage 2 content whic is "Event video > event music" the goal is to preload it to prepare to play  it immediatly after user click open envelope button. make the open envelope button not clickable before the event video finish loading to ensure that the open envelope button can always start the stage 2 smoothly. in stage 2, during the time video is playing, start background preload stage 3 content with the standard background video as the top priority.

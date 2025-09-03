@@ -1,6 +1,6 @@
 import { ref, computed, onUnmounted, readonly } from 'vue'
 import type { EventData, EventPhoto, Host, AgendaItem } from './useEventShowcase'
-import type { EventPaymentMethod } from '../services/api'
+import { sanitizeHtml, containsSuspiciousContent } from '../utils/sanitize'
 
 /**
  * Priority levels for content preloading
@@ -19,7 +19,7 @@ export enum PreloadPriority {
  */
 export interface PreloadableContent {
   id: string
-  type: 'image' | 'video' | 'audio' | 'font' | 'api'
+  type: 'image' | 'video' | 'audio' | 'font' | 'svg' | 'api'
   url: string
   priority: PreloadPriority
   metadata?: Record<string, any>
@@ -73,10 +73,27 @@ export function useBackgroundPreloader() {
     currentPriority: null
   })
   
+  // Stage-specific progress tracking - initialize with proper defaults
+  // Use total: 0 initially to indicate no work assigned yet
+  const stage2Progress = ref({ completed: 0, total: 0, percentage: 100 })
+  const stage3Progress = ref({ completed: 0, total: 0, percentage: 100 })
+  
+  // Fallback timing tracking for button readiness
+  const stage2StartTime = ref<Map<string, number>>(new Map())
+  const FALLBACK_TIMEOUT_MS = 15000 // 15 seconds fallback timeout
+  
   const preloadResults = ref<Map<string, PreloadResult>>(new Map())
   const activeRequests = ref<Map<string, AbortController>>(new Map())
   const contentQueue = ref<PreloadableContent[]>([])
+  // Cache with LRU eviction strategy and size limits
   const preloadCache = ref<Map<string, any>>(new Map())
+  const cacheAccessOrder = ref<string[]>([]) // Track access order for LRU
+  const maxCacheSize = ref(50) // Maximum number of cached items
+  const maxCacheMemory = ref(100 * 1024 * 1024) // 100MB memory limit
+  let currentCacheMemory = 0
+  
+  // Video memory management
+  const videoCacheCleanupCallbacks = ref<Map<string, () => void>>(new Map())
   
   // Configuration with sensible defaults
   const config = ref<PreloaderConfig>({
@@ -91,8 +108,8 @@ export function useBackgroundPreloader() {
   const respectDataUsage = computed(() => {
     if (!config.value.respectUserPreferences) return false
     
-    // Check connection type if available
-    const connection = (navigator as any).connection
+    // Safely check connection type if available
+    const connection = getNetworkConnection()
     if (connection) {
       // Skip preloading on slow connections
       if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
@@ -105,7 +122,7 @@ export function useBackgroundPreloader() {
     }
     
     // Check if user prefers reduced motion (might indicate performance concerns)
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return true
     }
     
@@ -230,21 +247,7 @@ export function useBackgroundPreloader() {
       })
     }
 
-    // Low priority - Agenda item icons
-    const agendaItems = event.agenda_items || []
-    agendaItems.forEach((item: AgendaItem) => {
-      // Agenda icons are typically SVG and small, but still preload for smoother experience
-      if (item.icon?.svg_code) {
-        // SVG content would be handled differently - this is just a placeholder
-        content.push({
-          id: `agenda-icon-${item.id}`,
-          type: 'image',
-          url: `data:image/svg+xml,${encodeURIComponent(item.icon.svg_code)}`,
-          priority: PreloadPriority.LOW,
-          metadata: { type: 'agenda_icon' }
-        })
-      }
-    })
+    // Skip agenda icons - let them load naturally on main content page
 
     return content
   }
@@ -257,6 +260,8 @@ export function useBackgroundPreloader() {
     
     // Check cache first
     if (config.value.enableCache && preloadCache.value.has(content.url)) {
+      // Update cache access order for LRU
+      updateCacheAccess(content.url)
       return {
         id: content.id,
         success: true,
@@ -277,6 +282,11 @@ export function useBackgroundPreloader() {
           break
         case 'video':
           result = await preloadVideo(content.url, abortController.signal)
+          if (result instanceof HTMLVideoElement) {
+            // Set up memory cleanup callback for video
+            const cleanupCallback = createVideoMemoryCleanup(result, content.url)
+            videoCacheCleanupCallbacks.value.set(content.id, cleanupCallback)
+          }
           break
         case 'audio':
           result = await preloadAudio(content.url, abortController.signal)
@@ -284,13 +294,16 @@ export function useBackgroundPreloader() {
         case 'font':
           result = await preloadFont(content.url, abortController.signal)
           break
+        case 'svg':
+          result = await preloadSvg(content.url, abortController.signal)
+          break
         default:
           throw new Error(`Unsupported content type: ${content.type}`)
       }
 
-      // Cache the result
+      // Cache the result with memory management
       if (config.value.enableCache) {
-        preloadCache.value.set(content.url, result)
+        setCacheItem(content.url, result)
       }
 
       const loadTime = performance.now() - startTime
@@ -336,8 +349,9 @@ export function useBackgroundPreloader() {
         resolve(img)
       }
 
-      img.onerror = () => {
+      img.onerror = (event) => {
         cleanup()
+        console.warn(`Image preload failed for: ${url}`, event)
         reject(new Error(`Failed to load image: ${url}`))
       }
 
@@ -356,44 +370,200 @@ export function useBackgroundPreloader() {
   }
 
   /**
-   * Preload a video
+   * Preload an SVG using a specialized approach
+   * SVGs are better handled via fetch or DOM insertion rather than Image element
+   */
+  const preloadSvg = (url: string, signal: AbortSignal): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      // For data URLs, we can validate and resolve immediately
+      if (url.startsWith('data:image/svg+xml')) {
+        try {
+          // Test if the data URL is valid by creating a temporary image
+          const img = new Image()
+          
+          const cleanup = () => {
+            img.onload = null
+            img.onerror = null
+            signal.removeEventListener('abort', onAbort)
+          }
+
+          const onAbort = () => {
+            cleanup()
+            reject(new Error('SVG preload aborted'))
+          }
+
+          img.onload = () => {
+            cleanup()
+            // SVG loaded successfully, resolve with the URL for caching
+            resolve(url)
+          }
+
+          img.onerror = () => {
+            cleanup()
+            // If image fails, try alternative SVG preloading method
+            console.warn(`SVG data URL failed to load as image, trying alternative method: ${url.substring(0, 100)}...`)
+            
+            // Try to validate SVG by parsing the data URL
+            try {
+              const svgContent = decodeURIComponent(url.replace('data:image/svg+xml,', ''))
+              if (svgContent.includes('<svg') && svgContent.includes('</svg>')) {
+                resolve(url) // SVG content looks valid
+              } else {
+                reject(new Error(`Invalid SVG content in data URL`))
+              }
+            } catch (parseError) {
+              reject(new Error(`Failed to parse SVG data URL: ${parseError}`))
+            }
+          }
+
+          signal.addEventListener('abort', onAbort)
+
+          // Set timeout
+          setTimeout(() => {
+            if (!signal.aborted) {
+              cleanup()
+              reject(new Error(`SVG load timeout: ${url.substring(0, 50)}...`))
+            }
+          }, config.value.timeoutMs)
+
+          img.src = url
+          
+        } catch (error) {
+          reject(new Error(`Failed to preload SVG data URL: ${error}`))
+        }
+      } else {
+        // For external SVG URLs, use fetch
+        fetch(url, { signal })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            return response.text()
+          })
+          .then(svgContent => {
+            // Basic SVG content validation
+            if (svgContent.includes('<svg') && svgContent.includes('</svg>')) {
+              resolve(svgContent)
+            } else {
+              throw new Error('Invalid SVG content received')
+            }
+          })
+          .catch(error => {
+            if (error.name === 'AbortError') {
+              reject(new Error('SVG preload aborted'))
+            } else {
+              reject(new Error(`Failed to fetch SVG: ${error.message}`))
+            }
+          })
+      }
+    })
+  }
+
+  /**
+   * Preload a video with progressive loading strategy - resolves when video has enough data to start playing
    */
   const preloadVideo = (url: string, signal: AbortSignal): Promise<HTMLVideoElement> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video')
-      video.preload = 'metadata' // Only load metadata, not full video
+      video.preload = 'metadata' // Start with metadata, then upgrade to auto
       video.muted = true
 
+      // Resource cleanup tracker
+      const videoResources = {
+        video,
+        timeoutId: null as NodeJS.Timeout | null,
+        progressiveTimeoutId: null as NodeJS.Timeout | null,
+        isAborted: false,
+        hasResolved: false
+      }
+
       const cleanup = () => {
+        if (videoResources.timeoutId) {
+          clearTimeout(videoResources.timeoutId)
+        }
+        if (videoResources.progressiveTimeoutId) {
+          clearTimeout(videoResources.progressiveTimeoutId)
+        }
+        
+        // Clean up video element event listeners
+        video.oncanplaythrough = null
+        video.oncanplay = null
         video.onloadedmetadata = null
         video.onerror = null
+        video.onabort = null
+        video.onstalled = null
+        video.onwaiting = null
+        video.onprogress = null
+        
         signal.removeEventListener('abort', onAbort)
+        
+        // Clean up video resources if aborted
+        if (videoResources.isAborted) {
+          video.src = ''
+          video.load() // Reset video element
+        }
       }
 
       const onAbort = () => {
+        videoResources.isAborted = true
         cleanup()
         reject(new Error('Video preload aborted'))
       }
 
+      const resolveIfNotDone = (reason: string) => {
+        if (!videoResources.hasResolved && !videoResources.isAborted) {
+          videoResources.hasResolved = true
+          console.log(`📺 Video resolved: ${reason} for ${url}`)
+          cleanup()
+          resolve(video)
+        }
+      }
+
+      // PROGRESSIVE LOADING: Resolve when video can start playing (not necessarily fully loaded)
+      video.oncanplay = () => {
+        resolveIfNotDone('HAVE_ENOUGH_DATA (canplay)')
+      }
+
+      // Backup: If full preload completes quickly, use that
+      video.oncanplaythrough = () => {
+        resolveIfNotDone('HAVE_ENOUGH_DATA (canplaythrough)')
+      }
+
+      // Progressive loading: When metadata loads, switch to auto preload
       video.onloadedmetadata = () => {
-        cleanup()
-        resolve(video)
+        console.log(`📺 Video metadata loaded for ${url}, switching to progressive loading...`)
+        // Switch to auto preload for better buffering
+        video.preload = 'auto'
+        
+        // Set progressive timeout - resolve with metadata if taking too long
+        videoResources.progressiveTimeoutId = setTimeout(() => {
+          if (!videoResources.hasResolved && video.readyState >= video.HAVE_METADATA) {
+            resolveIfNotDone('metadata fallback after progressive timeout')
+          }
+        }, 8000) // 8 second progressive timeout
       }
 
       video.onerror = () => {
         cleanup()
-        reject(new Error(`Failed to load video metadata: ${url}`))
+        reject(new Error(`Failed to load video: ${url}`))
       }
 
       signal.addEventListener('abort', onAbort)
 
-      // Set timeout
-      setTimeout(() => {
-        if (!signal.aborted) {
+      // Main timeout - much shorter now since we use progressive loading
+      videoResources.timeoutId = setTimeout(() => {
+        if (!signal.aborted && !videoResources.hasResolved) {
           cleanup()
-          reject(new Error(`Video load timeout: ${url}`))
+          // Final fallback: if we have any usable data, resolve; otherwise reject
+          if (video.readyState >= video.HAVE_METADATA) {
+            console.log(`📺 Video ${url} main timeout but has metadata, resolving anyway`)
+            resolve(video)
+          } else {
+            videoResources.isAborted = true
+            reject(new Error(`Video load timeout: ${url}`))
+          }
         }
-      }, config.value.timeoutMs)
+      }, config.value.timeoutMs) // Normal timeout, not doubled
 
       video.src = url
     })
@@ -443,14 +613,37 @@ export function useBackgroundPreloader() {
   }
 
   /**
-   * Preload a font
+   * Preload a font with security validation and concurrency control
    */
   const preloadFont = (url: string, signal: AbortSignal): Promise<FontFace> => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      // Validate font URL for security
+      if (!isValidFontUrl(url)) {
+        reject(new Error(`Invalid or unsafe font URL: ${url}`))
+        return
+      }
+
+      // Wait for available font loading slot
+      while (activeFontLoads.value >= maxConcurrentFonts) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        if (signal.aborted) {
+          reject(new Error('Font preload aborted while waiting for slot'))
+          return
+        }
+      }
+
+      activeFontLoads.value++
+
       const fontName = `preload-font-${Date.now()}`
       const fontFace = new FontFace(fontName, `url(${url})`)
 
+      const cleanup = () => {
+        activeFontLoads.value = Math.max(0, activeFontLoads.value - 1)
+        signal.removeEventListener('abort', onAbort)
+      }
+
       const onAbort = () => {
+        cleanup()
         reject(new Error('Font preload aborted'))
       }
 
@@ -459,7 +652,7 @@ export function useBackgroundPreloader() {
       // Set timeout
       const timeout = setTimeout(() => {
         if (!signal.aborted) {
-          signal.removeEventListener('abort', onAbort)
+          cleanup()
           reject(new Error(`Font load timeout: ${url}`))
         }
       }, config.value.timeoutMs)
@@ -467,70 +660,210 @@ export function useBackgroundPreloader() {
       fontFace.load()
         .then(() => {
           clearTimeout(timeout)
-          signal.removeEventListener('abort', onAbort)
+          cleanup()
           resolve(fontFace)
         })
         .catch((error) => {
           clearTimeout(timeout)
-          signal.removeEventListener('abort', onAbort)
+          cleanup()
           reject(error)
         })
     })
   }
 
   /**
-   * Start background preloading
+   * Start Stage 2 preloading (Event video and music)
    */
-  const startPreloading = async (event: EventData, getMediaUrl: (url: string) => string) => {
+  const startStage2Preloading = async (event: EventData, getMediaUrl: (url: string) => string) => {
+    // Record start time for fallback timeout calculation
+    stage2StartTime.value.set(event.id, Date.now())
+    
     // Skip if user prefers reduced data usage
     if (respectDataUsage.value) {
-      console.log('⚡ Skipping preloading due to user preferences or connection constraints')
+      console.log('⚡ Stage 2: Skipping preloading due to user preferences or connection constraints')
+      // Mark as completed even if skipped to prevent loading state
+      stage2Progress.value = { completed: 1, total: 1, percentage: 100 }
       return
     }
 
-    if (isPreloading.value) {
-      console.log('⚡ Preloading already in progress')
-      return
-    }
-
-    console.log('⚡ Starting background preloading...')
+    console.log('⚡ Stage 2: Starting preloading for event video and music...')
     
-    isPreloading.value = true
-    preloadResults.value.clear()
+    const stage2Content: PreloadableContent[] = []
 
-    // Generate content to preload
-    const content = generatePreloadContent(event, getMediaUrl)
-    
-    if (content.length === 0) {
-      console.log('⚡ No content to preload')
-      isPreloading.value = false
+    // Critical priority - Event video (must be fully preloaded for immediate playback)
+    if (event.event_video) {
+      stage2Content.push({
+        id: `event-video-${event.id}`,
+        type: 'video',
+        url: getMediaUrl(event.event_video),
+        priority: PreloadPriority.CRITICAL,
+        metadata: { type: 'event_video', stage: 2 }
+      })
+    }
+
+    // High priority - Event music (plays alongside video)
+    if (event.music) {
+      stage2Content.push({
+        id: `music-${event.id}`,
+        type: 'audio',
+        url: getMediaUrl(event.music),
+        priority: PreloadPriority.HIGH,
+        metadata: { type: 'music', stage: 2 }
+      })
+    }
+
+    if (stage2Content.length === 0) {
+      console.log('⚡ Stage 2: No content to preload, marking as ready')
+      // No content to preload = 100% complete
+      stage2Progress.value = { completed: 0, total: 0, percentage: 100 }
       return
     }
 
-    // Sort by priority (lower number = higher priority)
-    content.sort((a, b) => a.priority - b.priority)
-    contentQueue.value = content
-
-    // Initialize progress
-    preloadProgress.value = {
-      total: content.length,
-      completed: 0,
-      failed: 0,
-      percentage: 0,
-      currentPriority: null
-    }
-
-    console.log(`⚡ Queued ${content.length} items for preloading`)
-
-    // Process queue with concurrency control
-    await processPreloadQueue()
-
-    isPreloading.value = false
-    console.log(`⚡ Preloading complete: ${preloadProgress.value.completed} successful, ${preloadProgress.value.failed} failed`)
+    // Process Stage 2 content with concurrency control
+    await processStageContent(stage2Content, 2)
   }
 
   /**
-   * Process the preload queue with concurrency control
+   * Start Stage 3 preloading (Background video and photos)
+   */
+  const startStage3Preloading = async (event: EventData, getMediaUrl: (url: string) => string) => {
+    // Skip if user prefers reduced data usage
+    if (respectDataUsage.value) {
+      console.log('⚡ Stage 3: Skipping preloading due to user preferences or connection constraints')
+      return
+    }
+
+    console.log('⚡ Stage 3: Starting preloading for background video and photos...')
+    
+    const stage3Content: PreloadableContent[] = []
+
+    // Critical priority - Template background video
+    if (event.template_assets?.assets?.standard_background_video) {
+      stage3Content.push({
+        id: `bg-video-${event.id}`,
+        type: 'video',
+        url: getMediaUrl(event.template_assets.assets.standard_background_video),
+        priority: PreloadPriority.CRITICAL,
+        metadata: { type: 'background_video', stage: 3 }
+      })
+    }
+
+    // High priority - First few event photos
+    const photos = event.photos || event.event_photos || []
+    const priorityPhotos = photos.slice(0, 6)
+    priorityPhotos.forEach((photo: EventPhoto, index: number) => {
+      stage3Content.push({
+        id: `photo-${photo.id}`,
+        type: 'image',
+        url: getMediaUrl(photo.image),
+        priority: index < 3 ? PreloadPriority.HIGH : PreloadPriority.MEDIUM,
+        metadata: { type: 'event_photo', order: photo.order, stage: 3 }
+      })
+    })
+
+    // Medium priority - Event logos
+    if (event.logo_one) {
+      stage3Content.push({
+        id: `logo-one-${event.id}`,
+        type: 'image',
+        url: getMediaUrl(event.logo_one),
+        priority: PreloadPriority.MEDIUM_HIGH,
+        metadata: { type: 'logo', stage: 3 }
+      })
+    }
+
+    if (event.logo_two) {
+      stage3Content.push({
+        id: `logo-two-${event.id}`,
+        type: 'image',
+        url: getMediaUrl(event.logo_two),
+        priority: PreloadPriority.MEDIUM_HIGH,
+        metadata: { type: 'logo', stage: 3 }
+      })
+    }
+
+    if (stage3Content.length === 0) {
+      console.log('⚡ Stage 3: No content to preload, marking as ready')
+      // No content to preload = 100% complete
+      stage3Progress.value = { completed: 0, total: 0, percentage: 100 }
+      return
+    }
+
+    // Process Stage 3 content with concurrency control
+    await processStageContent(stage3Content, 3)
+  }
+
+  /**
+   * Start background preloading (backwards compatibility - now triggers Stage 2)
+   */
+  const startPreloading = async (event: EventData, getMediaUrl: (url: string) => string) => {
+    console.log('⚡ Starting sequential preloading: Stage 2 first...')
+    await startStage2Preloading(event, getMediaUrl)
+  }
+
+  /**
+   * Process stage-specific content with concurrency control and progress tracking
+   */
+  const processStageContent = async (stageContent: PreloadableContent[], stageNumber: number) => {
+    if (stageContent.length === 0) return
+
+    // Sort by priority (lower number = higher priority)
+    stageContent.sort((a, b) => a.priority - b.priority)
+
+    // Initialize stage progress - handle empty content gracefully
+    const stageProgressRef = stageNumber === 2 ? stage2Progress : stage3Progress
+    if (stageContent.length === 0) {
+      stageProgressRef.value = { completed: 0, total: 0, percentage: 100 }
+      console.log(`⚡ Stage ${stageNumber}: No content to process, marking as complete`)
+      return
+    }
+    
+    stageProgressRef.value = { completed: 0, total: stageContent.length, percentage: 0 }
+
+    console.log(`⚡ Stage ${stageNumber}: Processing ${stageContent.length} items...`)
+    console.log(`⚡ Stage ${stageNumber}: Initial progress:`, stageProgressRef.value)
+    
+    const running = new Set<Promise<PreloadResult>>()
+    let processed = 0
+
+    for (const content of stageContent) {
+      // Wait if we're at max concurrency
+      while (running.size >= config.value.maxConcurrentLoads) {
+        await Promise.race(running)
+      }
+
+      const task = preloadContent(content).then(result => {
+        preloadResults.value.set(result.id, result)
+        processed++
+        
+        // Update stage progress with proper calculation
+        const newPercentage = stageContent.length > 0 ? Math.round((processed / stageContent.length) * 100) : 100
+        stageProgressRef.value.completed = processed
+        stageProgressRef.value.percentage = newPercentage
+        
+        console.log(`⚡ Stage ${stageNumber}: Progress update: ${processed}/${stageContent.length} (${newPercentage}%)`)
+        
+        if (result.success) {
+          console.log(`✅ Stage ${stageNumber}: Preloaded ${content.type} ${content.id} (${processed}/${stageContent.length})`)
+        } else {
+          console.warn(`❌ Stage ${stageNumber}: Failed to preload ${content.type} ${content.id}`, result.error)
+        }
+
+        return result
+      }).finally(() => {
+        running.delete(task)
+      })
+
+      running.add(task)
+    }
+
+    // Wait for all tasks to complete
+    await Promise.all(running)
+    console.log(`⚡ Stage ${stageNumber}: Completed ${processed} items with final progress:`, stageProgressRef.value)
+  }
+
+  /**
+   * Process the preload queue with concurrency control (backwards compatibility)
    */
   const processPreloadQueue = async () => {
     const running = new Set<Promise<PreloadResult>>()
@@ -588,11 +921,64 @@ export function useBackgroundPreloader() {
   }
 
   /**
-   * Clear preload cache
+   * Creates a memory cleanup callback for video elements
+   */
+  const createVideoMemoryCleanup = (video: HTMLVideoElement, url: string) => {
+    return () => {
+      try {
+        // Clear video source and data to free memory
+        video.src = ''
+        video.load() // Reset video element state
+        console.log(`🛡️ Video memory cleanup completed for: ${url}`)
+      } catch (error) {
+        console.warn(`⚠️ Video cleanup warning for ${url}:`, error)
+      }
+    }
+  }
+
+  /**
+   * Clear video cache memory after playback starts
+   */
+  const clearVideoCache = (eventId: string) => {
+    const videoContentId = `event-video-${eventId}`
+    const bgVideoContentId = `bg-video-${eventId}`
+    
+    // Execute cleanup callbacks
+    const videoCleanup = videoCacheCleanupCallbacks.value.get(videoContentId)
+    const bgVideoCleanup = videoCacheCleanupCallbacks.value.get(bgVideoContentId)
+    
+    if (videoCleanup) {
+      videoCleanup()
+      videoCacheCleanupCallbacks.value.delete(videoContentId)
+    }
+    
+    if (bgVideoCleanup) {
+      bgVideoCleanup()
+      videoCacheCleanupCallbacks.value.delete(bgVideoContentId)
+    }
+    
+    console.log(`🛡️ Video cache cleared for event: ${eventId}`)
+  }
+
+  /**
+   * Clear preload cache with proper memory cleanup
    */
   const clearCache = () => {
+    // Execute all video cleanup callbacks
+    videoCacheCleanupCallbacks.value.forEach((cleanup, id) => {
+      try {
+        cleanup()
+      } catch (error) {
+        console.warn(`⚠️ Cleanup warning for ${id}:`, error)
+      }
+    })
+    videoCacheCleanupCallbacks.value.clear()
+    
     preloadCache.value.clear()
-    console.log('⚡ Preload cache cleared')
+    cacheAccessOrder.value = []
+    currentCacheMemory = 0
+    stage2StartTime.value.clear()
+    console.log('⚡ Preload cache cleared with memory tracking reset')
   }
 
   /**
@@ -607,6 +993,59 @@ export function useBackgroundPreloader() {
    */
   const isContentPreloaded = (url: string): boolean => {
     return preloadCache.value.has(url)
+  }
+
+  /**
+   * Check if critical Stage 2 content (event video) is ready for immediate playbook
+   * Includes fallback mechanism if preloading fails or times out
+   */
+  const isStage2Ready = (eventId: string, eventVideoUrl: string | null): boolean => {
+    if (!eventVideoUrl) {
+      console.log(`⚡ Stage 2 Ready: No video URL, ready to proceed for event ${eventId}`)
+      return true // No video means ready to proceed
+    }
+    
+    const result = preloadResults.value.get(`event-video-${eventId}`)
+    if (result?.success === true) {
+      console.log(`⚡ Stage 2 Ready: Video preloaded successfully for event ${eventId}`)
+      return true
+    }
+    
+    // Check if stage 2 progress shows completion
+    if (stage2Progress.value.percentage >= 100) {
+      console.log(`⚡ Stage 2 Ready: Progress shows 100% completion for event ${eventId}`)
+      return true
+    }
+    
+    // FALLBACK MECHANISM: If preloading failed or is taking too long, 
+    // enable button after reasonable timeout
+    const startTime = stage2StartTime.value.get(eventId)
+    if (startTime) {
+      const elapsed = Date.now() - startTime
+      if (elapsed > FALLBACK_TIMEOUT_MS) {
+        console.warn(`⚠️ Stage 2 fallback: Enabling button after ${elapsed}ms timeout for event ${eventId}`)
+        console.warn(`📊 Preload result:`, result)
+        console.warn(`📊 Stage 2 progress:`, stage2Progress.value)
+        return true // Allow user to proceed even if preload failed
+      }
+    }
+    
+    console.log(`⚡ Stage 2 Not Ready: Still waiting for preload completion for event ${eventId}`)
+    console.log(`📊 Current result:`, result)
+    console.log(`📊 Current progress:`, stage2Progress.value)
+    console.log(`📊 Start time:`, startTime, 'Elapsed:', startTime ? Date.now() - startTime : 'N/A')
+    
+    return false
+  }
+
+  /**
+   * Check if Stage 3 content is preloaded
+   */
+  const isStage3Ready = (eventId: string, standardBackgroundVideoUrl: string | null): boolean => {
+    if (!standardBackgroundVideoUrl) return true // No background video means ready
+    
+    const result = preloadResults.value.get(`bg-video-${eventId}`)
+    return result?.success === true
   }
 
   /**
@@ -629,16 +1068,300 @@ export function useBackgroundPreloader() {
     }
   }
 
-  // Cleanup on unmount
+  // Cache management functions
+  /**
+   * Estimates memory usage of cached item
+   */
+  const estimateMemoryUsage = (item: any): number => {
+    if (item instanceof HTMLImageElement) {
+      // Rough estimation: width * height * 4 bytes per pixel
+      return (item.naturalWidth || 100) * (item.naturalHeight || 100) * 4
+    }
+    if (item instanceof HTMLVideoElement) {
+      // Rough estimation for video metadata
+      return 10 * 1024 // 10KB for metadata
+    }
+    if (item instanceof HTMLAudioElement) {
+      return 5 * 1024 // 5KB for audio metadata
+    }
+    if (item instanceof FontFace) {
+      return 50 * 1024 // 50KB average font size
+    }
+    return 1024 // Default 1KB
+  }
+
+  /**
+   * Sets cache item with LRU eviction
+   */
+  const setCacheItem = (url: string, item: any) => {
+    const itemSize = estimateMemoryUsage(item)
+    
+    // Check if adding this item would exceed memory limits
+    while (currentCacheMemory + itemSize > maxCacheMemory.value && cacheAccessOrder.value.length > 0) {
+      evictLeastRecentlyUsed()
+    }
+
+    // Check if adding this item would exceed count limits
+    while (preloadCache.value.size >= maxCacheSize.value && cacheAccessOrder.value.length > 0) {
+      evictLeastRecentlyUsed()
+    }
+
+    // Add to cache
+    preloadCache.value.set(url, item)
+    currentCacheMemory += itemSize
+    
+    // Update access order
+    updateCacheAccess(url)
+  }
+
+  /**
+   * Updates cache access order for LRU tracking
+   */
+  const updateCacheAccess = (url: string) => {
+    // Remove from current position
+    const currentIndex = cacheAccessOrder.value.indexOf(url)
+    if (currentIndex > -1) {
+      cacheAccessOrder.value.splice(currentIndex, 1)
+    }
+    
+    // Add to end (most recently used)
+    cacheAccessOrder.value.push(url)
+  }
+
+  /**
+   * Evicts least recently used cache item
+   */
+  const evictLeastRecentlyUsed = () => {
+    if (cacheAccessOrder.value.length === 0) return
+
+    const lruUrl = cacheAccessOrder.value.shift()
+    if (lruUrl && preloadCache.value.has(lruUrl)) {
+      const item = preloadCache.value.get(lruUrl)
+      const itemSize = estimateMemoryUsage(item)
+      
+      preloadCache.value.delete(lruUrl)
+      currentCacheMemory = Math.max(0, currentCacheMemory - itemSize)
+      
+      console.log(`⚡ Evicted LRU cache item: ${lruUrl} (${itemSize} bytes)`)
+    }
+  }
+
+  // Font loading concurrency control
+  const activeFontLoads = ref(0)
+  const maxConcurrentFonts = 3
+
+  // Security helper functions
+  /**
+   * Creates a properly formatted SVG data URL
+   */
+  const createSvgDataUrl = (svgCode: string): string | null => {
+    const sanitizedSvg = sanitizeSvgContent(svgCode)
+    if (!sanitizedSvg) {
+      return null
+    }
+
+    try {
+      // Ensure the SVG has proper namespace and structure
+      const processedSvg = ensureSvgStructure(sanitizedSvg)
+      
+      // Create data URL with proper encoding
+      // Option 1: Use base64 encoding (more reliable for complex SVGs)
+      const base64Svg = btoa(unescape(encodeURIComponent(processedSvg)))
+      return `data:image/svg+xml;base64,${base64Svg}`
+      
+      // Option 2: Use URL encoding (commented out as fallback)
+      // return `data:image/svg+xml,${encodeURIComponent(processedSvg).replace(/'/g, '%27')}`
+      
+    } catch (error) {
+      console.warn('Failed to create SVG data URL:', error)
+      return null
+    }
+  }
+
+  /**
+   * Ensures SVG has proper structure and namespace
+   */
+  const ensureSvgStructure = (svgContent: string): string => {
+    let processedSvg = svgContent.trim()
+    
+    // Add XML namespace if missing
+    if (!processedSvg.includes('xmlns="http://www.w3.org/2000/svg"')) {
+      processedSvg = processedSvg.replace(
+        /<svg([^>]*)>/i, 
+        '<svg$1 xmlns="http://www.w3.org/2000/svg">'
+      )
+    }
+    
+    // Ensure viewBox exists for better scaling (if width/height are present)
+    if (!processedSvg.includes('viewBox=') && 
+        (processedSvg.includes('width=') || processedSvg.includes('height='))) {
+      const widthMatch = processedSvg.match(/width=["']([^"']*)["']/i)
+      const heightMatch = processedSvg.match(/height=["']([^"']*)["']/i)
+      
+      if (widthMatch && heightMatch) {
+        const width = parseFloat(widthMatch[1]) || 100
+        const height = parseFloat(heightMatch[1]) || 100
+        processedSvg = processedSvg.replace(
+          /<svg([^>]*)>/i, 
+          `<svg$1 viewBox="0 0 ${width} ${height}">`
+        )
+      }
+    }
+    
+    return processedSvg
+  }
+
+  /**
+   * Sanitizes SVG content to prevent XSS attacks
+   */
+  const sanitizeSvgContent = (svgCode: string): string | null => {
+    if (!svgCode || typeof svgCode !== 'string') {
+      return null
+    }
+
+    // Check for suspicious content first
+    if (containsSuspiciousContent(svgCode)) {
+      console.warn('Suspicious SVG content detected and blocked')
+      return null
+    }
+
+    // Allow only safe SVG elements and attributes
+    const sanitized = sanitizeHtml(svgCode, {
+      customConfig: {
+        ALLOWED_TAGS: [
+          'svg', 'path', 'circle', 'rect', 'line', 'ellipse', 'polygon', 'polyline', 
+          'g', 'defs', 'use', 'text', 'tspan', 'clipPath', 'mask', 'pattern', 
+          'linearGradient', 'radialGradient', 'stop', 'symbol', 'marker'
+        ],
+        ALLOWED_ATTR: [
+          'd', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 
+          'width', 'height', 'viewBox', 'fill', 'stroke', 'stroke-width', 
+          'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin',
+          'transform', 'id', 'class', 'opacity', 'fill-opacity', 'stroke-opacity',
+          'xmlns', 'xmlns:xlink', 'version', 'points', 'font-family', 'font-size',
+          'text-anchor', 'dominant-baseline', 'dx', 'dy', 'rotate',
+          'gradientUnits', 'gradientTransform', 'offset', 'stop-color', 'stop-opacity'
+        ],
+        FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'link', 'style', 'foreignObject'],
+        FORBID_ATTR: [
+          'onload', 'onerror', 'onclick', 'onmouseover', 'onmouseout', 'onmousemove',
+          'href', 'xlink:href', 'javascript', 'vbscript', 'data'
+        ]
+      }
+    })
+
+    return sanitized.trim() || null
+  }
+
+  /**
+   * Validates font URLs for security
+   */
+  const isValidFontUrl = (url: string): boolean => {
+    if (!url || typeof url !== 'string') {
+      return false
+    }
+
+    try {
+      const urlObj = new URL(url)
+      
+      // Allow only specific protocols
+      if (!['https:', 'data:'].includes(urlObj.protocol)) {
+        return false
+      }
+
+      // For data URLs, ensure they're font types
+      if (urlObj.protocol === 'data:') {
+        const validDataTypes = [
+          'data:font/woff',
+          'data:font/woff2', 
+          'data:font/truetype',
+          'data:font/opentype',
+          'data:application/font-woff',
+          'data:application/font-woff2'
+        ]
+        return validDataTypes.some(type => url.startsWith(type))
+      }
+
+      // For HTTPS URLs, basic domain validation
+      // In production, you might want to maintain a whitelist of trusted domains
+      const hostname = urlObj.hostname.toLowerCase()
+      
+      // Block obviously malicious or suspicious domains
+      const suspiciousDomains = ['localhost', '127.0.0.1', '0.0.0.0']
+      if (suspiciousDomains.includes(hostname)) {
+        return false
+      }
+
+      // Ensure file extension is font-related
+      const validExtensions = ['.woff', '.woff2', '.ttf', '.otf', '.eot']
+      const hasValidExtension = validExtensions.some(ext => 
+        urlObj.pathname.toLowerCase().endsWith(ext)
+      )
+
+      return hasValidExtension
+
+    } catch (error) {
+      // Invalid URL
+      return false
+    }
+  }
+
+  /**
+   * Safely gets network connection info without type casting
+   */
+  const getNetworkConnection = (): NetworkInformation | null => {
+    if (typeof navigator === 'undefined') {
+      return null
+    }
+
+    // Check if the connection property exists without type casting
+    if ('connection' in navigator && navigator.connection) {
+      return navigator.connection as NetworkInformation
+    }
+
+    // Check for vendor prefixed versions
+    const prefixed = ['mozConnection', 'webkitConnection'] as const
+    for (const prop of prefixed) {
+      if (prop in navigator && (navigator as any)[prop]) {
+        return (navigator as any)[prop] as NetworkInformation
+      }
+    }
+
+    return null
+  }
+
+  // TypeScript interface for network connection
+  interface NetworkInformation {
+    effectiveType?: '2g' | '3g' | '4g' | 'slow-2g'
+    saveData?: boolean
+  }
+
+  // Comprehensive cleanup on unmount
   onUnmounted(() => {
+    console.log('⚡ Background preloader unmounting - cleaning up all resources')
+    
+    // Cancel all active preloading
     cancelPreloading()
+    
+    // Clear cache and memory tracking
     clearCache()
+    
+    // Reset font loading counter
+    activeFontLoads.value = 0
+    
+    // Clear all remaining references
+    preloadResults.value.clear()
+    contentQueue.value = []
+    
+    console.log('⚡ Background preloader cleanup complete')
   })
 
   return {
     // State
     isPreloading: readonly(isPreloading),
     preloadProgress: readonly(preloadProgress),
+    stage2Progress: readonly(stage2Progress),
+    stage3Progress: readonly(stage3Progress),
     isComplete: readonly(isComplete),
     successfulLoads: readonly(successfulLoads),
     failedLoads: readonly(failedLoads),
@@ -646,10 +1369,15 @@ export function useBackgroundPreloader() {
 
     // Methods
     startPreloading,
+    startStage2Preloading,
+    startStage3Preloading,
     cancelPreloading,
     clearCache,
+    clearVideoCache, // New: video-specific memory cleanup
     updateConfig,
     isContentPreloaded,
+    isStage2Ready,
+    isStage3Ready,
     getStats,
 
     // Types for external use

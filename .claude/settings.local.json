@@ -33,7 +33,12 @@
       "Bash(git restore:*)",
       "Bash(git pull:*)",
       "Bash(git checkout:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git log:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rev-list:*)",
+      "WebFetch(domain:localhost)",
+      "WebSearch"
     ],
     "deny": [],
     "additionalDirectories": [

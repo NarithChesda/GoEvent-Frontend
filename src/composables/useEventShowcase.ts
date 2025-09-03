@@ -1,8 +1,10 @@
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { eventsService, type EventPaymentMethod } from '../services/api'
 import { useBackgroundPreloader } from './useBackgroundPreloader'
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
+import { usePerformance, ResourceManager } from '../utils/performance'
+import { sanitizeHtml, containsSuspiciousContent } from '../utils/sanitize'
 
 // Interfaces
 export interface Host {
@@ -157,11 +159,29 @@ export function useEventShowcase() {
   const {
     isPreloading,
     preloadProgress,
+    stage2Progress,
+    stage3Progress,
     startPreloading,
+    startStage2Preloading,
+    startStage3Preloading,
     cancelPreloading,
+    clearVideoCache,
     isContentPreloaded,
+    isStage2Ready,
+    isStage3Ready,
     getStats
   } = useBackgroundPreloader()
+
+  // Performance utilities with automatic cleanup
+  const {
+    deduplicateRequest,
+    addTimeout,
+    addCleanup,
+    cleanup: cleanupPerformance
+  } = usePerformance()
+
+  // Resource manager for comprehensive cleanup
+  const resourceManager = new ResourceManager()
 
   // State
   const loading = ref(false)
@@ -207,49 +227,28 @@ export function useEventShowcase() {
     }
     
     const fontList = fonts || [] as TemplateFont[]
-    
-    // TEST: If no fonts available, inject Tom Template 3 fonts for testing
-    if (fontList.length === 0) {
-      console.log('🧪 No template fonts in API, using Tom Template 3 test fonts')
-      return [
-        {
-          id: 5,
-          language: 'kh',
-          font_name: 'KhmerOSMoulPali',
-          font_type: 'primary',
-          font: {
-            name: 'KhmerOSMoulPali',
-            font_file: '/media/fonts/KhmerOSMoulpali.ttf'
-          }
-        },
-        {
-          id: 6,
-          language: 'en',
-          font_name: 'BrushScript',
-          font_type: 'primary',
-          font: {
-            name: 'BrushScript',
-            font_file: '/media/fonts/Brush_Script.ttf'
-          }
-        },
-        {
-          id: 11,
-          language: 'en',
-          font_name: 'Poppins-Regular',
-          font_type: 'secondary',
-          font: {
-            name: 'Poppins-Regular',
-            font_file: '/media/fonts/Poppins-Regular.ttf'
-          }
-        }
-      ] as TemplateFont[]
-    }
-    
     return fontList
   })
   
-  // Get fonts for current language with comprehensive font type support
+  // Memoized font processing with caching for performance
+  const languageFontsCache = ref<Map<string, any>>(new Map())
+  const fontProcessingVersion = ref(0) // Version counter for cache invalidation
+
+  // Watch for changes that should invalidate font cache
+  watch([templateFonts, currentLanguage], () => {
+    fontProcessingVersion.value++
+    languageFontsCache.value.clear()
+  })
+
   const getLanguageFonts = computed(() => {
+    const cacheKey = `${currentLanguage.value}-v${fontProcessingVersion.value}`
+    
+    // Check cache first - huge performance improvement for repeated access
+    if (languageFontsCache.value.has(cacheKey)) {
+      return languageFontsCache.value.get(cacheKey)
+    }
+    
+    // Expensive computation - only run when cache miss
     const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
     
     // Create font type mapping
@@ -260,39 +259,37 @@ export function useEventShowcase() {
       decorative: null as TemplateFont | null
     }
     
-    // First pass: Use new font_type field if available
-    langFonts.forEach(font => {
+    // First pass: Use new font_type field if available (most efficient)
+    for (const font of langFonts) {
       if (font.font_type) {
         const type = font.font_type.toLowerCase() as keyof typeof fontTypeMap
         if (type in fontTypeMap) {
           fontTypeMap[type] = font
         }
       }
-    })
+    }
     
     // Second pass: Backward compatibility with name-based detection for missing types
     const remainingFonts = langFonts.filter(font => {
-      // Skip fonts already assigned by font_type
       return !font.font_type || !Object.values(fontTypeMap).includes(font)
     })
     
-    // Sort remaining fonts for backward compatibility
-    const sortedFonts = [...remainingFonts].sort((a, b) => {
+    // Optimized sorting with pre-compiled patterns
+    const sortPatterns = [
+      { pattern: 'primary', priority: 1 },
+      { pattern: 'secondary', priority: 2 },
+      { pattern: 'accent', priority: 3 },
+      { pattern: 'decorative', priority: 4 }
+    ]
+    
+    const sortedFonts = remainingFonts.sort((a, b) => {
       const aName = (a.font_name || '').toLowerCase()
       const bName = (b.font_name || '').toLowerCase()
       
-      // Check for explicit naming patterns
-      if (aName.includes('primary')) return -1
-      if (bName.includes('primary')) return 1
-      if (aName.includes('secondary')) return 1
-      if (bName.includes('secondary')) return -1
-      if (aName.includes('accent')) return 1
-      if (bName.includes('accent')) return -1
-      if (aName.includes('decorative')) return 1
-      if (bName.includes('decorative')) return -1
+      const aPriority = sortPatterns.find(p => aName.includes(p.pattern))?.priority ?? 999
+      const bPriority = sortPatterns.find(p => bName.includes(p.pattern))?.priority ?? 999
       
-      // Fallback to ID or original order
-      return (a.id || 0) - (b.id || 0)
+      return aPriority !== bPriority ? aPriority - bPriority : ((a.id || 0) - (b.id || 0))
     })
     
     // Fill in missing font types from sorted fonts
@@ -315,41 +312,78 @@ export function useEventShowcase() {
     fontTypeMap.accent = fontTypeMap.accent || fontTypeMap.primary
     fontTypeMap.decorative = fontTypeMap.decorative || fontTypeMap.secondary || fontTypeMap.primary
     
+    // Cache the result for subsequent accesses
+    languageFontsCache.value.set(cacheKey, fontTypeMap)
+    
     return fontTypeMap
   })
   
-  // Primary font for headings and important text
+  // Dynamic font fallback system based on language and context
+  const getFallbackFontStack = (fontType: 'serif' | 'sans-serif' | 'decorative' = 'sans-serif') => {
+    const language = currentLanguage.value.toLowerCase()
+    
+    // Language-specific optimized fallbacks
+    const languageFallbacks: Record<string, string> = {
+      'km': fontType === 'serif' 
+        ? '"Noto Serif Khmer", "Khmer Serif", serif' 
+        : '"Noto Sans Khmer", "Khmer Sans", sans-serif',
+      'kh': fontType === 'serif' 
+        ? '"Noto Serif Khmer", "Khmer Serif", serif' 
+        : '"Noto Sans Khmer", "Khmer Sans", sans-serif',
+      'en': fontType === 'serif'
+        ? '"Inter", "Georgia", "Times New Roman", serif'
+        : '"Inter", "Helvetica Neue", "Arial", sans-serif',
+      'default': fontType === 'serif'
+        ? '"Inter", "Georgia", serif'
+        : '"Inter", "Helvetica Neue", sans-serif'
+    }
+    
+    return languageFallbacks[language] || languageFallbacks['default']
+  }
+
+  // Optimized font computeds with intelligent caching and fallbacks
   const primaryFont = computed(() => {
-    // Include fontsLoaded in dependency to trigger reactivity
-    const isLoaded = fontsLoaded.value // This makes the computed reactive to font loading
     const font = getLanguageFonts.value.primary
-    const fontName = getFontName(font) || '"Inter", "Helvetica Neue", "Arial", sans-serif'
-    return isLoaded ? fontName : fontName // Ensure reactivity
+    const customName = getFontName(font)
+    
+    if (customName && fontsLoaded.value) {
+      return `"${customName}", ${getFallbackFontStack('sans-serif')}`
+    }
+    
+    return getFallbackFontStack('sans-serif')
   })
   
-  // Secondary font for body text and descriptions
   const secondaryFont = computed(() => {
-    // Include fontsLoaded in dependency to trigger reactivity
-    const isLoaded = fontsLoaded.value // This makes the computed reactive to font loading
     const font = getLanguageFonts.value.secondary
-    const fontName = getFontName(font) || primaryFont.value
-    return isLoaded ? fontName : fontName // Ensure reactivity
+    const customName = getFontName(font)
+    
+    if (customName && fontsLoaded.value) {
+      return `"${customName}", ${getFallbackFontStack('sans-serif')}`
+    }
+    
+    return primaryFont.value
   })
   
-  // Accent font for special highlights
   const accentFont = computed(() => {
-    const isLoaded = fontsLoaded.value // Reactive to font loading
     const font = getLanguageFonts.value.accent
-    const fontName = getFontName(font) || primaryFont.value
-    return isLoaded ? fontName : fontName // Ensure reactivity
+    const customName = getFontName(font)
+    
+    if (customName && fontsLoaded.value) {
+      return `"${customName}", ${getFallbackFontStack('decorative')}`
+    }
+    
+    return primaryFont.value
   })
   
-  // Decorative font for artistic elements
   const decorativeFont = computed(() => {
-    const isLoaded = fontsLoaded.value // Reactive to font loading
     const font = getLanguageFonts.value.decorative
-    const fontName = getFontName(font) || primaryFont.value
-    return isLoaded ? fontName : fontName // Ensure reactivity
+    const customName = getFontName(font)
+    
+    if (customName && fontsLoaded.value) {
+      return `"${customName}", ${getFallbackFontStack('decorative')}`
+    }
+    
+    return accentFont.value
   })
   
   // Helper function to get font name with backward compatibility
@@ -376,15 +410,36 @@ export function useEventShowcase() {
   const eventTexts = computed(() => event.value?.event_texts || [] as EventText[])
   const hosts = computed(() => event.value?.hosts || [] as Host[])
   const agendaItems = computed(() => event.value?.agenda_items || [] as AgendaItem[])
+  // Cached photo sorting for performance
+  const photosCache = ref<{ version: number, sorted: EventPhoto[] }>({ version: -1, sorted: [] })
+  const photosCacheVersion = 0
+
   const eventPhotos = computed(() => {
     // Use photos field from API response (new format) or event_photos (legacy)
     const photos = event.value?.photos || event.value?.event_photos || []
-    return photos.sort((a, b) => a.order - b.order)
+    if (photos.length === 0) return []
+    
+    // Create a simple version hash based on photo count and first photo ID
+    const currentVersion = photos.length + (photos[0]?.id || 0) + (photos[0]?.order || 0)
+    
+    // Check if cache is still valid
+    if (photosCache.value.version === currentVersion && photosCache.value.sorted.length === photos.length) {
+      return photosCache.value.sorted
+    }
+    
+    // Sort and cache the result
+    const sorted = [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
+    photosCache.value = { version: currentVersion, sorted }
+    
+    return sorted
   })
 
+  // Memoized payment methods computation
   const paymentMethods = computed(() => {
     // Use payment_methods field from API response
     const methods = event.value?.payment_methods || []
+    if (methods.length === 0) return []
+    
     return methods
       .filter(method => method.is_active)
       .sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -407,7 +462,7 @@ export function useEventShowcase() {
     return color?.hex_color_code || color?.hex_code || primaryColor.value
   })
   
-  // Deprecated: Use primaryFont and secondaryFont instead
+  // Deprecated: Use primaryFont and secondaryFont instead - kept for backward compatibility
   const currentFont = computed(() => primaryFont.value)
   
   const isEventPast = computed(() => {
@@ -432,6 +487,14 @@ export function useEventShowcase() {
     return null
   })
 
+  // Envelope button readiness - separates cover stage assets from Stage 2 preloading
+  const isEnvelopeButtonReady = computed(() => {
+    if (!event.value?.id) return false // Need event ID to check preload status
+    
+    // Button readiness only depends on Stage 2 preloading, not cover stage assets
+    return isStage2Ready(event.value.id, eventVideoUrl.value)
+  })
+
   // Methods
   const loadShowcase = async (forceLanguage?: string) => {
     const eventId = route.params.id as string
@@ -440,55 +503,68 @@ export function useEventShowcase() {
       return
     }
 
-    loading.value = true
-    error.value = null
+    // Create a unique key for request deduplication
+    const language = forceLanguage || route.query.lang as string || currentLanguage.value
+    const guest = guestName.value || ''
+    const requestKey = `showcase-${eventId}-${language}-${guest}`
 
     try {
-      // If forceLanguage is provided, use it. Otherwise check URL, then fall back to current
-      if (forceLanguage) {
-        currentLanguage.value = forceLanguage
-      } else {
-        const urlLanguage = route.query.lang as string
-        if (urlLanguage) {
-          currentLanguage.value = urlLanguage
+      // Use request deduplication to prevent multiple concurrent calls
+      const data = await deduplicateRequest(requestKey, async () => {
+        loading.value = true
+        error.value = null
+
+        // If forceLanguage is provided, use it. Otherwise check URL, then fall back to current
+        if (forceLanguage) {
+          currentLanguage.value = forceLanguage
+        } else {
+          const urlLanguage = route.query.lang as string
+          if (urlLanguage) {
+            currentLanguage.value = urlLanguage
+          }
         }
-      }
-      
-      const params: { lang?: string; guest_name?: string } = {
-        lang: currentLanguage.value
-      }
-      
-      if (guestName.value) {
-        params.guest_name = guestName.value as string
-      }
-
-      // Fetch the showcase data
-      const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
-
-      if (showcaseResponse.success && showcaseResponse.data) {
-        showcaseData.value = showcaseResponse.data
         
-        // Photos are now included in the showcase API response
-        // The API returns photos in the 'photos' field
+        const params: { lang?: string; guest_name?: string } = {
+          lang: currentLanguage.value
+        }
         
-        // Set current language from meta
-        if (showcaseResponse.data.meta?.language) {
-          currentLanguage.value = showcaseResponse.data.meta.language
+        if (guestName.value) {
+          params.guest_name = guestName.value as string
         }
 
-        // Update meta tags for social sharing
-        updateEventMetaTags(showcaseResponse.data.event)
+        console.log('🚀 Loading showcase with params:', params)
 
-        // Load custom fonts asynchronously
-        loadCustomFonts().catch(err => {
-          console.error('Font loading failed:', err)
-        })
-      } else {
-        error.value = showcaseResponse.message || 'Failed to load event invitation'
+        // Fetch the showcase data
+        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
+
+        if (!showcaseResponse.success || !showcaseResponse.data) {
+          throw new Error(showcaseResponse.message || 'Failed to load event invitation')
+        }
+
+        return showcaseResponse.data
+      })
+
+      // Update state with loaded data
+      showcaseData.value = data
+      
+      // Set current language from meta
+      if (data.meta?.language) {
+        currentLanguage.value = data.meta.language
       }
+
+      // Update meta tags for social sharing
+      updateEventMetaTags(data.event)
+
+      // Load custom fonts asynchronously with better error handling
+      loadCustomFonts().catch(err => {
+        console.warn('Font loading failed, using fallback fonts:', err)
+      })
+      
     } catch (err: unknown) {
       console.error('Error loading showcase:', err)
-      error.value = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Failed to load event invitation'
+      error.value = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 
+                   (err as Error)?.message || 
+                   'Failed to load event invitation'
     } finally {
       loading.value = false
     }
@@ -541,53 +617,11 @@ export function useEventShowcase() {
     console.log(`🎨 Loading fonts for language: ${currentLanguage.value}`)
     console.log('Available fonts:', langFonts)
     
-    // TEST: If no fonts available, inject Tom Template 3 fonts for testing
+    // If no fonts available, gracefully fallback to system fonts
     if (langFonts.length === 0) {
-      console.log('🧪 No template fonts found, injecting Tom Template 3 fonts for testing...')
-      const testFonts = [
-        {
-          id: 5,
-          language: 'kh',
-          font_name: 'KhmerOSMoulPali',
-          font_type: 'primary',
-          font: {
-            name: 'KhmerOSMoulPali',
-            font_file: '/media/fonts/KhmerOSMoulpali.ttf'
-          }
-        },
-        {
-          id: 6,
-          language: 'en',
-          font_name: 'BrushScript',
-          font_type: 'primary',
-          font: {
-            name: 'BrushScript',
-            font_file: '/media/fonts/Brush_Script.ttf'
-          }
-        },
-        {
-          id: 11,
-          language: 'en',
-          font_name: 'Poppins-Regular',
-          font_type: 'secondary',
-          font: {
-            name: 'Poppins-Regular',
-            font_file: '/media/fonts/Poppins-Regular.ttf'
-          }
-        }
-      ]
-      
-      // Filter for current language
-      const testLangFonts = testFonts.filter(f => f.language === currentLanguage.value)
-      
-      // Load fonts in parallel
-      const loadPromises = testLangFonts.map(font => loadSingleFont(font))
-      await Promise.all(loadPromises)
-      
+      console.log('🔤 No template fonts found for language, using system font fallbacks')
       fontsLoaded.value = true
-      console.log('🎉 All test fonts loaded successfully!')
-      
-      // Force DOM update to apply new fonts
+      // Force DOM update to apply fallback fonts
       await nextTick()
       return
     }
@@ -614,6 +648,12 @@ export function useEventShowcase() {
       console.log(`🔗 Attempting to load font from: ${fullUrl}`)
       
       try {
+        // Validate font URL for security before loading
+        if (!isValidFontUrl(fullUrl)) {
+          console.warn(`⚠️ Invalid or unsafe font URL blocked: ${fullUrl}`)
+          return
+        }
+
         // Always try to load the font, don't rely on document.fonts.check
         const fontFace = new FontFace(fontName, `url(${fullUrl})`)
         const loadedFont = await fontFace.load()
@@ -647,6 +687,15 @@ export function useEventShowcase() {
       audioRef.value = new Audio(eventMusicUrl.value)
       audioRef.value.loop = true
       audioRef.value.volume = 0.35
+      
+      // Add cleanup for audio resource
+      addCleanup(() => {
+        if (audioRef.value) {
+          audioRef.value.pause()
+          audioRef.value.src = ''
+          audioRef.value = null
+        }
+      })
     }
   }
 
@@ -689,17 +738,38 @@ export function useEventShowcase() {
       if (eventMusicUrl.value) {
         playMusic()
       }
+
+      // Start Stage 3 preloading immediately when Stage 2 begins
+      if (event.value?.id) {
+        startStage3Preloading(event.value, getMediaUrl).catch(error => {
+          console.warn('⚡ Stage 3 preloading failed:', error)
+        })
+      }
       
       await nextTick()
       if (eventVideoRef.value) {
         // Ensure video plays with sound
         eventVideoRef.value.muted = false
-        eventVideoRef.value.play().catch(err => {
+        eventVideoRef.value.play().then(() => {
+          // Video started playing successfully - clear cache memory after a short delay
+          setTimeout(() => {
+            if (event.value?.id) {
+              clearVideoCache(event.value.id)
+            }
+          }, 3000) // Wait 3 seconds to ensure stable playback
+        }).catch(err => {
           console.error('Failed to play event video:', err)
           // Try playing muted if unmuted fails
           if (eventVideoRef.value) {
             eventVideoRef.value.muted = true
-            eventVideoRef.value.play()
+            eventVideoRef.value.play().then(() => {
+              // Even muted playback counts - clean up cache
+              setTimeout(() => {
+                if (event.value?.id) {
+                  clearVideoCache(event.value.id)
+                }
+              }, 3000)
+            })
           }
         })
       }
@@ -713,11 +783,26 @@ export function useEventShowcase() {
           playMusic()
         }
       }, 1000)
+      
+      // Start Stage 3 preloading even without video
+      if (event.value?.id) {
+        startStage3Preloading(event.value, getMediaUrl).catch(error => {
+          console.warn('⚡ Stage 3 preloading failed:', error)
+        })
+      }
     }
   }
 
   const onVideoCanPlay = () => {
     videoLoading.value = false
+    
+    // Clear video cache memory when video starts playing successfully
+    // This frees up memory from preloaded video data that's no longer needed
+    if (event.value?.id) {
+      setTimeout(() => {
+        clearVideoCache(event.value.id)
+      }, 2000) // Wait 2 seconds after video can play to ensure stable playback
+    }
   }
 
   const onEventVideoEnded = () => {
@@ -785,28 +870,136 @@ export function useEventShowcase() {
     await loadShowcase(newLanguage)
   }
 
-  // Background preloading integration
+  // Old Stage 3 preloading implementation removed - now handled by useBackgroundPreloader composable
+
+  // Background preloading integration with 3-stage flow - cover stage separate from Stage 2
   const handleCoverStageReady = () => {
-    console.log('🎭 Cover stage ready, starting background preloading...')
-    coverStageReady.value = true
+    console.log('🎭 Cover stage ready - assets loaded for display')
     
-    // Start preloading stage 2+ content in the background
-    if (event.value?.id) {
-      startPreloading(event.value, getMediaUrl).catch(error => {
-        console.warn('⚡ Background preloading failed:', error)
-      })
-    }
+    coverStageReady.value = true
+    console.log('🎭 coverStageReady set to true')
+    
+    // Cover stage readiness is separate from Stage 2 preloading
+    // Stage 2 preloading should already be started by event data watcher
+    console.log('🎭 Cover stage complete. Stage 2 preloading runs independently.')
   }
 
-  // Watch for event data changes to trigger preloading if cover stage is already ready
+  // Watch for event data changes to trigger Stage 2 preloading immediately (no cover stage dependency)
   watch(event, (newEvent) => {
-    if (newEvent?.id && coverStageReady.value && !isPreloading.value) {
-      console.log('🎭 Event data loaded and cover stage ready, starting preloading...')
-      startPreloading(newEvent, getMediaUrl).catch(error => {
-        console.warn('⚡ Background preloading failed:', error)
+    if (newEvent?.id) {
+      console.log('🎭 Event data loaded, starting Stage 2 preloading immediately...')
+      startStage2Preloading(newEvent, getMediaUrl).catch(error => {
+        console.warn('⚡ Stage 2 preloading failed:', error)
+        // The preloader handles error states internally, no need to manually set progress
       })
     }
   })
+
+  // Comprehensive cleanup for the composable
+  onUnmounted(() => {
+    // Cancel background preloading
+    cancelPreloading()
+    
+    // Clean up audio resources
+    if (audioRef.value) {
+      audioRef.value.pause()
+      audioRef.value.src = ''
+      audioRef.value = null
+    }
+    
+    // Clean up video resources
+    if (eventVideoRef.value) {
+      eventVideoRef.value.pause()
+      eventVideoRef.value.src = ''
+      eventVideoRef.value = null
+    }
+    
+    // Clean up performance utilities
+    cleanupPerformance()
+    
+    // Clean up resource manager
+    resourceManager.destroy()
+    
+    // Clear performance caches
+    photosCache.value = { version: -1, sorted: [] }
+    
+    // Clear reactive state
+    showcaseData.value = null
+    error.value = null
+    currentModalPhoto.value = null
+  })
+
+  /**
+   * Security helper function to validate font URLs
+   */
+  const isValidFontUrl = (url: string): boolean => {
+    if (!url || typeof url !== 'string') {
+      return false
+    }
+
+    try {
+      const urlObj = new URL(url)
+      
+      // Check if we're in development mode
+      const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development'
+      const hostname = urlObj.hostname.toLowerCase()
+      const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname)
+      
+      // Protocol validation - allow HTTP only for localhost in development
+      const allowedProtocols = ['https:', 'data:']
+      if (isDevelopment && isLocalhost) {
+        allowedProtocols.push('http:')
+      }
+      
+      if (!allowedProtocols.includes(urlObj.protocol)) {
+        console.warn(`❌ Protocol ${urlObj.protocol} not allowed for URL: ${url}`)
+        return false
+      }
+
+      // For data URLs, ensure they're font types
+      if (urlObj.protocol === 'data:') {
+        const validDataTypes = [
+          'data:font/woff',
+          'data:font/woff2', 
+          'data:font/truetype',
+          'data:font/opentype',
+          'data:application/font-woff',
+          'data:application/font-woff2'
+        ]
+        return validDataTypes.some(type => url.startsWith(type))
+      }
+
+      // Domain validation - only block malicious domains
+      // In development, allow localhost; in production, block all local addresses
+      const suspiciousDomains = isDevelopment 
+        ? ['0.0.0.0'] // Only block obviously malicious in dev
+        : ['localhost', '127.0.0.1', '0.0.0.0', '::1'] // Block all local addresses in production
+        
+      if (suspiciousDomains.includes(hostname)) {
+        console.warn(`❌ Suspicious domain blocked: ${hostname}`)
+        return false
+      }
+
+      // Ensure file extension is font-related
+      const validExtensions = ['.woff', '.woff2', '.ttf', '.otf', '.eot']
+      const hasValidExtension = validExtensions.some(ext => 
+        urlObj.pathname.toLowerCase().endsWith(ext)
+      )
+
+      if (!hasValidExtension) {
+        console.warn(`❌ Invalid font extension for URL: ${url}`)
+        return false
+      }
+
+      // Log successful validation for debugging
+      console.log(`✅ Font URL validated successfully: ${url}`)
+      return true
+
+    } catch (error) {
+      console.warn(`❌ Invalid URL format: ${url}`, error)
+      return false
+    }
+  }
 
   return {
     // State
@@ -844,15 +1037,17 @@ export function useEventShowcase() {
     secondaryFont,
     accentFont,
     decorativeFont,
-    getLanguageFonts, // Expose font type mapping
     isEventPast,
     eventVideoUrl,
     eventMusicUrl,
     availableLanguages,
+    isEnvelopeButtonReady, // New: envelope button readiness
 
     // Preloading state
     isPreloading,
     preloadProgress,
+    stage2Progress,
+    stage3Progress,
 
     // Methods
     loadShowcase,
@@ -877,7 +1072,12 @@ export function useEventShowcase() {
 
     // Preloading methods
     cancelPreloading,
+    clearVideoCache,
     isContentPreloaded,
-    getStats: getStats // Preload statistics
+    isStage2Ready,
+    isStage3Ready,
+    getStats: getStats, // Preload statistics
+    startStage2Preloading,
+    startStage3Preloading
   }
 }

@@ -61,20 +61,30 @@
               backgroundColor: `${primaryColor}25`,
               '--tw-ring-color': primaryColor + '80',
               color: primaryColor,
-              border: `1px solid ${primaryColor}30`,
+              border: `1px solid ${commentValidation.isValid ? primaryColor + '30' : '#dc262630'}`,
               fontFamily: secondaryFont || currentFont
             }"
+            @input="handleCommentInput"
+            @blur="validateCommentOnBlur"
             required
           />
-          <div class="text-xs text-right mt-1" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
-            {{ newComment.message.length }}/500
+          <div class="text-xs text-right mt-1 flex justify-between items-center">
+            <!-- Validation Errors -->
+            <div v-if="!commentValidation.isValid && commentValidation.errors.length > 0" class="text-red-500 text-xs">
+              {{ commentValidation.errors[0] }}
+            </div>
+            <div v-else></div>
+            <!-- Character Count -->
+            <div :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+              {{ newComment.message.length }}/500
+            </div>
           </div>
         </div>
 
         <!-- Submit Button -->
         <button
           type="submit"
-          :disabled="isSubmittingComment || !newComment.message.trim()"
+          :disabled="isSubmittingComment || !newComment.message.trim() || !commentValidation.isValid"
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           :style="{
             background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
@@ -319,6 +329,7 @@ import {
 } from '../../utils/translations'
 import { useStaggerAnimation, useEntranceAnimation } from '../../composables/useAdvancedAnimations'
 import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
+import { sanitizeComment, sanitizePlainText, validateAndSanitize, containsSuspiciousContent, type ValidationResult } from '../../utils/sanitize'
 
 interface EventText {
   text_type: string
@@ -423,6 +434,10 @@ const newComment = ref({
   message: ''
 })
 
+// Input validation state
+const commentValidation = ref<ValidationResult>({ isValid: true, sanitized: '', errors: [] })
+const isValidatingComment = ref(false)
+
 // Comments state
 const comments = ref<EventComment[]>([])
 const loadingComments = ref(false)
@@ -457,18 +472,20 @@ const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments
 // Helper function to process comments (simplified since backend now provides user_info)
 const processComments = (comments: EventComment[]): EventComment[] => {
   const processedComments = comments.map(comment => {
-    // Backend now provides user_info, so we just return the comment as is
+    // Backend now provides user_info, so we sanitize and return the comment
+    const sanitizedComment = sanitizeApiResponse(comment)
+    
     // If for some reason user_info is missing, we can add minimal fallback
-    if (!comment.user_info) {
-      comment.user_info = {
-        id: comment.user,
-        username: `user_${comment.user}`,
+    if (!sanitizedComment.user_info) {
+      sanitizedComment.user_info = {
+        id: sanitizedComment.user,
+        username: sanitizePlainText(`user_${sanitizedComment.user}`, 50),
         first_name: '',
         last_name: '',
         profile_picture: ''
       }
     }
-    return comment
+    return sanitizedComment
   })
 
   // Sort comments to show user's own comment at the top
@@ -577,6 +594,60 @@ const capitalizeFirstLetter = (text: string): string => {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+// Sanitization and validation helpers
+const validateCommentInput = (input: string): ValidationResult => {
+  // Check for suspicious content first
+  if (containsSuspiciousContent(input)) {
+    return {
+      isValid: false,
+      sanitized: '',
+      errors: ['Input contains potentially malicious content']
+    }
+  }
+
+  return validateAndSanitize(input, {
+    profile: 'COMMENT',
+    required: true,
+    minLength: 1,
+    maxLength: 500,
+    trimWhitespace: true
+  })
+}
+
+const sanitizeApiResponse = (comment: EventComment): EventComment => {
+  const sanitizedComment = { ...comment }
+  
+  // Sanitize comment text
+  sanitizedComment.comment_text = sanitizeComment(comment.comment_text)
+  
+  // Sanitize user info if present
+  if (sanitizedComment.user_info) {
+    sanitizedComment.user_info = {
+      ...sanitizedComment.user_info,
+      first_name: sanitizePlainText(sanitizedComment.user_info.first_name || '', 50),
+      last_name: sanitizePlainText(sanitizedComment.user_info.last_name || '', 50),
+      username: sanitizePlainText(sanitizedComment.user_info.username || '', 50)
+    }
+  }
+  
+  return sanitizedComment
+}
+
+// Input handling methods
+const handleCommentInput = () => {
+  // Debounced validation will be handled in the next phase
+  // For now, just reset validation errors on input
+  if (!commentValidation.value.isValid) {
+    commentValidation.value = { isValid: true, sanitized: '', errors: [] }
+  }
+}
+
+const validateCommentOnBlur = () => {
+  if (newComment.value.message.trim()) {
+    commentValidation.value = validateCommentInput(newComment.value.message)
+  }
+}
+
 const startEditComment = (comment: EventComment) => {
   editingCommentId.value = comment.id
   editCommentText.value = comment.comment_text
@@ -592,19 +663,29 @@ const cancelEditComment = () => {
 const updateComment = async (commentId: number) => {
   if (!editCommentText.value.trim()) return
 
+  // Validate the edited comment
+  const validation = validateCommentInput(editCommentText.value)
+  if (!validation.isValid) {
+    errorMessage.value = validation.errors[0] || 'Invalid comment content'
+    return
+  }
+
   isUpdatingComment.value = true
   errorMessage.value = ''
 
   try {
-    const response = await commentsService.updateComment(commentId, editCommentText.value.trim())
+    const response = await commentsService.updateComment(commentId, validation.sanitized)
 
     if (response.success && response.data) {
+      // Sanitize the response data
+      const sanitizedComment = sanitizeApiResponse(response.data)
+      
       // Update the comment in the local array
       const commentIndex = comments.value.findIndex(c => c.id === commentId)
       if (commentIndex !== -1) {
         comments.value[commentIndex] = {
           ...comments.value[commentIndex],
-          ...response.data
+          ...sanitizedComment
         }
       }
 
@@ -696,6 +777,14 @@ const formatCommentDate = (dateString: string): string => {
 const submitComment = async () => {
   if (!newComment.value.message.trim()) return
 
+  // Validate the comment before submission
+  const validation = validateCommentInput(newComment.value.message)
+  if (!validation.isValid) {
+    errorMessage.value = validation.errors[0] || 'Invalid comment content'
+    commentValidation.value = validation
+    return
+  }
+
   // Double-check authentication
   if (!authStore.isAuthenticated) {
     handleSignInClick()
@@ -713,10 +802,10 @@ const submitComment = async () => {
   errorMessage.value = ''
 
   try {
-    // Call the actual API
+    // Call the actual API with sanitized content
     const response = await commentsService.createComment(
       props.eventId,
-      newComment.value.message.trim()
+      validation.sanitized
     )
 
     if (response.success && response.data) {
@@ -732,16 +821,20 @@ const submitComment = async () => {
         }
       }
 
+      // Sanitize the response data
+      const sanitizedComment = sanitizeApiResponse(commentWithUserInfo)
+
       // Since user can only comment once per event, just add to beginning
       // The backend constraint ensures there won't be duplicates
-      comments.value.unshift(commentWithUserInfo)
+      comments.value.unshift(sanitizedComment)
       totalComments.value++
       hasAlreadyCommented.value = true
 
-      // Reset form
+      // Reset form and validation
       newComment.value.message = ''
+      commentValidation.value = { isValid: true, sanitized: '', errors: [] }
 
-      emit('commentSubmitted', commentWithUserInfo)
+      emit('commentSubmitted', sanitizedComment)
     } else {
       // Handle API errors
       if (response.message?.includes('unique')) {
@@ -817,18 +910,20 @@ const loadMoreComments = async () => {
     if (response.success && response.data) {
       // Process new comments (backend now provides user_info directly)
       const processedNewComments = response.data.results.map(comment => {
-        // Backend now provides user_info, so we just return the comment as is
+        // Sanitize the comment data
+        const sanitizedComment = sanitizeApiResponse(comment)
+        
         // If for some reason user_info is missing, we can add minimal fallback
-        if (!comment.user_info) {
-          comment.user_info = {
-            id: comment.user,
-            username: `user_${comment.user}`,
+        if (!sanitizedComment.user_info) {
+          sanitizedComment.user_info = {
+            id: sanitizedComment.user,
+            username: sanitizePlainText(`user_${sanitizedComment.user}`, 50),
             first_name: '',
             last_name: '',
             profile_picture: ''
           }
         }
-        return comment
+        return sanitizedComment
       })
 
       // For pagination, we don't want to re-sort everything, just append

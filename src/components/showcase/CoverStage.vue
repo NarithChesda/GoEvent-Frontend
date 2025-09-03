@@ -103,22 +103,50 @@
         <!-- Open Envelope Button Row: 20% -->
         <div class="content-row-button flex items-center justify-center animate-fadeIn animation-delay-800" style="height: 20%;">
           <div class="flex items-center justify-center h-full w-full">
+            <!-- Button container - always show button, but disable/show loading overlay when Stage 2 is preloading -->
             <button
               @click="$emit('openEnvelope')"
-              class="flex items-center justify-center h-full"
+              :disabled="!isEnvelopeButtonReady"
+              class="relative flex items-center justify-center h-full transition-all duration-300"
+              :class="{ 
+                'opacity-50 cursor-not-allowed': !isEnvelopeButtonReady,
+                'hover:scale-105 cursor-pointer': isEnvelopeButtonReady
+              }"
             >
+              <!-- Loading overlay when Stage 2 is preloading -->
+              <div 
+                v-if="!isEnvelopeButtonReady" 
+                class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 rounded-full backdrop-blur-sm z-10"
+              >
+                <div 
+                  class="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" 
+                  :style="{ borderBottomColor: primaryColor || '#3B82F6' }"
+                />
+                <p 
+                  class="text-sm font-medium opacity-80" 
+                  :style="{ color: primaryColor || '#FFFFFF', fontFamily: secondaryFont || currentFont }"
+                >
+                  {{ getLoadingMessage() }}
+                </p>
+              </div>
+              <!-- Button image (loads as part of cover stage assets) -->
               <img
-                v-if="templateAssets?.open_envelope_button"
+                v-if="templateAssets?.open_envelope_button && templateAssets.open_envelope_button.trim() !== ''"
+                ref="openEnvelopeButtonImg"
                 :src="getMediaUrl(templateAssets.open_envelope_button)"
                 alt="Open Invitation"
-                class="scaled-envelope-button cursor-pointer"
+                class="scaled-envelope-button transition-all duration-300"
                 @load="handleOpenEnvelopeButtonLoaded"
                 @error="handleOpenEnvelopeButtonError"
               />
 
+              <!-- Fallback button design -->
               <div
                 v-else
-                class="scaled-button-fallback rounded-full transition-all hover:scale-105 flex items-center justify-center"
+                class="scaled-button-fallback rounded-full transition-all flex items-center justify-center"
+                :class="{ 
+                  'hover:scale-105': isEnvelopeButtonReady
+                }"
                 :style="{
                   background: gradientStyle,
                   backdropFilter: 'blur(10px)'
@@ -170,6 +198,10 @@ interface Props {
   secondaryFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
+  isEnvelopeButtonReady?: boolean
+  isPreloading?: boolean
+  preloadProgress?: { percentage: number; currentPriority?: any }
+  stage2Progress?: { completed: number; total: number; percentage: number }
   getMediaUrl: (url: string) => string
 }
 
@@ -194,6 +226,7 @@ const eventLogoRef = ref<HTMLElement>()
 const inviteTextRef = ref<HTMLElement>()
 const guestNameRef = ref<HTMLElement>()
 const envelopeButtonRef = ref<HTMLElement>()
+const openEnvelopeButtonImg = ref<HTMLImageElement>()
 
 const gradientStyle = computed(() =>
   `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`
@@ -233,6 +266,25 @@ const inviteText = computed(() =>
   getTextContent('invite_text', "You're Invited")
 )
 
+// Loading message with improved Stage 2 progress tracking
+const getLoadingMessage = () => {
+  const progress = props.stage2Progress
+  console.log('🎭 CoverStage: Loading message - Stage2Progress:', progress)
+  console.log('🎭 CoverStage: Button ready state:', props.isEnvelopeButtonReady)
+  
+  if (progress) {
+    if (progress.total > 0) {
+      return `Preparing video... ${progress.percentage || 0}%`
+    } else if (progress.total === 0 && progress.percentage === 100) {
+      return 'Ready!'
+    } else if (progress.total === 0) {
+      return 'Initializing...'
+    }
+  }
+  
+  return 'Loading...'
+}
+
 // Completion detection state
 const assetsLoaded = ref({
   coverVideo: false,
@@ -245,43 +297,105 @@ const assetsLoaded = ref({
 const isStageReady = computed(() => {
   // Check if all critical assets are loaded
   const requiredAssets = []
+  const requiredAssetsDebug = []
 
   // Cover video or background image
   if (props.templateAssets?.standard_cover_video) {
     requiredAssets.push(assetsLoaded.value.coverVideo)
+    requiredAssetsDebug.push({ asset: 'coverVideo', loaded: assetsLoaded.value.coverVideo })
   } else if (props.templateAssets?.basic_background_photo) {
     requiredAssets.push(assetsLoaded.value.backgroundImage)
+    requiredAssetsDebug.push({ asset: 'backgroundImage', loaded: assetsLoaded.value.backgroundImage })
   } else {
     requiredAssets.push(true) // No background asset required
+    requiredAssetsDebug.push({ asset: 'no_background', loaded: true })
   }
 
   // Event logo (if present)
   if (props.eventLogo) {
     requiredAssets.push(assetsLoaded.value.eventLogo)
+    requiredAssetsDebug.push({ asset: 'eventLogo', loaded: assetsLoaded.value.eventLogo })
   } else {
     requiredAssets.push(true) // No logo required
+    requiredAssetsDebug.push({ asset: 'no_logo', loaded: true })
   }
 
-  // Open envelope button (if custom image is used)
-  if (props.templateAssets?.open_envelope_button) {
+  // Open envelope button (if custom image is used and URL is not empty)
+  if (props.templateAssets?.open_envelope_button && props.templateAssets.open_envelope_button.trim() !== '') {
     requiredAssets.push(assetsLoaded.value.openEnvelopeButton)
+    requiredAssetsDebug.push({ asset: 'openEnvelopeButton', loaded: assetsLoaded.value.openEnvelopeButton, url: props.templateAssets.open_envelope_button })
   } else {
-    requiredAssets.push(true) // Using default button, no asset required
+    requiredAssets.push(true) // Using default button or empty URL, no asset required
+    requiredAssetsDebug.push({ asset: 'default_button_or_empty_url', loaded: true, url: props.templateAssets?.open_envelope_button || 'none' })
   }
 
   // Fonts are always important
   requiredAssets.push(assetsLoaded.value.fonts)
+  requiredAssetsDebug.push({ asset: 'fonts', loaded: assetsLoaded.value.fonts })
 
-  return requiredAssets.every(loaded => loaded)
+  const allReady = requiredAssets.every(loaded => loaded)
+  console.log('🎭 CoverStage: Required assets check:', requiredAssetsDebug, 'All ready:', allReady)
+
+  return allReady
 })
 
 // Watch for completion and emit event
 watch(isStageReady, (ready) => {
+  console.log('🎭 CoverStage: Stage ready check:', ready, 'Assets loaded:', assetsLoaded.value)
   if (ready) {
     console.log('🎭 CoverStage: All assets loaded, stage ready for preloading')
     emit('coverStageReady')
   }
 }, { immediate: true })
+
+// Watch for templateAssets changes to handle dynamic loading
+watch(() => props.templateAssets?.open_envelope_button, (newButtonUrl, oldButtonUrl) => {
+  console.log('🎭 CoverStage: Template assets open envelope button changed from:', oldButtonUrl, 'to:', newButtonUrl)
+  
+  if (newButtonUrl && newButtonUrl.trim() !== '' && newButtonUrl !== oldButtonUrl) {
+    console.log('🎭 CoverStage: Valid new button URL detected, triggering image ref check')
+    // Reset the asset status and trigger new check
+    assetsLoaded.value.openEnvelopeButton = false
+    
+    // Use the same polling logic as in onMounted
+    let retryCount = 0
+    const maxRetries = 50
+    
+    const checkButtonImageRef = () => {
+      if (openEnvelopeButtonImg.value) {
+        console.log('🎭 CoverStage: (Watch) Open envelope button image ref found after', retryCount, 'retries')
+        if (openEnvelopeButtonImg.value.complete && openEnvelopeButtonImg.value.naturalWidth > 0) {
+          console.log('🎭 CoverStage: (Watch) Open envelope button already loaded (cached)')
+          handleOpenEnvelopeButtonLoaded()
+        } else {
+          console.log('🎭 CoverStage: (Watch) Open envelope button image ref found, waiting for load event')
+        }
+      } else {
+        retryCount++
+        if (retryCount < maxRetries) {
+          console.log(`🎭 CoverStage: (Watch) Open envelope button image ref not available yet, retry ${retryCount}/${maxRetries}`)
+          setTimeout(checkButtonImageRef, 100)
+        } else {
+          console.warn('🎭 CoverStage: (Watch) Open envelope button image ref never became available, falling back')
+          assetsLoaded.value.openEnvelopeButton = true
+        }
+      }
+    }
+    
+    nextTick(checkButtonImageRef)
+  } else if (!newButtonUrl || newButtonUrl.trim() === '') {
+    // No button URL or empty URL, mark as loaded (use default button behavior)
+    console.log('🎭 CoverStage: No button URL or empty URL, marking as loaded for default behavior')
+    console.log('🎭 CoverStage: Button URL value:', newButtonUrl)
+    assetsLoaded.value.openEnvelopeButton = true
+  }
+}, { immediate: false })
+
+// Also watch assetsLoaded to trigger stage ready check
+watch(assetsLoaded, () => {
+  console.log('🎭 CoverStage: Assets loaded changed:', JSON.stringify(assetsLoaded.value))
+  // This will trigger the computed property re-evaluation
+}, { deep: true })
 
 // Asset loading handlers
 const handleCoverVideoLoaded = () => {
@@ -319,13 +433,34 @@ const handleOpenEnvelopeButtonLoaded = () => {
   assetsLoaded.value.openEnvelopeButton = true
 }
 
-const handleOpenEnvelopeButtonError = () => {
-  console.warn('🎭 CoverStage: Open envelope button failed to load')
+const handleOpenEnvelopeButtonError = (error: Event) => {
+  console.warn('🎭 CoverStage: Open envelope button failed to load', error)
+  console.warn('🎭 CoverStage: Button URL was:', props.templateAssets?.open_envelope_button)
+  
+  // Get more details about the error
+  const img = error.target as HTMLImageElement
+  if (img) {
+    console.warn('🎭 CoverStage: Image element details:', {
+      src: img.src,
+      complete: img.complete,
+      naturalWidth: img.naturalWidth,
+      naturalHeight: img.naturalHeight,
+      currentSrc: img.currentSrc
+    })
+  }
+  
+  // Try to provide the full resolved URL for debugging
+  if (props.templateAssets?.open_envelope_button) {
+    const fullUrl = props.getMediaUrl(props.templateAssets.open_envelope_button)
+    console.warn('🎭 CoverStage: Full resolved URL:', fullUrl)
+  }
+  
   assetsLoaded.value.openEnvelopeButton = true // Consider it "loaded" to prevent blocking
 }
 
 // Font loading detection
 const checkFontsLoaded = async () => {
+  console.log('🎭 CoverStage: Starting font ready check...')
   // Wait for fonts to be applied to the DOM
   await nextTick()
 
@@ -357,9 +492,63 @@ const handleOpenEnvelope = () => {
 
 onMounted(() => {
   console.log('🎭 CoverStage: Initializing completion detection')
+  console.log('🎭 CoverStage: Template assets structure:', props.templateAssets)
+  console.log('🎭 CoverStage: Template assets breakdown:', {
+    coverVideo: props.templateAssets?.standard_cover_video,
+    backgroundPhoto: props.templateAssets?.basic_background_photo,
+    openEnvelopeButton: props.templateAssets?.open_envelope_button,
+    eventLogo: props.eventLogo
+  })
+  
+  // Log the resolved URLs as well for debugging
+  if (props.templateAssets?.open_envelope_button) {
+    const resolvedButtonUrl = props.getMediaUrl(props.templateAssets.open_envelope_button)
+    console.log('🎭 CoverStage: Resolved open envelope button URL:', resolvedButtonUrl)
+  } else {
+    console.log('🎭 CoverStage: No open envelope button asset found in template')
+  }
 
   // Check fonts after a short delay to allow font loading
   setTimeout(checkFontsLoaded, 500)
+
+  // Check if open envelope button image is already loaded (for cached images)
+  if (props.templateAssets?.open_envelope_button && props.templateAssets.open_envelope_button.trim() !== '') {
+    // Use a polling approach with timeout to wait for the image ref to be available
+    let retryCount = 0
+    const maxRetries = 50 // Maximum 5 seconds of retrying (50 * 100ms)
+    
+    const checkButtonImageRef = () => {
+      if (openEnvelopeButtonImg.value) {
+        console.log('🎭 CoverStage: Open envelope button image ref found after', retryCount, 'retries')
+        if (openEnvelopeButtonImg.value.complete && openEnvelopeButtonImg.value.naturalWidth > 0) {
+          console.log('🎭 CoverStage: Open envelope button already loaded (cached)')
+          handleOpenEnvelopeButtonLoaded()
+        } else {
+          console.log('🎭 CoverStage: Open envelope button image ref found, waiting for load event')
+          // Image ref exists but not loaded yet - the @load handler will catch it
+        }
+      } else {
+        retryCount++
+        if (retryCount < maxRetries) {
+          console.log(`🎭 CoverStage: Open envelope button image ref not available yet, retry ${retryCount}/${maxRetries}`)
+          // Retry after a short delay - the image element might not be rendered yet
+          setTimeout(checkButtonImageRef, 100)
+        } else {
+          console.warn('🎭 CoverStage: Open envelope button image ref never became available, falling back to default button behavior')
+          // Fallback: treat as if no custom button (use default button behavior)
+          assetsLoaded.value.openEnvelopeButton = true
+        }
+      }
+    }
+    
+    // Start checking after nextTick to allow template rendering
+    nextTick(checkButtonImageRef)
+  } else {
+    // No custom button or empty URL, using default
+    console.log('🎭 CoverStage: No custom open envelope button or empty URL, using default behavior')
+    console.log('🎭 CoverStage: Button URL value:', props.templateAssets?.open_envelope_button)
+    assetsLoaded.value.openEnvelopeButton = true
+  }
 
   // If no assets need loading, mark as ready immediately
   if (!props.templateAssets?.standard_cover_video &&
@@ -699,12 +888,19 @@ h1, h2, p {
   height: auto;
   width: auto;
   object-fit: contain;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.content-row-button .scaled-envelope-button:not(.opacity-50) {
   animation: pulse 2s infinite;
 }
 
-.content-row-button .scaled-envelope-button:hover {
+.content-row-button .scaled-envelope-button:not(.opacity-50):hover {
   transform: scale(1.1);
+  animation: none;
+}
+
+.content-row-button .scaled-envelope-button.opacity-50 {
   animation: none;
 }
 

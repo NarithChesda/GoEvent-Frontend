@@ -221,6 +221,7 @@ import {
 import { useStaggerAnimation } from '../../composables/useAdvancedAnimations'
 import { useMomentumScroll } from '../../composables/useAdvancedAnimations'
 import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
+import { usePerformance, useAdvancedThrottleFn } from '../../utils/performance'
 
 interface EventText {
   text_type: string
@@ -307,18 +308,34 @@ const nonFeaturedPhotos = computed(() =>
 )
 
 
-// Image dimensions cache for aspect ratio calculations
+// Performance utilities with automatic cleanup
+const {
+  addCleanup,
+  addEventListener,
+  addTimeout,
+  requestAnimationFrame,
+  cancelAnimationFrame,
+  deduplicateRequest,
+  cleanup: cleanupPerformance
+} = usePerformance()
+
+// Image dimensions cache for aspect ratio calculations - using WeakMap for better memory management
 const imageDimensions = ref<Record<string, { width: number; height: number }>>({})
+const imageCache = new WeakMap<HTMLImageElement, { width: number; height: number }>()
 
 // Track window width for responsive calculations
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
-// Update window width on resize
-const updateWindowWidth = () => {
+// Throttled resize handler to prevent excessive recalculations
+const updateWindowWidth = useAdvancedThrottleFn(() => {
   if (typeof window !== 'undefined') {
     windowWidth.value = window.innerWidth
   }
-}
+}, 100, { trailing: true, useRAF: true })
+
+// Animation frame IDs for cleanup
+const activeAnimationFrames = new Set<number>()
+const preloadedImages = new Set<HTMLImageElement>()
 
 // Photos for infinite scroll - use all photos if we have enough, otherwise repeat them
 const allPhotosForStrip = computed(() => {
@@ -385,30 +402,94 @@ const reverseAnimationDuration = computed((): number => {
   return Math.max(stripWidth.value / baseSpeed, 9) // minimum 9 seconds
 })
 
-// Handle image load to get actual dimensions
+// Enhanced image load handler with memory management
 const onImageLoad = (event: Event) => {
   const img = event.target as HTMLImageElement
   const photoId = img.closest('.floating-photo-card')?.getAttribute('data-photo-id') ||
                  img.closest('.photo-card')?.getAttribute('data-photo-id')
 
   if (photoId && img.naturalWidth && img.naturalHeight) {
-    imageDimensions.value[photoId] = {
+    const dimensions = {
       width: img.naturalWidth,
       height: img.naturalHeight
     }
+    
+    // Store in both reactive ref and WeakMap cache
+    imageDimensions.value[photoId] = dimensions
+    imageCache.set(img, dimensions)
+    
+    // Clean up the reference after use to prevent memory leaks
+    addTimeout(() => {
+      // Only remove from cache if image is no longer in DOM
+      if (!img.isConnected) {
+        imageCache.delete(img)
+      }
+    }, 5000)
   }
 }
 
-// Enhanced photo click with momentum scroll
+// Optimized image preloading with proper cleanup
+const preloadImageDimensions = async (photos: EventPhoto[]) => {
+  // Cancel any existing preload operations
+  preloadedImages.forEach(img => {
+    img.onload = null
+    img.onerror = null
+  })
+  preloadedImages.clear()
+
+  const preloadPromises = photos.map(photo => {
+    return deduplicateRequest(`preload-${photo.id}`, async () => {
+      return new Promise<void>((resolve) => {
+        const img = new Image()
+        preloadedImages.add(img)
+        
+        img.onload = () => {
+          if (img.naturalWidth && img.naturalHeight) {
+            imageDimensions.value[photo.id] = {
+              width: img.naturalWidth,
+              height: img.naturalHeight
+            }
+            imageCache.set(img, imageDimensions.value[photo.id])
+          }
+          resolve()
+        }
+        
+        img.onerror = () => {
+          console.warn(`Failed to preload image: ${photo.image}`)
+          resolve()
+        }
+        
+        // Add cleanup for the image reference
+        addCleanup(() => {
+          img.onload = null
+          img.onerror = null
+          imageCache.delete(img)
+          preloadedImages.delete(img)
+        })
+        
+        img.src = props.getMediaUrl(photo.image)
+      })
+    })
+  })
+
+  try {
+    await Promise.allSettled(preloadPromises)
+  } catch (error) {
+    console.warn('Error during image preloading:', error)
+  }
+}
+
+// Enhanced photo click with momentum scroll and proper cleanup
 const handlePhotoClick = (photo: EventPhoto) => {
   // Add a subtle scroll animation before opening photo
   if (!isScrolling.value) {
     const instance = getCurrentInstance()
     const emit = instance?.emit
     if (emit) {
-      setTimeout(() => {
+      // Use managed timeout instead of raw setTimeout
+      addTimeout(() => {
         emit('openPhoto', photo)
-      }, 50) // Small delay for better UX
+      }, 50)
     }
   }
 }
@@ -422,35 +503,44 @@ const setupPhotoAnimation = (el: any, id: string, index: number) => {
   }
 }
 
-// Preload image dimensions on mount
-onMounted(() => {
+// Enhanced mount with proper resource management
+onMounted(async () => {
   if (typeof window !== 'undefined') {
-    window.addEventListener('resize', updateWindowWidth)
+    // Use the performance utility's addEventListener for automatic cleanup
+    addEventListener(window, 'resize', updateWindowWidth, { passive: true })
     updateWindowWidth()
   }
 
-  // Preload dimensions for all photos
-  allPhotosForStrip.value.forEach(photo => {
-    const img = new Image()
-    img.onload = () => {
-      imageDimensions.value[photo.id] = {
-        width: img.naturalWidth,
-        height: img.naturalHeight
-      }
-    }
-    img.src = props.getMediaUrl(photo.image)
-  })
+  // Preload dimensions for all photos with proper cleanup
+  await preloadImageDimensions(allPhotosForStrip.value)
 
   // Setup gallery animations after mount
-  nextTick(() => {
-    // Additional animation setup can go here
-  })
+  await nextTick()
+  // Additional animation setup can go here
 })
 
 onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('resize', updateWindowWidth)
-  }
+  // Cancel throttled functions
+  updateWindowWidth.cancel()
+  
+  // Clean up preloaded images
+  preloadedImages.forEach(img => {
+    img.onload = null
+    img.onerror = null
+  })
+  preloadedImages.clear()
+  
+  // Clear image dimensions cache
+  imageDimensions.value = {}
+  
+  // Cancel any active animation frames
+  activeAnimationFrames.forEach(frameId => {
+    cancelAnimationFrame(frameId)
+  })
+  activeAnimationFrames.clear()
+  
+  // Use the performance utility's comprehensive cleanup
+  cleanupPerformance()
 })
 </script>
 
