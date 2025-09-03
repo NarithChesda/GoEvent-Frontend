@@ -165,7 +165,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { Plus, Calendar, AlertCircle, Trash2, ChevronDown } from 'lucide-vue-next'
+import { Plus, Calendar, AlertCircle, ChevronDown } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
 import CreateAgendaModal from './CreateAgendaModal.vue'
@@ -415,7 +415,7 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
         await fetchAgendaItems()
       }, 100)
     }
-  } catch (err) {
+  } catch {
     // Rollback on failure
     await fetchAgendaItems()
     error.value = 'Network error while reordering agenda items'

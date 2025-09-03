@@ -450,7 +450,7 @@ const removeMedia = async (field: string) => {
 }
 
 // File upload handlers
-const handleBannerUpload = (event: Event) => {
+const handleBannerUpload = (event: any) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'image')) {
@@ -459,7 +459,7 @@ const handleBannerUpload = (event: Event) => {
   target.value = '' // Reset input
 }
 
-const handleLogoOneUpload = (event: Event) => {
+const handleLogoOneUpload = (event: any) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'image')) {
@@ -468,7 +468,7 @@ const handleLogoOneUpload = (event: Event) => {
   target.value = '' // Reset input
 }
 
-const handleLogoTwoUpload = (event: Event) => {
+const handleLogoTwoUpload = (event: any) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'image')) {
@@ -477,7 +477,7 @@ const handleLogoTwoUpload = (event: Event) => {
   target.value = '' // Reset input
 }
 
-const handleVideoUpload = (event: Event) => {
+const handleVideoUpload = (event: any) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'video')) {
@@ -486,7 +486,7 @@ const handleVideoUpload = (event: Event) => {
   target.value = '' // Reset input
 }
 
-const handleMusicUpload = (event: Event) => {
+const handleMusicUpload = (event: any) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file, 'audio')) {

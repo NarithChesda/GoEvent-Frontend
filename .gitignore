@@ -31,3 +31,24 @@ coverage
 
 test-results/
 playwright-report/
+
+# Documentation and Design Files (excluding essential production docs)
+*.md
+!README.md
+!CLAUDE.md
+DESIGN_GUIDE/
+docs/
+.claude/
+
+# Development and API Documentation
+Authentication_API_Documentation.md
+event-comment-api.md
+event-guest-management.md
+event-showcase-api.md
+events.md
+EVENT_CRUD_API.md
+event_payment.md
+Event_Registration.md
+EVENT_TEMPLATE_API.md
+PAYMENT_API.md
+PRODUCTION_READINESS_REPORT.md

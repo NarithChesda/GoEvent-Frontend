@@ -265,7 +265,11 @@ export function useEventShowcase() {
   // ============================
   const event = computed(() => showcaseData.value?.event || {} as EventData)
   const meta = computed(() => showcaseData.value?.meta || {})
-  const guestName = computed(() => meta.value.guest_name || route.query.guest_name || '')
+  const guestName = computed(() => {
+    const guestNameFromQuery = route.query.guest_name
+    const guestNameStr = Array.isArray(guestNameFromQuery) ? guestNameFromQuery[0] : guestNameFromQuery
+    return meta.value.guest_name || guestNameStr || ''
+  })
   const templateAssets = computed(() => event.value?.template_assets?.assets || null)
   
   const templateColors = computed(() => {
