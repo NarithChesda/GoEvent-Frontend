@@ -86,6 +86,30 @@
                 </div>
               </div>
 
+              <!-- Timezone -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                  Timezone
+                </label>
+                <select
+                  v-model="form.timezone"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                >
+                  <optgroup v-for="(timezones, region) in timezonesByRegion" :key="region" :label="region">
+                    <option
+                      v-for="timezone in timezones"
+                      :key="timezone.value"
+                      :value="timezone.value"
+                    >
+                      {{ timezone.label }}
+                    </option>
+                  </optgroup>
+                </select>
+                <p class="text-xs text-slate-500 mt-1">
+                  Current selection: {{ getSelectedTimezoneLabel() }}
+                </p>
+              </div>
+
               <!-- Location -->
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -156,6 +180,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { Plus, X, Loader } from 'lucide-vue-next'
+import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 
 // Types
 interface EventFormData {
@@ -165,6 +190,7 @@ interface EventFormData {
   end_date: string
   location: string
   privacy: 'public' | 'private'
+  timezone: string
   // Additional fields that will be added during submission
   short_description?: string
   is_virtual?: boolean
@@ -174,7 +200,6 @@ interface EventFormData {
   registration_deadline?: string | null
   category?: number | null
   banner_image?: string | null
-  timezone?: string
   status?: string
 }
 
@@ -201,8 +226,12 @@ const form = reactive<EventFormData>({
   start_date: '',
   end_date: '',
   location: '',
-  privacy: 'public'
+  privacy: 'public',
+  timezone: getUserTimezone()
 })
+
+// Timezone data
+const timezonesByRegion = getTimezonesByRegion()
 
 // Methods
 const handleBackdropClick = (event: MouseEvent) => {
@@ -219,7 +248,8 @@ const resetForm = () => {
     start_date: '',
     end_date: '',
     location: '',
-    privacy: 'public'
+    privacy: 'public',
+    timezone: getUserTimezone()
   })
   // Reset default dates
   setDefaultDates()
@@ -256,7 +286,7 @@ const handleSubmit = async () => {
       registration_deadline: null,
       category: null,
       banner_image: null,
-      timezone: 'UTC',
+      timezone: formData.timezone || getUserTimezone(),
       status: 'published'
     }
     
@@ -293,6 +323,12 @@ const setDefaultDates = () => {
   
   form.start_date = startDate.toISOString().slice(0, 16)
   form.end_date = endDate.toISOString().slice(0, 16)
+}
+
+// Computed properties
+const getSelectedTimezoneLabel = () => {
+  const option = findTimezoneOption(form.timezone)
+  return option ? option.label : form.timezone
 }
 
 // Set defaults when component mounts

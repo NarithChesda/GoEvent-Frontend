@@ -1,83 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
     <Navigation />
-    
-    <!-- Hero Section (Mobile-Optimized) -->
-    <section class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-50 to-purple-100 overflow-hidden -mt-20">
-      <!-- Enhanced Background Elements -->
-      <div class="absolute inset-0">
-        <!-- Primary gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-purple-600/5"></div>
-        
-        <!-- Animated background shapes -->
-        <div class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-purple-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"></div>
-        <div class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"></div>
-        <div class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-purple-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/10 to-purple-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"></div>
-        
-        <!-- Geometric patterns -->
-        <div class="absolute top-32 right-32 w-4 h-4 bg-blue-500/30 rounded-full animate-pulse delay-300"></div>
-        <div class="absolute bottom-32 left-32 w-6 h-6 bg-purple-500/30 rounded-full animate-pulse delay-900"></div>
-        <div class="absolute top-64 left-64 w-3 h-3 bg-purple-500/40 rounded-full animate-pulse delay-1200"></div>
-      </div>
-      
-      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
-        <div class="text-center">
-          <div class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-6 sm:mb-8 shadow-lg shadow-blue-200/30">
-            <Calendar class="w-4 h-4 mr-2" />
-            Discover Amazing Events
-          </div>
-          <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-slate-900 mb-6 sm:mb-8 leading-tight tracking-tight">
-            <span class="typing-text">
-              {{ displayText }}<span v-if="!isComplete" class="typing-cursor">|</span>
-            </span>
-          </h1>
-          <p class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-600 leading-relaxed max-w-4xl mx-auto mb-8 sm:mb-12">
-            Explore public events, manage your created events, and discover events you've registered for all in one place. Join thousands of event enthusiasts in creating unforgettable experiences.
-          </p>
-        </div>
-
-        <!-- Enhanced Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-8">
-          <div class="group relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-blue-500/20 p-8 border border-white/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-3xl"></div>
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Calendar class="w-8 h-8 text-blue-600" />
-              </div>
-              <div class="text-3xl font-bold text-blue-600 mb-2">{{ stats.totalEvents }}</div>
-              <div class="text-sm text-slate-600 font-medium">Total Events</div>
-              <div class="text-xs text-green-600 font-medium mt-1">↗ Growing daily</div>
-            </div>
-          </div>
-          
-          <div class="group relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-green-500/20 p-8 border border-white/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-t-3xl"></div>
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Users class="w-8 h-8 text-green-600" />
-              </div>
-              <div class="text-3xl font-bold text-green-600 mb-2">{{ stats.upcomingEvents }}</div>
-              <div class="text-sm text-slate-600 font-medium">Upcoming Events</div>
-              <div class="text-xs text-green-600 font-medium mt-1">↗ Join now</div>
-            </div>
-          </div>
-          
-          <div class="group relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-purple-500/20 p-8 border border-white/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-600 rounded-t-3xl"></div>
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <UserPlus class="w-8 h-8 text-purple-600" />
-              </div>
-              <div class="text-3xl font-bold text-purple-600 mb-2">{{ stats.myEvents }}</div>
-              <div class="text-sm text-slate-600 font-medium">My Events</div>
-              <div class="text-xs text-purple-600 font-medium mt-1" v-if="authStore.isAuthenticated">↗ Create more</div>
-              <div class="text-xs text-purple-600 font-medium mt-1" v-else>↗ Sign in to create</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- Main Content -->
     <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
@@ -120,6 +43,7 @@
           <button
             v-if="authStore.isAuthenticated"
             @click="createEvent"
+            ref="createEventButton"
             class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 flex items-center"
           >
             <Plus class="w-5 h-5 mr-2" />
@@ -241,6 +165,21 @@
       </div>
     </Transition>
 
+    <!-- Floating Action Button -->
+    <Transition name="fab-fade">
+      <button
+        v-if="authStore.isAuthenticated && showFloatingButton"
+        @click="createEvent"
+        class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
+        aria-label="Create Event"
+      >
+        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+        <div class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+          Create Event
+        </div>
+      </button>
+    </Transition>
+
     <!-- Event Create Modal -->
     <EventCreateModal
       :is-visible="showCreateModal"
@@ -251,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   Calendar, 
@@ -259,16 +198,13 @@ import {
   ChevronLeft, 
   ChevronRight, 
   CheckCircle, 
-  AlertCircle,
-  Users,
-  UserPlus 
+  AlertCircle 
 } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
 import EventCard from '../components/EventCard.vue'
 import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
 import { useAuthStore } from '../stores/auth'
-import { useTypingAnimation } from '../composables/useTypingAnimation'
 import { 
   eventsService, 
   eventCategoriesService, 
@@ -282,9 +218,6 @@ type ViewType = 'all' | 'my' | 'registered'
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Typing animation for hero text
-const { displayText, isComplete } = useTypingAnimation('Find Your Next Experience', 30)
-
 // Reactive state
 const currentView = ref<ViewType>('all')
 const events = ref<Event[]>([])
@@ -293,6 +226,8 @@ const loading = ref(false)
 const filters = ref<EventFiltersType>({})
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
+const showFloatingButton = ref(false)
+const createEventButton = ref<HTMLButtonElement | null>(null)
 
 // Pagination
 const pagination = reactive({
@@ -300,13 +235,6 @@ const pagination = reactive({
   totalPages: 1,
   totalItems: 0,
   itemsPerPage: 20 // Match Django REST framework default page size
-})
-
-// Stats
-const stats = reactive({
-  totalEvents: 0,
-  upcomingEvents: 0,
-  myEvents: 0
 })
 
 // Computed
@@ -448,51 +376,6 @@ const loadCategories = async () => {
   }
 }
 
-const loadStats = async () => {
-  try {
-    // Load total public published events count (this should match the "All Events" tab)
-    const allEventsResponse = await eventsService.getEvents({ 
-      status: 'published', 
-      privacy: 'public',
-      page: 1  // Just get the first page to check the count
-    })
-    if (allEventsResponse.success && allEventsResponse.data) {
-      stats.totalEvents = allEventsResponse.data.count || 0
-    }
-    
-    // Load upcoming events count (public events only)
-    const today = new Date().toISOString().split('T')[0]
-    const upcomingResponse = await eventsService.getEvents({ 
-      status: 'published',
-      privacy: 'public',
-      start_date_after: today,
-      page: 1  // Just get the first page to check the count
-    })
-    if (upcomingResponse.success && upcomingResponse.data) {
-      stats.upcomingEvents = upcomingResponse.data.count || 0
-    }
-    
-    // Load my events count using dedicated endpoint
-    if (authStore.isAuthenticated) {
-      const myEventsResponse = await eventsService.getMyEvents({ page: 1 })
-      if (myEventsResponse.success && myEventsResponse.data) {
-        // For "My Events", we need to count organized + collaborated events
-        const organizedCount = myEventsResponse.data.organized.length || 0
-        const collaboratedCount = myEventsResponse.data.collaborated.length || 0
-        stats.myEvents = organizedCount + collaboratedCount
-      } else {
-        stats.myEvents = 0
-      }
-    } else {
-      stats.myEvents = 0
-    }
-  } catch (error) {
-    console.error('Failed to load stats:', error)
-    stats.totalEvents = 0
-    stats.upcomingEvents = 0
-    stats.myEvents = 0
-  }
-}
 
 const loadPage = (page: number) => {
   if (page >= 1 && page <= pagination.totalPages) {
@@ -561,9 +444,8 @@ const deleteEvent = async (event: Event) => {
     const response = await eventsService.deleteEvent(event.id)
     if (response.success) {
       showMessage('success', 'Event deleted successfully')
-      // Reload current page events and refresh stats
+      // Reload current page events
       loadEvents(pagination.currentPage)
-      loadStats()
     } else {
       showMessage('error', response.message || 'Failed to delete event')
     }
@@ -578,6 +460,27 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   setTimeout(() => {
     message.value = null
   }, 5000)
+}
+
+// Floating Action Button visibility logic
+const setupFloatingButton = () => {
+  if (!createEventButton.value) return
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      // Show floating button when main button is NOT visible
+      showFloatingButton.value = !entry.isIntersecting
+    },
+    {
+      threshold: 0.1, // Trigger when 10% of the button is visible
+      rootMargin: '0px 0px -10px 0px' // Add some margin to trigger slightly before fully out of view
+    }
+  )
+
+  observer.observe(createEventButton.value)
+
+  // Cleanup observer when component unmounts
+  return () => observer.disconnect()
 }
 
 interface EventFormData {
@@ -632,9 +535,8 @@ const handleEventCreate = async (formData: EventFormData) => {
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
       
-      // Reload current events list and stats
+      // Reload current events list
       await loadEvents(pagination.currentPage)
-      await loadStats()
     } else {
       console.error('Create event failed:', response)
       let errorMessage = response.message || 'Failed to create event'
@@ -663,25 +565,33 @@ watch([() => currentView.value, filters], () => {
 
 // Watch authentication state changes
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
-  // Reload stats when auth state changes
-  loadStats()
-  
   // If user logs out and is on "my" or "registered" tab, switch to "all"
   if (!isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
     currentView.value = 'all'
   }
 })
 
+// Observer cleanup function
+let cleanupObserver: (() => void) | null = null
+
 // Lifecycle
 onMounted(async () => {
   // Load initial data
-  await Promise.all([
-    loadCategories(),
-    loadStats()
-  ])
+  await loadCategories()
   
-  // Load events after categories and stats
+  // Load events after categories
   loadEvents()
+  
+  // Setup floating button after DOM is updated
+  await nextTick()
+  cleanupObserver = setupFloatingButton()
+})
+
+onUnmounted(() => {
+  // Cleanup intersection observer
+  if (cleanupObserver) {
+    cleanupObserver()
+  }
 })
 </script>
 
@@ -701,33 +611,19 @@ onMounted(async () => {
   transform: translateY(-20px);
 }
 
-/* Typing animation */
-.typing-text {
-  position: relative;
-  background: linear-gradient(to right, #2563eb, #9333ea);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Floating Action Button Animation */
+.fab-fade-enter-active,
+.fab-fade-leave-active {
+  transition: all 0.3s ease;
 }
 
-.typing-cursor {
-  animation: blink 1s infinite;
-  color: #3b82f6;
-  font-weight: normal;
-  -webkit-text-fill-color: #3b82f6;
+.fab-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
 }
 
-@keyframes blink {
-  0%, 50% {
-    opacity: 1;
-  }
-  51%, 100% {
-    opacity: 0;
-  }
-}
-
-.bg-clip-text {
-  background-clip: text;
-  -webkit-background-clip: text;
+.fab-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
 }
 </style>

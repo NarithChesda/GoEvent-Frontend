@@ -21,13 +21,13 @@
         <FileText class="w-5 h-5 text-blue-600 mr-2" />
         Content Filters
       </h3>
-      <div class="flex flex-wrap gap-4">
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Type:</label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="flex flex-col space-y-1.5">
+          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</label>
           <select
             v-model="filters.textType"
             @change="applyFilters"
-            class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
+            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Types</option>
             <option value="cover_header">Cover Header</option>
@@ -43,12 +43,12 @@
           </select>
         </div>
 
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Language:</label>
+        <div class="flex flex-col space-y-1.5">
+          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Language</label>
           <select
             v-model="filters.language"
             @change="applyFilters"
-            class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
+            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Languages</option>
             <option value="en">English</option>
@@ -62,14 +62,14 @@
           </select>
         </div>
 
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Status:</label>
+        <div class="flex flex-col space-y-1.5">
+          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
           <select
             v-model="filters.isActive"
             @change="applyFilters"
-            class="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white/70 backdrop-blur-sm"
+            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
           >
-            <option value="">All</option>
+            <option value="">All Statuses</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
@@ -324,6 +324,7 @@ const handleTextUpdated = (updatedText: EventText) => {
 
 const getTextTypeLabel = (textType: string): string => {
   const labels: Record<string, string> = {
+    'cover_header': 'Cover Header',
     'welcome_message': 'Welcome Message',
     'instructions': 'Instructions',
     'description': 'Description',
@@ -339,6 +340,7 @@ const getTextTypeLabel = (textType: string): string => {
 
 const getTextTypeIcon = (textType: string) => {
   const icons: Record<string, any> = {
+    'cover_header': FileText,
     'welcome_message': MessageSquare,
     'instructions': Info,
     'description': FileText,

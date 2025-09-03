@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8" @click="closeAllDropdowns">
     <div>
       <h4 class="text-lg font-semibold text-slate-900 mb-2">Basic Media</h4>
       <p class="text-sm text-slate-600 mb-6">Upload banner image, logos, and event video</p>
@@ -12,7 +12,7 @@
           <h5 class="font-semibold text-slate-900">Event Banner</h5>
           <p class="text-sm text-slate-600">Main hero image for your event (1200x800px recommended)</p>
         </div>
-        <div class="flex space-x-2">
+        <div class="relative">
           <input
             ref="bannerInput"
             type="file"
@@ -20,8 +20,10 @@
             @change="handleBannerUpload"
             class="hidden"
           />
+          
+          <!-- Upload button when no content -->
           <button
-            v-if="canEdit"
+            v-if="canEdit && !eventData?.banner_image"
             @click="($refs.bannerInput as HTMLInputElement)?.click()"
             :disabled="uploading.banner_image"
             class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -29,14 +31,37 @@
             <Upload class="w-4 h-4" />
             <span>{{ uploading.banner_image ? 'Uploading...' : 'Upload Banner' }}</span>
           </button>
-          <button
-            v-if="eventData?.banner_image && canEdit"
-            @click="confirmRemoveBanner"
-            :disabled="uploading.banner_image"
-            class="text-slate-400 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <X class="w-4 h-4" />
-          </button>
+          
+          <!-- Options button when content exists -->
+          <div v-else-if="canEdit && eventData?.banner_image" class="relative">
+            <button
+              @click.stop="toggleDropdown('banner')"
+              :disabled="uploading.banner_image"
+              class="text-slate-600 hover:text-slate-800 hover:bg-slate-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <MoreHorizontal class="w-5 h-5" />
+            </button>
+            
+            <!-- Dropdown menu -->
+            <div v-if="showDropdown.banner" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
+              <button
+                @click="($refs.bannerInput as HTMLInputElement)?.click(); closeAllDropdowns()"
+                :disabled="uploading.banner_image"
+                class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload class="w-4 h-4" />
+                <span>Replace</span>
+              </button>
+              <button
+                @click="confirmRemoveBanner(); closeAllDropdowns()"
+                :disabled="uploading.banner_image"
+                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <X class="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -65,7 +90,7 @@
             <h5 class="font-semibold text-slate-900">Primary Logo</h5>
             <p class="text-sm text-slate-600">Main event or organization logo</p>
           </div>
-          <div class="flex space-x-2">
+          <div class="relative">
             <input
               ref="logoOneInput"
               type="file"
@@ -73,8 +98,10 @@
               @change="handleLogoOneUpload"
               class="hidden"
             />
+            
+            <!-- Upload button when no content -->
             <button
-              v-if="canEdit"
+              v-if="canEdit && !eventData?.logo_one"
               @click="($refs.logoOneInput as HTMLInputElement)?.click()"
               :disabled="uploading.logo_one"
               class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -82,14 +109,37 @@
               <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ uploading.logo_one ? 'Uploading...' : 'Upload' }}</span>
             </button>
-            <button
-              v-if="eventData?.logo_one && canEdit"
-              @click="confirmRemoveLogoOne"
-              :disabled="uploading.logo_one"
-              class="text-slate-400 hover:text-red-600 hover:bg-red-50 px-2 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <X class="w-4 h-4" />
-            </button>
+            
+            <!-- Options button when content exists -->
+            <div v-else-if="canEdit && eventData?.logo_one" class="relative">
+              <button
+                @click.stop="toggleDropdown('logoOne')"
+                :disabled="uploading.logo_one"
+                class="text-slate-600 hover:text-slate-800 hover:bg-slate-50 px-2 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MoreHorizontal class="w-5 h-5" />
+              </button>
+              
+              <!-- Dropdown menu -->
+              <div v-if="showDropdown.logoOne" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
+                <button
+                  @click="($refs.logoOneInput as HTMLInputElement)?.click(); closeAllDropdowns()"
+                  :disabled="uploading.logo_one"
+                  class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Upload class="w-4 h-4" />
+                  <span>Replace</span>
+                </button>
+                <button
+                  @click="confirmRemoveLogoOne(); closeAllDropdowns()"
+                  :disabled="uploading.logo_one"
+                  class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X class="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -116,7 +166,7 @@
             <h5 class="font-semibold text-slate-900">Secondary Logo</h5>
             <p class="text-sm text-slate-600">Partner or sponsor logo</p>
           </div>
-          <div class="flex space-x-2">
+          <div class="relative">
             <input
               ref="logoTwoInput"
               type="file"
@@ -124,8 +174,10 @@
               @change="handleLogoTwoUpload"
               class="hidden"
             />
+            
+            <!-- Upload button when no content -->
             <button
-              v-if="canEdit"
+              v-if="canEdit && !eventData?.logo_two"
               @click="($refs.logoTwoInput as HTMLInputElement)?.click()"
               :disabled="uploading.logo_two"
               class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -133,14 +185,37 @@
               <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ uploading.logo_two ? 'Uploading...' : 'Upload' }}</span>
             </button>
-            <button
-              v-if="eventData?.logo_two && canEdit"
-              @click="confirmRemoveLogoTwo"
-              :disabled="uploading.logo_two"
-              class="text-slate-400 hover:text-red-600 hover:bg-red-50 px-2 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <X class="w-4 h-4" />
-            </button>
+            
+            <!-- Options button when content exists -->
+            <div v-else-if="canEdit && eventData?.logo_two" class="relative">
+              <button
+                @click.stop="toggleDropdown('logoTwo')"
+                :disabled="uploading.logo_two"
+                class="text-slate-600 hover:text-slate-800 hover:bg-slate-50 px-2 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MoreHorizontal class="w-5 h-5" />
+              </button>
+              
+              <!-- Dropdown menu -->
+              <div v-if="showDropdown.logoTwo" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
+                <button
+                  @click="($refs.logoTwoInput as HTMLInputElement)?.click(); closeAllDropdowns()"
+                  :disabled="uploading.logo_two"
+                  class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Upload class="w-4 h-4" />
+                  <span>Replace</span>
+                </button>
+                <button
+                  @click="confirmRemoveLogoTwo(); closeAllDropdowns()"
+                  :disabled="uploading.logo_two"
+                  class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X class="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -168,7 +243,7 @@
           <h5 class="font-semibold text-slate-900">Event Video</h5>
           <p class="text-sm text-slate-600">Upload a promotional or highlight video (Max 100MB)</p>
         </div>
-        <div class="flex space-x-2">
+        <div class="relative">
           <input
             ref="videoInput"
             type="file"
@@ -176,8 +251,10 @@
             @change="handleVideoUpload"
             class="hidden"
           />
+          
+          <!-- Upload button when no content -->
           <button
-            v-if="canEdit"
+            v-if="canEdit && !eventData?.event_video"
             @click="($refs.videoInput as HTMLInputElement)?.click()"
             :disabled="uploading.event_video"
             class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -185,14 +262,37 @@
             <Upload class="w-4 h-4" />
             <span>{{ uploading.event_video ? 'Uploading...' : 'Upload Video' }}</span>
           </button>
-          <button
-            v-if="eventData?.event_video && canEdit"
-            @click="confirmRemoveVideo"
-            :disabled="uploading.event_video"
-            class="text-slate-400 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <X class="w-4 h-4" />
-          </button>
+          
+          <!-- Options button when content exists -->
+          <div v-else-if="canEdit && eventData?.event_video" class="relative">
+            <button
+              @click.stop="toggleDropdown('video')"
+              :disabled="uploading.event_video"
+              class="text-slate-600 hover:text-slate-800 hover:bg-slate-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <MoreHorizontal class="w-5 h-5" />
+            </button>
+            
+            <!-- Dropdown menu -->
+            <div v-if="showDropdown.video" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
+              <button
+                @click="($refs.videoInput as HTMLInputElement)?.click(); closeAllDropdowns()"
+                :disabled="uploading.event_video"
+                class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload class="w-4 h-4" />
+                <span>Replace</span>
+              </button>
+              <button
+                @click="confirmRemoveVideo(); closeAllDropdowns()"
+                :disabled="uploading.event_video"
+                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <X class="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -222,7 +322,7 @@
           <h5 class="font-semibold text-slate-900">Event Music</h5>
           <p class="text-sm text-slate-600">Upload background music or audio content (Max 50MB)</p>
         </div>
-        <div class="flex space-x-2">
+        <div class="relative">
           <input
             ref="musicInput"
             type="file"
@@ -230,8 +330,10 @@
             @change="handleMusicUpload"
             class="hidden"
           />
+          
+          <!-- Upload button when no content -->
           <button
-            v-if="canEdit"
+            v-if="canEdit && !eventData?.music"
             @click="($refs.musicInput as HTMLInputElement)?.click()"
             :disabled="uploading.music"
             class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -239,14 +341,37 @@
             <Upload class="w-4 h-4" />
             <span>{{ uploading.music ? 'Uploading...' : 'Upload Music' }}</span>
           </button>
-          <button
-            v-if="eventData?.music && canEdit"
-            @click="confirmRemoveMusic"
-            :disabled="uploading.music"
-            class="text-slate-400 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <X class="w-4 h-4" />
-          </button>
+          
+          <!-- Options button when content exists -->
+          <div v-else-if="canEdit && eventData?.music" class="relative">
+            <button
+              @click.stop="toggleDropdown('music')"
+              :disabled="uploading.music"
+              class="text-slate-600 hover:text-slate-800 hover:bg-slate-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <MoreHorizontal class="w-5 h-5" />
+            </button>
+            
+            <!-- Dropdown menu -->
+            <div v-if="showDropdown.music" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
+              <button
+                @click="($refs.musicInput as HTMLInputElement)?.click(); closeAllDropdowns()"
+                :disabled="uploading.music"
+                class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload class="w-4 h-4" />
+                <span>Replace</span>
+              </button>
+              <button
+                @click="confirmRemoveMusic(); closeAllDropdowns()"
+                :disabled="uploading.music"
+                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <X class="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -298,7 +423,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { Upload, ImageIcon, Play, Music, X, AlertCircle } from 'lucide-vue-next'
+import { Upload, ImageIcon, Play, Music, X, AlertCircle, MoreHorizontal } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
@@ -332,6 +457,31 @@ const deleteModalData = ref({
   itemName: '',
   fieldToDelete: ''
 })
+
+// Dropdown state for each media section
+const showDropdown = ref({
+  banner: false,
+  logoOne: false,
+  logoTwo: false,
+  video: false,
+  music: false
+})
+
+// Close all dropdowns when clicking outside
+const closeAllDropdowns = () => {
+  showDropdown.value = {
+    banner: false,
+    logoOne: false,
+    logoTwo: false,
+    video: false,
+    music: false
+  }
+}
+
+const toggleDropdown = (section: keyof typeof showDropdown.value) => {
+  closeAllDropdowns()
+  showDropdown.value[section] = !showDropdown.value[section]
+}
 
 // Helper methods
 const getMediaUrl = (mediaUrl: string | null): string | undefined => {

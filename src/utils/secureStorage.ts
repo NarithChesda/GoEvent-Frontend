@@ -176,7 +176,7 @@ class SecureStorage {
       const serialized = JSON.stringify(storageData)
       localStorage.setItem(this.storagePrefix + key, serialized)
       
-      this.devLog('info', `Successfully stored encrypted data for key: ${key}`)
+      // this.devLog('info', `Successfully stored encrypted data for key: ${key}`)
     } catch (error) {
       console.error('Failed to store data securely:', error)
       

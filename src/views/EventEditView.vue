@@ -143,12 +143,19 @@
                 v-model="form.timezone"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
-                <option value="UTC">UTC</option>
-                <option value="America/New_York">Eastern Time</option>
-                <option value="America/Chicago">Central Time</option>
-                <option value="America/Denver">Mountain Time</option>
-                <option value="America/Los_Angeles">Pacific Time</option>
+                <optgroup v-for="(timezones, region) in timezonesByRegion" :key="region" :label="region">
+                  <option
+                    v-for="timezone in timezones"
+                    :key="timezone.value"
+                    :value="timezone.value"
+                  >
+                    {{ timezone.label }}
+                  </option>
+                </optgroup>
               </select>
+              <p class="text-xs text-slate-500 mt-1">
+                Current selection: {{ getSelectedTimezoneLabel() }}
+              </p>
             </div>
           </div>
 
@@ -311,6 +318,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Loader, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
 import { eventsService, eventCategoriesService, type Event, type EventCategory } from '../services/api'
+import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 
 const route = useRoute()
 const router = useRouter()
@@ -323,6 +331,9 @@ const isSubmitting = ref(false)
 const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
+// Timezone data
+const timezonesByRegion = getTimezonesByRegion()
+
 // Form data
 const form = reactive({
   title: '',
@@ -330,7 +341,7 @@ const form = reactive({
   description: '',
   start_date: '',
   end_date: '',
-  timezone: 'UTC',
+  timezone: getUserTimezone(),
   location: '',
   virtual_link: '',
   is_virtual: false,
@@ -384,7 +395,7 @@ const populateForm = (eventData: Event) => {
   form.description = eventData.description || ''
   form.start_date = eventData.start_date.slice(0, 16) // Convert to datetime-local format
   form.end_date = eventData.end_date.slice(0, 16)
-  form.timezone = eventData.timezone || 'UTC'
+  form.timezone = eventData.timezone || getUserTimezone()
   form.location = eventData.location || ''
   form.virtual_link = eventData.virtual_link || ''
   form.is_virtual = eventData.is_virtual
@@ -489,6 +500,12 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   setTimeout(() => {
     message.value = null
   }, 5000)
+}
+
+// Computed properties
+const getSelectedTimezoneLabel = () => {
+  const option = findTimezoneOption(form.timezone)
+  return option ? option.label : form.timezone
 }
 
 // Lifecycle

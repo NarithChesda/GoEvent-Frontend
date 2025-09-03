@@ -24,8 +24,10 @@
     </div>
 
     <!-- Filters Content -->
-    <Transition name="slide-down">
-      <div v-if="showFilters" class="px-6 pb-6">
+    <div 
+      class="filter-content px-6 transition-all duration-300 ease-in-out overflow-hidden"
+      :class="showFilters ? 'max-h-[2000px] pb-6' : 'max-h-0 pb-0'"
+    >
         <div class="space-y-6">
           <!-- Search and Primary Filters -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -153,8 +155,13 @@
           </div>
 
           <!-- Advanced Filters -->
-          <Transition name="slide-down">
-            <div v-if="showAdvanced" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+          <div 
+            class="advanced-filters transition-all duration-300 ease-in-out overflow-hidden"
+            :class="showAdvanced ? 'max-h-[500px] pt-4' : 'max-h-0 pt-0'"
+          >
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-gray-200"
+                 :class="showAdvanced ? 'pt-4' : 'pt-0'"
+            >
               <!-- Date Range -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Start Date From</label>
@@ -208,7 +215,7 @@
                 </select>
               </div>
             </div>
-          </Transition>
+          </div>
 
           <!-- Clear Filters -->
           <div v-if="hasActiveFilters" class="flex justify-end">
@@ -221,8 +228,7 @@
             </button>
           </div>
         </div>
-      </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
@@ -357,16 +363,9 @@ watch(() => props.modelValue, (newFilters) => {
 </script>
 
 <style scoped>
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.slide-down-enter-from,
-.slide-down-leave-to {
-  height: 0;
-  opacity: 0;
-  transform: translateY(-10px);
+/* Smooth expand/collapse animations using max-height */
+.filter-content,
+.advanced-filters {
+  transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 </style>

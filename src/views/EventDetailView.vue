@@ -429,7 +429,6 @@ const loadEvent = async () => {
       error.value = response.message || 'Event not found'
     }
   } catch (err) {
-    console.error('Error loading event:', err)
     error.value = 'Failed to load event details'
   } finally {
     loading.value = false
@@ -455,7 +454,6 @@ const registerForEvent = async () => {
       showMessage('error', response.message || 'Failed to register for event')
     }
   } catch (error) {
-    console.error('Error registering for event:', error)
     showMessage('error', 'An error occurred while registering')
   } finally {
     isRegistering.value = false
@@ -492,7 +490,6 @@ const handleDeleteEvent = async (eventId: string) => {
       actionMenuRef.value?.resetDeleting()
     }
   } catch (error) {
-    console.error('Error deleting event:', error)
     showMessage('error', 'An error occurred while deleting the event')
     actionMenuRef.value?.resetDeleting()
   }
@@ -552,9 +549,6 @@ const handleMediaUpdated = (updatedMedia: EventPhoto[]) => {
 }
 
 const handleEventUpdated = (updatedEvent: Event) => {
-  console.log('Event updated called with:', updatedEvent)
-  console.log('Current event before update:', event.value)
-
   if (event.value && updatedEvent) {
     // Ensure critical properties are preserved
     const mergedEvent: Event = {
@@ -576,16 +570,10 @@ const handleEventUpdated = (updatedEvent: Event) => {
       category_details: updatedEvent.category_details || event.value.category_details
     }
 
-    console.log('Merged event data:', mergedEvent)
     event.value = mergedEvent
   } else if (updatedEvent) {
-    console.log('No existing event, setting new event data')
     event.value = updatedEvent
-  } else {
-    console.warn('handleEventUpdated called with invalid data:', updatedEvent)
   }
-
-  console.log('Event after update:', event.value)
 }
 
 const handleTemplateUpdated = (template: any) => {

@@ -8,66 +8,6 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <CreditCard class="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ confirmedPaymentsCount }}</p>
-            <p class="text-sm text-slate-600">Confirmed</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Clock class="w-5 h-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ pendingPaymentsCount }}</p>
-            <p class="text-sm text-slate-600">Pending</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <DollarSign class="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">${{ totalAmount }}</p>
-            <p class="text-sm text-slate-600">Total Value</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Package class="w-5 h-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ activePackage ? 1 : 0 }}</p>
-            <p class="text-sm text-slate-600">Active Package</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Referrer Section -->
-    <EventReferrerSection
-      :event-id="eventId"
-      :can-edit="canEdit"
-      :referrer-details="event?.referrer_details"
-      :organizer-email="event?.organizer_details?.email"
-      @referrer-updated="handleReferrerUpdated"
-    />
-
     <!-- Template-Based Package Selection -->
     <div v-if="!hasSelectedTemplate" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
       <FileText class="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -133,6 +73,66 @@
       </div>
 
 
+    </div>
+
+    <!-- Referrer Section -->
+    <EventReferrerSection
+      :event-id="eventId"
+      :can-edit="canEdit"
+      :referrer-details="event?.referrer_details"
+      :organizer-email="event?.organizer_details?.email"
+      @referrer-updated="handleReferrerUpdated"
+    />
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">{{ confirmedPaymentsCount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">Confirmed</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <CreditCard class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">{{ pendingPaymentsCount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">Pending</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+            <Clock class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-lg sm:text-2xl font-semibold text-slate-900 truncate">${{ totalAmount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">Total Value</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <DollarSign class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">{{ activePackage ? '1' : '0' }}</p>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">Active</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <Package class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Existing Payments -->
@@ -202,7 +202,7 @@
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="closePaymentModal">
-          <div 
+          <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
             @click.stop
           >
@@ -518,7 +518,7 @@
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showUpdateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="cancelUpdate">
-          <div 
+          <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
             @click.stop
           >
@@ -1245,7 +1245,7 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 const handleReferrerUpdated = (updatedEvent: unknown) => {
   // Update the event data with the new referrer information
   console.log('handleReferrerUpdated called with:', updatedEvent)
-  
+
   if (props.event && updatedEvent && typeof updatedEvent === 'object') {
     const eventData = updatedEvent as Event
     console.log('Emitting event-updated with:', eventData)
