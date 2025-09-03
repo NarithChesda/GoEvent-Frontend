@@ -212,7 +212,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, getCurrentInstance, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import {
   translateRSVP,
@@ -244,7 +244,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   openPhoto: [EventPhoto]
 }>()
 
@@ -479,19 +479,10 @@ const preloadImageDimensions = async (photos: EventPhoto[]) => {
   }
 }
 
-// Enhanced photo click with momentum scroll and proper cleanup
+// Enhanced photo click with immediate response
 const handlePhotoClick = (photo: EventPhoto) => {
-  // Add a subtle scroll animation before opening photo
-  if (!isScrolling.value) {
-    const instance = getCurrentInstance()
-    const emit = instance?.emit
-    if (emit) {
-      // Use managed timeout instead of raw setTimeout
-      addTimeout(() => {
-        emit('openPhoto', photo)
-      }, 50)
-    }
-  }
+  // Emit photo open event immediately for better user experience
+  emit('openPhoto', photo)
 }
 
 // Setup photo animation for staggered reveals
