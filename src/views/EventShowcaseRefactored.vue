@@ -30,6 +30,7 @@
         :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
+        :event-video-url="eventVideoUrl"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
@@ -38,13 +39,11 @@
         :secondary-font="secondaryFont"
         :event-texts="eventTexts"
         :current-language="currentLanguage"
-        :is-envelope-button-ready="isEnvelopeButtonReady"
-        :is-preloading="isPreloading"
-        :preload-progress="preloadProgress"
-        :stage2-progress="stage2Progress"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
         @cover-stage-ready="handleCoverStageReady"
+        @event-video-preloaded="handleEventVideoPreloaded"
+        @event-video-ready="handleEventVideoReady"
       />
 
       <!-- Stage 2: Event Video -->
@@ -107,7 +106,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -139,10 +138,6 @@ const {
   isPhotoModalOpen,
   currentModalPhoto,
   isMusicPlaying,
-  isPreloading,
-  preloadProgress,
-  stage2Progress,
-  
   // Computed properties
   event,
   guestName,
@@ -160,9 +155,8 @@ const {
   secondaryFont,
   isEventPast,
   eventVideoUrl,
+  backgroundVideoUrl,
   availableLanguages,
-  isEnvelopeButtonReady,
-  
   // Methods
   loadShowcase,
   openEnvelope,
@@ -176,13 +170,29 @@ const {
   navigateToPhoto,
   changeLanguage,
   toggleMusic,
-  handleCoverStageReady,
-  cancelPreloading
+  handleCoverStageReady
 } = useEventShowcase()
+
+// View-specific reactive state
+const backgroundVideoReady = ref(false)
+const eventVideoPreloaded = ref(false)
+const eventVideoReadyFromCover = ref(false)
 
 // View-specific methods
 const registerForEvent = () => {
   router.push(`/events/${event.value.id}`)
+}
+
+const onBackgroundVideoReady = () => {
+  backgroundVideoReady.value = true
+}
+
+const handleEventVideoPreloaded = () => {
+  eventVideoPreloaded.value = true
+}
+
+const handleEventVideoReady = () => {
+  eventVideoReadyFromCover.value = true
 }
 
 const handleLoginRedirect = () => {
@@ -234,7 +244,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  cancelPreloading()
+  // Cleanup handled by composable
 })
 </script>
 

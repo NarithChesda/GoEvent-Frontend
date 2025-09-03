@@ -469,11 +469,20 @@ const containerClasses = computed(() => [
   'flex items-center justify-center'
 ])
 
+const existingBackgroundVideo = ref<HTMLVideoElement | null>(null)
+
 const backgroundVideoComponent = computed((): Component | string => {
+  // If we found an existing background video, don't create a new one
+  if (existingBackgroundVideo.value) {
+    return 'div'
+  }
   return props.templateAssets?.standard_background_video ? 'video' : 'div'
 })
 
 const backgroundVideoProps = computed(() => {
+  if (existingBackgroundVideo.value) {
+    return { class: 'bg-transparent' }
+  }
   if (props.templateAssets?.standard_background_video) {
     return {
       src: props.getMediaUrl(props.templateAssets.standard_background_video),
@@ -484,6 +493,23 @@ const backgroundVideoProps = computed(() => {
     }
   }
   return { class: 'bg-black' }
+})
+
+// Check for existing background video from EventVideoStage
+onMounted(async () => {
+  await nextTick()
+  // Look for pre-loaded background video in the DOM
+  const existingVideos = document.querySelectorAll('video[src*="standard_background_video"]')
+  for (const video of existingVideos) {
+    const videoElement = video as HTMLVideoElement
+    if (videoElement.style.opacity === '1' && videoElement.style.zIndex === '1') {
+      existingBackgroundVideo.value = videoElement
+      // Ensure it covers the background properly
+      videoElement.classList.add('absolute', 'inset-0', 'w-full', 'h-full', 'object-cover')
+      videoElement.style.zIndex = '0'
+      break
+    }
+  }
 })
 
 const emit = defineEmits<{

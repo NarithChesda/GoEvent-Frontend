@@ -1,5 +1,19 @@
 <template>
   <div class="absolute inset-0 z-10" :style="{ backgroundColor: primaryColor }">
+    <!-- Hidden Event Video Preloader -->
+    <video
+      v-if="eventVideoUrl"
+      ref="eventVideoPreloader"
+      :src="eventVideoUrl"
+      muted
+      playsinline
+      preload="auto"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
+      style="z-index: -10;"
+      @loadeddata="handleEventVideoPreloaded"
+      @canplaythrough="handleEventVideoReady"
+    />
+    
     <!-- Standard Cover Video Loop -->
     <video
       v-if="templateAssets?.standard_cover_video"
@@ -9,8 +23,6 @@
       muted
       playsinline
       class="absolute inset-0 w-full h-full desktop-video-sizing"
-      @loadeddata="handleCoverVideoLoaded"
-      @error="handleCoverVideoError"
     />
 
     <!-- Fallback Background Image -->
@@ -19,8 +31,6 @@
         :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
         class="w-full h-full object-cover"
-        @load="handleBackgroundImageLoaded"
-        @error="handleBackgroundImageError"
       />
     </div>
 
@@ -50,9 +60,7 @@
             <img
               :src="getMediaUrl(eventLogo)"
               :alt="eventTitle + ' logo'"
-              class="scaled-logo mx-auto drop-shadow-2xl"
-              @load="handleEventLogoLoaded"
-              @error="handleEventLogoError"
+              class="scaled-logo mx-auto"
             />
           </div>
         </div>
@@ -86,43 +94,22 @@
           <div class="flex items-center justify-center h-full w-full">
             <button
               @click="$emit('openEnvelope')"
-              :disabled="!isEnvelopeButtonReady"
               class="relative flex items-center justify-center h-full transition-all duration-300"
               :class="buttonClasses"
             >
-              <!-- Loading overlay when Stage 2 is preloading -->
-              <div 
-                v-if="!isEnvelopeButtonReady" 
-                class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 rounded-full backdrop-blur-sm z-10"
-              >
-                <div 
-                  class="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" 
-                  :style="{ borderBottomColor: primaryColor || '#3B82F6' }"
-                />
-                <p 
-                  class="text-sm font-medium opacity-80" 
-                  :style="{ color: primaryColor || '#FFFFFF', fontFamily: secondaryFont || currentFont }"
-                >
-                  {{ getLoadingMessage() }}
-                </p>
-              </div>
 
               <!-- Button image -->
               <img
-                v-if="hasCustomButton"
-                ref="openEnvelopeButtonImg"
+                v-if="hasCustomButton && templateAssets?.open_envelope_button"
                 :src="getMediaUrl(templateAssets.open_envelope_button)"
                 alt="Open Invitation"
                 class="scaled-envelope-button transition-all duration-300"
-                @load="handleOpenEnvelopeButtonLoaded"
-                @error="handleOpenEnvelopeButtonError"
               />
 
               <!-- Fallback button design -->
               <div
                 v-else
-                class="scaled-button-fallback rounded-full transition-all flex items-center justify-center"
-                :class="{ 'hover:scale-105': isEnvelopeButtonReady }"
+                class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105"
                 :style="fallbackButtonStyle"
               >
                 <span
@@ -141,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
@@ -161,6 +148,7 @@ interface Props {
   guestName: string
   eventTitle: string
   eventLogo?: string | null
+  eventVideoUrl?: string | null
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -170,9 +158,6 @@ interface Props {
   eventTexts?: EventText[]
   currentLanguage?: string
   isEnvelopeButtonReady?: boolean
-  isPreloading?: boolean
-  preloadProgress?: { percentage: number; currentPriority?: unknown }
-  stage2Progress?: { completed: number; total: number; percentage: number }
   getMediaUrl: (url: string) => string
 }
 
@@ -181,10 +166,26 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   openEnvelope: []
   coverStageReady: []
+  eventVideoPreloaded: []
+  eventVideoReady: []
 }>()
 
-// Template refs
-const openEnvelopeButtonImg = ref<HTMLImageElement>()
+// Template refs for preloaded video
+const eventVideoPreloader = ref<HTMLVideoElement | null>(null)
+const eventVideoPreloaded = ref(false)
+const eventVideoReady = ref(false)
+
+// Event video preloading handlers
+const handleEventVideoPreloaded = () => {
+  eventVideoPreloaded.value = true
+  emit('eventVideoPreloaded')
+}
+
+const handleEventVideoReady = () => {
+  eventVideoReady.value = true
+  emit('eventVideoReady')
+}
+
 
 // Computed properties for styling
 const gradientStyle = computed(() =>
@@ -221,8 +222,7 @@ const fallbackButtonStyle = computed(() => ({
 }))
 
 const buttonClasses = computed(() => ({
-  'opacity-50 cursor-not-allowed': !props.isEnvelopeButtonReady,
-  'hover:scale-105 cursor-pointer': props.isEnvelopeButtonReady
+  'hover:scale-105 cursor-pointer': true
 }))
 
 const hasCustomButton = computed(() => 
@@ -257,63 +257,9 @@ const inviteText = computed(() =>
   getTextContent('invite_text', "You're Invited")
 )
 
-// Loading message with Stage 2 progress tracking
-const getLoadingMessage = () => {
-  const progress = props.stage2Progress
-  
-  if (progress) {
-    if (progress.total > 0) {
-      return `Preparing video... ${progress.percentage || 0}%`
-    } else if (progress.total === 0 && progress.percentage === 100) {
-      return 'Ready!'
-    } else if (progress.total === 0) {
-      return 'Initializing...'
-    }
-  }
-  
-  return 'Loading...'
-}
 
-// Asset loading state
-const assetsLoaded = ref({
-  coverVideo: false,
-  backgroundImage: false,
-  eventLogo: false,
-  openEnvelopeButton: false,
-  fonts: false
-})
-
-const isStageReady = computed(() => {
-  const requiredAssets = []
-
-  // Background video or image
-  if (props.templateAssets?.standard_cover_video) {
-    requiredAssets.push(assetsLoaded.value.coverVideo)
-  } else if (props.templateAssets?.basic_background_photo) {
-    requiredAssets.push(assetsLoaded.value.backgroundImage)
-  } else {
-    requiredAssets.push(true) // No background asset required
-  }
-
-  // Event logo (if present)
-  if (props.eventLogo) {
-    requiredAssets.push(assetsLoaded.value.eventLogo)
-  } else {
-    requiredAssets.push(true) // No logo required
-  }
-
-  // Custom button (if present)
-  if (hasCustomButton.value) {
-    requiredAssets.push(assetsLoaded.value.openEnvelopeButton)
-  } else {
-    requiredAssets.push(true) // Using default button
-  }
-
-  // Fonts
-  requiredAssets.push(assetsLoaded.value.fonts)
-
-  return requiredAssets.every(loaded => loaded)
-})
+// Stage is always ready - no loading states
+const isStageReady = computed(() => true)
 
 // Watchers
 watch(isStageReady, (ready) => {
@@ -322,104 +268,7 @@ watch(isStageReady, (ready) => {
   }
 }, { immediate: true })
 
-watch(() => props.templateAssets?.open_envelope_button, (newButtonUrl, oldButtonUrl) => {
-  if (newButtonUrl && newButtonUrl.trim() !== '' && newButtonUrl !== oldButtonUrl) {
-    // Reset asset status for new button
-    assetsLoaded.value.openEnvelopeButton = false
-    
-    // Check if image is already cached
-    nextTick(() => {
-      checkButtonImageRef()
-    })
-  } else if (!newButtonUrl || newButtonUrl.trim() === '') {
-    // No custom button, mark as loaded
-    assetsLoaded.value.openEnvelopeButton = true
-  }
-}, { immediate: false })
-
-// Asset loading handlers
-const handleCoverVideoLoaded = () => {
-  assetsLoaded.value.coverVideo = true
-}
-
-const handleCoverVideoError = () => {
-  assetsLoaded.value.coverVideo = true // Consider loaded to prevent blocking
-}
-
-const handleBackgroundImageLoaded = () => {
-  assetsLoaded.value.backgroundImage = true
-}
-
-const handleBackgroundImageError = () => {
-  assetsLoaded.value.backgroundImage = true // Consider loaded to prevent blocking
-}
-
-const handleEventLogoLoaded = () => {
-  assetsLoaded.value.eventLogo = true
-}
-
-const handleEventLogoError = () => {
-  assetsLoaded.value.eventLogo = true // Consider loaded to prevent blocking
-}
-
-const handleOpenEnvelopeButtonLoaded = () => {
-  assetsLoaded.value.openEnvelopeButton = true
-}
-
-const handleOpenEnvelopeButtonError = () => {
-  assetsLoaded.value.openEnvelopeButton = true // Consider loaded to prevent blocking
-}
-
-// Font loading detection
-const checkFontsLoaded = async () => {
-  await nextTick()
-  
-  try {
-    await document.fonts.ready
-    assetsLoaded.value.fonts = true
-  } catch {
-    assetsLoaded.value.fonts = true // Don't block on font loading issues
-  }
-}
-
-// Button image reference checker
-const checkButtonImageRef = () => {
-  let retryCount = 0
-  const maxRetries = 50
-  
-  const check = () => {
-    if (openEnvelopeButtonImg.value) {
-      if (openEnvelopeButtonImg.value.complete && openEnvelopeButtonImg.value.naturalWidth > 0) {
-        handleOpenEnvelopeButtonLoaded()
-      }
-    } else {
-      retryCount++
-      if (retryCount < maxRetries) {
-        setTimeout(check, 100)
-      } else {
-        assetsLoaded.value.openEnvelopeButton = true
-      }
-    }
-  }
-  
-  check()
-}
-
-// Lifecycle hooks
-onMounted(() => {
-  // Initialize font loading check
-  setTimeout(checkFontsLoaded, 500)
-
-  // Handle custom button image loading
-  if (hasCustomButton.value) {
-    nextTick(() => {
-      checkButtonImageRef()
-    })
-  } else {
-    // No custom button, mark as loaded
-    assetsLoaded.value.openEnvelopeButton = true
-  }
-})
+// No asset loading handlers needed - stage loads immediately
 </script>
 
 <style scoped>

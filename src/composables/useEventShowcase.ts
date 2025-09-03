@@ -6,7 +6,6 @@ import { useRoute } from 'vue-router'
 import { eventsService, type EventPaymentMethod } from '../services/api'
 
 // Imports - Composables
-import { useBackgroundPreloader } from './useBackgroundPreloader'
 import { usePerformance, ResourceManager } from '../utils/performance'
 
 // Imports - Utilities
@@ -193,20 +192,6 @@ export function useEventShowcase() {
   // ============================
   // External Composables
   // ============================
-  const {
-    isPreloading,
-    preloadProgress,
-    stage2Progress,
-    stage3Progress,
-    startStage2Preloading,
-    startStage3Preloading,
-    cancelPreloading,
-    clearVideoCache,
-    isContentPreloaded,
-    isStage2Ready,
-    isStage3Ready,
-    getStats
-  } = useBackgroundPreloader()
 
   const {
     deduplicateRequest,
@@ -492,6 +477,13 @@ export function useEventShowcase() {
     return null
   })
 
+  const backgroundVideoUrl = computed(() => {
+    if (event.value?.template_assets?.assets?.standard_background_video) {
+      return getMediaUrl(event.value.template_assets.assets.standard_background_video)
+    }
+    return null
+  })
+
   const eventMusicUrl = computed(() => {
     if (event.value?.music) {
       return getMediaUrl(event.value.music)
@@ -499,10 +491,7 @@ export function useEventShowcase() {
     return null
   })
 
-  const isEnvelopeButtonReady = computed(() => {
-    if (!event.value?.id) return false
-    return isStage2Ready(event.value.id, eventVideoUrl.value)
-  })
+  const isEnvelopeButtonReady = computed(() => true)
 
   // ============================
   // Helper Functions
@@ -1030,33 +1019,15 @@ export function useEventShowcase() {
       if (eventMusicUrl.value) {
         playMusic()
       }
-
-      if (event.value?.id) {
-        startStage3Preloading(event.value, getMediaUrl).catch(() => {
-          // Stage 3 preloading failed silently
-        })
-      }
       
       await nextTick()
       if (eventVideoRef.value) {
         eventVideoRef.value.muted = false
-        eventVideoRef.value.play().then(() => {
-          setTimeout(() => {
-            if (event.value?.id) {
-              clearVideoCache(event.value.id)
-            }
-          }, 3000)
-        }).catch(() => {
+        eventVideoRef.value.play().catch(() => {
           // Try playing muted if unmuted fails
           if (eventVideoRef.value) {
             eventVideoRef.value.muted = true
-            eventVideoRef.value.play().then(() => {
-              setTimeout(() => {
-                if (event.value?.id) {
-                  clearVideoCache(event.value.id)
-                }
-              }, 3000)
-            })
+            eventVideoRef.value.play()
           }
         })
       }
@@ -1068,23 +1039,11 @@ export function useEventShowcase() {
           playMusic()
         }
       }, 1000)
-      
-      if (event.value?.id) {
-        startStage3Preloading(event.value, getMediaUrl).catch(() => {
-          // Stage 3 preloading failed silently
-        })
-      }
     }
   }
 
   const onVideoCanPlay = () => {
     videoLoading.value = false
-    
-    if (event.value?.id) {
-      setTimeout(() => {
-        clearVideoCache(event.value.id)
-      }, 2000)
-    }
   }
 
   const onEventVideoEnded = () => {
@@ -1139,7 +1098,7 @@ export function useEventShowcase() {
   }
 
   // ============================
-  // Stage Preloading Management
+  // Stage Management
   // ============================
   const handleCoverStageReady = () => {
     coverStageReady.value = true
@@ -1153,20 +1112,10 @@ export function useEventShowcase() {
     languageFontsCache.value.clear()
   })
 
-  watch(event, (newEvent) => {
-    if (newEvent?.id) {
-      startStage2Preloading(newEvent, getMediaUrl).catch(() => {
-        // Stage 2 preloading failed silently
-      })
-    }
-  })
-
   // ============================
   // Lifecycle Hooks
   // ============================
   onUnmounted(() => {
-    cancelPreloading()
-    
     if (audioRef.value) {
       audioRef.value.pause()
       audioRef.value.src = ''
@@ -1245,15 +1194,10 @@ export function useEventShowcase() {
     decorativeFont,
     isEventPast,
     eventVideoUrl,
+    backgroundVideoUrl,
     eventMusicUrl,
     availableLanguages,
     isEnvelopeButtonReady,
-
-    // Preloading state
-    isPreloading,
-    preloadProgress,
-    stage2Progress,
-    stage3Progress,
 
     // Methods
     loadShowcase,
@@ -1275,16 +1219,6 @@ export function useEventShowcase() {
     handleCoverStageReady,
     fontsLoaded,
     fontsLoadedCount,
-    fontLoadStats,
-
-    // Preloading methods
-    cancelPreloading,
-    clearVideoCache,
-    isContentPreloaded,
-    isStage2Ready,
-    isStage3Ready,
-    getStats,
-    startStage2Preloading,
-    startStage3Preloading
+    fontLoadStats
   }
 }
