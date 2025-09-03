@@ -16,56 +16,6 @@
       </button>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <Calendar class="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ uniqueDays }}</p>
-            <p class="text-sm text-slate-600">Days</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <FileText class="w-5 h-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalItems }}</p>
-            <p class="text-sm text-slate-600">Items</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <Clock class="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalDuration }}</p>
-            <p class="text-sm text-slate-600">Total Hours</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Users class="w-5 h-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalSpeakers }}</p>
-            <p class="text-sm text-slate-600">Speakers</p>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
@@ -235,9 +185,6 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import {
   Calendar,
-  FileText,
-  Clock,
-  Users,
   Plus,
   ChevronDown,
   Info,
@@ -305,27 +252,6 @@ const groupedAgendaDays = computed(() => {
   return grouped
 })
 
-const uniqueDays = computed(() => {
-  const uniqueDates = new Set(agendaItems.value.map(item => item.date))
-  return uniqueDates.size
-})
-
-const totalItems = computed(() => agendaItems.value.length)
-
-const totalDuration = computed(() => {
-  // Duration calculation would need start/end time parsing
-  // For now, return approximate based on items
-  return Math.round(agendaItems.value.length * 0.5) // Assume 30min average per item
-})
-
-const totalSpeakers = computed(() => {
-  const speakers = new Set(
-    agendaItems.value
-      .filter(item => item.speaker)
-      .map(item => item.speaker)
-  )
-  return speakers.size
-})
 
 // Methods
 const loadAgenda = async () => {

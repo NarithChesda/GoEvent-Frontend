@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="$emit('close')">
+      <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
         
         <div class="flex min-h-full items-center justify-center p-4">
@@ -351,6 +351,33 @@
                               v-model="translation.speaker"
                               type="text"
                               placeholder="Translated speaker"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div>
+                            <input
+                              v-model="translation.date_text"
+                              type="text"
+                              placeholder="Translated date text"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              v-model="translation.start_time_text"
+                              type="text"
+                              placeholder="Translated start time"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              v-model="translation.end_time_text"
+                              type="text"
+                              placeholder="Translated end time"
                               class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
