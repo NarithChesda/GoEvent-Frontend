@@ -424,7 +424,8 @@ import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
 import WeddingSectionDivider from './WeddingSectionDivider.vue'
-import type { EventData, EventText, Host, AgendaItem, EventPhoto, EventComment } from '../../composables/useEventShowcase'
+import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
+import type { EventComment } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import {
   translateRSVP,

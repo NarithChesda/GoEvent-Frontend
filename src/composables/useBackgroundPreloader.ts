@@ -34,6 +34,26 @@ export interface PreloadResult {
   error?: Error
   loadTime: number
   cached?: boolean
+  resource?: any // The loaded resource (HTMLVideoElement, HTMLImageElement, etc.)
+}
+
+/**
+ * Video cleanup callback interface
+ */
+export interface VideoCleanupCallback {
+  (): void
+  dispose?: () => void
+}
+
+/**
+ * Video element wrapper for memory management
+ */
+export interface VideoElementWrapper {
+  element: HTMLVideoElement
+  url: string
+  created: number
+  cleanup: VideoCleanupCallback
+  disposed: boolean
 }
 
 /**
@@ -96,7 +116,9 @@ export function useBackgroundPreloader() {
   const contentQueue = ref<PreloadableContent[]>([])
   const preloadCache = ref<Map<string, any>>(new Map())
   const cacheAccessOrder = ref<string[]>([])
-  const videoCacheCleanupCallbacks = ref<Map<string, () => void>>(new Map())
+  const videoCacheCleanupCallbacks = ref<Map<string, VideoCleanupCallback>>(new Map())
+  const videoElementPool = ref<VideoElementWrapper[]>([])
+  const maxVideoPoolSize = 5
   const activeFontLoads = ref(0)
   
   let currentCacheMemory = 0
@@ -251,7 +273,8 @@ export function useBackgroundPreloader() {
       return {
         id: content.id,
         success: true,
-        loadTime: performance.now() - startTime
+        loadTime: performance.now() - startTime,
+        resource: result
       }
     } catch (error: any) {
       return {
@@ -272,7 +295,7 @@ export function useBackgroundPreloader() {
       case 'video': {
         const result = await preloadVideo(content.url, signal)
         if (result instanceof HTMLVideoElement) {
-          const cleanup = createVideoMemoryCleanup(result, content.url)
+          const cleanup = createEnhancedVideoCleanup(result, content.url, content.id)
           videoCacheCleanupCallbacks.value.set(content.id, cleanup)
         }
         return result
@@ -426,29 +449,82 @@ export function useBackgroundPreloader() {
 
   const preloadVideo = (url: string, signal: AbortSignal): Promise<HTMLVideoElement> => {
     return new Promise((resolve, reject) => {
-      const video = document.createElement('video')
-      video.preload = 'metadata'
-      video.muted = true
-
+      const video = createVideoElement()
+      const isBlobUrl = url.startsWith('blob:')
+      
       let hasResolved = false
       let timeoutId: number | null = null
       let progressiveTimeoutId: number | null = null
+      let abortListener: (() => void) | null = null
 
+      // Enhanced cleanup function with comprehensive resource disposal
       const cleanup = () => {
-        if (timeoutId) clearTimeout(timeoutId)
-        if (progressiveTimeoutId) clearTimeout(progressiveTimeoutId)
+        // Clear all timeouts
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
+        if (progressiveTimeoutId) {
+          clearTimeout(progressiveTimeoutId)
+          progressiveTimeoutId = null
+        }
         
+        // Remove all event listeners from video element
         video.oncanplaythrough = null
         video.oncanplay = null
         video.onloadedmetadata = null
         video.onerror = null
-        signal.removeEventListener('abort', onAbort)
+        video.onloadstart = null
+        video.onprogress = null
+        video.onsuspend = null
+        video.onstalled = null
+        video.onwaiting = null
+        video.onabort = null
+        
+        // Remove abort signal listener
+        if (abortListener) {
+          signal.removeEventListener('abort', abortListener)
+          abortListener = null
+        }
+      }
+
+      // Enhanced video disposal function
+      const disposeVideo = () => {
+        try {
+          // Pause video and reset current time
+          if (!video.paused) {
+            video.pause()
+          }
+          video.currentTime = 0
+          
+          // Clear source and force unload
+          video.removeAttribute('src')
+          video.src = ''
+          
+          // Remove from DOM if attached
+          if (video.parentNode) {
+            video.parentNode.removeChild(video)
+          }
+          
+          // Force garbage collection hint
+          video.load()
+          
+          // Revoke blob URL if necessary
+          if (isBlobUrl) {
+            try {
+              URL.revokeObjectURL(url)
+            } catch (revokeError) {
+              console.warn(`Failed to revoke blob URL ${url}:`, revokeError)
+            }
+          }
+        } catch (error) {
+          console.warn(`Video disposal error for ${url}:`, error)
+        }
       }
 
       const onAbort = () => {
         cleanup()
-        video.src = ''
-        video.load()
+        disposeVideo()
         reject(new Error('Video preload aborted'))
       }
 
@@ -460,38 +536,95 @@ export function useBackgroundPreloader() {
         }
       }
 
-      video.oncanplay = resolveIfNotDone
-      video.oncanplaythrough = resolveIfNotDone
+      const handleError = (errorMsg: string) => {
+        cleanup()
+        disposeVideo()
+        reject(new Error(errorMsg))
+      }
+
+      // Set up event handlers with error checking
+      video.oncanplay = () => {
+        if (!hasResolved && !signal.aborted) {
+          resolveIfNotDone()
+        }
+      }
+      
+      video.oncanplaythrough = () => {
+        if (!hasResolved && !signal.aborted) {
+          resolveIfNotDone()
+        }
+      }
       
       video.onloadedmetadata = () => {
-        video.preload = 'auto'
-        progressiveTimeoutId = setTimeout(() => {
-          if (!hasResolved && video.readyState >= video.HAVE_METADATA) {
-            resolveIfNotDone()
-          }
-        }, 8000)
+        if (!signal.aborted) {
+          video.preload = 'auto'
+          progressiveTimeoutId = setTimeout(() => {
+            if (!hasResolved && !signal.aborted && video.readyState >= video.HAVE_METADATA) {
+              resolveIfNotDone()
+            }
+          }, 8000)
+        }
       }
 
       video.onerror = () => {
-        cleanup()
-        reject(new Error(`Failed to load video: ${url}`))
+        const errorMsg = video.error 
+          ? `Video load failed (${video.error.code}): ${getVideoErrorMessage(video.error.code)} - ${url}`
+          : `Failed to load video: ${url}`
+        handleError(errorMsg)
       }
 
-      signal.addEventListener('abort', onAbort)
+      video.onabort = () => {
+        if (!hasResolved) {
+          handleError(`Video load aborted: ${url}`)
+        }
+      }
 
+      // Set up abort signal listener
+      abortListener = onAbort
+      signal.addEventListener('abort', abortListener)
+
+      // Set up timeout with enhanced error handling
       timeoutId = setTimeout(() => {
         if (!signal.aborted && !hasResolved) {
           if (video.readyState >= video.HAVE_METADATA) {
             resolveIfNotDone()
           } else {
-            cleanup()
-            reject(new Error(`Video load timeout: ${url}`))
+            handleError(`Video load timeout (${config.value.timeoutMs}ms): ${url}`)
           }
         }
       }, config.value.timeoutMs)
 
-      video.src = url
+      // Start loading with error handling
+      try {
+        video.preload = 'metadata'
+        video.muted = true
+        video.src = url
+      } catch (error) {
+        handleError(`Failed to set video source: ${error}`)
+      }
     })
+  }
+
+  // Helper function to create video elements with proper settings
+  const createVideoElement = (): HTMLVideoElement => {
+    const video = document.createElement('video')
+    video.setAttribute('playsinline', '')
+    video.setAttribute('webkit-playsinline', '')
+    video.crossOrigin = 'anonymous'
+    video.preload = 'metadata'
+    video.muted = true
+    return video
+  }
+
+  // Get human-readable video error messages
+  const getVideoErrorMessage = (errorCode: number): string => {
+    const errorMessages = {
+      1: 'MEDIA_ERR_ABORTED - The user aborted the video load',
+      2: 'MEDIA_ERR_NETWORK - A network error occurred while loading',
+      3: 'MEDIA_ERR_DECODE - An error occurred while decoding the video',
+      4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Video format is not supported'
+    }
+    return errorMessages[errorCode as keyof typeof errorMessages] || `Unknown error code: ${errorCode}`
   }
 
   const preloadAudio = (url: string, signal: AbortSignal): Promise<HTMLAudioElement> => {
@@ -772,43 +905,185 @@ export function useBackgroundPreloader() {
     isPreloading.value = false
   }
 
-  const createVideoMemoryCleanup = (video: HTMLVideoElement, url: string) => {
-    return () => {
-      try {
-        video.src = ''
-        video.load()
-      } catch (error) {
-        console.warn(`Video cleanup warning for ${url}:`, error)
+  // Enhanced video cleanup with comprehensive resource management
+  const createEnhancedVideoCleanup = (video: HTMLVideoElement, url: string, id: string): VideoCleanupCallback => {
+    const isBlobUrl = url.startsWith('blob:')
+    let disposed = false
+    
+    const cleanup = () => {
+      if (disposed) {
+        return // Prevent double disposal
       }
+      disposed = true
+      
+      try {
+        // Remove from video pool if present
+        const poolIndex = videoElementPool.value.findIndex(wrapper => wrapper.element === video)
+        if (poolIndex !== -1) {
+          videoElementPool.value.splice(poolIndex, 1)
+        }
+        
+        // Comprehensive video element cleanup
+        disposeVideoElement(video, url, isBlobUrl)
+        
+        // Remove from cleanup callbacks
+        videoCacheCleanupCallbacks.value.delete(id)
+        
+      } catch (error) {
+        console.warn(`Enhanced video cleanup error for ${url}:`, error)
+      }
+    }
+    
+    // Add dispose method for explicit cleanup
+    cleanup.dispose = cleanup
+    
+    return cleanup
+  }
+  
+  // Comprehensive video element disposal
+  const disposeVideoElement = (video: HTMLVideoElement, url: string, isBlobUrl: boolean = false) => {
+    try {
+      // Pause and reset video state
+      if (!video.paused) {
+        video.pause()
+      }
+      video.currentTime = 0
+      
+      // Remove all possible event listeners
+      const eventTypes = [
+        'loadstart', 'progress', 'suspend', 'abort', 'error', 'emptied', 'stalled',
+        'loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing',
+        'waiting', 'seeking', 'seeked', 'ended', 'durationchange', 'timeupdate',
+        'play', 'pause', 'ratechange', 'resize', 'volumechange'
+      ]
+      
+      eventTypes.forEach(eventType => {
+        video.removeEventListener(eventType, () => {})
+        ;(video as any)[`on${eventType}`] = null
+      })
+      
+      // Clear source and force unload
+      video.removeAttribute('src')
+      video.removeAttribute('poster')
+      video.src = ''
+      
+      // Remove from DOM if attached
+      if (video.parentNode) {
+        video.parentNode.removeChild(video)
+      }
+      
+      // Force browser to release resources
+      video.load()
+      
+      // Revoke blob URL if necessary
+      if (isBlobUrl) {
+        try {
+          URL.revokeObjectURL(url)
+        } catch (revokeError) {
+          console.warn(`Failed to revoke blob URL ${url}:`, revokeError)
+        }
+      }
+      
+    } catch (error) {
+      console.warn(`Video element disposal error for ${url}:`, error)
     }
   }
 
+  // Enhanced video cache clearing with memory optimization
   const clearVideoCache = (eventId: string) => {
     const videoIds = [`event-video-${eventId}`, `bg-video-${eventId}`]
     
     videoIds.forEach(id => {
       const cleanup = videoCacheCleanupCallbacks.value.get(id)
       if (cleanup) {
-        cleanup()
-        videoCacheCleanupCallbacks.value.delete(id)
+        try {
+          cleanup()
+        } catch (error) {
+          console.warn(`Video cache cleanup error for ${id}:`, error)
+        }
       }
+      
+      // Remove from preload results
+      preloadResults.value.delete(id)
+      
+      // Remove from cache if present
+      const cacheKeys = Array.from(preloadCache.value.keys())
+      cacheKeys.forEach(key => {
+        if (key.includes(eventId)) {
+          const item = preloadCache.value.get(key)
+          if (item instanceof HTMLVideoElement) {
+            disposeVideoElement(item, key)
+            preloadCache.value.delete(key)
+            
+            // Update cache access order
+            const accessIndex = cacheAccessOrder.value.indexOf(key)
+            if (accessIndex > -1) {
+              cacheAccessOrder.value.splice(accessIndex, 1)
+            }
+          }
+        }
+      })
+    })
+    
+    // Clean up video pool entries for this event
+    videoElementPool.value = videoElementPool.value.filter(wrapper => {
+      if (wrapper.url.includes(eventId) || videoIds.some(id => wrapper.url.includes(id))) {
+        try {
+          wrapper.cleanup()
+        } catch (error) {
+          console.warn(`Video pool cleanup error:`, error)
+        }
+        return false
+      }
+      return true
     })
   }
 
+  // Enhanced cache clearing with comprehensive memory management
   const clearCache = () => {
+    // Clean up all video elements
     videoCacheCleanupCallbacks.value.forEach((cleanup, id) => {
       try {
         cleanup()
       } catch (error) {
-        console.warn(`Cleanup warning for ${id}:`, error)
+        console.warn(`Video cleanup warning for ${id}:`, error)
       }
     })
     videoCacheCleanupCallbacks.value.clear()
     
+    // Dispose all cached video elements
+    preloadCache.value.forEach((item, key) => {
+      if (item instanceof HTMLVideoElement) {
+        disposeVideoElement(item, key, key.startsWith('blob:'))
+      }
+    })
+    
+    // Clean up video pool
+    videoElementPool.value.forEach(wrapper => {
+      try {
+        wrapper.cleanup()
+      } catch (error) {
+        console.warn(`Video pool cleanup error:`, error)
+      }
+    })
+    videoElementPool.value = []
+    
+    // Clear all caches and state
     preloadCache.value.clear()
     cacheAccessOrder.value = []
     currentCacheMemory = 0
     stage2StartTime.value.clear()
+    preloadResults.value.clear()
+    
+    // Cancel any active requests
+    activeRequests.value.forEach(controller => {
+      try {
+        controller.abort()
+      } catch (error) {
+        console.warn('Error aborting request:', error)
+      }
+    })
+    activeRequests.value.clear()
   }
 
   const updateConfig = (newConfig: Partial<PreloaderConfig>) => {
@@ -852,10 +1127,35 @@ export function useBackgroundPreloader() {
     return result?.success === true
   }
 
+  // Enhanced statistics with memory tracking
   const getStats = () => {
     const results = Array.from(preloadResults.value.values())
     const successful = results.filter(r => r.success)
     const failed = results.filter(r => !r.success)
+    
+    // Memory breakdown by content type
+    const memoryByType = {
+      video: 0,
+      image: 0,
+      audio: 0,
+      font: 0,
+      other: 0
+    }
+    
+    preloadCache.value.forEach(item => {
+      const size = estimateMemoryUsage(item)
+      if (item instanceof HTMLVideoElement) {
+        memoryByType.video += size
+      } else if (item instanceof HTMLImageElement) {
+        memoryByType.image += size
+      } else if (item instanceof HTMLAudioElement) {
+        memoryByType.audio += size
+      } else if (item instanceof FontFace) {
+        memoryByType.font += size
+      } else {
+        memoryByType.other += size
+      }
+    })
     
     return {
       total: results.length,
@@ -865,20 +1165,89 @@ export function useBackgroundPreloader() {
         ? successful.reduce((sum, r) => sum + r.loadTime, 0) / successful.length 
         : 0,
       cacheHits: results.filter(r => r.cached).length,
-      errors: failed.map(r => ({ id: r.id, error: r.error?.message }))
+      errors: failed.map(r => ({ id: r.id, error: r.error?.message })),
+      memory: {
+        total: currentCacheMemory,
+        totalMB: Math.round(currentCacheMemory / 1024 / 1024 * 100) / 100,
+        breakdown: memoryByType,
+        breakdownMB: Object.fromEntries(
+          Object.entries(memoryByType).map(([type, bytes]) => [
+            type, 
+            Math.round(bytes / 1024 / 1024 * 100) / 100
+          ])
+        ),
+        cached_items: preloadCache.value.size,
+        video_cleanup_callbacks: videoCacheCleanupCallbacks.value.size,
+        video_pool_size: videoElementPool.value.length,
+        active_requests: activeRequests.value.size
+      }
+    }
+  }
+  
+  // Get memory status for monitoring
+  const getMemoryStatus = () => {
+    const stats = getStats()
+    const memoryUsagePercent = (currentCacheMemory / MAX_CACHE_MEMORY) * 100
+    const isMemoryPressure = memoryUsagePercent > 80
+    
+    return {
+      ...stats.memory,
+      usage_percent: Math.round(memoryUsagePercent * 100) / 100,
+      max_memory_mb: Math.round(MAX_CACHE_MEMORY / 1024 / 1024),
+      is_memory_pressure: isMemoryPressure,
+      should_cleanup: isMemoryPressure && videoElementPool.value.length > 0
+    }
+  }
+  
+  // Force cleanup when memory pressure is detected
+  const forceMemoryCleanup = () => {
+    const memoryStatus = getMemoryStatus()
+    
+    if (memoryStatus.is_memory_pressure) {
+      console.warn('Memory pressure detected, forcing cleanup')
+      
+      // Clean up video pool first
+      const poolCleanupCount = Math.min(videoElementPool.value.length, 3)
+      for (let i = 0; i < poolCleanupCount; i++) {
+        const wrapper = videoElementPool.value.shift()
+        if (wrapper) {
+          try {
+            wrapper.cleanup()
+          } catch (error) {
+            console.warn('Error during force cleanup:', error)
+          }
+        }
+      }
+      
+      // Evict old cache items
+      let cleanupAttempts = 0
+      while (currentCacheMemory > MAX_CACHE_MEMORY * 0.6 && 
+             cacheAccessOrder.value.length > 0 && 
+             cleanupAttempts < 10) {
+        evictLeastRecentlyUsed()
+        cleanupAttempts++
+      }
+      
+      console.log('Memory cleanup completed', getMemoryStatus())
     }
   }
 
-  // Cache Management
+  // Enhanced Cache Management with Video Memory Tracking
   const estimateMemoryUsage = (item: any): number => {
     if (item instanceof HTMLImageElement) {
       return (item.naturalWidth || 100) * (item.naturalHeight || 100) * 4
     }
     if (item instanceof HTMLVideoElement) {
-      return 10 * 1024
+      // More accurate video memory estimation
+      const width = item.videoWidth || 640
+      const height = item.videoHeight || 480
+      const duration = item.duration || 10
+      // Rough estimate: width * height * 3 (RGB) * duration * compression factor
+      return Math.min(width * height * 3 * Math.min(duration, 30) * 0.1, 50 * 1024 * 1024) // Cap at 50MB
     }
     if (item instanceof HTMLAudioElement) {
-      return 5 * 1024
+      const duration = item.duration || 30
+      return Math.min(duration * 16 * 1024, 10 * 1024 * 1024) // Cap at 10MB
     }
     if (item instanceof FontFace) {
       return 50 * 1024
@@ -888,6 +1257,25 @@ export function useBackgroundPreloader() {
 
   const setCacheItem = (url: string, item: any) => {
     const itemSize = estimateMemoryUsage(item)
+    
+    // Special handling for video elements
+    if (item instanceof HTMLVideoElement) {
+      // Check if we should cache this video based on memory constraints
+      if (itemSize > MAX_CACHE_MEMORY * 0.3) { // Don't cache videos larger than 30% of total cache
+        console.warn(`Video too large to cache (${Math.round(itemSize / 1024 / 1024)}MB): ${url}`)
+        return
+      }
+      
+      // Ensure we don't exceed video-specific memory limits
+      const currentVideoMemory = Array.from(preloadCache.value.entries())
+        .filter(([_, cachedItem]) => cachedItem instanceof HTMLVideoElement)
+        .reduce((sum, [cachedUrl, cachedItem]) => sum + estimateMemoryUsage(cachedItem), 0)
+      
+      if (currentVideoMemory + itemSize > MAX_CACHE_MEMORY * 0.7) { // Videos max 70% of cache
+        // Evict oldest videos first
+        evictOldestVideoItems(itemSize)
+      }
+    }
     
     // Check memory and size limits
     while ((currentCacheMemory + itemSize > MAX_CACHE_MEMORY || 
@@ -899,6 +1287,37 @@ export function useBackgroundPreloader() {
     preloadCache.value.set(url, item)
     currentCacheMemory += itemSize
     updateCacheAccess(url)
+  }
+  
+  // Evict oldest video items to free memory
+  const evictOldestVideoItems = (requiredMemory: number) => {
+    const videoEntries = Array.from(preloadCache.value.entries())
+      .filter(([_, item]) => item instanceof HTMLVideoElement)
+      .sort((a, b) => {
+        const aIndex = cacheAccessOrder.value.indexOf(a[0])
+        const bIndex = cacheAccessOrder.value.indexOf(b[0])
+        return aIndex - bIndex // Oldest first
+      })
+    
+    let freedMemory = 0
+    for (const [url, videoItem] of videoEntries) {
+      if (freedMemory >= requiredMemory) break
+      
+      const itemSize = estimateMemoryUsage(videoItem)
+      
+      // Dispose video element properly
+      disposeVideoElement(videoItem as HTMLVideoElement, url, url.startsWith('blob:'))
+      
+      // Remove from cache
+      preloadCache.value.delete(url)
+      const accessIndex = cacheAccessOrder.value.indexOf(url)
+      if (accessIndex > -1) {
+        cacheAccessOrder.value.splice(accessIndex, 1)
+      }
+      
+      currentCacheMemory = Math.max(0, currentCacheMemory - itemSize)
+      freedMemory += itemSize
+    }
   }
 
   const updateCacheAccess = (url: string) => {
@@ -916,6 +1335,11 @@ export function useBackgroundPreloader() {
     if (lruUrl && preloadCache.value.has(lruUrl)) {
       const item = preloadCache.value.get(lruUrl)
       const itemSize = estimateMemoryUsage(item)
+      
+      // Properly dispose video elements
+      if (item instanceof HTMLVideoElement) {
+        disposeVideoElement(item, lruUrl, lruUrl.startsWith('blob:'))
+      }
       
       preloadCache.value.delete(lruUrl)
       currentCacheMemory = Math.max(0, currentCacheMemory - itemSize)
@@ -1096,6 +1520,10 @@ export function useBackgroundPreloader() {
     isStage2Ready,
     isStage3Ready,
     getStats,
+
+    // Memory management
+    getMemoryStatus,
+    forceMemoryCleanup,
 
     // Types for external use
     PreloadPriority

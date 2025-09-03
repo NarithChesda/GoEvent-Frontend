@@ -38,7 +38,8 @@
       "Bash(git fetch:*)",
       "Bash(git rev-list:*)",
       "WebFetch(domain:localhost)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "additionalDirectories": [

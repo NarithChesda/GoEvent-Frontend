@@ -22,13 +22,12 @@
     <div 
       v-else-if="event.id" 
       class="showcase-container relative"
-      :style="{ backgroundColor: primaryColor || '#000' }"
     >
       <!-- Stage 1: Cover Video with Overlay -->
       <CoverStage
         v-if="!isEnvelopeOpened"
         :template-assets="templateAssets"
-        :guest-name="guestName as string"
+        :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
         :primary-color="primaryColor"
@@ -54,7 +53,7 @@
         :event-video-url="eventVideoUrl"
         :video-loading="videoLoading"
         :primary-color="primaryColor"
-        :event-video-ref="eventVideoRef as any"
+        :event-video-ref="eventVideoRef"
         @video-can-play="onVideoCanPlay"
         @video-ended="onEventVideoEnded"
         @video-error="onEventVideoError"
@@ -80,7 +79,7 @@
         :get-media-url="getMediaUrl"
         :available-languages="availableLanguages"
         :current-language="currentLanguage"
-        :guest-name="guestName as string"
+        :guest-name="guestName"
         :is-music-playing="isMusicPlaying"
         :is-authenticated="authStore.isAuthenticated"
         @open-map="openGoogleMap"
@@ -107,25 +106,29 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue'
+// Vue core
+import { onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+
+// Composables & Stores
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 
 // Components
-import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
-import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import CoverStage from '../components/showcase/CoverStage.vue'
+import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import EventVideoStage from '../components/showcase/EventVideoStage.vue'
+import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 
+// Router and stores
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Use the composable for all showcase logic
+// Event showcase composable
 const {
-  // State
+  // Reactive state
   loading,
   error,
   isEnvelopeOpened,
@@ -136,8 +139,11 @@ const {
   isPhotoModalOpen,
   currentModalPhoto,
   isMusicPlaying,
+  isPreloading,
+  preloadProgress,
+  stage2Progress,
   
-  // Computed
+  // Computed properties
   event,
   guestName,
   templateAssets,
@@ -155,13 +161,7 @@ const {
   isEventPast,
   eventVideoUrl,
   availableLanguages,
-  isEnvelopeButtonReady, // New: envelope button readiness
-  
-  // Preloading state
-  isPreloading,
-  preloadProgress,
-  stage2Progress,
-  // stage3Progress, // Future use for Stage 3 progress feedback
+  isEnvelopeButtonReady,
   
   // Methods
   loadShowcase,
@@ -177,87 +177,63 @@ const {
   changeLanguage,
   toggleMusic,
   handleCoverStageReady,
-  
-  // Preloading methods
   cancelPreloading
 } = useEventShowcase()
 
-
-// Additional methods specific to this view
+// View-specific methods
 const registerForEvent = () => {
   router.push(`/events/${event.value.id}`)
 }
 
-// Handle redirect from login - skip stages when returning with hash
 const handleLoginRedirect = () => {
   const hash = window.location.hash
   
   if (hash && event.value?.id) {
-    // Skip stages 1 and 2 by setting states directly for any hash redirect
+    // Skip stages for hash redirects
     isEnvelopeOpened.value = true
     isPlayingEventVideo.value = false
     
-    // Wait for the main content to render, then scroll to the appropriate section
+    // Scroll to target section after content renders
     setTimeout(() => {
-      let targetElement = null
+      const targetId = hash === '#rsvp' ? 'rsvp' : 
+                      hash === '#comment-section' ? 'comment-section' : null
       
-      if (hash === '#rsvp') {
-        targetElement = document.getElementById('rsvp')
-      } else if (hash === '#comment-section') {
-        targetElement = document.getElementById('comment-section')
-      }
-      
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      if (targetId) {
+        const targetElement = document.getElementById(targetId)
+        targetElement?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
     }, 300)
   }
 }
 
-// Watch for event data to be loaded, then handle redirect
-watch(event, (newEvent) => {
-  if (newEvent?.id) {
-    handleLoginRedirect()
-  }
-})
-
-const handleCommentSubmitted = (comment: unknown) => {
-  console.log('Comment submitted in showcase:', comment)
-  // In real implementation, you might want to show a success message
-  // or refresh comments from the server
+const handleCommentSubmitted = () => {
+  // Comment submission handled by the composable or component
 }
 
 const handleLogout = async () => {
-  console.log('Logout from showcase')
-  
-  // Remove hash from URL to prevent auto-redirect to section on re-login
+  // Remove hash to prevent auto-redirect on re-login
   if (window.location.hash) {
     const urlWithoutHash = window.location.href.split('#')[0]
     window.history.replaceState(null, '', urlWithoutHash)
   }
   
   await authStore.logout()
-  // Stay on the showcase page after logout - no redirect
 }
 
+// Watch for event data to handle redirects
+watch(event, (newEvent) => {
+  if (newEvent?.id) {
+    handleLoginRedirect()
+  }
+})
 
-// Lifecycle
+// Lifecycle hooks
 onMounted(async () => {
-  // Initialize auth state for RSVP functionality
   await authStore.initializeAuth()
-  // Load showcase content
   loadShowcase()
 })
 
-// Cleanup preloading when component unmounts or user navigates away
 onUnmounted(() => {
-  console.log('🎭 EventShowcase: Component unmounting, cancelling preloading')
-  cancelPreloading()
-})
-
-// Also cancel preloading when user navigates away
-onBeforeUnmount(() => {
-  console.log('🎭 EventShowcase: Before unmount, cancelling preloading')
   cancelPreloading()
 })
 </script>

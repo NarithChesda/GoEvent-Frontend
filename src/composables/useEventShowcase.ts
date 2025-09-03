@@ -73,6 +73,40 @@ export interface TemplateFont {
   }
 }
 
+export interface FontLoadConfig {
+  timeout?: number
+  retryAttempts?: number
+  fallbackFonts?: string[]
+  display?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional'
+}
+
+export interface FontCacheEntry {
+  fontFace: FontFace
+  loadedAt: number
+  url: string
+  fontName: string
+  isLoaded: boolean
+  loadAttempts: number
+  lastError?: string
+}
+
+export interface FontLoadResult {
+  success: boolean
+  fontName: string
+  url: string
+  loadTime: number
+  fromCache: boolean
+  error?: string
+}
+
+export interface FontLoadStats {
+  totalFonts: number
+  loadedFonts: number
+  failedFonts: number
+  averageLoadTime: number
+  cacheHitRate: number
+}
+
 export interface TemplateAssets {
   template?: {
     id: number
@@ -208,6 +242,19 @@ export function useEventShowcase() {
   // Font loading state
   const fontsLoaded = ref(false)
   const fontsLoadedCount = ref(0)
+  const fontLoadStats = ref<FontLoadStats>({
+    totalFonts: 0,
+    loadedFonts: 0,
+    failedFonts: 0,
+    averageLoadTime: 0,
+    cacheHitRate: 0
+  })
+  const fontLoadingPromises = ref<Map<string, Promise<FontLoadResult>>>(new Map())
+  
+  // Enhanced font cache with memory management
+  const globalFontCache = ref<Map<string, FontCacheEntry>>(new Map())
+  const maxCacheSize = 50 // Maximum cached font entries
+  const cacheExpiryTime = 30 * 60 * 1000 // 30 minutes
   
   // Photo modal state
   const isPhotoModalOpen = ref(false)
@@ -317,12 +364,15 @@ export function useEventShowcase() {
     
     // Cache result
     languageFontsCache.value.set(cacheKey, fontTypeMap)
-    return fontTypeMap
+    return fontTypeMap as Record<string, TemplateFont | null>
   })
   
-  // Font computed properties
+  // Font computed properties with null checks
   const primaryFont = computed(() => {
-    const font = getLanguageFonts.value.primary
+    const langFonts = getLanguageFonts.value
+    if (!langFonts) return getFallbackFontStack('sans-serif')
+    
+    const font = langFonts.primary
     const customName = getFontName(font)
     
     if (customName && fontsLoaded.value) {
@@ -333,7 +383,10 @@ export function useEventShowcase() {
   })
   
   const secondaryFont = computed(() => {
-    const font = getLanguageFonts.value.secondary
+    const langFonts = getLanguageFonts.value
+    if (!langFonts) return primaryFont.value
+    
+    const font = langFonts.secondary
     const customName = getFontName(font)
     
     if (customName && fontsLoaded.value) {
@@ -344,7 +397,10 @@ export function useEventShowcase() {
   })
   
   const accentFont = computed(() => {
-    const font = getLanguageFonts.value.accent
+    const langFonts = getLanguageFonts.value
+    if (!langFonts) return primaryFont.value
+    
+    const font = langFonts.accent
     const customName = getFontName(font)
     
     if (customName && fontsLoaded.value) {
@@ -355,7 +411,10 @@ export function useEventShowcase() {
   })
   
   const decorativeFont = computed(() => {
-    const font = getLanguageFonts.value.decorative
+    const langFonts = getLanguageFonts.value
+    if (!langFonts) return accentFont.value
+    
+    const font = langFonts.decorative
     const customName = getFontName(font)
     
     if (customName && fontsLoaded.value) {
@@ -541,6 +600,52 @@ export function useEventShowcase() {
     }
   }
 
+  const sanitizeFontName = (fontName: string): string => {
+    if (!fontName || typeof fontName !== 'string') {
+      return ''
+    }
+    
+    // Remove potentially dangerous characters
+    return fontName
+      .replace(/[<>"'&\\]/g, '')
+      .replace(/[^a-zA-Z0-9\s\-_]/g, '')
+      .trim()
+      .substring(0, 100) // Limit length
+  }
+
+  const manageFontCacheMemory = () => {
+    const cache = globalFontCache.value
+    const now = Date.now()
+    
+    // Remove expired entries
+    for (const [key, entry] of cache.entries()) {
+      if (now - entry.loadedAt > cacheExpiryTime) {
+        try {
+          document.fonts.delete(entry.fontFace)
+        } catch {
+          // Ignore cleanup errors
+        }
+        cache.delete(key)
+      }
+    }
+    
+    // If still over limit, remove oldest entries
+    if (cache.size > maxCacheSize) {
+      const sortedEntries = Array.from(cache.entries())
+        .sort((a, b) => a[1].loadedAt - b[1].loadedAt)
+      
+      const toRemove = sortedEntries.slice(0, cache.size - maxCacheSize)
+      for (const [key, entry] of toRemove) {
+        try {
+          document.fonts.delete(entry.fontFace)
+        } catch {
+          // Ignore cleanup errors
+        }
+        cache.delete(key)
+      }
+    }
+  }
+
   // ============================
   // Core Methods
   // ============================
@@ -595,8 +700,12 @@ export function useEventShowcase() {
       // Update meta tags for social sharing
       updateEventMetaTags(data.event)
 
-      // Load custom fonts asynchronously
-      loadCustomFonts().catch(() => {
+      // Load custom fonts asynchronously with progressive enhancement
+      loadCustomFonts({ 
+        display: 'swap',
+        timeout: 5000,
+        retryAttempts: 2
+      }).catch(() => {
         // Silently fall back to system fonts
       })
       
@@ -643,55 +752,219 @@ export function useEventShowcase() {
   }
 
   // ============================
-  // Font Loading
+  // Enhanced Font Loading System
   // ============================
-  const loadCustomFonts = async () => {
+  const loadCustomFonts = async (config?: FontLoadConfig) => {
+    const finalConfig = config || {}
+    const startTime = performance.now()
     fontsLoaded.value = false
     fontsLoadedCount.value = 0
+    
+    // Reset stats
+    fontLoadStats.value = {
+      totalFonts: 0,
+      loadedFonts: 0,
+      failedFonts: 0,
+      averageLoadTime: 0,
+      cacheHitRate: 0
+    }
     
     const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
     
     if (langFonts.length === 0) {
       fontsLoaded.value = true
       await nextTick()
-      return
+      return []
     }
     
-    const loadPromises = langFonts.map(font => loadSingleFont(font))
-    await Promise.all(loadPromises)
+    fontLoadStats.value.totalFonts = langFonts.length
     
+    // Cleanup cache memory before loading
+    manageFontCacheMemory()
+    
+    // Load fonts with progressive enhancement
+    const loadPromises = langFonts.map(font => loadSingleFontEnhanced(font, finalConfig))
+    const results = await Promise.allSettled(loadPromises)
+    
+    // Process results
+    const successfulLoads: FontLoadResult[] = []
+    let totalLoadTime = 0
+    let cacheHits = 0
+    
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value.success) {
+        successfulLoads.push(result.value)
+        totalLoadTime += result.value.loadTime
+        if (result.value.fromCache) {
+          cacheHits++
+        }
+        fontLoadStats.value.loadedFonts++
+      } else {
+        fontLoadStats.value.failedFonts++
+        console.warn(`Failed to load font ${langFonts[index].font_name}:`, 
+          result.status === 'rejected' ? result.reason : result.value.error)
+      }
+    })
+    
+    // Update statistics
+    fontLoadStats.value.averageLoadTime = successfulLoads.length > 0 
+      ? totalLoadTime / successfulLoads.length 
+      : 0
+    fontLoadStats.value.cacheHitRate = langFonts.length > 0 
+      ? (cacheHits / langFonts.length) * 100 
+      : 0
+    
+    fontsLoadedCount.value = fontLoadStats.value.loadedFonts
     fontsLoaded.value = true
+    
+    const totalTime = performance.now() - startTime
+    console.debug(`Font loading completed in ${totalTime.toFixed(2)}ms:`, fontLoadStats.value)
+    
     await nextTick()
+    return successfulLoads
   }
   
-  const loadSingleFont = async (font: TemplateFont) => {
-    const fontName = getFontName(font)
+  const loadSingleFontEnhanced = async (
+    font: TemplateFont, 
+    config: FontLoadConfig = {}
+  ): Promise<FontLoadResult> => {
+    const startTime = performance.now()
+    const fontName = sanitizeFontName(getFontName(font))
     const fontFile = getFontFile(font)
+    const timeout = config.timeout || 5000 // 5 second default timeout
+    const maxRetries = config.retryAttempts || 2
+    const display = config.display || 'swap'
+    
+    const result: FontLoadResult = {
+      success: false,
+      fontName,
+      url: '',
+      loadTime: 0,
+      fromCache: false
+    }
     
     if (!fontFile || !fontName) {
-      return false
+      result.error = 'Missing font file or name'
+      return result
     }
 
     const fullUrl = getMediaUrl(fontFile)
+    result.url = fullUrl
+    
+    // Check for existing loading promise
+    const cacheKey = `${fontName}-${fullUrl}`
+    if (fontLoadingPromises.value.has(cacheKey)) {
+      return await fontLoadingPromises.value.get(cacheKey)!
+    }
+    
+    // Check cache first
+    const cachedEntry = globalFontCache.value.get(cacheKey)
+    if (cachedEntry && cachedEntry.isLoaded && 
+        (Date.now() - cachedEntry.loadedAt < cacheExpiryTime)) {
+      result.success = true
+      result.fromCache = true
+      result.loadTime = performance.now() - startTime
+      return result
+    }
+    
+    const loadPromise = (async (): Promise<FontLoadResult> => {
+      let lastError = ''
+      
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          if (!isValidFontUrl(fullUrl)) {
+            throw new Error('Invalid or untrusted font URL')
+          }
+
+          // Create FontFace with progressive enhancement
+          const fontFace = new FontFace(
+            fontName, 
+            `url(${fullUrl})`,
+            {
+              display,
+              // Add font-variation-settings if needed
+              ...(font.font_type?.includes('variable') && {
+                variationSettings: 'normal'
+              })
+            }
+          )
+          
+          // Load with timeout
+          const loadedFont = await Promise.race([
+            fontFace.load(),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error('Font load timeout')), timeout)
+            )
+          ])
+          
+          // Add to document fonts
+          document.fonts.add(loadedFont)
+          
+          // Wait for font to be ready with timeout
+          await Promise.race([
+            document.fonts.ready,
+            new Promise(resolve => setTimeout(resolve, 1000)) // Max 1s wait
+          ])
+          
+          // Cache successful load
+          const cacheEntry: FontCacheEntry = {
+            fontFace: loadedFont,
+            loadedAt: Date.now(),
+            url: fullUrl,
+            fontName,
+            isLoaded: true,
+            loadAttempts: attempt + 1
+          }
+          
+          globalFontCache.value.set(cacheKey, cacheEntry)
+          
+          result.success = true
+          result.loadTime = performance.now() - startTime
+          
+          // Small delay to ensure browser has applied the font
+          await new Promise(resolve => setTimeout(resolve, 50))
+          
+          return result
+          
+        } catch (error) {
+          lastError = error instanceof Error ? error.message : 'Unknown error'
+          
+          if (attempt < maxRetries) {
+            // Exponential backoff for retries
+            await new Promise(resolve => 
+              setTimeout(resolve, Math.pow(2, attempt) * 500)
+            )
+          }
+        }
+      }
+      
+      // All attempts failed
+      result.error = `Failed after ${maxRetries + 1} attempts: ${lastError}`
+      result.loadTime = performance.now() - startTime
+      
+      // Cache failed attempt to prevent repeated requests
+      const failedEntry: FontCacheEntry = {
+        fontFace: new FontFace(fontName, 'url()'), // Dummy font face
+        loadedAt: Date.now(),
+        url: fullUrl,
+        fontName,
+        isLoaded: false,
+        loadAttempts: maxRetries + 1,
+        lastError
+      }
+      
+      globalFontCache.value.set(cacheKey, failedEntry)
+      
+      return result
+    })()
+    
+    fontLoadingPromises.value.set(cacheKey, loadPromise)
     
     try {
-      if (!isValidFontUrl(fullUrl)) {
-        return false
-      }
-
-      const fontFace = new FontFace(fontName, `url(${fullUrl})`)
-      const loadedFont = await fontFace.load()
-      document.fonts.add(loadedFont)
-      
-      await document.fonts.ready
-      fontsLoadedCount.value++
-      
-      // Small delay to ensure browser has applied the font
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      return true
-    } catch {
-      return false
+      const finalResult = await loadPromise
+      return finalResult
+    } finally {
+      fontLoadingPromises.value.delete(cacheKey)
     }
   }
 
@@ -905,6 +1178,22 @@ export function useEventShowcase() {
     cleanupPerformance()
     resourceManager.destroy()
     
+    // Clean up font resources
+    fontLoadingPromises.value.clear()
+    
+    // Cleanup global font cache (keep recently used)
+    const now = Date.now()
+    for (const [key, entry] of globalFontCache.value.entries()) {
+      if (now - entry.loadedAt > cacheExpiryTime || !entry.isLoaded) {
+        try {
+          document.fonts.delete(entry.fontFace)
+        } catch {
+          // Ignore cleanup errors
+        }
+        globalFontCache.value.delete(key)
+      }
+    }
+    
     photosCache.value = { version: -1, sorted: [] }
     showcaseData.value = null
     error.value = null
@@ -982,6 +1271,7 @@ export function useEventShowcase() {
     handleCoverStageReady,
     fontsLoaded,
     fontsLoadedCount,
+    fontLoadStats,
 
     // Preloading methods
     cancelPreloading,
