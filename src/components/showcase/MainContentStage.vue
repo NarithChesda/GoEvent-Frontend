@@ -1,18 +1,11 @@
 <template>
   <div class="absolute inset-0">
-    <!-- Standard Background Video Loop -->
-    <video
-      v-if="templateAssets?.standard_background_video"
-      :src="getMediaUrl(templateAssets.standard_background_video)"
-      autoplay
-      loop
-      muted
-      playsinline
+    <!-- Background Video or Fallback -->
+    <component
+      :is="backgroundVideoComponent"
+      v-bind="backgroundVideoProps"
       class="absolute inset-0 w-full h-full object-cover"
     />
-
-    <!-- Fallback Background - Plain Black -->
-    <div v-else class="absolute inset-0 bg-black"></div>
 
     <!-- Floating Action Menu -->
     <FloatingActionMenu
@@ -38,7 +31,7 @@
     <!-- Liquid Glass Floating Box Container -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
-        <div class="min-h-full py-10 sm:py-6 sm:px-4 md:py-8 md:px-6 laptop-sm:py-6 laptop-sm:px-8 laptop-md:py-8 laptop-md:px-10 laptop-lg:py-10 laptop-lg:px-12 desktop:py-12 desktop:px-12 flex items-center justify-center">
+        <div :class="containerClasses">
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card animate-slideUp">
             <!-- Glass Background Effects -->
@@ -413,7 +406,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, nextTick } from 'vue'
+import { computed, onMounted, ref, nextTick, type Component } from 'vue'
+import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
+import type { EventComment } from '../../types/showcase'
+import type { EventPaymentMethod } from '../../services/api'
+import type { SupportedLanguage } from '../../utils/translations'
+import { useRevealAnimations, ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
+import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
+import { translateRSVP } from '../../utils/translations'
+
+// Component imports
 import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
@@ -424,16 +426,8 @@ import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
 import WeddingSectionDivider from './WeddingSectionDivider.vue'
-import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
-import type { EventComment } from '../../types/showcase'
-import type { EventPaymentMethod } from '../../services/api'
-import {
-  translateRSVP,
-  type SupportedLanguage
-} from '../../utils/translations'
-import { useRevealAnimations, ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
-import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
 
+// Types
 interface TemplateAssets {
   standard_background_video?: string
 }
@@ -463,6 +457,35 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Computed properties for dynamic styling and components
+const containerClasses = computed(() => [
+  'min-h-full',
+  'py-10 sm:py-6 sm:px-4',
+  'md:py-8 md:px-6',
+  'laptop-sm:py-6 laptop-sm:px-8',
+  'laptop-md:py-8 laptop-md:px-10',
+  'laptop-lg:py-10 laptop-lg:px-12',
+  'desktop:py-12 desktop:px-12',
+  'flex items-center justify-center'
+])
+
+const backgroundVideoComponent = computed((): Component | string => {
+  return props.templateAssets?.standard_background_video ? 'video' : 'div'
+})
+
+const backgroundVideoProps = computed(() => {
+  if (props.templateAssets?.standard_background_video) {
+    return {
+      src: props.getMediaUrl(props.templateAssets.standard_background_video),
+      autoplay: true,
+      loop: true,
+      muted: true,
+      playsinline: true
+    }
+  }
+  return { class: 'bg-black' }
+})
+
 const emit = defineEmits<{
   openMap: []
   openPhoto: [EventPhoto]
@@ -474,67 +497,131 @@ const emit = defineEmits<{
 }>()
 
 // Animation setup
-const { observeRevealElement, cleanup: cleanupReveal } = useRevealAnimations({
-  animationType: 'slideUp',
+const REVEAL_ANIMATION_CONFIG = {
+  animationType: 'slideUp' as const,
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
   easing: ANIMATION_CONSTANTS.EASING.EXPO,
   threshold: 0.1,
   rootMargin: '0px 0px -100px 0px'
-})
+}
 
+const { observeRevealElement } = useRevealAnimations(REVEAL_ANIMATION_CONFIG)
 const { createScrollAnimation } = useScrollDrivenAnimations()
 
-// Refs for animated elements
-const welcomeHeaderRef = ref<HTMLElement>()
-const hostInfoRef = ref<HTMLElement>()
-const eventInfoRef = ref<HTMLElement>()
-const rsvpSectionRef = ref<HTMLElement>()
-const agendaSectionRef = ref<HTMLElement>()
-const locationSectionRef = ref<HTMLElement>()
-const videoSectionRef = ref<HTMLElement>()
-const gallerySectionRef = ref<HTMLElement>()
-const paymentSectionRef = ref<HTMLElement>()
-const commentSectionRef = ref<HTMLElement>()
-const footerSectionRef = ref<HTMLElement>()
+// Template refs for animated sections
+const sectionRefs = {
+  welcomeHeader: ref<HTMLElement>(),
+  hostInfo: ref<HTMLElement>(),
+  eventInfo: ref<HTMLElement>(),
+  rsvpSection: ref<HTMLElement>(),
+  agendaSection: ref<HTMLElement>(),
+  locationSection: ref<HTMLElement>(),
+  videoSection: ref<HTMLElement>(),
+  gallerySection: ref<HTMLElement>(),
+  paymentSection: ref<HTMLElement>(),
+  commentSection: ref<HTMLElement>(),
+  footerSection: ref<HTMLElement>()
+}
+
+// Extract individual refs for template usage
+const {
+  welcomeHeader: welcomeHeaderRef,
+  hostInfo: hostInfoRef,
+  eventInfo: eventInfoRef,
+  rsvpSection: rsvpSectionRef,
+  agendaSection: agendaSectionRef,
+  locationSection: locationSectionRef,
+  videoSection: videoSectionRef,
+  gallerySection: gallerySectionRef,
+  paymentSection: paymentSectionRef,
+  commentSection: commentSectionRef,
+  footerSection: footerSectionRef
+} = sectionRefs
+
+/**
+ * Initialize reveal animations for all sections
+ */
+const initializeRevealAnimations = () => {
+  const animationConfig: Array<[ref: any, id: string]> = [
+    [welcomeHeaderRef, 'welcome-header'],
+    [hostInfoRef, 'host-info'],
+    [eventInfoRef, 'event-info'],
+    [rsvpSectionRef, 'rsvp-section'],
+    [agendaSectionRef, 'agenda-section'],
+    [locationSectionRef, 'location-section'],
+    [videoSectionRef, 'video-section'],
+    [gallerySectionRef, 'gallery-section'],
+    [paymentSectionRef, 'payment-section'],
+    [commentSectionRef, 'comment-section'],
+    [footerSectionRef, 'footer-section']
+  ]
+
+  animationConfig.forEach(([elementRef, elementId]) => {
+    if (elementRef.value) {
+      observeRevealElement(elementRef.value, elementId)
+    }
+  })
+}
+
+/**
+ * Initialize scroll-driven animations
+ */
+const initializeScrollAnimations = () => {
+  const liquidGlassCard = document.querySelector('.liquid-glass-card')
+  if (liquidGlassCard) {
+    createScrollAnimation(
+      liquidGlassCard,
+      [
+        { transform: 'translateY(0px)' },
+        { transform: 'translateY(-20px)' }
+      ],
+      {
+        duration: 1000,
+        easing: 'ease-out'
+      }
+    )
+  }
+}
 
 // Setup animations on mount
 onMounted(() => {
   nextTick(() => {
-    // Observe sections for reveal animations
-    if (welcomeHeaderRef.value) observeRevealElement(welcomeHeaderRef.value, 'welcome-header')
-    if (hostInfoRef.value) observeRevealElement(hostInfoRef.value, 'host-info')
-    if (eventInfoRef.value) observeRevealElement(eventInfoRef.value, 'event-info')
-    if (rsvpSectionRef.value) observeRevealElement(rsvpSectionRef.value, 'rsvp-section')
-    if (agendaSectionRef.value) observeRevealElement(agendaSectionRef.value, 'agenda-section')
-    if (locationSectionRef.value) observeRevealElement(locationSectionRef.value, 'location-section')
-    if (videoSectionRef.value) observeRevealElement(videoSectionRef.value, 'video-section')
-    if (gallerySectionRef.value) observeRevealElement(gallerySectionRef.value, 'gallery-section')
-    if (paymentSectionRef.value) observeRevealElement(paymentSectionRef.value, 'payment-section')
-    if (commentSectionRef.value) observeRevealElement(commentSectionRef.value, 'comment-section')
-    if (footerSectionRef.value) observeRevealElement(footerSectionRef.value, 'footer-section')
-    
-    // Add subtle parallax to background elements
-    const liquidGlassCard = document.querySelector('.liquid-glass-card')
-    if (liquidGlassCard) {
-      createScrollAnimation(
-        liquidGlassCard,
-        [
-          { transform: 'translateY(0px)' },
-          { transform: 'translateY(-20px)' }
-        ],
-        {
-          duration: 1000,
-          easing: 'ease-out'
-        }
-      )
-    }
+    initializeRevealAnimations()
+    initializeScrollAnimations()
   })
 })
 
-// Enhanced translation function that combines database content with frontend translations
+// Translation key mapping for consistent lookups
+const TRANSLATION_KEY_MAP: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+  'location_header': 'location_header',
+  'video_header': 'video_header',
+  'gallery_header': 'gallery_header',
+  'comment_header': 'comment_header',
+  'comment_placeholder': 'comment_placeholder',
+  'comment_signin_prompt': 'comment_signin_prompt',
+  'comment_signin_button': 'comment_signin_button',
+  'comment_post_button': 'comment_post_button',
+  'comment_posting_button': 'comment_posting_button',
+  'comment_no_comments': 'comment_no_comments',
+  'comment_loading': 'comment_loading',
+  'comment_already_commented': 'comment_already_commented',
+  'comment_one_per_user': 'comment_one_per_user',
+  'comment_you_badge': 'comment_you_badge',
+  'payment_wedding_gift': 'payment_wedding_gift',
+  'payment_birthday_gift': 'payment_birthday_gift',
+  'footer_thank_you': 'footer_thank_you',
+  'footer_create_invitations': 'footer_create_invitations'
+} as const
+
+/**
+ * Enhanced translation function that combines database content with frontend translations
+ * @param textType - The type of text to retrieve
+ * @param fallback - Fallback text if no translation found
+ * @returns Translated text content
+ */
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
-  if (props.eventTexts && props.currentLanguage) {
+  if (props.eventTexts?.length && props.currentLanguage) {
     const text = props.eventTexts.find(text =>
       text.text_type === textType && text.language === props.currentLanguage
     )
@@ -545,157 +632,73 @@ const getTextContent = (textType: string, fallback = ''): string => {
 
   // Fallback to frontend translation system
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-
-  // Map text types to translation keys
-  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    'location_header': 'location_header',
-    'video_header': 'video_header',
-    'gallery_header': 'gallery_header',
-    'comment_header': 'comment_header',
-    'comment_placeholder': 'comment_placeholder',
-    'comment_signin_prompt': 'comment_signin_prompt',
-    'comment_signin_button': 'comment_signin_button',
-    'comment_post_button': 'comment_post_button',
-    'comment_posting_button': 'comment_posting_button',
-    'comment_no_comments': 'comment_no_comments',
-    'comment_loading': 'comment_loading',
-    'comment_already_commented': 'comment_already_commented',
-    'comment_one_per_user': 'comment_one_per_user',
-    'comment_you_badge': 'comment_you_badge',
-    'payment_wedding_gift': 'payment_wedding_gift',
-    'payment_birthday_gift': 'payment_birthday_gift',
-    'footer_thank_you': 'footer_thank_you',
-    'footer_create_invitations': 'footer_create_invitations'
-  }
-
-  const translationKey = keyMap[textType]
-  if (translationKey) {
-    return translateRSVP(translationKey, currentLang)
-  }
-
-  return fallback
+  const translationKey = TRANSLATION_KEY_MAP[textType]
+  
+  return translationKey ? translateRSVP(translationKey, currentLang) : fallback
 }
 
-const welcomeMessage = computed(() =>
-  props.eventTexts.find(text => text.text_type === 'welcome_message')?.content
-)
+/**
+ * Helper function to find event text by type
+ */
+const findEventText = (textType: string) => 
+  props.eventTexts?.find(text => text.text_type === textType)
 
-const dateText = computed(() =>
-  props.eventTexts.find(text => text.text_type === 'date_text')?.content
-)
+// Computed properties for event text content
+const welcomeMessage = computed(() => findEventText('welcome_message')?.content)
+const dateText = computed(() => findEventText('date_text')?.content)
+const timeText = computed(() => findEventText('time_text')?.content)
+const locationText = computed(() => findEventText('location_text')?.content)
+const descriptionText = computed(() => findEventText('description')?.content)
+const descriptionTitle = computed(() => findEventText('description')?.title)
 
-const timeText = computed(() =>
-  props.eventTexts.find(text => text.text_type === 'time_text')?.content
-)
-
-const locationText = computed(() =>
-  props.eventTexts.find(text => text.text_type === 'location_text')?.content
-)
-
-const descriptionText = computed(() =>
-  props.eventTexts.find(text => text.text_type === 'description')?.content
-)
-
-const descriptionTitle = computed(() =>
-  props.eventTexts.find(text => text.text_type === 'description')?.title
-)
-
-const locationHeaderText = computed(() =>
+// Computed properties for translated text
+const locationHeaderText = computed(() => 
   getTextContent('location_header', 'Location')
 )
-
-const footerThankYouText = computed(() =>
+const footerThankYouText = computed(() => 
   getTextContent('footer_thank_you', 'Thank you for celebrating with us')
 )
-
-const footerCreateInvitationsText = computed(() =>
+const footerCreateInvitationsText = computed(() => 
   getTextContent('footer_create_invitations', 'Create beautiful event invitations')
 )
 
-// Floating Action Menu Handlers
-const handleLanguageChange = (language: string) => {
-  emit('changeLanguage', language)
-}
-
-const handleMusicToggle = (isPlaying: boolean) => {
-  console.log('Music toggle:', isPlaying)
-  emit('musicToggle')
-}
-
-const handleRSVP = () => {
-  console.log('RSVP clicked')
-  const rsvpElement = document.getElementById('rsvp-section')
-  if (rsvpElement) {
-    rsvpElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+/**
+ * Utility function for smooth scrolling to sections
+ */
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
+
+// Floating Action Menu Handlers
+const handleLanguageChange = (language: string) => emit('changeLanguage', language)
+const handleMusicToggle = () => emit('musicToggle')
+const handleLogout = () => emit('logout')
+const handleCommentSubmitted = (comment: EventComment) => emit('commentSubmitted', comment)
+
+// Section navigation handlers
+const handleRSVP = () => scrollToSection('rsvp-section')
+const handleGift = () => scrollToSection('payment-section')
+const handleAgenda = () => scrollToSection('agenda-section')
+const handleLocation = () => scrollToSection('location-section')
+const handleGallery = () => scrollToSection('gallery-section')
+const handleComment = () => scrollToSection('comment-section')
+const handleVideo = () => scrollToSection('video-section')
 
 const handleReminder = () => {
-  console.log('Reminder clicked')
   // TODO: Implement reminder functionality
-}
-
-const handleGift = () => {
-  console.log('Gift clicked')
-  const paymentElement = document.getElementById('payment-section')
-  if (paymentElement) {
-    paymentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-const handleAgenda = () => {
-  console.log('Agenda clicked')
-  const agendaElement = document.getElementById('agenda-section')
-  if (agendaElement) {
-    agendaElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-const handleLocation = () => {
-  console.log('Location clicked')
-  const locationElement = document.getElementById('location-section')
-  if (locationElement) {
-    locationElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-const handleGallery = () => {
-  console.log('Gallery clicked')
-  const galleryElement = document.getElementById('gallery-section')
-  if (galleryElement) {
-    galleryElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-const handleComment = () => {
-  console.log('Comment clicked')
-  const commentElement = document.getElementById('comment-section')
-  if (commentElement) {
-    commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-const handleVideo = () => {
-  console.log('Video clicked')
-  const videoElement = document.getElementById('video-section')
-  if (videoElement) {
-    videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-const handleCommentSubmitted = (comment: EventComment) => {
-  console.log('Comment submitted:', comment)
-  emit('commentSubmitted', comment)
-}
-
-const handleLogout = () => {
-  console.log('Logout clicked')
-  emit('logout')
+  console.warn('Reminder functionality not yet implemented')
 }
 </script>
 
 <style scoped>
-/* Animations */
+/* ===================
+   ANIMATIONS
+   =================== */
+
+/* Slide up animation for main card */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -707,11 +710,39 @@ const handleLogout = () => {
   }
 }
 
+/* Liquid glass rotation animation */
+@keyframes liquid-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Gleam animation for text effects */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ===================
+   LAYOUT COMPONENTS
+   =================== */
+
+/* Main slide animation */
 .animate-slideUp {
   animation: slideUp 0.8s ease-out forwards;
 }
 
-/* Liquid Glass Card Styles */
+/* Liquid Glass Card - Consolidated styles */
 .liquid-glass-card {
   position: relative;
   border-radius: 1.5rem;
@@ -720,28 +751,15 @@ const handleLogout = () => {
   height: 85vh;
   max-width: 85vw;
   max-height: 85vh;
+  will-change: transform;
+  transition: transform 0.3s ease-out;
 }
 
-/* Small mobile phones only - minimal padding */
-@media (max-width: 480px) and (max-height: 800px) {
-  .liquid-glass-card {
-    width: 85vw;
-    height: 85vh;
-    max-width: 85vw;
-    max-height: 85vh;
-  }
+.liquid-glass-card:hover {
+  transform: translateY(-2px);
 }
 
-/* All other devices - consistent desktop padding */
-@media (min-width: 481px), (min-height: 801px) {
-  .liquid-glass-card {
-    width: 85vw;
-    height: 85vh;
-    max-width: 85vw;
-    max-height: 85vh;
-  }
-}
-
+/* Glass background with optimized containment */
 .glass-background {
   position: absolute;
   inset: 0;
@@ -754,6 +772,7 @@ const handleLogout = () => {
   border: 1px solid rgba(255, 255, 255, 0.61);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  contain: layout style paint;
 }
 
 .glass-background::before {
@@ -769,25 +788,24 @@ const handleLogout = () => {
     transparent 70%
   );
   animation: liquid-rotate 30s linear infinite;
+  contain: layout style paint;
 }
 
-@keyframes liquid-rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+/* ===================
+   UTILITY CLASSES
+   =================== */
+
+/* Gleam animation for headers */
+.gleam-animation {
+  animation: gradientShift 3s ease-in-out infinite;
 }
 
-.glass-section {
-  background: rgba(255, 255, 255, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+/* Hidden scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Custom Scrollbar - Hidden */
 .custom-scrollbar::-webkit-scrollbar {
   width: 0px;
   background: transparent;
@@ -805,18 +823,17 @@ const handleLogout = () => {
   background: transparent;
 }
 
-/* For Firefox */
-.custom-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
+/* ===================
+   REVEAL ANIMATIONS
+   =================== */
 
-/* Reveal Animation Base Styles */
+/* Base reveal animation styles */
 .animate-reveal {
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1),
-              transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: 
+    opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1),
+    transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
   will-change: opacity, transform;
 }
 
@@ -825,84 +842,38 @@ const handleLogout = () => {
   transform: translateY(0);
 }
 
-/* Responsive reveal distance adjustments */
+/* ===================
+   RESPONSIVE DESIGN
+   =================== */
+
+/* Mobile-specific reveal animation adjustments */
 @media (max-width: 640px) {
   .animate-reveal {
     transform: translateY(20px);
   }
 }
 
-/* Reduce motion for accessibility */
+/* ===================
+   ACCESSIBILITY
+   =================== */
+
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-reveal {
     transition: opacity 0.3s ease;
     transform: none !important;
   }
-}
-
-/* Enhanced liquid glass animations */
-.liquid-glass-card {
-  position: relative;
-  border-radius: 1.5rem;
-  overflow: hidden;
-  width: 85vw;
-  height: 85vh;
-  max-width: 85vw;
-  max-height: 85vh;
-  will-change: transform;
-  transition: transform 0.3s ease-out;
-}
-
-.liquid-glass-card:hover {
-  transform: translateY(-2px);
-}
-
-/* Optimized glass background with containment */
-.glass-background {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.50) 0%,
-    rgba(255, 255, 255, 0.39) 50%,
-    rgba(255, 255, 255, 0.50) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.61);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  contain: layout style paint;
-}
-
-.glass-background::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.11) 0%,
-    transparent 70%
-  );
-  animation: liquid-rotate 30s linear infinite;
-  contain: layout style paint;
-}
-
-/* Gleam Animation Styles - Reusable */
-.gleam-animation {
-  animation: gradientShift 3s ease-in-out infinite;
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
+  
+  .animate-slideUp {
+    animation: none;
   }
-  50% {
-    background-position: 100% 50%;
+  
+  .gleam-animation {
+    animation: none;
   }
-  100% {
-    background-position: 0% 50%;
+  
+  .glass-background::before {
+    animation: none;
   }
 }
 

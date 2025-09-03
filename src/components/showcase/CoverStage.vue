@@ -211,7 +211,8 @@ const guestNameTextStyle = computed(() => ({
 
 const inviteTextStyle = computed(() => ({
   color: props.primaryColor || 'rgba(255, 255, 255, 0.9)',
-  fontFamily: props.secondaryFont || props.currentFont
+  fontFamily: props.secondaryFont || props.currentFont,
+  textShadow: 'none'
 }))
 
 const fallbackButtonStyle = computed(() => ({

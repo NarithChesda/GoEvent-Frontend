@@ -367,7 +367,7 @@ const handleLogout = () => {
 <style scoped>
 .floating-action-menu {
   position: absolute;
-  bottom: 1rem;
+  bottom: max(1rem, calc(1rem + env(safe-area-inset-bottom, 2rem)));
   right: 1rem;
   z-index: 9999;
 }
@@ -375,14 +375,14 @@ const handleLogout = () => {
 /* Responsive positioning for different screen sizes */
 @media (min-width: 640px) {
   .floating-action-menu {
-    bottom: 1.5rem;
+    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem)));
     right: 1.5rem;
   }
 }
 
 @media (min-width: 768px) {
   .floating-action-menu {
-    bottom: 2rem;
+    bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom, 2rem)));
     right: 2rem;
   }
 }
@@ -498,28 +498,33 @@ const handleLogout = () => {
 
 .menu-container {
   position: absolute;
-  bottom: 60px;
+  bottom: calc(44px + 0.75rem + max(1rem, calc(1rem + env(safe-area-inset-bottom, 2rem))));
   right: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   min-width: 180px;
+  max-height: calc(100vh - 140px - max(1rem, calc(1rem + env(safe-area-inset-bottom, 2rem))));
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Responsive menu container positioning */
 @media (min-width: 640px) {
   .menu-container {
-    bottom: 64px;
+    bottom: calc(52px + 0.75rem + max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem))));
     gap: 0.625rem;
     min-width: 190px;
+    max-height: calc(100vh - 150px - max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem))));
   }
 }
 
 @media (min-width: 768px) {
   .menu-container {
-    bottom: 72px;
+    bottom: calc(56px + 0.75rem + max(2rem, calc(2rem + env(safe-area-inset-bottom, 2rem))));
     gap: 0.75rem;
     min-width: 200px;
+    max-height: calc(100vh - 160px - max(2rem, calc(2rem + env(safe-area-inset-bottom, 2rem))));
   }
 }
 
@@ -850,7 +855,7 @@ const handleLogout = () => {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .floating-action-menu {
-    bottom: 1.5rem;
+    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem)));
     right: 1.5rem;
   }
 
@@ -881,6 +886,30 @@ const handleLogout = () => {
 
 .language-options::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
+}
+
+/* Hide scrollbar for menu container */
+.menu-container::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.menu-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu-container::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.menu-container::-webkit-scrollbar-thumb:hover {
+  background: transparent;
+}
+
+/* Firefox scrollbar hiding */
+.menu-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* Glass section styles */
