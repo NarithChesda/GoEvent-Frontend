@@ -40,7 +40,7 @@
       playsinline
       preload="auto"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
-      style="z-index: -5;"
+      style="z-index: -2;"
       data-video-type="background"
       :data-event-id="eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'"
       @loadeddata="handleBackgroundVideoPreloaded"
@@ -71,9 +71,9 @@
       />
     </div>
 
-    <!-- Cover Content Overlay (Stage 1) -->
+    <!-- Cover Content Overlay (Stage 1) - Hidden when redirecting to main content -->
     <div 
-      v-if="currentVideoPhase === 'none'"
+      v-if="currentVideoPhase === 'none' && !shouldSkipToMainContent"
       class="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500"
       :class="{ 'opacity-0 pointer-events-none': isContentHidden }"
       style="z-index: 10;"
@@ -170,7 +170,7 @@
     <!-- Main Content Overlay (Stage 3 - Background Video) -->
     <!-- Fixed: Using v-if instead of v-else-if to resolve Vue template error -->
     <div 
-      v-if="currentVideoPhase === 'background'"
+      v-if="currentVideoPhase === 'background' || shouldSkipToMainContent"
       class="absolute inset-0 z-20"
     >
       <!-- MainContentStage content will be inserted here -->
@@ -212,6 +212,7 @@ interface Props {
   currentLanguage?: string
   isEnvelopeButtonReady?: boolean
   currentShowcaseStage?: 'cover' | 'event_video' | 'main_content'
+  shouldSkipToMainContent?: boolean
   getMediaUrl: (url: string) => string
 }
 
@@ -238,15 +239,12 @@ const eventVideoReady = ref(false)
 const backgroundVideoPreloaded = ref(false)
 const backgroundVideoReady = ref(false)
 
-// Sequential video state - Initialize from persistent stage
-const currentVideoPhase = ref<'none' | 'event' | 'background'>(
-  props.currentShowcaseStage === 'main_content' ? 'background' :
-  props.currentShowcaseStage === 'event_video' ? 'event' : 'none'
-)
+// Sequential video state - Initialize based on current stage and redirect state  
+const currentVideoPhase = ref<'none' | 'event' | 'background'>('none')
 const sequentialVideoReady = ref(false)
 
 // Video state management - ensure only one video plays at a time
-const isCoverVideoPlaying = ref(true)
+const isCoverVideoPlaying = ref(!props.shouldSkipToMainContent && props.currentShowcaseStage !== 'main_content')
 const isEventVideoComplete = ref(false)
 
 // Event listener cleanup tracking
@@ -317,7 +315,11 @@ const playEventVideo = () => {
 }
 
 const playBackgroundVideo = () => {
-  if (!backgroundVideoElement.value || !props.backgroundVideoUrl) return
+  if (!props.backgroundVideoUrl) {
+    console.warn('No background video URL provided')
+    emit('sequentialVideoEnded')
+    return
+  }
   
   // Mark event video as complete
   isEventVideoComplete.value = true
@@ -325,16 +327,36 @@ const playBackgroundVideo = () => {
   // Hide the event video (sequential container)
   if (sequentialVideoContainer.value) {
     sequentialVideoContainer.value.style.opacity = '0'
+    sequentialVideoContainer.value.style.zIndex = '-10'
   }
   
   // Show and play the background video
   currentVideoPhase.value = 'background'
-  backgroundVideoElement.value.style.opacity = '1'
-  backgroundVideoElement.value.style.zIndex = '0' // Lower z-index for background video
   
-  backgroundVideoElement.value.play().catch(() => {
-    emit('sequentialVideoEnded')
-  })
+  // Wait for background video element to be available
+  if (backgroundVideoElement.value) {
+    backgroundVideoElement.value.style.opacity = '1'
+    backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
+    
+    backgroundVideoElement.value.play().catch((error) => {
+      console.warn('Background video play failed:', error)
+      emit('sequentialVideoEnded')
+    })
+  } else {
+    console.warn('Background video element not available yet')
+    // Retry after a short delay
+    setTimeout(() => {
+      if (backgroundVideoElement.value) {
+        backgroundVideoElement.value.style.opacity = '1'
+        backgroundVideoElement.value.style.zIndex = '-1'
+        backgroundVideoElement.value.play().catch(() => {
+          emit('sequentialVideoEnded')
+        })
+      } else {
+        emit('sequentialVideoEnded')
+      }
+    }, 100)
+  }
   
   emit('playBackgroundVideo')
   
@@ -474,6 +496,35 @@ const inviteText = computed(() =>
 )
 
 
+// Initialize video state based on current showcase stage and redirect state
+const initializeVideoState = () => {
+  if (props.shouldSkipToMainContent || props.currentShowcaseStage === 'main_content') {
+    // Skip directly to main content with background video
+    isContentHidden.value = true
+    isCoverVideoPlaying.value = false
+    
+    if (props.backgroundVideoUrl) {
+      playBackgroundVideo()
+    } else {
+      currentVideoPhase.value = 'background'
+      emit('sequentialVideoEnded')
+    }
+  } else if (props.currentShowcaseStage === 'event_video') {
+    // Initialize for event video stage
+    isContentHidden.value = true
+    isCoverVideoPlaying.value = false
+    
+    if (props.eventVideoUrl) {
+      playEventVideo()
+    }
+  } else {
+    // Default: show cover stage
+    currentVideoPhase.value = 'none'
+    isCoverVideoPlaying.value = true
+    isContentHidden.value = false
+  }
+}
+
 // Stage is always ready - no loading states
 const isStageReady = computed(() => true)
 
@@ -481,6 +532,8 @@ const isStageReady = computed(() => true)
 watch(isStageReady, (ready) => {
   if (ready) {
     emit('coverStageReady')
+    // Initialize video state on first render
+    initializeVideoState()
   }
 }, { immediate: true })
 
@@ -498,6 +551,24 @@ watch(() => props.currentShowcaseStage, (newStage) => {
     if (props.backgroundVideoUrl) {
       playBackgroundVideo()
     } else {
+      emit('sequentialVideoEnded')
+    }
+  }
+}, { immediate: true })
+
+// Watch for redirect state changes to skip directly to main content
+watch(() => props.shouldSkipToMainContent, (shouldSkip) => {
+  if (shouldSkip) {
+    // Skip cover and event video, go directly to main content
+    isContentHidden.value = true
+    isCoverVideoPlaying.value = false // Stop cover video immediately
+    
+    if (props.backgroundVideoUrl) {
+      // Force background video phase regardless of current phase
+      playBackgroundVideo()
+    } else {
+      // If no background video, just show main content
+      currentVideoPhase.value = 'background'
       emit('sequentialVideoEnded')
     }
   }

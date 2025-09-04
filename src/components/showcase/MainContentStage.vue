@@ -537,6 +537,7 @@ const emit = defineEmits<{
   commentSubmitted: [EventComment]
   musicToggle: []
   logout: []
+  mainContentViewed: []
 }>()
 
 // Animation setup
@@ -631,6 +632,9 @@ onMounted(() => {
   nextTick(() => {
     initializeRevealAnimations()
     initializeScrollAnimations()
+    
+    // Emit that main content has been viewed
+    emit('mainContentViewed')
   })
 })
 

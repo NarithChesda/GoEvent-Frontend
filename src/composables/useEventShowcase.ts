@@ -250,6 +250,178 @@ export function useEventShowcase() {
   const isPhotoModalOpen = ref(false)
   const currentModalPhoto = ref<EventPhoto | null>(null)
 
+  // Showcase Stage Management
+  const currentShowcaseStage = ref<'cover' | 'event_video' | 'main_content'>('cover')
+
+  // ============================
+  // Redirect State Management
+  // ============================
+  
+  /**
+   * Gets the localStorage key for a specific event's main content seen status
+   */
+  const getMainContentSeenKey = (eventId: string): string => {
+    // Sanitize eventId to prevent injection
+    const sanitizedId = eventId.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50)
+    return `showcase_main_content_seen_${sanitizedId}`
+  }
+
+  /**
+   * Checks if user has seen the main content stage for this event
+   */
+  const hasSeenMainContent = computed(() => {
+    const eventId = route.params.id as string
+    if (!eventId) return false
+    
+    try {
+      const key = getMainContentSeenKey(eventId)
+      const seen = localStorage.getItem(key)
+      return seen === 'true'
+    } catch {
+      // localStorage might be disabled
+      return false
+    }
+  })
+
+  /**
+   * Gets redirect indicators from current route and URL
+   */
+  const getRedirectIndicators = () => {
+    const hash = route.hash || (typeof window !== 'undefined' ? window.location.hash : '')
+    const scrollTo = route.query.scrollTo as string
+    const redirect = route.query.redirect as string
+    
+    return {
+      hasRsvpHash: hash === '#rsvp',
+      hasCommentHash: hash === '#comment-section',
+      hasScrollToRsvp: scrollTo === 'rsvp',
+      hasScrollToComment: scrollTo === 'comment-section',
+      hasRedirectFlag: redirect === 'true',
+      hasAny: hash === '#rsvp' || hash === '#comment-section' || 
+              scrollTo === 'rsvp' || scrollTo === 'comment-section' || 
+              redirect === 'true' ||
+              // Fallback: check if redirect was recently initiated
+              (typeof window !== 'undefined' && sessionStorage.getItem('pending_redirect') === 'true')
+    }
+  }
+
+  /**
+   * Determines if we should skip directly to main content stage
+   * This happens when:
+   * 1. User has previously seen main content stage AND has redirect indicators
+   */
+  const shouldSkipToMainContent = computed(() => {
+    const redirectIndicators = getRedirectIndicators()
+    
+    // Only skip to main content if user has seen it before AND has redirect indicators
+    // This ensures first-time visitors always see the cover stage
+    return hasSeenMainContent.value && redirectIndicators.hasAny
+  })
+
+  /**
+   * Marks that the user has seen the main content stage
+   * This persists across browser sessions
+   */
+  const markMainContentSeen = () => {
+    const eventId = route.params.id as string
+    if (!eventId) return
+
+    try {
+      const key = getMainContentSeenKey(eventId)
+      localStorage.setItem(key, 'true')
+      
+      // Also update the current stage
+      currentShowcaseStage.value = 'main_content'
+    } catch (error) {
+      console.warn('Failed to mark main content as seen:', error)
+    }
+  }
+
+  /**
+   * Checks if current navigation is a page refresh/direct access
+   */
+  const isPageRefresh = () => {
+    if (typeof window === 'undefined') return true // SSR default
+    
+    const redirectIndicators = getRedirectIndicators()
+    return !redirectIndicators.hasAny
+  }
+
+  /**
+   * Initializes the showcase stage based on redirect state
+   * This should be called when the showcase loads
+   */
+  const initializeShowcaseStage = async () => {
+    // Wait for route to be fully loaded
+    await nextTick()
+    
+    // If user refreshes page or accesses directly, always start with cover stage
+    if (isPageRefresh()) {
+      currentShowcaseStage.value = 'cover'
+      return
+    }
+
+    // If user has redirect indicators and has seen main content before, skip to main content
+    if (shouldSkipToMainContent.value) {
+      currentShowcaseStage.value = 'main_content'
+    } else {
+      currentShowcaseStage.value = 'cover'
+    }
+  }
+
+  /**
+   * Handles login redirects with proper stage management
+   * This maintains the redirect state after authentication
+   */
+  const handleLoginRedirectWithStage = () => {
+    const redirectIndicators = getRedirectIndicators()
+    
+    if ((redirectIndicators.hasAny) && hasSeenMainContent.value) {
+      // Set pending redirect flag for state persistence
+      try {
+        sessionStorage.setItem('pending_redirect', 'true')
+      } catch {
+        // Handle sessionStorage errors silently
+      }
+      
+      // Only skip stages if user has seen main content before
+      // Set stage to main content for immediate display
+      currentShowcaseStage.value = 'main_content'
+      
+      // Scroll to target section after content renders
+      setTimeout(() => {
+        const ALLOWED_SCROLL_TARGETS = ['rsvp', 'comment-section'] as const
+        const hash = route.hash || (typeof window !== 'undefined' ? window.location.hash : '')
+        const scrollTo = route.query.scrollTo as string
+        
+        const targetId = ALLOWED_SCROLL_TARGETS.find(target => 
+          hash === `#${target}` || scrollTo === target
+        ) || null
+        
+        if (targetId) {
+          const targetElement = document.getElementById(targetId)
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            
+            // Add highlight animation
+            targetElement.style.transition = 'background-color 0.3s ease'
+            targetElement.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'
+            setTimeout(() => {
+              targetElement.style.backgroundColor = ''
+            }, 2000)
+          }
+        }
+        
+        // Clear pending redirect flag after successful redirect
+        try {
+          sessionStorage.removeItem('pending_redirect')
+        } catch {
+          // Handle sessionStorage errors silently
+        }
+      }, 500)
+    }
+  }
+
   // ============================
   // Computed Properties
   // ============================
@@ -996,6 +1168,9 @@ export function useEventShowcase() {
       // Update meta tags for social sharing
       updateEventMetaTags(data.event)
 
+      // Initialize showcase stage based on redirect state
+      await initializeShowcaseStage()
+
       // Load custom fonts asynchronously with progressive enhancement
       loadCustomFonts({ 
         display: 'swap',
@@ -1323,6 +1498,9 @@ export function useEventShowcase() {
   const openEnvelope = async () => {
     isEnvelopeOpened.value = true
     
+    // Transition to event video stage
+    currentShowcaseStage.value = 'event_video'
+    
     if (eventVideoUrl.value) {
       isPlayingEventVideo.value = true
       
@@ -1343,8 +1521,12 @@ export function useEventShowcase() {
         })
       }
     } else {
+      // No event video, skip directly to main content
       setTimeout(() => {
         isPlayingEventVideo.value = false
+        currentShowcaseStage.value = 'main_content'
+        markMainContentSeen()
+        
         initializeAudio()
         if (eventMusicUrl.value) {
           playMusic()
@@ -1359,10 +1541,17 @@ export function useEventShowcase() {
 
   const onEventVideoEnded = () => {
     isPlayingEventVideo.value = false
+    // Transition to main content stage when event video ends
+    currentShowcaseStage.value = 'main_content'
+    markMainContentSeen()
   }
 
   const onEventVideoError = () => {
     isPlayingEventVideo.value = false
+    
+    // On video error, skip to main content
+    currentShowcaseStage.value = 'main_content'
+    markMainContentSeen()
     
     if (!audioRef.value) {
       initializeAudio()
@@ -1485,6 +1674,7 @@ export function useEventShowcase() {
     isMusicPlaying,
     audioRef,
     coverStageReady,
+    currentShowcaseStage,
 
     // Computed
     event,
@@ -1534,6 +1724,16 @@ export function useEventShowcase() {
     fontsLoaded,
     fontsLoadedCount,
     fontLoadStats,
+    
+    // Redirect State Management
+    initializeShowcaseStage,
+    handleLoginRedirectWithStage,
+    hasSeenMainContent,
+    shouldSkipToMainContent,
+    markMainContentSeen,
+    getMainContentSeenKey,
+    getRedirectIndicators,
+    isPageRefresh,
     
     // Video Resource Manager
     videoResourceManager

@@ -39,6 +39,8 @@
         :secondary-font="secondaryFont"
         :event-texts="eventTexts"
         :current-language="currentLanguage"
+        :current-showcase-stage="currentShowcaseStage"
+        :should-skip-to-main-content="shouldSkipToMainContent"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
         @cover-stage-ready="handleCoverStageReady"
@@ -77,6 +79,7 @@
             @comment-submitted="handleCommentSubmitted"
             @music-toggle="toggleMusic"
             @logout="handleLogout"
+            @main-content-viewed="handleMainContentViewed"
           />
         </template>
       </CoverStage>
@@ -126,6 +129,7 @@ const {
   isPhotoModalOpen,
   currentModalPhoto,
   isMusicPlaying,
+  currentShowcaseStage,
   // Computed properties
   event,
   guestName,
@@ -158,6 +162,11 @@ const {
   changeLanguage,
   toggleMusic,
   handleCoverStageReady,
+  // Redirect State Management
+  shouldSkipToMainContent,
+  hasSeenMainContent,
+  markMainContentSeen,
+  handleLoginRedirectWithStage,
   // Video Resource Manager
   videoResourceManager
 } = useEventShowcase()
@@ -184,28 +193,19 @@ const handleEventVideoReady = () => {
 }
 
 const handleLoginRedirect = () => {
-  const hash = window.location.hash
-  
-  if (hash && event.value?.id) {
-    // Skip stages for hash redirects
-    isEnvelopeOpened.value = true
-    isPlayingEventVideo.value = false
-    
-    // Scroll to target section after content renders
-    setTimeout(() => {
-      const targetId = hash === '#rsvp' ? 'rsvp' : 
-                      hash === '#comment-section' ? 'comment-section' : null
-      
-      if (targetId) {
-        const targetElement = document.getElementById(targetId)
-        targetElement?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
-    }, 300)
-  }
+  // The redirect logic is now handled by the composable
+  handleLoginRedirectWithStage()
 }
 
 const handleCommentSubmitted = () => {
   // Comment submission is handled by the child component
+  // Mark that main content has been seen when user interacts with comments
+  markMainContentSeen()
+}
+
+const handleMainContentViewed = () => {
+  // Mark that user has seen the main content stage
+  markMainContentSeen()
 }
 
 const handleLogout = async () => {
