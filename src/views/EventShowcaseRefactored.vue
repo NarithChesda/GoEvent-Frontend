@@ -23,14 +23,14 @@
       v-else-if="event.id" 
       class="showcase-container relative"
     >
-      <!-- Stage 1: Cover Video with Overlay -->
+      <!-- Single Stage: Cover with Sequential Videos and MainContent Overlay -->
       <CoverStage
-        v-if="!isEnvelopeOpened"
         :template-assets="templateAssets"
         :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
         :event-video-url="eventVideoUrl"
+        :background-video-url="backgroundVideoUrl"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
@@ -44,51 +44,42 @@
         @cover-stage-ready="handleCoverStageReady"
         @event-video-preloaded="handleEventVideoPreloaded"
         @event-video-ready="handleEventVideoReady"
-      />
-
-      <!-- Stage 2: Event Video -->
-      <EventVideoStage
-        v-else-if="isPlayingEventVideo"
-        :event-video-url="eventVideoUrl"
-        :video-loading="videoLoading"
-        :primary-color="primaryColor"
-        :event-video-ref="eventVideoRef"
-        @video-can-play="onVideoCanPlay"
-        @video-ended="onEventVideoEnded"
-        @video-error="onEventVideoError"
-      />
-
-      <!-- Stage 3: Main Content -->
-      <MainContentStage
-        v-else
-        :template-assets="templateAssets"
-        :event="event"
-        :event-texts="eventTexts"
-        :hosts="hosts"
-        :agenda-items="agendaItems"
-        :event-photos="eventPhotos"
-        :payment-methods="paymentMethods"
-        :primary-color="primaryColor"
-        :secondary-color="secondaryColor"
-        :accent-color="accentColor"
-        :current-font="currentFont"
-        :primary-font="primaryFont"
-        :secondary-font="secondaryFont"
-        :is-event-past="isEventPast"
-        :get-media-url="getMediaUrl"
-        :available-languages="availableLanguages"
-        :current-language="currentLanguage"
-        :guest-name="guestName"
-        :is-music-playing="isMusicPlaying"
-        :is-authenticated="authStore.isAuthenticated"
-        @open-map="openGoogleMap"
-        @open-photo="openPhotoModal"
-        @register="registerForEvent"
-        @change-language="changeLanguage"
-        @comment-submitted="handleCommentSubmitted"
-        @music-toggle="toggleMusic"
-        @logout="handleLogout"
-      />
+        @sequential-video-ended="onEventVideoEnded"
+        @play-event-video="onVideoCanPlay"
+      >
+        <!-- MainContent slot content for background video stage -->
+        <template #main-content>
+          <MainContentStage
+            :template-assets="templateAssets"
+            :event="event"
+            :event-texts="eventTexts"
+            :hosts="hosts"
+            :agenda-items="agendaItems"
+            :event-photos="eventPhotos"
+            :payment-methods="paymentMethods"
+            :primary-color="primaryColor"
+            :secondary-color="secondaryColor"
+            :accent-color="accentColor"
+            :current-font="currentFont"
+            :primary-font="primaryFont"
+            :secondary-font="secondaryFont"
+            :is-event-past="isEventPast"
+            :get-media-url="getMediaUrl"
+            :available-languages="availableLanguages"
+            :current-language="currentLanguage"
+            :guest-name="guestName"
+            :is-music-playing="isMusicPlaying"
+            :is-authenticated="authStore.isAuthenticated"
+            @open-map="openGoogleMap"
+            @open-photo="openPhotoModal"
+            @register="registerForEvent"
+            @change-language="changeLanguage"
+            @comment-submitted="handleCommentSubmitted"
+            @music-toggle="toggleMusic"
+            @logout="handleLogout"
+          />
+        </template>
+      </CoverStage>
 
       <!-- Photo Modal -->
       <PhotoModal
@@ -106,7 +97,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch, ref } from 'vue'
+import { onMounted, onUnmounted, watch, ref, provide } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -170,8 +161,13 @@ const {
   navigateToPhoto,
   changeLanguage,
   toggleMusic,
-  handleCoverStageReady
+  handleCoverStageReady,
+  // Video Resource Manager
+  videoResourceManager
 } = useEventShowcase()
+
+// Provide video resource manager to child components using Vue's provide/inject
+provide('videoResourceManager', videoResourceManager)
 
 // View-specific reactive state
 const backgroundVideoReady = ref(false)
@@ -240,10 +236,21 @@ watch(event, (newEvent) => {
 // Lifecycle hooks
 onMounted(async () => {
   await authStore.initializeAuth()
+  
+  // Make video resource manager globally accessible for child components
+  ;(window as any).__showcaseComposable = {
+    videoResourceManager
+  }
+  
   loadShowcase()
 })
 
 onUnmounted(() => {
+  // Clean up global reference
+  if ((window as any).__showcaseComposable) {
+    delete (window as any).__showcaseComposable
+  }
+  
   // Cleanup handled by composable
 })
 </script>

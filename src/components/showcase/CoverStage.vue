@@ -1,6 +1,20 @@
 <template>
   <div class="absolute inset-0 z-10" :style="{ backgroundColor: primaryColor }">
-    <!-- Hidden Event Video Preloader -->
+    <!-- Sequential Video Container - plays all videos in order -->
+    <video
+      ref="sequentialVideoContainer"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
+      style="z-index: -10;"
+      data-video-type="sequential"
+      :data-event-id="eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'"
+      muted
+      playsinline
+      preload="auto"
+      @ended="handleSequentialVideoEnded"
+      @error="handleSequentialVideoError"
+    />
+
+    <!-- Hidden Event Video Preloader for backwards compatibility -->
     <video
       v-if="eventVideoUrl"
       ref="eventVideoPreloader"
@@ -9,24 +23,47 @@
       playsinline
       preload="auto"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
-      style="z-index: -10;"
+      style="z-index: -15;"
+      data-video-type="event"
+      :data-event-id="eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'"
       @loadeddata="handleEventVideoPreloaded"
       @canplaythrough="handleEventVideoReady"
     />
-    
-    <!-- Standard Cover Video Loop -->
+
+    <!-- Background Video Element - preloaded and ready for seamless transition -->
     <video
-      v-if="templateAssets?.standard_cover_video"
+      v-if="backgroundVideoUrl"
+      ref="backgroundVideoElement"
+      :src="getMediaUrl(backgroundVideoUrl)"
+      muted
+      loop
+      playsinline
+      preload="auto"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
+      style="z-index: -5;"
+      data-video-type="background"
+      :data-event-id="eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'"
+      @loadeddata="handleBackgroundVideoPreloaded"
+      @canplaythrough="handleBackgroundVideoReady"
+    />
+    
+    <!-- Standard Cover Video Loop - Only show when not in event/background phase -->
+    <video
+      v-if="templateAssets?.standard_cover_video && isCoverVideoPlaying"
+      ref="coverVideoElement"
       :src="getMediaUrl(templateAssets.standard_cover_video)"
       autoplay
       loop
       muted
       playsinline
       class="absolute inset-0 w-full h-full desktop-video-sizing"
+      data-video-type="cover"
+      :data-event-id="eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'"
+      style="z-index: -1;"
     />
 
     <!-- Fallback Background Image -->
-    <div v-else-if="templateAssets?.basic_background_photo" class="absolute inset-0">
+    <div v-if="templateAssets?.basic_background_photo && isCoverVideoPlaying && !templateAssets?.standard_cover_video" class="absolute inset-0" style="z-index: -1;">
       <img
         :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
@@ -34,8 +71,13 @@
       />
     </div>
 
-    <!-- Content Overlay -->
-    <div class="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8 text-center">
+    <!-- Cover Content Overlay (Stage 1) -->
+    <div 
+      v-if="currentVideoPhase === 'none'"
+      class="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500"
+      :class="{ 'opacity-0 pointer-events-none': isContentHidden }"
+      style="z-index: 10;"
+    >
       <!-- Centered Inner Container with Row Distribution -->
       <div class="inner-container-rows flex flex-col w-full max-w-5xl mx-auto" style="height: 53vh;">
         <!-- Event Title Row: 18.75% -->
@@ -93,7 +135,7 @@
         <div class="content-row-button flex items-center justify-center animate-fadeIn animation-delay-800" style="height: 20%;">
           <div class="flex items-center justify-center h-full w-full">
             <button
-              @click="$emit('openEnvelope')"
+              @click="handleOpenEnvelope"
               class="relative flex items-center justify-center h-full transition-all duration-300"
               :class="buttonClasses"
             >
@@ -124,11 +166,21 @@
         </div>
       </div>
     </div>
+    
+    <!-- Main Content Overlay (Stage 3 - Background Video) -->
+    <!-- Fixed: Using v-if instead of v-else-if to resolve Vue template error -->
+    <div 
+      v-if="currentVideoPhase === 'background'"
+      class="absolute inset-0 z-20"
+    >
+      <!-- MainContentStage content will be inserted here -->
+      <slot name="main-content"></slot>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, onUnmounted } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
@@ -149,6 +201,7 @@ interface Props {
   eventTitle: string
   eventLogo?: string | null
   eventVideoUrl?: string | null
+  backgroundVideoUrl?: string | null
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -168,14 +221,37 @@ const emit = defineEmits<{
   coverStageReady: []
   eventVideoPreloaded: []
   eventVideoReady: []
+  sequentialVideoReady: []
+  sequentialVideoEnded: []
+  playEventVideo: []
+  playBackgroundVideo: []
 }>()
 
-// Template refs for preloaded video
+// Template refs for preloaded video and sequential container
 const eventVideoPreloader = ref<HTMLVideoElement | null>(null)
+const sequentialVideoContainer = ref<HTMLVideoElement | null>(null)
+const coverVideoElement = ref<HTMLVideoElement | null>(null)
+const backgroundVideoElement = ref<HTMLVideoElement | null>(null)
 const eventVideoPreloaded = ref(false)
 const eventVideoReady = ref(false)
+const backgroundVideoPreloaded = ref(false)
+const backgroundVideoReady = ref(false)
 
-// Event video preloading handlers
+// Sequential video state
+const currentVideoPhase = ref<'none' | 'event' | 'background'>('none')
+const sequentialVideoReady = ref(false)
+
+// Video state management - ensure only one video plays at a time
+const isCoverVideoPlaying = ref(true)
+const isEventVideoComplete = ref(false)
+
+// Event listener cleanup tracking
+const videoEventListeners = ref<Map<HTMLVideoElement, Array<{ event: string; handler: EventListener }>>>(new Map())
+
+// Content visibility state
+const isContentHidden = ref(false)
+
+// Event video preloading handlers with cleanup tracking
 const handleEventVideoPreloaded = () => {
   eventVideoPreloaded.value = true
   emit('eventVideoPreloaded')
@@ -184,6 +260,154 @@ const handleEventVideoPreloaded = () => {
 const handleEventVideoReady = () => {
   eventVideoReady.value = true
   emit('eventVideoReady')
+}
+
+// Background video preloading handlers
+const handleBackgroundVideoPreloaded = () => {
+  backgroundVideoPreloaded.value = true
+}
+
+const handleBackgroundVideoReady = () => {
+  backgroundVideoReady.value = true
+}
+
+// Sequential video handlers
+const handleSequentialVideoEnded = () => {
+  if (currentVideoPhase.value === 'event') {
+    // Event video ended, switch to background video if available
+    isEventVideoComplete.value = true
+    if (props.backgroundVideoUrl) {
+      playBackgroundVideo()
+    } else {
+      emit('sequentialVideoEnded')
+    }
+  } else if (currentVideoPhase.value === 'background') {
+    // Background video ended, emit completion (though background should loop)
+    emit('sequentialVideoEnded')
+  }
+}
+
+const handleSequentialVideoError = (error: Event) => {
+  console.warn('Sequential video error:', error)
+  // Continue with the flow even if there's an error
+  emit('sequentialVideoEnded')
+}
+
+const playEventVideo = () => {
+  if (!sequentialVideoContainer.value || !props.eventVideoUrl) return
+  
+  // Stop cover video
+  isCoverVideoPlaying.value = false
+  
+  currentVideoPhase.value = 'event'
+  sequentialVideoContainer.value.src = props.eventVideoUrl
+  sequentialVideoContainer.value.style.opacity = '1'
+  sequentialVideoContainer.value.style.zIndex = '20'
+  sequentialVideoContainer.value.muted = false // Unmute for event video
+  sequentialVideoContainer.value.loop = false // Don't loop event video
+  
+  sequentialVideoContainer.value.play().catch((error) => {
+    console.warn('Failed to play event video:', error)
+    handleSequentialVideoEnded()
+  })
+  
+  emit('playEventVideo')
+}
+
+const playBackgroundVideo = () => {
+  if (!backgroundVideoElement.value || !props.backgroundVideoUrl) return
+  
+  // Mark event video as complete
+  isEventVideoComplete.value = true
+  
+  // Hide the event video (sequential container)
+  if (sequentialVideoContainer.value) {
+    sequentialVideoContainer.value.style.opacity = '0'
+  }
+  
+  // Show and play the background video
+  currentVideoPhase.value = 'background'
+  backgroundVideoElement.value.style.opacity = '1'
+  backgroundVideoElement.value.style.zIndex = '0' // Lower z-index for background video
+  
+  backgroundVideoElement.value.play().catch((error) => {
+    console.warn('Failed to play background video:', error)
+    emit('sequentialVideoEnded')
+  })
+  
+  emit('playBackgroundVideo')
+  
+  // Emit completion since main content is now displayed
+  setTimeout(() => {
+    emit('sequentialVideoEnded')
+  }, 500) // Small delay to ensure smooth transition
+}
+
+// Video resource manager for memory cleanup
+const addVideoEventListener = (video: HTMLVideoElement, event: string, handler: EventListener) => {
+  video.addEventListener(event, handler)
+  
+  if (!videoEventListeners.value.has(video)) {
+    videoEventListeners.value.set(video, [])
+  }
+  videoEventListeners.value.get(video)?.push({ event, handler })
+}
+
+const cleanupVideoElement = (video: HTMLVideoElement | null) => {
+  if (!video) return
+  
+  // Remove all tracked event listeners
+  const listeners = videoEventListeners.value.get(video)
+  if (listeners) {
+    listeners.forEach(({ event, handler }) => {
+      video.removeEventListener(event, handler)
+    })
+    videoEventListeners.value.delete(video)
+  }
+  
+  // Cleanup video resources
+  video.pause()
+  video.src = ''
+  video.load() // Reset the video element
+}
+
+const cleanupAllVideoResources = () => {
+  // Cleanup all video elements
+  cleanupVideoElement(eventVideoPreloader.value)
+  cleanupVideoElement(sequentialVideoContainer.value)
+  cleanupVideoElement(coverVideoElement.value)
+  cleanupVideoElement(backgroundVideoElement.value)
+  
+  // Cleanup any other video elements in the DOM that might have been created
+  const allVideos = document.querySelectorAll('video[src*="event_video"]')
+  allVideos.forEach(video => {
+    const videoElement = video as HTMLVideoElement
+    if (videoElement.style.zIndex === '-10') { // This is likely our preloader
+      cleanupVideoElement(videoElement)
+    }
+  })
+  
+  // Clear all listener tracking
+  videoEventListeners.value.clear()
+}
+
+// Handle envelope opening with smooth transition
+const handleOpenEnvelope = () => {
+  // First hide the content with fade animation
+  isContentHidden.value = true
+  
+  // After content is hidden, start the sequential video or emit the openEnvelope event
+  setTimeout(() => {
+    if (props.eventVideoUrl) {
+      playEventVideo()
+    } else if (props.backgroundVideoUrl) {
+      // If no event video but has background video, go directly to background video
+      playBackgroundVideo()
+    } else {
+      // No videos available, just emit the event
+      emit('openEnvelope')
+    }
+  }, 500) // Match the CSS transition duration
 }
 
 
@@ -267,6 +491,68 @@ watch(isStageReady, (ready) => {
     emit('coverStageReady')
   }
 }, { immediate: true })
+
+// Cleanup on component unmount
+onUnmounted(() => {
+  cleanupAllVideoResources()
+})
+
+// Enhanced video element management
+watch(eventVideoPreloader, (newVideo, oldVideo) => {
+  // Cleanup old video if it exists
+  if (oldVideo) {
+    cleanupVideoElement(oldVideo)
+  }
+  
+  // Setup new video with tracked event listeners
+  if (newVideo) {
+    addVideoEventListener(newVideo, 'loadeddata', handleEventVideoPreloaded)
+    addVideoEventListener(newVideo, 'canplaythrough', handleEventVideoReady)
+    
+    // Add error handler for memory cleanup
+    const errorHandler = () => {
+      console.warn('Event video preloader error, cleaning up resources')
+      cleanupVideoElement(newVideo)
+    }
+    addVideoEventListener(newVideo, 'error', errorHandler)
+  }
+})
+
+// Watch cover video playing state and pause/resume accordingly
+watch(isCoverVideoPlaying, (isPlaying) => {
+  if (coverVideoElement.value) {
+    if (isPlaying) {
+      // Resume cover video
+      coverVideoElement.value.play().catch(() => {
+        // Ignore play errors
+      })
+    } else {
+      // Pause and hide cover video
+      coverVideoElement.value.pause()
+    }
+  }
+})
+
+// Enhanced background video element management
+watch(backgroundVideoElement, (newVideo, oldVideo) => {
+  // Cleanup old video if it exists
+  if (oldVideo) {
+    cleanupVideoElement(oldVideo)
+  }
+  
+  // Setup new video with tracked event listeners
+  if (newVideo) {
+    addVideoEventListener(newVideo, 'loadeddata', handleBackgroundVideoPreloaded)
+    addVideoEventListener(newVideo, 'canplaythrough', handleBackgroundVideoReady)
+    
+    // Add error handler for memory cleanup
+    const errorHandler = () => {
+      console.warn('Background video error, cleaning up resources')
+      cleanupVideoElement(newVideo)
+    }
+    addVideoEventListener(newVideo, 'error', errorHandler)
+  }
+})
 
 // No asset loading handlers needed - stage loads immediately
 </script>

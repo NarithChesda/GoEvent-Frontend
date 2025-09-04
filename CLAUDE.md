@@ -29,6 +29,9 @@ npm run test:unit
 
 # Run e2e tests
 npm run test:e2e
+
+# Preview production build
+npm run preview
 ```
 
 ### Testing Commands
@@ -50,13 +53,15 @@ npm run test:e2e -- --project=chromium
 
 ### Technology Stack
 - **Framework**: Vue 3 with Composition API
-- **Build Tool**: Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: Pinia
-- **Routing**: Vue Router
+- **Build Tool**: Vite 7.0
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS 4.1 with custom design system
+- **State Management**: Pinia stores
+- **Routing**: Vue Router 4 with authentication guards
 - **Testing**: Vitest (unit), Playwright (e2e)
-- **Icons**: Lucide Vue
+- **Icons**: Lucide Vue Next
+- **Authentication**: JWT with Google OAuth integration
+- **Additional**: DOMPurify for sanitization, Vue3 Google Login
 
 ### Project Structure
 - `/src/views/` - Page-level components (Home, Events, EventDetail, SignIn, etc.)
@@ -235,7 +240,29 @@ The application leverages Vue 3 composables for shared business logic:
 - **Image Optimization**: Proper media URL resolution and responsive images
 - **Font Loading**: Dynamic font loading for template customization
 - **Network Handling**: Offline detection and request retry mechanisms
+- **Video Playback**: Showcase videos use staged preloading and support for various browser environments
 
-Always run `npm run type-check` and `npm run lint` before committing changes to ensure code quality and TypeScript compliance.
+### Video Playback Architecture
+- **Multi-Stage Preloading**: Sequential preloading across 3 showcase stages
+- **Browser Compatibility**: Handles autoplay restrictions in different browsers
+- **In-App Browser Support**: Special considerations for Telegram, Facebook Messenger browsers
+- **Fallback Mechanisms**: Graceful degradation when autoplay is blocked
 
-- Event Showcase page divide into 3 stage, stage 1 cover stage, stage 2 event video stage, stage 3 main content stage. at stage 1, after loading all the cover stage content, it needs to run a background pre load for stage 2 content whic is "Event video > event music" the goal is to preload it to prepare to play  it immediatly after user click open envelope button. make the open envelope button not clickable before the event video finish loading to ensure that the open envelope button can always start the stage 2 smoothly. in stage 2, during the time video is playing, start background preload stage 3 content with the standard background video as the top priority.
+### Event Showcase Stage Loading Strategy
+Event Showcase pages use a sophisticated 3-stage loading system:
+
+- **Stage 1 (Cover Stage)**: After loading all cover assets, background-preload Stage 2 content ("Event Video > Event Music"). The "Open Envelope" button remains disabled until Stage 2 video finishes loading to ensure smooth playback.
+
+- **Stage 2 (Event Video Stage)**: While the video plays, background-preload Stage 3 content with the standard background video as top priority.
+
+- **Stage 3 (Main Content Stage)**: Display event information, galleries, and agenda once background preload completes.
+
+## Important Development Reminders
+
+- **ALWAYS** prefer editing existing files over creating new ones
+- **NEVER** create documentation files (*.md) or README files unless explicitly requested
+- Run `npm run type-check` and `npm run lint` before committing changes
+- Follow existing code conventions and patterns found in the codebase
+- Check for existing libraries/utilities before adding new dependencies
+- Use the card-based design system for UI components
+- Implement proper permission checks for restricted functionality

@@ -224,6 +224,11 @@ export function useEventShowcase() {
   const audioRef = ref<HTMLAudioElement | null>(null)
   const isMusicPlaying = ref(false)
   
+  // Video resource management
+  const videoEventListeners = ref<Map<HTMLVideoElement, Array<{ event: string; handler: EventListener }>>>(new Map())
+  const managedVideoElements = ref<Set<HTMLVideoElement>>(new Set())
+  const videoCleanupCallbacks = ref<Set<() => void>>(new Set())
+  
   // Font loading state
   const fontsLoaded = ref(false)
   const fontsLoadedCount = ref(0)
@@ -492,6 +497,312 @@ export function useEventShowcase() {
   })
 
   const isEnvelopeButtonReady = computed(() => true)
+
+  // ============================
+  // Centralized Video Resource Manager
+  // ============================
+  
+  /**
+   * Centralized video resource manager for memory-efficient video handling
+   * Prevents memory leaks and manages video element lifecycle with security
+   */
+  const videoResourceManager = {
+    // Security and performance constants
+    MAX_MANAGED_VIDEOS: 10,
+    MAX_CLEANUP_TIME: 5000, // 5 seconds
+    CLEANUP_BATCH_SIZE: 3,
+    
+    /**
+     * Register a video element for managed cleanup with validation
+     */
+    registerVideo(video: HTMLVideoElement, identifier?: string): void {
+      // Security validation
+      if (!validateVideoElement(video)) {
+        console.warn('Invalid video element, skipping registration:', identifier)
+        return
+      }
+      
+      if (managedVideoElements.value.has(video)) {
+        console.debug('Video already registered:', identifier || video.src)
+        return
+      }
+      
+      // Check resource limits
+      if (managedVideoElements.value.size >= this.MAX_MANAGED_VIDEOS) {
+        console.warn('Maximum video limit reached, cleaning up oldest videos')
+        this.enforceResourceLimits()
+      }
+      
+      managedVideoElements.value.add(video)
+      console.debug('Registered video for management:', identifier || video.src)
+      
+      // Add default error handler to prevent uncaught exceptions
+      const errorHandler = (event: Event) => {
+        console.warn('Video error in managed element:', event)
+        this.cleanupVideo(video)
+      }
+      
+      this.addVideoEventListener(video, 'error', errorHandler)
+    },
+    
+    /**
+     * Add event listener with automatic cleanup tracking
+     */
+    addVideoEventListener(video: HTMLVideoElement, event: string, handler: EventListener): void {
+      video.addEventListener(event, handler)
+      
+      if (!videoEventListeners.value.has(video)) {
+        videoEventListeners.value.set(video, [])
+      }
+      videoEventListeners.value.get(video)?.push({ event, handler })
+    },
+    
+    /**
+     * Clean up a specific video element with timeout and error boundaries
+     */
+    cleanupVideo(video: HTMLVideoElement | null): Promise<void> {
+      return new Promise((resolve, reject) => {
+        if (!video) {
+          resolve()
+          return
+        }
+        
+        const cleanup = async () => {
+          console.debug('Cleaning up video element:', video.src)
+          
+          // Remove all tracked event listeners
+          const listeners = videoEventListeners.value.get(video)
+          if (listeners) {
+            listeners.forEach(({ event, handler }) => {
+              try {
+                video.removeEventListener(event, handler)
+              } catch (error) {
+                console.warn('Error removing video event listener:', error)
+              }
+            })
+            videoEventListeners.value.delete(video)
+          }
+          
+          // Cleanup video resources with error boundary and abort handling
+          try {
+            // Handle any pending play promises to prevent AbortErrors
+            if (!video.paused) {
+              try {
+                video.pause()
+                // Small delay to let any pending promises settle
+                await new Promise(resolve => setTimeout(resolve, 50))
+              } catch (pauseError) {
+                console.warn('Error pausing video during cleanup:', pauseError)
+              }
+            }
+            
+            // Clear source with error handling
+            try {
+              video.src = ''
+              video.removeAttribute('src')
+              video.load()
+            } catch (loadError) {
+              console.warn('Error clearing video source during cleanup:', loadError)
+            }
+            
+            // Remove from managed set
+            managedVideoElements.value.delete(video)
+            
+            resolve()
+          } catch (error) {
+            console.warn('Error during video cleanup:', error)
+            // Still remove from managed set even if cleanup partially failed
+            managedVideoElements.value.delete(video)
+            reject(error)
+          }
+        }
+        
+        // Apply timeout to prevent hanging cleanup
+        const timeoutId = setTimeout(() => {
+          console.warn('Video cleanup timeout, forcing removal')
+          managedVideoElements.value.delete(video)
+          reject(new Error('Cleanup timeout'))
+        }, this.MAX_CLEANUP_TIME)
+        
+        cleanup()
+          .then(() => {
+            clearTimeout(timeoutId)
+            resolve()
+          })
+          .catch((error) => {
+            clearTimeout(timeoutId)
+            reject(error)
+          })
+      })
+    },
+    
+    /**
+     * Enforce resource limits by cleaning up oldest videos
+     */
+    enforceResourceLimits(): void {
+      const videos = Array.from(managedVideoElements.value)
+      const excess = videos.length - this.MAX_MANAGED_VIDEOS + this.CLEANUP_BATCH_SIZE
+      
+      if (excess > 0) {
+        const videosToClean = videos.slice(0, Math.min(excess, this.CLEANUP_BATCH_SIZE))
+        videosToClean.forEach(video => {
+          this.cleanupVideo(video).catch(error => {
+            console.warn('Failed to cleanup video during limit enforcement:', error)
+          })
+        })
+      }
+    },
+    
+    /**
+     * Clean up all managed video resources
+     */
+    cleanupAllVideos(): void {
+      console.debug('Cleaning up all managed video resources')
+      
+      // Cleanup all managed video elements
+      managedVideoElements.value.forEach(video => {
+        this.cleanupVideo(video)
+      })
+      
+      // Execute custom cleanup callbacks
+      videoCleanupCallbacks.value.forEach(callback => {
+        try {
+          callback()
+        } catch (error) {
+          console.warn('Error executing video cleanup callback:', error)
+        }
+      })
+      
+      // Clear all tracking
+      videoEventListeners.value.clear()
+      managedVideoElements.value.clear()
+      videoCleanupCallbacks.value.clear()
+    },
+    
+    /**
+     * Register a custom cleanup callback
+     */
+    addCleanupCallback(callback: () => void): void {
+      videoCleanupCallbacks.value.add(callback)
+    },
+    
+    /**
+     * Find and cleanup duplicate video elements with improved handoff handling
+     */
+    deduplicateVideos(sourcePattern: string): HTMLVideoElement | null {
+      const videos = Array.from(document.querySelectorAll(`video[src*="${sourcePattern}"]`)) as HTMLVideoElement[]
+      
+      if (videos.length <= 1) {
+        return videos[0] || null
+      }
+      
+      console.debug(`Found ${videos.length} duplicate videos for pattern: ${sourcePattern}`)
+      
+      // Keep the most ready video, cleanup others
+      const sortedVideos = videos.sort((a, b) => {
+        // Priority: in document, higher readyState, not paused, has proper styling
+        const scoreA = (document.contains(a) ? 8 : 0) + a.readyState + (a.paused ? 0 : 4) + (a.style.opacity === '1' ? 2 : 0)
+        const scoreB = (document.contains(b) ? 8 : 0) + b.readyState + (b.paused ? 0 : 4) + (b.style.opacity === '1' ? 2 : 0)
+        return scoreB - scoreA
+      })
+      
+      const keepVideo = sortedVideos[0]
+      const removeVideos = sortedVideos.slice(1)
+      
+      // Cleanup duplicate videos with proper error handling
+      removeVideos.forEach(video => {
+        // Pause and clear any pending play promises before cleanup
+        if (!video.paused) {
+          try {
+            video.pause()
+          } catch (pauseError) {
+            console.warn('Error pausing duplicate video:', pauseError)
+          }
+        }
+        
+        this.cleanupVideo(video).catch(cleanupError => {
+          console.warn('Error cleaning up duplicate video:', cleanupError)
+        })
+        
+        // Remove from DOM if still present
+        if (video.parentNode) {
+          try {
+            video.parentNode.removeChild(video)
+          } catch (removeError) {
+            console.warn('Error removing duplicate video from DOM:', removeError)
+          }
+        }
+      })
+      
+      return keepVideo
+    },
+    
+    /**
+     * Get statistics about managed video resources
+     */
+    getStats(): { managedVideos: number; totalListeners: number } {
+      const totalListeners = Array.from(videoEventListeners.value.values())
+        .reduce((sum, listeners) => sum + listeners.length, 0)
+      
+      return {
+        managedVideos: managedVideoElements.value.size,
+        totalListeners
+      }
+    }
+  }
+
+  // ============================
+  // Security & Validation Utilities
+  // ============================
+  const sanitizeVideoId = (id: string): string => {
+    if (!id || typeof id !== 'string') return ''
+    // Remove any potentially dangerous characters
+    return id.replace(/[<>"'&\\]/g, '').replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50)
+  }
+
+  const validateVideoElement = (element: HTMLVideoElement): boolean => {
+    if (!element || !(element instanceof HTMLVideoElement)) return false
+    
+    // Check if element is attached to document
+    if (!document.contains(element)) return false
+    
+    // Validate src attribute is from trusted domain
+    const src = element.src || element.getAttribute('src') || ''
+    if (!src) return true // Allow empty src for cleanup
+    
+    try {
+      const url = new URL(src)
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      const allowedOrigins = [
+        new URL(API_BASE_URL).origin,
+        window.location.origin
+      ]
+      
+      // Allow data URLs for embedded content
+      if (url.protocol === 'data:') {
+        return url.href.startsWith('data:video/')
+      }
+      
+      return allowedOrigins.includes(url.origin)
+    } catch {
+      return false
+    }
+  }
+
+  const createSafeVideoQuery = (videoType: 'cover' | 'event' | 'background', eventId?: string): string => {
+    const sanitizedEventId = eventId ? sanitizeVideoId(eventId) : ''
+    
+    switch (videoType) {
+      case 'cover':
+        return `video[data-video-type="cover"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
+      case 'event':
+        return `video[data-video-type="event"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
+      case 'background':
+        return `video[data-video-type="background"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
+      default:
+        return 'video[data-video-type]'
+    }
+  }
 
   // ============================
   // Helper Functions
@@ -970,7 +1281,16 @@ export function useEventShowcase() {
       audioRef.value.loop = true
       audioRef.value.volume = 0.35
       
+      // Register audio cleanup with both systems
       addCleanup(() => {
+        if (audioRef.value) {
+          audioRef.value.pause()
+          audioRef.value.src = ''
+          audioRef.value = null
+        }
+      })
+      
+      videoResourceManager.addCleanupCallback(() => {
         if (audioRef.value) {
           audioRef.value.pause()
           audioRef.value.src = ''
@@ -1116,6 +1436,11 @@ export function useEventShowcase() {
   // Lifecycle Hooks
   // ============================
   onUnmounted(() => {
+    console.debug('useEventShowcase: Starting cleanup process')
+    
+    // Cleanup video resources first (most critical for memory)
+    videoResourceManager.cleanupAllVideos()
+    
     if (audioRef.value) {
       audioRef.value.pause()
       audioRef.value.src = ''
@@ -1151,6 +1476,8 @@ export function useEventShowcase() {
     showcaseData.value = null
     error.value = null
     currentModalPhoto.value = null
+    
+    console.debug('useEventShowcase: Cleanup completed')
   })
 
   // ============================
@@ -1219,6 +1546,9 @@ export function useEventShowcase() {
     handleCoverStageReady,
     fontsLoaded,
     fontsLoadedCount,
-    fontLoadStats
+    fontLoadStats,
+    
+    // Video Resource Manager
+    videoResourceManager
   }
 }
