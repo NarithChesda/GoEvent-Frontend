@@ -420,13 +420,35 @@ export function useEventShowcase() {
   }
 
   /**
-   * Handles login redirects with proper stage management
-   * This maintains the redirect state after authentication
+   * Video state preservation flag to maintain video loading state during redirects
+   */
+  const videoStatePreserved = ref(false)
+  
+  /**
+   * Sets video state preservation flag to prevent video loading issues during auth redirects
+   */
+  const preserveVideoState = () => {
+    videoStatePreserved.value = true
+  }
+  
+  /**
+   * Clears video state preservation flag after successful video restoration
+   */
+  const clearVideoStatePreservation = () => {
+    videoStatePreserved.value = false
+  }
+
+  /**
+   * Enhanced login redirect handler with video state preservation
+   * This maintains the redirect state after authentication and preserves video loading
    */
   const handleLoginRedirectWithStage = () => {
     const redirectIndicators = getRedirectIndicators()
     
     if ((redirectIndicators.hasAny) && hasSeenMainContent.value) {
+      // Preserve video state before stage change to prevent loading issues
+      preserveVideoState()
+      
       // Set pending redirect flag for state persistence
       try {
         sessionStorage.setItem('pending_redirect', 'true')
@@ -454,6 +476,11 @@ export function useEventShowcase() {
             targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
           }
         }
+        
+        // Clear video state preservation after successful redirect
+        setTimeout(() => {
+          clearVideoStatePreservation()
+        }, 1000)
         
         // Clear pending redirect flag after successful redirect
         try {
@@ -1982,6 +2009,11 @@ export function useEventShowcase() {
     getMainContentSeenKey,
     getRedirectIndicators,
     isPageRefresh,
+    
+    // Video State Preservation
+    videoStatePreserved,
+    preserveVideoState,
+    clearVideoStatePreservation,
     
     // Video Resource Manager
     videoResourceManager

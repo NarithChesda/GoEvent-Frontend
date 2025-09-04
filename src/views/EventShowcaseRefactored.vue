@@ -41,6 +41,7 @@
         :current-language="currentLanguage"
         :current-showcase-stage="currentShowcaseStage"
         :should-skip-to-main-content="shouldSkipToMainContent"
+        :video-state-preserved="videoStatePreserved"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
         @cover-stage-ready="handleCoverStageReady"
@@ -100,7 +101,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch, provide } from 'vue'
+import { onMounted, onUnmounted, watch, provide, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -164,6 +165,10 @@ const {
   shouldSkipToMainContent,
   markMainContentSeen,
   handleLoginRedirectWithStage,
+  // Video State Preservation
+  videoStatePreserved,
+  preserveVideoState,
+  clearVideoStatePreservation,
   // Video Resource Manager
   videoResourceManager
 } = useEventShowcase()
@@ -207,11 +212,13 @@ const handleLogout = async () => {
   await authStore.logout()
 }
 
-// Watch for event data to handle redirects after login
+// Watch for event data to handle redirects after login with proper timing
 watch(
   () => event.value?.id, 
-  (eventId) => {
+  async (eventId) => {
     if (eventId) {
+      // Wait a tick to ensure all reactive updates have been processed
+      await nextTick()
       handleLoginRedirect()
     }
   }

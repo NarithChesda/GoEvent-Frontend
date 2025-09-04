@@ -14,9 +14,9 @@
       @error="handleSequentialVideoError"
     />
 
-    <!-- Hidden Event Video Preloader for backwards compatibility -->
+    <!-- Hidden Event Video Preloader - loads after cover video -->
     <video
-      v-if="eventVideoUrl"
+      v-if="eventVideoUrl && shouldLoadEventVideo"
       ref="eventVideoPreloader"
       :src="eventVideoUrl"
       muted
@@ -30,9 +30,9 @@
       @canplaythrough="handleEventVideoReady"
     />
 
-    <!-- Background Video Element - preloaded and ready for seamless transition -->
+    <!-- Background Video Element - loads after event video -->
     <video
-      v-if="backgroundVideoUrl"
+      v-if="backgroundVideoUrl && shouldLoadBackgroundVideo"
       ref="backgroundVideoElement"
       :src="getMediaUrl(backgroundVideoUrl)"
       muted
@@ -60,6 +60,7 @@
       data-video-type="cover"
       :data-event-id="eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'"
       style="z-index: -1;"
+      @loadeddata="handleCoverVideoLoaded"
     />
 
     <!-- Fallback Background Image -->
@@ -180,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref, onUnmounted } from 'vue'
+import { computed, watch, ref, onUnmounted, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
@@ -213,6 +214,7 @@ interface Props {
   isEnvelopeButtonReady?: boolean
   currentShowcaseStage?: 'cover' | 'event_video' | 'main_content'
   shouldSkipToMainContent?: boolean
+  videoStatePreserved?: boolean
   getMediaUrl: (url: string) => string
 }
 
@@ -239,6 +241,10 @@ const eventVideoReady = ref(false)
 const backgroundVideoPreloaded = ref(false)
 const backgroundVideoReady = ref(false)
 
+// Priority loading flags
+const shouldLoadEventVideo = ref(false)
+const shouldLoadBackgroundVideo = ref(false)
+
 // Sequential video state - Initialize based on current stage and redirect state  
 const currentVideoPhase = ref<'none' | 'event' | 'background'>('none')
 const sequentialVideoReady = ref(false)
@@ -262,6 +268,21 @@ const handleEventVideoPreloaded = () => {
 const handleEventVideoReady = () => {
   eventVideoReady.value = true
   emit('eventVideoReady')
+  // Start loading background video after event video is ready
+  if (props.backgroundVideoUrl) {
+    shouldLoadBackgroundVideo.value = true
+  }
+}
+
+// Cover video loaded handler - start loading event video
+const handleCoverVideoLoaded = () => {
+  // Start loading event video after cover video is loaded
+  if (props.eventVideoUrl) {
+    shouldLoadEventVideo.value = true
+  } else if (props.backgroundVideoUrl) {
+    // No event video, start background video loading directly
+    shouldLoadBackgroundVideo.value = true
+  }
 }
 
 // Background video preloading handlers
@@ -333,30 +354,34 @@ const playBackgroundVideo = () => {
   // Show and play the background video
   currentVideoPhase.value = 'background'
   
-  // Wait for background video element to be available
-  if (backgroundVideoElement.value) {
-    backgroundVideoElement.value.style.opacity = '1'
-    backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
-    
-    backgroundVideoElement.value.play().catch((error) => {
-      console.warn('Background video play failed:', error)
-      emit('sequentialVideoEnded')
-    })
-  } else {
-    console.warn('Background video element not available yet')
-    // Retry after a short delay
-    setTimeout(() => {
-      if (backgroundVideoElement.value) {
-        backgroundVideoElement.value.style.opacity = '1'
-        backgroundVideoElement.value.style.zIndex = '-1'
-        backgroundVideoElement.value.play().catch(() => {
-          emit('sequentialVideoEnded')
-        })
-      } else {
-        emit('sequentialVideoEnded')
-      }
-    }, 100)
+  // Ensure background video loading is triggered first
+  if (!shouldLoadBackgroundVideo.value) {
+    shouldLoadBackgroundVideo.value = true
   }
+  
+  // Wait for background video element to be available with proper timing
+  const tryPlayBackgroundVideo = (attempt = 1) => {
+    if (backgroundVideoElement.value) {
+      backgroundVideoElement.value.style.opacity = '1'
+      backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
+      
+      backgroundVideoElement.value.play().catch((error) => {
+        console.warn('Background video play failed:', error)
+        emit('sequentialVideoEnded')
+      })
+    } else if (attempt <= 5) {
+      // Retry with exponential backoff, max 5 attempts
+      setTimeout(() => {
+        tryPlayBackgroundVideo(attempt + 1)
+      }, 50 * attempt) // 50ms, 100ms, 150ms, 200ms, 250ms
+    } else {
+      // Give up after 5 attempts and continue with the flow
+      emit('sequentialVideoEnded')
+    }
+  }
+  
+  // Start trying to play background video
+  tryPlayBackgroundVideo()
   
   emit('playBackgroundVideo')
   
@@ -503,6 +528,13 @@ const initializeVideoState = () => {
     isContentHidden.value = true
     isCoverVideoPlaying.value = false
     
+    // If video state is preserved (from auth redirect), ensure videos are properly loaded
+    if (props.videoStatePreserved) {
+      // Force video loading flags to true to restore video functionality
+      shouldLoadEventVideo.value = true
+      shouldLoadBackgroundVideo.value = true
+    }
+    
     if (props.backgroundVideoUrl) {
       playBackgroundVideo()
     } else {
@@ -514,6 +546,11 @@ const initializeVideoState = () => {
     isContentHidden.value = true
     isCoverVideoPlaying.value = false
     
+    // If video state is preserved, ensure event video loading is enabled
+    if (props.videoStatePreserved && props.eventVideoUrl) {
+      shouldLoadEventVideo.value = true
+    }
+    
     if (props.eventVideoUrl) {
       playEventVideo()
     }
@@ -522,6 +559,17 @@ const initializeVideoState = () => {
     currentVideoPhase.value = 'none'
     isCoverVideoPlaying.value = true
     isContentHidden.value = false
+    
+    // If video state is preserved but we're at cover stage, reset loading flags appropriately
+    if (props.videoStatePreserved) {
+      // Don't reset video loading flags, let them load normally
+      if (props.eventVideoUrl) {
+        shouldLoadEventVideo.value = true
+      }
+      if (props.backgroundVideoUrl) {
+        shouldLoadBackgroundVideo.value = true
+      }
+    }
   }
 }
 
@@ -571,6 +619,25 @@ watch(() => props.shouldSkipToMainContent, (shouldSkip) => {
       currentVideoPhase.value = 'background'
       emit('sequentialVideoEnded')
     }
+  }
+}, { immediate: true })
+
+// Watch for video state preservation changes to restore video loading after auth redirects
+watch(() => props.videoStatePreserved, (isPreserved) => {
+  if (isPreserved) {
+    // When video state is being preserved, ensure video loading flags remain active
+    // This prevents videos from being reset during auth redirects
+    if (props.eventVideoUrl && !shouldLoadEventVideo.value) {
+      shouldLoadEventVideo.value = true
+    }
+    if (props.backgroundVideoUrl && !shouldLoadBackgroundVideo.value) {
+      shouldLoadBackgroundVideo.value = true
+    }
+    
+    // Re-initialize video state to handle any stage changes during preservation
+    nextTick(() => {
+      initializeVideoState()
+    })
   }
 }, { immediate: true })
 
