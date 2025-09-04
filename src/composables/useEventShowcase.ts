@@ -12,6 +12,28 @@ import { usePerformance, ResourceManager } from '../utils/performance'
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
 
 // ============================
+// Configuration Constants
+// ============================
+const FONT_CONFIG = {
+  DEFAULT_TIMEOUT: 5000,
+  DEFAULT_MAX_RETRIES: 2,
+  DEFAULT_DISPLAY: 'swap' as const,
+  CACHE_EXPIRY_TIME: 30 * 60 * 1000, // 30 minutes
+  MAX_CACHE_SIZE: 50,
+  FONT_READY_WAIT_TIME: 1000,
+  FONT_APPLY_DELAY: 50,
+  RETRY_BASE_DELAY: 500,
+  MAX_FONT_NAME_LENGTH: 100
+} as const
+
+const VIDEO_CONFIG = {
+  MAX_MANAGED_VIDEOS: 10,
+  MAX_CLEANUP_TIME: 5000, // 5 seconds
+  CLEANUP_BATCH_SIZE: 3,
+  PAUSE_DELAY: 50
+} as const
+
+// ============================
 // Type Definitions
 // ============================
 export interface Host {
@@ -183,6 +205,24 @@ export interface ShowcaseData {
   }
 }
 
+// Enhanced error handling types
+export interface FontLoadError extends Error {
+  fontName?: string
+  url?: string
+  attempt?: number
+}
+
+export interface VideoError extends Error {
+  videoElement?: HTMLVideoElement
+  src?: string
+}
+
+export interface ShowcaseError extends Error {
+  eventId?: string
+  language?: string
+  code?: 'LOAD_FAILED' | 'INVALID_EVENT' | 'NETWORK_ERROR' | 'PERMISSION_DENIED'
+}
+
 // ============================
 // Main Composable
 // ============================
@@ -243,8 +283,8 @@ export function useEventShowcase() {
   
   // Enhanced font cache with memory management
   const globalFontCache = ref<Map<string, FontCacheEntry>>(new Map())
-  const maxCacheSize = 50 // Maximum cached font entries
-  const cacheExpiryTime = 30 * 60 * 1000 // 30 minutes
+  const maxCacheSize = FONT_CONFIG.MAX_CACHE_SIZE
+  const cacheExpiryTime = FONT_CONFIG.CACHE_EXPIRY_TIME
   
   // Photo modal state
   const isPhotoModalOpen = ref(false)
@@ -258,10 +298,12 @@ export function useEventShowcase() {
   // ============================
   
   /**
-   * Gets the localStorage key for a specific event's main content seen status
+   * Generates a secure localStorage key for tracking main content view status
+   * Sanitizes the eventId to prevent any potential injection attacks
+   * Used for determining if user should skip intro animations on return visits
    */
   const getMainContentSeenKey = (eventId: string): string => {
-    // Sanitize eventId to prevent injection
+    // Sanitize eventId to prevent injection and limit length for security
     const sanitizedId = eventId.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50)
     return `showcase_main_content_seen_${sanitizedId}`
   }
@@ -306,9 +348,17 @@ export function useEventShowcase() {
   }
 
   /**
-   * Determines if we should skip directly to main content stage
-   * This happens when:
-   * 1. User has previously seen main content stage AND has redirect indicators
+   * Intelligent stage determination for returning users with redirect context
+   * 
+   * This computed determines if we should skip intro animations and go directly 
+   * to main content. The logic ensures:
+   * 
+   * 1. First-time visitors ALWAYS see the full experience (cover → video → main)
+   * 2. Returning users with redirect indicators (from login, deep links) skip to main content
+   * 3. Users without redirect context see the full experience regardless of previous visits
+   * 
+   * This provides optimal UX: newcomers get the full immersion, returning users 
+   * get quick access to the content they're looking for.
    */
   const shouldSkipToMainContent = computed(() => {
     const redirectIndicators = getRedirectIndicators()
@@ -402,13 +452,6 @@ export function useEventShowcase() {
           const targetElement = document.getElementById(targetId)
           if (targetElement) {
             targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            
-            // Add highlight animation
-            targetElement.style.transition = 'background-color 0.3s ease'
-            targetElement.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'
-            setTimeout(() => {
-              targetElement.style.backgroundColor = ''
-            }, 2000)
           }
         }
         
@@ -452,10 +495,16 @@ export function useEventShowcase() {
     return (fonts || []) as TemplateFont[]
   })
   
-  // Font processing cache
+  // Font processing cache - optimized for language-specific font lookups
+  // This cache stores processed font mappings by language to avoid recomputation
   const languageFontsCache = ref<Map<string, Record<string, TemplateFont | null>>>(new Map())
-  const fontProcessingVersion = ref(0)
+  const fontProcessingVersion = ref(0) // Increment to invalidate cache
 
+  /**
+   * Computed property that processes template fonts for the current language
+   * Uses intelligent caching to avoid repeated processing of font mappings
+   * Maps fonts by type (primary, secondary, accent, decorative) with fallbacks
+   */
   const getLanguageFonts = computed(() => {
     const cacheKey = `${currentLanguage.value}-v${fontProcessingVersion.value}`
     
@@ -674,14 +723,27 @@ export function useEventShowcase() {
   // ============================
   
   /**
-   * Centralized video resource manager for memory-efficient video handling
-   * Prevents memory leaks and manages video element lifecycle with security
+   * Advanced Video Resource Manager
+   * 
+   * This centralized system manages video element lifecycle to prevent memory leaks
+   * and ensure optimal performance in showcase environments. Key features:
+   * 
+   * • **Memory Management**: Tracks and limits concurrent video elements
+   * • **Event Cleanup**: Automatically removes event listeners on cleanup
+   * • **Security Validation**: Validates video sources against trusted domains
+   * • **Error Recovery**: Handles AbortError and other video-specific errors
+   * • **Resource Limits**: Enforces maximum video count with cleanup strategies
+   * • **Deduplication**: Prevents duplicate videos for the same source
+   * 
+   * Used extensively by showcase components to ensure smooth video transitions
+   * without memory issues, especially important for wedding invitation showcases
+   * that may have multiple video stages.
    */
   const videoResourceManager = {
     // Security and performance constants
-    MAX_MANAGED_VIDEOS: 10,
-    MAX_CLEANUP_TIME: 5000, // 5 seconds
-    CLEANUP_BATCH_SIZE: 3,
+    MAX_MANAGED_VIDEOS: VIDEO_CONFIG.MAX_MANAGED_VIDEOS,
+    MAX_CLEANUP_TIME: VIDEO_CONFIG.MAX_CLEANUP_TIME,
+    CLEANUP_BATCH_SIZE: VIDEO_CONFIG.CLEANUP_BATCH_SIZE,
     
     /**
      * Register a video element for managed cleanup with validation
@@ -756,9 +818,9 @@ export function useEventShowcase() {
               try {
                 video.pause()
                 // Small delay to let any pending promises settle
-                await new Promise(resolve => setTimeout(resolve, 50))
-              } catch {
-                // Silently handle pause errors
+                await new Promise(resolve => setTimeout(resolve, VIDEO_CONFIG.PAUSE_DELAY))
+              } catch (pauseError) {
+                console.warn('Error pausing video during cleanup:', pauseError)
               }
             }
             
@@ -851,7 +913,19 @@ export function useEventShowcase() {
     },
     
     /**
-     * Find and cleanup duplicate video elements with improved handoff handling
+     * Intelligent Video Deduplication System
+     * 
+     * Handles the complex scenario where multiple video elements exist for the same source.
+     * This commonly occurs during stage transitions in the showcase when videos are
+     * being handed off between different components.
+     * 
+     * The scoring algorithm prioritizes videos based on:
+     * 1. Document attachment (8 points) - videos in DOM are preferred
+     * 2. Ready state (0-4 points) - more loaded videos are preferred  
+     * 3. Playing state (4 points) - active videos are preferred
+     * 4. Visibility (2 points) - visible videos are preferred
+     * 
+     * This ensures the most "ready" video is kept while others are safely cleaned up.
      */
     deduplicateVideos(sourcePattern: string): HTMLVideoElement | null {
       const videos = Array.from(document.querySelectorAll(`video[src*="${sourcePattern}"]`)) as HTMLVideoElement[]
@@ -860,7 +934,7 @@ export function useEventShowcase() {
         return videos[0] || null
       }
       
-      // Keep the most ready video, cleanup others
+      // Keep the most ready video using intelligent scoring, cleanup others
       const sortedVideos = videos.sort((a, b) => {
         // Priority: in document, higher readyState, not paused, has proper styling
         const scoreA = (document.contains(a) ? 8 : 0) + a.readyState + (a.paused ? 0 : 4) + (a.style.opacity === '1' ? 2 : 0)
@@ -916,11 +990,12 @@ export function useEventShowcase() {
   // ============================
   // Security & Validation Utilities
   // ============================
-  const sanitizeVideoId = (id: string): string => {
-    if (!id || typeof id !== 'string') return ''
-    // Remove any potentially dangerous characters
-    return id.replace(/[<>"'&\\]/g, '').replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50)
-  }
+  // Helper function for sanitizing video IDs (reserved for future use)
+  // const sanitizeVideoId = (id: string): string => {
+  //   if (!id || typeof id !== 'string') return ''
+  //   // Remove any potentially dangerous characters
+  //   return id.replace(/[<>"'&\\]/g, '').replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50)
+  // }
 
   const validateVideoElement = (element: HTMLVideoElement): boolean => {
     if (!element || !(element instanceof HTMLVideoElement)) return false
@@ -951,20 +1026,21 @@ export function useEventShowcase() {
     }
   }
 
-  const createSafeVideoQuery = (videoType: 'cover' | 'event' | 'background', eventId?: string): string => {
-    const sanitizedEventId = eventId ? sanitizeVideoId(eventId) : ''
-    
-    switch (videoType) {
-      case 'cover':
-        return `video[data-video-type="cover"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
-      case 'event':
-        return `video[data-video-type="event"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
-      case 'background':
-        return `video[data-video-type="background"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
-      default:
-        return 'video[data-video-type]'
-    }
-  }
+  // Helper function for creating safe video queries (reserved for future use)
+  // const createSafeVideoQuery = (videoType: 'cover' | 'event' | 'background', eventId?: string): string => {
+  //   const sanitizedEventId = eventId ? sanitizeVideoId(eventId) : ''
+  //   
+  //   switch (videoType) {
+  //     case 'cover':
+  //       return `video[data-video-type="cover"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
+  //     case 'event':
+  //       return `video[data-video-type="event"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
+  //     case 'background':
+  //       return `video[data-video-type="background"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
+  //     default:
+  //       return 'video[data-video-type]'
+  //   }
+  // }
 
 
   // ============================
@@ -1067,19 +1143,25 @@ export function useEventShowcase() {
     }
   }
 
+  /**
+   * Sanitizes font names to prevent injection attacks and ensure compatibility
+   */
   const sanitizeFontName = (fontName: string): string => {
     if (!fontName || typeof fontName !== 'string') {
       return ''
     }
     
-    // Remove potentially dangerous characters
+    // Remove potentially dangerous characters and limit length
     return fontName
       .replace(/[<>"'&\\]/g, '')
       .replace(/[^a-zA-Z0-9\s\-_]/g, '')
       .trim()
-      .substring(0, 100) // Limit length
+      .substring(0, FONT_CONFIG.MAX_FONT_NAME_LENGTH)
   }
 
+  /**
+   * Enhanced font cache memory management with improved cleanup logic
+   */
   const manageFontCacheMemory = () => {
     const cache = globalFontCache.value
     const now = Date.now()
@@ -1089,8 +1171,8 @@ export function useEventShowcase() {
       if (now - entry.loadedAt > cacheExpiryTime) {
         try {
           document.fonts.delete(entry.fontFace)
-        } catch {
-          // Ignore cleanup errors
+        } catch (error) {
+          console.warn('Failed to remove expired font from document:', error)
         }
         cache.delete(key)
       }
@@ -1105,11 +1187,116 @@ export function useEventShowcase() {
       for (const [key, entry] of toRemove) {
         try {
           document.fonts.delete(entry.fontFace)
-        } catch {
-          // Ignore cleanup errors
+        } catch (error) {
+          console.warn('Failed to remove old font from document:', error)
         }
         cache.delete(key)
       }
+    }
+  }
+
+  /**
+   * Validates font configuration and returns sanitized values
+   */
+  const validateFontConfig = (font: TemplateFont, config: FontLoadConfig) => {
+    const fontName = sanitizeFontName(getFontName(font))
+    const fontFile = getFontFile(font)
+    const timeout = config.timeout || FONT_CONFIG.DEFAULT_TIMEOUT
+    const maxRetries = config.retryAttempts || FONT_CONFIG.DEFAULT_MAX_RETRIES
+    const display = config.display || FONT_CONFIG.DEFAULT_DISPLAY
+    
+    return { fontName, fontFile, timeout, maxRetries, display }
+  }
+
+  /**
+   * Creates and loads a FontFace with proper error handling
+   */
+  const createAndLoadFontFace = async (
+    fontName: string,
+    fullUrl: string,
+    display: string,
+    timeout: number,
+    font: TemplateFont
+  ): Promise<FontFace> => {
+    if (!isValidFontUrl(fullUrl)) {
+      throw new FontLoadError(`Invalid or untrusted font URL: ${fullUrl}`, { fontName, url: fullUrl })
+    }
+
+    const fontFace = new FontFace(
+      fontName, 
+      `url(${fullUrl})`,
+      {
+        display: display as FontDisplay,
+        // Add font-variation-settings if needed
+        ...(font.font_type?.includes('variable') && {
+          variationSettings: 'normal'
+        })
+      }
+    )
+    
+    // Load with timeout
+    const loadedFont = await Promise.race([
+      fontFace.load(),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new FontLoadError('Font load timeout', { fontName, url: fullUrl })), timeout)
+      )
+    ])
+    
+    return loadedFont
+  }
+
+  /**
+   * Adds loaded font to document and waits for readiness
+   */
+  const addFontToDocument = async (loadedFont: FontFace): Promise<void> => {
+    document.fonts.add(loadedFont)
+    
+    // Wait for font to be ready with timeout
+    await Promise.race([
+      document.fonts.ready,
+      new Promise(resolve => setTimeout(resolve, FONT_CONFIG.FONT_READY_WAIT_TIME))
+    ])
+    
+    // Small delay to ensure browser has applied the font
+    await new Promise(resolve => setTimeout(resolve, FONT_CONFIG.FONT_APPLY_DELAY))
+  }
+
+  /**
+   * Creates cache entries for successful and failed font loads
+   */
+  const createCacheEntry = (
+    fontFace: FontFace,
+    fontName: string,
+    fullUrl: string,
+    isLoaded: boolean,
+    loadAttempts: number,
+    lastError?: string
+  ): FontCacheEntry => {
+    return {
+      fontFace,
+      loadedAt: Date.now(),
+      url: fullUrl,
+      fontName,
+      isLoaded,
+      loadAttempts,
+      lastError
+    }
+  }
+
+  /**
+   * Creates a custom error for font loading with additional context
+   */
+  const FontLoadError = class extends Error {
+    fontName?: string
+    url?: string
+    attempt?: number
+    
+    constructor(message: string, details?: { fontName?: string; url?: string; attempt?: number }) {
+      super(message)
+      this.name = 'FontLoadError'
+      this.fontName = details?.fontName
+      this.url = details?.url
+      this.attempt = details?.attempt
     }
   }
 
@@ -1174,33 +1361,86 @@ export function useEventShowcase() {
       // Load custom fonts asynchronously with progressive enhancement
       loadCustomFonts({ 
         display: 'swap',
-        timeout: 5000,
-        retryAttempts: 2
-      }).catch(() => {
-        // Silently fall back to system fonts
+        timeout: FONT_CONFIG.DEFAULT_TIMEOUT,
+        retryAttempts: FONT_CONFIG.DEFAULT_MAX_RETRIES
+      }).catch((fontError) => {
+        // Log font loading issues but don't block the main showcase
+        console.warn('Font loading failed, falling back to system fonts:', fontError)
       })
       
     } catch (err: unknown) {
-      const errorMessage = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      error.value = errorMessage || (err as Error)?.message || 'Failed to load event invitation'
+      // Improved error handling with proper type safety
+      const showcaseError = createShowcaseError(err, {
+        eventId,
+        language: currentLanguage.value,
+        code: 'LOAD_FAILED'
+      })
+      
+      error.value = showcaseError.message
+      console.warn('Failed to load showcase:', showcaseError)
     } finally {
       loading.value = false
     }
   }
 
+  /**
+   * Creates a properly typed ShowcaseError with context
+   */
+  const createShowcaseError = (
+    originalError: unknown, 
+    context: { eventId?: string; language?: string; code?: ShowcaseError['code'] }
+  ): ShowcaseError => {
+    // Handle API response errors
+    interface ApiErrorResponse {
+      response?: {
+        data?: {
+          detail?: string
+          message?: string
+        }
+        status?: number
+      }
+    }
+    
+    const apiError = originalError as ApiErrorResponse
+    const apiMessage = apiError?.response?.data?.detail || apiError?.response?.data?.message
+    
+    // Handle standard errors
+    const standardError = originalError as Error
+    const message = apiMessage || standardError?.message || 'Failed to load event invitation'
+    
+    // Create enhanced error with context
+    const showcaseError = new Error(message) as ShowcaseError
+    showcaseError.name = 'ShowcaseError'
+    showcaseError.eventId = context.eventId
+    showcaseError.language = context.language
+    showcaseError.code = context.code || 'LOAD_FAILED'
+    
+    return showcaseError
+  }
+
   // ============================
   // Meta Tags Management
   // ============================
-  const updateEventMetaTags = (event: Record<string, unknown>) => {
-    if (!event) return
+  /**
+   * Updates meta tags with proper type safety for event data
+   */
+  const updateEventMetaTags = (event: EventData) => {
+    if (!event?.id) return
 
-    const eventImage = getBestEventImage(event)
-    const eventDescription = createEventDescription(event)
-    const eventTitle = `${event.title as string} - GoEvent`
+    const eventImage = getBestEventImage(event as unknown as Record<string, unknown>)
+    const eventDescription = createEventDescription(event as unknown as Record<string, unknown>)
+    const eventTitle = `${event.title} - GoEvent`
     
-    const startDate = event.start_date ? new Date(event.start_date as string).toISOString() : undefined
+    const startDate = event.start_date ? new Date(event.start_date).toISOString() : undefined
     
-    const organizerDetails = event.organizer_details as { first_name?: string; last_name?: string; username?: string } | undefined
+    // Type-safe organizer details extraction
+    interface OrganizerDetails {
+      first_name?: string
+      last_name?: string
+      username?: string
+    }
+    
+    const organizerDetails = (event as EventData & { organizer_details?: OrganizerDetails }).organizer_details
     const organizerName = organizerDetails
       ? `${organizerDetails.first_name || ''} ${organizerDetails.last_name || ''}`.trim() || organizerDetails.username || 'GoEvent'
       : 'GoEvent'
@@ -1209,13 +1449,13 @@ export function useEventShowcase() {
       title: eventTitle,
       description: eventDescription,
       image: eventImage,
-      url: `${window.location.origin}/events/${event.id as string}/showcase`,
+      url: `${window.location.origin}/events/${event.id}/showcase`,
       siteName: 'GoEvent',
       type: 'website',
       locale: currentLanguage.value === 'kh' ? 'kh_KH' : 'en_US',
       author: organizerName,
       publishedTime: startDate,
-      location: (event.location as string) || undefined
+      location: event.location || undefined
     }
 
     updateMetaTags(metaData)
@@ -1226,7 +1466,6 @@ export function useEventShowcase() {
   // ============================
   const loadCustomFonts = async (config?: FontLoadConfig) => {
     const finalConfig = config || {}
-    const startTime = performance.now()
     fontsLoaded.value = false
     fontsLoadedCount.value = 0
     
@@ -1287,23 +1526,23 @@ export function useEventShowcase() {
     fontsLoadedCount.value = fontLoadStats.value.loadedFonts
     fontsLoaded.value = true
     
-    const totalTime = performance.now() - startTime
     // Font loading completed successfully
+    // Total loading time: ${performance.now() - startTime}ms
     
     await nextTick()
     return successfulLoads
   }
   
+  /**
+   * Enhanced single font loading with improved error handling and modular design
+   * Broken down into smaller, focused functions for better maintainability
+   */
   const loadSingleFontEnhanced = async (
     font: TemplateFont, 
     config: FontLoadConfig = {}
   ): Promise<FontLoadResult> => {
     const startTime = performance.now()
-    const fontName = sanitizeFontName(getFontName(font))
-    const fontFile = getFontFile(font)
-    const timeout = config.timeout || 5000 // 5 second default timeout
-    const maxRetries = config.retryAttempts || 2
-    const display = config.display || 'swap'
+    const { fontName, fontFile, timeout, maxRetries, display } = validateFontConfig(font, config)
     
     const result: FontLoadResult = {
       success: false,
@@ -1313,6 +1552,7 @@ export function useEventShowcase() {
       fromCache: false
     }
     
+    // Early validation
     if (!fontFile || !fontName) {
       result.error = 'Missing font file or name'
       return result
@@ -1321,121 +1561,98 @@ export function useEventShowcase() {
     const fullUrl = getMediaUrl(fontFile)
     result.url = fullUrl
     
-    // Check for existing loading promise
+    // Check for existing loading promise to prevent duplicate requests
     const cacheKey = `${fontName}-${fullUrl}`
     if (fontLoadingPromises.value.has(cacheKey)) {
       return await fontLoadingPromises.value.get(cacheKey)!
     }
     
-    // Check cache first
+    // Check cache first for immediate return if available
     const cachedEntry = globalFontCache.value.get(cacheKey)
-    if (cachedEntry && cachedEntry.isLoaded && 
-        (Date.now() - cachedEntry.loadedAt < cacheExpiryTime)) {
+    if (cachedEntry?.isLoaded && (Date.now() - cachedEntry.loadedAt < cacheExpiryTime)) {
       result.success = true
       result.fromCache = true
       result.loadTime = performance.now() - startTime
       return result
     }
     
-    const loadPromise = (async (): Promise<FontLoadResult> => {
-      let lastError = ''
-      
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          if (!isValidFontUrl(fullUrl)) {
-            throw new Error('Invalid or untrusted font URL')
-          }
-
-          // Create FontFace with progressive enhancement
-          const fontFace = new FontFace(
-            fontName, 
-            `url(${fullUrl})`,
-            {
-              display,
-              // Add font-variation-settings if needed
-              ...(font.font_type?.includes('variable') && {
-                variationSettings: 'normal'
-              })
-            }
-          )
-          
-          // Load with timeout
-          const loadedFont = await Promise.race([
-            fontFace.load(),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('Font load timeout')), timeout)
-            )
-          ])
-          
-          // Add to document fonts
-          document.fonts.add(loadedFont)
-          
-          // Wait for font to be ready with timeout
-          await Promise.race([
-            document.fonts.ready,
-            new Promise(resolve => setTimeout(resolve, 1000)) // Max 1s wait
-          ])
-          
-          // Cache successful load
-          const cacheEntry: FontCacheEntry = {
-            fontFace: loadedFont,
-            loadedAt: Date.now(),
-            url: fullUrl,
-            fontName,
-            isLoaded: true,
-            loadAttempts: attempt + 1
-          }
-          
-          globalFontCache.value.set(cacheKey, cacheEntry)
-          
-          result.success = true
-          result.loadTime = performance.now() - startTime
-          
-          // Small delay to ensure browser has applied the font
-          await new Promise(resolve => setTimeout(resolve, 50))
-          
-          return result
-          
-        } catch (error) {
-          lastError = error instanceof Error ? error.message : 'Unknown error'
-          
-          if (attempt < maxRetries) {
-            // Exponential backoff for retries
-            await new Promise(resolve => 
-              setTimeout(resolve, Math.pow(2, attempt) * 500)
-            )
-          }
-        }
-      }
-      
-      // All attempts failed
-      result.error = `Failed after ${maxRetries + 1} attempts: ${lastError}`
-      result.loadTime = performance.now() - startTime
-      
-      // Cache failed attempt to prevent repeated requests
-      const failedEntry: FontCacheEntry = {
-        fontFace: new FontFace(fontName, 'url()'), // Dummy font face
-        loadedAt: Date.now(),
-        url: fullUrl,
-        fontName,
-        isLoaded: false,
-        loadAttempts: maxRetries + 1,
-        lastError
-      }
-      
-      globalFontCache.value.set(cacheKey, failedEntry)
-      
-      return result
-    })()
+    // Create the loading promise with retry logic
+    const loadPromise = executeLoadWithRetry(
+      font, fontName, fullUrl, timeout, maxRetries, display, result, startTime
+    )
     
+    // Cache the loading promise to prevent duplicates
     fontLoadingPromises.value.set(cacheKey, loadPromise)
     
     try {
-      const finalResult = await loadPromise
-      return finalResult
+      return await loadPromise
     } finally {
       fontLoadingPromises.value.delete(cacheKey)
     }
+  }
+
+  /**
+   * Executes font loading with retry logic and proper error handling
+   */
+  const executeLoadWithRetry = async (
+    font: TemplateFont,
+    fontName: string,
+    fullUrl: string,
+    timeout: number,
+    maxRetries: number,
+    display: string,
+    result: FontLoadResult,
+    startTime: number
+  ): Promise<FontLoadResult> => {
+    let lastError = ''
+    const cacheKey = `${fontName}-${fullUrl}`
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        // Create and load the font face
+        const loadedFont = await createAndLoadFontFace(fontName, fullUrl, display, timeout, font)
+        
+        // Add to document and wait for readiness
+        await addFontToDocument(loadedFont)
+        
+        // Cache successful load
+        const cacheEntry = createCacheEntry(loadedFont, fontName, fullUrl, true, attempt + 1)
+        globalFontCache.value.set(cacheKey, cacheEntry)
+        
+        // Update result and return success
+        result.success = true
+        result.loadTime = performance.now() - startTime
+        
+        return result
+        
+      } catch (error) {
+        const fontError = error as FontLoadError
+        lastError = fontError.message || 'Unknown error'
+        
+        if (attempt < maxRetries) {
+          // Exponential backoff for retries
+          await new Promise(resolve => 
+            setTimeout(resolve, Math.pow(2, attempt) * FONT_CONFIG.RETRY_BASE_DELAY)
+          )
+        }
+      }
+    }
+    
+    // All attempts failed - cache the failure and return error result
+    const failedEntry = createCacheEntry(
+      new FontFace(fontName, 'url()'), // Dummy font face for failed loads
+      fontName, 
+      fullUrl, 
+      false, 
+      maxRetries + 1, 
+      lastError
+    )
+    globalFontCache.value.set(cacheKey, failedEntry)
+    
+    result.error = `Failed after ${maxRetries + 1} attempts: ${lastError}`
+    result.loadTime = performance.now() - startTime
+    
+    return result
   }
 
   // ============================
@@ -1495,6 +1712,23 @@ export function useEventShowcase() {
   // ============================
   // Stage Flow Management
   // ============================
+  
+  /**
+   * Advanced Showcase Stage Flow Controller
+   * 
+   * Manages the three-stage wedding invitation experience:
+   * 
+   * **Stage 1 (Cover)**: Static invitation with envelope opening animation
+   * **Stage 2 (Event Video)**: Personal video message from couple (optional)
+   * **Stage 3 (Main Content)**: Full invitation details, RSVP, gallery, etc.
+   * 
+   * The flow is designed for optimal emotional impact:
+   * - Cover stage creates anticipation
+   * - Event video provides personal touch
+   * - Main content delivers all practical information
+   * 
+   * Includes intelligent skipping for return visitors and proper audio management.
+   */
   const openEnvelope = async () => {
     isEnvelopeOpened.value = true
     
@@ -1512,11 +1746,14 @@ export function useEventShowcase() {
       await nextTick()
       if (eventVideoRef.value) {
         eventVideoRef.value.muted = false
-        eventVideoRef.value.play().catch(() => {
+        eventVideoRef.value.play().catch((playError) => {
+          console.warn('Failed to play event video unmuted, trying muted:', playError)
           // Try playing muted if unmuted fails
           if (eventVideoRef.value) {
             eventVideoRef.value.muted = true
-            eventVideoRef.value.play()
+            eventVideoRef.value.play().catch((mutedError) => {
+              console.warn('Failed to play event video even when muted:', mutedError)
+            })
           }
         })
       }
@@ -1539,6 +1776,11 @@ export function useEventShowcase() {
     videoLoading.value = false
   }
 
+  /**
+   * Handles the completion of the event video stage
+   * Automatically transitions to main content and marks that user has seen it
+   * This is critical for the return visitor skip logic
+   */
   const onEventVideoEnded = () => {
     isPlayingEventVideo.value = false
     // Transition to main content stage when event video ends
@@ -1546,13 +1788,19 @@ export function useEventShowcase() {
     markMainContentSeen()
   }
 
+  /**
+   * Graceful error recovery for event video playback failures
+   * Ensures the showcase continues to function even if video fails
+   * Automatically falls back to music and main content
+   */
   const onEventVideoError = () => {
     isPlayingEventVideo.value = false
     
-    // On video error, skip to main content
+    // On video error, skip to main content gracefully
     currentShowcaseStage.value = 'main_content'
     markMainContentSeen()
     
+    // Ensure audio is still available as fallback
     if (!audioRef.value) {
       initializeAudio()
       if (eventMusicUrl.value) {

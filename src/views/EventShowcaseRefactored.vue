@@ -44,8 +44,8 @@
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelope"
         @cover-stage-ready="handleCoverStageReady"
-        @event-video-preloaded="handleEventVideoPreloaded"
-        @event-video-ready="handleEventVideoReady"
+        @event-video-preloaded="() => {}"
+        @event-video-ready="() => {}"
         @sequential-video-ended="onEventVideoEnded"
         @play-event-video="onVideoCanPlay"
       >
@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch, ref, provide } from 'vue'
+import { onMounted, onUnmounted, watch, provide } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -123,8 +123,6 @@ const {
   // Reactive state
   loading,
   error,
-  isEnvelopeOpened,
-  isPlayingEventVideo,
   currentLanguage,
   isPhotoModalOpen,
   currentModalPhoto,
@@ -164,7 +162,6 @@ const {
   handleCoverStageReady,
   // Redirect State Management
   shouldSkipToMainContent,
-  hasSeenMainContent,
   markMainContentSeen,
   handleLoginRedirectWithStage,
   // Video Resource Manager
@@ -174,9 +171,7 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
-// View-specific reactive state (unused but kept for compatibility)
-const eventVideoPreloaded = ref(false)
-const eventVideoReadyFromCover = ref(false)
+// View-specific reactive state - removed unused refs for performance
 
 // View-specific methods
 const registerForEvent = () => {
@@ -184,13 +179,7 @@ const registerForEvent = () => {
 }
 
 
-const handleEventVideoPreloaded = () => {
-  eventVideoPreloaded.value = true
-}
-
-const handleEventVideoReady = () => {
-  eventVideoReadyFromCover.value = true
-}
+// Dead code handlers removed - functionality moved to composable
 
 const handleLoginRedirect = () => {
   // The redirect logic is now handled by the composable
@@ -232,23 +221,13 @@ watch(
 onMounted(async () => {
   await authStore.initializeAuth()
   
-  // Make video resource manager globally accessible for child components
-  const windowWithShowcase = window as typeof window & { __showcaseComposable?: { videoResourceManager: typeof videoResourceManager } }
-  windowWithShowcase.__showcaseComposable = {
-    videoResourceManager
-  }
-  
+  // Initialize showcase - video resource manager is provided via Vue's provide/inject pattern
   loadShowcase()
 })
 
 onUnmounted(() => {
-  // Clean up global reference
-  const windowWithShowcase = window as typeof window & { __showcaseComposable?: { videoResourceManager: typeof videoResourceManager } }
-  if (windowWithShowcase.__showcaseComposable) {
-    delete windowWithShowcase.__showcaseComposable
-  }
-  
-  // Cleanup handled by composable
+  // All cleanup is handled by the composable's onUnmounted hook
+  // No manual cleanup needed as we're using proper Vue provide/inject pattern
 })
 </script>
 
