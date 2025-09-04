@@ -211,6 +211,7 @@ interface Props {
   eventTexts?: EventText[]
   currentLanguage?: string
   isEnvelopeButtonReady?: boolean
+  currentShowcaseStage?: 'cover' | 'event_video' | 'main_content'
   getMediaUrl: (url: string) => string
 }
 
@@ -237,8 +238,11 @@ const eventVideoReady = ref(false)
 const backgroundVideoPreloaded = ref(false)
 const backgroundVideoReady = ref(false)
 
-// Sequential video state
-const currentVideoPhase = ref<'none' | 'event' | 'background'>('none')
+// Sequential video state - Initialize from persistent stage
+const currentVideoPhase = ref<'none' | 'event' | 'background'>(
+  props.currentShowcaseStage === 'main_content' ? 'background' :
+  props.currentShowcaseStage === 'event_video' ? 'event' : 'none'
+)
 const sequentialVideoReady = ref(false)
 
 // Video state management - ensure only one video plays at a time
@@ -287,8 +291,7 @@ const handleSequentialVideoEnded = () => {
   }
 }
 
-const handleSequentialVideoError = (error: Event) => {
-  console.warn('Sequential video error:', error)
+const handleSequentialVideoError = () => {
   // Continue with the flow even if there's an error
   emit('sequentialVideoEnded')
 }
@@ -306,8 +309,7 @@ const playEventVideo = () => {
   sequentialVideoContainer.value.muted = false // Unmute for event video
   sequentialVideoContainer.value.loop = false // Don't loop event video
   
-  sequentialVideoContainer.value.play().catch((error) => {
-    console.warn('Failed to play event video:', error)
+  sequentialVideoContainer.value.play().catch(() => {
     handleSequentialVideoEnded()
   })
   
@@ -330,8 +332,7 @@ const playBackgroundVideo = () => {
   backgroundVideoElement.value.style.opacity = '1'
   backgroundVideoElement.value.style.zIndex = '0' // Lower z-index for background video
   
-  backgroundVideoElement.value.play().catch((error) => {
-    console.warn('Failed to play background video:', error)
+  backgroundVideoElement.value.play().catch(() => {
     emit('sequentialVideoEnded')
   })
   
@@ -377,15 +378,6 @@ const cleanupAllVideoResources = () => {
   cleanupVideoElement(sequentialVideoContainer.value)
   cleanupVideoElement(coverVideoElement.value)
   cleanupVideoElement(backgroundVideoElement.value)
-  
-  // Cleanup any other video elements in the DOM that might have been created
-  const allVideos = document.querySelectorAll('video[src*="event_video"]')
-  allVideos.forEach(video => {
-    const videoElement = video as HTMLVideoElement
-    if (videoElement.style.zIndex === '-10') { // This is likely our preloader
-      cleanupVideoElement(videoElement)
-    }
-  })
   
   // Clear all listener tracking
   videoEventListeners.value.clear()
@@ -492,6 +484,25 @@ watch(isStageReady, (ready) => {
   }
 }, { immediate: true })
 
+// Watch for showcase stage changes to initialize proper video state
+watch(() => props.currentShowcaseStage, (newStage) => {
+  if (newStage === 'event_video' && currentVideoPhase.value === 'none') {
+    // User returned to event video stage after login
+    isContentHidden.value = true
+    if (props.eventVideoUrl) {
+      playEventVideo()
+    }
+  } else if (newStage === 'main_content' && currentVideoPhase.value !== 'background') {
+    // User returned to main content stage after login  
+    isContentHidden.value = true
+    if (props.backgroundVideoUrl) {
+      playBackgroundVideo()
+    } else {
+      emit('sequentialVideoEnded')
+    }
+  }
+}, { immediate: true })
+
 // Cleanup on component unmount
 onUnmounted(() => {
   cleanupAllVideoResources()
@@ -511,7 +522,6 @@ watch(eventVideoPreloader, (newVideo, oldVideo) => {
     
     // Add error handler for memory cleanup
     const errorHandler = () => {
-      console.warn('Event video preloader error, cleaning up resources')
       cleanupVideoElement(newVideo)
     }
     addVideoEventListener(newVideo, 'error', errorHandler)
@@ -524,7 +534,7 @@ watch(isCoverVideoPlaying, (isPlaying) => {
     if (isPlaying) {
       // Resume cover video
       coverVideoElement.value.play().catch(() => {
-        // Ignore play errors
+        // Silently handle play errors
       })
     } else {
       // Pause and hide cover video
@@ -547,14 +557,13 @@ watch(backgroundVideoElement, (newVideo, oldVideo) => {
     
     // Add error handler for memory cleanup
     const errorHandler = () => {
-      console.warn('Background video error, cleaning up resources')
       cleanupVideoElement(newVideo)
     }
     addVideoEventListener(newVideo, 'error', errorHandler)
   }
 })
 
-// No asset loading handlers needed - stage loads immediately
+// Stage initialization is handled by watchers and computed properties
 </script>
 
 <style scoped>

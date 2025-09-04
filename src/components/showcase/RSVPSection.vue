@@ -836,8 +836,7 @@ const loadCurrentRegistration = async () => {
       savedGuestCount.value = 0
       hasUnsavedGuestChanges.value = false
     }
-  } catch (error) {
-    console.error('Error loading registration:', error)
+  } catch {
     currentRegistration.value = null
     rsvpStatus.value = null
     additionalGuests.value = 0
@@ -910,8 +909,7 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
         }, 3000)
       }
     }
-  } catch (error) {
-    console.error('RSVP error:', error)
+  } catch {
     errorMessage.value = 'An unexpected error occurred. Please try again.'
   } finally {
     isSubmitting.value = false
@@ -1006,8 +1004,8 @@ const updateGuestCountInAPI = async () => {
         successMessage.value = ''
       }, 2000)
     }
-  } catch (error) {
-    console.error('Error updating guest count:', error)
+  } catch {
+    // Handle guest count update error
     // Show error for manual saves
     errorMessage.value = 'Failed to update guest count. Please try again.'
   } finally {

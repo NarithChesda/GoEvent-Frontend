@@ -190,42 +190,6 @@ export interface BaseShowcaseProps {
   currentLanguage?: string
 }
 
-export interface RSVPHeaderProps extends BaseShowcaseProps {
-  isExpanded: boolean
-  rsvpStatus: RSVPStatus
-  eventTitle: string
-  eventDate: string
-  eventTime: string
-  isEventPast: boolean
-  onToggle: () => void
-}
-
-export interface RSVPEventInfoProps extends BaseShowcaseProps {
-  eventTitle: string
-  eventDate: string
-  eventTime: string
-  eventLocation?: string
-  isEventPast: boolean
-}
-
-export interface RSVPButtonsProps extends BaseShowcaseProps {
-  rsvpStatus: RSVPStatus
-  isUpdatingRSVP: boolean
-  isAuthenticated: boolean
-  onSetStatus: (status: RSVPStatus) => void
-  onSignIn: () => void
-}
-
-export interface RSVPGuestManagerProps extends BaseShowcaseProps {
-  rsvpStatus: RSVPStatus
-  additionalGuests: number
-  maxGuests: number
-  isUpdatingGuestCount: boolean
-  paymentMethods: EventPaymentMethod[]
-  onIncreaseGuests: () => void
-  onDecreaseGuests: () => void
-  onGuestCounterLeave: () => void
-}
 
 // Error boundary types
 export interface ErrorInfo {

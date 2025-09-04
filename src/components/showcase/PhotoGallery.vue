@@ -455,7 +455,7 @@ const preloadImageDimensions = async (photos: EventPhoto[]) => {
         }
         
         img.onerror = () => {
-          console.warn(`Failed to preload image: ${photo.image}`)
+          // Silently handle image load errors
           resolve()
         }
         
@@ -474,8 +474,8 @@ const preloadImageDimensions = async (photos: EventPhoto[]) => {
 
   try {
     await Promise.allSettled(preloadPromises)
-  } catch (error) {
-    console.warn('Error during image preloading:', error)
+  } catch {
+    // Silently handle preloading errors
   }
 }
 

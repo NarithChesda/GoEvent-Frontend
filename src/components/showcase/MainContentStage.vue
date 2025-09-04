@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0">
+  <div class="absolute inset-0 z-10">
     <!-- Background Video or Fallback -->
     <component
       :is="backgroundVideoComponent"
@@ -9,6 +9,7 @@
 
     <!-- Floating Action Menu -->
     <FloatingActionMenu
+      class="z-30"
       :primary-color="primaryColor"
       :accent-color="accentColor"
       :current-language="currentLanguage"
@@ -29,8 +30,8 @@
     />
 
     <!-- Liquid Glass Floating Box Container -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute inset-0 overflow-y-auto custom-scrollbar">
+    <div class="absolute inset-0 overflow-hidden z-20">
+      <div class="absolute inset-0 overflow-y-auto custom-scrollbar z-20">
         <div :class="containerClasses">
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card animate-slideUp">
@@ -406,7 +407,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, nextTick, type Component } from 'vue'
+import { computed, onMounted, onUnmounted, ref, nextTick, inject, type Component } from 'vue'
 import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
 import type { EventComment } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
@@ -471,44 +472,60 @@ const containerClasses = computed(() => [
 
 const existingBackgroundVideo = ref<HTMLVideoElement | null>(null)
 
-const backgroundVideoComponent = computed((): Component | string => {
-  // If we found an existing background video, don't create a new one
-  if (existingBackgroundVideo.value) {
-    return 'div'
-  }
-  return props.templateAssets?.standard_background_video ? 'video' : 'div'
-})
+// Inject video resource manager from parent showcase using Vue's provide/inject
+// Must be called at top level of setup, not inside lifecycle hooks
+const injectedVideoResourceManager = inject<any>('videoResourceManager')
 
-const backgroundVideoProps = computed(() => {
-  if (existingBackgroundVideo.value) {
-    return { class: 'bg-transparent' }
-  }
-  if (props.templateAssets?.standard_background_video) {
-    return {
-      src: props.getMediaUrl(props.templateAssets.standard_background_video),
-      autoplay: true,
-      loop: true,
-      muted: true,
-      playsinline: true
+// Security validation function for video elements
+const validateVideoElement = (element: HTMLVideoElement): boolean => {
+  if (!element || !(element instanceof HTMLVideoElement)) return false
+  
+  // Check if element is attached to document
+  if (!document.contains(element)) return false
+  
+  // Validate src attribute is from trusted domain
+  const src = element.src || element.getAttribute('src') || ''
+  if (!src) return true // Allow empty src for cleanup
+  
+  try {
+    const url = new URL(src)
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const allowedOrigins = [
+      new URL(API_BASE_URL).origin,
+      window.location.origin
+    ]
+    
+    // Allow data URLs for embedded content
+    if (url.protocol === 'data:') {
+      return url.href.startsWith('data:video/')
     }
+    
+    return allowedOrigins.includes(url.origin)
+  } catch {
+    return false
   }
-  return { class: 'bg-black' }
+}
+const videoResourceManager = ref<{
+  cleanup: () => void
+  stats: () => { managedVideos: number; totalListeners: number }
+} | null>(null)
+
+const backgroundVideoComponent = computed((): Component | string => {
+  // Use div as the background video is handled by CoverStage
+  return 'div'
 })
 
-// Check for existing background video from EventVideoStage
+const backgroundVideoProps = computed(() => ({
+  class: 'bg-transparent'
+}))
+
+// Simplified mounting - no video management needed
 onMounted(async () => {
   await nextTick()
-  // Look for pre-loaded background video in the DOM
-  const existingVideos = document.querySelectorAll('video[src*="standard_background_video"]')
-  for (const video of existingVideos) {
-    const videoElement = video as HTMLVideoElement
-    if (videoElement.style.opacity === '1' && videoElement.style.zIndex === '1') {
-      existingBackgroundVideo.value = videoElement
-      // Ensure it covers the background properly
-      videoElement.classList.add('absolute', 'inset-0', 'w-full', 'h-full', 'object-cover')
-      videoElement.style.zIndex = '0'
-      break
-    }
+  
+  // Use the injected video resource manager for other operations if needed
+  if (injectedVideoResourceManager) {
+    videoResourceManager.value = injectedVideoResourceManager
   }
 })
 
@@ -565,10 +582,10 @@ const {
 } = sectionRefs
 
 /**
- * Initialize reveal animations for all sections
+ * Initialize reveal animations
  */
 const initializeRevealAnimations = () => {
-  const animationConfig: Array<[ref: any, id: string]> = [
+  const animationConfig: Array<[any, string]> = [
     [welcomeHeaderRef, 'welcome-header'],
     [hostInfoRef, 'host-info'],
     [eventInfoRef, 'event-info'],
@@ -590,7 +607,7 @@ const initializeRevealAnimations = () => {
 }
 
 /**
- * Initialize scroll-driven animations
+ * Initialize scroll animations
  */
 const initializeScrollAnimations = () => {
   const liquidGlassCard = document.querySelector('.liquid-glass-card')
@@ -640,7 +657,7 @@ const TRANSLATION_KEY_MAP: Record<string, keyof typeof import('../../utils/trans
 } as const
 
 /**
- * Enhanced translation function that combines database content with frontend translations
+ * Get text content from database or frontend translations
  * @param textType - The type of text to retrieve
  * @param fallback - Fallback text if no translation found
  * @returns Translated text content
@@ -664,7 +681,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 /**
- * Helper function to find event text by type
+ * Find event text by type
  */
 const findEventText = (textType: string) => 
   props.eventTexts?.find(text => text.text_type === textType)
@@ -689,7 +706,7 @@ const footerCreateInvitationsText = computed(() =>
 )
 
 /**
- * Utility function for smooth scrolling to sections
+ * Smooth scroll to section by ID
  */
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId)
@@ -714,9 +731,14 @@ const handleComment = () => scrollToSection('comment-section')
 const handleVideo = () => scrollToSection('video-section')
 
 const handleReminder = () => {
-  // TODO: Implement reminder functionality
-  console.warn('Reminder functionality not yet implemented')
+  // TODO: Implement reminder functionality when needed
 }
+// Cleanup on component unmount
+onUnmounted(() => {
+  // Clear local references
+  existingBackgroundVideo.value = null
+  videoResourceManager.value = null
+})
 </script>
 
 <style scoped>

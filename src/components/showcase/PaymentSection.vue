@@ -401,16 +401,14 @@ const hasVisibleBankInfo = (method: EventPaymentMethod): boolean => {
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    // You could emit a success event here or show a toast
-    console.log('Copied to clipboard:', text)
-  } catch (err) {
-    console.error('Failed to copy to clipboard:', err)
+    // Text copied successfully
+  } catch {
+    // Failed to copy - could show user feedback here
   }
 }
 
-const onImageError = (event: Event) => {
-  console.error('Failed to load QR code image:', event)
-  // You could set a fallback or emit an error event
+const onImageError = () => {
+  // QR code image failed to load - could set fallback here
 }
 
 const capitalizeText = (text: string | undefined): string => {

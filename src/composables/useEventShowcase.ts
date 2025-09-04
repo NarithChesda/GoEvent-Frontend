@@ -210,7 +210,7 @@ export function useEventShowcase() {
   const showcaseData = ref<ShowcaseData | null>(null)
   
   // Language state
-  const urlLang = route.query.lang as string || 'kh'
+  const urlLang = (route.query.lang as string) || 'kh'
   const currentLanguage = ref(urlLang)
   
   // UI state
@@ -253,7 +253,7 @@ export function useEventShowcase() {
   // ============================
   // Computed Properties
   // ============================
-  const event = computed(() => showcaseData.value?.event || {} as EventData)
+  const event = computed(() => showcaseData.value?.event || ({} as EventData))
   const meta = computed(() => showcaseData.value?.meta || {})
   const guestName = computed(() => {
     const guestNameFromQuery = route.query.guest_name
@@ -277,8 +277,7 @@ export function useEventShowcase() {
       }))
     }
     
-    const fontList = fonts || [] as TemplateFont[]
-    return fontList
+    return (fonts || []) as TemplateFont[]
   })
   
   // Font processing cache
@@ -421,9 +420,9 @@ export function useEventShowcase() {
   // Deprecated: Use primaryFont instead
   const currentFont = computed(() => primaryFont.value)
   
-  const eventTexts = computed(() => event.value?.event_texts || [] as EventText[])
-  const hosts = computed(() => event.value?.hosts || [] as Host[])
-  const agendaItems = computed(() => event.value?.agenda_items || [] as AgendaItem[])
+  const eventTexts = computed(() => event.value?.event_texts || [])
+  const hosts = computed(() => event.value?.hosts || [])
+  const agendaItems = computed(() => event.value?.agenda_items || [])
   
   // Photo sorting with cache
   const photosCache = ref<{ version: number, sorted: EventPhoto[] }>({ version: -1, sorted: [] })
@@ -456,17 +455,17 @@ export function useEventShowcase() {
   const availableLanguages = computed(() => event.value?.available_languages || [])
   
   const primaryColor = computed(() => {
-    const color = templateColors.value[0]
+    const color = templateColors.value?.[0]
     return color?.hex_color_code || color?.hex_code || '#3B82F6'
   })
   
   const secondaryColor = computed(() => {
-    const color = templateColors.value[1]
+    const color = templateColors.value?.[1]
     return color?.hex_color_code || color?.hex_code || null
   })
   
   const accentColor = computed(() => {
-    const color = templateColors.value[2]
+    const color = templateColors.value?.[2]
     return color?.hex_color_code || color?.hex_code || primaryColor.value
   })
   
@@ -523,22 +522,18 @@ export function useEventShowcase() {
       }
       
       if (managedVideoElements.value.has(video)) {
-        console.debug('Video already registered:', identifier || video.src)
         return
       }
       
       // Check resource limits
       if (managedVideoElements.value.size >= this.MAX_MANAGED_VIDEOS) {
-        console.warn('Maximum video limit reached, cleaning up oldest videos')
         this.enforceResourceLimits()
       }
       
       managedVideoElements.value.add(video)
-      console.debug('Registered video for management:', identifier || video.src)
       
       // Add default error handler to prevent uncaught exceptions
-      const errorHandler = (event: Event) => {
-        console.warn('Video error in managed element:', event)
+      const errorHandler = () => {
         this.cleanupVideo(video)
       }
       
@@ -568,7 +563,6 @@ export function useEventShowcase() {
         }
         
         const cleanup = async () => {
-          console.debug('Cleaning up video element:', video.src)
           
           // Remove all tracked event listeners
           const listeners = videoEventListeners.value.get(video)
@@ -591,8 +585,8 @@ export function useEventShowcase() {
                 video.pause()
                 // Small delay to let any pending promises settle
                 await new Promise(resolve => setTimeout(resolve, 50))
-              } catch (pauseError) {
-                console.warn('Error pausing video during cleanup:', pauseError)
+              } catch {
+                // Silently handle pause errors
               }
             }
             
@@ -601,8 +595,8 @@ export function useEventShowcase() {
               video.src = ''
               video.removeAttribute('src')
               video.load()
-            } catch (loadError) {
-              console.warn('Error clearing video source during cleanup:', loadError)
+            } catch {
+              // Silently handle source clearing errors
             }
             
             // Remove from managed set
@@ -610,7 +604,6 @@ export function useEventShowcase() {
             
             resolve()
           } catch (error) {
-            console.warn('Error during video cleanup:', error)
             // Still remove from managed set even if cleanup partially failed
             managedVideoElements.value.delete(video)
             reject(error)
@@ -619,7 +612,6 @@ export function useEventShowcase() {
         
         // Apply timeout to prevent hanging cleanup
         const timeoutId = setTimeout(() => {
-          console.warn('Video cleanup timeout, forcing removal')
           managedVideoElements.value.delete(video)
           reject(new Error('Cleanup timeout'))
         }, this.MAX_CLEANUP_TIME)
@@ -657,19 +649,19 @@ export function useEventShowcase() {
      * Clean up all managed video resources
      */
     cleanupAllVideos(): void {
-      console.debug('Cleaning up all managed video resources')
-      
       // Cleanup all managed video elements
       managedVideoElements.value.forEach(video => {
-        this.cleanupVideo(video)
+        this.cleanupVideo(video).catch(() => {
+          // Silently handle cleanup errors
+        })
       })
       
       // Execute custom cleanup callbacks
       videoCleanupCallbacks.value.forEach(callback => {
         try {
           callback()
-        } catch (error) {
-          console.warn('Error executing video cleanup callback:', error)
+        } catch {
+          // Silently handle callback errors
         }
       })
       
@@ -696,8 +688,6 @@ export function useEventShowcase() {
         return videos[0] || null
       }
       
-      console.debug(`Found ${videos.length} duplicate videos for pattern: ${sourcePattern}`)
-      
       // Keep the most ready video, cleanup others
       const sortedVideos = videos.sort((a, b) => {
         // Priority: in document, higher readyState, not paused, has proper styling
@@ -715,21 +705,21 @@ export function useEventShowcase() {
         if (!video.paused) {
           try {
             video.pause()
-          } catch (pauseError) {
-            console.warn('Error pausing duplicate video:', pauseError)
+          } catch {
+            // Silently handle pause errors
           }
         }
         
-        this.cleanupVideo(video).catch(cleanupError => {
-          console.warn('Error cleaning up duplicate video:', cleanupError)
+        this.cleanupVideo(video).catch(() => {
+          // Silently handle cleanup errors
         })
         
         // Remove from DOM if still present
         if (video.parentNode) {
           try {
             video.parentNode.removeChild(video)
-          } catch (removeError) {
-            console.warn('Error removing duplicate video from DOM:', removeError)
+          } catch {
+            // Silently handle DOM removal errors
           }
         }
       })
@@ -803,6 +793,7 @@ export function useEventShowcase() {
         return 'video[data-video-type]'
     }
   }
+
 
   // ============================
   // Helper Functions
@@ -1001,6 +992,7 @@ export function useEventShowcase() {
         currentLanguage.value = data.meta.language
       }
 
+
       // Update meta tags for social sharing
       updateEventMetaTags(data.event)
 
@@ -1014,9 +1006,8 @@ export function useEventShowcase() {
       })
       
     } catch (err: unknown) {
-      error.value = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 
-                   (err as Error)?.message || 
-                   'Failed to load event invitation'
+      const errorMessage = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      error.value = errorMessage || (err as Error)?.message || 'Failed to load event invitation'
     } finally {
       loading.value = false
     }
@@ -1122,7 +1113,7 @@ export function useEventShowcase() {
     fontsLoaded.value = true
     
     const totalTime = performance.now() - startTime
-    console.debug(`Font loading completed in ${totalTime.toFixed(2)}ms:`, fontLoadStats.value)
+    // Font loading completed successfully
     
     await nextTick()
     return successfulLoads
@@ -1436,8 +1427,6 @@ export function useEventShowcase() {
   // Lifecycle Hooks
   // ============================
   onUnmounted(() => {
-    console.debug('useEventShowcase: Starting cleanup process')
-    
     // Cleanup video resources first (most critical for memory)
     videoResourceManager.cleanupAllVideos()
     
@@ -1476,8 +1465,6 @@ export function useEventShowcase() {
     showcaseData.value = null
     error.value = null
     currentModalPhoto.value = null
-    
-    console.debug('useEventShowcase: Cleanup completed')
   })
 
   // ============================

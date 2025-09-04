@@ -694,8 +694,7 @@ const updateComment = async (commentId: number) => {
     } else {
       errorMessage.value = response.message || 'Failed to update comment. Please try again.'
     }
-  } catch (error) {
-    console.error('Failed to update comment:', error)
+  } catch {
     errorMessage.value = 'An error occurred while updating your comment. Please try again.'
   } finally {
     isUpdatingComment.value = false
@@ -735,8 +734,7 @@ const handleDeleteConfirm = async () => {
       errorMessage.value = response.message || 'Failed to delete comment. Please try again.'
       showDeleteModal.value = false
     }
-  } catch (error) {
-    console.error('Failed to delete comment:', error)
+  } catch {
     errorMessage.value = 'An error occurred while deleting your comment. Please try again.'
     showDeleteModal.value = false
   } finally {
@@ -844,8 +842,7 @@ const submitComment = async () => {
         errorMessage.value = response.message || 'Failed to post comment. Please try again.'
       }
     }
-  } catch (error) {
-    console.error('Failed to submit comment:', error)
+  } catch {
     errorMessage.value = 'An error occurred while posting your comment. Please try again.'
   } finally {
     isSubmittingComment.value = false
@@ -883,8 +880,7 @@ const loadComments = async () => {
       totalComments.value = 0
       hasMoreComments.value = false
     }
-  } catch (error) {
-    console.error('Failed to load comments:', error)
+  } catch {
     comments.value = []
     totalComments.value = 0
     hasMoreComments.value = false
@@ -953,8 +949,7 @@ const loadMoreComments = async () => {
     } else {
       hasMoreComments.value = false
     }
-  } catch (error) {
-    console.error('Failed to load more comments:', error)
+  } catch {
     hasMoreComments.value = false
   } finally {
     loadingMoreComments.value = false

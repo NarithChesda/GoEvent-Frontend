@@ -107,7 +107,6 @@ import { useAuthStore } from '../stores/auth'
 // Components
 import CoverStage from '../components/showcase/CoverStage.vue'
 import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
-import EventVideoStage from '../components/showcase/EventVideoStage.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
@@ -123,8 +122,6 @@ const {
   error,
   isEnvelopeOpened,
   isPlayingEventVideo,
-  videoLoading,
-  eventVideoRef,
   currentLanguage,
   isPhotoModalOpen,
   currentModalPhoto,
@@ -153,7 +150,6 @@ const {
   openEnvelope,
   onVideoCanPlay,
   onEventVideoEnded,
-  onEventVideoError,
   getMediaUrl,
   openGoogleMap,
   openPhotoModal,
@@ -169,8 +165,7 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
-// View-specific reactive state
-const backgroundVideoReady = ref(false)
+// View-specific reactive state (unused but kept for compatibility)
 const eventVideoPreloaded = ref(false)
 const eventVideoReadyFromCover = ref(false)
 
@@ -179,9 +174,6 @@ const registerForEvent = () => {
   router.push(`/events/${event.value.id}`)
 }
 
-const onBackgroundVideoReady = () => {
-  backgroundVideoReady.value = true
-}
 
 const handleEventVideoPreloaded = () => {
   eventVideoPreloaded.value = true
@@ -213,7 +205,7 @@ const handleLoginRedirect = () => {
 }
 
 const handleCommentSubmitted = () => {
-  // Comment submission handled by the composable or component
+  // Comment submission is handled by the child component
 }
 
 const handleLogout = async () => {
@@ -226,19 +218,23 @@ const handleLogout = async () => {
   await authStore.logout()
 }
 
-// Watch for event data to handle redirects
-watch(event, (newEvent) => {
-  if (newEvent?.id) {
-    handleLoginRedirect()
+// Watch for event data to handle redirects after login
+watch(
+  () => event.value?.id, 
+  (eventId) => {
+    if (eventId) {
+      handleLoginRedirect()
+    }
   }
-})
+)
 
 // Lifecycle hooks
 onMounted(async () => {
   await authStore.initializeAuth()
   
   // Make video resource manager globally accessible for child components
-  ;(window as any).__showcaseComposable = {
+  const windowWithShowcase = window as typeof window & { __showcaseComposable?: { videoResourceManager: typeof videoResourceManager } }
+  windowWithShowcase.__showcaseComposable = {
     videoResourceManager
   }
   
@@ -247,8 +243,9 @@ onMounted(async () => {
 
 onUnmounted(() => {
   // Clean up global reference
-  if ((window as any).__showcaseComposable) {
-    delete (window as any).__showcaseComposable
+  const windowWithShowcase = window as typeof window & { __showcaseComposable?: { videoResourceManager: typeof videoResourceManager } }
+  if (windowWithShowcase.__showcaseComposable) {
+    delete windowWithShowcase.__showcaseComposable
   }
   
   // Cleanup handled by composable
