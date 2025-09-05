@@ -135,7 +135,32 @@
         <!-- Open Envelope Button Row: 20% -->
         <div class="content-row-button flex items-center justify-center animate-fadeIn animation-delay-800" style="height: 20%;">
           <div class="flex items-center justify-center h-full w-full">
+            
+            <!-- Loading Animation when video is not ready -->
+            <div
+              v-if="shouldShowButtonLoading"
+              class="loading-container flex items-center justify-center h-full"
+            >
+              <div class="loading-spinner-wrapper">
+                <div 
+                  class="loading-spinner"
+                  :style="{ borderTopColor: primaryColor }"
+                ></div>
+                <p 
+                  class="loading-text mt-3 text-center"
+                  :style="{ 
+                    color: primaryColor, 
+                    fontFamily: secondaryFont || currentFont 
+                  }"
+                >
+                  Loading...
+                </p>
+              </div>
+            </div>
+
+            <!-- Open Envelope Button (shown when video is ready or no video) -->
             <button
+              v-else
               @click="handleOpenEnvelope"
               class="relative flex items-center justify-center h-full transition-all duration-300"
               :class="buttonClasses"
@@ -492,6 +517,12 @@ const hasCustomButton = computed(() =>
   props.templateAssets?.open_envelope_button && 
   props.templateAssets.open_envelope_button.trim() !== ''
 )
+
+// Determine if we should show loading state for envelope button
+const shouldShowButtonLoading = computed(() => {
+  // Show loading if there's an event video but it's not ready yet
+  return props.eventVideoUrl && !eventVideoReady.value
+})
 
 // Text content helpers
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -1186,6 +1217,67 @@ h1, h2, p {
   .event-logo-showcase {
     max-height: 180px;
     max-width: 450px;
+  }
+}
+
+/* Loading Spinner Animation */
+.loading-spinner-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+}
+
+.loading-spinner {
+  width: clamp(40px, 8vh, 80px);
+  height: clamp(40px, 8vh, 80px);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #3B82F6; /* Will be overridden by dynamic color */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  backdrop-filter: blur(2px);
+}
+
+.loading-text {
+  font-size: clamp(0.75rem, 2vh, 1rem);
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading container responsive sizing */
+@media (max-width: 480px) {
+  .loading-spinner {
+    width: clamp(35px, 6vh, 60px);
+    height: clamp(35px, 6vh, 60px);
+    border-width: 2px;
+  }
+  
+  .loading-text {
+    font-size: clamp(0.625rem, 1.5vh, 0.875rem);
+    margin-top: 0.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .loading-spinner {
+    width: clamp(50px, 10vh, 100px);
+    height: clamp(50px, 10vh, 100px);
+    border-width: 4px;
+  }
+  
+  .loading-text {
+    font-size: clamp(0.875rem, 2.5vh, 1.25rem);
   }
 }
 </style>

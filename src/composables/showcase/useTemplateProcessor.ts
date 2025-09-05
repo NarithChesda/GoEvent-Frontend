@@ -1,65 +1,91 @@
-import { ref, computed, watch } from 'vue'
-import type { TemplateFont, TemplateColor } from '../useEventShowcase'
-import { useLRUCache } from '../cache/useLRUCache'
+import { ref, computed } from 'vue'
+import type { TemplateFont, TemplateColor, TemplateAssets } from '../useEventShowcase'
 
 /**
- * Template processing composable
- * Handles template colors, fonts, and asset processing with performance optimizations
+ * Template Processing Composable
+ * 
+ * Handles all template-related processing including:
+ * - Font type mapping and language-specific processing
+ * - Color extraction and computed properties
+ * - Template asset URL resolution
+ * - Cache management for processed templates
+ * - Fallback handling for missing template data
  */
-export function useTemplateProcessor(
-  templateColors: any,
-  templateFonts: any,
-  currentLanguage: any
-) {
-  // Performance caches
-  const languageFontsCache = useLRUCache<any>(20, 10) // 20 items, 10MB
-  const fontProcessingVersion = ref(0)
-
-  // Watch for changes that should invalidate font cache
-  watch([templateFonts, currentLanguage], () => {
-    fontProcessingVersion.value++
-    languageFontsCache.clear()
-  })
+export function useTemplateProcessor() {
+  // Font processing cache - optimized for language-specific font lookups
+  // This cache stores processed font mappings by language to avoid recomputation
+  const languageFontsCache = ref<Map<string, Record<string, TemplateFont | null>>>(new Map())
+  const fontProcessingVersion = ref(0) // Increment to invalidate cache
 
   /**
-   * Dynamic font fallback system based on language and context
+   * Extracts font name from template font object
    */
-  const getFallbackFontStack = (fontType: 'serif' | 'sans-serif' | 'decorative' = 'sans-serif') => {
-    const language = currentLanguage.value?.toLowerCase() || 'en'
-    
-    // Language-specific optimized fallbacks
-    const languageFallbacks = {
-      'km': fontType === 'serif' 
-        ? '"Noto Serif Khmer", "Khmer Serif", serif' 
-        : '"Noto Sans Khmer", "Khmer Sans", sans-serif',
-      'en': fontType === 'serif'
-        ? '"Inter", "Georgia", "Times New Roman", serif'
-        : '"Inter", "Helvetica Neue", "Arial", sans-serif',
-      'default': fontType === 'serif'
-        ? '"Inter", "Georgia", serif'
-        : '"Inter", "Helvetica Neue", sans-serif'
-    }
-    
-    return languageFallbacks[language] || languageFallbacks.default
+  const getFontName = (font: TemplateFont | null): string => {
+    if (!font) return ''
+    return font.font?.name || font.font_name || ''
   }
 
   /**
-   * Optimized language fonts processing with caching
+   * Extracts font file URL from template font object
    */
-  const getLanguageFonts = computed(() => {
-    const cacheKey = `${currentLanguage.value}-v${fontProcessingVersion.value}`
+  const getFontFile = (font: TemplateFont | null): string => {
+    if (!font) return ''
+    return font.font?.font_file || font.font_file || ''
+  }
+
+  /**
+   * Resolves media URLs to absolute paths
+   */
+  const getMediaUrl = (url: string): string => {
+    if (!url) return ''
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url
+    }
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    return url.startsWith('/') ? `${API_BASE_URL}${url}` : `${API_BASE_URL}/media/${url}`
+  }
+
+  /**
+   * Processes template fonts from various formats into normalized array
+   */
+  const normalizeTemplateFonts = (fonts: any): TemplateFont[] => {
+    if (!fonts) return []
     
-    // Check cache first - huge performance improvement for repeated access
-    const cached = languageFontsCache.get(cacheKey)
-    if (cached) {
-      return cached
+    if (!Array.isArray(fonts)) {
+      // Handle object format {language: font} -> array format
+      return Object.entries(fonts).map(([lang, font]) => ({
+        ...(font as TemplateFont),
+        language: lang
+      }))
     }
     
-    // Expensive computation - only run when cache miss
-    const fonts = templateFonts.value || []
-    const langFonts = fonts.filter((f: TemplateFont) => f.language === currentLanguage.value)
+    return fonts as TemplateFont[]
+  }
+
+  /**
+   * Processes template colors from various formats
+   */
+  const normalizeTemplateColors = (colors: any): TemplateColor[] => {
+    if (!colors || !Array.isArray(colors)) return []
+    return colors as TemplateColor[]
+  }
+
+  /**
+   * Computed property that processes template fonts for a specific language
+   * Uses intelligent caching to avoid repeated processing of font mappings
+   * Maps fonts by type (primary, secondary, accent, decorative) with fallbacks
+   */
+  const getLanguageFonts = (fonts: TemplateFont[], currentLanguage: string) => {
+    const cacheKey = `${currentLanguage}-v${fontProcessingVersion.value}`
     
-    // Create font type mapping
+    // Return cached result if available
+    if (languageFontsCache.value.has(cacheKey)) {
+      return languageFontsCache.value.get(cacheKey)
+    }
+    
+    // Process fonts for current language
+    const langFonts = fonts.filter(f => f.language === currentLanguage)
+    
     const fontTypeMap = {
       primary: null as TemplateFont | null,
       secondary: null as TemplateFont | null,
@@ -67,7 +93,7 @@ export function useTemplateProcessor(
       decorative: null as TemplateFont | null
     }
     
-    // First pass: Use new font_type field if available (most efficient)
+    // First pass: Use font_type field if available
     for (const font of langFonts) {
       if (font.font_type) {
         const type = font.font_type.toLowerCase() as keyof typeof fontTypeMap
@@ -78,11 +104,11 @@ export function useTemplateProcessor(
     }
     
     // Second pass: Backward compatibility with name-based detection
-    const remainingFonts = langFonts.filter((font: TemplateFont) => {
+    const remainingFonts = langFonts.filter(font => {
       return !font.font_type || !Object.values(fontTypeMap).includes(font)
     })
     
-    // Optimized sorting with pre-compiled patterns
+    // Font type priority patterns
     const sortPatterns = [
       { pattern: 'primary', priority: 1 },
       { pattern: 'secondary', priority: 2 },
@@ -90,7 +116,7 @@ export function useTemplateProcessor(
       { pattern: 'decorative', priority: 4 }
     ]
     
-    const sortedFonts = remainingFonts.sort((a: TemplateFont, b: TemplateFont) => {
+    const sortedFonts = remainingFonts.sort((a, b) => {
       const aName = (a.font_name || '').toLowerCase()
       const bName = (b.font_name || '').toLowerCase()
       
@@ -120,124 +146,139 @@ export function useTemplateProcessor(
     fontTypeMap.accent = fontTypeMap.accent || fontTypeMap.primary
     fontTypeMap.decorative = fontTypeMap.decorative || fontTypeMap.secondary || fontTypeMap.primary
     
-    // Cache the result for subsequent accesses
-    languageFontsCache.set(cacheKey, fontTypeMap)
-    
-    return fontTypeMap
-  })
-
-  /**
-   * Helper function to get font name with backward compatibility
-   */
-  const getFontName = (font: TemplateFont | null): string => {
-    if (!font) return ''
-    
-    // New format: nested font object
-    if (font.font?.font_file) {
-      return font.font.name || ''
-    }
-    // Legacy format: direct font_file
-    return font.font_name || ''
+    // Cache result
+    languageFontsCache.value.set(cacheKey, fontTypeMap)
+    return fontTypeMap as Record<string, TemplateFont | null>
   }
 
   /**
-   * Helper function to get font file path
+   * Creates font CSS declarations with fallbacks
    */
-  const getFontFile = (font: TemplateFont | null): string => {
-    if (!font) return ''
+  const createFontDeclaration = (
+    font: TemplateFont | null, 
+    fallbackStack: string,
+    fontsLoaded: boolean
+  ): string => {
+    if (!font || !fontsLoaded) return fallbackStack
     
-    // New format: nested font object
-    if (font.font?.font_file) {
-      return font.font.font_file
+    const customName = getFontName(font)
+    if (customName) {
+      return `"${customName}", ${fallbackStack}`
     }
-    // Fallback to legacy font_file
-    return font.font_file || ''
+    
+    return fallbackStack
   }
 
-  // Template color processing
-  const primaryColor = computed(() => {
-    const colors = templateColors.value || []
-    const color = colors[0]
-    return color?.hex_color_code || color?.hex_code || '#3B82F6'
-  })
-
-  const secondaryColor = computed(() => {
-    const colors = templateColors.value || []
-    const color = colors[1]
-    return color?.hex_color_code || color?.hex_code || null
-  })
-
-  const accentColor = computed(() => {
-    const colors = templateColors.value || []
-    const color = colors[2]
-    return color?.hex_color_code || color?.hex_code || primaryColor.value
-  })
-
-  // Font computeds with intelligent fallbacks
-  const primaryFont = computed(() => {
-    const font = getLanguageFonts.value.primary
-    const customName = getFontName(font)
+  /**
+   * Extracts template colors with proper fallbacks
+   */
+  const extractTemplateColors = (templateColors: TemplateColor[]) => {
+    const primaryColor = templateColors?.[0]?.hex_color_code || templateColors?.[0]?.hex_code || '#3B82F6'
+    const secondaryColor = templateColors?.[1]?.hex_color_code || templateColors?.[1]?.hex_code || null
+    const accentColor = templateColors?.[2]?.hex_color_code || templateColors?.[2]?.hex_code || primaryColor
     
-    if (customName) {
-      return `"${customName}", ${getFallbackFontStack('sans-serif')}`
+    return {
+      primaryColor,
+      secondaryColor,
+      accentColor
+    }
+  }
+
+  /**
+   * Extracts template assets with URL resolution
+   */
+  const extractTemplateAssets = (templateAssets?: TemplateAssets) => {
+    if (!templateAssets?.assets) return null
+    
+    const assets = templateAssets.assets
+    
+    return {
+      openEnvelopeButton: assets.open_envelope_button ? getMediaUrl(assets.open_envelope_button) : null,
+      basicDecorationPhoto: assets.basic_decoration_photo ? getMediaUrl(assets.basic_decoration_photo) : null,
+      basicBackgroundPhoto: assets.basic_background_photo ? getMediaUrl(assets.basic_background_photo) : null,
+      standardCoverVideo: assets.standard_cover_video ? getMediaUrl(assets.standard_cover_video) : null,
+      standardBackgroundVideo: assets.standard_background_video ? getMediaUrl(assets.standard_background_video) : null
+    }
+  }
+
+  /**
+   * Processes SVG icons with template color replacement
+   * Used for agenda items and other UI elements
+   */
+  const processSVGWithColors = (svgCode: string, colors: { primary: string; secondary?: string; accent: string }): string => {
+    if (!svgCode) return ''
+    
+    // Replace common color placeholders with template colors
+    let processedSVG = svgCode
+      .replace(/fill="currentColor"/g, `fill="${colors.primary}"`)
+      .replace(/stroke="currentColor"/g, `stroke="${colors.primary}"`)
+      .replace(/fill="#000"/g, `fill="${colors.primary}"`)
+      .replace(/fill="#000000"/g, `fill="${colors.primary}"`)
+      .replace(/stroke="#000"/g, `stroke="${colors.primary}"`)
+      .replace(/stroke="#000000"/g, `stroke="${colors.primary}"`)
+    
+    // Replace accent colors if secondary color is available
+    if (colors.secondary) {
+      processedSVG = processedSVG
+        .replace(/fill="#666"/g, `fill="${colors.secondary}"`)
+        .replace(/fill="#666666"/g, `fill="${colors.secondary}"`)
+        .replace(/stroke="#666"/g, `stroke="${colors.secondary}"`)
+        .replace(/stroke="#666666"/g, `stroke="${colors.secondary}"`)
     }
     
-    return getFallbackFontStack('sans-serif')
-  })
+    return processedSVG
+  }
 
-  const secondaryFont = computed(() => {
-    const font = getLanguageFonts.value.secondary
-    const customName = getFontName(font)
-    
-    if (customName) {
-      return `"${customName}", ${getFallbackFontStack('sans-serif')}`
-    }
-    
-    return primaryFont.value
-  })
+  /**
+   * Invalidate font processing cache (useful when language changes)
+   */
+  const invalidateFontCache = (): void => {
+    fontProcessingVersion.value++
+    languageFontsCache.value.clear()
+  }
 
-  const accentFont = computed(() => {
-    const font = getLanguageFonts.value.accent
-    const customName = getFontName(font)
-    
-    if (customName) {
-      return `"${customName}", ${getFallbackFontStack('decorative')}`
+  /**
+   * Get template processing statistics
+   */
+  const getProcessingStats = () => {
+    return {
+      cacheSize: languageFontsCache.value.size,
+      cacheVersion: fontProcessingVersion.value
     }
-    
-    return primaryFont.value
-  })
+  }
 
-  const decorativeFont = computed(() => {
-    const font = getLanguageFonts.value.decorative
-    const customName = getFontName(font)
-    
-    if (customName) {
-      return `"${customName}", ${getFallbackFontStack('decorative')}`
-    }
-    
-    return accentFont.value
-  })
+  /**
+   * Clear all processing caches
+   */
+  const clearCaches = (): void => {
+    languageFontsCache.value.clear()
+  }
 
   return {
     // Font processing
-    getLanguageFonts,
     getFontName,
     getFontFile,
-    getFallbackFontStack,
+    getLanguageFonts,
+    createFontDeclaration,
+    normalizeTemplateFonts,
     
-    // Template colors
-    primaryColor,
-    secondaryColor,
-    accentColor,
+    // Color processing
+    normalizeTemplateColors,
+    extractTemplateColors,
     
-    // Template fonts
-    primaryFont,
-    secondaryFont,
-    accentFont,
-    decorativeFont,
+    // Asset processing
+    extractTemplateAssets,
+    getMediaUrl,
+    
+    // SVG processing
+    processSVGWithColors,
     
     // Cache management
-    clearCache: () => languageFontsCache.clear(),
-    getCacheStats: () => languageFontsCache.stats()
+    invalidateFontCache,
+    getProcessingStats,
+    clearCaches,
+    
+    // State (readonly)
+    fontProcessingVersion: computed(() => fontProcessingVersion.value)
   }
 }

@@ -145,7 +145,10 @@
       "Read(/C:\\Users\\narit\\Code\\GoEvent-Frontend-main/**)",
       "Read(/C:\\Users\\narit\\Code\\GoEvent-Frontend-main\\src\\views/**)",
       "Read(/C:\\Users\\narit\\Code\\GoEvent-Frontend-main\\src\\composables/**)",
-      "Read(/C:\\Users\\narit\\Code\\GoEvent-Frontend-main\\src\\views/**)"
+      "Read(/C:\\Users\\narit\\Code\\GoEvent-Frontend-main\\src\\views/**)",
+      "Bash(git clean:*)",
+      "Bash(npx tsc:*)",
+      "Read(C:\\/**)"
     ],
     "deny": [],
     "additionalDirectories": [

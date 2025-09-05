@@ -161,6 +161,7 @@ const {
   changeLanguage,
   toggleMusic,
   handleCoverStageReady,
+  setStage,
   // Redirect State Management
   shouldSkipToMainContent,
   markMainContentSeen,
@@ -188,7 +189,7 @@ const registerForEvent = () => {
 
 const handleLoginRedirect = () => {
   // The redirect logic is now handled by the composable
-  handleLoginRedirectWithStage()
+  handleLoginRedirectWithStage(setStage)
 }
 
 const handleCommentSubmitted = () => {
