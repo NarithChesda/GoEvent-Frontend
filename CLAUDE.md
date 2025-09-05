@@ -266,3 +266,4 @@ Event Showcase pages use a sophisticated 3-stage loading system:
 - Check for existing libraries/utilities before adding new dependencies
 - Use the card-based design system for UI components
 - Implement proper permission checks for restricted functionality
+- "Always use Tailwind CSS for styling"

@@ -25,6 +25,7 @@
     >
       <!-- Single Stage: Cover with Sequential Videos and MainContent Overlay -->
       <CoverStage
+        ref="coverStageRef"
         :template-assets="templateAssets"
         :guest-name="guestName"
         :event-title="event.title"
@@ -43,12 +44,11 @@
         :should-skip-to-main-content="shouldSkipToMainContent"
         :video-state-preserved="videoStatePreserved"
         :get-media-url="getMediaUrl"
-        @open-envelope="openEnvelope"
+        @open-envelope="openEnvelopeWithVideoSync"
         @cover-stage-ready="handleCoverStageReady"
         @event-video-preloaded="() => {}"
         @event-video-ready="() => {}"
         @sequential-video-ended="onEventVideoEnded"
-        @play-event-video="onVideoCanPlay"
       >
         <!-- MainContent slot content for background video stage -->
         <template #main-content>
@@ -101,7 +101,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch, provide, nextTick } from 'vue'
+import { onMounted, onUnmounted, watch, provide, nextTick, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -177,6 +177,9 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
+// CoverStage component ref
+const coverStageRef = ref<InstanceType<typeof CoverStage> | null>(null)
+
 // View-specific reactive state - removed unused refs for performance
 
 // View-specific methods
@@ -196,6 +199,17 @@ const handleCommentSubmitted = () => {
   // Comment submission is handled by the child component
   // Mark that main content has been seen when user interacts with comments
   markMainContentSeen()
+}
+
+// Override the openEnvelope function to include video synchronization
+const openEnvelopeWithVideoSync = async () => {
+  // First call the original openEnvelope function which handles music
+  await openEnvelope()
+  
+  // Then trigger the video playback to synchronize with the music
+  if (coverStageRef.value) {
+    coverStageRef.value.startEventVideo()
+  }
 }
 
 const handleMainContentViewed = () => {
