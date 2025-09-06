@@ -147,6 +147,7 @@ const {
   isEventPast,
   eventVideoUrl,
   backgroundVideoUrl,
+  eventMusicUrl,
   availableLanguages,
   // Methods
   loadShowcase,
@@ -204,9 +205,10 @@ const handleCommentSubmitted = () => {
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
   // First call the original openEnvelope function which handles music
-  await openEnvelope()
+  // Pass the required parameters for music to work
+  await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
   
-  // Then trigger the video playback to synchronize with the music
+  // Then trigger the video playbook to synchronize with the music
   if (coverStageRef.value) {
     coverStageRef.value.startEventVideo()
   }
