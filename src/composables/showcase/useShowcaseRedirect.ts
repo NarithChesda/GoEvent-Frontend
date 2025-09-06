@@ -142,17 +142,16 @@ export function useShowcaseRedirect(route: RouteLocationNormalizedLoaded) {
     // Wait for route to be fully loaded
     await nextTick()
     
-    // If user refreshes page or accesses directly, always start with cover stage
-    if (isPageRefresh()) {
-      return 'cover'
-    }
-
-    // If user has redirect indicators and has seen main content before, skip to main content
-    if (shouldSkipToMainContent.value) {
+    // Check redirect indicators first to handle language changes
+    const redirectIndicators = getRedirectIndicators()
+    
+    // If user has redirect indicators (including language changes) and has seen main content before, skip to main content
+    if (redirectIndicators.hasAny && hasSeenMainContent.value) {
       return 'main_content'
-    } else {
-      return 'cover'
     }
+    
+    // If user refreshes page or accesses directly without redirect indicators, start with cover stage
+    return 'cover'
   }
 
   /**

@@ -221,7 +221,7 @@ const handleLogout = async () => {
   // Remove hash to prevent auto-redirect on re-login
   if (window.location.hash) {
     const urlWithoutHash = window.location.href.split('#')[0]
-    window.history.replaceState(null, '', urlWithoutHash)
+    window.history.replaceState(window.history.state, '', urlWithoutHash)
   }
   
   await authStore.logout()

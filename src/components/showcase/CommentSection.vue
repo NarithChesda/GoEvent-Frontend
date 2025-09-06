@@ -1028,7 +1028,7 @@ const checkForCommentRedirect = () => {
       const url = new URL(window.location.href)
       url.hash = ''
       url.searchParams.delete('scrollTo')
-      window.history.replaceState(null, '', url.toString())
+      window.history.replaceState(window.history.state, '', url.toString())
     }, 200)
   }
 }
