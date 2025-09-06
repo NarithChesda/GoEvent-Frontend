@@ -207,31 +207,6 @@
         </div>
       </div>
 
-      <!-- Statistics -->
-      <div class="mt-6 pt-4 border-t border-gray-200">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-          <div>
-            <div class="text-2xl font-bold text-slate-900">{{ paymentMethods.length }}</div>
-            <div class="text-sm text-slate-600">Total Methods</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-green-600">{{ activePaymentMethods.length }}</div>
-            <div class="text-sm text-slate-600">Active</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-blue-600">{{ bankTransferCount }}</div>
-            <div class="text-sm text-slate-600">Bank Accounts</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-purple-600">{{ qrCodeCount }}</div>
-            <div class="text-sm text-slate-600">With QR Code</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-orange-600">{{ paymentUrlCount }}</div>
-            <div class="text-sm text-slate-600">With Online Link</div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Modals -->
@@ -335,28 +310,6 @@ const dragOverIndex = ref<number | null>(null)
 const draggedPaymentMethod = ref<EventPaymentMethod | null>(null)
 const draggedIndex = ref<number | null>(null)
 
-// Computed properties
-const activePaymentMethods = computed(() => 
-  paymentMethods.value.filter(pm => pm.is_active)
-)
-
-const bankTransferCount = computed(() =>
-  paymentMethods.value.filter(pm => pm.payment_method === 'bank_transfer').length
-)
-
-const qrCodeCount = computed(() =>
-  paymentMethods.value.filter(pm => 
-    pm.payment_method === 'qr_code' || 
-    (pm.payment_method === 'bank_transfer' && pm.qr_code_image)
-  ).length
-)
-
-const paymentUrlCount = computed(() =>
-  paymentMethods.value.filter(pm => 
-    pm.payment_method === 'payment_url' || 
-    (pm.payment_method === 'bank_transfer' && pm.payment_url)
-  ).length
-)
 
 // Helper methods
 const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
