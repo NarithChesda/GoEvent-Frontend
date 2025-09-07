@@ -133,6 +133,17 @@ export function useCoverStageVideo(
     if (currentVideoPhase.value === 'event') {
       // Event video ended, switch to background video if available
       isEventVideoComplete.value = true
+      
+      // Hide the event video that just ended (could be preloader or sequential container)
+      if (videoRefs.eventVideoPreloader.value) {
+        videoRefs.eventVideoPreloader.value.style.opacity = '0'
+        videoRefs.eventVideoPreloader.value.style.zIndex = '-15'
+      }
+      if (videoRefs.sequentialVideoContainer.value) {
+        videoRefs.sequentialVideoContainer.value.style.opacity = '0'
+        videoRefs.sequentialVideoContainer.value.style.zIndex = '-10'
+      }
+      
       if (props.backgroundVideoUrl) {
         playBackgroundVideo()
       } else {
@@ -150,19 +161,35 @@ export function useCoverStageVideo(
   }
 
   const playEventVideo = () => {
-    if (!videoRefs.sequentialVideoContainer.value || !props.eventVideoUrl) return
+    if (!props.eventVideoUrl) return
     
     // Stop cover video
     isCoverVideoPlaying.value = false
     
     currentVideoPhase.value = 'event'
-    videoRefs.sequentialVideoContainer.value.src = props.eventVideoUrl
-    videoRefs.sequentialVideoContainer.value.style.opacity = '1'
-    videoRefs.sequentialVideoContainer.value.style.zIndex = '20'
-    videoRefs.sequentialVideoContainer.value.muted = false // Unmute for event video
-    videoRefs.sequentialVideoContainer.value.loop = false // Don't loop event video
     
-    videoRefs.sequentialVideoContainer.value.play().catch(() => {
+    // Use preloaded event video if available, otherwise fallback to sequential container
+    const videoToUse = videoRefs.eventVideoPreloader.value || videoRefs.sequentialVideoContainer.value
+    if (!videoToUse) return
+    
+    // If using the preloaded video, we don't need to set src again
+    if (videoToUse === videoRefs.eventVideoPreloader.value) {
+      // Use the preloaded video directly - no need to set src again
+      videoToUse.style.opacity = '1'
+      videoToUse.style.zIndex = '20'
+      videoToUse.style.pointerEvents = 'none'
+      videoToUse.muted = false // Unmute for event video
+      videoToUse.loop = false // Don't loop event video
+    } else {
+      // Fallback to sequential container if preloader not available
+      videoToUse.src = props.eventVideoUrl
+      videoToUse.style.opacity = '1'
+      videoToUse.style.zIndex = '20'
+      videoToUse.muted = false // Unmute for event video
+      videoToUse.loop = false // Don't loop event video
+    }
+    
+    videoToUse.play().catch(() => {
       handleSequentialVideoEnded()
     })
     
@@ -179,10 +206,14 @@ export function useCoverStageVideo(
     // Mark event video as complete
     isEventVideoComplete.value = true
     
-    // Hide the event video (sequential container)
+    // Hide the event video (sequential container and event preloader)
     if (videoRefs.sequentialVideoContainer.value) {
       videoRefs.sequentialVideoContainer.value.style.opacity = '0'
       videoRefs.sequentialVideoContainer.value.style.zIndex = '-10'
+    }
+    if (videoRefs.eventVideoPreloader.value) {
+      videoRefs.eventVideoPreloader.value.style.opacity = '0'
+      videoRefs.eventVideoPreloader.value.style.zIndex = '-15'
     }
     
     // Show and play the background video
@@ -193,9 +224,10 @@ export function useCoverStageVideo(
       shouldLoadBackgroundVideo.value = true
     }
     
-    // Wait for background video element to be available with proper timing
+    // Use preloaded background video directly - it should already be loaded and ready
     const tryPlayBackgroundVideo = (attempt = 1) => {
       if (videoRefs.backgroundVideoElement.value) {
+        // Background video should already be preloaded, no need to set src again
         videoRefs.backgroundVideoElement.value.style.opacity = '1'
         videoRefs.backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
         
@@ -385,6 +417,7 @@ export function useCoverStageVideo(
     if (newVideo) {
       addVideoEventListener(newVideo, 'loadeddata', handleEventVideoPreloaded)
       addVideoEventListener(newVideo, 'canplaythrough', handleEventVideoReady)
+      addVideoEventListener(newVideo, 'ended', handleSequentialVideoEnded)
       
       // Add error handler for memory cleanup
       const errorHandler = () => {
