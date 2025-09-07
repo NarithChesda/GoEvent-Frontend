@@ -120,6 +120,7 @@
                   :event-end-date="event.end_date"
                   :primary-color="primaryColor"
                   :secondary-color="secondaryColor"
+                  @show-auth-modal="$emit('showAuthModal')"
                   :accent-color="accentColor"
                   :is-event-past="isEventPast"
                   :event-texts="eventTexts"
@@ -538,6 +539,7 @@ const emit = defineEmits<{
   musicToggle: []
   logout: []
   mainContentViewed: []
+  showAuthModal: []
 }>()
 
 // Animation setup

@@ -514,6 +514,7 @@ import {
   getPersonUnit,
   type SupportedLanguage
 } from '../../utils/translations'
+import { useAuthModal } from '../../composables/useAuthModal'
 
 interface Props {
   eventId: string
@@ -532,10 +533,18 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Emit for auth modal control
+const emit = defineEmits<{
+  showAuthModal: []
+}>()
+
 // Router and Auth
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+
+// Auth modal composable
+const { withAuth } = useAuthModal()
 
 // State
 const rsvpStatus = ref<'coming' | 'not_coming' | null>(null)
@@ -948,22 +957,25 @@ const updateCountdown = () => {
 }
 
 const handleSignInClick = () => {
-  // Store the current route with hash for RSVP section
-  // Remove any existing hash first, then add the desired hash
-  const currentPathWithoutHash = route.fullPath.split('#')[0]
-  const currentPath = currentPathWithoutHash + '#rsvp'
-
-  // Navigate to sign-in with redirect parameter
-  router.push({
-    path: '/signin',
-    query: { redirect: currentPath }
-  })
+  // Emit event to show auth modal instead of redirecting
+  emit('showAuthModal')
+  
+  // Optionally, you can use withAuth if you want to perform an action after authentication
+  // withAuth(() => {
+  //   // This code will run after successful authentication
+  //   console.log('User authenticated, can now RSVP')
+  // })
 }
 
 const setRSVPStatus = async (status: 'coming' | 'not_coming') => {
-  // Check authentication for "attending" status (fallback, should not be needed with new UI)
+  // Check authentication for "attending" status
   if (status === 'coming' && !authStore.isAuthenticated) {
-    handleSignInClick()
+    // Use withAuth to handle authentication and then submit RSVP
+    withAuth(async () => {
+      await submitRSVP(status)
+    })
+    // Also emit to show modal
+    emit('showAuthModal')
     return
   }
 

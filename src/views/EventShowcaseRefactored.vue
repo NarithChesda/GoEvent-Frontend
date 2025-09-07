@@ -81,9 +81,17 @@
             @music-toggle="toggleMusic"
             @logout="handleLogout"
             @main-content-viewed="handleMainContentViewed"
+            @show-auth-modal="openAuthModal"
           />
         </template>
       </CoverStage>
+
+      <!-- Auth Modal -->
+      <AuthModal
+        :is-visible="showAuthModal"
+        @close="onAuthModalClose"
+        @authenticated="onUserAuthenticated"
+      />
 
       <!-- Photo Modal -->
       <PhotoModal
@@ -114,6 +122,8 @@ import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
+import AuthModal from '../components/AuthModal.vue'
+import { useAuthModal } from '../composables/useAuthModal'
 
 // Router and stores
 const router = useRouter()
@@ -180,6 +190,9 @@ provide('videoResourceManager', videoResourceManager)
 
 // CoverStage component ref
 const coverStageRef = ref<InstanceType<typeof CoverStage> | null>(null)
+
+// Auth modal state and handlers
+const { showAuthModal, openAuthModal, onAuthModalClose, onUserAuthenticated } = useAuthModal()
 
 // View-specific reactive state - removed unused refs for performance
 
