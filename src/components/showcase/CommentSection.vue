@@ -314,6 +314,13 @@
     @confirm="handleDeleteConfirm"
     @cancel="handleDeleteCancel"
   />
+
+  <!-- Authentication Modal -->
+  <AuthModal
+    :is-visible="showAuthModal"
+    @close="onAuthModalClose"
+    @authenticated="handleUserAuthenticated"
+  />
 </template>
 
 <script setup lang="ts">
@@ -323,12 +330,14 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
+import AuthModal from '../AuthModal.vue'
 import {
   translateRSVP,
   type SupportedLanguage
 } from '../../utils/translations'
 import { useStaggerAnimation, useEntranceAnimation } from '../../composables/useAdvancedAnimations'
 import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
+import { useAuthModal } from '../../composables/useAuthModal'
 import { sanitizeComment, sanitizePlainText, validateAndSanitize, containsSuspiciousContent, type ValidationResult } from '../../utils/sanitize'
 
 interface EventText {
@@ -466,6 +475,23 @@ const commentToDeleteName = ref<string>('')
 // Avatar error tracking
 const avatarErrors = ref<Set<number>>(new Set())
 
+// Auth modal using composable
+const {
+  showAuthModal,
+  openAuthModal,
+  onAuthModalClose,
+  onUserAuthenticated: handleUserAuthenticated,
+  withAuth
+} = useAuthModal({
+  onAuthenticated: () => {
+    // User successfully authenticated via modal
+    // Trigger scroll and highlight animation for comment form
+    nextTick(() => {
+      scrollToCommentSection()
+    })
+  }
+})
+
 // Computed
 const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments.value)
 
@@ -516,19 +542,8 @@ const isUserAuthenticated = computed(() => {
 
 // Methods
 const handleSignInClick = () => {
-  // Store the current route with hash for comment section
-  // Remove any existing hash first, then add the desired hash
-  const currentPathWithoutHash = route.fullPath.split('#')[0]
-  const currentPath = currentPathWithoutHash + '#comment-section'
-
-  // Navigate to sign-in with redirect parameter
-  router.push({
-    path: '/signin',
-    query: {
-      redirect: currentPath,
-      scrollTo: 'comment-section' // Extra parameter to ensure we scroll to comments
-    }
-  })
+  // Open the authentication modal using composable
+  openAuthModal()
 }
 
 const getCommentDisplayName = (comment: EventComment): string => {
@@ -785,7 +800,7 @@ const submitComment = async () => {
 
   // Double-check authentication
   if (!authStore.isAuthenticated) {
-    handleSignInClick()
+    openAuthModal()
     return
   }
 
