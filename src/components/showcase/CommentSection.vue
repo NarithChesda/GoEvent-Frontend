@@ -315,12 +315,14 @@
     @cancel="handleDeleteCancel"
   />
 
-  <!-- Authentication Modal -->
-  <AuthModal
-    :is-visible="showAuthModal"
-    @close="onAuthModalClose"
-    @authenticated="handleUserAuthenticated"
-  />
+  <!-- Authentication Modal (Teleported to body for proper full-screen backdrop) -->
+  <Teleport to="body">
+    <AuthModal
+      :is-visible="showAuthModal"
+      @close="onAuthModalClose"
+      @authenticated="handleUserAuthenticated"
+    />
+  </Teleport>
 </template>
 
 <script setup lang="ts">
