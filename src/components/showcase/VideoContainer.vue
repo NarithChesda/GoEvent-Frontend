@@ -35,6 +35,7 @@
       v-if="backgroundVideoUrl && shouldLoadBackgroundVideo"
       ref="backgroundVideoElement"
       :src="getMediaUrl(backgroundVideoUrl)"
+      autoplay
       muted
       loop
       playsinline
@@ -45,6 +46,7 @@
       :data-event-id="eventDataId"
       @loadeddata="$emit('backgroundVideoPreloaded')"
       @canplaythrough="$emit('backgroundVideoReady')"
+      @playing="handleBackgroundVideoPlaying"
     />
     
     <!-- Standard Cover Video Loop - Only show when not in event/background phase -->
@@ -118,6 +120,15 @@ const coverVideoElement = ref<HTMLVideoElement | null>(null)
 const eventDataId = computed(() => 
   props.eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'
 )
+
+// Handle background video playing event to ensure visibility
+const handleBackgroundVideoPlaying = () => {
+  if (backgroundVideoElement.value) {
+    // Ensure the video is visible when it starts playing
+    backgroundVideoElement.value.style.opacity = '1'
+    backgroundVideoElement.value.style.zIndex = '-1'
+  }
+}
 
 // Expose refs to parent component
 defineExpose({

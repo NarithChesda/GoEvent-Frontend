@@ -227,12 +227,25 @@ export function useCoverStageVideo(
     // Use preloaded background video directly - it should already be loaded and ready
     const tryPlayBackgroundVideo = (attempt = 1) => {
       if (videoRefs.backgroundVideoElement.value) {
+        // Check if video is already playing (autoplay might have worked)
+        if (!videoRefs.backgroundVideoElement.value.paused) {
+          // Video is already playing via autoplay, just ensure visibility
+          videoRefs.backgroundVideoElement.value.style.opacity = '1'
+          videoRefs.backgroundVideoElement.value.style.zIndex = '-1'
+          emit('sequentialVideoEnded')
+          return
+        }
+        
         // Background video should already be preloaded, no need to set src again
         videoRefs.backgroundVideoElement.value.style.opacity = '1'
         videoRefs.backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
         
+        // Try to play programmatically as fallback
         videoRefs.backgroundVideoElement.value.play().catch((error) => {
           console.warn('Background video play failed:', error)
+          // Even if play fails, show the video element (first frame will be visible)
+          videoRefs.backgroundVideoElement.value!.style.opacity = '1'
+          videoRefs.backgroundVideoElement.value!.style.zIndex = '-1'
           emit('sequentialVideoEnded')
         })
       } else if (attempt <= 5) {
