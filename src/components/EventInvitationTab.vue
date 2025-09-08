@@ -218,7 +218,7 @@
                     <button
                       @click="copyShowcaseLink(guest)"
                       class="text-purple-600 hover:text-purple-700 relative group"
-                      :title="`Copy link: ${getGuestShowcaseUrl(guest)}`"
+                      :title="`Copy sharing link for ${guest.name}`"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -342,6 +342,7 @@ import {
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
+import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import SocialMediaPreview from './SocialMediaPreview.vue'
 
 // Props
@@ -540,19 +541,20 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const getShowcaseUrl = (showcaseLink: string) => {
-  const baseUrl = window.location.origin
-  return `${baseUrl}${showcaseLink}`
+const getGuestShowcaseUrl = (guest: EventGuest) => {
+  // Use SSR meta URL for personalized guest invitations
+  return getGuestSSRMetaUrl(props.eventId, guest.name, 'kh')
 }
 
-const getGuestShowcaseUrl = (guest: EventGuest) => {
-  // Construct showcase URL with guest name and Khmer language
+const getDirectGuestShowcaseUrl = (guest: EventGuest) => {
+  // Direct URL for opening in browser (non-SSR)
   const showcaseUrl = `/events/${props.eventId}/showcase?guest_name=${encodeURIComponent(guest.name)}&lang=kh`
   return `${window.location.origin}${showcaseUrl}`
 }
 
 const viewGuestShowcase = (guest: EventGuest) => {
-  const fullUrl = getGuestShowcaseUrl(guest)
+  // Use direct URL for viewing (non-SSR) so it opens immediately
+  const fullUrl = getDirectGuestShowcaseUrl(guest)
   window.open(fullUrl, '_blank')
 }
 

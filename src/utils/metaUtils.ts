@@ -198,3 +198,36 @@ export const debugMetaTags = () => {
     }
   }
 }
+
+// SSR Meta URL utilities for social media sharing
+export const getSSRMetaUrl = (eventId: string, options?: {
+  guestName?: string
+  language?: string
+}): string => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  const baseUrl = `${API_BASE_URL}/api/events/${eventId}/meta/`
+  
+  if (!options?.guestName && !options?.language) {
+    return baseUrl
+  }
+  
+  const params = new URLSearchParams()
+  if (options.guestName) {
+    params.append('guest_name', options.guestName)
+  }
+  if (options.language) {
+    params.append('lang', options.language)
+  }
+  
+  return `${baseUrl}?${params.toString()}`
+}
+
+// Generate personalized SSR meta URL for guest invitations
+export const getGuestSSRMetaUrl = (eventId: string, guestName: string, language = 'en'): string => {
+  return getSSRMetaUrl(eventId, { guestName, language })
+}
+
+// Generate general SSR meta URL for public sharing
+export const getPublicSSRMetaUrl = (eventId: string, language = 'en'): string => {
+  return getSSRMetaUrl(eventId, { language })
+}

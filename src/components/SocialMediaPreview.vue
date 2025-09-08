@@ -26,7 +26,8 @@
 
       <!-- Showcase URL Display -->
       <div class="space-y-2">
-        <label class="block text-sm font-medium text-slate-700">Event Showcase URL</label>
+        <label class="block text-sm font-medium text-slate-700">Social Media Sharing URL</label>
+        <p class="text-xs text-slate-500 mb-2">This URL is optimized for social media previews and will redirect to your showcase page</p>
         <div class="flex space-x-2">
           <input
             :value="showcaseUrl"
@@ -199,7 +200,7 @@
       <!-- Action Buttons -->
       <div class="flex flex-col sm:flex-row gap-3">
         <a
-          :href="showcaseUrl"
+          :href="directShowcaseUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-500/25 flex items-center justify-center space-x-2"
@@ -235,7 +236,7 @@ import {
   TestTube
 } from 'lucide-vue-next'
 import type { Event } from '../services/api'
-import { createEventDescription } from '../utils/metaUtils'
+import { createEventDescription, getPublicSSRMetaUrl } from '../utils/metaUtils'
 
 interface Props {
   eventData?: Event
@@ -258,6 +259,12 @@ const platforms = [
 // Computed properties
 const showcaseUrl = computed(() => {
   if (!props.eventData?.id) return ''
+  // Use SSR meta URL for social media sharing
+  return getPublicSSRMetaUrl(props.eventData.id, 'en')
+})
+
+const directShowcaseUrl = computed(() => {
+  if (!props.eventData?.id) return ''
   const baseUrl = window.location.origin
   return `${baseUrl}/events/${props.eventData.id}/showcase`
 })
@@ -275,7 +282,7 @@ const metaTitle = computed(() => {
 // Use the same description logic as meta tags
 const metaDescription = computed(() => {
   if (!props.eventData) return 'Event description will appear here.'
-  return createEventDescription(props.eventData as Record<string, unknown>)
+  return createEventDescription(props.eventData as unknown as Record<string, unknown>)
 })
 
 const previewImage = computed(() => {
