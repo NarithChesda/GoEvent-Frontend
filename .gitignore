@@ -32,15 +32,37 @@ coverage
 test-results/
 playwright-report/
 
-# Documentation and Design Files (excluding essential production docs)
+# Documentation and Design Files (production excludes all except README)
 *.md
 !README.md
-!CLAUDE.md
 DESIGN_GUIDE/
 docs/
 .claude/
 
-# Development and API Documentation
+# Development Configuration Files
+.env.local
+.env.development
+.env.test
+.env.*.local
+CLAUDE.md
+
+# Development Tools & Settings
+.vscode/settings.json
+.vscode/launch.json
+prettier.config.*
+eslint.config.*
+.eslintcache
+
+# Development Dependencies & Cache
+.npm
+.eslintcache
+.stylelintcache
+.parcel-cache
+.cache
+.temp
+.tmp
+
+# Development API Documentation  
 Authentication_API_Documentation.md
 event-comment-api.md
 event-guest-management.md
@@ -52,3 +74,35 @@ Event_Registration.md
 EVENT_TEMPLATE_API.md
 PAYMENT_API.md
 PRODUCTION_READINESS_REPORT.md
+SSR_META_IMPLEMENTATION.md
+
+# Development Scripts & Tools
+scripts/dev-*
+scripts/test-*
+*.dev.js
+*.test.js
+*.spec.js
+
+# Source Maps (optional for production)
+*.map
+
+# Backup Files
+*.backup
+*.bak
+*.orig
+*~
+
+# OS Generated Files
+Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Development Server Files
+.nuxt
+.next
+.out
+.vercel
+.netlify
