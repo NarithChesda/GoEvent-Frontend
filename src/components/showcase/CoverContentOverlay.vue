@@ -34,7 +34,7 @@
       </div>
 
       <!-- Invite Text Row: 8.75% -->
-      <div class="content-row-invite flex items-center justify-center animate-fadeIn animation-delay-400" style="height: 8.75%;">
+      <div v-if="guestName" class="content-row-invite flex items-center justify-center animate-fadeIn animation-delay-400" style="height: 8.75%;">
         <div class="invite-content-container flex items-center justify-center px-4 w-full" style="height: 60%;">
           <p
             class="scaled-invite-text khmer-text-fix text-center"

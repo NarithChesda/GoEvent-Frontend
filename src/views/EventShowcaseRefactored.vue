@@ -116,6 +116,9 @@ import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 
+// Meta tags utility
+import { updateMetaTags, getBestEventImage, createEventDescription, debugMetaTags } from '../utils/metaUtils'
+
 // Components
 import CoverStage from '../components/showcase/CoverStage.vue'
 import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
@@ -253,6 +256,71 @@ watch(
     }
   }
 )
+
+// Watch for event data changes to update meta tags for social media sharing
+watch(
+  () => event.value,
+  (eventData) => {
+    if (eventData && eventData.id) {
+      updateEventMetaTags(eventData)
+    }
+  },
+  { immediate: true, deep: true }
+)
+
+// Helper function to update meta tags for the current event
+const updateEventMetaTags = (eventData: any) => {
+  try {
+    const bestImage = getBestEventImage(eventData)
+    const eventDescription = createEventDescription(eventData)
+    
+    // Convert relative URLs to absolute URLs for social media
+    const getAbsoluteImageUrl = (imageUrl: string | undefined): string | undefined => {
+      if (!imageUrl) return undefined
+      
+      // If it's already a full URL, return as is
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl
+      }
+      
+      // If it's a relative URL, prepend the API base URL
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      if (imageUrl.startsWith('/')) {
+        return `${API_BASE_URL}${imageUrl}`
+      }
+      
+      // If it doesn't start with /, assume it needs /media/ prefix
+      return `${API_BASE_URL}/media/${imageUrl}`
+    }
+    
+    const absoluteImageUrl = getAbsoluteImageUrl(bestImage)
+    
+    // Format event date
+    const eventDate = eventData.start_date ? new Date(eventData.start_date).toISOString() : undefined
+    
+    // Build the current showcase URL
+    const currentUrl = window.location.href
+    
+    // Update meta tags with event information
+    updateMetaTags({
+      title: `${eventData.title} - Event Invitation`,
+      description: eventDescription,
+      image: absoluteImageUrl,
+      url: currentUrl,
+      siteName: 'GoEvent',
+      type: 'website',
+      locale: 'en_US',
+      author: eventData.organizer_details?.first_name || eventData.organizer_details?.username || 'GoEvent',
+      publishedTime: eventDate,
+      location: eventData.location || eventData.virtual_link || undefined
+    })
+    
+    // Debug current meta tags in development
+    debugMetaTags()
+  } catch (error) {
+    console.warn('Failed to update meta tags:', error)
+  }
+}
 
 // Lifecycle hooks
 onMounted(async () => {

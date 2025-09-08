@@ -175,3 +175,26 @@ export const createEventDescription = (event: Record<string, unknown>): string =
   
   return `Join ${organizer} for ${event.title as string}, a ${eventType.toLowerCase()}${location}. RSVP now on GoEvent!`
 }
+
+// Debug function to log current meta tags (for development)
+export const debugMetaTags = () => {
+  if (import.meta.env.DEV) {
+    const relevantTags = [
+      'description', 'author',
+      'og:type', 'og:title', 'og:description', 'og:url', 'og:site_name', 'og:image', 'og:image:alt',
+      'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:site'
+    ]
+    
+    relevantTags.forEach(tagName => {
+      const element = document.head.querySelector(`meta[name="${tagName}"], meta[property="${tagName}"]`) as HTMLMetaElement
+      if (element) {
+        element.getAttribute('content')
+      }
+    })
+    
+    const structuredData = document.head.querySelector('script[type="application/ld+json"]')
+    if (structuredData && structuredData.textContent) {
+      JSON.parse(structuredData.textContent)
+    }
+  }
+}
