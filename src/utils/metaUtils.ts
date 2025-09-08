@@ -205,7 +205,7 @@ export const getSSRMetaUrl = (eventId: string, options?: {
   language?: string
 }): string => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  const baseUrl = `${API_BASE_URL}/api/events/${eventId}/meta/`
+  const baseUrl = `${API_BASE_URL}/events/${eventId}/meta/`
   
   if (!options?.guestName && !options?.language) {
     return baseUrl
