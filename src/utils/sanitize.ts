@@ -94,7 +94,7 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): stri
 
   try {
     // Sanitize the content
-    let sanitized = DOMPurify.sanitize(input, config) as string
+    let sanitized = DOMPurify.sanitize(input, config) as unknown as string
 
     // Ensure we have a string (DOMPurify can return different types based on config)
     if (typeof sanitized !== 'string') {

@@ -271,7 +271,7 @@ class ApiService {
             // If JSON parsing fails on an auth request, log the error and raw response
             if (response.url.includes('/api/auth/')) {
               console.error('JSON Parse Error for Auth Response:', {
-                error: parseError.message,
+                error: (parseError as Error).message,
                 rawText: text,
                 contentType: contentType
               })
@@ -340,7 +340,7 @@ class ApiService {
       // Enhanced error logging for auth requests
       if (response.url.includes('/api/auth/')) {
         console.error('Auth API Response Parsing Error:', {
-          error: error.message,
+          error: (error as Error).message,
           url: response.url,
           status: response.status,
           contentType: contentType

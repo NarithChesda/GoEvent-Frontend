@@ -198,7 +198,7 @@ export function useErrorHandler() {
   /**
    * Debounced error handler to prevent spam
    */
-  const errorTimeouts = new Map<string, NodeJS.Timeout>()
+  const errorTimeouts = new Map<string, number>()
   
   const debouncedError = (
     error: Error | string,
@@ -242,7 +242,7 @@ export function useErrorHandler() {
         result = result.filter(e => e.recoverable === filter.recoverable)
       }
       if (filter.since) {
-        result = result.filter(e => e.timestamp >= filter.since)
+        result = result.filter(e => e.timestamp >= filter.since!)
       }
     }
 

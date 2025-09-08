@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err) {
       const errorMsg = 'Network error during login'
-      console.error('Auth Store: Login exception caught', { error: err, message: err.message })
+      console.error('Auth Store: Login exception caught', { error: err, message: (err as Error).message })
       setError(errorMsg)
       return { success: false, error: errorMsg }
     } finally {
