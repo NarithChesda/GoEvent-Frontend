@@ -8,6 +8,9 @@
       </div>
     </div>
 
+    <!-- Social Media Preview -->
+    <SocialMediaPreview :event-data="event" />
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
@@ -103,41 +106,6 @@
 
     <!-- Invitation Management Section -->
     <div v-else class="space-y-6">
-      <!-- Send Invitations Button -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 text-center">
-        <Mail class="w-12 h-12 text-blue-600 mx-auto mb-4" />
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Ready to Send Invitations</h3>
-        <p class="text-slate-600 mb-4 max-w-lg mx-auto">
-          Your event template is ready! Add guests to your list and send them beautiful digital invitations.
-        </p>
-        <p class="text-sm text-slate-500 mb-6">
-          Each guest will receive a personalized showcase link to view your event.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            @click="showAddGuestModal = true"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
-          >
-            <UserPlus class="w-5 h-5 mr-2" />
-            Add First Guest
-          </button>
-          <button
-            @click="viewEventShowcase"
-            class="bg-white/80 backdrop-blur-sm border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold py-3 px-6 rounded-xl transition-all duration-200 inline-flex items-center"
-          >
-            <ExternalLink class="w-5 h-5 mr-2" />
-            View Showcase
-          </button>
-          <button
-            @click="sendInvitations"
-            class="bg-white/80 backdrop-blur-sm border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 px-6 rounded-xl transition-all duration-200 inline-flex items-center"
-          >
-            <Send class="w-5 h-5 mr-2" />
-            Bulk Send
-          </button>
-        </div>
-      </div>
-
       <!-- Guest List Management -->
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
         <div class="flex items-center justify-between mb-6">
@@ -145,13 +113,29 @@
             <Users class="w-5 h-5 text-blue-600 mr-2" />
             Guest List
           </h3>
-          <button
-            @click="showAddGuestModal = true"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
-          >
-            <UserPlus class="w-4 h-4 mr-2" />
-            Add Guest
-          </button>
+          <div class="flex gap-2">
+            <button
+              @click="viewEventShowcase"
+              class="bg-white/80 backdrop-blur-sm border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center"
+            >
+              <ExternalLink class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">View Showcase</span>
+            </button>
+            <button
+              @click="sendInvitations"
+              class="bg-white/80 backdrop-blur-sm border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center"
+            >
+              <Send class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">Bulk Send</span>
+            </button>
+            <button
+              @click="showAddGuestModal = true"
+              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
+            >
+              <UserPlus class="w-4 h-4 mr-2" />
+              Add Guest
+            </button>
+          </div>
         </div>
 
         <!-- Search Bar -->
@@ -358,6 +342,7 @@ import {
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
+import SocialMediaPreview from './SocialMediaPreview.vue'
 
 // Props
 const props = defineProps<{
