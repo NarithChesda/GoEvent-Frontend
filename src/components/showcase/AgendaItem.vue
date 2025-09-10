@@ -1,7 +1,12 @@
 <template>
-  <div class="agenda-card p-4 flex items-center gap-4">
-    <!-- Icon Section (Left) -->
+  <div class="agenda-card p-4 flex items-center gap-4" :style="{ '--primary-color': primaryColor }">
+    <!-- Icon Section (Left) - Small dot on mobile, full icon on desktop -->
     <div class="flex-shrink-0">
+      <!-- Mobile: Small colored dot indicator -->
+      <div class="sm:hidden w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: primaryColor }"></div>
+      
+      <!-- Desktop: Full icon -->
+      <div class="hidden sm:block">
       <div
         v-if="item.icon?.svg_code"
         class="agenda-icon-large flex items-center justify-center"
@@ -11,7 +16,16 @@
         }"
         v-html="processedSvgCode"
       />
-      <Calendar v-else class="agenda-icon-large" :style="{ color: primaryColor }" />
+      <Calendar
+        v-else
+        class="agenda-icon-large agenda-fallback-icon"
+        :stroke-width="0.75"
+        :style="{
+          '--icon-color': primaryColor,
+          color: primaryColor
+        }"
+      />
+      </div>
     </div>
 
     <!-- Content Section (Right) -->
@@ -128,9 +142,32 @@ const timeText = computed(() => {
 </script>
 
 <style scoped>
-/* Horizontal Card Styling - No background */
+/* Horizontal Card Styling with mobile enhancements */
 .agenda-card {
   transition: all 0.2s ease;
+  position: relative;
+}
+
+/* Mobile: Add subtle card styling */
+@media (max-width: 639px) {
+  .agenda-card {
+    border-left: 3px solid var(--primary-color);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 0.75rem 0.75rem 0;
+    backdrop-filter: blur(8px);
+    margin-bottom: 0.75rem;
+    padding-left: 1rem;
+  }
+  
+  .agenda-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  }
 }
 
 /* Large Icon Styling - 75% bigger than original (w-10 h-10 = 2.5rem, 75% bigger = 4.375rem) */
@@ -138,6 +175,14 @@ const timeText = computed(() => {
   width: 4.375rem;
   height: 4.375rem;
   color: var(--icon-color) !important;
+}
+
+/* Mobile responsive icon sizing */
+@media (max-width: 640px) {
+  .agenda-icon-large {
+    width: 3rem;
+    height: 3rem;
+  }
 }
 
 .agenda-icon-large svg {
@@ -163,5 +208,36 @@ const timeText = computed(() => {
 .agenda-icon-large svg ellipse {
   fill: var(--icon-color) !important;
   stroke: var(--icon-color) !important;
+}
+
+/* Specific styling for fallback Calendar icon */
+.agenda-fallback-icon {
+  color: var(--icon-color) !important;
+}
+
+.agenda-fallback-icon svg {
+  color: var(--icon-color) !important;
+  fill: none !important;
+  stroke: var(--icon-color) !important;
+  stroke-width: 0.5 !important;
+}
+
+.agenda-fallback-icon svg * {
+  color: var(--icon-color) !important;
+  fill: none !important;
+  stroke: var(--icon-color) !important;
+  stroke-width: 0.5 !important;
+}
+
+.agenda-fallback-icon svg path {
+  stroke-width: 0.5 !important;
+}
+
+.agenda-fallback-icon svg line {
+  stroke-width: 0.5 !important;
+}
+
+.agenda-fallback-icon svg rect {
+  stroke-width: 0.5 !important;
 }
 </style>
