@@ -1,5 +1,5 @@
 // Translation utilities for RSVP section and other components
-export type SupportedLanguage = 'en' | 'kh' | 'fr' | 'ja' | 'ko' | 'zh-cn' | 'th' | 'vn'
+export type SupportedLanguage = 'en' | 'kh' | 'zh-cn'
 
 // RSVP Translation Dictionary
 export const rsvpTranslations: Record<SupportedLanguage, {
@@ -94,6 +94,21 @@ export const rsvpTranslations: Record<SupportedLanguage, {
   // Footer section
   footer_thank_you: string
   footer_create_invitations: string
+
+  // Floating menu section
+  floating_menu_language: string
+  floating_menu_music_on: string
+  floating_menu_music_off: string
+  floating_menu_rsvp: string
+  floating_menu_reminder: string
+  floating_menu_agenda: string
+  floating_menu_location: string
+  floating_menu_video: string
+  floating_menu_gallery: string
+  floating_menu_gift: string
+  floating_menu_comment: string
+  floating_menu_logout: string
+  floating_menu_select_language: string
 }> = {
   en: {
     // Main headers
@@ -186,7 +201,22 @@ export const rsvpTranslations: Record<SupportedLanguage, {
 
     // Footer section
     footer_thank_you: 'Thank you for celebrating with us',
-    footer_create_invitations: 'Create beautiful event invitations'
+    footer_create_invitations: 'Create beautiful event invitations',
+
+    // Floating menu section
+    floating_menu_language: 'Language',
+    floating_menu_music_on: 'Music On',
+    floating_menu_music_off: 'Music Off',
+    floating_menu_rsvp: 'RSVP',
+    floating_menu_reminder: 'Reminder',
+    floating_menu_agenda: 'Agenda',
+    floating_menu_location: 'Location',
+    floating_menu_video: 'Video',
+    floating_menu_gallery: 'Gallery',
+    floating_menu_gift: 'Gift',
+    floating_menu_comment: 'Comment',
+    floating_menu_logout: 'Logout',
+    floating_menu_select_language: 'Select Language'
   },
 
   kh: {
@@ -280,289 +310,22 @@ export const rsvpTranslations: Record<SupportedLanguage, {
 
     // Footer section
     footer_thank_you: 'អរគុណសម្រាប់ការចូលរួមអបអរសាទរជាមួយយើង',
-    footer_create_invitations: 'ងាយស្រួលពេលមានកម្មវិធី'
-  },
+    footer_create_invitations: 'ងាយស្រួលពេលមានកម្មវិធី',
 
-  fr: {
-    // Main headers
-    rsvp_header: 'Assisterez-vous à notre mariage ?',
-    invite_text: 'Vous êtes invité',
-
-    // Buttons
-    rsvp_yes_button: 'Oui, je viendrai',
-    rsvp_no_button: 'Ne peut pas venir',
-    rsvp_sign_in_button: 'Se connecter pour RSVP',
-
-    // Status indicators
-    rsvp_attending: 'Participe',
-    rsvp_cant_attend: 'Ne peut pas venir',
-
-    // Guest management
-    rsvp_additional_guests: 'Invités supplémentaires',
-    rsvp_total_attending: 'Total participants',
-    rsvp_person: 'personne',
-    rsvp_people: 'personnes',
-
-    // Date and time formats
-    date_format_long: 'EEEE d MMMM yyyy',
-    date_format_compact: 'd MMM',
-    time_format: 'HH:mm',
-
-    // Time units
-    rsvp_days: 'j',
-    rsvp_hours: 'h',
-    rsvp_minutes: 'm',
-    rsvp_seconds: 's',
-
-    // Status messages
-    rsvp_status_live: 'En direct',
-    rsvp_status_ended: 'Terminé',
-    rsvp_thank_you: 'Merci pour votre réponse',
-    rsvp_sign_in: 'Veuillez vous connecter pour confirmer votre présence',
-
-    // Loading and action states
-    rsvp_loading_status: 'Chargement de votre statut RSVP...',
-    rsvp_registering: 'Inscription...',
-    rsvp_updating: 'Mise à jour...',
-    rsvp_saving: 'Sauvegarde...',
-
-    // Guest count management
-    rsvp_unsaved_changes: 'Modifications non sauvegardées',
-    rsvp_save_now: 'Sauvegarder maintenant',
-    rsvp_auto_save: 'Sauvegarde automatique dans',
-
-    // System messages
-    rsvp_confirmation: 'Confirmation :',
-    rsvp_dismiss: 'Ignorer',
-
-    // Success messages
-    rsvp_registration_success: 'Parfait ! Vous êtes inscrit avec {count} {unit}.',
-    rsvp_unregister_success: 'Nous regrettons que vous ne puissiez pas venir. Merci de nous avoir prévenus.',
-    rsvp_guest_update_success: 'Nombre d\'invités mis à jour à {count} {unit}',
-    rsvp_thank_you_simple: 'Merci pour votre réponse.',
-
-    // Agenda section
-    agenda_header: 'Programme de l\'événement',
-    agenda_activity: 'activité',
-    agenda_activities: 'activités',
-
-    // Location section
-    location_header: 'Lieu',
-
-    // Video section
-    video_header: 'Vidéo',
-
-    // Gallery section
-    gallery_header: 'Galerie de photos',
-
-    // Comment section
-    comment_header: 'Commentaires et souhaits',
-    comment_placeholder: 'Partagez vos pensées, souhaits ou félicitations...',
-    comment_signin_prompt: 'Veuillez vous connecter pour laisser un commentaire',
-    comment_signin_button: 'Se connecter pour commenter',
-    comment_post_button: 'Publier le commentaire',
-    comment_posting_button: 'Publication...',
-    comment_no_comments: 'Soyez le premier à laisser un commentaire !',
-    comment_loading: 'Chargement des commentaires...',
-    comment_already_commented: 'Vous avez déjà laissé un commentaire pour cet événement',
-    comment_one_per_user: 'Chaque utilisateur ne peut commenter qu\'une seule fois par événement',
-    comment_you_badge: 'Vous',
-
-    // Payment section
-    payment_wedding_gift: 'Cadeau de mariage',
-    payment_birthday_gift: 'Cadeau d\'anniversaire',
-
-    // Footer section
-    footer_thank_you: 'Merci de célébrer avec nous',
-    footer_create_invitations: 'Créer de belles invitations d\'événement'
-  },
-
-  ja: {
-    // Main headers
-    rsvp_header: '結婚式にご出席いただけますか？',
-    invite_text: 'ご招待',
-
-    // Buttons
-    rsvp_yes_button: 'はい、出席します',
-    rsvp_no_button: '欠席します',
-    rsvp_sign_in_button: 'サインインしてRSVP',
-
-    // Status indicators
-    rsvp_attending: '出席',
-    rsvp_cant_attend: '欠席',
-
-    // Guest management
-    rsvp_additional_guests: '追加ゲスト',
-    rsvp_total_attending: '出席者合計',
-    rsvp_person: '名',
-    rsvp_people: '名',
-
-    // Date and time formats
-    date_format_long: 'yyyy年MMMM月d日 EEEE',
-    date_format_compact: 'M月d日',
-    time_format: 'HH:mm',
-
-    // Time units
-    rsvp_days: '日',
-    rsvp_hours: '時',
-    rsvp_minutes: '分',
-    rsvp_seconds: '秒',
-
-    // Status messages
-    rsvp_status_live: 'ライブ',
-    rsvp_status_ended: '終了',
-    rsvp_thank_you: 'ご返答ありがとうございます',
-    rsvp_sign_in: 'このイベントにRSVPするためにサインインしてください',
-
-    // Loading and action states
-    rsvp_loading_status: 'RSVPステータスを読み込み中...',
-    rsvp_registering: '登録中...',
-    rsvp_updating: '更新中...',
-    rsvp_saving: '保存中...',
-
-    // Guest count management
-    rsvp_unsaved_changes: '未保存の変更',
-    rsvp_save_now: '今すぐ保存',
-    rsvp_auto_save: '自動保存まで',
-
-    // System messages
-    rsvp_confirmation: '確認番号：',
-    rsvp_dismiss: '閉じる',
-
-    // Success messages
-    rsvp_registration_success: '素晴らしい！{count}{unit}で登録されました。',
-    rsvp_unregister_success: 'ご出席いただけず残念です。お知らせいただきありがとうございます。',
-    rsvp_guest_update_success: 'ゲスト数を{count}{unit}に更新しました',
-    rsvp_thank_you_simple: 'ご返答ありがとうございます。',
-
-    // Agenda section
-    agenda_header: 'イベントスケジュール',
-    agenda_activity: '活動',
-    agenda_activities: '活動',
-
-    // Location section
-    location_header: '場所',
-
-    // Video section
-    video_header: 'ビデオ',
-
-    // Gallery section
-    gallery_header: 'フォトギャラリー',
-
-    // Comment section
-    comment_header: 'コメントとお祖い',
-    comment_placeholder: 'ご想い、お祖い、お祐いの言葉をお寄せください...',
-    comment_signin_prompt: 'コメントを残すにはサインインしてください',
-    comment_signin_button: 'サインインしてコメント',
-    comment_post_button: 'コメントを投稿',
-    comment_posting_button: '投稿中...',
-    comment_no_comments: '最初のコメントを残しましょう！',
-    comment_loading: 'コメントを読み込み中...',
-    comment_already_commented: 'このイベントに既にコメントを残しています',
-    comment_one_per_user: '各ユーザーはイベントごとに一度だけコメントできます',
-    comment_you_badge: 'あなた',
-
-    // Payment section
-    payment_wedding_gift: '結婚祁い金',
-    payment_birthday_gift: '誕生日ギフト',
-
-    // Footer section
-    footer_thank_you: 'ご一緒にお祝いいただき、ありがとうございます',
-    footer_create_invitations: '美しいイベント招待状を作成'
-  },
-
-  ko: {
-    // Main headers
-    rsvp_header: '저희 결혼식에 참석하실 예정인가요?',
-    invite_text: '초대합니다',
-
-    // Buttons
-    rsvp_yes_button: '네, 참석하겠습니다',
-    rsvp_no_button: '참석할 수 없습니다',
-    rsvp_sign_in_button: '로그인하여 RSVP',
-
-    // Status indicators
-    rsvp_attending: '참석',
-    rsvp_cant_attend: '불참',
-
-    // Guest management
-    rsvp_additional_guests: '추가 게스트',
-    rsvp_total_attending: '총 참석자',
-    rsvp_person: '명',
-    rsvp_people: '명',
-
-    // Date and time formats
-    date_format_long: 'yyyy년 MMMM월 d일 EEEE',
-    date_format_compact: 'M월 d일',
-    time_format: 'a h:mm',
-
-    // Time units
-    rsvp_days: '일',
-    rsvp_hours: '시간',
-    rsvp_minutes: '분',
-    rsvp_seconds: '초',
-
-    // Status messages
-    rsvp_status_live: '라이브',
-    rsvp_status_ended: '종료됨',
-    rsvp_thank_you: '답변해 주셔서 감사합니다',
-    rsvp_sign_in: '이 이벤트에 RSVP하려면 로그인해 주세요',
-
-    // Loading and action states
-    rsvp_loading_status: 'RSVP 상태를 불러오는 중...',
-    rsvp_registering: '등록 중...',
-    rsvp_updating: '업데이트 중...',
-    rsvp_saving: '저장 중...',
-
-    // Guest count management
-    rsvp_unsaved_changes: '저장되지 않은 변경사항',
-    rsvp_save_now: '지금 저장',
-    rsvp_auto_save: '자동 저장까지',
-
-    // System messages
-    rsvp_confirmation: '확인번호:',
-    rsvp_dismiss: '닫기',
-
-    // Success messages
-    rsvp_registration_success: '훌륭합니다! {count}{unit}으로 등록되었습니다.',
-    rsvp_unregister_success: '참석하실 수 없어 아쉽습니다. 알려주셔서 감사합니다.',
-    rsvp_guest_update_success: '게스트 수를 {count}{unit}으로 업데이트했습니다',
-    rsvp_thank_you_simple: '답변해 주셔서 감사합니다.',
-
-    // Agenda section
-    agenda_header: '이벤트 일정',
-    agenda_activity: '활동',
-    agenda_activities: '활동',
-
-    // Location section
-    location_header: '장소',
-
-    // Video section
-    video_header: '비디오',
-
-    // Gallery section
-    gallery_header: '포토 갤러리',
-
-    // Comment section
-    comment_header: '댓글과 축하',
-    comment_placeholder: '생각, 축하, 축하 말샀을 공유해주세요...',
-    comment_signin_prompt: '댓글을 남기려면 로그인해 주세요',
-    comment_signin_button: '로그인하여 댓글 남기기',
-    comment_post_button: '댓글 게시',
-    comment_posting_button: '게시 중...',
-    comment_no_comments: '첫 번째 댓글을 남겨보세요!',
-    comment_loading: '댓글 로딩 중...',
-    comment_already_commented: '이 이벤트에 이미 댓글을 남겼습니다',
-    comment_one_per_user: '각 사용자는 이벤트당 한 번만 댓글을 남길 수 있습니다',
-    comment_you_badge: '당신',
-
-    // Payment section
-    payment_wedding_gift: '결혼 선물',
-    payment_birthday_gift: '생일 선물',
-
-    // Footer section
-    footer_thank_you: '함께 축하해 주셔서 감사합니다',
-    footer_create_invitations: '아름다운 이벤트 초대장 만들기'
+    // Floating menu section
+    floating_menu_language: 'ភាសា',
+    floating_menu_music_on: 'បើកតន្ត្រី',
+    floating_menu_music_off: 'បិទតន្ត្រី',
+    floating_menu_rsvp: 'RSVP',
+    floating_menu_reminder: 'រំលឹក',
+    floating_menu_agenda: 'កាលវិភាគ',
+    floating_menu_location: 'ទីតាំង',
+    floating_menu_video: 'វីដេអូ',
+    floating_menu_gallery: 'រូបថត',
+    floating_menu_gift: 'អំណោយ',
+    floating_menu_comment: 'មតិយោបល់',
+    floating_menu_logout: 'ចាកចេញ',
+    floating_menu_select_language: 'ជ្រើសរើសភាសា'
   },
 
   'zh-cn': {
@@ -656,195 +419,22 @@ export const rsvpTranslations: Record<SupportedLanguage, {
 
     // Footer section
     footer_thank_you: '感谢您与我们一同庆祝',
-    footer_create_invitations: '创建精美的活动邀请函'
-  },
+    footer_create_invitations: '创建精美的活动邀请函',
 
-  th: {
-    // Main headers
-    rsvp_header: 'คุณจะเข้าร่วมงานแต่งงานของเราไหม?',
-    invite_text: 'คุณได้รับเชิญ',
-
-    // Buttons
-    rsvp_yes_button: 'ใช่ ฉันจะเข้าร่วม',
-    rsvp_no_button: 'ไม่สามารถเข้าร่วมได้',
-    rsvp_sign_in_button: 'เข้าสู่ระบบเพื่อ RSVP',
-
-    // Status indicators
-    rsvp_attending: 'เข้าร่วม',
-    rsvp_cant_attend: 'ไม่สามารถเข้าร่วม',
-
-    // Guest management
-    rsvp_additional_guests: 'แขกเพิ่มเติม',
-    rsvp_total_attending: 'รวมผู้เข้าร่วม',
-    rsvp_person: 'คน',
-    rsvp_people: 'คน',
-
-    // Date and time formats
-    date_format_long: 'EEEE ที่ d MMMM yyyy',
-    date_format_compact: 'd MMM',
-    time_format: 'HH:mm',
-
-    // Time units
-    rsvp_days: 'วัน',
-    rsvp_hours: 'ชั่วโมง',
-    rsvp_minutes: 'นาที',
-    rsvp_seconds: 'วินาที',
-
-    // Status messages
-    rsvp_status_live: 'สด',
-    rsvp_status_ended: 'สิ้นสุดแล้ว',
-    rsvp_thank_you: 'ขอบคุณสำหรับการตอบกลับ',
-    rsvp_sign_in: 'กรุณาเข้าสู่ระบบเพื่อ RSVP สำหรับกิจกรรมนี้',
-
-    // Loading and action states
-    rsvp_loading_status: 'กำลังโหลดสถานะ RSVP ของคุณ...',
-    rsvp_registering: 'กำลังลงทะเบียน...',
-    rsvp_updating: 'กำลังอัปเดต...',
-    rsvp_saving: 'กำลังบันทึก...',
-
-    // Guest count management
-    rsvp_unsaved_changes: 'การเปลี่ยนแปลงที่ไม่ได้บันทึก',
-    rsvp_save_now: 'บันทึกตอนนี้',
-    rsvp_auto_save: 'บันทึกอัตโนมัติใน',
-
-    // System messages
-    rsvp_confirmation: 'รหัสยืนยัน:',
-    rsvp_dismiss: 'ปิด',
-
-    // Success messages
-    rsvp_registration_success: 'ยอดเยี่ยม! คุณได้ลงทะเบียนแล้วจำนวน {count} {unit}',
-    rsvp_unregister_success: 'เสียใจที่คุณไม่สามารถมาได้ ขอบคุณที่แจ้งให้เราทราบ',
-    rsvp_guest_update_success: 'อัปเดตจำนวนแขกเป็น {count} {unit}',
-    rsvp_thank_you_simple: 'ขอบคุณสำหรับการตอบกลับ',
-
-    // Agenda section
-    agenda_header: 'กำหนดการกิจกรรม',
-    agenda_activity: 'กิจกรรม',
-    agenda_activities: 'กิจกรรม',
-
-    // Location section
-    location_header: 'สถานที่',
-
-    // Video section
-    video_header: 'วีดีโอ',
-
-    // Gallery section
-    gallery_header: 'แกลเลอรี่รูปภาพ',
-
-    // Comment section
-    comment_header: 'คำคิดเห็นและคำอวยพร',
-    comment_placeholder: 'แบ่งปันความคิด คำอวยพร หรือคำอุ่นพร...',
-    comment_signin_prompt: 'กรุณาเข้าสู่ระบบเพื่อแสดงความคิดเห็น',
-    comment_signin_button: 'เข้าสู่ระบบเพื่อแสดงความคิดเห็น',
-    comment_post_button: 'โพสต์ความคิดเห็น',
-    comment_posting_button: 'กำลังโพสต์...',
-    comment_no_comments: 'เป็นคนแรกที่แสดงความคิดเห็น!',
-    comment_loading: 'กำลังโหลดความคิดเห็น...',
-    comment_already_commented: 'คุณได้แสดงความคิดเห็นในกิจกรรมนี้แล้ว',
-    comment_one_per_user: 'ผู้ใช้แต่ละคนสามารถแสดงความคิดเห็นได้เพียงครั้งเดียวต่อกิจกรรม',
-    comment_you_badge: 'คุณ',
-
-    // Payment section
-    payment_wedding_gift: 'ของขวัญงานแต่งงาน',
-    payment_birthday_gift: 'ของขวัญวันเกิด',
-
-    // Footer section
-    footer_thank_you: 'ขอบคุณที่ร่วมเฉลิมฉลองกับเรา',
-    footer_create_invitations: 'สร้างการเชิญงานที่สวยงาม'
-  },
-
-  vn: {
-    // Main headers
-    rsvp_header: 'Bạn có tham dự đám cưới của chúng tôi không?',
-    invite_text: 'Bạn được mời',
-
-    // Buttons
-    rsvp_yes_button: 'Có, tôi sẽ tham dự',
-    rsvp_no_button: 'Không thể tham dự',
-    rsvp_sign_in_button: 'Đăng nhập để RSVP',
-
-    // Status indicators
-    rsvp_attending: 'Tham dự',
-    rsvp_cant_attend: 'Không thể tham dự',
-
-    // Guest management
-    rsvp_additional_guests: 'Khách bổ sung',
-    rsvp_total_attending: 'Tổng số người tham dự',
-    rsvp_person: 'người',
-    rsvp_people: 'người',
-
-    // Date and time formats
-    date_format_long: 'EEEE, ngày d tháng MMMM năm yyyy',
-    date_format_compact: 'd MMM',
-    time_format: 'HH:mm',
-
-    // Time units
-    rsvp_days: 'ngày',
-    rsvp_hours: 'giờ',
-    rsvp_minutes: 'phút',
-    rsvp_seconds: 'giây',
-
-    // Status messages
-    rsvp_status_live: 'Trực tiếp',
-    rsvp_status_ended: 'Đã kết thúc',
-    rsvp_thank_you: 'Cảm ơn phản hồi của bạn',
-    rsvp_sign_in: 'Vui lòng đăng nhập để RSVP cho sự kiện này',
-
-    // Loading and action states
-    rsvp_loading_status: 'Đang tải trạng thái RSVP của bạn...',
-    rsvp_registering: 'Đang đăng ký...',
-    rsvp_updating: 'Đang cập nhật...',
-    rsvp_saving: 'Đang lưu...',
-
-    // Guest count management
-    rsvp_unsaved_changes: 'Thay đổi chưa lưu',
-    rsvp_save_now: 'Lưu ngay',
-    rsvp_auto_save: 'Tự động lưu trong',
-
-    // System messages
-    rsvp_confirmation: 'Mã xác nhận:',
-    rsvp_dismiss: 'Đóng',
-
-    // Success messages
-    rsvp_registration_success: 'Tuyệt vời! Bạn đã đăng ký với {count} {unit}.',
-    rsvp_unregister_success: 'Chúng tôi rất tiếc vì bạn không thể tham dự. Cảm ơn bạn đã thông báo.',
-    rsvp_guest_update_success: 'Đã cập nhật số lượng khách thành {count} {unit}',
-    rsvp_thank_you_simple: 'Cảm ơn phản hồi của bạn.',
-
-    // Agenda section
-    agenda_header: 'Lịch trình sự kiện',
-    agenda_activity: 'hoạt động',
-    agenda_activities: 'hoạt động',
-
-    // Location section
-    location_header: 'Địa điểm',
-
-    // Video section
-    video_header: 'Video',
-
-    // Gallery section
-    gallery_header: 'Thư viện ảnh',
-
-    // Comment section
-    comment_header: 'Bình luận và lời chúc',
-    comment_placeholder: 'Chia sẻ suy nghĩ, lời chúc, hoặc lời chúc mừng của bạn...',
-    comment_signin_prompt: 'Vui lòng đăng nhập để để lại bình luận',
-    comment_signin_button: 'Đăng nhập để bình luận',
-    comment_post_button: 'Đăng bình luận',
-    comment_posting_button: 'Đang đăng...',
-    comment_no_comments: 'Hãy là người đầu tiên để lại bình luận!',
-    comment_loading: 'Đang tải bình luận...',
-    comment_already_commented: 'Bạn đã để lại bình luận cho sự kiện này rồi',
-    comment_one_per_user: 'Mỗi người dùng chỉ có thể bình luận một lần cho mỗi sự kiện',
-    comment_you_badge: 'Bạn',
-
-    // Payment section
-    payment_wedding_gift: 'Quà cưới',
-    payment_birthday_gift: 'Quà sinh nhật',
-
-    // Footer section
-    footer_thank_you: 'Cảm ơn bạn đã ăn mừng cùng chúng tôi',
-    footer_create_invitations: 'Tạo thiệp mời sự kiện đẹp'
+    // Floating menu section
+    floating_menu_language: '语言',
+    floating_menu_music_on: '打开音乐',
+    floating_menu_music_off: '关闭音乐',
+    floating_menu_rsvp: 'RSVP',
+    floating_menu_reminder: '提醒',
+    floating_menu_agenda: '日程',
+    floating_menu_location: '位置',
+    floating_menu_video: '视频',
+    floating_menu_gallery: '照片库',
+    floating_menu_gift: '礼物',
+    floating_menu_comment: '评论',
+    floating_menu_logout: '退出',
+    floating_menu_select_language: '选择语言'
   }
 }
 
@@ -898,12 +488,7 @@ export function formatDateLocalized(
     const localeMap: Record<SupportedLanguage, string> = {
       'en': 'en-US',
       'kh': 'km-KH',
-      'fr': 'fr-FR',
-      'ja': 'ja-JP',
-      'ko': 'ko-KR',
-      'zh-cn': 'zh-CN',
-      'th': 'th-TH',
-      'vn': 'vi-VN'
+      'zh-cn': 'zh-CN'
     }
 
     const locale = localeMap[language] || 'en-US'
@@ -929,18 +514,13 @@ export function formatTimeLocalized(
     const localeMap: Record<SupportedLanguage, string> = {
       'en': 'en-US',
       'kh': 'km-KH',
-      'fr': 'fr-FR',
-      'ja': 'ja-JP',
-      'ko': 'ko-KR',
-      'zh-cn': 'zh-CN',
-      'th': 'th-TH',
-      'vn': 'vi-VN'
+      'zh-cn': 'zh-CN'
     }
 
     const locale = localeMap[language] || 'en-US'
 
     // Use 24-hour format for most Asian languages, 12-hour for English
-    const options: Intl.DateTimeFormatOptions = language === 'en' || language === 'ko'
+    const options: Intl.DateTimeFormatOptions = language === 'en'
       ? { hour: 'numeric', minute: '2-digit', hour12: true }
       : { hour: '2-digit', minute: '2-digit', hour12: false }
 
@@ -956,7 +536,7 @@ export function getPersonUnit(count: number, language: SupportedLanguage = 'en')
   const translations = rsvpTranslations[language] || rsvpTranslations.en
 
   // For most Asian languages, singular and plural are the same
-  if (['kh', 'ja', 'ko', 'zh-cn', 'th', 'vn'].includes(language)) {
+  if (['kh', 'zh-cn'].includes(language)) {
     return translations.rsvp_person
   }
 

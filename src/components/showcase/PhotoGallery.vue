@@ -70,9 +70,9 @@
               animationDuration: `${animationDuration}s`
             }"
           >
-            <!-- First set of photos -->
+            <!-- First set of photos (virtualized) -->
             <div
-              v-for="photo in allPhotosForStrip"
+              v-for="photo in visiblePhotos"
               :key="`first-${photo.id}`"
               class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
@@ -102,7 +102,7 @@
 
             <!-- Duplicate set for seamless infinite scroll (reuses cached images) -->
             <div
-              v-for="photo in allPhotosForStrip"
+              v-for="photo in visiblePhotos"
               :key="`second-${photo.id}`"
               class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
@@ -148,9 +148,9 @@
               animationDuration: `${reverseAnimationDuration}s`
             }"
           >
-            <!-- First set of photos (reversed order) -->
+            <!-- First set of photos (reversed order, virtualized) -->
             <div
-              v-for="photo in reversePhotosForStrip"
+              v-for="photo in visibleReversePhotos"
               :key="`reverse-first-${photo.id}`"
               class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
@@ -180,7 +180,7 @@
 
             <!-- Duplicate set for seamless infinite scroll (reuses cached images) -->
             <div
-              v-for="photo in reversePhotosForStrip"
+              v-for="photo in visibleReversePhotos"
               :key="`reverse-second-${photo.id}`"
               class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
@@ -323,9 +323,69 @@ const {
   cleanup: cleanupPerformance
 } = usePerformance()
 
-// Image dimensions cache for aspect ratio calculations - using WeakMap for better memory management
+// Single Image Cache System - eliminates 4× duplicate network requests
+class SingleImageCache {
+  private cache = new Map<string, HTMLImageElement>()
+  private loadingPromises = new Map<string, Promise<HTMLImageElement>>()
+  
+  async getImage(src: string): Promise<HTMLImageElement> {
+    // Return cached image immediately if available
+    if (this.cache.has(src)) {
+      return this.cache.get(src)!.cloneNode(false) as HTMLImageElement
+    }
+    
+    // Return existing promise if image is already loading
+    if (this.loadingPromises.has(src)) {
+      const originalImg = await this.loadingPromises.get(src)!
+      return originalImg.cloneNode(false) as HTMLImageElement
+    }
+    
+    // Start loading new image
+    const loadPromise = new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        this.cache.set(src, img)
+        this.loadingPromises.delete(src)
+        resolve(img)
+      }
+      img.onerror = () => {
+        this.loadingPromises.delete(src)
+        reject(new Error(`Failed to load image: ${src}`))
+      }
+      img.src = src
+    })
+    
+    this.loadingPromises.set(src, loadPromise)
+    const originalImg = await loadPromise
+    return originalImg.cloneNode(false) as HTMLImageElement
+  }
+  
+  preload(src: string): Promise<void> {
+    return this.getImage(src).then(() => void 0)
+  }
+  
+  getDimensions(src: string): { width: number; height: number } | null {
+    const img = this.cache.get(src)
+    if (img && img.naturalWidth && img.naturalHeight) {
+      return {
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      }
+    }
+    return null
+  }
+  
+  clear(): void {
+    this.cache.clear()
+    this.loadingPromises.clear()
+  }
+}
+
+// Global image cache instance
+const globalImageCache = new SingleImageCache()
+
+// Image dimensions cache for aspect ratio calculations
 const imageDimensions = ref<Record<string, { width: number; height: number }>>({})
-const imageCache = new WeakMap<HTMLImageElement, { width: number; height: number }>()
 
 // Track window width for responsive calculations
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
@@ -339,7 +399,6 @@ const updateWindowWidth = useAdvancedThrottleFn(() => {
 
 // Animation frame IDs for cleanup
 const activeAnimationFrames = new Set<number>()
-const preloadedImages = new Set<HTMLImageElement>()
 
 // Photos for infinite scroll - use all photos if we have enough, otherwise repeat them
 const allPhotosForStrip = computed(() => {
@@ -379,13 +438,13 @@ const getPhotoWidth = (photo: EventPhoto): number => {
   return fixedHeight
 }
 
-// Calculate strip width for animation
+// Calculate strip width for animation (using visible photos for performance)
 const stripWidth = computed((): number => {
   let totalWidth = 0
-  allPhotosForStrip.value.forEach(photo => {
+  visiblePhotos.value.forEach(photo => {
     totalWidth += getPhotoWidth(photo) + GALLERY_SPACING // Consistent spacing throughout gallery
   })
-  return totalWidth
+  return totalWidth || 1000 // Fallback width to prevent division by zero
 })
 
 // Animation duration based on number of photos (faster animation)
@@ -406,7 +465,105 @@ const reverseAnimationDuration = computed((): number => {
   return Math.max(stripWidth.value / baseSpeed, 9) // minimum 9 seconds
 })
 
-// Enhanced image load handler with memory management
+// Virtual Scrolling Implementation
+const BUFFER_SIZE = 3 // Number of photos to render outside visible area
+const visiblePhotos = ref<EventPhoto[]>([])
+const visibleReversePhotos = ref<EventPhoto[]>([])
+const containerWidth = ref(1024) // Default width
+
+// Calculate visible photos based on current animation progress and container width
+const calculateVisiblePhotos = (photos: EventPhoto[], isReverse = false): EventPhoto[] => {
+  if (photos.length === 0) return []
+  
+  // For infinite scroll, we need to show enough photos to fill the visible area plus buffer
+  const averagePhotoWidth = 200 // Approximate average photo width
+  const photosNeededForVisibleArea = Math.ceil(containerWidth.value / averagePhotoWidth)
+  const totalPhotosToRender = Math.min(photos.length, photosNeededForVisibleArea + (BUFFER_SIZE * 2))
+  
+  // Always show at least the minimum needed for smooth animation
+  const minPhotos = Math.min(photos.length, 8)
+  const photosToShow = Math.max(totalPhotosToRender, minPhotos)
+  
+  // For performance, limit maximum photos rendered at once
+  const maxPhotos = Math.min(photos.length, 16)
+  const finalCount = Math.min(photosToShow, maxPhotos)
+  
+  return photos.slice(0, finalCount)
+}
+
+// Throttled update function for virtual scrolling
+const updateVisiblePhotos = useAdvancedThrottleFn(() => {
+  visiblePhotos.value = calculateVisiblePhotos(allPhotosForStrip.value, false)
+  visibleReversePhotos.value = calculateVisiblePhotos(reversePhotosForStrip.value, true)
+}, 100, { trailing: true, useRAF: true })
+
+// Update container width on resize
+const updateContainerWidth = useAdvancedThrottleFn(() => {
+  if (typeof window !== 'undefined') {
+    containerWidth.value = window.innerWidth
+    updateVisiblePhotos()
+  }
+}, 100, { trailing: true, useRAF: true })
+
+// Memory cleanup with intersection observer
+const photoIntersectionObserver = ref<IntersectionObserver | null>(null)
+const observedPhotoElements = new WeakMap<Element, { photoId: string; cleanupTimer: number | null }>()
+
+// Clean up resources for photos that scroll out of view
+const createPhotoIntersectionObserver = () => {
+  if (photoIntersectionObserver.value) {
+    photoIntersectionObserver.value.disconnect()
+  }
+
+  photoIntersectionObserver.value = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const photoData = observedPhotoElements.get(entry.target)
+        if (!photoData) return
+
+        if (entry.isIntersecting) {
+          // Photo is visible - cancel any pending cleanup
+          if (photoData.cleanupTimer) {
+            clearTimeout(photoData.cleanupTimer)
+            photoData.cleanupTimer = null
+          }
+        } else {
+          // Photo scrolled out of view - schedule cleanup after delay
+          photoData.cleanupTimer = addTimeout(() => {
+            const imgElement = entry.target.querySelector('img')
+            if (imgElement && !imgElement.closest('.photo-strip')?.contains(imgElement)) {
+              // Photo is definitely out of view, perform cleanup
+              imgElement.src = '' // Clear src to stop any pending loads
+              imgElement.removeAttribute('data-optimized-id')
+              
+              // Remove from observed elements
+              observedPhotoElements.delete(entry.target)
+              photoIntersectionObserver.value?.unobserve(entry.target)
+            }
+          }, 5000) // 5 second delay before cleanup
+        }
+      })
+    },
+    {
+      root: null,
+      rootMargin: '100px', // Start observing 100px before element enters/exits viewport
+      threshold: 0.1
+    }
+  )
+}
+
+// Observe photo element for memory cleanup
+const observePhotoForCleanup = (element: Element, photoId: string) => {
+  if (photoIntersectionObserver.value && element) {
+    observedPhotoElements.set(element, {
+      photoId,
+      cleanupTimer: null
+    })
+    photoIntersectionObserver.value.observe(element)
+  }
+}
+
+// Enhanced image load handler using centralized cache
 const onImageLoad = (event: Event) => {
   const img = event.target as HTMLImageElement
   const photoId = img.closest('.floating-photo-card')?.getAttribute('data-photo-id') ||
@@ -418,70 +575,87 @@ const onImageLoad = (event: Event) => {
       height: img.naturalHeight
     }
     
-    // Store in both reactive ref and WeakMap cache
+    // Store dimensions for aspect ratio calculations
     imageDimensions.value[photoId] = dimensions
-    imageCache.set(img, dimensions)
-    
-    // Clean up the reference after use to prevent memory leaks
-    addTimeout(() => {
-      // Only remove from cache if image is no longer in DOM
-      if (!img.isConnected) {
-        imageCache.delete(img)
-      }
-    }, 5000)
   }
 }
 
-// Optimized image preloading with proper cleanup
-const preloadImageDimensions = async (photos: EventPhoto[]) => {
-  // Cancel any existing preload operations
-  preloadedImages.forEach(img => {
-    img.onload = null
-    img.onerror = null
-  })
-  preloadedImages.clear()
+// Smart preloading system - loads images in priority batches
+const preloadedPhotoIds = new Set<string>()
+const preloadQueue = ref<EventPhoto[]>([])
+const isPreloading = ref(false)
 
-  const preloadPromises = photos.map(photo => {
-    return deduplicateRequest(`preload-${photo.id}`, async () => {
-      return new Promise<void>((resolve) => {
-        const img = new Image()
-        preloadedImages.add(img)
-        
-        img.onload = () => {
-          if (img.naturalWidth && img.naturalHeight) {
-            imageDimensions.value[photo.id] = {
-              width: img.naturalWidth,
-              height: img.naturalHeight
-            }
-            imageCache.set(img, imageDimensions.value[photo.id])
-          }
-          resolve()
-        }
-        
-        img.onerror = () => {
-          // Silently handle image load errors
-          resolve()
-        }
-        
-        // Add cleanup for the image reference
-        addCleanup(() => {
-          img.onload = null
-          img.onerror = null
-          imageCache.delete(img)
-          preloadedImages.delete(img)
-        })
-        
-        img.src = props.getMediaUrl(photo.image)
-      })
-    })
-  })
+// Preload images in batches based on priority
+const smartPreloadImages = async (photos: EventPhoto[], priority: 'high' | 'medium' | 'low' = 'medium') => {
+  if (isPreloading.value && priority === 'low') return // Skip low priority if already preloading
+  
+  const photosToPreload = photos.filter(photo => !preloadedPhotoIds.has(photo.id))
+  if (photosToPreload.length === 0) return
 
+  // Batch size based on priority
+  const batchSize = priority === 'high' ? photosToPreload.length : priority === 'medium' ? 6 : 3
+  const batches = []
+  
+  for (let i = 0; i < photosToPreload.length; i += batchSize) {
+    batches.push(photosToPreload.slice(i, i + batchSize))
+  }
+
+  isPreloading.value = true
+  
   try {
-    await Promise.allSettled(preloadPromises)
-  } catch {
-    // Silently handle preloading errors
+    // Process batches sequentially to avoid overwhelming the network
+    for (const batch of batches) {
+      const batchPromises = batch.map(photo => 
+        deduplicateRequest(`smart-preload-${photo.id}`, async () => {
+          try {
+            const src = props.getMediaUrl(photo.image)
+            await globalImageCache.preload(src)
+            
+            // Mark as preloaded
+            preloadedPhotoIds.add(photo.id)
+            
+            // Get dimensions from cache and store for aspect ratio calculations
+            const dimensions = globalImageCache.getDimensions(src)
+            if (dimensions) {
+              imageDimensions.value[photo.id] = dimensions
+            }
+          } catch (error) {
+            console.debug(`Failed to preload image for photo ${photo.id}:`, error)
+          }
+        })
+      )
+      
+      await Promise.allSettled(batchPromises)
+      
+      // Add small delay between batches to prevent blocking
+      if (batches.indexOf(batch) < batches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, priority === 'high' ? 50 : 100))
+      }
+    }
+  } finally {
+    isPreloading.value = false
   }
 }
+
+// Legacy function for compatibility
+const preloadImageDimensions = (photos: EventPhoto[]) => {
+  return smartPreloadImages(photos, 'high')
+}
+
+// Preload next batch of photos intelligently
+const preloadNextBatch = useAdvancedThrottleFn(async () => {
+  if (isPreloading.value) return
+  
+  const allPhotos = allPhotosForStrip.value
+  const visibleCount = visiblePhotos.value.length
+  const nextBatchStart = visibleCount
+  const nextBatchSize = Math.min(8, allPhotos.length - nextBatchStart)
+  
+  if (nextBatchSize > 0) {
+    const nextBatch = allPhotos.slice(nextBatchStart, nextBatchStart + nextBatchSize)
+    await smartPreloadImages(nextBatch, 'low')
+  }
+}, 2000, { trailing: true }) // 2 second throttle for low priority preloading
 
 // Enhanced photo click with immediate response
 const handlePhotoClick = (photo: EventPhoto) => {
@@ -503,11 +677,22 @@ onMounted(async () => {
   if (typeof window !== 'undefined') {
     // Use the performance utility's addEventListener for automatic cleanup
     addEventListener(window, 'resize', updateWindowWidth, { passive: true })
+    addEventListener(window, 'resize', updateContainerWidth, { passive: true })
     updateWindowWidth()
+    updateContainerWidth()
   }
 
-  // Preload dimensions for all photos with proper cleanup
-  await preloadImageDimensions(allPhotosForStrip.value)
+  // Initialize virtual scrolling
+  updateVisiblePhotos()
+
+  // Initialize intersection observer for memory cleanup
+  createPhotoIntersectionObserver()
+
+  // Preload visible photos with high priority
+  await smartPreloadImages(visiblePhotos.value, 'high')
+  
+  // Start background preloading of next batch
+  preloadNextBatch()
 
   // Setup gallery animations after mount
   await nextTick()
@@ -517,16 +702,29 @@ onMounted(async () => {
 onUnmounted(() => {
   // Cancel throttled functions
   updateWindowWidth.cancel()
+  updateVisiblePhotos.cancel()
+  updateContainerWidth.cancel()
+  preloadNextBatch.cancel()
   
-  // Clean up preloaded images
-  preloadedImages.forEach(img => {
-    img.onload = null
-    img.onerror = null
+  // Clean up intersection observer and photo elements
+  if (photoIntersectionObserver.value) {
+    photoIntersectionObserver.value.disconnect()
+    photoIntersectionObserver.value = null
+  }
+  
+  // Clear any pending cleanup timers
+  observedPhotoElements.forEach((photoData) => {
+    if (photoData.cleanupTimer) {
+      clearTimeout(photoData.cleanupTimer)
+    }
   })
-  preloadedImages.clear()
   
   // Clear image dimensions cache
   imageDimensions.value = {}
+  
+  // Clear virtual scrolling data
+  visiblePhotos.value = []
+  visibleReversePhotos.value = []
   
   // Cancel any active animation frames
   activeAnimationFrames.forEach(frameId => {
@@ -536,6 +734,10 @@ onUnmounted(() => {
   
   // Use the performance utility's comprehensive cleanup
   cleanupPerformance()
+  
+  // Clear the global image cache when component unmounts
+  // Note: In production, you might want to keep cache across components
+  // globalImageCache.clear()
 })
 </script>
 
@@ -547,33 +749,43 @@ onUnmounted(() => {
 
 /* ===== CLEAN GALLERY DESIGN ===== */
 
-/* Infinite Scroll Keyframes */
-@keyframes infinite-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(calc(-50%));
-  }
-}
-
-@keyframes infinite-scroll-reverse {
-  0% {
-    transform: translateX(calc(-50%));
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
+/* Infinite Scroll Keyframes - optimized with translate3d for GPU acceleration */
 
 .animate-infinite-scroll {
   animation: infinite-scroll linear infinite;
   will-change: transform;
+  /* Optimize for smooth 60fps animation */
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .animate-infinite-scroll-reverse {
   animation: infinite-scroll-reverse linear infinite;
   will-change: transform;
+  /* Optimize for smooth 60fps animation */
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize animation performance with compositor layers */
+@keyframes infinite-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes infinite-scroll-reverse {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* Enhanced Gallery Animation Styles */
@@ -628,10 +840,24 @@ onUnmounted(() => {
   filter: brightness(1.1);
 }
 
-/* Enhanced gallery containers */
+/* Enhanced gallery containers with performance optimizations */
 .momentum-scroll-container {
   contain: layout style paint;
   height: 208px;
+  /* Optimize for smooth scrolling */
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* Photo strip containers optimized for animation performance */
+.photo-strip-wrapper {
+  /* Enable hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* Optimize container for scrolling content */
+  contain: layout style paint;
+  /* Prevent unnecessary reflows */
+  overflow: hidden;
 }
 
 /* Clean Gallery Styles */
@@ -695,16 +921,39 @@ onUnmounted(() => {
   }
 }
 
-/* Enhanced performance optimizations */
+/* Enhanced performance optimizations with GPU acceleration */
 .photo-strip {
   contain: layout style paint;
   transform: translateZ(0);
   backface-visibility: hidden;
+  /* Optimize for continuous animation */
+  will-change: transform;
+}
+
+.enhanced-photo-card {
+  /* Force GPU layer creation */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* Optimize rendering */
+  contain: layout style paint;
 }
 
 .enhanced-photo-card img {
-  will-change: transform, filter;
+  /* Optimized for hover animations */
+  will-change: auto;
   backface-visibility: hidden;
+  /* Improve image rendering quality during animations */
+  image-rendering: optimizeQuality;
+}
+
+.enhanced-photo-card:hover img {
+  will-change: transform, filter;
+}
+
+/* Remove will-change after hover ends to save GPU memory */
+.enhanced-photo-card:not(:hover) img {
+  will-change: auto;
+  transition-delay: 300ms; /* Delay removing will-change until animation completes */
 }
 
 /* Optimized image loading performance */
@@ -717,12 +966,28 @@ onUnmounted(() => {
   transform: translateZ(0);
 }
 
-/* Memory optimization for duplicate images */
+/* Memory optimization for duplicate images with content-visibility */
 .enhanced-photo-card img[data-optimized-id^="opt-dup-"],
 .enhanced-photo-card img[data-optimized-id^="opt-rev-dup-"] {
   /* Second instances should leverage cached images */
   content-visibility: auto;
   contain-intrinsic-size: 188px 188px;
+}
+
+/* Virtual scrolling optimizations - use content-visibility for off-screen elements */
+.photo-card {
+  /* Improve rendering performance for scrollable content */
+  content-visibility: auto;
+  contain-intrinsic-size: 188px 188px;
+  /* Optimize for translation animations */
+  transform: translateZ(0);
+}
+
+/* Optimize featured photo for immediate visibility */
+.featured-photo-container {
+  /* Ensure featured photo gets priority rendering */
+  content-visibility: visible;
+  contain: layout style paint;
 }
 
 /* Responsive gallery heights */

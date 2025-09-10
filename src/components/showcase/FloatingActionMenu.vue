@@ -38,7 +38,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <Languages :size="20" :color="primaryColor" />
-            <span class="menu-text">Language</span>
+            <span class="menu-text">{{ menuTranslations.language }}</span>
           </button>
         </div>
 
@@ -55,7 +55,7 @@
               :size="20"
               :color="primaryColor"
             />
-            <span class="menu-text">{{ props.isMusicPlaying ? 'Music Off' : 'Music On' }}</span>
+            <span class="menu-text">{{ props.isMusicPlaying ? menuTranslations.musicOff : menuTranslations.musicOn }}</span>
           </button>
         </div>
 
@@ -67,7 +67,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <UserCheck :size="20" :color="primaryColor" />
-            <span class="menu-text">RSVP</span>
+            <span class="menu-text">{{ menuTranslations.rsvp }}</span>
           </button>
         </div>
 
@@ -79,7 +79,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <Bell :size="20" :color="primaryColor" />
-            <span class="menu-text">Reminder</span>
+            <span class="menu-text">{{ menuTranslations.reminder }}</span>
           </button>
         </div>
 
@@ -92,7 +92,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <Calendar :size="20" :color="primaryColor" />
-            <span class="menu-text">Agenda</span>
+            <span class="menu-text">{{ menuTranslations.agenda }}</span>
           </button>
         </div>
 
@@ -104,7 +104,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <MapPin :size="20" :color="primaryColor" />
-            <span class="menu-text">Location</span>
+            <span class="menu-text">{{ menuTranslations.location }}</span>
           </button>
         </div>
 
@@ -116,7 +116,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <Play :size="20" :color="primaryColor" />
-            <span class="menu-text">Video</span>
+            <span class="menu-text">{{ menuTranslations.video }}</span>
           </button>
         </div>
 
@@ -128,7 +128,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <Image :size="20" :color="primaryColor" />
-            <span class="menu-text">Gallery</span>
+            <span class="menu-text">{{ menuTranslations.gallery }}</span>
           </button>
         </div>
 
@@ -140,7 +140,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <Gift :size="20" :color="primaryColor" />
-            <span class="menu-text">Gift</span>
+            <span class="menu-text">{{ menuTranslations.gift }}</span>
           </button>
         </div>
 
@@ -152,7 +152,7 @@
             :style="{ borderColor: primaryColor }"
           >
             <MessageCircle :size="20" :color="primaryColor" />
-            <span class="menu-text">Comment</span>
+            <span class="menu-text">{{ menuTranslations.comment }}</span>
           </button>
         </div>
 
@@ -167,7 +167,7 @@
             }"
           >
             <LogOut :size="20" color="white" />
-            <span class="menu-text">Logout</span>
+            <span class="menu-text">{{ menuTranslations.logout }}</span>
           </button>
         </div>
       </div>
@@ -178,7 +178,7 @@
       <div v-if="showLanguageModal" class="modal-overlay" @click="closeLanguageModal">
         <div class="language-modal glass-section" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title" :style="{ color: primaryColor }">Select Language</h3>
+            <h3 class="modal-title" :style="{ color: primaryColor }">{{ menuTranslations.selectLanguage }}</h3>
             <button @click="closeLanguageModal" class="close-button">
               <X :size="20" :color="primaryColor" />
             </button>
@@ -223,6 +223,10 @@ import {
   MessageCircle,
   LogOut
 } from 'lucide-vue-next'
+import {
+  translateRSVP,
+  type SupportedLanguage
+} from '../../utils/translations'
 
 interface Props {
   primaryColor?: string
@@ -287,6 +291,29 @@ const displayLanguages = computed(() => {
     flag: languageFlags[lang.language] || '🌐'
   }))
 })
+
+// Translation helpers
+const getTranslation = (key: keyof typeof import('../../utils/translations').rsvpTranslations.en): string => {
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP(key, currentLang)
+}
+
+// Computed properties for menu item translations
+const menuTranslations = computed(() => ({
+  language: getTranslation('floating_menu_language'),
+  musicOn: getTranslation('floating_menu_music_on'),
+  musicOff: getTranslation('floating_menu_music_off'),
+  rsvp: getTranslation('floating_menu_rsvp'),
+  reminder: getTranslation('floating_menu_reminder'),
+  agenda: getTranslation('floating_menu_agenda'),
+  location: getTranslation('floating_menu_location'),
+  video: getTranslation('floating_menu_video'),
+  gallery: getTranslation('floating_menu_gallery'),
+  gift: getTranslation('floating_menu_gift'),
+  comment: getTranslation('floating_menu_comment'),
+  logout: getTranslation('floating_menu_logout'),
+  selectLanguage: getTranslation('floating_menu_select_language')
+}))
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value

@@ -9,11 +9,11 @@
 
     <!-- Content Loading Overlay -->
     <Transition name="fade">
-      <div 
+      <div
         v-if="contentLoading"
         class="absolute inset-0 z-40 flex items-center justify-center"
       >
-        <div 
+        <div
           class="backdrop-blur-sm bg-black bg-opacity-20 rounded-2xl px-6 py-4 flex items-center space-x-3"
           :style="{
             boxShadow: `0 8px 32px ${primaryColor}20`
@@ -22,7 +22,7 @@
           <div class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-80"
                :style="{ color: primaryColor }">
           </div>
-          <span 
+          <span
             class="text-white font-medium text-sm"
             :style="{ fontFamily: primaryFont || currentFont }"
           >
@@ -67,7 +67,7 @@
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
                 <!-- Welcome Header -->
-                <div 
+                <div
                   ref="welcomeHeaderRef"
                   class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 animate-reveal"
                 >
@@ -107,7 +107,7 @@
                 />
 
                 <!-- Event Information -->
-                <div 
+                <div
                   ref="eventInfoRef"
                   class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
                 >
@@ -134,8 +134,8 @@
                 </div>
 
                 <!-- RSVP Section -->
-                <div 
-                  id="rsvp-section" 
+                <div
+                  id="rsvp-section"
                   ref="rsvpSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
@@ -162,8 +162,8 @@
                 </div>
 
                 <!-- Agenda Section -->
-                <div 
-                  id="agenda-section" 
+                <div
+                  id="agenda-section"
                   ref="agendaSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
@@ -186,8 +186,8 @@
                 </div>
 
                 <!-- Map Section -->
-                <div 
-                  id="location-section" 
+                <div
+                  id="location-section"
                   ref="locationSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
@@ -227,8 +227,8 @@
                 </div>
 
                 <!-- YouTube Video Section -->
-                <div 
-                  id="video-section" 
+                <div
+                  id="video-section"
                   ref="videoSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
@@ -251,8 +251,8 @@
                 </div>
 
                 <!-- Photo Gallery Section -->
-                <div 
-                  id="gallery-section" 
+                <div
+                  id="gallery-section"
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
@@ -277,9 +277,9 @@
                 </div>
 
                 <!-- Payment Section -->
-                <div 
-                  v-if="paymentMethods.length > 0" 
-                  id="payment-section" 
+                <div
+                  v-if="paymentMethods.length > 0"
+                  id="payment-section"
                   ref="paymentSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
@@ -306,8 +306,8 @@
                 </div>
 
                 <!-- Comment Section -->
-                <div 
-                  id="comment-section" 
+                <div
+                  id="comment-section"
                   ref="commentSectionRef"
                   class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal"
                 >
@@ -345,7 +345,7 @@
                 </div>
 
                 <!-- Footer Section -->
-                <div 
+                <div
                   ref="footerSectionRef"
                   class="mt-8 -mx-6 sm:-mx-6 md:-mx-6 laptop-sm:-mx-8 laptop-md:-mx-10 laptop-lg:-mx-12 desktop:-mx-8 -mb-6 sm:-mb-6 md:-mb-6 laptop-sm:-mb-8 laptop-md:-mb-10 laptop-lg:-mb-12 desktop:-mb-8 animate-reveal"
                 >
@@ -405,7 +405,7 @@
                           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                           </svg>
-                          info@goevent.com
+                          info@goevent.online
                         </div>
                         <div
                           class="inline-flex items-center justify-center text-sm text-white px-2"
@@ -416,7 +416,7 @@
                           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"/>
                           </svg>
-                          www.goevent.com
+                          www.goevent.online
                         </div>
                       </div>
                     </div>
@@ -506,14 +506,14 @@ const injectedVideoResourceManager = inject<any>('videoResourceManager')
 // Security validation function for video elements
 const validateVideoElement = (element: HTMLVideoElement): boolean => {
   if (!element || !(element instanceof HTMLVideoElement)) return false
-  
+
   // Check if element is attached to document
   if (!document.contains(element)) return false
-  
+
   // Validate src attribute is from trusted domain
   const src = element.src || element.getAttribute('src') || ''
   if (!src) return true // Allow empty src for cleanup
-  
+
   try {
     const url = new URL(src)
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
@@ -521,12 +521,12 @@ const validateVideoElement = (element: HTMLVideoElement): boolean => {
       new URL(API_BASE_URL).origin,
       window.location.origin
     ]
-    
+
     // Allow data URLs for embedded content
     if (url.protocol === 'data:') {
       return url.href.startsWith('data:video/')
     }
-    
+
     return allowedOrigins.includes(url.origin)
   } catch {
     return false
@@ -549,7 +549,7 @@ const backgroundVideoProps = computed(() => ({
 // Simplified mounting - no video management needed
 onMounted(async () => {
   await nextTick()
-  
+
   // Use the injected video resource manager for other operations if needed
   if (injectedVideoResourceManager) {
     videoResourceManager.value = injectedVideoResourceManager
@@ -660,7 +660,7 @@ onMounted(() => {
   nextTick(() => {
     initializeRevealAnimations()
     initializeScrollAnimations()
-    
+
     // Emit that main content has been viewed
     emit('mainContentViewed')
   })
@@ -708,14 +708,14 @@ const getTextContent = (textType: string, fallback = ''): string => {
   // Fallback to frontend translation system
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
   const translationKey = TRANSLATION_KEY_MAP[textType]
-  
+
   return translationKey ? translateRSVP(translationKey, currentLang) : fallback
 }
 
 /**
  * Find event text by type
  */
-const findEventText = (textType: string) => 
+const findEventText = (textType: string) =>
   props.eventTexts?.find(text => text.text_type === textType)
 
 // Computed properties for event text content
@@ -727,13 +727,13 @@ const descriptionText = computed(() => findEventText('description')?.content)
 const descriptionTitle = computed(() => findEventText('description')?.title)
 
 // Computed properties for translated text
-const locationHeaderText = computed(() => 
+const locationHeaderText = computed(() =>
   getTextContent('location_header', 'Location')
 )
-const footerThankYouText = computed(() => 
+const footerThankYouText = computed(() =>
   getTextContent('footer_thank_you', 'Thank you for celebrating with us')
 )
-const footerCreateInvitationsText = computed(() => 
+const footerCreateInvitationsText = computed(() =>
   getTextContent('footer_create_invitations', 'Create beautiful event invitations')
 )
 
@@ -911,7 +911,7 @@ onUnmounted(() => {
 .animate-reveal {
   opacity: 0;
   transform: translateY(40px);
-  transition: 
+  transition:
     opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1),
     transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
   will-change: opacity, transform;
@@ -958,19 +958,19 @@ onUnmounted(() => {
     transition: opacity 0.3s ease;
     transform: none !important;
   }
-  
+
   .animate-slideUp {
     animation: none;
   }
-  
+
   .gleam-animation {
     animation: none;
   }
-  
+
   .glass-background::before {
     animation: none;
   }
-  
+
   .fade-enter-active,
   .fade-leave-active {
     transition: opacity 0.2s ease;
