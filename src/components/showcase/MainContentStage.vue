@@ -7,6 +7,31 @@
       class="absolute inset-0 w-full h-full object-cover"
     />
 
+    <!-- Content Loading Overlay -->
+    <Transition name="fade">
+      <div 
+        v-if="contentLoading"
+        class="absolute inset-0 z-40 flex items-center justify-center"
+      >
+        <div 
+          class="backdrop-blur-sm bg-black bg-opacity-20 rounded-2xl px-6 py-4 flex items-center space-x-3"
+          :style="{
+            boxShadow: `0 8px 32px ${primaryColor}20`
+          }"
+        >
+          <div class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-80"
+               :style="{ color: primaryColor }">
+          </div>
+          <span 
+            class="text-white font-medium text-sm"
+            :style="{ fontFamily: primaryFont || currentFont }"
+          >
+            Updating content...
+          </span>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Floating Action Menu -->
     <FloatingActionMenu
       class="z-30"
@@ -455,6 +480,7 @@ interface Props {
   guestName?: string
   isMusicPlaying?: boolean
   isAuthenticated?: boolean
+  contentLoading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -908,6 +934,21 @@ onUnmounted(() => {
 }
 
 /* ===================
+   TRANSITION EFFECTS
+   =================== */
+
+/* Fade transition for loading overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ===================
    ACCESSIBILITY
    =================== */
 
@@ -928,6 +969,11 @@ onUnmounted(() => {
   
   .glass-background::before {
     animation: none;
+  }
+  
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.2s ease;
   }
 }
 

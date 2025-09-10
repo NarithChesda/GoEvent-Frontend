@@ -238,6 +238,7 @@ export function useEventShowcase() {
   // ============================
   // Core state
   const loading = ref(false)
+  const contentLoading = ref(false)
   const error = ref<string | null>(null)
   const showcaseData = ref<ShowcaseData | null>(null)
   
@@ -574,6 +575,103 @@ export function useEventShowcase() {
   }
 
   /**
+   * Updates language content without triggering full loading state
+   * This prevents the background video from reloading during language changes
+   */
+  const updateLanguageContent = async (newLanguage: string) => {
+    const eventId = route.params.id as string
+    if (!eventId) {
+      error.value = 'Invalid event ID'
+      return
+    }
+
+    if (currentLanguage.value === newLanguage) return
+
+    const guest = guestName.value || ''
+    const requestKey = `language-content-${eventId}-${newLanguage}-${guest}`
+
+    try {
+      contentLoading.value = true
+      error.value = null
+
+      // Update current language immediately for UI feedback
+      currentLanguage.value = newLanguage
+
+      const params: { lang?: string; guest_name?: string } = {
+        lang: newLanguage
+      }
+      
+      if (guestName.value) {
+        params.guest_name = guestName.value as string
+      }
+
+      const data = await deduplicateRequest(requestKey, async () => {
+        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
+
+        if (!showcaseResponse.success || !showcaseResponse.data) {
+          throw new Error(showcaseResponse.message || 'Failed to load event content')
+        }
+
+        return showcaseResponse.data
+      })
+
+      // Update only the content-related parts of showcaseData
+      if (showcaseData.value) {
+        showcaseData.value = {
+          ...showcaseData.value,
+          event: {
+            ...showcaseData.value.event,
+            event_texts: data.event.event_texts,
+            hosts: data.event.hosts,
+            agenda_items: data.event.agenda_items,
+            available_languages: data.event.available_languages
+          },
+          meta: {
+            ...showcaseData.value.meta,
+            language: data.meta?.language || newLanguage
+          }
+        }
+      } else {
+        // Fallback to full data update if showcaseData doesn't exist
+        showcaseData.value = data
+      }
+
+      // Load custom fonts for the new language asynchronously
+      const langFonts = templateFonts.value.filter(f => f.language === newLanguage)
+      
+      fontManager.loadCustomFonts(langFonts, { 
+        display: 'swap',
+        timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
+        retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES
+      }).catch((fontError) => {
+        // Log font loading issues but don't block the content update
+        console.warn('Font loading failed during language change, falling back to system fonts:', fontError)
+      })
+
+      // Clear language change flags after successful content update
+      setTimeout(() => {
+        redirectManager.clearLanguageChangeFlags()
+      }, 500) // Shorter timeout since we're not doing full stage initialization
+      
+    } catch (err: unknown) {
+      // Enhanced error handling with proper type safety
+      const showcaseError = createShowcaseError(err, {
+        eventId,
+        language: newLanguage,
+        code: 'LOAD_FAILED'
+      })
+      
+      error.value = showcaseError.message
+      console.warn('Failed to update language content:', showcaseError)
+      
+      // Revert language on error
+      currentLanguage.value = showcaseData.value?.meta?.language || urlLang
+    } finally {
+      contentLoading.value = false
+    }
+  }
+
+  /**
    * Creates a properly typed ShowcaseError with context
    */
   const createShowcaseError = (
@@ -694,20 +792,29 @@ export function useEventShowcase() {
   const changeLanguage = async (newLanguage: string) => {
     if (currentLanguage.value === newLanguage) return
     
-    // Always mark main content as seen and set language change flag for consistent behavior
-    // This ensures language changes always redirect to main content regardless of login status
-    redirectManager.markMainContentSeen()
+    // Check if we're in the main content stage (background video is playing)
+    const isInMainContentStage = stageManager.currentShowcaseStage.value === 'main_content'
     
-    // Set a session flag to indicate this is a language change
-    try {
-      sessionStorage.setItem('language_change', 'true')
-      // Also set a timestamp to clear this flag after a reasonable time
-      sessionStorage.setItem('language_change_time', Date.now().toString())
-    } catch {
-      // Ignore sessionStorage errors
+    if (isInMainContentStage) {
+      // Use lightweight content update to avoid reloading background video
+      await updateLanguageContent(newLanguage)
+    } else {
+      // Use full showcase reload for other stages
+      // Always mark main content as seen and set language change flag for consistent behavior
+      // This ensures language changes always redirect to main content regardless of login status
+      redirectManager.markMainContentSeen()
+      
+      // Set a session flag to indicate this is a language change
+      try {
+        sessionStorage.setItem('language_change', 'true')
+        // Also set a timestamp to clear this flag after a reasonable time
+        sessionStorage.setItem('language_change_time', Date.now().toString())
+      } catch {
+        // Ignore sessionStorage errors
+      }
+      
+      await loadShowcase(newLanguage)
     }
-    
-    await loadShowcase(newLanguage)
   }
 
   // Stage management delegated to stageManager
@@ -752,6 +859,7 @@ export function useEventShowcase() {
   return {
     // State (maintained for backward compatibility)
     loading,
+    contentLoading,
     error,
     showcaseData,
     currentLanguage,
@@ -797,6 +905,7 @@ export function useEventShowcase() {
 
     // Methods
     loadShowcase,
+    updateLanguageContent,
     loadCustomFonts: fontManager.loadCustomFonts,
     openEnvelope: stageManager.openEnvelope,
     onVideoCanPlay: stageManager.onVideoCanPlay,

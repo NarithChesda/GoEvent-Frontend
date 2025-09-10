@@ -73,6 +73,7 @@
             :guest-name="guestName"
             :is-music-playing="isMusicPlaying"
             :is-authenticated="authStore.isAuthenticated"
+            :content-loading="contentLoading"
             @open-map="openGoogleMap"
             @open-photo="openPhotoModal"
             @register="registerForEvent"
@@ -136,6 +137,7 @@ const authStore = useAuthStore()
 const {
   // Reactive state
   loading,
+  contentLoading,
   error,
   currentLanguage,
   isPhotoModalOpen,
