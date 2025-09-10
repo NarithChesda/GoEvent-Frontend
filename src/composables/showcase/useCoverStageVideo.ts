@@ -128,6 +128,17 @@ export function useCoverStageVideo(
     backgroundVideoReady.value = true
   }
 
+  // Handle background video playing event - this is when we should show main content
+  const handleBackgroundVideoPlaying = () => {
+    // Only change phase if we're transitioning from event video AND not already in background phase
+    // This prevents autoplay from triggering phase change during cover stage
+    if (isEventVideoComplete.value && currentVideoPhase.value !== 'background') {
+      console.log('Background video started playing after event video, changing to background phase')
+      currentVideoPhase.value = 'background'
+      emit('sequentialVideoEnded')
+    }
+  }
+
   // Sequential video handlers
   const handleSequentialVideoEnded = () => {
     if (currentVideoPhase.value === 'event') {
@@ -216,8 +227,8 @@ export function useCoverStageVideo(
       videoRefs.eventVideoPreloader.value.style.zIndex = '-15'
     }
     
-    // Show and play the background video
-    currentVideoPhase.value = 'background'
+    // DON'T change video phase yet - wait for video to actually start playing
+    // currentVideoPhase.value = 'background'
     
     // Ensure background video loading is triggered first
     if (!shouldLoadBackgroundVideo.value) {
@@ -229,23 +240,25 @@ export function useCoverStageVideo(
       if (videoRefs.backgroundVideoElement.value) {
         // Check if video is already playing (autoplay might have worked)
         if (!videoRefs.backgroundVideoElement.value.paused) {
-          // Video is already playing via autoplay, just ensure visibility
+          // Video is already playing via autoplay - the @playing event handler will change phase
           videoRefs.backgroundVideoElement.value.style.opacity = '1'
           videoRefs.backgroundVideoElement.value.style.zIndex = '-1'
-          emit('sequentialVideoEnded')
+          // Don't change phase here - let @playing event handler do it
           return
         }
         
-        // Background video should already be preloaded, no need to set src again
+        // Make video visible but don't change phase yet
         videoRefs.backgroundVideoElement.value.style.opacity = '1'
         videoRefs.backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
         
-        // Try to play programmatically as fallback
-        videoRefs.backgroundVideoElement.value.play().catch((error) => {
+        // Try to play programmatically - phase will be changed in @playing event handler
+        videoRefs.backgroundVideoElement.value.play().then(() => {
+          // Video started playing successfully - phase will be changed in @playing handler
+          console.log('Background video play() succeeded, waiting for @playing event')
+        }).catch((error) => {
           console.warn('Background video play failed:', error)
-          // Even if play fails, show the video element (first frame will be visible)
-          videoRefs.backgroundVideoElement.value!.style.opacity = '1'
-          videoRefs.backgroundVideoElement.value!.style.zIndex = '-1'
+          // Even if play fails, change phase to show main content (static first frame will be visible)
+          currentVideoPhase.value = 'background'
           emit('sequentialVideoEnded')
         })
       } else if (attempt <= 5) {
@@ -255,6 +268,8 @@ export function useCoverStageVideo(
         }, 50 * attempt) // 50ms, 100ms, 150ms, 200ms, 250ms
       } else {
         // Give up after 5 attempts and continue with the flow
+        console.warn('Background video element not found after 5 attempts, showing main content anyway')
+        currentVideoPhase.value = 'background'
         emit('sequentialVideoEnded')
       }
     }
@@ -264,10 +279,8 @@ export function useCoverStageVideo(
     
     emit('playBackgroundVideo')
     
-    // Emit completion since main content is now displayed
-    setTimeout(() => {
-      emit('sequentialVideoEnded')
-    }, 500) // Small delay to ensure smooth transition
+    // Note: sequentialVideoEnded will be emitted when video actually starts playing
+    // or when we fallback after failed attempts
   }
 
   // Initialize video state based on current showcase stage and redirect state
@@ -493,6 +506,7 @@ export function useCoverStageVideo(
     handleCoverVideoLoaded,
     handleBackgroundVideoPreloaded,
     handleBackgroundVideoReady,
+    handleBackgroundVideoPlaying,
     handleSequentialVideoEnded,
     handleSequentialVideoError,
     playEventVideo,

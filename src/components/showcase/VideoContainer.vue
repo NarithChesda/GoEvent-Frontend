@@ -35,7 +35,6 @@
       v-if="backgroundVideoUrl && shouldLoadBackgroundVideo"
       ref="backgroundVideoElement"
       :src="getMediaUrl(backgroundVideoUrl)"
-      autoplay
       muted
       loop
       playsinline
@@ -101,13 +100,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   sequentialVideoEnded: []
   sequentialVideoError: []
   eventVideoPreloaded: []
   eventVideoReady: []
   backgroundVideoPreloaded: []
   backgroundVideoReady: []
+  backgroundVideoPlaying: []
   coverVideoLoaded: []
 }>()
 
@@ -121,13 +121,15 @@ const eventDataId = computed(() =>
   props.eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'
 )
 
-// Handle background video playing event to ensure visibility
+// Handle background video playing event to ensure visibility and notify parent
 const handleBackgroundVideoPlaying = () => {
   if (backgroundVideoElement.value) {
     // Ensure the video is visible when it starts playing
     backgroundVideoElement.value.style.opacity = '1'
     backgroundVideoElement.value.style.zIndex = '-1'
   }
+  // Emit event to parent so it can change the video phase and show main content
+  emit('backgroundVideoPlaying')
 }
 
 // Expose refs to parent component

@@ -16,6 +16,7 @@
       @eventVideoReady="videoState.handleEventVideoReady"
       @backgroundVideoPreloaded="videoState.handleBackgroundVideoPreloaded"
       @backgroundVideoReady="videoState.handleBackgroundVideoReady"
+      @backgroundVideoPlaying="videoState.handleBackgroundVideoPlaying"
       @coverVideoLoaded="videoState.handleCoverVideoLoaded"
     />
 

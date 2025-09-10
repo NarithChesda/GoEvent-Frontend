@@ -148,7 +148,8 @@
       "Read(/C:\\Users\\narit\\Code\\GoEvent-Frontend-main\\src\\views/**)",
       "Bash(git clean:*)",
       "Bash(npx tsc:*)",
-      "Read(C:\\/**)"
+      "Read(C:\\/**)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "additionalDirectories": [
