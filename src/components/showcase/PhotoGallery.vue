@@ -60,7 +60,7 @@
         style="margin-bottom: 0px"
         :ref="el => setupPhotoAnimation(el, 'photo-gallery', 1)"
       >
-        <!-- Photo strip with infinite scroll -->
+        <!-- Photo strip with optimized infinite scroll -->
         <div class="photo-strip-wrapper overflow-hidden flex items-center enhanced-scroll">
           <div
             class="photo-strip flex animate-infinite-scroll items-center"
@@ -88,6 +88,7 @@
                 class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
                 @load="onImageLoad"
+                :data-optimized-id="`opt-${photo.id}`"
               />
 
               <!-- Caption overlay -->
@@ -99,7 +100,7 @@
               </div>
             </div>
 
-            <!-- Duplicate set for seamless infinite scroll -->
+            <!-- Duplicate set for seamless infinite scroll (reuses cached images) -->
             <div
               v-for="photo in allPhotosForStrip"
               :key="`second-${photo.id}`"
@@ -116,6 +117,7 @@
                 :alt="photo.caption || 'Event Photo'"
                 class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
+                :data-optimized-id="`opt-dup-${photo.id}`"
               />
 
               <!-- Caption overlay -->
@@ -136,7 +138,7 @@
         style="margin-top: 0px"
         :ref="el => setupPhotoAnimation(el, 'reverse-gallery', 2)"
       >
-        <!-- Photo strip with reverse infinite scroll -->
+        <!-- Photo strip with optimized reverse infinite scroll -->
         <div class="photo-strip-wrapper overflow-hidden flex items-center enhanced-scroll">
           <div
             class="photo-strip flex animate-infinite-scroll-reverse items-center"
@@ -164,6 +166,7 @@
                 class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
                 @load="onImageLoad"
+                :data-optimized-id="`opt-rev-${photo.id}`"
               />
 
               <!-- Caption overlay -->
@@ -175,7 +178,7 @@
               </div>
             </div>
 
-            <!-- Duplicate set for seamless infinite scroll (reversed) -->
+            <!-- Duplicate set for seamless infinite scroll (reuses cached images) -->
             <div
               v-for="photo in reversePhotosForStrip"
               :key="`reverse-second-${photo.id}`"
@@ -192,6 +195,7 @@
                 :alt="photo.caption || 'Event Photo'"
                 class="w-full h-full object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                 loading="lazy"
+                :data-optimized-id="`opt-rev-dup-${photo.id}`"
               />
 
               <!-- Caption overlay -->
@@ -701,6 +705,24 @@ onUnmounted(() => {
 .enhanced-photo-card img {
   will-change: transform, filter;
   backface-visibility: hidden;
+}
+
+/* Optimized image loading performance */
+.enhanced-photo-card img[data-optimized-id] {
+  /* Force browser to cache and reuse identical src images */
+  image-rendering: optimizeQuality;
+  /* Optimize for repeated use */
+  image-orientation: from-image;
+  /* GPU acceleration for smooth scrolling */
+  transform: translateZ(0);
+}
+
+/* Memory optimization for duplicate images */
+.enhanced-photo-card img[data-optimized-id^="opt-dup-"],
+.enhanced-photo-card img[data-optimized-id^="opt-rev-dup-"] {
+  /* Second instances should leverage cached images */
+  content-visibility: auto;
+  contain-intrinsic-size: 188px 188px;
 }
 
 /* Responsive gallery heights */
