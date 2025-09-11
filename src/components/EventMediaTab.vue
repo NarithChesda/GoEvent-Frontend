@@ -302,8 +302,8 @@ const videosCount = computed(() => {
   // Count video embeds from eventData
   if (!localEventData.value) return 0
   let count = 0
-  if (localEventData.value.video_embed) count++
-  if (localEventData.value.youtube_url) count++
+  if (localEventData.value.event_video) count++
+  if (localEventData.value.youtube_embed_link) count++
   return count
 })
 

@@ -984,7 +984,7 @@ const openPaymentLink = (paymentLink: string): void => {
 }
 
 
-const handleImageError = (event: Event): void => {
+const handleImageError = (event: globalThis.Event): void => {
   const img = event.target as HTMLImageElement
   if (img?.src) {
     console.error('Failed to load QR code image:', img.src)
@@ -993,7 +993,7 @@ const handleImageError = (event: Event): void => {
   }
 }
 
-const handleFileSelect = (event: Event): void => {
+const handleFileSelect = (event: globalThis.Event): void => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0] || null
 
@@ -1011,7 +1011,7 @@ const handleFileSelect = (event: Event): void => {
   error.value = null
 }
 
-const handleUpdateFileSelect = (event: Event): void => {
+const handleUpdateFileSelect = (event: globalThis.Event): void => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0] || null
 

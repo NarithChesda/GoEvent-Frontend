@@ -128,12 +128,12 @@ export function useCoverStageVideo(
     backgroundVideoReady.value = true
   }
 
-  // Handle background video playing event - this is when we should show main content
+  // Handle background video playing event - fallback for edge cases
   const handleBackgroundVideoPlaying = () => {
+    // Fallback phase transition if play() promise didn't handle it (edge cases)
     // Only change phase if we're transitioning from event video AND not already in background phase
-    // This prevents autoplay from triggering phase change during cover stage
     if (isEventVideoComplete.value && currentVideoPhase.value !== 'background') {
-      console.log('Background video started playing after event video, changing to background phase')
+      console.log('Background video @playing event fallback - changing to background phase')
       currentVideoPhase.value = 'background'
       emit('sequentialVideoEnded')
     }
@@ -240,10 +240,14 @@ export function useCoverStageVideo(
       if (videoRefs.backgroundVideoElement.value) {
         // Check if video is already playing (autoplay might have worked)
         if (!videoRefs.backgroundVideoElement.value.paused) {
-          // Video is already playing via autoplay - the @playing event handler will change phase
+          // Video is already playing via autoplay - change phase immediately
           videoRefs.backgroundVideoElement.value.style.opacity = '1'
           videoRefs.backgroundVideoElement.value.style.zIndex = '-1'
-          // Don't change phase here - let @playing event handler do it
+          console.log('Background video already playing via autoplay, changing to background phase immediately')
+          if (isEventVideoComplete.value && currentVideoPhase.value !== 'background') {
+            currentVideoPhase.value = 'background'
+            emit('sequentialVideoEnded')
+          }
           return
         }
         
@@ -251,10 +255,14 @@ export function useCoverStageVideo(
         videoRefs.backgroundVideoElement.value.style.opacity = '1'
         videoRefs.backgroundVideoElement.value.style.zIndex = '-1' // Background but visible
         
-        // Try to play programmatically - phase will be changed in @playing event handler
+        // Try to play programmatically - change phase immediately after successful play()
         videoRefs.backgroundVideoElement.value.play().then(() => {
-          // Video started playing successfully - phase will be changed in @playing handler
-          console.log('Background video play() succeeded, waiting for @playing event')
+          // Video started playing successfully - change phase immediately for instant content display
+          console.log('Background video play() succeeded, changing to background phase immediately')
+          if (isEventVideoComplete.value && currentVideoPhase.value !== 'background') {
+            currentVideoPhase.value = 'background'
+            emit('sequentialVideoEnded')
+          }
         }).catch((error) => {
           console.warn('Background video play failed:', error)
           // Even if play fails, change phase to show main content (static first frame will be visible)

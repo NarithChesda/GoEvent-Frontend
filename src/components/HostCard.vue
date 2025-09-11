@@ -25,7 +25,7 @@
       <div class="relative">
         <div v-if="host.profile_image" class="w-20 h-20 rounded-full overflow-hidden">
           <img
-            :src="getMediaUrl(host.profile_image)"
+            :src="getMediaUrl(host.profile_image) || undefined"
             :alt="host.name"
             class="w-full h-full object-cover"
           />
@@ -172,7 +172,7 @@ const hasSocialLinks = computed(() => {
 })
 
 // Utility method to get full URL for media
-const getMediaUrl = (mediaUrl: string | null): string | null => {
+const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
   return apiService.getProfilePictureUrl(mediaUrl)
 }
 
