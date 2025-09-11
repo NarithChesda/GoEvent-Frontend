@@ -14,14 +14,13 @@
       @error="$emit('sequentialVideoError')"
     />
 
-    <!-- Hidden Event Video Preloader - loads after cover video -->
+    <!-- Hidden Event Video Preloader - no src initially, will be set by blob URL -->
     <video
-      v-if="eventVideoUrl && shouldLoadEventVideo"
+      v-if="eventVideoUrl"
       ref="eventVideoPreloader"
-      :src="eventVideoUrl"
       muted
       playsinline
-      preload="auto"
+      preload="none"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
       style="z-index: -15;"
       data-video-type="event"
@@ -30,15 +29,14 @@
       @canplaythrough="$emit('eventVideoReady')"
     />
 
-    <!-- Background Video Element - loads after event video -->
+    <!-- Background Video Element - no src initially, will be set by blob URL -->
     <video
-      v-if="backgroundVideoUrl && shouldLoadBackgroundVideo"
+      v-if="backgroundVideoUrl"
       ref="backgroundVideoElement"
-      :src="getMediaUrl(backgroundVideoUrl)"
       muted
       loop
       playsinline
-      preload="auto"
+      preload="none"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
       style="z-index: -2;"
       data-video-type="background"
@@ -92,8 +90,6 @@ interface Props {
   eventTitle: string
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
-  shouldLoadEventVideo: boolean
-  shouldLoadBackgroundVideo: boolean
   isCoverVideoPlaying: boolean
   getMediaUrl: (url: string) => string
 }
