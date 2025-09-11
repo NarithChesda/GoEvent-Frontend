@@ -10,8 +10,10 @@
       :getMediaUrl="getMediaUrl"
       @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
       @sequentialVideoError="videoState.handleSequentialVideoError"
+      @eventVideoLoadStarted="videoState.handleEventVideoLoadStarted"
       @eventVideoPreloaded="videoState.handleEventVideoPreloaded"
       @eventVideoReady="videoState.handleEventVideoReady"
+      @backgroundVideoLoadStarted="videoState.handleBackgroundVideoLoadStarted"
       @backgroundVideoPreloaded="videoState.handleBackgroundVideoPreloaded"
       @backgroundVideoReady="videoState.handleBackgroundVideoReady"
       @backgroundVideoPlaying="videoState.handleBackgroundVideoPlaying"
@@ -51,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useCoverStageVideo, type ShowcaseStage } from '../../composables/showcase/useCoverStageVideo'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
@@ -95,8 +97,10 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   openEnvelope: []
   coverStageReady: []
+  eventVideoLoadStarted: []
   eventVideoPreloaded: []
   eventVideoReady: []
+  backgroundVideoLoadStarted: []
   sequentialVideoReady: []
   sequentialVideoEnded: []
   playEventVideo: []
@@ -105,25 +109,22 @@ const emit = defineEmits<{
 
 // Template refs for video elements
 const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
-const eventVideoPreloader = computed(() => videoContainerRef.value?.eventVideoPreloader || null)
-const sequentialVideoContainer = computed(() => videoContainerRef.value?.sequentialVideoContainer || null)
-const coverVideoElement = computed(() => videoContainerRef.value?.coverVideoElement || null)
-const backgroundVideoElement = computed(() => videoContainerRef.value?.backgroundVideoElement || null)
 
 // Use the video management composable
 const videoState = useCoverStageVideo(
   {
-    eventVideoPreloader,
-    sequentialVideoContainer,
-    coverVideoElement,
-    backgroundVideoElement
+    eventVideoPreloader: () => videoContainerRef.value?.eventVideoPreloader || null,
+    sequentialVideoContainer: () => videoContainerRef.value?.sequentialVideoContainer || null,
+    coverVideoElement: () => videoContainerRef.value?.coverVideoElement || null,
+    backgroundVideoElement: () => videoContainerRef.value?.backgroundVideoElement || null
   },
   {
     eventVideoUrl: props.eventVideoUrl,
     backgroundVideoUrl: props.backgroundVideoUrl,
     currentShowcaseStage: props.currentShowcaseStage,
     shouldSkipToMainContent: props.shouldSkipToMainContent,
-    videoStatePreserved: props.videoStatePreserved
+    videoStatePreserved: props.videoStatePreserved,
+    templateAssets: props.templateAssets
   },
   (event, ...args) => {
     // Forward events from composable to parent
@@ -136,17 +137,9 @@ const handleOpenEnvelope = () => {
   emit('openEnvelope')
 }
 
-// Stage is always ready - no loading states
-const isStageReady = computed(() => true)
-
-// Watchers
-watch(isStageReady, (ready) => {
-  if (ready) {
-    emit('coverStageReady')
-    // Initialize video state on first render
-    videoState.initializeVideoState()
-  }
-}, { immediate: true })
+// Initialize video state immediately
+emit('coverStageReady')
+videoState.initializeVideoState()
 
 // Expose methods for parent component
 const startEventVideo = () => {

@@ -1,13 +1,13 @@
-import { ref, computed, onUnmounted, nextTick, watch, type Ref } from 'vue'
+import { ref, computed, onUnmounted, nextTick, watch, readonly, type Ref } from 'vue'
 
 export type VideoPhase = 'none' | 'event' | 'background'
 export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
 
 interface VideoElementRefs {
-  eventVideoPreloader: Ref<HTMLVideoElement | null>
-  sequentialVideoContainer: Ref<HTMLVideoElement | null>
-  coverVideoElement: Ref<HTMLVideoElement | null>
-  backgroundVideoElement: Ref<HTMLVideoElement | null>
+  eventVideoPreloader: () => HTMLVideoElement | null
+  sequentialVideoContainer: () => HTMLVideoElement | null
+  coverVideoElement: () => HTMLVideoElement | null
+  backgroundVideoElement: () => HTMLVideoElement | null
 }
 
 interface VideoUrls {
@@ -16,8 +16,10 @@ interface VideoUrls {
 }
 
 interface VideoEmits {
+  eventVideoLoadStarted: []
   eventVideoPreloaded: []
   eventVideoReady: []
+  backgroundVideoLoadStarted: []
   sequentialVideoEnded: []
   playEventVideo: []
   playBackgroundVideo: []
@@ -27,7 +29,12 @@ interface VideoProps extends VideoUrls {
   currentShowcaseStage?: ShowcaseStage
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
+  templateAssets?: { standard_cover_video?: string } | null
 }
+
+// Basic device detection
+const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+const isLowEndDevice = (navigator as any).deviceMemory ? (navigator as any).deviceMemory <= 2 : navigator.hardwareConcurrency <= 2
 
 export function useCoverStageVideo(
   videoRefs: VideoElementRefs,
@@ -40,69 +47,79 @@ export function useCoverStageVideo(
   const eventVideoReady = ref(false)
   const backgroundVideoPreloaded = ref(false)
   const backgroundVideoReady = ref(false)
-  const sequentialVideoReady = ref(false)
-  const isEventVideoComplete = ref(false)
-  
-  // Loading state flags (for UI feedback only)
-  const eventVideoLoading = ref(false)
-  const backgroundVideoLoading = ref(false)
   
   // Video state control
   const isCoverVideoPlaying = ref(!props.shouldSkipToMainContent && props.currentShowcaseStage !== 'main_content')
   const isContentHidden = ref(false)
   
-  // Event listener cleanup tracking
-  const videoEventListeners = ref<Map<HTMLVideoElement, Array<{ event: string; handler: EventListener }>>>(new Map())
-  
   // Store blob URLs for cleanup
   const videoBlobUrls = ref<Map<string, string>>(new Map())
 
-  // Video resource manager for memory cleanup
+  // Video resource manager with WeakMap
+  const videoListenerRefs = new WeakMap<HTMLVideoElement, Array<{ event: string; handler: EventListener; controller: AbortController }>>()
+
   const addVideoEventListener = (video: HTMLVideoElement, event: string, handler: EventListener) => {
-    video.addEventListener(event, handler)
+    const controller = new AbortController()
+    video.addEventListener(event, handler, { signal: controller.signal })
     
-    if (!videoEventListeners.value.has(video)) {
-      videoEventListeners.value.set(video, [])
+    if (!videoListenerRefs.has(video)) {
+      videoListenerRefs.set(video, [])
     }
-    videoEventListeners.value.get(video)?.push({ event, handler })
+    videoListenerRefs.get(video)?.push({ event, handler, controller })
   }
 
   const cleanupVideoElement = (video: HTMLVideoElement | null) => {
     if (!video) return
     
-    // Remove all tracked event listeners
-    const listeners = videoEventListeners.value.get(video)
+    // Abort all event listeners for this video element
+    const listeners = videoListenerRefs.get(video)
     if (listeners) {
-      listeners.forEach(({ event, handler }) => {
-        video.removeEventListener(event, handler)
+      listeners.forEach(({ controller }) => {
+        controller.abort()
       })
-      videoEventListeners.value.delete(video)
+      videoListenerRefs.delete(video)
     }
     
-    // Cleanup video resources
-    video.pause()
-    video.src = ''
-    video.load() // Reset the video element
+    // Cleanup video resources with error handling
+    try {
+      video.pause()
+      video.src = ''
+      video.load()
+      
+      // Clear any remaining blob URL if it exists
+      const currentSrc = video.currentSrc
+      if (currentSrc && currentSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(currentSrc)
+      }
+    } catch (error) {
+      // Silently handle cleanup errors
+    }
   }
 
   const cleanupAllVideoResources = () => {
     // Cleanup all video elements
-    cleanupVideoElement(videoRefs.eventVideoPreloader.value)
-    cleanupVideoElement(videoRefs.sequentialVideoContainer.value)
-    cleanupVideoElement(videoRefs.coverVideoElement.value)
-    cleanupVideoElement(videoRefs.backgroundVideoElement.value)
-    
-    // Clear all listener tracking
-    videoEventListeners.value.clear()
+    cleanupVideoElement(videoRefs.eventVideoPreloader())
+    cleanupVideoElement(videoRefs.sequentialVideoContainer())
+    cleanupVideoElement(videoRefs.coverVideoElement())
+    cleanupVideoElement(videoRefs.backgroundVideoElement())
     
     // Cleanup all blob URLs
     videoBlobUrls.value.forEach((blobUrl) => {
-      URL.revokeObjectURL(blobUrl)
+      try {
+        URL.revokeObjectURL(blobUrl)
+      } catch (error) {
+        // Silently handle revocation errors
+      }
     })
     videoBlobUrls.value.clear()
+    
+    // Force garbage collection hint for mobile browsers
+    if (isMobile && typeof window !== 'undefined' && 'gc' in window) {
+      (window as any).gc()
+    }
   }
 
-  // Force full video download using fetch with priority support
+  // Video download with device optimization
   const forceFullVideoDownload = async (videoUrl: string, videoType: 'event' | 'background') => {
     try {
       // Check if already downloaded
@@ -111,24 +128,43 @@ export function useCoverStageVideo(
         return existingBlob
       }
       
+      // Skip background video for low-end devices
+      if (videoType === 'background' && isLowEndDevice) {
+        return null
+      }
+      
       // Get the full URL if it's relative
       const fullUrl = videoUrl.startsWith('http') 
         ? videoUrl 
         : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${videoUrl.startsWith('/') ? videoUrl : `/media/${videoUrl}`}`
       
-      // Fetch with priority hint for event video
-      const response = await fetch(fullUrl, {
-        priority: videoType === 'event' ? 'high' : 'low'
-      } as RequestInit)
+      // Basic fetch configuration
+      const fetchOptions: RequestInit = {}
+      
+      // Mobile optimizations
+      if (isMobile) {
+        fetchOptions.cache = 'force-cache'
+        fetchOptions.keepalive = true
+      }
+      
+      // Skip large videos on low-end devices
+      if (isLowEndDevice) {
+        const headResponse = await fetch(fullUrl, { ...fetchOptions, method: 'HEAD' })
+        const contentLength = headResponse.headers.get('content-length')
+        const videoSizeInMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0
+        
+        if (videoSizeInMB > 10) {
+          return null
+        }
+      }
+      
+      const response = await fetch(fullUrl, fetchOptions)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch ${videoType} video: ${response.status}`)
       }
       
-      // Read the response as blob
       const blob = await response.blob()
-      
-      // Create and store blob URL for cleanup
       const blobUrl = URL.createObjectURL(blob)
       videoBlobUrls.value.set(videoUrl, blobUrl)
       
@@ -138,111 +174,116 @@ export function useCoverStageVideo(
     }
   }
 
+  // Background video loading (triggered after event video is ready)
+  const loadBackgroundVideo = async () => {
+    if (!props.backgroundVideoUrl) return
+    
+    // Emit event that background video loading has started
+    emit('backgroundVideoLoadStarted')
+    
+    const bgBlobUrl = await forceFullVideoDownload(props.backgroundVideoUrl, 'background')
+    if (bgBlobUrl && videoRefs.backgroundVideoElement()) {
+      videoRefs.backgroundVideoElement()!.src = bgBlobUrl
+    }
+  }
+
   // Event video preloading handlers
   const handleEventVideoPreloaded = () => {
-    if (eventVideoPreloaded.value) return // Prevent duplicate firing
-    
+    if (eventVideoPreloaded.value) return
     eventVideoPreloaded.value = true
     emit('eventVideoPreloaded')
   }
 
+  // Handler for event video load started event
+  const handleEventVideoLoadStarted = () => {
+    // This can be used by parent components to show loading indicators
+    // or perform other actions when event video loading begins
+  }
+
   const handleEventVideoReady = () => {
-    if (eventVideoReady.value) return // Prevent duplicate firing
-    
+    if (eventVideoReady.value) return
     eventVideoReady.value = true
     emit('eventVideoReady')
+    // Start loading background video only after event video is ready
+    loadBackgroundVideo()
   }
 
-  // Priority-based video loading with fetch
-  const startPriorityVideoLoading = async () => {
-    // Priority 1: Load event video first (highest priority)
-    if (props.eventVideoUrl) {
-      eventVideoLoading.value = true
-      const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
-      if (eventBlobUrl && videoRefs.eventVideoPreloader.value) {
-        videoRefs.eventVideoPreloader.value.src = eventBlobUrl
-      }
-      eventVideoLoading.value = false
-    }
+  // Event video loading (triggered after cover video is loaded)
+  const loadEventVideo = async () => {
+    if (!props.eventVideoUrl) return
     
-    // Priority 2: Load background video after event video starts
-    if (props.backgroundVideoUrl) {
-      // Small delay to ensure event video gets network priority
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      backgroundVideoLoading.value = true
-      const bgBlobUrl = await forceFullVideoDownload(props.backgroundVideoUrl, 'background')
-      if (bgBlobUrl && videoRefs.backgroundVideoElement.value) {
-        videoRefs.backgroundVideoElement.value.src = bgBlobUrl
-      }
-      backgroundVideoLoading.value = false
+    // Emit event that event video loading has started
+    emit('eventVideoLoadStarted')
+    
+    const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
+    if (eventBlobUrl && videoRefs.eventVideoPreloader()) {
+      videoRefs.eventVideoPreloader()!.src = eventBlobUrl
     }
   }
 
-  // Cover video loaded handler - start loading event video
+  // Cover video loaded handler - start loading event video after cover video is ready
   const handleCoverVideoLoaded = () => {
-    startPriorityVideoLoading()
+    loadEventVideo()
   }
 
-  // Background video preloading handlers
+  // Event to trigger background video loading externally
+  const triggerBackgroundVideoLoad = () => {
+    loadBackgroundVideo()
+  }
+
+  // Background video handlers
   const handleBackgroundVideoPreloaded = () => {
-    if (backgroundVideoPreloaded.value) return // Prevent duplicate firing
-    
+    if (backgroundVideoPreloaded.value) return
     backgroundVideoPreloaded.value = true
   }
 
   const handleBackgroundVideoReady = () => {
-    if (backgroundVideoReady.value) return // Prevent duplicate firing
-    
+    if (backgroundVideoReady.value) return
     backgroundVideoReady.value = true
   }
 
-  // Handle background video playing event - simplified
+  // Handler for background video load started event
+  const handleBackgroundVideoLoadStarted = () => {
+    // This can be used by parent components to show loading indicators
+    // or perform other actions when background video loading begins
+  }
+
   const handleBackgroundVideoPlaying = () => {}
 
   // Sequential video handlers
   const handleSequentialVideoEnded = () => {
     if (currentVideoPhase.value === 'event') {
-      // Event video ended, switch to background video
       playBackgroundVideo()
     } else if (currentVideoPhase.value === 'background') {
-      // Background video ended, emit completion (though background should loop)
       emit('sequentialVideoEnded')
     }
   }
 
   const handleSequentialVideoError = () => {
-    // Continue with the flow even if there's an error
     emit('sequentialVideoEnded')
   }
 
   const playEventVideo = () => {
     if (!props.eventVideoUrl) return
     
-    // Stop cover video
     isCoverVideoPlaying.value = false
-    
     currentVideoPhase.value = 'event'
     
-    // Use preloaded event video if available, otherwise fallback to sequential container
-    const videoToUse = videoRefs.eventVideoPreloader.value || videoRefs.sequentialVideoContainer.value
+    const videoToUse = videoRefs.eventVideoPreloader() || videoRefs.sequentialVideoContainer()
     if (!videoToUse) return
     
-    // If using the preloaded video, we don't need to set src again
-    if (videoToUse === videoRefs.eventVideoPreloader.value) {
-      // Use the preloaded video directly - no need to set src again
+    if (videoToUse === videoRefs.eventVideoPreloader()) {
       videoToUse.style.opacity = '1'
       videoToUse.style.zIndex = '20'
       videoToUse.style.pointerEvents = 'none'
-      videoToUse.muted = false // Unmute for event video
-      videoToUse.loop = false // Don't loop event video
+      videoToUse.muted = false
+      videoToUse.loop = false
     } else {
-      // Fallback to sequential container if preloader not available
       videoToUse.src = props.eventVideoUrl
       videoToUse.style.opacity = '1'
       videoToUse.style.zIndex = '20'
-      videoToUse.muted = false // Unmute for event video
-      videoToUse.loop = false // Don't loop event video
+      videoToUse.muted = false
+      videoToUse.loop = false
     }
     
     videoToUse.play().catch(() => {
@@ -258,43 +299,42 @@ export function useCoverStageVideo(
       return
     }
     
-    const bgVideo = videoRefs.backgroundVideoElement.value
+    const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) {
       emit('sequentialVideoEnded')
       return
     }
     
-    // Prepare background video for smooth transition
     bgVideo.style.opacity = '1'
     bgVideo.style.zIndex = '-1'
     
     bgVideo.play()
       .then(() => {
-        // Only hide event video after background video starts playing (smooth crossfade)
-        if (videoRefs.eventVideoPreloader.value) {
-          videoRefs.eventVideoPreloader.value.style.opacity = '0'
+        // Hide the event video that was playing
+        if (videoRefs.eventVideoPreloader()) {
+          videoRefs.eventVideoPreloader()!.style.opacity = '0'
+        }
+        if (videoRefs.sequentialVideoContainer()) {
+          videoRefs.sequentialVideoContainer()!.style.opacity = '0'
         }
         currentVideoPhase.value = 'background'
         emit('sequentialVideoEnded')
       })
       .catch((error) => {
-        // Still transition to main content even if video fails
         currentVideoPhase.value = 'background'
         emit('sequentialVideoEnded')
       })
   }
 
-  // Initialize video state based on current showcase stage and redirect state
+  // Initialize video state
   const initializeVideoState = () => {
     if (props.shouldSkipToMainContent || props.currentShowcaseStage === 'main_content') {
-      // Skip directly to main content with background video
       isContentHidden.value = true
       isCoverVideoPlaying.value = false
       
-      // If video state is preserved (from auth redirect), ensure videos are properly loaded
       if (props.videoStatePreserved) {
-        // Re-initiate priority loading to restore video functionality
-        startPriorityVideoLoading()
+        // If video state is preserved, load event video immediately
+        loadEventVideo()
       }
       
       if (props.backgroundVideoUrl) {
@@ -304,68 +344,60 @@ export function useCoverStageVideo(
         emit('sequentialVideoEnded')
       }
     } else if (props.currentShowcaseStage === 'event_video') {
-      // Initialize for event video stage
       isContentHidden.value = true
       isCoverVideoPlaying.value = false
       
-      // If video state is preserved, ensure event video loading is enabled
       if (props.videoStatePreserved && props.eventVideoUrl) {
-        startPriorityVideoLoading()
+        // If video state is preserved, load event video immediately
+        loadEventVideo()
       }
       
       if (props.eventVideoUrl) {
         playEventVideo()
       }
     } else {
-      // Default: show cover stage
       currentVideoPhase.value = 'none'
       isCoverVideoPlaying.value = true
       isContentHidden.value = false
       
-      // If video state is preserved but we're at cover stage, start priority loading
       if (props.videoStatePreserved) {
-        // Re-initiate priority loading to restore video functionality
-        startPriorityVideoLoading()
+        // If video state is preserved, load event video immediately
+        loadEventVideo()
+      } else if (!props.templateAssets?.standard_cover_video) {
+        // If there's no cover video, start loading event video immediately
+        loadEventVideo()
       }
     }
   }
 
-  // Handle envelope opening with smooth transition
+  // Handle envelope opening
   const handleOpenEnvelope = () => {
-    // First hide the content with fade animation
     isContentHidden.value = true
     
-    // After content is hidden, start the sequential video or emit the openEnvelope event
     setTimeout(() => {
       if (props.eventVideoUrl) {
         playEventVideo()
       } else if (props.backgroundVideoUrl) {
-        // If no event video but has background video, go directly to background video
         playBackgroundVideo()
       } else {
-        // No videos available, just emit the event
-        // This needs to be handled by parent component
         emit('sequentialVideoEnded')
       }
-    }, 500) // Match the CSS transition duration
+    }, 500)
   }
 
   // Computed properties
   const shouldShowButtonLoading = computed(() => {
-    // Show loading if there's an event video but it's not ready yet
     return props.eventVideoUrl && !eventVideoReady.value
   })
 
   // Watchers
   watch(() => props.currentShowcaseStage, (newStage) => {
     if (newStage === 'event_video' && currentVideoPhase.value === 'none') {
-      // User returned to event video stage after login
       isContentHidden.value = true
       if (props.eventVideoUrl) {
         playEventVideo()
       }
     } else if (newStage === 'main_content' && currentVideoPhase.value !== 'background') {
-      // User returned to main content stage after login  
       isContentHidden.value = true
       if (props.backgroundVideoUrl) {
         playBackgroundVideo()
@@ -375,91 +407,38 @@ export function useCoverStageVideo(
     }
   }, { immediate: true })
 
-  // Watch for redirect state changes to skip directly to main content
   watch(() => props.shouldSkipToMainContent, (shouldSkip) => {
     if (shouldSkip) {
-      // Skip cover and event video, go directly to main content
       isContentHidden.value = true
-      isCoverVideoPlaying.value = false // Stop cover video immediately
+      isCoverVideoPlaying.value = false
       
       if (props.backgroundVideoUrl) {
-        // Force background video phase regardless of current phase
         playBackgroundVideo()
       } else {
-        // If no background video, just show main content
         currentVideoPhase.value = 'background'
         emit('sequentialVideoEnded')
       }
     }
   }, { immediate: true })
 
-  // Watch for video state preservation changes to restore video loading after auth redirects
   watch(() => props.videoStatePreserved, (isPreserved) => {
     if (isPreserved) {
-      // When video state is being preserved, restart priority loading
-      // This prevents videos from being reset during auth redirects
-      startPriorityVideoLoading()
-      
-      // Re-initialize video state to handle any stage changes during preservation
+      // When video state is being preserved, load event video immediately
+      loadEventVideo()
       nextTick(() => {
         initializeVideoState()
       })
     }
   }, { immediate: true })
 
-  // Watch cover video playing state and pause/resume accordingly
   watch(isCoverVideoPlaying, (isPlaying) => {
-    if (videoRefs.coverVideoElement.value) {
+    const coverVideo = videoRefs.coverVideoElement()
+    if (coverVideo) {
       if (isPlaying) {
-        // Resume cover video
-        videoRefs.coverVideoElement.value.play().catch(() => {
-          // Silently handle play errors
-        })
+        coverVideo.play().catch(() => {})
       } else {
-        // Pause and hide cover video
-        videoRefs.coverVideoElement.value.pause()
+        coverVideo.pause()
       }
-    }
-  })
-
-  // Enhanced video element management
-  watch(videoRefs.eventVideoPreloader, (newVideo, oldVideo) => {
-    // Cleanup old video if it exists
-    if (oldVideo) {
-      cleanupVideoElement(oldVideo)
-    }
-    
-    // Setup new video with tracked event listeners
-    if (newVideo) {
-      addVideoEventListener(newVideo, 'loadeddata', handleEventVideoPreloaded)
-      addVideoEventListener(newVideo, 'canplaythrough', handleEventVideoReady)
-      addVideoEventListener(newVideo, 'ended', handleSequentialVideoEnded)
-      
-      // Add error handler for memory cleanup
-      const errorHandler = () => {
-        cleanupVideoElement(newVideo)
-      }
-      addVideoEventListener(newVideo, 'error', errorHandler)
-    }
-  })
-
-  // Enhanced background video element management
-  watch(videoRefs.backgroundVideoElement, (newVideo, oldVideo) => {
-    // Cleanup old video if it exists
-    if (oldVideo) {
-      cleanupVideoElement(oldVideo)
-    }
-    
-    // Setup new video with tracked event listeners
-    if (newVideo) {
-      addVideoEventListener(newVideo, 'loadeddata', handleBackgroundVideoPreloaded)
-      addVideoEventListener(newVideo, 'canplaythrough', handleBackgroundVideoReady)
-      
-      // Add error handler for memory cleanup
-      const errorHandler = () => {
-        cleanupVideoElement(newVideo)
-      }
-      addVideoEventListener(newVideo, 'error', errorHandler)
     }
   })
 
@@ -468,20 +447,17 @@ export function useCoverStageVideo(
     cleanupAllVideoResources()
   })
 
-  // Expose method for parent to trigger event video
   const startEventVideo = () => {
     playEventVideo()
   }
 
   return {
     // State
-    currentVideoPhase,
-    eventVideoPreloaded,
-    eventVideoReady,
-    backgroundVideoPreloaded,
-    backgroundVideoReady,
-    eventVideoLoading,
-    backgroundVideoLoading,
+    currentVideoPhase: readonly(currentVideoPhase),
+    eventVideoPreloaded: readonly(eventVideoPreloaded),
+    eventVideoReady: readonly(eventVideoReady),
+    backgroundVideoPreloaded: readonly(backgroundVideoPreloaded),
+    backgroundVideoReady: readonly(backgroundVideoReady),
     isCoverVideoPlaying,
     isContentHidden,
     
@@ -489,9 +465,11 @@ export function useCoverStageVideo(
     shouldShowButtonLoading,
     
     // Methods
+    handleEventVideoLoadStarted,
     handleEventVideoPreloaded,
     handleEventVideoReady,
     handleCoverVideoLoaded,
+    handleBackgroundVideoLoadStarted,
     handleBackgroundVideoPreloaded,
     handleBackgroundVideoReady,
     handleBackgroundVideoPlaying,
@@ -502,6 +480,9 @@ export function useCoverStageVideo(
     handleOpenEnvelope,
     initializeVideoState,
     cleanupAllVideoResources,
-    startEventVideo
+    startEventVideo,
+    triggerBackgroundVideoLoad,
+    loadBackgroundVideo,
+    loadEventVideo
   }
 }

@@ -6,7 +6,6 @@
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
       style="z-index: -10;"
       data-video-type="sequential"
-      :data-event-id="eventDataId"
       muted
       playsinline
       preload="auto"
@@ -24,9 +23,10 @@
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
       style="z-index: -15;"
       data-video-type="event"
-      :data-event-id="eventDataId"
       @loadeddata="$emit('eventVideoPreloaded')"
       @canplaythrough="$emit('eventVideoReady')"
+      @ended="$emit('sequentialVideoEnded')"
+      @error="$emit('sequentialVideoError')"
     />
 
     <!-- Background Video Element - no src initially, will be set by blob URL -->
@@ -40,7 +40,6 @@
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
       style="z-index: -2;"
       data-video-type="background"
-      :data-event-id="eventDataId"
       @loadeddata="$emit('backgroundVideoPreloaded')"
       @canplaythrough="$emit('backgroundVideoReady')"
       @playing="handleBackgroundVideoPlaying"
@@ -57,7 +56,6 @@
       playsinline
       class="absolute inset-0 w-full h-full desktop-video-sizing"
       data-video-type="cover"
-      :data-event-id="eventDataId"
       style="z-index: -1;"
       @loadeddata="$emit('coverVideoLoaded')"
     />
@@ -78,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 interface TemplateAssets {
   standard_cover_video?: string
@@ -99,8 +97,10 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   sequentialVideoEnded: []
   sequentialVideoError: []
+  eventVideoLoadStarted: []
   eventVideoPreloaded: []
   eventVideoReady: []
+  backgroundVideoLoadStarted: []
   backgroundVideoPreloaded: []
   backgroundVideoReady: []
   backgroundVideoPlaying: []
@@ -113,9 +113,6 @@ const eventVideoPreloader = ref<HTMLVideoElement | null>(null)
 const backgroundVideoElement = ref<HTMLVideoElement | null>(null)
 const coverVideoElement = ref<HTMLVideoElement | null>(null)
 
-const eventDataId = computed(() => 
-  props.eventTitle?.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50) || 'unknown'
-)
 
 // Handle background video playing event to ensure visibility and notify parent
 const handleBackgroundVideoPlaying = () => {
