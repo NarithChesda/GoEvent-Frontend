@@ -13,15 +13,15 @@
       @error="$emit('sequentialVideoError')"
     />
 
-    <!-- Hidden Event Video Preloader - no src initially, will be set by blob URL -->
+    <!-- Hidden Event Video Preloader - stays visible as background while background video loads -->
     <video
       v-if="eventVideoUrl"
       ref="eventVideoPreloader"
       muted
       playsinline
       preload="none"
-      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
-      style="z-index: -15;"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
+      style="z-index: 5;"
       data-video-type="event"
       @loadeddata="$emit('eventVideoPreloaded')"
       @canplaythrough="$emit('eventVideoReady')"
@@ -29,7 +29,7 @@
       @error="$emit('sequentialVideoError')"
     />
 
-    <!-- Background Video Element - no src initially, will be set by blob URL -->
+    <!-- Background Video Element - will replace event video when ready -->
     <video
       v-if="backgroundVideoUrl"
       ref="backgroundVideoElement"
@@ -38,7 +38,7 @@
       playsinline
       preload="none"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
-      style="z-index: -2;"
+      style="z-index: 4;"
       data-video-type="background"
       @loadeddata="$emit('backgroundVideoPreloaded')"
       @canplaythrough="$emit('backgroundVideoReady')"
@@ -119,7 +119,7 @@ const handleBackgroundVideoPlaying = () => {
   if (backgroundVideoElement.value) {
     // Ensure the video is visible when it starts playing
     backgroundVideoElement.value.style.opacity = '1'
-    backgroundVideoElement.value.style.zIndex = '-1'
+    backgroundVideoElement.value.style.zIndex = '5'  // Same level as event video to replace it
   }
   // Emit event to parent so it can change the video phase and show main content
   emit('backgroundVideoPlaying')

@@ -10,13 +10,10 @@
       :getMediaUrl="getMediaUrl"
       @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
       @sequentialVideoError="videoState.handleSequentialVideoError"
-      @eventVideoLoadStarted="videoState.handleEventVideoLoadStarted"
       @eventVideoPreloaded="videoState.handleEventVideoPreloaded"
       @eventVideoReady="videoState.handleEventVideoReady"
-      @backgroundVideoLoadStarted="videoState.handleBackgroundVideoLoadStarted"
       @backgroundVideoPreloaded="videoState.handleBackgroundVideoPreloaded"
       @backgroundVideoReady="videoState.handleBackgroundVideoReady"
-      @backgroundVideoPlaying="videoState.handleBackgroundVideoPlaying"
       @coverVideoLoaded="videoState.handleCoverVideoLoaded"
     />
 
