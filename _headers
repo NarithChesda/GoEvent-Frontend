@@ -1,0 +1,74 @@
+# Cloudflare Pages headers configuration
+# Security and performance headers for the GoEvent Frontend
+
+# Security headers for all pages
+/*
+  # Security headers
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # Content Security Policy (basic - adjust based on your needs)
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' https:; connect-src 'self' https://api.goevent.online https://accounts.google.com; frame-src https://accounts.google.com;
+
+  # Cache control for HTML - no cache for dynamic content
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Long-term caching for static assets with immutable flag
+/assets/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Long-term caching for all assets directory
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Moderate caching for root-level static files
+/*.png
+  Cache-Control: public, max-age=2592000
+/*.jpg
+  Cache-Control: public, max-age=2592000
+/*.jpeg
+  Cache-Control: public, max-age=2592000
+/*.webp
+  Cache-Control: public, max-age=2592000
+/*.svg
+  Cache-Control: public, max-age=2592000
+/*.ico
+  Cache-Control: public, max-age=2592000
+/*.woff
+  Cache-Control: public, max-age=2592000
+/*.woff2
+  Cache-Control: public, max-age=2592000
+/*.ttf
+  Cache-Control: public, max-age=2592000
+
+# Special files with specific caching strategies
+/favicon.ico
+  Cache-Control: public, max-age=86400
+
+# Service worker caching
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Manifest file
+/manifest.json
+  Cache-Control: public, max-age=86400
+
+# Robots.txt
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+# Sitemap
+/sitemap.xml
+  Cache-Control: public, max-age=3600

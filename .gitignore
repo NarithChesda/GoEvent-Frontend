@@ -39,9 +39,12 @@ DESIGN_GUIDE/
 docs/
 .claude/
 
-# Development Configuration Files
+# Environment Variables - Security Critical (exclude ALL .env files)
+.env
+.env.*
 .env.local
 .env.development
+.env.production
 .env.test
 .env.*.local
 CLAUDE.md

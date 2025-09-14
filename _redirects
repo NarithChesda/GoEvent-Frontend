@@ -1,0 +1,11 @@
+# Cloudflare Pages redirects and rewrites
+# This file handles client-side routing for Vue.js SPA
+
+# Handle Vue Router routes - redirect all non-asset requests to index.html
+# This ensures that direct navigation to routes like /events/123 works properly
+/*    /index.html   200
+
+# Optional: Redirect old API routes if you had any
+# /api/*  https://api.goevent.online/:splat  302
+
+# Security headers and performance optimizations are handled in _headers file

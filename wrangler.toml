@@ -1,0 +1,51 @@
+# Cloudflare Pages configuration for GoEvent Frontend
+name = "goevent-frontend"
+compatibility_date = "2024-09-14"
+
+[build]
+command = "npm run build-cloudflare"
+cwd = "."
+watch_dir = ["src", "public", "index.html", "vite.config.ts", "tailwind.config.js"]
+
+[build.upload]
+format = "directory"
+dir = "dist"
+
+# Node.js configuration for build
+[build.environment_variables]
+NODE_VERSION = "20"
+NPM_FLAGS = "--frozen-lockfile"
+
+# Environment variables (set these in Cloudflare Pages dashboard)
+[env.production.vars]
+# Required environment variables for production:
+# VITE_API_BASE_URL = "https://api.goevent.online"
+# VITE_MEDIA_BASE_URL = "https://api.goevent.online"
+# VITE_ENVIRONMENT = "production"
+# VITE_GOOGLE_CLIENT_ID = "your_actual_google_client_id"
+# VITE_GENERATE_SOURCEMAP = "true"
+
+[env.preview.vars]
+# Preview environment variables:
+# VITE_API_BASE_URL = "https://api.goevent.online"
+# VITE_MEDIA_BASE_URL = "https://api.goevent.online"
+# VITE_ENVIRONMENT = "preview"
+# VITE_GOOGLE_CLIENT_ID = "your_actual_google_client_id"
+# VITE_GENERATE_SOURCEMAP = "true"
+
+# Pages configuration
+[pages]
+# Cloudflare Pages specific settings
+compatibility_flags = []
+
+# Preview deployments configuration
+[pages.build]
+# Build configuration for Pages
+destination_dir = "dist"
+root_dir = "."
+build_command = "npm run build-cloudflare"
+
+# Functions configuration (if needed for future serverless functions)
+[pages.functions]
+compatibility_date = "2024-09-14"
+compatibility_flags = []
