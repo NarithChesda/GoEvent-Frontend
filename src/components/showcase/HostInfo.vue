@@ -1,99 +1,193 @@
 <template>
-  <div class="host-info-container mb-2 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-12 px-2 sm:px-4 md:px-6 laptop-sm:px-8 laptop-md:px-10 laptop-lg:px-12 desktop:px-8">
-    <!-- Top Section: Parents Names -->
-    <div v-if="hosts.length > 0" class="mt-2 sm:mt-3 laptop-sm:mt-4 mb-1 sm:mb-2">
-      <div class="flex justify-center gap-12 sm:gap-6 md:gap-8 laptop-sm:gap-10 laptop-md:gap-12 laptop-lg:gap-14 desktop:gap-10">
-        <!-- Host 1 Parents -->
-        <div class="text-center flex-1" style="max-width: 220px;">
+  <div class="host-info-wrapper" :class="{ 'khmer-text': currentLanguage === 'kh' }">
+    <!-- Grid container with 6 rows -->
+    <div class="host-info-grid">
+
+      <!-- Row 1: Welcome Header (moved from MainContentStage) -->
+      <div class="welcome-row">
+        <div class="welcome-content">
+          <h2
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
+            :style="{
+              fontFamily: primaryFont || currentFont,
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              backgroundSize: '200% 200%'
+            }"
+          >
+            {{ welcomeMessage || 'Welcome to Our Event' }}
+          </h2>
+        </div>
+      </div>
+
+      <!-- Row 2: Host Parent A Names -->
+      <div v-if="hosts.length > 0" class="parent-row">
+        <!-- Host 1 Parent A (45% width) -->
+        <div class="host-parent-left">
           <p
-            class="host-parent-name leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            :class="[
+              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto'
             }"
           >
             {{ hosts[0].parent_a_name || 'Father Name' }}
           </p>
+        </div>
+
+        <!-- Center spacer (10% width) -->
+        <div class="center-spacer"></div>
+
+        <!-- Host 2 Parent A (45% width) -->
+        <div class="host-parent-right">
           <p
-            class="host-parent-name leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            v-if="hosts.length > 1"
+            :class="[
+              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto'
+            }"
+          >
+            {{ hosts[1]?.parent_a_name || 'Father Name' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Row 3: Host Parent B Names -->
+      <div v-if="hosts.length > 0" class="parent-row">
+        <!-- Host 1 Parent B (45% width) -->
+        <div class="host-parent-left">
+          <p
+            :class="[
+              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
+            :style="{
+              color: primaryColor,
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto'
             }"
           >
             {{ hosts[0].parent_b_name || 'Mother Name' }}
           </p>
         </div>
 
+        <!-- Center spacer (10% width) -->
+        <div class="center-spacer"></div>
 
-
-        <!-- Host 2 Parents -->
-        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
+        <!-- Host 2 Parent B (45% width) -->
+        <div class="host-parent-right">
           <p
-            class="host-parent-name leading-relaxed py-2 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+            v-if="hosts.length > 1"
+            :class="[
+              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto'
             }"
           >
-            {{ hosts[1].parent_a_name || 'Father Name' }}
-          </p>
-          <p
-            class="host-parent-name leading-relaxed py-1 text-xs sm:text-sm md:text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap"
-            :style="{
-              color: primaryColor,
-              fontFamily: secondaryFont || currentFont
-            }"
-          >
-            {{ hosts[1].parent_b_name || 'Mother Name' }}
+            {{ hosts[1]?.parent_b_name || 'Mother Name' }}
           </p>
         </div>
       </div>
-    </div>
 
-    <!-- Middle Section: Logo (Highlight) -->
-    <div class="logo-section py-6 my-2 sm:my-3 laptop-sm:my-4 laptop-md:my-5 laptop-lg:my-6 desktop:my-4 px-2 sm:px-4 md:px-8 laptop-sm:px-10 laptop-md:px-12 laptop-lg:px-16 desktop:px-12">
-      <div class="flex justify-center">
-        <div class="logo-container p-2 sm:p-3 md:p-4 laptop-sm:p-5 laptop-md:p-6 laptop-lg:p-7 desktop:p-6">
+      <!-- Row 4: Logo -->
+      <div class="logo-row">
+        <div class="logo-content">
           <img
             v-if="logoUrl"
             :src="logoUrl"
             alt="Event Logo"
-            class="host-logo-showcase mx-auto"
+            class="host-logo-showcase"
           />
           <div
             v-else
-            class="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 laptop-sm:w-36 laptop-sm:h-36 laptop-md:w-40 laptop-md:h-40 laptop-lg:w-44 laptop-lg:h-44 desktop:w-52 desktop:h-52 rounded-full flex items-center justify-center mx-auto shadow-2xl"
+            class="logo-fallback"
             :style="{
               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
             }"
           >
-            <span class="text-white font-bold text-2xl sm:text-3xl md:text-4xl laptop-sm:text-5xl laptop-md:text-6xl laptop-lg:text-7xl desktop:text-6xl" :style="{ fontFamily: primaryFont || currentFont }">
+            <span class="logo-initial" :style="{ fontFamily: primaryFont || currentFont }">
               {{ eventInitial }}
             </span>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Bottom Section: Bride & Groom Labels and Names -->
-    <div v-if="hosts.length > 0" class="hosts-section">
-      <div class="flex justify-center gap-4 sm:gap-6 md:gap-8 laptop-sm:gap-10 laptop-md:gap-12 laptop-lg:gap-14 desktop:gap-10">
-        <!-- Host 1 (Bride/Groom) -->
-        <div class="text-center flex-1" style="max-width: 220px;">
+      <!-- Row 5: Host Titles -->
+      <div v-if="hosts.length > 0" class="title-row">
+        <!-- Host 1 Title (45% width) -->
+        <div class="host-title-left">
           <p
-            class="host-title text-xs md:text-base font-medium opacity-80"
+            :class="[
+              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto'
             }"
           >
             {{ hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1') }}
           </p>
-          <h3
-            class="host-name gleam-animation leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
+        </div>
+
+        <!-- Center spacer (10% width) -->
+        <div class="center-spacer"></div>
+
+        <!-- Host 2 Title (45% width) -->
+        <div class="host-title-right">
+          <p
+            v-if="hosts.length > 1"
+            :class="[
+              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
             :style="{
-              background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
+              color: primaryColor,
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto'
+            }"
+          >
+            {{ hosts[1]?.title || 'Bride' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Row 6: Host Names -->
+      <div v-if="hosts.length > 0" class="name-row">
+        <!-- Host 1 Name (45% width) -->
+        <div class="host-name-left">
+          <h3
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
+            :style="{
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
               backgroundSize: '200% 200%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -105,26 +199,19 @@
           </h3>
         </div>
 
-        <!-- Divider (Heart or &) - Only show if two hosts -->
-        <div v-if="hosts.length > 1" class="flex items-center px-2">
+        <!-- Center spacer (10% width) -->
+        <div class="center-spacer"></div>
 
-        </div>
-
-        <!-- Host 2 (Bride/Groom) -->
-        <div v-if="hosts.length > 1" class="text-center flex-1" style="max-width: 220px;">
-          <p
-            class="host-title text-xs md:text-base font-medium opacity-80"
-            :style="{
-              color: primaryColor,
-              fontFamily: secondaryFont || currentFont
-            }"
-          >
-            {{ hosts[1].title || 'Bride' }}
-          </p>
+        <!-- Host 2 Name (45% width) -->
+        <div class="host-name-right">
           <h3
-            class="host-name gleam-animation leading-relaxed py-2 text-base sm:text-lg md:text-xl font-bold text-ellipsis overflow-hidden whitespace-nowrap text-center"
+            v-if="hosts.length > 1"
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
+              currentLanguage === 'kh' && 'khmer-text-fix'
+            ]"
             :style="{
-              background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
               backgroundSize: '200% 200%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -132,10 +219,11 @@
               fontFamily: primaryFont || secondaryFont || currentFont
             }"
           >
-            {{ hosts[1].name }}
+            {{ hosts[1]?.name }}
           </h3>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -153,35 +241,124 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  welcomeMessage?: string
+  currentLanguage?: string
 }
 
 defineProps<Props>()
 </script>
 
 <style scoped>
-/* Gleam Animation Styles - Shared */
-.gleam-animation {
-  animation: gradientShift 3s ease-in-out infinite;
+/* Main wrapper with responsive padding */
+.host-info-wrapper {
+  width: 100%;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+/* Grid container with 6 rows */
+.host-info-grid {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto auto;
+  width: 100%;
+  gap: 0.25rem;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* Host Logo Responsive Sizing - Matching CoverStage */
+/* Row layouts with flexible 3-column structure */
+.parent-row,
+.title-row,
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  width: 100%;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Reduce spacing between title and name rows */
+.name-row {
+  margin-top: -0.125rem;
+}
+
+/* Welcome row (full width) */
+.welcome-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.welcome-content {
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Logo row (full width centered) */
+.logo-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem 0;
+  box-sizing: border-box;
+}
+
+.logo-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Column alignments */
+.host-parent-left,
+.host-title-left,
+.host-name-left {
+  text-align: center;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.host-parent-right,
+.host-title-right,
+.host-name-right {
+  text-align: center;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.center-spacer {
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+/* Khmer-specific center spacer adjustments */
+.khmer-text .center-spacer {
+  width: 0.5rem;
+}
+
+/* Text styles - using Tailwind classes now */
+
+/* Title and Name text styles now use Tailwind classes */
+
+/* Logo styles */
 .host-logo-showcase {
   height: auto;
-  max-height: 144px; /* Base mobile size */
+  max-height: 120px;
   width: auto;
-  max-width: 300px;
+  max-width: 280px;
   object-fit: contain;
   transition: transform 0.3s ease;
 }
@@ -190,72 +367,251 @@ defineProps<Props>()
   transform: scale(1.05);
 }
 
-/* Responsive adjustments for logo - matching CoverStage breakpoints */
+.logo-fallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.logo-initial {
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+/* Gleam Animation */
+.gleam-animation {
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+/* Responsive breakpoints */
+
+/* Small phones (sm: 640px) */
 @media (min-width: 640px) {
+
+  .host-info-grid {
+    gap: 0.25rem;
+  }
+
+  .name-row {
+    margin-top: -0.125rem;
+  }
+
+  .welcome-row {
+    margin-bottom: 2rem;
+  }
+
+
   .host-logo-showcase {
     max-height: 140px;
-    max-width: 350px;
+    max-width: 320px;
+  }
+
+  .logo-fallback {
+    width: 112px;
+    height: 112px;
+  }
+
+  .logo-initial {
+    font-size: 1.875rem;
   }
 }
 
+/* Tablets (md: 768px) */
 @media (min-width: 768px) {
+
+  .host-info-grid {
+    gap: 0.625rem;
+  }
+
+  .name-row {
+    margin-top: -0.375rem;
+  }
+
+
   .host-logo-showcase {
     max-height: 150px;
-    max-width: 375px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .host-logo-showcase {
-    max-height: 140px;
     max-width: 350px;
   }
+
+  .logo-fallback {
+    width: 128px;
+    height: 128px;
+  }
+
+  .logo-initial {
+    font-size: 2.25rem;
+  }
 }
 
-@media (min-width: 1280px) {
+/* Small laptops (laptop-sm: 1024px) */
+@media (min-width: 1024px) {
+
+  .host-info-grid {
+    gap: 0.75rem;
+  }
+
+  .name-row {
+    margin-top: -0.5rem;
+  }
+
+
   .host-logo-showcase {
     max-height: 160px;
-    max-width: 400px;
+    max-width: 380px;
+  }
+
+  .logo-fallback {
+    width: 144px;
+    height: 144px;
+  }
+
+  .logo-initial {
+    font-size: 3rem;
   }
 }
 
-@media (min-width: 1536px) {
+/* Medium laptops (laptop-md: 1280px) */
+@media (min-width: 1280px) {
+
+  .host-info-grid {
+    gap: 0.875rem;
+  }
+
+  .name-row {
+    margin-top: -0.625rem;
+  }
+
+
   .host-logo-showcase {
     max-height: 180px;
-    max-width: 450px;
+    max-width: 420px;
+  }
+
+  .logo-fallback {
+    width: 160px;
+    height: 160px;
+  }
+
+  .logo-initial {
+    font-size: 3.5rem;
   }
 }
 
-/* Typography styles are now handled by Tailwind responsive classes */
+/* Large laptops (laptop-lg: 1536px) */
+@media (min-width: 1536px) {
 
-/* Mobile optimizations */
+  .host-info-grid {
+    gap: 1rem;
+  }
+
+  .name-row {
+    margin-top: -0.75rem;
+  }
+
+
+  .host-logo-showcase {
+    max-height: 200px;
+    max-width: 460px;
+  }
+
+  .logo-fallback {
+    width: 176px;
+    height: 176px;
+  }
+
+  .logo-initial {
+    font-size: 4rem;
+  }
+}
+
+/* Desktop (desktop: 1920px) */
+@media (min-width: 1920px) {
+
+  .host-info-grid {
+    gap: 1.125rem;
+  }
+
+  .name-row {
+    margin-top: -0.875rem;
+  }
+
+
+  .host-logo-showcase {
+    max-height: 220px;
+    max-width: 500px;
+  }
+
+  .logo-fallback {
+    width: 208px;
+    height: 208px;
+  }
+
+  .logo-initial {
+    font-size: 4.5rem;
+  }
+}
+
+/* Khmer language mobile adjustments */
 @media (max-width: 768px) {
-  .host-info-container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .logo-section {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .khmer-text .parent-row,
+  .khmer-text .title-row,
+  .khmer-text .name-row {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   }
 }
 
-/* Extra small phones - smaller font sizes for all text elements */
+/* Extra small phones */
 @media (max-width: 374px) {
-  .host-name {
-    font-size: 0.75rem !important; /* 12px - made even smaller */
-    line-height: 1.2 !important;
+
+  .host-info-grid {
+    gap: 0.25rem;
   }
-  
-  .host-parent-name {
-    font-size: 0.625rem !important; /* 10px */
-    line-height: 1.2 !important;
+
+
+  .host-logo-showcase {
+    max-height: 100px;
+    max-width: 240px;
   }
-  
-  .host-title {
-    font-size: 0.625rem !important; /* 10px */
-    line-height: 1.2 !important;
+
+  .logo-fallback {
+    width: 80px;
+    height: 80px;
+  }
+
+  .logo-initial {
+    font-size: 1.25rem;
+  }
+}
+
+/* Enhanced Khmer font rendering - matching EventInfo */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* Additional Khmer text adjustments - removed as we're using Tailwind classes */
+
+/* iPad and tablet portrait adjustments */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .parent-row,
+  .title-row,
+  .name-row {
+    grid-template-columns: 1fr auto 1fr;
   }
 }
 </style>

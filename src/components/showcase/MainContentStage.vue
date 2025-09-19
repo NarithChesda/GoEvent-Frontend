@@ -66,27 +66,7 @@
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
-                <!-- Welcome Header -->
-                <div
-                  ref="welcomeHeaderRef"
-                  class="text-center py-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 animate-reveal"
-                >
-                  <h1
-                    class="welcome-header gleam-animation leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
-                    :style="{
-                      fontFamily: primaryFont || currentFont,
-                      background: `linear-gradient(45deg, ${primaryColor} 0%, ${secondaryColor || accentColor} 50%, ${primaryColor} 100%)`,
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      backgroundSize: '200% 200%'
-                    }"
-                  >
-                    {{ welcomeMessage || 'Welcome to Our Event' }}
-                  </h1>
-                </div>
-
-                <!-- Host Information -->
+                <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
                     :hosts="hosts"
@@ -98,6 +78,8 @@
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
+                    :welcome-message="welcomeMessage"
+                    :current-language="currentLanguage"
                   />
                 </div>
 
