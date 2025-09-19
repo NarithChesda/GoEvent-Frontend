@@ -5,7 +5,7 @@
 
       <!-- Row 1: Welcome Header (moved from MainContentStage) -->
       <div class="welcome-row">
-        <div class="welcome-content">
+        <div class="welcome-content mt-6">
           <h2
             :class="[
               'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
@@ -31,7 +31,7 @@
         <div class="host-parent-left">
           <p
             :class="[
-              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -53,7 +53,7 @@
           <p
             v-if="hosts.length > 1"
             :class="[
-              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -74,7 +74,7 @@
         <div class="host-parent-left">
           <p
             :class="[
-              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -96,7 +96,7 @@
           <p
             v-if="hosts.length > 1"
             :class="[
-              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -112,7 +112,7 @@
       </div>
 
       <!-- Row 4: Logo -->
-      <div class="logo-row">
+      <div class="logo-row my-6">
         <div class="logo-content">
           <img
             v-if="logoUrl"
@@ -140,7 +140,7 @@
         <div class="host-title-left">
           <p
             :class="[
-              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -162,7 +162,7 @@
           <p
             v-if="hosts.length > 1"
             :class="[
-              'text-xs sm:text-sm md:text-base leading-normal text-center opacity-90',
+              'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -183,7 +183,7 @@
         <div class="host-name-left">
           <h3
             :class="[
-              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
+              'host-name-text font-semibold leading-tight uppercase gleam-animation',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -207,7 +207,7 @@
           <h3
             v-if="hosts.length > 1"
             :class="[
-              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
+              'host-name-text font-semibold leading-tight uppercase gleam-animation',
               currentLanguage === 'kh' && 'khmer-text-fix'
             ]"
             :style="{
@@ -277,6 +277,11 @@ defineProps<Props>()
   align-items: center;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+/* Reduce spacing between parent rows */
+.parent-row:nth-child(3) {
+  margin-top: -0.25rem;
 }
 
 /* Reduce spacing between title and name rows */
@@ -349,16 +354,24 @@ defineProps<Props>()
   width: 0.5rem;
 }
 
-/* Text styles - using Tailwind classes now */
+/* Parent name text styles with reduced sizes */
+.parent-name-text {
+  font-size: 0.5625rem; /* 9px - 25% reduction from 12px (mobile) */
+}
+
+/* Host name text styles with 15% mobile reduction */
+.host-name-text {
+  font-size: 0.85rem; /* 13.6px - 15% reduction from 16px (mobile) */
+}
 
 /* Title and Name text styles now use Tailwind classes */
 
 /* Logo styles */
 .host-logo-showcase {
   height: auto;
-  max-height: 120px;
+  max-height: 180px; /* Match CoverStage mobile size */
   width: auto;
-  max-width: 280px;
+  max-width: 330px; /* Match CoverStage mobile size */
   object-fit: contain;
   transition: transform 0.3s ease;
 }
@@ -412,10 +425,22 @@ defineProps<Props>()
     margin-bottom: 2rem;
   }
 
+  .parent-name-text {
+    font-size: 0.6875rem; /* 11px - 22% reduction from 14px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.125rem;
+  }
+
+  .host-name-text {
+    font-size: 0.95625rem; /* 15.3px - 15% reduction from 18px */
+  }
+
 
   .host-logo-showcase {
-    max-height: 140px;
-    max-width: 320px;
+    max-height: 140px; /* Match CoverStage 640px+ */
+    max-width: 350px; /* Match CoverStage 640px+ */
   }
 
   .logo-fallback {
@@ -439,10 +464,22 @@ defineProps<Props>()
     margin-top: -0.375rem;
   }
 
+  .parent-name-text {
+    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.375rem;
+  }
+
+  .host-name-text {
+    font-size: 1.0625rem; /* 17px - 15% reduction from 20px */
+  }
+
 
   .host-logo-showcase {
-    max-height: 150px;
-    max-width: 350px;
+    max-height: 150px; /* Match CoverStage 768px+ */
+    max-width: 375px; /* Match CoverStage 768px+ */
   }
 
   .logo-fallback {
@@ -466,10 +503,22 @@ defineProps<Props>()
     margin-top: -0.5rem;
   }
 
+  .parent-name-text {
+    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.5rem;
+  }
+
+  .host-name-text {
+    font-size: 1.275rem; /* 20.4px - 15% reduction from 24px */
+  }
+
 
   .host-logo-showcase {
-    max-height: 160px;
-    max-width: 380px;
+    max-height: 140px; /* Match CoverStage 1024px+ */
+    max-width: 350px; /* Match CoverStage 1024px+ */
   }
 
   .logo-fallback {
@@ -493,10 +542,22 @@ defineProps<Props>()
     margin-top: -0.625rem;
   }
 
+  .parent-name-text {
+    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.625rem;
+  }
+
+  .host-name-text {
+    font-size: 1.5rem; /* 24px - continues lg:text-2xl */
+  }
+
 
   .host-logo-showcase {
-    max-height: 180px;
-    max-width: 420px;
+    max-height: 160px; /* Match CoverStage 1280px+ */
+    max-width: 400px; /* Match CoverStage 1280px+ */
   }
 
   .logo-fallback {
@@ -520,10 +581,22 @@ defineProps<Props>()
     margin-top: -0.75rem;
   }
 
+  .parent-name-text {
+    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.75rem;
+  }
+
+  .host-name-text {
+    font-size: 1.5rem; /* 24px - continues lg:text-2xl */
+  }
+
 
   .host-logo-showcase {
-    max-height: 200px;
-    max-width: 460px;
+    max-height: 180px; /* Match CoverStage 1536px+ */
+    max-width: 450px; /* Match CoverStage 1536px+ */
   }
 
   .logo-fallback {
@@ -547,10 +620,22 @@ defineProps<Props>()
     margin-top: -0.875rem;
   }
 
+  .parent-name-text {
+    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.875rem;
+  }
+
+  .host-name-text {
+    font-size: 1.5rem; /* 24px - continues lg:text-2xl */
+  }
+
 
   .host-logo-showcase {
-    max-height: 220px;
-    max-width: 500px;
+    max-height: 180px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
+    max-width: 450px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
   }
 
   .logo-fallback {
