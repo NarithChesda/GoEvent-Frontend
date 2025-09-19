@@ -512,7 +512,7 @@ defineProps<Props>()
   }
 
   .host-name-text {
-    font-size: 1.275rem; /* 20.4px - 15% reduction from 24px */
+    font-size: 1.0625rem; /* 17px - smaller than welcome header's 24px */
   }
 
 
@@ -551,7 +551,7 @@ defineProps<Props>()
   }
 
   .host-name-text {
-    font-size: 1.5rem; /* 24px - continues lg:text-2xl */
+    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
   }
 
 
@@ -590,7 +590,7 @@ defineProps<Props>()
   }
 
   .host-name-text {
-    font-size: 1.5rem; /* 24px - continues lg:text-2xl */
+    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
   }
 
 
@@ -629,7 +629,7 @@ defineProps<Props>()
   }
 
   .host-name-text {
-    font-size: 1.5rem; /* 24px - continues lg:text-2xl */
+    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
   }
 
 
