@@ -1,26 +1,26 @@
 <template>
   <div class="min-h-screen">
     <Navigation />
-    
+
     <!-- Hero Section -->
     <section id="hero" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
       <!-- Enhanced Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
         <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"></div>
-        
+
         <!-- Animated background shapes -->
         <div class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"></div>
         <div class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"></div>
         <div class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-indigo-400/30 to-blue-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/10 to-purple-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"></div>
-        
+
         <!-- Geometric patterns -->
         <div class="absolute top-32 right-32 w-4 h-4 bg-blue-500/30 rounded-full animate-pulse delay-300"></div>
         <div class="absolute bottom-32 left-32 w-6 h-6 bg-purple-500/30 rounded-full animate-pulse delay-900"></div>
         <div class="absolute top-64 left-64 w-3 h-3 bg-indigo-500/40 rounded-full animate-pulse delay-1200"></div>
       </div>
-      
+
       <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
@@ -30,24 +30,22 @@
                 Our Story
               </div>
               <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500">
-                <span class="typing-text-about">{{ aboutText }}</span><span 
-                  v-if="aboutComplete" 
+                <span class="typing-text-about">{{ aboutText }}</span><span
+                  v-if="aboutComplete"
                   class="typing-text-goevent"
-                >{{ goEventText }}</span><span 
-                  v-if="!aboutComplete || (aboutComplete && !goEventComplete)" 
+                >{{ goEventText }}</span><span
+                  v-if="!aboutComplete || (aboutComplete && !goEventComplete)"
                   class="typing-cursor"
                 >|</span>
               </h1>
               <p class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000">
-                We're on a mission to revolutionize event management by making it simple, 
-                efficient, and accessible for everyone. From intimate gatherings to large-scale 
-                conferences, we provide the tools you need to create 
-                <span class="text-blue-600 font-semibold">unforgettable experiences</span>.
+                We are on a mission to Build intelligent, tech-driven solutions that redefine how businesses manage and deliver
+              <span class="text-blue-600 font-semibold"> experiences</span>.
               </p>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200">
-              <RouterLink 
+              <RouterLink
                 to="/events"
                 class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
               >
@@ -62,7 +60,7 @@
                 Learn More
               </RouterLink>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400">
               <div class="flex -space-x-2">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base">A</div>
@@ -73,7 +71,7 @@
               <span class="text-slate-600 font-medium text-sm sm:text-base">Meet the team behind the magic</span>
             </div>
           </div>
-          
+
           <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main About Card -->
@@ -85,7 +83,7 @@
                     <span class="text-xs sm:text-sm text-gray-600 font-medium">Since 2023</span>
                   </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
                   <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50">
                     <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">50K+</div>
@@ -98,7 +96,7 @@
                     <div class="text-xs text-green-600 font-medium mt-1">↗ Global reach</div>
                   </div>
                 </div>
-                
+
                 <div class="space-y-4">
                   <div class="flex justify-between items-center">
                     <span class="text-sm font-medium text-gray-700">Mission Progress</span>
@@ -107,7 +105,7 @@
                   <div class="w-full bg-gray-200 rounded-full h-3">
                     <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000" style="width: 92%"></div>
                   </div>
-                  
+
                   <div class="flex justify-between items-center pt-4">
                     <span class="text-xs text-gray-500">Transforming event management</span>
                     <div class="flex space-x-1">
@@ -118,7 +116,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Floating Cards -->
               <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
@@ -131,7 +129,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
                   <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -147,7 +145,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Scroll Indicator -->
       <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div class="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
@@ -157,7 +155,7 @@
     </section>
 
     <!-- Mission & Vision -->
-    <section 
+    <section
       ref="missionSection"
       class="py-24 bg-white relative overflow-hidden scroll-animate"
       :class="{ 'animate-fade-in-up': isVisible.mission }"
@@ -194,16 +192,14 @@
                   <Target class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
               </div>
-              
+
               <div class="pt-6 sm:pt-8">
                 <h3 class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-white mb-4 sm:mb-6">Our Mission</h3>
                 <p class="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed">
-                  To empower event organizers worldwide with innovative technology that transforms 
-                  complex event management into seamless, enjoyable experiences. We believe every 
-                  event, regardless of size, deserves professional-grade tools and exceptional execution.
+                 To become a leading force in transforming businesses through AI-driven innovation — starting with event management and expanding into broader industries — by empowering people and organizations to unlock the full potential of artificial intelligence.
                 </p>
               </div>
-              
+
               <!-- Decorative elements -->
               <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white/10 to-white/5 rounded-full"></div>
               <div class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-full"></div>
@@ -219,16 +215,22 @@
                   <Eye class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
               </div>
-              
+
               <div class="pt-6 sm:pt-8">
                 <h3 class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">Our Vision</h3>
                 <p class="text-sm sm:text-base lg:text-lg text-slate-600 leading-relaxed">
-                  To become the world's most trusted event management platform, where creativity 
-                  meets technology. We envision a future where organizing events is so intuitive 
-                  and efficient that it inspires more meaningful human connections and memorable experiences.
+
+
+
+
+Train and nurture the next generation of AI engineers, creating a sustainable ecosystem of innovation.
+
+Maximize the value of AI for businesses by bridging cutting-edge technology with real-world impact.
+
+Drive digital transformation with scalable, human-centered, AI-powered solutions.
                 </p>
               </div>
-              
+
               <!-- Decorative elements -->
               <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full"></div>
               <div class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full"></div>
@@ -245,7 +247,7 @@
         <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 right-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
       </div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
@@ -259,10 +261,10 @@
             Our impact on the event management industry
           </p>
         </div>
-        
+
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-          <div 
-            v-for="stat in stats" 
+          <div
+            v-for="stat in stats"
             :key="stat.label"
             class="relative bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center hover:bg-white/30 transition-all duration-300 group hover:shadow-xl"
           >
@@ -274,7 +276,7 @@
     </section>
 
     <!-- Values -->
-    <section 
+    <section
       ref="valuesSection"
       class="py-16 scroll-animate features-bg"
       :class="{ 'animate-fade-in-up': isVisible.values }"
@@ -293,17 +295,17 @@
             These core principles guide everything we do and shape our company culture, driving us to create exceptional experiences.
           </p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-          <div 
-            v-for="(value, index) in values" 
+          <div
+            v-for="(value, index) in values"
             :key="value.title"
             class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             :class="index === 1 ? 'md:scale-105 md:z-10 border-blue-100' : ''"
           >
             <!-- Top accent bar -->
             <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></div>
-            
+
             <div class="relative">
               <!-- Icon with design guide styling -->
               <div class="relative mb-6">
@@ -313,7 +315,7 @@
                 <!-- Floating accent -->
                 <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"></div>
               </div>
-              
+
               <!-- Content with design guide typography -->
               <div class="space-y-4">
                 <h3 class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
@@ -324,7 +326,7 @@
                 </p>
               </div>
             </div>
-            
+
             <!-- Hover effect background -->
             <div class="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-purple-50/0 group-hover:from-blue-50/30 group-hover:to-purple-50/30 rounded-xl transition-all duration-300 -z-10"></div>
           </div>
@@ -333,7 +335,7 @@
     </section>
 
     <!-- Team Section -->
-    <section 
+    <section
       ref="teamSection"
       class="py-16 relative overflow-hidden scroll-animate team-bg"
       :class="{ 'animate-fade-in-up': isVisible.team }"
@@ -341,7 +343,7 @@
       <!-- Background decoration -->
       <div class="absolute top-0 right-0 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl"></div>
       <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
-      
+
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16 lg:mb-20">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
@@ -355,7 +357,7 @@
             Passionate professionals dedicated to transforming event management and creating exceptional experiences
           </p>
         </div>
-        
+
         <!-- Loading State -->
         <div v-if="teamLoading" class="flex justify-center items-center py-12 sm:py-16">
           <div class="flex items-center space-x-3 sm:space-x-4 text-blue-600">
@@ -368,7 +370,7 @@
         <div v-else-if="teamError" class="text-center py-12 sm:py-16">
           <div class="bg-red-50 border border-red-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md mx-auto">
             <p class="text-red-600 font-medium text-sm sm:text-base">{{ teamError }}</p>
-            <button 
+            <button
               @click="fetchTeamMembers"
               class="mt-4 bg-red-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200 text-sm sm:text-base"
             >
@@ -379,8 +381,8 @@
 
         <!-- Team Members Grid -->
         <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-          <div 
-            v-for="(member, index) in teamMembers" 
+          <div
+            v-for="(member, index) in teamMembers"
             :key="member.id"
             class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"
             :class="index === 1 ? 'md:scale-105 md:z-10' : ''"
@@ -390,14 +392,14 @@
               <div class="relative">
                 <!-- Profile Picture or Initials -->
                 <div class="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full shadow-xl group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-                  <img 
-                    v-if="member.profile_picture" 
-                    :src="apiService.getProfilePictureUrl(member.profile_picture) || ''" 
+                  <img
+                    v-if="member.profile_picture"
+                    :src="apiService.getProfilePictureUrl(member.profile_picture) || ''"
                     :alt="member.name"
                     class="w-full h-full object-cover"
                     @error="($event.target as HTMLImageElement).style.display='none'"
                   />
-                  <div 
+                  <div
                     v-else
                     class="w-full h-full bg-gradient-to-br flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold"
                     :class="getAvatarGradient(member.id)"
@@ -411,7 +413,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Content -->
             <div class="text-center space-y-3 sm:space-y-4">
               <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{{ member.name }}</h3>
@@ -419,30 +421,30 @@
               <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
                 {{ member.bio || `${member.name} is a valuable member of our team at GoEvent.` }}
               </p>
-              
+
               <!-- Social links -->
               <div class="flex justify-center space-x-3 sm:space-x-4 pt-3 sm:pt-4">
-                <a 
-                  v-if="member.linkedin_url" 
-                  :href="member.linkedin_url" 
+                <a
+                  v-if="member.linkedin_url"
+                  :href="member.linkedin_url"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center text-blue-600 hover:scale-110 transition-all duration-200"
                 >
                   <Linkedin class="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
-                <a 
-                  v-if="member.twitter_url" 
-                  :href="member.twitter_url" 
+                <a
+                  v-if="member.twitter_url"
+                  :href="member.twitter_url"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center text-blue-600 hover:scale-110 transition-all duration-200"
                 >
                   <Twitter class="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
-                <a 
-                  v-if="member.github_url" 
-                  :href="member.github_url" 
+                <a
+                  v-if="member.github_url"
+                  :href="member.github_url"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center text-blue-600 hover:scale-110 transition-all duration-200"
@@ -451,12 +453,12 @@
                 </a>
               </div>
             </div>
-            
+
             <!-- Hover effect background -->
             <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
           </div>
         </div>
-        
+
         <!-- Join team CTA -->
         <div class="text-center mt-12 sm:mt-16 lg:mt-20">
           <div class="inline-flex flex-col sm:flex-row items-center bg-white/60 backdrop-blur-sm border border-white/30 rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6">
@@ -480,7 +482,7 @@
         <div class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"></div>
       </div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10">
@@ -489,18 +491,18 @@
               <Users class="w-4 h-4" />
               Join Our Team
             </div>
-            
+
             <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight">
               Be Part of the
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200"> Future</span>
             </h2>
-            
+
             <p class="text-base sm:text-lg lg:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4">
-              We're always looking for talented individuals who share our passion for innovation 
-              and creating exceptional user experiences. Be part of the team that's transforming 
+              We're always looking for talented individuals who share our passion for innovation
+              and creating exceptional user experiences. Be part of the team that's transforming
               the event management industry.
             </p>
-            
+
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-3 sm:gap-6 mb-8 sm:mb-10 max-w-lg mx-auto">
               <div class="text-center">
@@ -516,7 +518,7 @@
                 <div class="text-xs sm:text-sm text-blue-200">Remote OK</div>
               </div>
             </div>
-            
+
             <!-- Buttons -->
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <a
@@ -539,7 +541,7 @@
     </section>
 
     <Footer />
-    
+
     <!-- Scroll to Top Button -->
     <Transition name="fade">
       <button
@@ -561,14 +563,14 @@ import Footer from '../components/Footer.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
 import { useDelayedTypingAnimation } from '../composables/useDelayedTypingAnimation'
 import { teamMembersService, type TeamMember, apiService } from '../services/api'
-import { 
-  Target, 
-  Eye, 
-  Heart, 
-  Users, 
-  Lightbulb, 
-  Shield, 
-  Zap, 
+import {
+  Target,
+  Eye,
+  Heart,
+  Users,
+  Lightbulb,
+  Shield,
+  Zap,
   Award,
   BarChart3,
   Linkedin,
@@ -633,7 +635,7 @@ const teamError = ref<string | null>(null)
 // Avatar gradient options for fallback when no profile picture
 const avatarGradients = [
   "from-blue-500 to-purple-600",
-  "from-emerald-500 to-blue-500", 
+  "from-emerald-500 to-blue-500",
   "from-purple-500 to-blue-600",
   "from-blue-600 to-purple-600",
   "from-orange-500 to-red-500",
@@ -651,10 +653,10 @@ const getAvatarGradient = (id: number): string => {
 const fetchTeamMembers = async () => {
   teamLoading.value = true
   teamError.value = null
-  
+
   try {
     const response = await teamMembersService.getTeamMembers()
-    
+
     if (response.success && response.data) {
       // Sort by order field and filter only active members
       teamMembers.value = response.data.results
@@ -687,7 +689,7 @@ const teamSection = ref<HTMLElement>()
 onMounted(() => {
   // Fetch team members data
   fetchTeamMembers()
-  
+
   // Observe sections for scroll animations
   if (missionSection.value) {
     observeElement(missionSection.value, 'mission')
