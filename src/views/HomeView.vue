@@ -1,20 +1,20 @@
 <template>
   <div class="min-h-screen">
     <Navigation />
-    
+
     <!-- Hero Section -->
     <section id="hero" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
       <!-- Optimized Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
         <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"></div>
-        
+
         <!-- Reduced animated background shapes for better performance -->
         <div class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full mix-blend-multiply hero-blur-shape animate-float"></div>
         <div class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/15 to-pink-400/15 rounded-full mix-blend-multiply hero-blur-shape animate-float-delayed"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-blue-300/8 to-purple-300/8 rounded-full mix-blend-multiply hero-blur-large"></div>
       </div>
-      
+
       <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
@@ -32,16 +32,16 @@
                 Transform your event planning experience with our cutting-edge platform. From intimate gatherings to large-scale conferences, we make event management effortless and engaging.
               </p>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200">
-              <RouterLink 
+              <RouterLink
                 to="/signup"
                 class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
               >
                 Start Creating Events
                 <ArrowRight class="inline w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </RouterLink>
-              <button 
+              <button
                 @click="scrollToDemo"
                 class="flex items-center justify-center bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg border-2 border-blue-200 text-base shadow-sm transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md hover:scale-[1.02] active:bg-blue-100 active:scale-[0.98] group"
               >
@@ -49,7 +49,7 @@
                 Watch Demo
               </button>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 lg:gap-8 text-xs sm:text-sm animate-fade-in animation-delay-1400">
               <div class="flex items-center space-x-2 text-gray-600">
                 <div class="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center">
@@ -71,7 +71,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main Dashboard Card -->
@@ -83,7 +83,7 @@
                     <span class="text-xs sm:text-sm text-gray-600 font-medium">Live</span>
                   </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
                   <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50">
                     <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">1,247</div>
@@ -96,7 +96,7 @@
                     <div class="text-xs text-green-600 font-medium mt-1">↗ +5.2% this month</div>
                   </div>
                 </div>
-                
+
                 <div class="space-y-4">
                   <div class="flex justify-between items-center">
                     <span class="text-sm font-medium text-gray-700">Event Progress</span>
@@ -105,7 +105,7 @@
                   <div class="w-full bg-gray-200 rounded-full h-3">
                     <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000" style="width: 87%"></div>
                   </div>
-                  
+
                   <div class="flex justify-between items-center pt-4">
                     <span class="text-xs text-gray-500">Next milestone in 3 days</span>
                     <div class="flex space-x-1">
@@ -116,7 +116,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Floating Cards -->
               <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
@@ -129,7 +129,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
                 <div class="flex items-center space-x-2">
                   <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -145,7 +145,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Scroll Indicator -->
       <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div class="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
@@ -155,8 +155,8 @@
     </section>
 
     <!-- Features Section -->
-    <section 
-      id="features" 
+    <section
+      id="features"
       ref="featuresSection"
       class="py-16 scroll-animate features-bg"
       :class="{ 'animate-fade-in-up': isVisible.features }"
@@ -175,17 +175,17 @@
             Powerful features designed to make event planning effortless, engaging, and memorable for both organizers and attendees.
           </p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-          <div 
-            v-for="(feature, index) in features" 
+          <div
+            v-for="(feature, index) in features"
             :key="feature.title"
             class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             :class="index === 1 ? 'md:scale-105 md:z-10 border-blue-100' : ''"
           >
             <!-- Top accent bar -->
             <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></div>
-            
+
             <div class="relative">
               <!-- Icon with design guide styling -->
               <div class="relative mb-6">
@@ -195,7 +195,7 @@
                 <!-- Floating accent -->
                 <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"></div>
               </div>
-              
+
               <!-- Content with design guide typography -->
               <div class="space-y-4">
                 <h3 class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
@@ -206,7 +206,7 @@
                 </p>
               </div>
             </div>
-            
+
             <!-- Hover effect background -->
             <div class="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-purple-50/0 group-hover:from-blue-50/30 group-hover:to-purple-50/30 rounded-xl transition-all duration-300 -z-10"></div>
           </div>
@@ -215,15 +215,15 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section 
-      id="testimonials" 
-      ref="testimonialsSection" 
+    <section
+      id="testimonials"
+      ref="testimonialsSection"
       class="py-16 relative overflow-hidden scroll-animate"
       :class="{ 'animate-fade-in-up': isVisible.testimonials }"
     >
       <!-- Background gradient -->
       <div class="absolute inset-0 testimonials-bg"></div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-16">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
@@ -237,28 +237,28 @@
             From intimate gatherings to large-scale conferences, see how GoEvent transforms event planning
           </p>
         </div>
-        
+
         <!-- Testimonials Grid -->
         <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
-          <div v-for="(testimonial, index) in testimonials" :key="testimonial.name" 
+          <div v-for="(testimonial, index) in testimonials" :key="testimonial.name"
                class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
                :class="index === 1 ? 'md:scale-105 md:z-10' : ''">
-            
+
             <!-- Quote icon -->
             <div class="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm sm:text-lg font-bold">
               "
             </div>
-            
+
             <!-- Rating stars -->
             <div class="flex text-yellow-400 mb-4 sm:mb-6">
               <Star v-for="i in 5" :key="i" class="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
             </div>
-            
+
             <!-- Testimonial content -->
             <blockquote class="text-slate-700 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 font-medium">
               "{{ testimonial.content }}"
             </blockquote>
-            
+
             <!-- Author info -->
             <div class="flex items-center">
               <div class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 group-hover:scale-110 transition-transform duration-300">
@@ -269,12 +269,12 @@
                 <p class="text-blue-600 font-medium text-xs sm:text-sm lg:text-base">{{ testimonial.role }}</p>
               </div>
             </div>
-            
+
             <!-- Hover effect background -->
             <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
           </div>
         </div>
-        
+
         <!-- Trust indicators -->
         <div class="text-center">
           <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 lg:space-x-8 bg-white/60 backdrop-blur-sm rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border border-white/20">
@@ -298,8 +298,8 @@
     </section>
 
     <!-- FAQ Section -->
-    <section 
-      id="faq" 
+    <section
+      id="faq"
       ref="faqSection"
       class="py-16 scroll-animate faq-bg"
       :class="{ 'animate-fade-in-up': isVisible.faq }"
@@ -319,11 +319,11 @@
             Everything you need to know about GoEvent and how it can transform your event planning experience.
           </p>
         </div>
-        
+
         <!-- FAQ Items - Redesigned with Better Spacing and Typography -->
         <div class="space-y-6">
-          <div 
-            v-for="(faq, index) in faqs" 
+          <div
+            v-for="(faq, index) in faqs"
             :key="index"
             class="group bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm hover:shadow-lg hover:border-blue-200/50 transition-all duration-300 overflow-hidden"
           >
@@ -338,7 +338,7 @@
               </div>
               <div class="flex-shrink-0 ml-4">
                 <div class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-purple-100 flex items-center justify-center transition-all duration-300">
-                  <ChevronDown 
+                  <ChevronDown
                     class="w-5 h-5 text-slate-500 group-hover:text-blue-600 transition-all duration-300"
                     :class="{ 'rotate-180': openFaq === index }"
                   />
@@ -370,7 +370,7 @@
     </section>
 
     <!-- Pricing Section -->
-    <PricingSection 
+    <PricingSection
       ref="pricingSection"
       class="scroll-animate pricing-bg"
       :class="{ 'animate-fade-in-up': isVisible.pricing }"
@@ -384,7 +384,7 @@
         <div class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"></div>
       </div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-8 lg:p-10 xl:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10">
@@ -395,16 +395,16 @@
               <Sparkles class="w-4 h-4" />
               Start Your Journey Today
             </div>
-            
+
             <h2 class="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 leading-tight tracking-tight">
               Ready to Transform Your
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"> Event Management?</span>
             </h2>
-            
+
             <p class="text-lg text-slate-300 mb-6 leading-relaxed">
               Join thousands of event organizers who trust GoEvent to deliver exceptional experiences. Start your free trial today and see the difference.
             </p>
-            
+
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-4 lg:gap-6 mb-8">
               <div class="text-center lg:text-left">
@@ -420,7 +420,7 @@
                 <div class="text-xs sm:text-sm text-slate-400">Support</div>
               </div>
             </div>
-            
+
             <!-- Buttons -->
             <div class="flex flex-col sm:flex-row gap-4">
               <RouterLink
@@ -438,7 +438,7 @@
               </RouterLink>
             </div>
           </div>
-          
+
           <!-- Right side - Visual Element -->
           <div class="relative lg:pl-8">
             <div class="relative">
@@ -451,7 +451,7 @@
                     <span class="text-xs sm:text-sm text-slate-600 font-medium">Live</span>
                   </div>
                 </div>
-                
+
                 <!-- Mock analytics -->
                 <div class="space-y-4">
                   <div class="flex justify-between items-center">
@@ -466,7 +466,7 @@
                     <span class="text-slate-600">Success Rate</span>
                     <span class="font-bold text-green-600">98.5%</span>
                   </div>
-                  
+
                   <!-- Progress bar -->
                   <div class="mt-6">
                     <div class="flex justify-between text-sm mb-2">
@@ -479,12 +479,12 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Floating elements -->
               <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
                 <Star class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              
+
               <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-br from-purple-500 to-pink-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
                 <Bell class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
@@ -496,7 +496,7 @@
     </section>
 
     <Footer />
-    
+
     <!-- Scroll to Top Button -->
     <Transition name="fade">
       <button
@@ -518,12 +518,12 @@ import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
 import { useTypingAnimation } from '../composables/useTypingAnimation'
-import { 
+import {
   Calendar,
-  Users, 
+  Users,
   BarChart3,
   MessageSquare,
-  MapPin, 
+  MapPin,
   Camera,
   Bell,
   Check,
@@ -649,11 +649,7 @@ const testimonials = computed(() => [
 const faqs = computed(() => [
   {
     question: "How much does GoEvent cost?",
-    answer: "GoEvent offers flexible pricing plans to suit different needs. We have a free tier for small events, and paid plans starting at $29/month for professional features. Enterprise solutions are available with custom pricing. All plans include a 14-day free trial with no credit card required."
-  },
-  {
-    question: "Can I integrate GoEvent with my existing tools?",
-    answer: "Yes! GoEvent integrates with popular tools including Google Calendar, Outlook, Slack, Zoom, Teams, Mailchimp, and many more. We also offer a robust API for custom integrations and webhooks for real-time data sync with your existing systems."
+    answer: "GoEvent offers flexible pricing plans to suit different needs. We have a free tier for small events, and paid plans starting at $300/event for customize design. Business solutions are available with custom pricing."
   },
   {
     question: "Is my event data secure and private?",
@@ -669,7 +665,7 @@ const faqs = computed(() => [
   },
   {
     question: "Can I customize the registration forms and event pages?",
-    answer: "Definitely! GoEvent offers extensive customization options including custom registration forms, branded event pages, custom domains, personalized email templates, and white-label solutions. You can match your organization's branding and create a seamless experience for your attendees."
+    answer: "Definitely! GoEvent offers extensive customization options including custom registration forms, branded event pages, personalized email templates, and white-label solutions. You can match your organization's branding and create a seamless experience for your attendees."
   }
 ])
 
