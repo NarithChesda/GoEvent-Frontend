@@ -91,6 +91,59 @@
                     />
                   </div>
 
+                  <!-- Profile Picture -->
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      Profile Picture
+                    </label>
+                    <div class="flex items-start space-x-4">
+                      <!-- Preview -->
+                      <div class="flex-shrink-0">
+                        <div v-if="profilePicturePreview" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200">
+                          <img
+                            :src="profilePicturePreview"
+                            alt="Profile preview"
+                            class="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div v-else class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                          <User class="w-8 h-8 text-gray-400" />
+                        </div>
+                      </div>
+
+                      <!-- Upload Controls -->
+                      <div class="flex-1 space-y-2">
+                        <input
+                          ref="profilePictureInput"
+                          type="file"
+                          accept="image/*"
+                          @change="handleProfilePictureSelect"
+                          class="hidden"
+                        />
+                        <div class="flex space-x-2">
+                          <button
+                            type="button"
+                            @click="triggerProfilePictureUpload"
+                            :disabled="profilePictureUploading"
+                            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
+                          >
+                            <Upload class="w-4 h-4" />
+                            <span>{{ profilePictureUploading ? 'Uploading...' : 'Upload' }}</span>
+                          </button>
+                          <button
+                            v-if="profilePicturePreview || (formData.profile_image && formData.profile_image !== '')"
+                            type="button"
+                            @click="removeProfilePicture"
+                            class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <p class="text-xs text-slate-500">JPG, PNG, or WebP. Max 3MB.</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Bio -->
                   <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -328,7 +381,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { X, User, Mail, Languages, Plus, UserPlus } from 'lucide-vue-next'
+import { X, User, Mail, Languages, Plus, UserPlus, Upload } from 'lucide-vue-next'
 import { hostsService, type EventHost, type CreateHostRequest, type HostTranslation } from '../services/api'
 
 interface Props {
@@ -346,6 +399,10 @@ const emit = defineEmits<Emits>()
 // State
 const loading = ref(false)
 const showAddTranslation = ref(false)
+const profilePictureInput = ref<HTMLInputElement>()
+const profilePicturePreview = ref<string | null>(null)
+const profilePictureUploading = ref(false)
+const selectedProfileImageFile = ref<File | null>(null)
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -366,6 +423,7 @@ const formData = reactive<CreateHostRequest>({
   parent_b_name: '',
   title: '',
   bio: '',
+  profile_image: '',
   email: '',
   linkedin_url: '',
   twitter_url: '',
@@ -430,19 +488,61 @@ const removeTranslation = (index: number) => {
   }
 }
 
+// Profile picture methods
+const triggerProfilePictureUpload = () => {
+  profilePictureInput.value?.click()
+}
+
+const handleProfilePictureSelect = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) return
+
+  // Validate file
+  if (!file.type.startsWith('image/')) {
+    alert('Please select a valid image file')
+    return
+  }
+
+  if (file.size > 3 * 1024 * 1024) { // 3MB limit
+    alert('File size must be less than 3MB')
+    return
+  }
+
+  // Store the file for later upload
+  selectedProfileImageFile.value = file
+
+  // Create preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    profilePicturePreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+
+  // Clear input
+  if (input) input.value = ''
+}
+
+const removeProfilePicture = () => {
+  formData.profile_image = ''
+  profilePicturePreview.value = null
+  selectedProfileImageFile.value = null
+}
+
 const createHost = async () => {
   loading.value = true
-  
+
   try {
     // Clean the translations data
     const requestData = { ...formData }
-    
+
     if (requestData.translations && requestData.translations.length > 0) {
       // Only include translations with valid language codes
-      const validTranslations = requestData.translations.filter(t => 
+      const validTranslations = requestData.translations.filter(t =>
         t.language && t.language.trim() !== ''
       )
-      
+
       if (validTranslations.length > 0) {
         requestData.translations = validTranslations
       } else {
@@ -453,8 +553,15 @@ const createHost = async () => {
       // If no translations, omit the field entirely
       delete requestData.translations
     }
-    
-    const response = await hostsService.createHost(props.eventId, requestData)
+
+    // Remove profile_image from requestData since we'll send the file separately
+    delete requestData.profile_image
+
+    // Use the appropriate method based on whether we have a file
+    const response = selectedProfileImageFile.value
+      ? await hostsService.createHostWithFile(props.eventId, requestData, selectedProfileImageFile.value)
+      : await hostsService.createHost(props.eventId, requestData)
+
     if (response.success && response.data) {
       emit('created', response.data)
     } else {

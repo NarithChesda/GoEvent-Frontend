@@ -94,6 +94,59 @@
                     />
                   </div>
 
+                  <!-- Profile Picture -->
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      Profile Picture
+                    </label>
+                    <div class="flex items-start space-x-4">
+                      <!-- Preview -->
+                      <div class="flex-shrink-0">
+                        <div v-if="profilePicturePreview || (formData.profile_image && formData.profile_image !== '')" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200">
+                          <img
+                            :src="profilePicturePreview || formData.profile_image || ''"
+                            alt="Profile preview"
+                            class="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div v-else class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                          <User class="w-8 h-8 text-gray-400" />
+                        </div>
+                      </div>
+
+                      <!-- Upload Controls -->
+                      <div class="flex-1 space-y-2">
+                        <input
+                          ref="profilePictureInput"
+                          type="file"
+                          accept="image/*"
+                          @change="handleProfilePictureSelect"
+                          class="hidden"
+                        />
+                        <div class="flex space-x-2">
+                          <button
+                            type="button"
+                            @click="triggerProfilePictureUpload"
+                            :disabled="profilePictureUploading"
+                            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
+                          >
+                            <Upload class="w-4 h-4" />
+                            <span>{{ profilePictureUploading ? 'Uploading...' : 'Upload' }}</span>
+                          </button>
+                          <button
+                            v-if="profilePicturePreview || (formData.profile_image && formData.profile_image !== '')"
+                            type="button"
+                            @click="removeProfilePicture"
+                            class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <p class="text-xs text-slate-500">JPG, PNG, or WebP. Max 3MB.</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Bio -->
                   <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -334,7 +387,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { X, UserPen, User, Mail, Languages, Plus, Loader } from 'lucide-vue-next'
+import { X, UserPen, User, Mail, Languages, Plus, Loader, Upload } from 'lucide-vue-next'
 import { hostsService, type EventHost, type HostTranslation } from '../services/api'
 
 interface Props {
@@ -353,6 +406,10 @@ const emit = defineEmits<Emits>()
 // State
 const loading = ref(false)
 const showAddTranslation = ref(false)
+const profilePictureInput = ref<HTMLInputElement>()
+const profilePicturePreview = ref<string | null>(null)
+const profilePictureUploading = ref(false)
+const selectedProfileImageFile = ref<File | null>(null)
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -373,6 +430,7 @@ const formData = reactive({
   parent_b_name: props.host.parent_b_name,
   title: props.host.title,
   bio: props.host.bio,
+  profile_image: props.host.profile_image,
   email: props.host.email,
   linkedin_url: props.host.linkedin_url,
   twitter_url: props.host.twitter_url,
@@ -431,9 +489,51 @@ const removeTranslation = (index: number) => {
   formData.translations.splice(index, 1)
 }
 
+// Profile picture methods
+const triggerProfilePictureUpload = () => {
+  profilePictureInput.value?.click()
+}
+
+const handleProfilePictureSelect = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) return
+
+  // Validate file
+  if (!file.type.startsWith('image/')) {
+    alert('Please select a valid image file')
+    return
+  }
+
+  if (file.size > 3 * 1024 * 1024) { // 3MB limit
+    alert('File size must be less than 3MB')
+    return
+  }
+
+  // Store the file for later upload
+  selectedProfileImageFile.value = file
+
+  // Create preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    profilePicturePreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+
+  // Clear input
+  if (input) input.value = ''
+}
+
+const removeProfilePicture = () => {
+  formData.profile_image = ''
+  profilePicturePreview.value = null
+  selectedProfileImageFile.value = null
+}
+
 const updateHost = async () => {
   loading.value = true
-  
+
   try {
     // Clean the translations data - remove server-generated fields
     const cleanedTranslations = formData.translations.map(translation => ({
@@ -447,7 +547,7 @@ const updateHost = async () => {
     }))
 
     // Build request data - include ALL required fields for PUT request
-    const requestData = {
+    const requestData: any = {
       name: formData.name,
       parent_a_name: formData.parent_a_name || '',
       parent_b_name: formData.parent_b_name || '',
@@ -460,8 +560,17 @@ const updateHost = async () => {
       order: formData.order || 0,
       translations: cleanedTranslations.filter(t => t.language && t.language.trim() !== '')
     }
-    
-    const response = await hostsService.updateHost(props.eventId, props.host.id, requestData)
+
+    // Only include profile_image in request if we're not uploading a new file
+    if (!selectedProfileImageFile.value) {
+      requestData.profile_image = formData.profile_image || ''
+    }
+
+    // Use the appropriate method based on whether we have a new file
+    const response = selectedProfileImageFile.value
+      ? await hostsService.updateHostWithFile(props.eventId, props.host.id, requestData, selectedProfileImageFile.value)
+      : await hostsService.updateHost(props.eventId, props.host.id, requestData)
+
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {

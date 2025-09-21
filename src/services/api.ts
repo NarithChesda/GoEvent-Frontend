@@ -457,6 +457,19 @@ class ApiService {
     })
   }
 
+  async putFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(async () => {
+      return fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          // Don't set Content-Type for FormData, let the browser handle it
+          ...this.getAuthHeaders()
+        },
+        body: data
+      })
+    })
+  }
+
   async patchFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
     return this.handleNetworkRequest<T>(async () => {
       return fetch(`${this.baseURL}${endpoint}`, {
@@ -642,6 +655,7 @@ export interface CreateHostRequest {
   parent_b_name?: string
   title?: string
   bio?: string
+  profile_image?: string
   email?: string
   linkedin_url?: string
   twitter_url?: string
@@ -1150,9 +1164,71 @@ export const hostsService = {
     return apiService.post<EventHost>(`/api/events/${eventId}/hosts/`, data)
   },
 
+  // Create a new host with file upload
+  async createHostWithFile(eventId: string, data: CreateHostRequest, profileImageFile?: File): Promise<ApiResponse<EventHost>> {
+    if (profileImageFile) {
+      const formData = new FormData()
+
+      // Add all the host data as form fields
+      formData.append('name', data.name)
+      if (data.parent_a_name) formData.append('parent_a_name', data.parent_a_name)
+      if (data.parent_b_name) formData.append('parent_b_name', data.parent_b_name)
+      if (data.title) formData.append('title', data.title)
+      if (data.bio) formData.append('bio', data.bio)
+      if (data.email) formData.append('email', data.email)
+      if (data.linkedin_url) formData.append('linkedin_url', data.linkedin_url)
+      if (data.twitter_url) formData.append('twitter_url', data.twitter_url)
+      if (data.website_url) formData.append('website_url', data.website_url)
+      if (data.order !== undefined) formData.append('order', data.order.toString())
+
+      // Add the profile image file
+      formData.append('profile_image', profileImageFile)
+
+      // Add translations as JSON string if they exist
+      if (data.translations && data.translations.length > 0) {
+        formData.append('translations', JSON.stringify(data.translations))
+      }
+
+      return apiService.postFormData<EventHost>(`/api/events/${eventId}/hosts/`, formData)
+    } else {
+      return apiService.post<EventHost>(`/api/events/${eventId}/hosts/`, data)
+    }
+  },
+
   // Update a host (full update)
   async updateHost(eventId: string, hostId: number, data: Partial<CreateHostRequest>): Promise<ApiResponse<EventHost>> {
     return apiService.put<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, data)
+  },
+
+  // Update a host with file upload
+  async updateHostWithFile(eventId: string, hostId: number, data: Partial<CreateHostRequest>, profileImageFile?: File): Promise<ApiResponse<EventHost>> {
+    if (profileImageFile) {
+      const formData = new FormData()
+
+      // Add all the host data as form fields
+      if (data.name) formData.append('name', data.name)
+      if (data.parent_a_name !== undefined) formData.append('parent_a_name', data.parent_a_name)
+      if (data.parent_b_name !== undefined) formData.append('parent_b_name', data.parent_b_name)
+      if (data.title !== undefined) formData.append('title', data.title)
+      if (data.bio !== undefined) formData.append('bio', data.bio)
+      if (data.email !== undefined) formData.append('email', data.email)
+      if (data.linkedin_url !== undefined) formData.append('linkedin_url', data.linkedin_url)
+      if (data.twitter_url !== undefined) formData.append('twitter_url', data.twitter_url)
+      if (data.website_url !== undefined) formData.append('website_url', data.website_url)
+      if (data.order !== undefined) formData.append('order', data.order.toString())
+
+      // Add the profile image file
+      formData.append('profile_image', profileImageFile)
+
+      // Add translations as JSON string if they exist
+      if (data.translations && data.translations.length > 0) {
+        formData.append('translations', JSON.stringify(data.translations))
+      }
+
+      return apiService.putFormData<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, formData)
+    } else {
+      return apiService.put<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, data)
+    }
   },
 
   // Partially update a host
