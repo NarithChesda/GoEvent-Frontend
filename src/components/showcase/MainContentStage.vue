@@ -745,7 +745,28 @@ const handleComment = () => scrollToSection('comment-section')
 const handleVideo = () => scrollToSection('video-section')
 
 const handleReminder = () => {
-  // TODO: Implement reminder functionality when needed
+  // Add event to Google Calendar
+  if (!props.event) return
+
+  const startDate = new Date(props.event.start_date)
+  const endDate = new Date(props.event.end_date)
+
+  const formatDateForGoogle = (date: Date) => {
+    return date.toISOString().replace(/-|:|\.\d\d\d/g, '')
+  }
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: props.event.title,
+    dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
+    details: props.event.description || props.event.short_description || '',
+    location: props.event.is_virtual
+      ? (props.event.virtual_link || 'Virtual Event')
+      : (props.event.location || ''),
+    trp: 'false'
+  })
+
+  window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
 }
 // Cleanup on component unmount
 onUnmounted(() => {
