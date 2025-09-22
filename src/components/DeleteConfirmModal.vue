@@ -3,15 +3,17 @@
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto" @click="handleCancel">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             class="relative bg-white rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all"
             @click.stop
           >
             <div class="text-center">
               <!-- Icon -->
-              <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div
+                class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
                 <Trash2 class="w-8 h-8 text-red-600" />
               </div>
 
@@ -19,16 +21,17 @@
               <h3 class="text-xl font-bold text-slate-900 mb-2">
                 {{ title }}
               </h3>
-              
+
               <!-- Message -->
               <p class="text-slate-600 mb-6">
                 <span v-if="itemName">
-                  Are you sure you want to delete "<strong>{{ itemName }}</strong>"?
+                  Are you sure you want to delete "<strong>{{ itemName }}</strong
+                  >"?
                 </span>
                 <span v-else>
                   {{ message }}
                 </span>
-                <br>
+                <br />
                 <span class="text-sm">This action cannot be undone.</span>
               </p>
 
@@ -46,7 +49,10 @@
                   :disabled="loading"
                   class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
                 >
-                  <div v-if="loading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div
+                    v-if="loading"
+                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                  ></div>
                   <span>{{ loading ? 'Deleting...' : 'Delete' }}</span>
                 </button>
               </div>
@@ -77,7 +83,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   title: 'Delete Item',
   message: 'Are you sure you want to delete this item?',
-  loading: false
+  loading: false,
 })
 
 const emit = defineEmits<Emits>()

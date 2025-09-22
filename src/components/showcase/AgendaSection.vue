@@ -1,5 +1,8 @@
 <template>
-  <div v-if="agendaItems.length > 0" class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
+  <div
+    v-if="agendaItems.length > 0"
+    class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
+  >
     <!-- Welcome Header -->
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
@@ -7,7 +10,7 @@
         :style="{
           fontFamily: primaryFont || currentFont,
           '--gradient-start': primaryColor,
-          '--gradient-end': secondaryColor || accentColor
+          '--gradient-end': secondaryColor || accentColor,
         }"
       >
         {{ agendaHeaderText }}
@@ -16,9 +19,9 @@
 
     <!-- Agenda Collapse Cards -->
     <div class="space-y-3">
-      <div 
-        v-for="(date, dateIndex) in agendaTabs" 
-        :key="date" 
+      <div
+        v-for="(date, dateIndex) in agendaTabs"
+        :key="date"
         class="agenda-date-section"
         :style="{ '--animation-delay': `${dateIndex * 100}ms` }"
       >
@@ -28,75 +31,94 @@
           :style="{
             '--primary-color': primaryColor,
             backgroundColor: `${primaryColor}15`,
-            border: `1px solid ${primaryColor}40`
+            border: `1px solid ${primaryColor}40`,
           }"
         >
           <!-- Collapsible Card Header - Always Visible -->
-          <div
-            class="agenda-card-header"
-            @click="toggleCard(date)"
-          >
+          <div class="agenda-card-header" @click="toggleCard(date)">
             <div class="flex items-center justify-between p-4">
               <!-- Date Info -->
               <div class="flex items-center space-x-3">
                 <div class="icon-container" :style="{ backgroundColor: `${primaryColor}08` }">
-                  <svg class="w-5 h-5" :style="{ color: primaryColor }" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                  <svg
+                    class="w-5 h-5"
+                    :style="{ color: primaryColor }"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-sm sm:text-base"
-                      :style="{
-                        color: primaryColor,
-                        fontFamily: primaryFont || currentFont
-                      }">
+                  <h3
+                    class="font-semibold text-sm sm:text-base"
+                    :style="{
+                      color: primaryColor,
+                      fontFamily: primaryFont || currentFont,
+                    }"
+                  >
                     {{ formatAgendaDate(date) }}
                   </h3>
-                  <div class="activity-count"
-                       :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
-                    <span>{{ agendaByDate[date]?.length || 0 }} {{ getActivityCountText(agendaByDate[date]?.length || 0) }}</span>
+                  <div
+                    class="activity-count"
+                    :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+                  >
+                    <span
+                      >{{ agendaByDate[date]?.length || 0 }}
+                      {{ getActivityCountText(agendaByDate[date]?.length || 0) }}</span
+                    >
                   </div>
                 </div>
               </div>
 
               <!-- Expand/Collapse Arrow -->
-              <div class="expand-arrow" :class="{ 'expanded': isCardExpanded(date) }">
-                <svg class="w-5 h-5" :style="{ color: primaryColor }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              <div class="expand-arrow" :class="{ expanded: isCardExpanded(date) }">
+                <svg
+                  class="w-5 h-5"
+                  :style="{ color: primaryColor }"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
           </div>
 
           <!-- Expandable Content -->
-          <div
-            class="agenda-card-content"
-            :class="{ 'expanded': isCardExpanded(date) }"
-          >
+          <div class="agenda-card-content" :class="{ expanded: isCardExpanded(date) }">
             <div class="agenda-scrollable-wrapper">
-              <div 
+              <div
                 class="agenda-scrollable-content"
                 @scroll="throttledScrollHandler($event, date)"
-                :ref="el => setScrollRef(el as HTMLElement | null, date)"
+                :ref="(el) => setScrollRef(el as HTMLElement | null, date)"
               >
                 <!-- First agenda description at top center -->
-                <div v-if="getFirstAgendaDescription(date)" 
-                     class="text-center mb-3 px-2">
-                  <h4 class="font-semibold text-sm sm:text-base"
-                     :style="{
-                       color: primaryColor,
-                       fontFamily: primaryFont || currentFont
-                     }">
+                <div v-if="getFirstAgendaDescription(date)" class="text-center mb-3 px-2">
+                  <h4
+                    class="font-semibold text-sm sm:text-base"
+                    :style="{
+                      color: primaryColor,
+                      fontFamily: primaryFont || currentFont,
+                    }"
+                  >
                     {{ getFirstAgendaDescription(date) }}
                   </h4>
                 </div>
 
                 <!-- Agenda Items for this date -->
                 <div class="space-y-4">
-                  <div
-                    v-for="item in agendaByDate[date] || []"
-                    :key="item.id"
-                  >
+                  <div v-for="item in agendaByDate[date] || []" :key="item.id">
                     <AgendaItem
                       :item="item"
                       :primary-color="primaryColor"
@@ -108,9 +130,9 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Scroll indicator -->
-              <div 
+              <div
                 v-show="scrollStates[date]?.canScrollDown"
                 class="scroll-indicator"
                 :style="{ '--indicator-color': primaryColor }"
@@ -118,7 +140,12 @@
                 <div class="scroll-indicator-content">
                   <div class="scroll-text">Scroll for more</div>
                   <svg class="scroll-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                    />
                   </svg>
                 </div>
               </div>
@@ -127,7 +154,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -137,7 +163,7 @@ import AgendaItem from './AgendaItem.vue'
 import {
   translateRSVP,
   formatDateLocalized,
-  type SupportedLanguage
+  type SupportedLanguage,
 } from '../../utils/translations'
 
 interface AgendaItemIcon {
@@ -187,19 +213,22 @@ const throttledScrollHandler = throttle((event: Event, date: string) => {
 function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T {
   let timeoutId: number | null = null
   let lastExecTime = 0
-  
+
   return ((...args: Parameters<T>) => {
     const currentTime = Date.now()
-    
+
     if (currentTime - lastExecTime > delay) {
       func(...args)
       lastExecTime = currentTime
     } else {
       if (timeoutId) clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        func(...args)
-        lastExecTime = Date.now()
-      }, delay - (currentTime - lastExecTime))
+      timeoutId = setTimeout(
+        () => {
+          func(...args)
+          lastExecTime = Date.now()
+        },
+        delay - (currentTime - lastExecTime),
+      )
     }
   }) as T
 }
@@ -208,8 +237,8 @@ function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T 
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
   if (props.eventTexts && props.currentLanguage) {
-    const text = props.eventTexts.find(text =>
-      text.text_type === textType && text.language === props.currentLanguage
+    const text = props.eventTexts.find(
+      (text) => text.text_type === textType && text.language === props.currentLanguage,
     )
     if (text?.content) {
       return text.content
@@ -220,10 +249,13 @@ const getTextContent = (textType: string, fallback = ''): string => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
 
   // Map text types to translation keys
-  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    'agenda_header': 'agenda_header',
-    'agenda_activity': 'agenda_activity',
-    'agenda_activities': 'agenda_activities'
+  const keyMap: Record<
+    string,
+    keyof typeof import('../../utils/translations').rsvpTranslations.en
+  > = {
+    agenda_header: 'agenda_header',
+    agenda_activity: 'agenda_activity',
+    agenda_activities: 'agenda_activities',
   }
 
   const translationKey = keyMap[textType]
@@ -247,7 +279,7 @@ const scrollRefs = ref<Record<string, HTMLElement>>({})
 const agendaByDate = computed(() => {
   const grouped: Record<string, AgendaItemData[]> = {}
 
-  props.agendaItems.forEach(item => {
+  props.agendaItems.forEach((item) => {
     const date = item.date || 'No Date'
     if (!grouped[date]) {
       grouped[date] = []
@@ -256,7 +288,7 @@ const agendaByDate = computed(() => {
   })
 
   // Sort items within each date by order
-  Object.keys(grouped).forEach(date => {
+  Object.keys(grouped).forEach((date) => {
     grouped[date].sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
@@ -274,9 +306,7 @@ const agendaTabs = computed(() => {
 })
 
 // Translatable text computed properties
-const agendaHeaderText = computed(() =>
-  getTextContent('agenda_header', 'Event Schedule')
-)
+const agendaHeaderText = computed(() => getTextContent('agenda_header', 'Event Schedule'))
 
 const getActivityCountText = (count: number): string => {
   if (count === 1) {
@@ -298,7 +328,7 @@ const toggleCard = (date: string) => {
   } else {
     // Otherwise, open this card (automatically closes any other open card)
     expandedCard.value = date
-    
+
     // Check scroll state after expansion animation with RAF for better performance
     requestAnimationFrame(() => {
       setTimeout(() => {
@@ -318,18 +348,21 @@ const setScrollRef = (el: HTMLElement | null, date: string) => {
   }
 }
 
-
 const checkScrollState = (date: string) => {
   const scrollElement = scrollRefs.value[date]
   if (!scrollElement) return
-  
+
   const { scrollTop, scrollHeight, clientHeight } = scrollElement
   const canScrollDown = scrollTop < scrollHeight - clientHeight - 5
   const canScrollUp = scrollTop > 5
-  
+
   // Only update if state actually changed
   const currentState = scrollStates.value[date]
-  if (!currentState || currentState.canScrollDown !== canScrollDown || currentState.canScrollUp !== canScrollUp) {
+  if (
+    !currentState ||
+    currentState.canScrollDown !== canScrollDown ||
+    currentState.canScrollUp !== canScrollUp
+  ) {
     scrollStates.value[date] = { canScrollDown, canScrollUp }
   }
 }
@@ -348,7 +381,7 @@ const formatAgendaDate = (dateString: string): string => {
 // Computed property to get first agenda description for each date
 const firstAgendaDescriptions = computed(() => {
   const descriptions: Record<string, string> = {}
-  Object.keys(agendaByDate.value).forEach(date => {
+  Object.keys(agendaByDate.value).forEach((date) => {
     const agendaItems = agendaByDate.value[date] || []
     const firstItem = agendaItems[0]
     descriptions[date] = firstItem?.description || ''
@@ -374,12 +407,12 @@ onMounted(() => {
         }
       })
     },
-    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
   )
 
   // Observe all agenda cards
   const cards = document.querySelectorAll('.agenda-date-section')
-  cards.forEach(card => observer.observe(card))
+  cards.forEach((card) => observer.observe(card))
 })
 </script>
 
@@ -421,13 +454,15 @@ onMounted(() => {
   border-radius: 1.5rem;
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   transform: translateZ(0);
   backdrop-filter: blur(16px);
-  box-shadow: 
-    0 12px 36px -6px var(--primary-color)25,
-    0 6px 24px -3px var(--primary-color)20,
-    0 3px 12px -1px var(--primary-color)15,
+  box-shadow:
+    0 12px 36px -6px var(--primary-color) 25,
+    0 6px 24px -3px var(--primary-color) 20,
+    0 3px 12px -1px var(--primary-color) 15,
     inset 0 1px 2px rgba(255, 255, 255, 0.12);
 }
 
@@ -444,10 +479,10 @@ onMounted(() => {
 
 .agenda-card-container:hover {
   transform: translateY(-2px) translateZ(0);
-  box-shadow: 
-    0 20px 40px -8px var(--primary-color)25,
-    0 8px 32px -4px var(--primary-color)20,
-    0 4px 16px -2px var(--primary-color)15,
+  box-shadow:
+    0 20px 40px -8px var(--primary-color) 25,
+    0 8px 32px -4px var(--primary-color) 20,
+    0 4px 16px -2px var(--primary-color) 15,
     inset 0 1px 2px rgba(255, 255, 255, 0.15);
 }
 
@@ -490,8 +525,9 @@ onMounted(() => {
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.4s ease-in-out;
+  transition:
+    max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.4s ease-in-out;
   will-change: max-height, opacity;
   contain: layout style;
 }
@@ -527,7 +563,7 @@ onMounted(() => {
   right: 0;
   height: 3rem;
   pointer-events: none;
-  background: linear-gradient(transparent, var(--indicator-color, #4f46e5)30);
+  background: linear-gradient(transparent, var(--indicator-color, #4f46e5) 30);
   border-radius: 0 0 1.5rem 1.5rem;
   transition: opacity 0.3s ease;
 }
@@ -569,7 +605,7 @@ onMounted(() => {
   .agenda-card-content {
     transition: none;
   }
-  
+
   .scroll-arrow {
     animation: none;
   }
@@ -577,10 +613,15 @@ onMounted(() => {
 
 /* Bounce animation */
 @keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
-    transform: translate3d(0,0,0);
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: translate3d(0, -8px, 0);
   }
   70% {

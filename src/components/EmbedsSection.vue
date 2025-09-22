@@ -43,7 +43,7 @@
             <X class="w-4 h-4" />
           </button>
         </div>
-        
+
         <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
           <Youtube class="w-12 h-12 text-slate-400 mx-auto mb-2" />
           <p class="text-slate-600">No YouTube video embedded</p>
@@ -78,7 +78,7 @@
           <iframe
             :src="formData.google_map_embed_link"
             class="w-full h-64 rounded-2xl"
-            style="border:0;"
+            style="border: 0"
             allowfullscreen
             loading="lazy"
           ></iframe>
@@ -90,7 +90,7 @@
             <X class="w-4 h-4" />
           </button>
         </div>
-        
+
         <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
           <MapPin class="w-12 h-12 text-slate-400 mx-auto mb-2" />
           <p class="text-slate-600">No location map embedded</p>
@@ -105,7 +105,10 @@
         :disabled="saving"
         class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50"
       >
-        <div v-if="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div
+          v-if="saving"
+          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+        ></div>
         <Save v-else class="w-4 h-4" />
         <span>{{ saving ? 'Saving...' : 'Save Changes' }}</span>
       </button>
@@ -160,7 +163,7 @@ const emit = defineEmits<Emits>()
 // State
 const formData = ref({
   youtube_embed_link: props.eventData?.youtube_embed_link || '',
-  google_map_embed_link: props.eventData?.google_map_embed_link || ''
+  google_map_embed_link: props.eventData?.google_map_embed_link || '',
 })
 
 const saving = ref(false)
@@ -171,13 +174,13 @@ const deleting = ref(false)
 const deleteModalData = ref({
   title: '',
   itemName: '',
-  fieldToDelete: ''
+  fieldToDelete: '',
 })
 
 // Computed
 const hasChanges = computed(() => {
   if (!props.eventData) return false
-  
+
   return (
     formData.value.youtube_embed_link !== (props.eventData.youtube_embed_link || '') ||
     formData.value.google_map_embed_link !== (props.eventData.google_map_embed_link || '')
@@ -185,19 +188,23 @@ const hasChanges = computed(() => {
 })
 
 // Watch for prop changes
-watch(() => props.eventData, (newEventData) => {
-  if (newEventData) {
-    formData.value = {
-      youtube_embed_link: newEventData.youtube_embed_link || '',
-      google_map_embed_link: newEventData.google_map_embed_link || ''
+watch(
+  () => props.eventData,
+  (newEventData) => {
+    if (newEventData) {
+      formData.value = {
+        youtube_embed_link: newEventData.youtube_embed_link || '',
+        google_map_embed_link: newEventData.google_map_embed_link || '',
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true },
+)
 
 // Methods
 const saveChanges = async () => {
   if (!props.eventData) return
-  
+
   saving.value = true
   error.value = null
   showSuccess.value = false
@@ -206,15 +213,15 @@ const saveChanges = async () => {
     // Prepare data - convert empty strings to null for removal
     const updateData = {
       youtube_embed_link: formData.value.youtube_embed_link.trim() || null,
-      google_map_embed_link: formData.value.google_map_embed_link.trim() || null
+      google_map_embed_link: formData.value.google_map_embed_link.trim() || null,
     }
 
     const response = await eventsService.patchEvent(props.eventData.id, updateData)
-    
+
     if (response.success && response.data) {
       emit('updated', response.data)
       showSuccess.value = true
-      
+
       // Hide success message after 3 seconds
       setTimeout(() => {
         showSuccess.value = false
@@ -234,7 +241,7 @@ const confirmRemoveYouTube = () => {
   deleteModalData.value = {
     title: 'Remove YouTube Video',
     itemName: 'YouTube Video Embed',
-    fieldToDelete: 'youtube_embed_link'
+    fieldToDelete: 'youtube_embed_link',
   }
   showDeleteModal.value = true
 }
@@ -243,25 +250,25 @@ const confirmRemoveMap = () => {
   deleteModalData.value = {
     title: 'Remove Google Map',
     itemName: 'Google Maps Embed',
-    fieldToDelete: 'google_map_embed_link'
+    fieldToDelete: 'google_map_embed_link',
   }
   showDeleteModal.value = true
 }
 
 const handleDeleteConfirm = async () => {
   if (!props.eventData) return
-  
+
   deleting.value = true
   error.value = null
   showSuccess.value = false
 
   try {
     const updateData = {
-      [deleteModalData.value.fieldToDelete]: null
+      [deleteModalData.value.fieldToDelete]: null,
     }
 
     const response = await eventsService.patchEvent(props.eventData.id, updateData)
-    
+
     if (response.success && response.data) {
       // Update local form data
       if (deleteModalData.value.fieldToDelete === 'youtube_embed_link') {
@@ -269,11 +276,11 @@ const handleDeleteConfirm = async () => {
       } else if (deleteModalData.value.fieldToDelete === 'google_map_embed_link') {
         formData.value.google_map_embed_link = ''
       }
-      
+
       emit('updated', response.data)
       showDeleteModal.value = false
       showSuccess.value = true
-      
+
       // Hide success message after 3 seconds
       setTimeout(() => {
         showSuccess.value = false
@@ -304,19 +311,27 @@ const validateGoogleMapsUrl = (url: string): boolean => {
 }
 
 // Watch for URL validation
-watch(() => formData.value.youtube_embed_link, (newValue) => {
-  if (newValue && !validateYouTubeUrl(newValue)) {
-    error.value = 'Please enter a valid YouTube embed URL (https://www.youtube.com/embed/VIDEO_ID)'
-  } else if (error.value?.includes('YouTube')) {
-    error.value = null
-  }
-})
+watch(
+  () => formData.value.youtube_embed_link,
+  (newValue) => {
+    if (newValue && !validateYouTubeUrl(newValue)) {
+      error.value =
+        'Please enter a valid YouTube embed URL (https://www.youtube.com/embed/VIDEO_ID)'
+    } else if (error.value?.includes('YouTube')) {
+      error.value = null
+    }
+  },
+)
 
-watch(() => formData.value.google_map_embed_link, (newValue) => {
-  if (newValue && !validateGoogleMapsUrl(newValue)) {
-    error.value = 'Please enter a valid Google Maps embed URL (https://www.google.com/maps/embed/...)'
-  } else if (error.value?.includes('Google Maps')) {
-    error.value = null
-  }
-})
+watch(
+  () => formData.value.google_map_embed_link,
+  (newValue) => {
+    if (newValue && !validateGoogleMapsUrl(newValue)) {
+      error.value =
+        'Please enter a valid Google Maps embed URL (https://www.google.com/maps/embed/...)'
+    } else if (error.value?.includes('Google Maps')) {
+      error.value = null
+    }
+  },
+)
 </script>

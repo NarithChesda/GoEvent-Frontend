@@ -1,5 +1,5 @@
 <template>
-  <component 
+  <component
     :is="as"
     :class="cardClasses"
     :role="role"
@@ -10,7 +10,7 @@
     @keydown="handleKeydown"
   >
     <!-- Top accent bar (optional) -->
-    <div 
+    <div
       v-if="accentColor"
       class="absolute top-0 left-0 right-0 h-1 rounded-t-2xl transition-all duration-300"
       :class="accentColor"
@@ -21,7 +21,7 @@
     <slot />
 
     <!-- Hover background effect -->
-    <div 
+    <div
       v-if="interactive"
       class="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-blue-50/30 rounded-2xl transition-all duration-300 -z-10 pointer-events-none"
     />
@@ -72,7 +72,7 @@ const props = withDefaults(defineProps<Props>(), {
   accentStyle: undefined,
   featured: false,
   draggable: false,
-  customClass: ''
+  customClass: '',
 })
 
 const emit = defineEmits<Emits>()
@@ -88,7 +88,7 @@ const cardClasses = computed(() => {
     'shadow-lg',
     'transition-all',
     'duration-300',
-    'overflow-hidden'
+    'overflow-hidden',
   ]
 
   // Variant-specific classes
@@ -104,53 +104,40 @@ const cardClasses = computed(() => {
       'hover:scale-[1.02]',
       'focus-within:ring-2',
       'focus-within:ring-blue-500',
-      'focus-within:ring-offset-2'
+      'focus-within:ring-offset-2',
     ],
     compact: ['rounded-xl'],
-    featured: [
-      'rounded-2xl',
-      'ring-2',
-      'ring-purple-200/50',
-      'shadow-xl'
-    ],
-    media: [
-      'rounded-2xl',
-      'overflow-hidden'
-    ]
+    featured: ['rounded-2xl', 'ring-2', 'ring-purple-200/50', 'shadow-xl'],
+    media: ['rounded-2xl', 'overflow-hidden'],
   }
 
   // Size-specific classes
   const sizeClasses = {
     sm: ['p-4'],
     md: ['p-6'],
-    lg: ['p-8']
+    lg: ['p-8'],
   }
 
   // Interactive states
-  const interactiveClasses = props.interactive ? [
-    'cursor-pointer',
-    'group',
-    'hover:border-blue-200/50',
-    'hover:shadow-xl',
-    'hover:-translate-y-1',
-    'focus:outline-none',
-    'focus:ring-2',
-    'focus:ring-blue-500',
-    'focus:ring-offset-2'
-  ] : []
+  const interactiveClasses = props.interactive
+    ? [
+        'cursor-pointer',
+        'group',
+        'hover:border-blue-200/50',
+        'hover:shadow-xl',
+        'hover:-translate-y-1',
+        'focus:outline-none',
+        'focus:ring-2',
+        'focus:ring-blue-500',
+        'focus:ring-offset-2',
+      ]
+    : []
 
   // Featured state
-  const featuredClasses = props.featured ? [
-    'ring-2',
-    'ring-purple-200',
-    'shadow-xl'
-  ] : []
+  const featuredClasses = props.featured ? ['ring-2', 'ring-purple-200', 'shadow-xl'] : []
 
   // Draggable state
-  const draggableClasses = props.draggable ? [
-    'hover:cursor-grab',
-    'active:cursor-grabbing'
-  ] : []
+  const draggableClasses = props.draggable ? ['hover:cursor-grab', 'active:cursor-grabbing'] : []
 
   return [
     ...baseClasses,
@@ -159,8 +146,10 @@ const cardClasses = computed(() => {
     ...interactiveClasses,
     ...featuredClasses,
     ...draggableClasses,
-    props.customClass
-  ].filter(Boolean).join(' ')
+    props.customClass,
+  ]
+    .filter(Boolean)
+    .join(' ')
 })
 
 // Event handlers
@@ -189,8 +178,9 @@ const handleKeydown = (event: KeyboardEvent) => {
 /* Optimize animations for 60fps */
 @media (prefers-reduced-motion: no-preference) {
   .card-base {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -200,7 +190,7 @@ const handleKeydown = (event: KeyboardEvent) => {
     transition: box-shadow 0.1s ease;
     transform: none !important;
   }
-  
+
   .card-base:hover {
     transform: none !important;
   }

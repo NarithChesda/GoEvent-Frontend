@@ -9,8 +9,8 @@ export function useTemplateSelection(templates: Ref<EventTemplate[]>) {
   const selectedTemplateId = ref<number | null>(null)
 
   // Computed properties
-  const selectedTemplate = computed(() => 
-    templates.value.find(template => template.id === selectedTemplateId.value) || null
+  const selectedTemplate = computed(
+    () => templates.value.find((template) => template.id === selectedTemplateId.value) || null,
   )
 
   const hasSelection = computed(() => selectedTemplateId.value !== null)
@@ -35,15 +35,15 @@ export function useTemplateSelection(templates: Ref<EventTemplate[]>) {
   return {
     // State
     selectedTemplateId,
-    
+
     // Computed
     selectedTemplate,
     hasSelection,
-    
+
     // Actions
     selectTemplate,
     selectTemplateById,
     clearSelection,
-    isTemplateSelected
+    isTemplateSelected,
   }
 }

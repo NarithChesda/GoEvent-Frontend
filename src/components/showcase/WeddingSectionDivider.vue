@@ -1,57 +1,33 @@
 <template>
-  <div class="flex justify-center my-8 sm:my-10 laptop-sm:my-10 laptop-md:my-12 laptop-lg:my-14 desktop:my-12">
+  <div
+    class="flex justify-center my-8 sm:my-10 laptop-sm:my-10 laptop-md:my-12 laptop-lg:my-14 desktop:my-12"
+  >
     <div class="bow-tie-divider">
       <!-- Extended Left Line -->
-      <div 
-        class="divider-line left-line" 
-        :style="{ backgroundColor: primaryColor }"
-      ></div>
-      
+      <div class="divider-line left-line" :style="{ backgroundColor: primaryColor }"></div>
+
       <!-- Bow Tie Center -->
       <div class="bow-tie-center">
-        <svg 
-          class="bow-tie-svg" 
+        <svg
+          class="bow-tie-svg"
           :style="{ color: primaryColor }"
-          viewBox="0 0 40 20" 
-          fill="none" 
+          viewBox="0 0 40 20"
+          fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <!-- Left bow -->
-          <path 
-            d="M5 10 Q12 5 18 10 Q12 15 5 10 Z" 
-            fill="currentColor"
-            opacity="0.8"
-          />
+          <path d="M5 10 Q12 5 18 10 Q12 15 5 10 Z" fill="currentColor" opacity="0.8" />
           <!-- Right bow -->
-          <path 
-            d="M35 10 Q28 5 22 10 Q28 15 35 10 Z" 
-            fill="currentColor"
-            opacity="0.8"
-          />
+          <path d="M35 10 Q28 5 22 10 Q28 15 35 10 Z" fill="currentColor" opacity="0.8" />
           <!-- Center knot -->
-          <ellipse 
-            cx="20" 
-            cy="10" 
-            rx="3" 
-            ry="6" 
-            fill="currentColor"
-          />
+          <ellipse cx="20" cy="10" rx="3" ry="6" fill="currentColor" />
           <!-- Center highlight -->
-          <ellipse 
-            cx="20" 
-            cy="10" 
-            rx="1.5" 
-            ry="4" 
-            fill="rgba(255, 255, 255, 0.3)"
-          />
+          <ellipse cx="20" cy="10" rx="1.5" ry="4" fill="rgba(255, 255, 255, 0.3)" />
         </svg>
       </div>
-      
+
       <!-- Extended Right Line -->
-      <div 
-        class="divider-line right-line" 
-        :style="{ backgroundColor: primaryColor }"
-      ></div>
+      <div class="divider-line right-line" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </div>
 </template>
@@ -109,11 +85,11 @@ defineProps<Props>()
     width: 40px;
     height: 20px;
   }
-  
+
   .left-line {
     margin-right: 1.5rem;
   }
-  
+
   .right-line {
     margin-left: 1.5rem;
   }
@@ -124,15 +100,15 @@ defineProps<Props>()
     width: 48px;
     height: 24px;
   }
-  
+
   .bow-tie-divider {
     max-width: 500px;
   }
-  
+
   .left-line {
     margin-right: 2rem;
   }
-  
+
   .right-line {
     margin-left: 2rem;
   }
@@ -160,7 +136,8 @@ defineProps<Props>()
 }
 
 @keyframes gentle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.8;
   }

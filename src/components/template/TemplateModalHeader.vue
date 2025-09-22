@@ -1,8 +1,12 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-8 py-4 sm:py-6 text-white flex-shrink-0">
+  <div
+    class="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-8 py-4 sm:py-6 text-white flex-shrink-0"
+  >
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+        <div
+          class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0"
+        >
           <LayoutTemplate class="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
         <div class="min-w-0 flex-1">

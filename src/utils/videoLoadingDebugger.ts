@@ -1,6 +1,6 @@
 /**
  * Video Loading Debugger Utility
- * 
+ *
  * Add this to the event showcase page to monitor video loading behavior in real-time.
  * Provides console logging and visual debugging information.
  */
@@ -40,7 +40,7 @@ export class VideoLoadingDebugger {
       networkState: video.networkState,
       readyState: video.readyState,
       bufferedAmount: 0,
-      loadStartTime: Date.now()
+      loadStartTime: Date.now(),
     }
 
     this.videos.set(video, info)
@@ -61,14 +61,14 @@ export class VideoLoadingDebugger {
    */
   getVideoStatus() {
     const status: Record<string, any> = {}
-    
+
     this.videos.forEach((info, video) => {
       status[info.type] = {
         src: info.src ? info.src.substring(info.src.lastIndexOf('/') + 1) : 'none',
         networkState: this.getNetworkStateText(info.networkState),
         readyState: this.getReadyStateText(info.readyState),
         buffered: `${info.bufferedAmount.toFixed(1)}%`,
-        loadTime: info.loadStartTime ? `${Date.now() - info.loadStartTime}ms` : 'n/a'
+        loadTime: info.loadStartTime ? `${Date.now() - info.loadStartTime}ms` : 'n/a',
       }
     })
 
@@ -81,7 +81,7 @@ export class VideoLoadingDebugger {
   logStatus() {
     const status = this.getVideoStatus()
     const elapsed = Date.now() - this.startTime
-    
+
     console.group(`📊 Video Status @ ${elapsed}ms`)
     Object.entries(status).forEach(([type, info]) => {
       console.log(`${type}: ${JSON.stringify(info, null, 2)}`)
@@ -152,10 +152,10 @@ export class VideoLoadingDebugger {
   private getReadyStateText(state: number): string {
     const states = [
       'HAVE_NOTHING',
-      'HAVE_METADATA', 
+      'HAVE_METADATA',
       'HAVE_CURRENT_DATA',
       'HAVE_FUTURE_DATA',
-      'HAVE_ENOUGH_DATA'
+      'HAVE_ENOUGH_DATA',
     ]
     return states[state] || `UNKNOWN(${state})`
   }

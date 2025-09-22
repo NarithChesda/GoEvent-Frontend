@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Text Content</h2>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Event Text Content
+        </h2>
         <p class="text-sm text-slate-600 mt-1">Manage multi-language text content for your event</p>
       </div>
       <button
@@ -44,7 +46,9 @@
         </div>
 
         <div class="flex flex-col space-y-1.5">
-          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Language</label>
+          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+            >Language</label
+          >
           <select
             v-model="filters.language"
             @change="applyFilters"
@@ -78,7 +82,10 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+    <div
+      v-if="loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+    >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span class="ml-3 text-slate-600">Loading text content...</span>
@@ -86,7 +93,10 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 text-center">
+    <div
+      v-else-if="error"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 text-center"
+    >
       <div class="text-lg text-red-600 font-semibold mb-4">{{ error }}</div>
       <button
         @click="fetchTexts"
@@ -97,15 +107,19 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="filteredTexts.length === 0" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="filteredTexts.length === 0"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <FileText class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">
         {{ allTexts.length === 0 ? 'No Text Content Yet' : 'No Matching Text Content' }}
       </h3>
       <p class="text-slate-600 mb-6">
-        {{ allTexts.length === 0
-          ? 'Start building your event content by adding your first text content.'
-          : 'Try adjusting your filters to see more content.'
+        {{
+          allTexts.length === 0
+            ? 'Start building your event content by adding your first text content.'
+            : 'Try adjusting your filters to see more content.'
         }}
       </p>
       <button
@@ -130,7 +144,9 @@
           <h3 class="text-lg font-bold text-slate-900 flex items-center">
             <component :is="getTextTypeIcon(textType)" class="w-5 h-5 mr-2 text-blue-600" />
             {{ getTextTypeLabel(textType) }}
-            <span class="ml-2 text-sm text-slate-500">({{ group.length }} item{{ group.length !== 1 ? 's' : '' }})</span>
+            <span class="ml-2 text-sm text-slate-500"
+              >({{ group.length }} item{{ group.length !== 1 ? 's' : '' }})</span
+            >
           </h3>
         </div>
 
@@ -168,7 +184,12 @@
       :show="showDeleteModal"
       :loading="deleteLoading"
       title="Delete Text Content"
-      :item-name="textToDelete?.title || (textToDelete?.content ? textToDelete.content.substring(0, 50) + (textToDelete.content.length > 50 ? '...' : '') : '')"
+      :item-name="
+        textToDelete?.title ||
+        (textToDelete?.content
+          ? textToDelete.content.substring(0, 50) + (textToDelete.content.length > 50 ? '...' : '')
+          : '')
+      "
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />
@@ -177,7 +198,16 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Plus, FileText, MessageSquare, Info, Calendar, Clock, MapPin, Heart } from 'lucide-vue-next'
+import {
+  Plus,
+  FileText,
+  MessageSquare,
+  Info,
+  Calendar,
+  Clock,
+  MapPin,
+  Heart,
+} from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EventTextCard from './EventTextCard.vue'
 import CreateEventTextModal from './CreateEventTextModal.vue'
@@ -205,12 +235,12 @@ const textToDelete = ref<EventText | null>(null)
 const filters = reactive({
   textType: '',
   language: '',
-  isActive: ''
+  isActive: '',
 })
 
 // Computed
 const filteredTexts = computed(() => {
-  return allTexts.value.filter(text => {
+  return allTexts.value.filter((text) => {
     if (filters.textType && text.text_type !== filters.textType) return false
     if (filters.language && text.language !== filters.language) return false
     if (filters.isActive !== '' && text.is_active.toString() !== filters.isActive) return false
@@ -221,7 +251,7 @@ const filteredTexts = computed(() => {
 const groupedTexts = computed(() => {
   const groups: Record<string, EventText[]> = {}
 
-  filteredTexts.value.forEach(text => {
+  filteredTexts.value.forEach((text) => {
     if (!groups[text.text_type]) {
       groups[text.text_type] = []
     }
@@ -229,7 +259,7 @@ const groupedTexts = computed(() => {
   })
 
   // Sort texts within each group by order, then language
-  Object.keys(groups).forEach(textType => {
+  Object.keys(groups).forEach((textType) => {
     groups[textType].sort((a, b) => {
       if (a.order !== b.order) return a.order - b.order
       return a.language.localeCompare(b.language)
@@ -238,7 +268,6 @@ const groupedTexts = computed(() => {
 
   return groups
 })
-
 
 // Methods
 const fetchTexts = async () => {
@@ -274,7 +303,7 @@ const editText = (text: EventText) => {
 }
 
 const deleteText = (textId: number) => {
-  const text = allTexts.value.find(t => t.id === textId)
+  const text = allTexts.value.find((t) => t.id === textId)
   if (!text) return
 
   textToDelete.value = text
@@ -290,7 +319,7 @@ const confirmDelete = async () => {
     const response = await eventTextsService.deleteEventText(props.eventId, textToDelete.value.id)
 
     if (response.success) {
-      allTexts.value = allTexts.value.filter(t => t.id !== textToDelete.value!.id)
+      allTexts.value = allTexts.value.filter((t) => t.id !== textToDelete.value!.id)
       showDeleteModal.value = false
       textToDelete.value = null
     } else {
@@ -314,7 +343,7 @@ const handleTextCreated = (newText: EventText) => {
 }
 
 const handleTextUpdated = (updatedText: EventText) => {
-  const index = allTexts.value.findIndex(t => t.id === updatedText.id)
+  const index = allTexts.value.findIndex((t) => t.id === updatedText.id)
   if (index !== -1) {
     allTexts.value[index] = updatedText
   }
@@ -324,46 +353,46 @@ const handleTextUpdated = (updatedText: EventText) => {
 
 const getTextTypeLabel = (textType: string): string => {
   const labels: Record<string, string> = {
-    'cover_header': 'Cover Header',
-    'welcome_message': 'Welcome Message',
-    'instructions': 'Instructions',
-    'description': 'Description',
-    'short_description': 'Short Description',
-    'date_text': 'Date Text',
-    'time_text': 'Time Text',
-    'location_text': 'Location Text',
-    'thank_you_message': 'Thank You Message',
-    'custom': 'Custom Content'
+    cover_header: 'Cover Header',
+    welcome_message: 'Welcome Message',
+    instructions: 'Instructions',
+    description: 'Description',
+    short_description: 'Short Description',
+    date_text: 'Date Text',
+    time_text: 'Time Text',
+    location_text: 'Location Text',
+    thank_you_message: 'Thank You Message',
+    custom: 'Custom Content',
   }
   return labels[textType] || textType
 }
 
 const getTextTypeIcon = (textType: string) => {
   const icons: Record<string, any> = {
-    'cover_header': FileText,
-    'welcome_message': MessageSquare,
-    'instructions': Info,
-    'description': FileText,
-    'short_description': FileText,
-    'date_text': Calendar,
-    'time_text': Clock,
-    'location_text': MapPin,
-    'thank_you_message': Heart,
-    'custom': FileText
+    cover_header: FileText,
+    welcome_message: MessageSquare,
+    instructions: Info,
+    description: FileText,
+    short_description: FileText,
+    date_text: Calendar,
+    time_text: Clock,
+    location_text: MapPin,
+    thank_you_message: Heart,
+    custom: FileText,
   }
   return icons[textType] || FileText
 }
 
 const getLanguageName = (languageCode: string): string => {
   const languageNames: Record<string, string> = {
-    'en': 'English',
-    'kh': 'Khmer',
-    'fr': 'French',
-    'ja': 'Japanese',
-    'ko': 'Korean',
+    en: 'English',
+    kh: 'Khmer',
+    fr: 'French',
+    ja: 'Japanese',
+    ko: 'Korean',
     'zh-cn': 'Chinese (Simplified)',
-    'th': 'Thai',
-    'vn': 'Vietnamese'
+    th: 'Thai',
+    vn: 'Vietnamese',
   }
   return languageNames[languageCode] || languageCode.toUpperCase()
 }

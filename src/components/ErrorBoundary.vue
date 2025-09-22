@@ -18,9 +18,7 @@
 
       <!-- Error Details (Development Mode) -->
       <details v-if="isDevelopment && error" class="error-boundary__details">
-        <summary class="error-boundary__details-summary">
-          Technical Details
-        </summary>
+        <summary class="error-boundary__details-summary">Technical Details</summary>
         <pre class="error-boundary__stack">{{ error.stack }}</pre>
         <div v-if="errorInfo?.componentStack" class="error-boundary__component-stack">
           <h4>Component Stack:</h4>
@@ -30,7 +28,7 @@
 
       <!-- Action Buttons -->
       <div class="error-boundary__actions">
-        <button 
+        <button
           v-if="showRetry"
           @click="handleRetry"
           class="error-boundary__button error-boundary__button--primary"
@@ -41,7 +39,7 @@
           {{ isRetrying ? 'Retrying...' : 'Try Again' }}
         </button>
 
-        <button 
+        <button
           v-if="showReload"
           @click="handleReload"
           class="error-boundary__button error-boundary__button--secondary"
@@ -50,7 +48,7 @@
           Reload Page
         </button>
 
-        <button 
+        <button
           v-if="showReport"
           @click="handleReport"
           class="error-boundary__button error-boundary__button--outline"
@@ -98,7 +96,7 @@ const props = withDefaults(defineProps<Props>(), {
   showReload: true,
   showReport: false,
   maxRetries: 3,
-  resetOnPropsChange: true
+  resetOnPropsChange: true,
 })
 
 const emit = defineEmits<{
@@ -124,7 +122,7 @@ const errorBoundaryStyle = computed(() => ({
   '--background-color': '#fef2f2',
   '--text-color': '#374151',
   '--border-color': '#fecaca',
-  ...props.customStyle
+  ...props.customStyle,
 }))
 
 // Error capture
@@ -135,7 +133,7 @@ onErrorCaptured((err: Error, instance, info: string) => {
 
   const errorInfoObj: ErrorInfo = {
     componentStack: info,
-    errorBoundary: 'ErrorBoundary'
+    errorBoundary: 'ErrorBoundary',
   }
 
   hasError.value = true
@@ -163,17 +161,17 @@ provide('errorBoundary', {
     if (!hasError.value) {
       const errorInfoObj: ErrorInfo = {
         componentStack: 'Manually reported error',
-        errorBoundary: 'ErrorBoundary'
+        errorBoundary: 'ErrorBoundary',
       }
-      
+
       hasError.value = true
       error.value = err
       errorInfo.value = errorInfoObj
-      
+
       emit('error', err, errorInfoObj)
       logError(err, errorInfoObj)
     }
-  }
+  },
 })
 
 // Methods
@@ -201,16 +199,16 @@ const handleRetry = async () => {
     errorInfo.value = null
 
     emit('retry')
-    
+
     console.log(`ErrorBoundary retry successful (attempt ${retryCount.value})`)
   } catch (retryError) {
     console.error('ErrorBoundary retry failed:', retryError)
-    
+
     // If retry fails, show the retry error instead
     error.value = retryError as Error
     errorInfo.value = {
       componentStack: 'Error occurred during retry',
-      errorBoundary: 'ErrorBoundary'
+      errorBoundary: 'ErrorBoundary',
     }
   } finally {
     isRetrying.value = false
@@ -241,14 +239,14 @@ const logError = (err: Error, info: ErrorInfo) => {
     timestamp: new Date().toISOString(),
     url: window.location.href,
     userAgent: navigator.userAgent,
-    retryCount: retryCount.value
+    retryCount: retryCount.value,
   }
 
   // Send to error tracking service in production
   if (!isDevelopment.value) {
     // Replace with your error tracking service
     console.error('Production Error:', errorLog)
-    
+
     // Example: Send to external service
     // errorTrackingService.captureError(errorLog)
   }
@@ -268,7 +266,7 @@ defineExpose({
   reset,
   hasError: () => hasError.value,
   getError: () => error.value,
-  getRetryCount: () => retryCount.value
+  getRetryCount: () => retryCount.value,
 })
 </script>
 
@@ -440,16 +438,16 @@ defineExpose({
     padding: 1rem;
     min-height: 300px;
   }
-  
+
   .error-boundary__title {
     font-size: 1.25rem;
   }
-  
+
   .error-boundary__actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .error-boundary__button {
     width: 100%;
     max-width: 200px;

@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Invitations</h2>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Event Invitations
+        </h2>
         <p class="text-sm text-slate-600 mt-1">Manage invitations and track your guest list</p>
       </div>
     </div>
@@ -73,7 +75,10 @@
     </div>
 
     <!-- No Template Selected -->
-    <div v-else-if="!props.event?.event_template" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="!props.event?.event_template"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <Mail class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">No Template Selected</h3>
       <p class="text-slate-600 mb-6 max-w-md mx-auto">
@@ -89,11 +94,15 @@
     </div>
 
     <!-- Template Payment Check -->
-    <div v-else-if="!hasTemplatePayment" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="!hasTemplatePayment"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <Lock class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">Template Payment Required</h3>
       <p class="text-slate-600 mb-6 max-w-md mx-auto">
-        Your template "{{ props.event.event_template_details?.name || 'Selected Template' }}" requires payment before you can send invitations.
+        Your template "{{ props.event.event_template_details?.name || 'Selected Template' }}"
+        requires payment before you can send invitations.
       </p>
       <button
         @click="redirectToPaymentTab"
@@ -148,8 +157,18 @@
               placeholder="Search guests by name..."
               class="w-full px-4 py-2 pl-10 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
             />
-            <svg class="absolute left-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
         </div>
@@ -163,24 +182,48 @@
         <div v-else-if="guests.length === 0" class="text-center py-12">
           <Users class="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <p class="text-slate-500">No guests added yet</p>
-          <p class="text-sm text-slate-400 mt-1">Click "Add Guest" to start building your guest list</p>
+          <p class="text-sm text-slate-400 mt-1">
+            Click "Add Guest" to start building your guest list
+          </p>
         </div>
 
         <div v-else class="overflow-hidden rounded-2xl">
           <table class="min-w-full">
             <thead>
               <tr class="bg-slate-50/50">
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Guest Name</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Invited On</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-slate-700 uppercase tracking-wider">Actions</th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
+                >
+                  Guest Name
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
+                >
+                  Invited On
+                </th>
+                <th
+                  class="px-6 py-3 text-right text-xs font-medium text-slate-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody class="bg-white/50 divide-y divide-slate-100">
-              <tr v-for="guest in guests" :key="guest.id" class="hover:bg-slate-50/50 transition-colors">
+              <tr
+                v-for="guest in guests"
+                :key="guest.id"
+                class="hover:bg-slate-50/50 transition-colors"
+              >
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                    <div
+                      class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm"
+                    >
                       {{ getInitials(guest.name) }}
                     </div>
                     <span class="ml-3 text-sm font-medium text-slate-900">{{ guest.name }}</span>
@@ -191,7 +234,10 @@
                     class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                     :class="getStatusClass(guest.invitation_status)"
                   >
-                    <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="getStatusDotClass(guest.invitation_status)"></span>
+                    <span
+                      class="w-1.5 h-1.5 rounded-full mr-1.5"
+                      :class="getStatusDotClass(guest.invitation_status)"
+                    ></span>
                     {{ getStatusDisplay(guest) }}
                   </span>
                 </td>
@@ -221,7 +267,12 @@
                       :title="`Copy sharing link for ${guest.name}`"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
                       </svg>
                     </button>
                     <button
@@ -243,8 +294,12 @@
     <!-- Add Guest Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showAddGuestModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="closeAddGuestModal">
-          <div 
+        <div
+          v-if="showAddGuestModal"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click="closeAddGuestModal"
+        >
+          <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
             @click.stop
           >
@@ -296,7 +351,9 @@
                   class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
                 >
                   <span v-if="isAddingGuest" class="inline-flex items-center">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div
+                      class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                    ></div>
                     Adding...
                   </span>
                   <span v-else>Add Guest</span>
@@ -326,19 +383,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { 
-  Send, 
-  CheckCircle, 
-  Clock, 
-  Users, 
-  Lock, 
+import {
+  Send,
+  CheckCircle,
+  Clock,
+  Users,
+  Lock,
   CreditCard,
   Mail,
   UserPlus,
   X,
   AlertCircle,
   Trash2,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
@@ -371,17 +428,15 @@ const guests = ref<EventGuest[]>([])
 const guestStats = ref<GuestStats | null>(null)
 
 // Use payment template integration composable
-const {
-  isTemplateActivated,
-  loadPayments,
-  loadingPayments
-} = usePaymentTemplateIntegration(props.event)
+const { isTemplateActivated, loadPayments, loadingPayments } = usePaymentTemplateIntegration(
+  props.event,
+)
 
 // Computed properties
 const hasTemplatePayment = computed(() => {
   // Check if template is selected first
   if (!props.event?.event_template) return false
-  
+
   // Use the same logic as template tab - check if template is activated
   return isTemplateActivated.value
 })
@@ -425,7 +480,7 @@ const sendIndividualInvitation = async (guest: EventGuest) => {
     const response = await guestService.markInvitationSent(props.eventId, guest.id)
     if (response.success && response.data) {
       // Update the guest in the list
-      const index = guests.value.findIndex(g => g.id === guest.id)
+      const index = guests.value.findIndex((g) => g.id === guest.id)
       if (index !== -1) {
         guests.value[index] = response.data
       }
@@ -445,12 +500,12 @@ const addGuest = async () => {
   if (!newGuestName.value.trim()) return
 
   isAddingGuest.value = true
-  
+
   try {
     const response = await guestService.createGuest(props.eventId, {
-      name: newGuestName.value.trim()
+      name: newGuestName.value.trim(),
     })
-    
+
     if (response.success && response.data) {
       guests.value.unshift(response.data) // Add to beginning of list
       showMessage('success', `${response.data.name} added to guest list`)
@@ -474,7 +529,7 @@ const removeGuest = async (guest: EventGuest) => {
     try {
       const response = await guestService.deleteGuest(props.eventId, guest.id)
       if (response.success) {
-        guests.value = guests.value.filter(g => g.id !== guest.id)
+        guests.value = guests.value.filter((g) => g.id !== guest.id)
         showMessage('success', `${guest.name} removed from guest list`)
         // Refresh stats
         loadGuestStats()
@@ -496,7 +551,7 @@ const closeAddGuestModal = () => {
 const getInitials = (name: string) => {
   return name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
@@ -537,7 +592,7 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString([], {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   })
 }
 
@@ -560,11 +615,14 @@ const viewGuestShowcase = (guest: EventGuest) => {
 
 const copyShowcaseLink = (guest: EventGuest) => {
   const fullUrl = getGuestShowcaseUrl(guest)
-  navigator.clipboard.writeText(fullUrl).then(() => {
-    showMessage('success', `Showcase link copied for ${guest.name}`)
-  }).catch(() => {
-    showMessage('error', 'Failed to copy link')
-  })
+  navigator.clipboard
+    .writeText(fullUrl)
+    .then(() => {
+      showMessage('success', `Showcase link copied for ${guest.name}`)
+    })
+    .catch(() => {
+      showMessage('error', 'Failed to copy link')
+    })
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
@@ -579,9 +637,9 @@ const loadGuests = async () => {
   try {
     const response = await guestService.getGuests(props.eventId, {
       search: searchTerm.value,
-      ordering: 'name'
+      ordering: 'name',
     })
-    
+
     if (response.success && response.data) {
       guests.value = response.data.results
     } else {

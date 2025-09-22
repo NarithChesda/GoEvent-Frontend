@@ -16,9 +16,11 @@
       </button>
     </div>
 
-
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+    <div
+      v-if="loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+    >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span class="ml-3 text-slate-600">Loading agenda...</span>
@@ -33,13 +35,15 @@
         class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
         <!-- Date Header -->
-        <div 
+        <div
           @click="toggleDay(day.date)"
           class="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 border-b border-white/20 cursor-pointer hover:from-blue-600/10 hover:to-purple-600/10 transition-all duration-200"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
+              <div
+                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold"
+              >
                 {{ new Date(day.date).getDate() }}
               </div>
               <div>
@@ -60,11 +64,7 @@
         <Transition name="slide-down">
           <div v-if="expandedDays.includes(day.date)" class="border-t border-white/20">
             <div class="p-6 pt-4 space-y-3">
-              <div 
-                ref="sortableContainer"
-                class="space-y-3"
-                :data-date="day.date"
-              >
+              <div ref="sortableContainer" class="space-y-3" :data-date="day.date">
                 <AgendaItemCard
                   v-for="item in day.items"
                   :key="item.id"
@@ -86,7 +86,10 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="!loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <Calendar class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">No Agenda Items Yet</h3>
       <p class="text-slate-600 mb-6">Start building your event schedule by adding agenda items.</p>
@@ -101,7 +104,9 @@
     </div>
 
     <!-- Session Types Info -->
-    <div class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6">
+    <div
+      class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6"
+    >
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
         <Info class="w-5 h-5 text-blue-600 mr-2" />
         Session Types
@@ -183,14 +188,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import {
-  Calendar,
-  Plus,
-  ChevronDown,
-  Info,
-  CheckCircle,
-  AlertCircle
-} from 'lucide-vue-next'
+import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
 import CreateAgendaModal from './CreateAgendaModal.vue'
@@ -222,7 +220,7 @@ const groupedAgendaDays = computed(() => {
   const grouped: { date: string; items: EventAgendaItem[] }[] = []
   const dateMap = new Map<string, EventAgendaItem[]>()
 
-  agendaItems.value.forEach(item => {
+  agendaItems.value.forEach((item) => {
     const date = item.date || 'no-date' // Handle null dates
     if (!dateMap.has(date)) {
       dateMap.set(date, [])
@@ -240,7 +238,7 @@ const groupedAgendaDays = computed(() => {
     .forEach(([date, items]) => {
       grouped.push({
         date,
-        items: items.sort((a, b) => a.order - b.order) // Use order field instead
+        items: items.sort((a, b) => a.order - b.order), // Use order field instead
       })
     })
 
@@ -251,7 +249,6 @@ const groupedAgendaDays = computed(() => {
 
   return grouped
 })
-
 
 // Methods
 const loadAgenda = async () => {
@@ -289,7 +286,7 @@ const formatDayHeader = (date: string): string => {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -339,7 +336,7 @@ const deleteAgendaItem = async () => {
     const response = await agendaService.deleteAgendaItem(props.eventId, itemToDelete.value.id)
     if (response.success) {
       showMessage('success', 'Agenda item deleted successfully')
-      agendaItems.value = agendaItems.value.filter(item => item.id !== itemToDelete.value!.id)
+      agendaItems.value = agendaItems.value.filter((item) => item.id !== itemToDelete.value!.id)
       closeDeleteModal()
     } else {
       showMessage('error', response.message || 'Failed to delete agenda item')
@@ -359,7 +356,7 @@ const handleAgendaCreated = (newItem: EventAgendaItem) => {
 }
 
 const handleAgendaUpdated = (updatedItem: EventAgendaItem) => {
-  const index = agendaItems.value.findIndex(item => item.id === updatedItem.id)
+  const index = agendaItems.value.findIndex((item) => item.id === updatedItem.id)
   if (index !== -1) {
     agendaItems.value[index] = updatedItem
   }
@@ -398,9 +395,9 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
   }
 
   // Find both items in the current array
-  const draggedIndex = agendaItems.value.findIndex(item => item.id === draggedItem.value!.id)
-  const targetIndex = agendaItems.value.findIndex(item => item.id === targetItem.id)
-  
+  const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
+  const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
+
   if (draggedIndex === -1 || targetIndex === -1) {
     draggedItem.value = null
     return
@@ -418,12 +415,12 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
 
   const updates = newItems.map((item, index) => ({
     id: item.id,
-    order: index
+    order: index,
   }))
 
   // Optimistic update - force reactivity by creating new array reference
   agendaItems.value = [...newItems]
-  
+
   // Force Vue to update the computed property
   await nextTick()
 

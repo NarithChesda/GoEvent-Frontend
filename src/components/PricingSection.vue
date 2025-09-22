@@ -1,22 +1,26 @@
 <template>
-  <section 
-    id="pricing" 
-    class="py-24 relative overflow-hidden scroll-animate"
-  >
+  <section id="pricing" class="py-24 relative overflow-hidden scroll-animate">
     <!-- Background elements -->
     <div class="absolute inset-0">
-      <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+      <div
+        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+      ></div>
       <div class="absolute bottom-0 right-0 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
     </div>
-    
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div class="text-center mb-20">
-        <div class="inline-flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full mb-6">
+        <div
+          class="inline-flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full mb-6"
+        >
           <Star class="h-4 w-4 mr-2" />
           Simple & Transparent
         </div>
         <h2 class="text-5xl font-bold text-slate-900 mb-6 leading-tight">
-          Choose Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Perfect Plan</span>
+          Choose Your
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            >Perfect Plan</span
+          >
         </h2>
         <p class="text-xl text-slate-600 max-w-3xl mx-auto">
           Start free, upgrade when you need more. No hidden fees, cancel anytime.
@@ -25,15 +29,17 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div
+          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+        ></div>
         <p class="text-slate-700 mt-4">Loading pricing plans...</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="text-center">
         <p class="text-red-500 mb-4">{{ error }}</p>
-        <button 
-          @click="fetchPricingPlans" 
+        <button
+          @click="fetchPricingPlans"
           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
         >
           Retry
@@ -46,15 +52,19 @@
         <div class="mb-12" v-if="Object.keys(categorizedPlans).length > 1">
           <div class="flex justify-center">
             <div class="max-w-full overflow-x-auto scrollbar-hide">
-              <div class="inline-flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-1 shadow-lg min-w-min">
+              <div
+                class="inline-flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-1 shadow-lg min-w-min"
+              >
                 <button
                   v-for="categoryName in Object.keys(categorizedPlans)"
                   :key="categoryName"
                   @click="activeCategory = categoryName"
                   class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-300"
-                  :class="activeCategory === categoryName 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                    : 'text-slate-700 hover:text-blue-600 hover:bg-white/50'"
+                  :class="
+                    activeCategory === categoryName
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'text-slate-700 hover:text-blue-600 hover:bg-white/50'
+                  "
                 >
                   {{ categoryName }}
                 </button>
@@ -62,95 +72,133 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Plans Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto justify-items-center">
-          <div 
-            v-for="plan in (Object.keys(categorizedPlans).length === 1 ? Object.values(categorizedPlans)[0] : categorizedPlans[activeCategory] || [])" 
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto justify-items-center"
+        >
+          <div
+            v-for="plan in Object.keys(categorizedPlans).length === 1
+              ? Object.values(categorizedPlans)[0]
+              : categorizedPlans[activeCategory] || []"
             :key="plan.id"
             class="relative group w-full max-w-sm"
             :class="plan.is_best_seller ? 'lg:transform lg:scale-105 lg:z-10' : ''"
           >
-              <!-- Best Seller Badge -->
-              <div v-if="plan.is_best_seller" class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-lg">
-                  <Star class="w-4 h-4 fill-current" />
-                  <span class="text-sm font-bold uppercase tracking-wide">Best Seller</span>
-                </div>
+            <!-- Best Seller Badge -->
+            <div
+              v-if="plan.is_best_seller"
+              class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20"
+            >
+              <div
+                class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-lg"
+              >
+                <Star class="w-4 h-4 fill-current" />
+                <span class="text-sm font-bold uppercase tracking-wide">Best Seller</span>
               </div>
-              
-              <!-- Card -->
-              <div class="relative bg-white/90 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl h-[620px] flex flex-col group-hover:bg-white/95 transition-all duration-300"
-                   :class="plan.is_best_seller ? 'border-purple-300 shadow-2xl bg-white/95 shadow-purple-500/20' : ''">
-                
-                <!-- Plan header - Fixed height -->
-                <div class="text-center p-8 pb-6">
-                  <h4 class="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{{ plan.name }}</h4>
-                  <div class="mb-4">
-                    <div class="flex items-baseline justify-center gap-1">
-                      <span class="text-xl font-bold text-slate-600">$</span>
-                      <span 
-                        class="text-5xl font-bold leading-none"
-                        :class="plan.is_best_seller 
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600' 
-                          : 'text-slate-900'"
-                      >{{ parseFloat(plan.price).toFixed(0) }}</span>
-                    </div>
+            </div>
+
+            <!-- Card -->
+            <div
+              class="relative bg-white/90 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl h-[620px] flex flex-col group-hover:bg-white/95 transition-all duration-300"
+              :class="
+                plan.is_best_seller
+                  ? 'border-purple-300 shadow-2xl bg-white/95 shadow-purple-500/20'
+                  : ''
+              "
+            >
+              <!-- Plan header - Fixed height -->
+              <div class="text-center p-8 pb-6">
+                <h4 class="text-2xl font-bold text-slate-900 mb-4 tracking-tight">
+                  {{ plan.name }}
+                </h4>
+                <div class="mb-4">
+                  <div class="flex items-baseline justify-center gap-1">
+                    <span class="text-xl font-bold text-slate-600">$</span>
+                    <span
+                      class="text-5xl font-bold leading-none"
+                      :class="
+                        plan.is_best_seller
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600'
+                          : 'text-slate-900'
+                      "
+                      >{{ parseFloat(plan.price).toFixed(0) }}</span
+                    >
                   </div>
-                  <p class="text-slate-600 text-base leading-relaxed">{{ plan.description }}</p>
                 </div>
-                
-                <!-- Divider -->
-                <div class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-8 mb-6"></div>
-                
-                <!-- Features section - Fixed height with scroll -->
-                <div class="px-8 flex-1">
-                  <h5 class="text-slate-700 font-medium text-sm uppercase tracking-wider mb-4 flex items-center">
-                    <div class="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-2"></div>
-                    What's Included
-                  </h5>
-                  <div class="h-[240px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent pr-2">
-                    <ul class="space-y-3">
-                      <li 
-                        v-for="feature in plan.features" 
-                        :key="feature"
-                        class="flex items-start text-slate-700"
+                <p class="text-slate-600 text-base leading-relaxed">{{ plan.description }}</p>
+              </div>
+
+              <!-- Divider -->
+              <div
+                class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-8 mb-6"
+              ></div>
+
+              <!-- Features section - Fixed height with scroll -->
+              <div class="px-8 flex-1">
+                <h5
+                  class="text-slate-700 font-medium text-sm uppercase tracking-wider mb-4 flex items-center"
+                >
+                  <div
+                    class="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-2"
+                  ></div>
+                  What's Included
+                </h5>
+                <div
+                  class="h-[240px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent pr-2"
+                >
+                  <ul class="space-y-3">
+                    <li
+                      v-for="feature in plan.features"
+                      :key="feature"
+                      class="flex items-start text-slate-700"
+                    >
+                      <div
+                        class="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3 mt-0.5 shadow-lg shadow-blue-500/25"
                       >
-                        <div class="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3 mt-0.5 shadow-lg shadow-blue-500/25">
-                          <Check class="w-3 h-3 text-white stroke-2" />
-                        </div>
-                        <span class="text-sm leading-relaxed font-medium">{{ feature }}</span>
-                      </li>
-                    </ul>
-                  </div>
+                        <Check class="w-3 h-3 text-white stroke-2" />
+                      </div>
+                      <span class="text-sm leading-relaxed font-medium">{{ feature }}</span>
+                    </li>
+                  </ul>
                 </div>
-                
-                <!-- CTA Button - Fixed at bottom -->
-                <div class="p-8 pt-6">
-                  <RouterLink
-                    to="/signup"
-                    class="w-full text-center block py-4 px-8 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    :class="plan.is_best_seller 
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-blue-500/25' 
-                      : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'"
-                  >
-                    {{ plan.is_best_seller ? 'Choose This Plan' : 'Select Plan' }}
-                  </RouterLink>
-                </div>
-                
-                <!-- Enhanced hover effect -->
-                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                
-                <!-- Best seller glow effect -->
-                <div v-if="plan.is_best_seller" class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl pointer-events-none"></div>
               </div>
+
+              <!-- CTA Button - Fixed at bottom -->
+              <div class="p-8 pt-6">
+                <RouterLink
+                  to="/signup"
+                  class="w-full text-center block py-4 px-8 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  :class="
+                    plan.is_best_seller
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-blue-500/25'
+                      : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
+                  "
+                >
+                  {{ plan.is_best_seller ? 'Choose This Plan' : 'Select Plan' }}
+                </RouterLink>
+              </div>
+
+              <!-- Enhanced hover effect -->
+              <div
+                class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              ></div>
+
+              <!-- Best seller glow effect -->
+              <div
+                v-if="plan.is_best_seller"
+                class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl pointer-events-none"
+              ></div>
             </div>
           </div>
         </div>
-      
+      </div>
+
       <!-- Bottom guarantee -->
       <div class="text-center mt-16">
-        <div class="inline-flex items-center bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl px-8 py-4 shadow-lg">
+        <div
+          class="inline-flex items-center bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl px-8 py-4 shadow-lg"
+        >
           <Shield class="h-6 w-6 text-green-500 mr-3" />
           <span class="text-slate-700 font-medium text-lg">30-day money-back guarantee</span>
           <div class="w-px h-6 bg-slate-200 mx-6"></div>
@@ -200,10 +248,10 @@ const activeCategory = ref<string>('')
 
 const categorizedPlans = computed(() => {
   const categories: Record<string, PricingPlan[]> = {}
-  
+
   pricingPlans.value
-    .filter(plan => plan.is_active)
-    .forEach(plan => {
+    .filter((plan) => plan.is_active)
+    .forEach((plan) => {
       // Use category name from API if available, otherwise fallback to category ID
       let categoryName: string
       if (typeof plan.category === 'object' && plan.category !== null && plan.category.name) {
@@ -212,47 +260,54 @@ const categorizedPlans = computed(() => {
         // Fallback for backward compatibility
         categoryName = `Category ${plan.category}`
       }
-      
+
       if (!categories[categoryName]) {
         categories[categoryName] = []
       }
       categories[categoryName].push(plan)
     })
-  
+
   // Sort plans within each category by price
-  Object.keys(categories).forEach(category => {
+  Object.keys(categories).forEach((category) => {
     categories[category].sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
   })
-  
+
   return categories
 })
 
 // Watch for changes in categorized plans and set active category
-watch(categorizedPlans, (newCategories) => {
-  const categories = Object.keys(newCategories)
-  if (categories.length > 0 && !activeCategory.value) {
-    activeCategory.value = categories[0]
-  }
-}, { immediate: true })
+watch(
+  categorizedPlans,
+  (newCategories) => {
+    const categories = Object.keys(newCategories)
+    if (categories.length > 0 && !activeCategory.value) {
+      activeCategory.value = categories[0]
+    }
+  },
+  { immediate: true },
+)
 
 const fetchPricingPlans = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     // Try to fetch from API, but handle authentication errors gracefully
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/core-data/pricing-plans/`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-        // Don't include auth headers for public pricing data
-      }
-    })
-    
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/core-data/pricing-plans/`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Don't include auth headers for public pricing data
+        },
+      },
+    )
+
     if (response.ok) {
       const data = await response.json()
       // Handle both paginated and direct array responses
-      pricingPlans.value = 'results' in data ? data.results : data as unknown as PricingPlan[]
+      pricingPlans.value = 'results' in data ? data.results : (data as unknown as PricingPlan[])
     } else if (response.status === 401) {
       // Authentication required - use fallback data
       console.log('Pricing endpoint requires authentication, using fallback data')
@@ -264,68 +319,98 @@ const fetchPricingPlans = async () => {
     console.error('Error fetching pricing plans:', err)
     // Don't show error to user, just use fallback data
     error.value = null
-    
+
     // Fallback to static data
     pricingPlans.value = [
       {
         id: 1,
-        name: "Basic",
-        description: "Perfect for small events and beginners",
-        price: "100.00",
-        commission: "10.00",
+        name: 'Basic',
+        description: 'Perfect for small events and beginners',
+        price: '100.00',
+        commission: '10.00',
         features: [
-          "Up to 100 guests",
-          "Basic event planning tools",
-          "Email invitations",
-          "RSVP tracking",
-          "Basic analytics"
+          'Up to 100 guests',
+          'Basic event planning tools',
+          'Email invitations',
+          'RSVP tracking',
+          'Basic analytics',
         ],
-        category: { id: 5, name: 'Wedding', description: 'Wedding events', color: '#9b59b6', icon: 'fas fa-palette', is_active: true, created_by: 1, created_by_name: 'admin', created_at: new Date().toISOString() },
+        category: {
+          id: 5,
+          name: 'Wedding',
+          description: 'Wedding events',
+          color: '#9b59b6',
+          icon: 'fas fa-palette',
+          is_active: true,
+          created_by: 1,
+          created_by_name: 'admin',
+          created_at: new Date().toISOString(),
+        },
         is_best_seller: false,
         is_active: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: 2,
-        name: "Standard",
-        description: "Most popular choice for regular organizers",
-        price: "300.00",
-        commission: "30.00",
+        name: 'Standard',
+        description: 'Most popular choice for regular organizers',
+        price: '300.00',
+        commission: '30.00',
         features: [
-          "Up to 500 guests",
-          "Advanced planning tools",
-          "Custom branding",
-          "Multiple event types",
-          "Advanced analytics",
-          "Priority support"
+          'Up to 500 guests',
+          'Advanced planning tools',
+          'Custom branding',
+          'Multiple event types',
+          'Advanced analytics',
+          'Priority support',
         ],
-        category: { id: 5, name: 'Wedding', description: 'Wedding events', color: '#9b59b6', icon: 'fas fa-palette', is_active: true, created_by: 1, created_by_name: 'admin', created_at: new Date().toISOString() },
+        category: {
+          id: 5,
+          name: 'Wedding',
+          description: 'Wedding events',
+          color: '#9b59b6',
+          icon: 'fas fa-palette',
+          is_active: true,
+          created_by: 1,
+          created_by_name: 'admin',
+          created_at: new Date().toISOString(),
+        },
         is_best_seller: true,
         is_active: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: 3,
-        name: "Premium",
-        description: "For large organizations and agencies",
-        price: "600.00",
-        commission: "60.00",
+        name: 'Premium',
+        description: 'For large organizations and agencies',
+        price: '600.00',
+        commission: '60.00',
         features: [
-          "Unlimited guests",
-          "White-label solution",
-          "API access",
-          "Custom integrations",
-          "Dedicated account manager",
-          "24/7 phone support"
+          'Unlimited guests',
+          'White-label solution',
+          'API access',
+          'Custom integrations',
+          'Dedicated account manager',
+          '24/7 phone support',
         ],
-        category: { id: 5, name: 'Wedding', description: 'Wedding events', color: '#9b59b6', icon: 'fas fa-palette', is_active: true, created_by: 1, created_by_name: 'admin', created_at: new Date().toISOString() },
+        category: {
+          id: 5,
+          name: 'Wedding',
+          description: 'Wedding events',
+          color: '#9b59b6',
+          icon: 'fas fa-palette',
+          is_active: true,
+          created_by: 1,
+          created_by_name: 'admin',
+          created_at: new Date().toISOString(),
+        },
         is_best_seller: false,
         is_active: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ]
   } finally {
     loading.value = false
@@ -345,11 +430,11 @@ onMounted(async () => {
 <style scoped>
 /* Hide scrollbar but keep scroll functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none; /* Safari and Chrome */
 }
 
 /* Custom scrollbar for features section */
@@ -410,7 +495,8 @@ onMounted(async () => {
 
 /* Animation for best seller badge */
 @keyframes gentle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(-50%) scale(1);
   }
   50% {

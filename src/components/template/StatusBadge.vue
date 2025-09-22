@@ -17,7 +17,7 @@ const props = defineProps<Props>()
 
 const badgeClasses = computed(() => {
   const baseClasses = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium'
-  
+
   switch (props.status) {
     case 'active':
       return `${baseClasses} bg-green-100 text-green-800`

@@ -1,6 +1,6 @@
 <template>
-  <div 
-    v-if="isOpen" 
+  <div
+    v-if="isOpen"
     class="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center px-2 sm:px-4"
     @click="closeModal"
   >
@@ -35,7 +35,7 @@
       </button>
 
       <!-- Photo Container -->
-      <div 
+      <div
         class="relative max-w-full max-h-full"
         @click.stop
         @touchstart="handleTouchStart"
@@ -49,17 +49,19 @@
           loading="lazy"
           draggable="false"
         />
-        
+
         <!-- Caption -->
-        <div 
-          v-if="currentPhoto?.caption" 
+        <div
+          v-if="currentPhoto?.caption"
           class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-4 rounded-b-lg"
         >
           <p class="text-center text-sm">{{ currentPhoto.caption }}</p>
         </div>
 
         <!-- Photo Counter -->
-        <div class="absolute top-2 left-2 sm:top-4 sm:left-4 bg-black bg-opacity-50 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium">
+        <div
+          class="absolute top-2 left-2 sm:top-4 sm:left-4 bg-black bg-opacity-50 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium"
+        >
           {{ currentIndex + 1 }} / {{ photos.length }}
         </div>
       </div>
@@ -88,7 +90,7 @@ const emit = defineEmits<{
 
 const currentIndex = computed(() => {
   if (!props.currentPhoto || props.photos.length === 0) return 0
-  return props.photos.findIndex(photo => photo.id === props.currentPhoto?.id)
+  return props.photos.findIndex((photo) => photo.id === props.currentPhoto?.id)
 })
 
 const canGoPrevious = computed(() => currentIndex.value > 0)
@@ -115,7 +117,7 @@ const goToNext = () => {
 // Keyboard navigation with additional shortcuts
 const handleKeydown = (event: KeyboardEvent) => {
   if (!props.isOpen) return
-  
+
   switch (event.key) {
     case 'Escape':
     case 'Backspace':
@@ -158,17 +160,17 @@ const handleTouchStart = (event: TouchEvent) => {
 
 const handleTouchEnd = (event: TouchEvent) => {
   if (!event.changedTouches.length) return
-  
+
   const touchEndX = event.changedTouches[0].clientX
   const touchEndY = event.changedTouches[0].clientY
-  
+
   const deltaX = touchEndX - touchStartX.value
   const deltaY = touchEndY - touchStartY.value
-  
+
   // Only process horizontal swipes (ignore vertical scrolling)
   if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
     event.preventDefault()
-    
+
     if (deltaX > 0) {
       // Swipe right - go to previous
       goToPrevious()
@@ -180,15 +182,19 @@ const handleTouchEnd = (event: TouchEvent) => {
 }
 
 // Add/remove event listener when modal opens/closes
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen) {
-    document.addEventListener('keydown', handleKeydown)
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', handleKeydown)
-    document.body.style.overflow = ''
-  }
-}, { immediate: true })
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeydown)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.removeEventListener('keydown', handleKeydown)
+      document.body.style.overflow = ''
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

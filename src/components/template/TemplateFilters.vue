@@ -1,5 +1,7 @@
 <template>
-  <div class="p-4 sm:p-8 border-b border-slate-200/20 space-y-4 sm:space-y-6 bg-white/50 backdrop-blur-sm flex-shrink-0">
+  <div
+    class="p-4 sm:p-8 border-b border-slate-200/20 space-y-4 sm:space-y-6 bg-white/50 backdrop-blur-sm flex-shrink-0"
+  >
     <!-- Category Filter -->
     <div class="flex flex-wrap items-center gap-2">
       <span class="text-xs sm:text-sm font-medium text-slate-700 mr-1 sm:mr-2 flex-shrink-0">
@@ -11,7 +13,7 @@
           'px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0',
           selectedCategory === null
             ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-            : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md'
+            : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md',
         ]"
         type="button"
       >
@@ -25,7 +27,7 @@
           'px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 flex-shrink-0',
           selectedCategory === category.id
             ? 'text-white shadow-lg'
-            : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md'
+            : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md',
         ]"
         :style="selectedCategory === category.id ? { backgroundColor: category.color } : {}"
         type="button"
@@ -63,7 +65,7 @@ defineProps<Props>()
 const emit = defineEmits<{
   'update:searchQuery': [value: string]
   'update:selectedCategory': [value: number | null]
-  'clearFilters': []
+  clearFilters: []
 }>()
 
 const handleSearchInput = (event: Event): void => {

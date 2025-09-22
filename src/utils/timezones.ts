@@ -19,15 +19,15 @@ export function getTimezoneOffset(timezone: string): string {
   const now = new Date()
   const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }))
   const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }))
-  
+
   const offsetMs = tzDate.getTime() - utcDate.getTime()
   const offsetHours = Math.floor(offsetMs / (1000 * 60 * 60))
   const offsetMinutes = Math.floor((Math.abs(offsetMs) % (1000 * 60 * 60)) / (1000 * 60))
-  
+
   const sign = offsetMs >= 0 ? '+' : '-'
   const hours = Math.abs(offsetHours).toString().padStart(2, '0')
   const minutes = offsetMinutes.toString().padStart(2, '0')
-  
+
   return `${sign}${hours}:${minutes}`
 }
 
@@ -39,86 +39,86 @@ export const TIMEZONE_OPTIONS: TimezoneOption[] = [
     value: 'Asia/Dubai',
     label: 'UTC+04:00 - Dubai (Gulf Standard Time)',
     offset: '+04:00',
-    region: 'Dubai'
+    region: 'Dubai',
   },
   {
     value: 'Asia/Karachi',
     label: 'UTC+05:00 - Karachi (Pakistan Standard Time)',
     offset: '+05:00',
-    region: 'Karachi'
+    region: 'Karachi',
   },
   {
     value: 'Asia/Kolkata',
     label: 'UTC+05:30 - Mumbai/Delhi (India Standard Time)',
     offset: '+05:30',
-    region: 'Mumbai/Delhi'
+    region: 'Mumbai/Delhi',
   },
   {
     value: 'Asia/Dhaka',
     label: 'UTC+06:00 - Dhaka (Bangladesh Standard Time)',
     offset: '+06:00',
-    region: 'Dhaka'
+    region: 'Dhaka',
   },
   {
     value: 'Asia/Jakarta',
     label: 'UTC+07:00 - Jakarta (Western Indonesia Time)',
     offset: '+07:00',
-    region: 'Jakarta'
+    region: 'Jakarta',
   },
   {
     value: 'Asia/Bangkok',
     label: 'UTC+07:00 - Bangkok (Indochina Time)',
     offset: '+07:00',
-    region: 'Bangkok'
+    region: 'Bangkok',
   },
   {
     value: 'Asia/Ho_Chi_Minh',
     label: 'UTC+07:00 - Ho Chi Minh City (Indochina Time)',
     offset: '+07:00',
-    region: 'Ho Chi Minh City'
+    region: 'Ho Chi Minh City',
   },
   {
     value: 'Asia/Singapore',
     label: 'UTC+08:00 - Singapore (Singapore Standard Time)',
     offset: '+08:00',
-    region: 'Singapore'
+    region: 'Singapore',
   },
   {
     value: 'Asia/Hong_Kong',
     label: 'UTC+08:00 - Hong Kong (Hong Kong Standard Time)',
     offset: '+08:00',
-    region: 'Hong Kong'
+    region: 'Hong Kong',
   },
   {
     value: 'Asia/Shanghai',
     label: 'UTC+08:00 - Shanghai (China Standard Time)',
     offset: '+08:00',
-    region: 'Shanghai'
+    region: 'Shanghai',
   },
   {
     value: 'Asia/Taipei',
     label: 'UTC+08:00 - Taipei (China Standard Time)',
     offset: '+08:00',
-    region: 'Taipei'
+    region: 'Taipei',
   },
   {
     value: 'Asia/Manila',
     label: 'UTC+08:00 - Manila (Philippine Standard Time)',
     offset: '+08:00',
-    region: 'Manila'
+    region: 'Manila',
   },
   {
     value: 'Asia/Seoul',
     label: 'UTC+09:00 - Seoul (Korea Standard Time)',
     offset: '+09:00',
-    region: 'Seoul'
+    region: 'Seoul',
   },
   {
     value: 'Asia/Tokyo',
     label: 'UTC+09:00 - Tokyo (Japan Standard Time)',
     offset: '+09:00',
-    region: 'Tokyo'
-  }
+    region: 'Tokyo',
+  },
 ]
 
 /**
@@ -127,7 +127,7 @@ export const TIMEZONE_OPTIONS: TimezoneOption[] = [
  */
 export function getTimezonesByRegion() {
   const regions = {
-    'Asia': TIMEZONE_OPTIONS
+    Asia: TIMEZONE_OPTIONS,
   }
 
   return regions
@@ -151,7 +151,7 @@ export function getUserTimezone(): string {
  * @returns TimezoneOption or null if not found
  */
 export function findTimezoneOption(timezoneId: string): TimezoneOption | null {
-  return TIMEZONE_OPTIONS.find(option => option.value === timezoneId) || null
+  return TIMEZONE_OPTIONS.find((option) => option.value === timezoneId) || null
 }
 
 /**
@@ -162,17 +162,17 @@ export function findTimezoneOption(timezoneId: string): TimezoneOption | null {
  */
 export function getDynamicTimezoneOffset(timezoneId: string, date: Date = new Date()): string {
   try {
-    const utc = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
+    const utc = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
     const targetTime = new Date(utc.toLocaleString('en-US', { timeZone: timezoneId }))
     const offsetMs = targetTime.getTime() - utc.getTime()
-    
+
     const offsetHours = Math.floor(offsetMs / (1000 * 60 * 60))
     const offsetMinutes = Math.floor((Math.abs(offsetMs) % (1000 * 60 * 60)) / (1000 * 60))
-    
+
     const sign = offsetMs >= 0 ? '+' : '-'
     const hours = Math.abs(offsetHours).toString().padStart(2, '0')
     const minutes = offsetMinutes.toString().padStart(2, '0')
-    
+
     return `${sign}${hours}:${minutes}`
   } catch {
     return '+00:00'

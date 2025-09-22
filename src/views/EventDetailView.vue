@@ -49,8 +49,8 @@
           <!-- Main Content Area -->
           <div class="flex-1 min-w-0">
             <!-- About Tab -->
-            <EventAboutSection 
-              v-if="activeTab === 'about'" 
+            <EventAboutSection
+              v-if="activeTab === 'about'"
               :event="event"
               @join-virtual="joinVirtualEvent"
             />
@@ -77,11 +77,15 @@
             <div v-if="activeTab === 'event-texts'">
               <div v-if="!canViewEventTexts || !event?.id" class="text-center py-12">
                 <div v-if="!event?.id">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                  <div
+                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"
+                  ></div>
                   <span class="text-lg text-slate-600 leading-relaxed">Loading event data...</span>
                 </div>
                 <div v-else>
-                  <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div
+                    class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                  >
                     <Lock class="w-8 h-8 text-slate-400" />
                   </div>
                   <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -90,16 +94,15 @@
                   </p>
                 </div>
               </div>
-              <EventTextTab
-                v-else
-                :event-id="event.id"
-              />
+              <EventTextTab v-else :event-id="event.id" />
             </div>
 
             <!-- Attendees Tab -->
             <div v-if="activeTab === 'attendees'">
               <div v-if="!canViewAttendees" class="text-center py-12">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -118,7 +121,9 @@
             <!-- Media Tab -->
             <div v-if="activeTab === 'media'">
               <div v-if="!canViewMedia" class="text-center py-12">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -140,7 +145,9 @@
             <!-- Collaborator Tab -->
             <div v-if="activeTab === 'collaborator'">
               <div v-if="!canViewCollaborators" class="text-center py-12">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -159,7 +166,9 @@
             <!-- Payment Tab -->
             <div v-if="activeTab === 'payment'">
               <div v-if="!canViewPayment" class="text-center py-12">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -180,7 +189,9 @@
             <!-- Invitation Tab -->
             <div v-if="activeTab === 'invitation'">
               <div v-if="!canViewInvitation" class="text-center py-12">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -200,7 +211,9 @@
             <!-- Template Tab -->
             <div v-if="activeTab === 'template'">
               <div v-if="!canViewTemplate" class="text-center py-12">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
@@ -215,7 +228,6 @@
                 @template-updated="handleTemplateUpdated"
               />
             </div>
-
           </div>
         </div>
       </div>
@@ -224,11 +236,7 @@
       <Footer />
 
       <!-- Floating Edit Button -->
-      <div
-        v-if="event?.can_edit"
-        class="fixed bottom-8 right-8 z-40"
-        @click.stop
-      >
+      <div v-if="event?.can_edit" class="fixed bottom-8 right-8 z-40" @click.stop>
         <button
           @click="toggleActionMenu"
           class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
@@ -254,9 +262,13 @@
     <!-- Error State -->
     <div v-else-if="error" class="pt-24 pb-16">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-blue-500/25 p-12">
+        <div
+          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-blue-500/25 p-12"
+        >
           <AlertTriangle class="w-16 h-16 text-red-600 mx-auto mb-6" />
-          <h1 class="text-2xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">Event Not Found</h1>
+          <h1 class="text-2xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
+            Event Not Found
+          </h1>
           <p class="text-lg text-slate-600 mb-8 leading-relaxed max-w-prose mx-auto">{{ error }}</p>
           <button
             @click="$router.push('/events')"
@@ -281,20 +293,13 @@
         </div>
       </div>
     </Transition>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  Lock,
-  Pencil,
-  CheckCircle,
-  AlertCircle,
-  AlertTriangle
-} from 'lucide-vue-next'
+import { Lock, Pencil, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
 import Footer from '../components/Footer.vue'
 import EventHeroSection from '../components/EventHeroSection.vue'
@@ -339,7 +344,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'template', label: 'Template', icon: 'monitor' },
   { id: 'payment', label: 'Payment', icon: 'credit-card' },
-  { id: 'invitation', label: 'Invitations', icon: 'mail' }
+  { id: 'invitation', label: 'Invitations', icon: 'mail' },
 ])
 
 // Computed properties
@@ -360,7 +365,6 @@ const isRegistrationClosed = computed(() => {
   if (!event.value || !event.value.registration_deadline) return false
   return new Date(event.value.registration_deadline) < new Date()
 })
-
 
 const canViewAttendees = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
@@ -399,13 +403,11 @@ const canViewInvitation = computed(() => {
   return canViewRestrictedTabs.value
 })
 
-
 const canDeleteEvent = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
   // Only the organizer (event creator) can delete the event
   return event.value.organizer === authStore.user?.id
 })
-
 
 // Removed unused daysUntilEvent computed property
 
@@ -443,7 +445,7 @@ const registerForEvent = async () => {
   try {
     const response = await eventsService.registerForEvent(event.value.id, {
       guest_count: 0,
-      notes: ''
+      notes: '',
     })
 
     if (response.success) {
@@ -519,8 +521,6 @@ const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
   return `${API_BASE_URL}/media/${bannerImage}`
 }
 
-
-
 const getMediaUrl = (mediaUrl: string | null): string | undefined => {
   if (!mediaUrl) return undefined
 
@@ -539,16 +539,13 @@ const getMediaUrl = (mediaUrl: string | null): string | undefined => {
   return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
-
-
-
 const handleMediaUpdated = (updatedMedia: EventPhoto[]) => {
   if (event.value) {
     event.value.photos = updatedMedia
   }
 }
 
-const handleEventUpdated = (updatedEvent: Event) => {
+const handleEventUpdated = (updatedEvent: Partial<Event> | Event) => {
   if (event.value && updatedEvent) {
     // Ensure critical properties are preserved
     const mergedEvent: Event = {
@@ -563,11 +560,13 @@ const handleEventUpdated = (updatedEvent: Event) => {
       agenda_items: updatedEvent.agenda_items || event.value.agenda_items || [],
       photos: updatedEvent.photos || event.value.photos || [],
       // Add any event texts if they exist in the update
-      ...(updatedEvent as any).event_texts && { event_texts: (updatedEvent as any).event_texts },
-      collaborators_details: updatedEvent.collaborators_details || event.value.collaborators_details || [],
-      registrations_details: updatedEvent.registrations_details || event.value.registrations_details || [],
+      ...((updatedEvent as any).event_texts && { event_texts: (updatedEvent as any).event_texts }),
+      collaborators_details:
+        updatedEvent.collaborators_details || event.value.collaborators_details || [],
+      registrations_details:
+        updatedEvent.registrations_details || event.value.registrations_details || [],
       organizer_details: updatedEvent.organizer_details || event.value.organizer_details,
-      category_details: updatedEvent.category_details || event.value.category_details
+      category_details: updatedEvent.category_details || event.value.category_details,
     }
 
     event.value = mergedEvent
@@ -610,7 +609,7 @@ const formatEventDate = (dateString: string): string => {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -618,12 +617,9 @@ const formatEventTime = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleTimeString([], {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
-
-
-
 
 // Calendar integration functions
 const addToGoogleCalendar = () => {
@@ -642,9 +638,9 @@ const addToGoogleCalendar = () => {
     dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
     details: event.value.description || event.value.short_description || '',
     location: event.value.is_virtual
-      ? (event.value.virtual_link || 'Virtual Event')
-      : (event.value.location || ''),
-    trp: 'false'
+      ? event.value.virtual_link || 'Virtual Event'
+      : event.value.location || '',
+    trp: 'false',
   })
 
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
@@ -662,8 +658,8 @@ const addToOutlookCalendar = () => {
     enddt: endDate.toISOString(),
     body: event.value.description || event.value.short_description || '',
     location: event.value.is_virtual
-      ? (event.value.virtual_link || 'Virtual Event')
-      : (event.value.location || '')
+      ? event.value.virtual_link || 'Virtual Event'
+      : event.value.location || '',
   })
 
   window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`, '_blank')
@@ -689,9 +685,11 @@ DTSTART:${formatDateForICS(startDate)}
 DTEND:${formatDateForICS(endDate)}
 SUMMARY:${event.value.title}
 DESCRIPTION:${event.value.description || event.value.short_description || ''}
-LOCATION:${event.value.is_virtual
-  ? (event.value.virtual_link || 'Virtual Event')
-  : (event.value.location || '')}
+LOCATION:${
+    event.value.is_virtual
+      ? event.value.virtual_link || 'Virtual Event'
+      : event.value.location || ''
+  }
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`
@@ -706,7 +704,6 @@ END:VCALENDAR`
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
-
 
 // Lifecycle
 onMounted(() => {
@@ -754,8 +751,6 @@ onUnmounted(() => {
   transform: scale(0.9);
 }
 
-
-
 /* Line clamp utility for progressive disclosure */
 .line-clamp-6 {
   display: -webkit-box;
@@ -763,5 +758,4 @@ onUnmounted(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 </style>

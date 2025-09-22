@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">About This Event</h2>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          About This Event
+        </h2>
         <p class="text-sm text-slate-600 mt-1">Learn more about what makes this event special</p>
       </div>
     </div>
@@ -11,7 +13,6 @@
     <!-- Event Description - Main Content -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg">
       <div class="p-6">
-        
         <div class="flex items-center mb-4">
           <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
             <FileText class="w-5 h-5 text-blue-600" />
@@ -23,8 +24,12 @@
         </div>
 
         <div v-if="event.description" class="prose prose-slate max-w-none">
-          <div :class="{ 'line-clamp-6': !isDescriptionExpanded && event.description.length > 300 }">
-            <p class="text-slate-700 leading-relaxed whitespace-pre-line">{{ event.description }}</p>
+          <div
+            :class="{ 'line-clamp-6': !isDescriptionExpanded && event.description.length > 300 }"
+          >
+            <p class="text-slate-700 leading-relaxed whitespace-pre-line">
+              {{ event.description }}
+            </p>
           </div>
           <button
             v-if="event.description.length > 300"
@@ -38,7 +43,7 @@
             />
           </button>
         </div>
-        
+
         <div v-else class="text-center py-8">
           <FileText class="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <p class="text-slate-500">No description available for this event</p>
@@ -47,7 +52,10 @@
     </div>
 
     <!-- Virtual Meeting Info -->
-    <div v-if="event.is_virtual && event.virtual_link" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg">
+    <div
+      v-if="event.is_virtual && event.virtual_link"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg"
+    >
       <div class="p-6">
         <div class="flex items-center mb-4">
           <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
@@ -60,7 +68,7 @@
             </p>
           </div>
         </div>
-        
+
         <div class="space-y-3">
           <div class="bg-slate-50 rounded-lg p-3 border">
             <p class="text-sm text-slate-600 font-mono break-all">{{ event.virtual_link }}</p>
@@ -89,14 +97,18 @@
             <p class="text-sm text-slate-600">Additional details about this event</p>
           </div>
         </div>
-        
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <!-- Category -->
           <div v-if="event.category_details" class="text-center">
-            <div class="w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center"
-                 :style="{ backgroundColor: event.category_details.color + '20' }">
-              <div class="w-3 h-3 rounded-full"
-                   :style="{ backgroundColor: event.category_details.color }"></div>
+            <div
+              class="w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center"
+              :style="{ backgroundColor: event.category_details.color + '20' }"
+            >
+              <div
+                class="w-3 h-3 rounded-full"
+                :style="{ backgroundColor: event.category_details.color }"
+              ></div>
             </div>
             <p class="text-sm font-medium text-slate-900">{{ event.category_details.name }}</p>
             <p class="text-xs text-slate-500">Category</p>
@@ -104,7 +116,9 @@
 
           <!-- Duration -->
           <div v-if="event.start_date && event.end_date" class="text-center">
-            <div class="w-12 h-12 bg-slate-100 mx-auto mb-2 rounded-full flex items-center justify-center">
+            <div
+              class="w-12 h-12 bg-slate-100 mx-auto mb-2 rounded-full flex items-center justify-center"
+            >
               <Clock class="w-5 h-5 text-slate-600" />
             </div>
             <p class="text-sm font-medium text-slate-900">{{ getEventDuration() }}</p>
@@ -113,21 +127,29 @@
 
           <!-- Privacy -->
           <div class="text-center">
-            <div class="w-12 h-12 bg-slate-100 mx-auto mb-2 rounded-full flex items-center justify-center">
+            <div
+              class="w-12 h-12 bg-slate-100 mx-auto mb-2 rounded-full flex items-center justify-center"
+            >
               <Lock v-if="event.privacy === 'private'" class="w-5 h-5 text-slate-600" />
               <Users v-else class="w-5 h-5 text-slate-600" />
             </div>
-            <p class="text-sm font-medium text-slate-900 capitalize">{{ event.privacy || 'Public' }}</p>
+            <p class="text-sm font-medium text-slate-900 capitalize">
+              {{ event.privacy || 'Public' }}
+            </p>
             <p class="text-xs text-slate-500">Visibility</p>
           </div>
 
           <!-- Format -->
           <div class="text-center">
-            <div class="w-12 h-12 bg-slate-100 mx-auto mb-2 rounded-full flex items-center justify-center">
+            <div
+              class="w-12 h-12 bg-slate-100 mx-auto mb-2 rounded-full flex items-center justify-center"
+            >
               <Monitor v-if="event.is_virtual" class="w-5 h-5 text-slate-600" />
               <MapPin v-else class="w-5 h-5 text-slate-600" />
             </div>
-            <p class="text-sm font-medium text-slate-900">{{ event.is_virtual ? 'Virtual' : 'In-Person' }}</p>
+            <p class="text-sm font-medium text-slate-900">
+              {{ event.is_virtual ? 'Virtual' : 'In-Person' }}
+            </p>
             <p class="text-xs text-slate-500">Format</p>
           </div>
         </div>
@@ -136,7 +158,9 @@
         <div v-if="event.timezone" class="mt-6 pt-4 border-t border-slate-200">
           <div class="flex items-center justify-center space-x-2 text-slate-600">
             <Globe class="w-4 h-4" />
-            <span class="text-sm">Event timezone: <strong class="text-slate-900">{{ event.timezone }}</strong></span>
+            <span class="text-sm"
+              >Event timezone: <strong class="text-slate-900">{{ event.timezone }}</strong></span
+            >
           </div>
         </div>
       </div>
@@ -155,7 +179,7 @@ import {
   Clock,
   MapPin,
   FileText,
-  Globe
+  Globe,
 } from 'lucide-vue-next'
 import { type Event } from '../services/api'
 
@@ -176,14 +200,14 @@ const isDescriptionExpanded = ref(false)
 // Event duration calculation
 const getEventDuration = (): string => {
   if (!props.event.start_date || !props.event.end_date) return 'TBA'
-  
+
   const start = new Date(props.event.start_date)
   const end = new Date(props.event.end_date)
   const diffMs = end.getTime() - start.getTime()
-  
+
   const hours = Math.floor(diffMs / (1000 * 60 * 60))
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-  
+
   if (hours === 0) return `${minutes}m`
   if (minutes === 0) return `${hours}h`
   return `${hours}h ${minutes}m`

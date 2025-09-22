@@ -3,9 +3,9 @@
     <Transition name="modal">
       <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="handleModalClose">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        
+
         <div class="flex min-h-full items-center justify-center p-2 sm:p-4">
-          <div 
+          <div
             class="relative w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
             @click.stop
           >
@@ -84,37 +84,32 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'close': []
+  close: []
   'template-selected': [template: EventTemplate]
 }>()
 
 // Composables
-const { 
-  loading, 
-  selecting, 
-  templates, 
-  message, 
-  loadTemplates, 
+const {
+  loading,
+  selecting,
+  templates,
+  message,
+  loadTemplates,
   selectTemplate: selectTemplateApi,
-  resetState
+  resetState,
 } = useTemplateApi()
 
-const { 
-  searchQuery, 
-  selectedCategoryId, 
-  categories, 
-  filteredTemplates, 
+const {
+  searchQuery,
+  selectedCategoryId,
+  categories,
+  filteredTemplates,
   clearFilters,
-  setCategoryFilter
+  setCategoryFilter,
 } = useTemplateFiltering(templates)
 
-const { 
-  selectedTemplateId, 
-  selectedTemplate, 
-  hasSelection,
-  selectTemplate,
-  clearSelection
-} = useTemplateSelection(templates)
+const { selectedTemplateId, selectedTemplate, hasSelection, selectTemplate, clearSelection } =
+  useTemplateSelection(templates)
 
 // Event handlers
 const handleModalClose = (): void => {
@@ -128,15 +123,18 @@ const handleTemplateSelection = (template: EventTemplate): void => {
 
 const handleConfirmSelection = async (): Promise<void> => {
   if (!selectedTemplate.value || selecting.value) return
-  
+
   const result = await selectTemplateApi(props.eventId, selectedTemplate.value.id)
-  
+
   if (result.success && result.template) {
     // Add delay for success message visibility
-    setTimeout(() => {
-      emit('template-selected', result.template!)
-      handleModalClose()
-    }, result.template === selectedTemplate.value ? 1000 : 2000)
+    setTimeout(
+      () => {
+        emit('template-selected', result.template!)
+        handleModalClose()
+      },
+      result.template === selectedTemplate.value ? 1000 : 2000,
+    )
   }
 }
 
@@ -148,7 +146,7 @@ const resetModalState = (): void => {
 
 const initializeModal = async (): Promise<void> => {
   await loadTemplates()
-  
+
   // Auto-select event category if provided
   if (props.eventCategory && !selectedCategoryId.value) {
     setCategoryFilter(props.eventCategory)
@@ -156,13 +154,16 @@ const initializeModal = async (): Promise<void> => {
 }
 
 // Watchers
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen) {
-    initializeModal()
-  } else {
-    resetModalState()
-  }
-})
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    if (isOpen) {
+      initializeModal()
+    } else {
+      resetModalState()
+    }
+  },
+)
 
 // Lifecycle
 onMounted(() => {

@@ -12,7 +12,7 @@ export const SANITIZATION_PROFILES = {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true,
-    RETURN_DOM: false
+    RETURN_DOM: false,
   },
 
   /**
@@ -22,17 +22,33 @@ export const SANITIZATION_PROFILES = {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true,
-    RETURN_DOM: false
+    RETURN_DOM: false,
   },
 
   /**
    * For rich content like event descriptions - more permissive
    */
   RICH_CONTENT: {
-    ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'em', 'strong', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    ALLOWED_TAGS: [
+      'p',
+      'br',
+      'b',
+      'i',
+      'em',
+      'strong',
+      'ul',
+      'ol',
+      'li',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+    ],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true,
-    RETURN_DOM: false
+    RETURN_DOM: false,
   },
 
   /**
@@ -42,8 +58,8 @@ export const SANITIZATION_PROFILES = {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true,
-    RETURN_DOM: false
-  }
+    RETURN_DOM: false,
+  },
 } as const
 
 /**
@@ -58,7 +74,7 @@ export interface SanitizeOptions {
 
 /**
  * Sanitizes HTML content using DOMPurify with predefined profiles
- * 
+ *
  * @param input - The content to sanitize
  * @param options - Sanitization options
  * @returns Sanitized content
@@ -74,12 +90,7 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): stri
     return ''
   }
 
-  const {
-    profile = 'PLAIN_TEXT',
-    maxLength = 5000,
-    trimWhitespace = true,
-    customConfig
-  } = options
+  const { profile = 'PLAIN_TEXT', maxLength = 5000, trimWhitespace = true, customConfig } = options
 
   // Get the sanitization profile
   const profileConfig = SANITIZATION_PROFILES[profile]
@@ -89,7 +100,7 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): stri
     ALLOWED_TAGS: profileConfig.ALLOWED_TAGS,
     ALLOWED_ATTR: profileConfig.ALLOWED_ATTR,
     KEEP_CONTENT: profileConfig.KEEP_CONTENT,
-    RETURN_DOM: profileConfig.RETURN_DOM
+    RETURN_DOM: profileConfig.RETURN_DOM,
   }
 
   try {
@@ -109,7 +120,7 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): stri
     // Enforce maximum length
     if (sanitized.length > maxLength) {
       sanitized = sanitized.substring(0, maxLength)
-      
+
       // Try to cut at word boundary if possible
       const lastSpaceIndex = sanitized.lastIndexOf(' ')
       if (lastSpaceIndex > maxLength * 0.8) {
@@ -120,7 +131,6 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): stri
     }
 
     return sanitized
-
   } catch (error) {
     console.error('sanitizeHtml: Error during sanitization:', error)
     // Return empty string on error to prevent potential XSS
@@ -131,7 +141,7 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): stri
 /**
  * Sanitizes user comment content specifically
  * This is a convenience wrapper for comment sanitization
- * 
+ *
  * @param comment - The comment text to sanitize
  * @param maxLength - Maximum allowed length (default: 500)
  * @returns Sanitized comment
@@ -140,13 +150,13 @@ export function sanitizeComment(comment: string, maxLength = 500): string {
   return sanitizeHtml(comment, {
     profile: 'COMMENT',
     maxLength,
-    trimWhitespace: true
+    trimWhitespace: true,
   })
 }
 
 /**
  * Sanitizes plain text content (strips all HTML)
- * 
+ *
  * @param text - The text to sanitize
  * @param maxLength - Maximum allowed length
  * @returns Sanitized plain text
@@ -155,13 +165,13 @@ export function sanitizePlainText(text: string, maxLength = 1000): string {
   return sanitizeHtml(text, {
     profile: 'PLAIN_TEXT',
     maxLength,
-    trimWhitespace: true
+    trimWhitespace: true,
   })
 }
 
 /**
  * Sanitizes rich content like event descriptions
- * 
+ *
  * @param content - The rich content to sanitize
  * @param maxLength - Maximum allowed length (default: 5000)
  * @returns Sanitized rich content
@@ -170,13 +180,13 @@ export function sanitizeRichContent(content: string, maxLength = 5000): string {
   return sanitizeHtml(content, {
     profile: 'RICH_CONTENT',
     maxLength,
-    trimWhitespace: true
+    trimWhitespace: true,
   })
 }
 
 /**
  * Validates and sanitizes user input
- * 
+ *
  * @param input - The input to validate and sanitize
  * @param options - Validation and sanitization options
  * @returns Object with sanitized content and validation result
@@ -194,10 +204,10 @@ export function validateAndSanitize(
     minLength?: number
     pattern?: RegExp
     patternMessage?: string
-  } = {}
+  } = {},
 ): ValidationResult {
   const errors: string[] = []
-  
+
   // Type check
   if (typeof input !== 'string') {
     input = String(input)
@@ -237,14 +247,14 @@ export function validateAndSanitize(
   return {
     isValid: errors.length === 0,
     sanitized,
-    errors
+    errors,
   }
 }
 
 /**
  * Utility to check if a string contains potentially malicious content
  * This is a basic check and should be used alongside proper sanitization
- * 
+ *
  * @param input - The input to check
  * @returns True if input appears to contain potentially malicious content
  */
@@ -262,23 +272,23 @@ export function containsSuspiciousContent(input: string): boolean {
     /<object[\s\S]*?>/gi,
     /<embed[\s\S]*?>/gi,
     /data:\s*text\/html/gi,
-    /vbscript:/gi
+    /vbscript:/gi,
   ]
 
-  return suspiciousPatterns.some(pattern => pattern.test(input))
+  return suspiciousPatterns.some((pattern) => pattern.test(input))
 }
 
 /**
  * Batch sanitization for multiple inputs
  * Useful for sanitizing form data or API responses
- * 
+ *
  * @param inputs - Object with string values to sanitize
  * @param defaultOptions - Default sanitization options
  * @returns Object with sanitized values
  */
 export function batchSanitize<T extends Record<string, string>>(
   inputs: T,
-  defaultOptions: SanitizeOptions = { profile: 'PLAIN_TEXT' }
+  defaultOptions: SanitizeOptions = { profile: 'PLAIN_TEXT' },
 ): T {
   const sanitized = {} as T
 
@@ -296,7 +306,7 @@ export function batchSanitize<T extends Record<string, string>>(
 /**
  * Creates a sanitization validator for use in forms
  * Returns a validator function that can be used with form libraries
- * 
+ *
  * @param options - Sanitization and validation options
  * @returns Validator function
  */
@@ -306,7 +316,7 @@ export function createSanitizationValidator(
     minLength?: number
     pattern?: RegExp
     patternMessage?: string
-  } = {}
+  } = {},
 ) {
   return (value: string): string | null => {
     const result = validateAndSanitize(value, options)

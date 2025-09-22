@@ -9,19 +9,17 @@
 
     <!-- Content Loading Overlay -->
     <Transition name="fade">
-      <div
-        v-if="contentLoading"
-        class="absolute inset-0 z-40 flex items-center justify-center"
-      >
+      <div v-if="contentLoading" class="absolute inset-0 z-40 flex items-center justify-center">
         <div
           class="backdrop-blur-sm bg-black bg-opacity-20 rounded-2xl px-6 py-4 flex items-center space-x-3"
           :style="{
-            boxShadow: `0 8px 32px ${primaryColor}20`
+            boxShadow: `0 8px 32px ${primaryColor}20`,
           }"
         >
-          <div class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-80"
-               :style="{ color: primaryColor }">
-          </div>
+          <div
+            class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-80"
+            :style="{ color: primaryColor }"
+          ></div>
           <span
             class="text-white font-medium text-sm"
             :style="{ fontFamily: primaryFont || currentFont }"
@@ -65,7 +63,9 @@
 
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
-              <div class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8">
+              <div
+                class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8"
+              >
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
@@ -84,9 +84,7 @@
                 </div>
 
                 <!-- Host Info Divider -->
-                <WeddingSectionDivider
-                  :primary-color="primaryColor"
-                />
+                <WeddingSectionDivider :primary-color="primaryColor" />
 
                 <!-- Event Information -->
                 <div
@@ -110,9 +108,7 @@
                   />
 
                   <!-- Event Info Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- RSVP Section -->
@@ -122,25 +118,23 @@
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
                   <RSVPSection
-                  :event-id="event.id"
-                  :event-start-date="event.start_date"
-                  :event-end-date="event.end_date"
-                  :primary-color="primaryColor"
-                  :secondary-color="secondaryColor"
-                  @show-auth-modal="$emit('showAuthModal')"
-                  :accent-color="accentColor"
-                  :is-event-past="isEventPast"
-                  :event-texts="eventTexts"
-                  :current-language="currentLanguage"
-                  :current-font="currentFont"
-                  :primary-font="primaryFont"
-                  :secondary-font="secondaryFont"
+                    :event-id="event.id"
+                    :event-start-date="event.start_date"
+                    :event-end-date="event.end_date"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    @show-auth-modal="$emit('showAuthModal')"
+                    :accent-color="accentColor"
+                    :is-event-past="isEventPast"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
                   />
 
                   <!-- RSVP Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Agenda Section -->
@@ -150,21 +144,19 @@
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
                   <AgendaSection
-                  :agenda-items="agendaItems"
-                  :primary-color="primaryColor"
-                  :secondary-color="secondaryColor"
-                  :accent-color="accentColor"
-                  :event-texts="eventTexts"
-                  :current-language="currentLanguage"
-                  :current-font="currentFont"
-                  :primary-font="primaryFont"
-                  :secondary-font="secondaryFont"
+                    :agenda-items="agendaItems"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
                   />
 
                   <!-- Agenda Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Map Section -->
@@ -173,39 +165,39 @@
                   ref="locationSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
-                <div v-if="event.google_map_embed_link" class="mb-6">
-                  <!-- Location Header -->
-                  <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
-                    <h2
-                      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
-                      :style="{
-                        fontFamily: primaryFont || currentFont,
-                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
-                      }"
+                  <div v-if="event.google_map_embed_link" class="mb-6">
+                    <!-- Location Header -->
+                    <div
+                      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8"
                     >
-                      {{ locationHeaderText }}
-                    </h2>
-                  </div>
-                  <div class="aspect-video rounded-xl overflow-hidden">
-                    <iframe
-                      :src="event.google_map_embed_link"
-                      width="100%"
-                      height="100%"
-                      style="border:0;"
-                      :allowfullscreen="false"
-                      loading="lazy"
-                      referrerpolicy="no-referrer-when-downgrade"
-                    />
-                  </div>
+                      <h2
+                        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase"
+                        :style="{
+                          fontFamily: primaryFont || currentFont,
+                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                        }"
+                      >
+                        {{ locationHeaderText }}
+                      </h2>
+                    </div>
+                    <div class="aspect-video rounded-xl overflow-hidden">
+                      <iframe
+                        :src="event.google_map_embed_link"
+                        width="100%"
+                        height="100%"
+                        style="border: 0"
+                        :allowfullscreen="false"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
 
-                  <!-- Location Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
-                </div>
+                    <!-- Location Section Divider -->
+                    <WeddingSectionDivider :primary-color="primaryColor" />
+                  </div>
                 </div>
 
                 <!-- YouTube Video Section -->
@@ -215,21 +207,19 @@
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
                   <YouTubeVideoSection
-                  :youtube-embed-link="event.youtube_embed_link"
-                  :primary-color="primaryColor"
-                  :secondary-color="secondaryColor || undefined"
-                  :accent-color="accentColor"
-                  :current-font="currentFont"
-                  :primary-font="primaryFont"
-                  :secondary-font="secondaryFont"
-                  :event-texts="eventTexts"
-                  :current-language="currentLanguage"
+                    :youtube-embed-link="event.youtube_embed_link"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor || undefined"
+                    :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
                   />
 
                   <!-- Video Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Photo Gallery Section -->
@@ -239,23 +229,21 @@
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
                   <PhotoGallery
-                  :photos="eventPhotos"
-                  :primary-color="primaryColor"
-                  :secondary-color="secondaryColor"
-                  :accent-color="accentColor"
-                  :get-media-url="getMediaUrl"
-                  :current-font="currentFont"
-                  :primary-font="primaryFont"
-                  :secondary-font="secondaryFont"
-                  :event-texts="eventTexts"
-                  :current-language="currentLanguage"
-                  @open-photo="$emit('openPhoto', $event)"
+                    :photos="eventPhotos"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :get-media-url="getMediaUrl"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    @open-photo="$emit('openPhoto', $event)"
                   />
 
                   <!-- Gallery Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Payment Section -->
@@ -282,9 +270,7 @@
                   />
 
                   <!-- Payment Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Comment Section -->
@@ -294,23 +280,21 @@
                   class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal"
                 >
                   <CommentSection
-                  :event-id="event.id"
-                  :guest-name="guestName as string"
-                  :primary-color="primaryColor"
-                  :secondary-color="secondaryColor"
-                  :accent-color="accentColor"
-                  :current-font="currentFont"
-                  :primary-font="primaryFont"
-                  :secondary-font="secondaryFont"
-                  :event-texts="eventTexts"
-                  :current-language="currentLanguage"
-                  @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
+                    :event-id="event.id"
+                    :guest-name="guestName as string"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
                   />
 
                   <!-- Comment Section Divider -->
-                  <WeddingSectionDivider
-                    :primary-color="primaryColor"
-                  />
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Registration Button -->
@@ -319,7 +303,7 @@
                     @click="$emit('register')"
                     class="w-full py-3 rounded-xl font-semibold text-white transform hover:scale-[1.02] transition-all shadow-lg"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || primaryColor})`
+                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || primaryColor})`,
                     }"
                   >
                     Register Now
@@ -341,14 +325,15 @@
                         0 6px 24px -3px ${primaryColor}20,
                         0 3px 12px -1px ${primaryColor}15,
                         inset 0 1px 2px rgba(255, 255, 255, 0.2)
-                      `
+                      `,
                     }"
                   >
                     <!-- Top Highlight Line -->
                     <div
                       class="absolute top-0 left-0 right-0 h-px"
                       :style="{
-                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent)'
+                        background:
+                          'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent)',
                       }"
                     ></div>
 
@@ -371,7 +356,10 @@
                             GoEvent
                           </span>
                         </div>
-                        <p class="text-xs text-white opacity-90" :style="{ fontFamily: secondaryFont || currentFont }">
+                        <p
+                          class="text-xs text-white opacity-90"
+                          :style="{ fontFamily: secondaryFont || currentFont }"
+                        >
                           {{ footerCreateInvitationsText }}
                         </p>
                       </div>
@@ -381,22 +369,42 @@
                         <div
                           class="inline-flex items-center justify-center text-sm text-white px-2"
                           :style="{
-                            fontFamily: secondaryFont || currentFont
+                            fontFamily: secondaryFont || currentFont,
                           }"
                         >
-                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                          <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                            />
                           </svg>
                           info@goevent.online
                         </div>
                         <div
                           class="inline-flex items-center justify-center text-sm text-white px-2"
                           :style="{
-                            fontFamily: secondaryFont || currentFont
+                            fontFamily: secondaryFont || currentFont,
                           }"
                         >
-                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"/>
+                          <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
+                            />
                           </svg>
                           www.goevent.online
                         </div>
@@ -404,7 +412,6 @@
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -416,7 +423,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, nextTick, inject, type Component } from 'vue'
-import type { EventData, EventText, Host, AgendaItem, EventPhoto } from '../../composables/useEventShowcase'
+import type {
+  EventData,
+  EventText,
+  Host,
+  AgendaItem,
+  EventPhoto,
+} from '../../composables/useEventShowcase'
 import type { EventComment } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import type { SupportedLanguage } from '../../utils/translations'
@@ -476,7 +489,7 @@ const containerClasses = computed(() => [
   'laptop-md:py-8 laptop-md:px-10',
   'laptop-lg:py-10 laptop-lg:px-12',
   'desktop:py-12 desktop:px-12',
-  'flex items-center justify-center'
+  'flex items-center justify-center',
 ])
 
 const existingBackgroundVideo = ref<HTMLVideoElement | null>(null)
@@ -499,10 +512,7 @@ const validateVideoElement = (element: HTMLVideoElement): boolean => {
   try {
     const url = new URL(src)
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    const allowedOrigins = [
-      new URL(API_BASE_URL).origin,
-      window.location.origin
-    ]
+    const allowedOrigins = [new URL(API_BASE_URL).origin, window.location.origin]
 
     // Allow data URLs for embedded content
     if (url.protocol === 'data:') {
@@ -525,7 +535,7 @@ const backgroundVideoComponent = computed((): Component | string => {
 })
 
 const backgroundVideoProps = computed(() => ({
-  class: 'bg-transparent'
+  class: 'bg-transparent',
 }))
 
 // Simplified mounting - no video management needed
@@ -556,7 +566,7 @@ const REVEAL_ANIMATION_CONFIG = {
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
   easing: ANIMATION_CONSTANTS.EASING.EXPO,
   threshold: 0.1,
-  rootMargin: '0px 0px -100px 0px'
+  rootMargin: '0px 0px -100px 0px',
 }
 
 const { observeRevealElement } = useRevealAnimations(REVEAL_ANIMATION_CONFIG)
@@ -574,7 +584,7 @@ const sectionRefs = {
   gallerySection: ref<HTMLElement>(),
   paymentSection: ref<HTMLElement>(),
   commentSection: ref<HTMLElement>(),
-  footerSection: ref<HTMLElement>()
+  footerSection: ref<HTMLElement>(),
 }
 
 // Extract individual refs for template usage
@@ -589,7 +599,7 @@ const {
   gallerySection: gallerySectionRef,
   paymentSection: paymentSectionRef,
   commentSection: commentSectionRef,
-  footerSection: footerSectionRef
+  footerSection: footerSectionRef,
 } = sectionRefs
 
 /**
@@ -607,7 +617,7 @@ const initializeRevealAnimations = () => {
     [gallerySectionRef, 'gallery-section'],
     [paymentSectionRef, 'payment-section'],
     [commentSectionRef, 'comment-section'],
-    [footerSectionRef, 'footer-section']
+    [footerSectionRef, 'footer-section'],
   ]
 
   animationConfig.forEach(([elementRef, elementId]) => {
@@ -625,14 +635,11 @@ const initializeScrollAnimations = () => {
   if (liquidGlassCard) {
     createScrollAnimation(
       liquidGlassCard,
-      [
-        { transform: 'translateY(0px)' },
-        { transform: 'translateY(-20px)' }
-      ],
+      [{ transform: 'translateY(0px)' }, { transform: 'translateY(-20px)' }],
       {
         duration: 1000,
-        easing: 'ease-out'
-      }
+        easing: 'ease-out',
+      },
     )
   }
 }
@@ -649,25 +656,28 @@ onMounted(() => {
 })
 
 // Translation key mapping for consistent lookups
-const TRANSLATION_KEY_MAP: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-  'location_header': 'location_header',
-  'video_header': 'video_header',
-  'gallery_header': 'gallery_header',
-  'comment_header': 'comment_header',
-  'comment_placeholder': 'comment_placeholder',
-  'comment_signin_prompt': 'comment_signin_prompt',
-  'comment_signin_button': 'comment_signin_button',
-  'comment_post_button': 'comment_post_button',
-  'comment_posting_button': 'comment_posting_button',
-  'comment_no_comments': 'comment_no_comments',
-  'comment_loading': 'comment_loading',
-  'comment_already_commented': 'comment_already_commented',
-  'comment_one_per_user': 'comment_one_per_user',
-  'comment_you_badge': 'comment_you_badge',
-  'payment_wedding_gift': 'payment_wedding_gift',
-  'payment_birthday_gift': 'payment_birthday_gift',
-  'footer_thank_you': 'footer_thank_you',
-  'footer_create_invitations': 'footer_create_invitations'
+const TRANSLATION_KEY_MAP: Record<
+  string,
+  keyof typeof import('../../utils/translations').rsvpTranslations.en
+> = {
+  location_header: 'location_header',
+  video_header: 'video_header',
+  gallery_header: 'gallery_header',
+  comment_header: 'comment_header',
+  comment_placeholder: 'comment_placeholder',
+  comment_signin_prompt: 'comment_signin_prompt',
+  comment_signin_button: 'comment_signin_button',
+  comment_post_button: 'comment_post_button',
+  comment_posting_button: 'comment_posting_button',
+  comment_no_comments: 'comment_no_comments',
+  comment_loading: 'comment_loading',
+  comment_already_commented: 'comment_already_commented',
+  comment_one_per_user: 'comment_one_per_user',
+  comment_you_badge: 'comment_you_badge',
+  payment_wedding_gift: 'payment_wedding_gift',
+  payment_birthday_gift: 'payment_birthday_gift',
+  footer_thank_you: 'footer_thank_you',
+  footer_create_invitations: 'footer_create_invitations',
 } as const
 
 /**
@@ -679,8 +689,8 @@ const TRANSLATION_KEY_MAP: Record<string, keyof typeof import('../../utils/trans
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
   if (props.eventTexts?.length && props.currentLanguage) {
-    const text = props.eventTexts.find(text =>
-      text.text_type === textType && text.language === props.currentLanguage
+    const text = props.eventTexts.find(
+      (text) => text.text_type === textType && text.language === props.currentLanguage,
     )
     if (text?.content) {
       return text.content
@@ -698,7 +708,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
  * Find event text by type
  */
 const findEventText = (textType: string) =>
-  props.eventTexts?.find(text => text.text_type === textType)
+  props.eventTexts?.find((text) => text.text_type === textType)
 
 // Computed properties for event text content
 const welcomeMessage = computed(() => findEventText('welcome_message')?.content)
@@ -709,14 +719,12 @@ const descriptionText = computed(() => findEventText('description')?.content)
 const descriptionTitle = computed(() => findEventText('description')?.title)
 
 // Computed properties for translated text
-const locationHeaderText = computed(() =>
-  getTextContent('location_header', 'Location')
-)
+const locationHeaderText = computed(() => getTextContent('location_header', 'Location'))
 const footerThankYouText = computed(() =>
-  getTextContent('footer_thank_you', 'Thank you for celebrating with us')
+  getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
 )
 const footerCreateInvitationsText = computed(() =>
-  getTextContent('footer_create_invitations', 'Create beautiful event invitations')
+  getTextContent('footer_create_invitations', 'Create beautiful event invitations'),
 )
 
 /**
@@ -761,9 +769,9 @@ const handleReminder = () => {
     dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
     details: props.event.description || props.event.short_description || '',
     location: props.event.is_virtual
-      ? (props.event.virtual_link || 'Virtual Event')
-      : (props.event.location || ''),
-    trp: 'false'
+      ? props.event.virtual_link || 'Virtual Event'
+      : props.event.location || '',
+    trp: 'false',
   })
 
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
@@ -848,9 +856,9 @@ onUnmounted(() => {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.50) 0%,
+    rgba(255, 255, 255, 0.5) 0%,
     rgba(255, 255, 255, 0.39) 50%,
-    rgba(255, 255, 255, 0.50) 100%
+    rgba(255, 255, 255, 0.5) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.61);
   backdrop-filter: blur(20px);
@@ -865,11 +873,7 @@ onUnmounted(() => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.11) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.11) 0%, transparent 70%);
   animation: liquid-rotate 30s linear infinite;
   contain: layout style paint;
 }
@@ -979,5 +983,4 @@ onUnmounted(() => {
     transition: opacity 0.2s ease;
   }
 }
-
 </style>

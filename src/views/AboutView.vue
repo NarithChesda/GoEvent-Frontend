@@ -3,95 +3,169 @@
     <Navigation />
 
     <!-- Hero Section -->
-    <section id="hero" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20">
+    <section
+      id="hero"
+      class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20"
+    >
       <!-- Enhanced Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"></div>
+        <div
+          class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"
+        ></div>
 
         <!-- Animated background shapes -->
-        <div class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"></div>
-        <div class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"></div>
-        <div class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-indigo-400/30 to-blue-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/10 to-purple-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"></div>
+        <div
+          class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"
+        ></div>
+        <div
+          class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"
+        ></div>
+        <div
+          class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-indigo-400/30 to-blue-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"
+        ></div>
+        <div
+          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/10 to-purple-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"
+        ></div>
 
         <!-- Geometric patterns -->
-        <div class="absolute top-32 right-32 w-4 h-4 bg-blue-500/30 rounded-full animate-pulse delay-300"></div>
-        <div class="absolute bottom-32 left-32 w-6 h-6 bg-purple-500/30 rounded-full animate-pulse delay-900"></div>
-        <div class="absolute top-64 left-64 w-3 h-3 bg-indigo-500/40 rounded-full animate-pulse delay-1200"></div>
+        <div
+          class="absolute top-32 right-32 w-4 h-4 bg-blue-500/30 rounded-full animate-pulse delay-300"
+        ></div>
+        <div
+          class="absolute bottom-32 left-32 w-6 h-6 bg-purple-500/30 rounded-full animate-pulse delay-900"
+        ></div>
+        <div
+          class="absolute top-64 left-64 w-3 h-3 bg-indigo-500/40 rounded-full animate-pulse delay-1200"
+        ></div>
       </div>
 
-      <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32">
+      <div
+        class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32"
+      >
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
             <div class="space-y-4 sm:space-y-6">
-              <div class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-blue-200/30">
+              <div
+                class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-blue-200/30"
+              >
                 <Heart class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Our Story
               </div>
-              <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500">
-                <span class="typing-text-about">{{ aboutText }}</span><span
-                  v-if="aboutComplete"
-                  class="typing-text-goevent"
-                >{{ goEventText }}</span><span
+              <h1
+                class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500"
+              >
+                <span class="typing-text-about">{{ aboutText }}</span
+                ><span v-if="aboutComplete" class="typing-text-goevent">{{ goEventText }}</span
+                ><span
                   v-if="!aboutComplete || (aboutComplete && !goEventComplete)"
                   class="typing-cursor"
-                >|</span>
+                  >|</span
+                >
               </h1>
-              <p class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000">
-                We are on a mission to Build intelligent, tech-driven solutions that redefine how businesses manage and deliver
-              <span class="text-blue-600 font-semibold"> experiences</span>.
+              <p
+                class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000"
+              >
+                We are on a mission to Build intelligent, tech-driven solutions that redefine how
+                businesses manage and deliver
+                <span class="text-blue-600 font-semibold"> experiences</span>.
               </p>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200">
+            <div
+              class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200"
+            >
               <RouterLink
                 to="/events"
                 class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
               >
                 Explore Our Events
-                <ArrowRight class="inline w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight
+                  class="inline w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                />
               </RouterLink>
               <RouterLink
                 to="/"
                 class="flex items-center justify-center bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg border-2 border-blue-200 text-base shadow-sm transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md hover:scale-[1.02] active:bg-blue-100 active:scale-[0.98] group"
               >
-                <Heart class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300" />
+                <Heart
+                  class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
+                />
                 Learn More
               </RouterLink>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400">
+            <div
+              class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400"
+            >
               <div class="flex -space-x-2">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base">A</div>
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base">S</div>
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base">M</div>
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base">+</div>
+                <div
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                >
+                  A
+                </div>
+                <div
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                >
+                  S
+                </div>
+                <div
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                >
+                  M
+                </div>
+                <div
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                >
+                  +
+                </div>
               </div>
-              <span class="text-slate-600 font-medium text-sm sm:text-base">Meet the team behind the magic</span>
+              <span class="text-slate-600 font-medium text-sm sm:text-base"
+                >Meet the team behind the magic</span
+              >
             </div>
           </div>
 
           <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main About Card -->
-              <div class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50">
+              <div
+                class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
+              >
                 <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
-                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">Our Journey</h3>
+                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">
+                    Our Journey
+                  </h3>
                   <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <div
+                      class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"
+                    ></div>
                     <span class="text-xs sm:text-sm text-gray-600 font-medium">Since 2023</span>
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
-                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50">
-                    <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2">50K+</div>
+                <div
+                  class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8"
+                >
+                  <div
+                    class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50"
+                  >
+                    <div
+                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2"
+                    >
+                      50K+
+                    </div>
                     <div class="text-xs sm:text-sm text-blue-700 font-medium">Events Created</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ Growing daily</div>
                   </div>
-                  <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-emerald-200/50">
-                    <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2">150+</div>
+                  <div
+                    class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-emerald-200/50"
+                  >
+                    <div
+                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2"
+                    >
+                      150+
+                    </div>
                     <div class="text-xs sm:text-sm text-emerald-700 font-medium">Countries</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ Global reach</div>
                   </div>
@@ -103,7 +177,10 @@
                     <span class="text-sm font-bold text-gray-900">92%</span>
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000" style="width: 92%"></div>
+                    <div
+                      class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
+                      style="width: 92%"
+                    ></div>
                   </div>
 
                   <div class="flex justify-between items-center pt-4">
@@ -118,9 +195,13 @@
               </div>
 
               <!-- Floating Cards -->
-              <div class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block">
+              <div
+                class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block"
+              >
                 <div class="flex items-center space-x-2">
-                  <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <div
+                    class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center"
+                  >
                     <Award class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
                   </div>
                   <div>
@@ -130,9 +211,13 @@
                 </div>
               </div>
 
-              <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block">
+              <div
+                class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block"
+              >
                 <div class="flex items-center space-x-2">
-                  <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div
+                    class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center"
+                  >
                     <Users class="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
                   </div>
                   <div>
@@ -162,21 +247,34 @@
     >
       <!-- Background decoration -->
       <div class="absolute inset-0">
-        <div class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"></div>
+        <div
+          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"
+        ></div>
+        <div
+          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"
+        ></div>
       </div>
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Section Header -->
         <div class="text-center mb-12 sm:mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+          >
             <Target class="w-4 h-4" />
             Our Purpose
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
-            Mission & <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Vision</span>
+          <h2
+            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight"
+          >
+            Mission &
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+              >Vision</span
+            >
           </h2>
-          <p class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
+          <p
+            class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4"
+          >
             The driving forces behind everything we do at GoEvent
           </p>
         </div>
@@ -185,55 +283,77 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 xl:gap-12">
           <!-- Mission Card -->
           <div class="group relative">
-            <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10 hover:scale-105 transition-all duration-500">
+            <div
+              class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10 hover:scale-105 transition-all duration-500"
+            >
               <!-- Floating icon -->
               <div class="absolute -top-4 sm:-top-6 left-6 sm:left-8">
-                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300">
+                <div
+                  class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300"
+                >
                   <Target class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
               </div>
 
               <div class="pt-6 sm:pt-8">
-                <h3 class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-white mb-4 sm:mb-6">Our Mission</h3>
+                <h3
+                  class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-white mb-4 sm:mb-6"
+                >
+                  Our Mission
+                </h3>
                 <p class="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed">
-                 To become a leading force in transforming businesses through AI-driven innovation — starting with event management and expanding into broader industries — by empowering people and organizations to unlock the full potential of artificial intelligence.
+                  To become a leading force in transforming businesses through AI-driven innovation
+                  — starting with event management and expanding into broader industries — by
+                  empowering people and organizations to unlock the full potential of artificial
+                  intelligence.
                 </p>
               </div>
 
               <!-- Decorative elements -->
-              <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white/10 to-white/5 rounded-full"></div>
-              <div class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-full"></div>
+              <div
+                class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white/10 to-white/5 rounded-full"
+              ></div>
+              <div
+                class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-full"
+              ></div>
             </div>
           </div>
 
           <!-- Vision Card -->
           <div class="group relative">
-            <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-slate-500/10 border border-slate-200 hover:scale-105 transition-all duration-500">
+            <div
+              class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-slate-500/10 border border-slate-200 hover:scale-105 transition-all duration-500"
+            >
               <!-- Floating icon -->
               <div class="absolute -top-4 sm:-top-6 left-6 sm:left-8">
-                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300">
+                <div
+                  class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300"
+                >
                   <Eye class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
               </div>
 
               <div class="pt-6 sm:pt-8">
-                <h3 class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">Our Vision</h3>
+                <h3
+                  class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-slate-900 mb-4 sm:mb-6"
+                >
+                  Our Vision
+                </h3>
                 <p class="text-sm sm:text-base lg:text-lg text-slate-600 leading-relaxed">
-
-
-
-
-Train and nurture the next generation of AI engineers, creating a sustainable ecosystem of innovation.
-
-Maximize the value of AI for businesses by bridging cutting-edge technology with real-world impact.
-
-Drive digital transformation with scalable, human-centered, AI-powered solutions.
+                  Train and nurture the next generation of AI engineers, creating a sustainable
+                  ecosystem of innovation. Maximize the value of AI for businesses by bridging
+                  cutting-edge technology with real-world impact. Drive digital transformation with
+                  scalable, human-centered, AI-powered solutions.
                 </p>
               </div>
 
               <!-- Decorative elements -->
-              <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full"></div>
-              <div class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full"></div>
+              <div
+                class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full"
+              ></div>
+              <div
+                class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full"
+              ></div>
             </div>
           </div>
         </div>
@@ -244,18 +364,27 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
     <section class="py-16 relative overflow-hidden stats-bg">
       <!-- Background elements -->
       <div class="absolute inset-0">
-        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div
+          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+        ></div>
         <div class="absolute bottom-0 right-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+          >
             <BarChart3 class="h-4 w-4" />
             Our Impact
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6">
-            GoEvent by the <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Numbers</span>
+          <h2
+            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6"
+          >
+            GoEvent by the
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+              >Numbers</span
+            >
           </h2>
           <p class="text-base sm:text-lg lg:text-xl text-slate-300 px-4">
             Our impact on the event management industry
@@ -268,8 +397,14 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
             :key="stat.label"
             class="relative bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center hover:bg-white/30 transition-all duration-300 group hover:shadow-xl"
           >
-            <div class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 sm:mb-2 group-hover:scale-105 transition-transform duration-300">{{ stat.value }}</div>
-            <div class="text-blue-100 text-sm sm:text-base lg:text-lg font-medium">{{ stat.label }}</div>
+            <div
+              class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 sm:mb-2 group-hover:scale-105 transition-transform duration-300"
+            >
+              {{ stat.value }}
+            </div>
+            <div class="text-blue-100 text-sm sm:text-base lg:text-lg font-medium">
+              {{ stat.label }}
+            </div>
           </div>
         </div>
       </div>
@@ -283,16 +418,25 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+          >
             <Star class="w-4 h-4" />
             Our Core Values
           </div>
-          <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
+          <h2
+            class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
+          >
             What Drives Us to
-            <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Succeed</span>
+            <span
+              class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            >
+              Succeed</span
+            >
           </h2>
           <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            These core principles guide everything we do and shape our company culture, driving us to create exceptional experiences.
+            These core principles guide everything we do and shape our company culture, driving us
+            to create exceptional experiences.
           </p>
         </div>
 
@@ -304,21 +448,34 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
             :class="index === 1 ? 'md:scale-105 md:z-10 border-blue-100' : ''"
           >
             <!-- Top accent bar -->
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></div>
+            <div
+              class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
+            ></div>
 
             <div class="relative">
               <!-- Icon with design guide styling -->
               <div class="relative mb-6">
-                <div class="w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110" :class="value.bgColor">
-                  <component :is="value.icon" class="w-8 h-8 transition-all duration-300" :class="value.iconColor" />
+                <div
+                  class="w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  :class="value.bgColor"
+                >
+                  <component
+                    :is="value.icon"
+                    class="w-8 h-8 transition-all duration-300"
+                    :class="value.iconColor"
+                  />
                 </div>
                 <!-- Floating accent -->
-                <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"></div>
+                <div
+                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
+                ></div>
               </div>
 
               <!-- Content with design guide typography -->
               <div class="space-y-4">
-                <h3 class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                <h3
+                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                >
                   {{ value.title }}
                 </h3>
                 <p class="text-base text-slate-700 leading-relaxed">
@@ -328,7 +485,9 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
             </div>
 
             <!-- Hover effect background -->
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-purple-50/0 group-hover:from-blue-50/30 group-hover:to-purple-50/30 rounded-xl transition-all duration-300 -z-10"></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-purple-50/0 group-hover:from-blue-50/30 group-hover:to-purple-50/30 rounded-xl transition-all duration-300 -z-10"
+            ></div>
           </div>
         </div>
       </div>
@@ -346,15 +505,25 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16 lg:mb-20">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+          >
             <Users class="w-4 h-4" />
             Our Amazing Team
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight">
-            Meet the <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Innovators</span>
+          <h2
+            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight"
+          >
+            Meet the
+            <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+              >Innovators</span
+            >
           </h2>
-          <p class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4">
-            Passionate professionals dedicated to transforming event management and creating exceptional experiences
+          <p
+            class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4"
+          >
+            Passionate professionals dedicated to transforming event management and creating
+            exceptional experiences
           </p>
         </div>
 
@@ -362,13 +531,17 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
         <div v-if="teamLoading" class="flex justify-center items-center py-12 sm:py-16">
           <div class="flex items-center space-x-3 sm:space-x-4 text-blue-600">
             <Loader class="w-6 h-6 sm:w-8 sm:h-8 animate-spin" />
-            <span class="text-sm sm:text-base lg:text-lg font-medium">Loading our amazing team...</span>
+            <span class="text-sm sm:text-base lg:text-lg font-medium"
+              >Loading our amazing team...</span
+            >
           </div>
         </div>
 
         <!-- Error State -->
         <div v-else-if="teamError" class="text-center py-12 sm:py-16">
-          <div class="bg-red-50 border border-red-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md mx-auto">
+          <div
+            class="bg-red-50 border border-red-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md mx-auto"
+          >
             <p class="text-red-600 font-medium text-sm sm:text-base">{{ teamError }}</p>
             <button
               @click="fetchTeamMembers"
@@ -391,24 +564,33 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
             <div class="relative mb-6 sm:mb-8 flex justify-center">
               <div class="relative">
                 <!-- Profile Picture or Initials -->
-                <div class="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full shadow-xl group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <div
+                  class="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full shadow-xl group-hover:scale-110 transition-transform duration-300 overflow-hidden"
+                >
                   <img
                     v-if="member.profile_picture"
                     :src="apiService.getProfilePictureUrl(member.profile_picture) || ''"
                     :alt="member.name"
                     class="w-full h-full object-cover"
-                    @error="($event.target as HTMLImageElement).style.display='none'"
+                    @error="($event.target as HTMLImageElement).style.display = 'none'"
                   />
                   <div
                     v-else
                     class="w-full h-full bg-gradient-to-br flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold"
                     :class="getAvatarGradient(member.id)"
                   >
-                    {{ member.name.split(' ').map(n => n[0]).join('') }}
+                    {{
+                      member.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                    }}
                   </div>
                 </div>
                 <!-- Online indicator -->
-                <div class="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-green-400 border-3 sm:border-4 border-white rounded-full flex items-center justify-center">
+                <div
+                  class="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-green-400 border-3 sm:border-4 border-white rounded-full flex items-center justify-center"
+                >
                   <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>
                 </div>
               </div>
@@ -416,7 +598,9 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
 
             <!-- Content -->
             <div class="text-center space-y-3 sm:space-y-4">
-              <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{{ member.name }}</h3>
+              <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">
+                {{ member.name }}
+              </h3>
               <p class="text-blue-600 font-semibold text-base sm:text-lg">{{ member.role }}</p>
               <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
                 {{ member.bio || `${member.name} is a valuable member of our team at GoEvent.` }}
@@ -455,66 +639,101 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
             </div>
 
             <!-- Hover effect background -->
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
+            ></div>
           </div>
         </div>
 
         <!-- Join team CTA -->
         <div class="text-center mt-12 sm:mt-16 lg:mt-20">
-          <div class="inline-flex flex-col sm:flex-row items-center bg-white/60 backdrop-blur-sm border border-white/30 rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6">
+          <div
+            class="inline-flex flex-col sm:flex-row items-center bg-white/60 backdrop-blur-sm border border-white/30 rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6"
+          >
             <div class="flex -space-x-2">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full border-2 border-white"></div>
-              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full border-2 border-white"></div>
-              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs sm:text-sm">?</div>
+              <div
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full border-2 border-white"
+              ></div>
+              <div
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full border-2 border-white"
+              ></div>
+              <div
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs sm:text-sm"
+              >
+                ?
+              </div>
             </div>
-            <span class="text-slate-700 font-medium text-sm sm:text-base text-center sm:text-left">We're hiring! Join our growing team</span>
+            <span class="text-slate-700 font-medium text-sm sm:text-base text-center sm:text-left"
+              >We're hiring! Join our growing team</span
+            >
           </div>
         </div>
       </div>
     </section>
-
 
     <!-- Join Us CTA -->
     <section class="py-20 lg:py-32 bg-white relative overflow-hidden">
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <!-- Subtle gradient orbs -->
-        <div class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"></div>
+        <div
+          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"
+        ></div>
+        <div
+          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"
+        ></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
-        <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10">
+        <div
+          class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10"
+        >
           <div class="text-center max-w-4xl mx-auto">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6"
+            >
               <Users class="w-4 h-4" />
               Join Our Team
             </div>
 
-            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight">
+            <h2
+              class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight"
+            >
               Be Part of the
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200"> Future</span>
+              <span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200"
+              >
+                Future</span
+              >
             </h2>
 
-            <p class="text-base sm:text-lg lg:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4">
-              We're always looking for talented individuals who share our passion for innovation
-              and creating exceptional user experiences. Be part of the team that's transforming
-              the event management industry.
+            <p
+              class="text-base sm:text-lg lg:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
+            >
+              We're always looking for talented individuals who share our passion for innovation and
+              creating exceptional user experiences. Be part of the team that's transforming the
+              event management industry.
             </p>
 
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-3 sm:gap-6 mb-8 sm:mb-10 max-w-lg mx-auto">
               <div class="text-center">
-                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">20+</div>
+                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
+                  20+
+                </div>
                 <div class="text-xs sm:text-sm text-blue-200">Team Members</div>
               </div>
               <div class="text-center">
-                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">5+</div>
+                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
+                  5+
+                </div>
                 <div class="text-xs sm:text-sm text-blue-200">Open Roles</div>
               </div>
               <div class="text-center">
-                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">100%</div>
+                <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
+                  100%
+                </div>
                 <div class="text-xs sm:text-sm text-blue-200">Remote OK</div>
               </div>
             </div>
@@ -526,7 +745,9 @@ Drive digital transformation with scalable, human-centered, AI-powered solutions
                 class="group bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/10 flex items-center justify-center"
               >
                 View Open Positions
-                <Users class="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <Users
+                  class="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                />
               </a>
               <RouterLink
                 to="/"
@@ -579,51 +800,56 @@ import {
   ArrowRight,
   Github,
   Loader,
-  Star
+  Star,
 } from 'lucide-vue-next'
 
 const values = [
   {
     icon: Heart,
-    title: "Customer First",
+    title: 'Customer First',
     description: "Every decision we make starts with our customers' needs and success in mind.",
-    bgColor: "bg-gradient-to-br from-red-100 to-red-200",
-    iconColor: "text-red-600",
+    bgColor: 'bg-gradient-to-br from-red-100 to-red-200',
+    iconColor: 'text-red-600',
   },
   {
     icon: Lightbulb,
-    title: "Innovation",
-    description: "We constantly push boundaries to deliver cutting-edge solutions that exceed expectations.",
-    bgColor: "bg-gradient-to-br from-yellow-100 to-yellow-200",
-    iconColor: "text-yellow-600",
+    title: 'Innovation',
+    description:
+      'We constantly push boundaries to deliver cutting-edge solutions that exceed expectations.',
+    bgColor: 'bg-gradient-to-br from-yellow-100 to-yellow-200',
+    iconColor: 'text-yellow-600',
   },
   {
     icon: Users,
-    title: "Collaboration",
-    description: "We believe the best results come from diverse teams working together towards common goals.",
-    bgColor: "bg-gradient-to-br from-purple-100 to-purple-200",
-    iconColor: "text-purple-600",
+    title: 'Collaboration',
+    description:
+      'We believe the best results come from diverse teams working together towards common goals.',
+    bgColor: 'bg-gradient-to-br from-purple-100 to-purple-200',
+    iconColor: 'text-purple-600',
   },
   {
     icon: Shield,
-    title: "Reliability",
-    description: "Our platform is built to be dependable, secure, and always available when you need it most.",
-    bgColor: "bg-gradient-to-br from-emerald-100 to-emerald-200",
-    iconColor: "text-emerald-600",
+    title: 'Reliability',
+    description:
+      'Our platform is built to be dependable, secure, and always available when you need it most.',
+    bgColor: 'bg-gradient-to-br from-emerald-100 to-emerald-200',
+    iconColor: 'text-emerald-600',
   },
   {
     icon: Zap,
-    title: "Efficiency",
-    description: "We streamline complex processes to help you achieve more with less effort and time.",
-    bgColor: "bg-gradient-to-br from-blue-100 to-blue-200",
-    iconColor: "text-blue-600",
+    title: 'Efficiency',
+    description:
+      'We streamline complex processes to help you achieve more with less effort and time.',
+    bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
+    iconColor: 'text-blue-600',
   },
   {
     icon: Award,
-    title: "Excellence",
-    description: "We maintain the highest standards in everything we do, from code quality to customer service.",
-    bgColor: "bg-gradient-to-br from-orange-100 to-orange-200",
-    iconColor: "text-orange-600",
+    title: 'Excellence',
+    description:
+      'We maintain the highest standards in everything we do, from code quality to customer service.',
+    bgColor: 'bg-gradient-to-br from-orange-100 to-orange-200',
+    iconColor: 'text-orange-600',
   },
 ]
 
@@ -634,14 +860,14 @@ const teamError = ref<string | null>(null)
 
 // Avatar gradient options for fallback when no profile picture
 const avatarGradients = [
-  "from-blue-500 to-purple-600",
-  "from-emerald-500 to-blue-500",
-  "from-purple-500 to-blue-600",
-  "from-blue-600 to-purple-600",
-  "from-orange-500 to-red-500",
-  "from-emerald-500 to-blue-600",
-  "from-blue-500 to-purple-500",
-  "from-purple-600 to-blue-600"
+  'from-blue-500 to-purple-600',
+  'from-emerald-500 to-blue-500',
+  'from-purple-500 to-blue-600',
+  'from-blue-600 to-purple-600',
+  'from-orange-500 to-red-500',
+  'from-emerald-500 to-blue-600',
+  'from-blue-500 to-purple-500',
+  'from-purple-600 to-blue-600',
 ]
 
 // Function to get avatar gradient based on member ID
@@ -660,7 +886,7 @@ const fetchTeamMembers = async () => {
     if (response.success && response.data) {
       // Sort by order field and filter only active members
       teamMembers.value = response.data.results
-        .filter(member => member.is_active)
+        .filter((member) => member.is_active)
         .sort((a, b) => a.order - b.order)
     } else {
       teamError.value = response.message || 'Failed to load team members'
@@ -678,8 +904,16 @@ const { isVisible, observeElement } = useScrollAnimations()
 const { showScrollTop, scrollToTop } = useScrollToTop()
 
 // Typing animation for hero text - split into two parts
-const { displayText: aboutText, isComplete: aboutComplete } = useDelayedTypingAnimation('About ', 30, 800)
-const { displayText: goEventText, isComplete: goEventComplete } = useDelayedTypingAnimation('GoEvent', 30, 1100)
+const { displayText: aboutText, isComplete: aboutComplete } = useDelayedTypingAnimation(
+  'About ',
+  30,
+  800,
+)
+const { displayText: goEventText, isComplete: goEventComplete } = useDelayedTypingAnimation(
+  'GoEvent',
+  30,
+  1100,
+)
 
 // Refs for sections
 const missionSection = ref<HTMLElement>()
@@ -703,10 +937,10 @@ onMounted(() => {
 })
 
 const stats = [
-  { value: "50K+", label: "Events Created" },
-  { value: "2M+", label: "Attendees Managed" },
-  { value: "150+", label: "Countries Served" },
-  { value: "99.9%", label: "Uptime" },
+  { value: '50K+', label: 'Events Created' },
+  { value: '2M+', label: 'Attendees Managed' },
+  { value: '150+', label: 'Countries Served' },
+  { value: '99.9%', label: 'Uptime' },
 ]
 </script>
 
@@ -841,10 +1075,12 @@ const stats = [
 }
 
 @keyframes blink {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }

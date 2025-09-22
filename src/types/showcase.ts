@@ -190,7 +190,6 @@ export interface BaseShowcaseProps {
   currentLanguage?: string
 }
 
-
 // Error boundary types
 export interface ErrorInfo {
   componentStack: string

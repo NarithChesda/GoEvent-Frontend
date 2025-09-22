@@ -9,61 +9,61 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { title: 'Home - GoEvent' }
+      meta: { title: 'Home - GoEvent' },
     },
     {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue'),
-      meta: { title: 'About - GoEvent' }
+      meta: { title: 'About - GoEvent' },
     },
     {
       path: '/signin',
       name: 'signin',
       component: () => import('../views/SignInView.vue'),
-      meta: { title: 'Sign In - GoEvent' }
+      meta: { title: 'Sign In - GoEvent' },
     },
     {
       path: '/signup',
       name: 'signup',
       component: () => import('../views/SignUpView.vue'),
-      meta: { title: 'Sign Up - GoEvent' }
+      meta: { title: 'Sign Up - GoEvent' },
     },
     {
       path: '/events',
       name: 'events',
       component: () => import('../views/EventsView.vue'),
-      meta: { title: 'Events - GoEvent' }
+      meta: { title: 'Events - GoEvent' },
     },
     {
       path: '/events/:id',
       name: 'event-detail',
       component: () => import('../views/EventDetailView.vue'),
-      meta: { title: 'Event Details - GoEvent' }
+      meta: { title: 'Event Details - GoEvent' },
     },
     {
       path: '/events/:id/edit',
       name: 'event-edit',
       component: () => import('../views/EventEditView.vue'),
-      meta: { requiresAuth: true, title: 'Edit Event - GoEvent' }
+      meta: { requiresAuth: true, title: 'Edit Event - GoEvent' },
     },
     {
       path: '/events/:id/showcase',
       name: 'event-showcase',
       component: () => import('../views/EventShowcaseRefactored.vue'),
-      meta: { title: 'Event Showcase - GoEvent' }
+      meta: { title: 'Event Showcase - GoEvent' },
     },
     {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),
-      meta: { requiresAuth: true, title: 'Settings - GoEvent' }
+      meta: { requiresAuth: true, title: 'Settings - GoEvent' },
     },
     {
       path: '/contact',
       name: 'contact',
       component: () => import('../views/AboutView.vue'), // Redirect to about page for now
-      meta: { title: 'Contact - GoEvent' }
+      meta: { title: 'Contact - GoEvent' },
     },
   ],
 })
@@ -76,7 +76,7 @@ router.beforeEach(async (to, from, next) => {
       const { useAuthStore } = await import('../stores/auth')
       const { authService } = await import('../services/auth')
       const authStore = useAuthStore()
-      
+
       // Basic authentication check
       if (!authStore.isAuthenticated) {
         // Redirect to signin with the current path as a query parameter
@@ -134,7 +134,7 @@ router.beforeEach(async (to, from, next) => {
       console.log('🏷️ Leaving showcase page, resetting meta tags')
       resetMetaTags()
     }
-    
+
     next()
   } catch (error) {
     console.error('Route guard error:', error)

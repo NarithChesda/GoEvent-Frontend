@@ -4,10 +4,7 @@ import { ref, onUnmounted } from 'vue'
  * LRU Cache composable with memory management
  * Provides efficient caching with automatic eviction based on size and memory limits
  */
-export function useLRUCache<T = any>(
-  maxSize: number = 50,
-  maxMemoryMB: number = 100
-) {
+export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number = 100) {
   const cache = ref<Map<string, T>>(new Map())
   const accessOrder = ref<string[]>([])
   const maxMemory = maxMemoryMB * 1024 * 1024 // Convert MB to bytes
@@ -46,7 +43,7 @@ export function useLRUCache<T = any>(
     if (currentIndex > -1) {
       accessOrder.value.splice(currentIndex, 1)
     }
-    
+
     // Add to end (most recently used)
     accessOrder.value.push(key)
   }
@@ -61,10 +58,10 @@ export function useLRUCache<T = any>(
     if (lruKey && cache.value.has(lruKey)) {
       const item = cache.value.get(lruKey)!
       const itemSize = estimateMemoryUsage(item)
-      
+
       cache.value.delete(lruKey)
       currentMemory = Math.max(0, currentMemory - itemSize)
-      
+
       console.log(`🗑️ Evicted LRU cache item: ${lruKey} (${itemSize} bytes)`)
     }
   }
@@ -74,7 +71,7 @@ export function useLRUCache<T = any>(
    */
   const set = (key: string, item: T): void => {
     const itemSize = estimateMemoryUsage(item)
-    
+
     // Check if adding this item would exceed memory limits
     while (currentMemory + itemSize > maxMemory && accessOrder.value.length > 0) {
       evictLeastRecentlyUsed()
@@ -94,7 +91,7 @@ export function useLRUCache<T = any>(
     // Add to cache
     cache.value.set(key, item)
     currentMemory += itemSize
-    
+
     // Update access order
     updateAccessOrder(key)
   }
@@ -124,16 +121,16 @@ export function useLRUCache<T = any>(
     if (cache.value.has(key)) {
       const item = cache.value.get(key)!
       const itemSize = estimateMemoryUsage(item)
-      
+
       cache.value.delete(key)
       currentMemory = Math.max(0, currentMemory - itemSize)
-      
+
       // Remove from access order
       const index = accessOrder.value.indexOf(key)
       if (index > -1) {
         accessOrder.value.splice(index, 1)
       }
-      
+
       return true
     }
     return false
@@ -157,25 +154,26 @@ export function useLRUCache<T = any>(
     memoryUsage: currentMemory,
     maxMemory,
     memoryPercentage: Math.round((currentMemory / maxMemory) * 100),
-    accessOrder: [...accessOrder.value]
+    accessOrder: [...accessOrder.value],
   })
 
   /**
    * Force eviction of old items based on age
    */
-  const evictOldItems = (maxAge: number = 300000) => { // 5 minutes default
+  const evictOldItems = (maxAge: number = 300000) => {
+    // 5 minutes default
     const now = Date.now()
     const keysToEvict: string[] = []
-    
+
     // This would require tracking creation time, which we can add if needed
     // For now, just evict half the items if we're at capacity
     if (cache.value.size >= maxSize) {
       const evictCount = Math.floor(cache.value.size / 2)
       keysToEvict.push(...accessOrder.value.slice(0, evictCount))
     }
-    
-    keysToEvict.forEach(key => delete_(key))
-    
+
+    keysToEvict.forEach((key) => delete_(key))
+
     return keysToEvict.length
   }
 
@@ -195,6 +193,6 @@ export function useLRUCache<T = any>(
     // Expose readonly refs for reactivity
     size: () => cache.value.size,
     keys: () => Array.from(cache.value.keys()),
-    values: () => Array.from(cache.value.values())
+    values: () => Array.from(cache.value.values()),
   }
 }

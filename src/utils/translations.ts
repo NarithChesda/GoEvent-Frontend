@@ -2,118 +2,121 @@
 export type SupportedLanguage = 'en' | 'kh' | 'zh-cn'
 
 // RSVP Translation Dictionary
-export const rsvpTranslations: Record<SupportedLanguage, {
-  // Main headers
-  rsvp_header: string
-  invite_text: string
+export const rsvpTranslations: Record<
+  SupportedLanguage,
+  {
+    // Main headers
+    rsvp_header: string
+    invite_text: string
 
-  // Buttons
-  rsvp_yes_button: string
-  rsvp_no_button: string
-  rsvp_sign_in_button: string
+    // Buttons
+    rsvp_yes_button: string
+    rsvp_no_button: string
+    rsvp_sign_in_button: string
 
-  // Status indicators
-  rsvp_attending: string
-  rsvp_cant_attend: string
+    // Status indicators
+    rsvp_attending: string
+    rsvp_cant_attend: string
 
-  // Guest management
-  rsvp_additional_guests: string
-  rsvp_total_attending: string
-  rsvp_person: string
-  rsvp_people: string
+    // Guest management
+    rsvp_additional_guests: string
+    rsvp_total_attending: string
+    rsvp_person: string
+    rsvp_people: string
 
-  // Date and time formats
-  date_format_long: string // For full date display
-  date_format_compact: string // For compact date display
-  time_format: string // For time display
+    // Date and time formats
+    date_format_long: string // For full date display
+    date_format_compact: string // For compact date display
+    time_format: string // For time display
 
-  // Time units
-  rsvp_days: string
-  rsvp_hours: string
-  rsvp_minutes: string
-  rsvp_seconds: string
+    // Time units
+    rsvp_days: string
+    rsvp_hours: string
+    rsvp_minutes: string
+    rsvp_seconds: string
 
-  // Status messages
-  rsvp_status_live: string
-  rsvp_status_ended: string
-  rsvp_thank_you: string
-  rsvp_sign_in: string
+    // Status messages
+    rsvp_status_live: string
+    rsvp_status_ended: string
+    rsvp_thank_you: string
+    rsvp_sign_in: string
 
-  // Loading and action states
-  rsvp_loading_status: string
-  rsvp_registering: string
-  rsvp_updating: string
-  rsvp_saving: string
+    // Loading and action states
+    rsvp_loading_status: string
+    rsvp_registering: string
+    rsvp_updating: string
+    rsvp_saving: string
 
-  // Guest count management
-  rsvp_unsaved_changes: string
-  rsvp_save_now: string
-  rsvp_auto_save: string
+    // Guest count management
+    rsvp_unsaved_changes: string
+    rsvp_save_now: string
+    rsvp_auto_save: string
 
-  // System messages
-  rsvp_confirmation: string
-  rsvp_dismiss: string
+    // System messages
+    rsvp_confirmation: string
+    rsvp_dismiss: string
 
-  // Success messages
-  rsvp_registration_success: string
-  rsvp_unregister_success: string
-  rsvp_guest_update_success: string
-  rsvp_thank_you_simple: string
+    // Success messages
+    rsvp_registration_success: string
+    rsvp_unregister_success: string
+    rsvp_guest_update_success: string
+    rsvp_thank_you_simple: string
 
-  // Agenda section
-  agenda_header: string
-  agenda_activity: string
-  agenda_activities: string
+    // Agenda section
+    agenda_header: string
+    agenda_activity: string
+    agenda_activities: string
 
-  // Location section
-  location_header: string
+    // Location section
+    location_header: string
 
-  // Video section
-  video_header: string
+    // Video section
+    video_header: string
 
-  // Gallery section
-  gallery_header: string
+    // Gallery section
+    gallery_header: string
 
-  // Comment section
-  comment_header: string
-  comment_placeholder: string
-  comment_signin_prompt: string
-  comment_signin_button: string
-  comment_post_button: string
-  comment_posting_button: string
-  comment_no_comments: string
-  comment_loading: string
-  comment_already_commented: string
-  comment_one_per_user: string
-  comment_you_badge: string
+    // Comment section
+    comment_header: string
+    comment_placeholder: string
+    comment_signin_prompt: string
+    comment_signin_button: string
+    comment_post_button: string
+    comment_posting_button: string
+    comment_no_comments: string
+    comment_loading: string
+    comment_already_commented: string
+    comment_one_per_user: string
+    comment_you_badge: string
 
-  // Payment section
-  payment_wedding_gift: string
-  payment_birthday_gift: string
+    // Payment section
+    payment_wedding_gift: string
+    payment_birthday_gift: string
 
-  // Footer section
-  footer_thank_you: string
-  footer_create_invitations: string
+    // Footer section
+    footer_thank_you: string
+    footer_create_invitations: string
 
-  // Floating menu section
-  floating_menu_language: string
-  floating_menu_music_on: string
-  floating_menu_music_off: string
-  floating_menu_rsvp: string
-  floating_menu_reminder: string
-  floating_menu_agenda: string
-  floating_menu_location: string
-  floating_menu_video: string
-  floating_menu_gallery: string
-  floating_menu_gift: string
-  floating_menu_comment: string
-  floating_menu_logout: string
-  floating_menu_select_language: string
-}> = {
+    // Floating menu section
+    floating_menu_language: string
+    floating_menu_music_on: string
+    floating_menu_music_off: string
+    floating_menu_rsvp: string
+    floating_menu_reminder: string
+    floating_menu_agenda: string
+    floating_menu_location: string
+    floating_menu_video: string
+    floating_menu_gallery: string
+    floating_menu_gift: string
+    floating_menu_comment: string
+    floating_menu_logout: string
+    floating_menu_select_language: string
+  }
+> = {
   en: {
     // Main headers
     rsvp_header: 'Will you attend our wedding?',
-    invite_text: 'You\'re Invited',
+    invite_text: "You're Invited",
 
     // Buttons
     rsvp_yes_button: "Yes, I'll attend",
@@ -163,8 +166,8 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     rsvp_dismiss: 'Dismiss',
 
     // Success messages
-    rsvp_registration_success: 'Great! You\'re registered with {count} {unit}.',
-    rsvp_unregister_success: 'We\'re sorry you can\'t make it. Thank you for letting us know.',
+    rsvp_registration_success: "Great! You're registered with {count} {unit}.",
+    rsvp_unregister_success: "We're sorry you can't make it. Thank you for letting us know.",
     rsvp_guest_update_success: 'Updated guest count to {count} {unit}',
     rsvp_thank_you_simple: 'Thank you for your response.',
 
@@ -216,7 +219,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     floating_menu_gift: 'Gift',
     floating_menu_comment: 'Comment',
     floating_menu_logout: 'Logout',
-    floating_menu_select_language: 'Select Language'
+    floating_menu_select_language: 'Select Language',
   },
 
   kh: {
@@ -325,7 +328,7 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     floating_menu_gift: 'អំណោយ',
     floating_menu_comment: 'មតិយោបល់',
     floating_menu_logout: 'ចាកចេញ',
-    floating_menu_select_language: 'ជ្រើសរើសភាសា'
+    floating_menu_select_language: 'ជ្រើសរើសភាសា',
   },
 
   'zh-cn': {
@@ -434,15 +437,15 @@ export const rsvpTranslations: Record<SupportedLanguage, {
     floating_menu_gift: '礼物',
     floating_menu_comment: '评论',
     floating_menu_logout: '退出',
-    floating_menu_select_language: '选择语言'
-  }
+    floating_menu_select_language: '选择语言',
+  },
 }
 
 // Translation function with fallback support
 export function translateRSVP(
   key: keyof typeof rsvpTranslations.en,
   language: SupportedLanguage = 'en',
-  replacements?: Record<string, string | number>
+  replacements?: Record<string, string | number>,
 ): string {
   // Get translation from dictionary, fallback to English if not found
   const translations = rsvpTranslations[language] || rsvpTranslations.en
@@ -462,7 +465,7 @@ export function translateRSVP(
 export function formatDateLocalized(
   date: Date | string,
   format: 'long' | 'compact',
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
 ): string {
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date
@@ -470,12 +473,20 @@ export function formatDateLocalized(
     if (language === 'kh') {
       // Custom Khmer date formatting
       const khmerMonths = [
-        'មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា',
-        'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
+        'មករា',
+        'កុម្ភៈ',
+        'មីនា',
+        'មេសា',
+        'ឧសភា',
+        'មិថុនា',
+        'កក្កដា',
+        'សីហា',
+        'កញ្ញា',
+        'តុលា',
+        'វិច្ឆិកា',
+        'ធ្នូ',
       ]
-      const khmerDays = [
-        'អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'
-      ]
+      const khmerDays = ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']
 
       if (format === 'long') {
         return `${khmerDays[dateObj.getDay()]} ទី${dateObj.getDate()} ខែ${khmerMonths[dateObj.getMonth()]} ឆ្នាំ${dateObj.getFullYear()}`
@@ -486,15 +497,16 @@ export function formatDateLocalized(
 
     // Use standard Intl.DateTimeFormat for other languages
     const localeMap: Record<SupportedLanguage, string> = {
-      'en': 'en-US',
-      'kh': 'km-KH',
-      'zh-cn': 'zh-CN'
+      en: 'en-US',
+      kh: 'km-KH',
+      'zh-cn': 'zh-CN',
     }
 
     const locale = localeMap[language] || 'en-US'
-    const options: Intl.DateTimeFormatOptions = format === 'long'
-      ? { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
-      : { month: 'short', day: 'numeric' }
+    const options: Intl.DateTimeFormatOptions =
+      format === 'long'
+        ? { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+        : { month: 'short', day: 'numeric' }
 
     return dateObj.toLocaleDateString(locale, options)
   } catch (error) {
@@ -506,23 +518,24 @@ export function formatDateLocalized(
 // Time formatting with localization support
 export function formatTimeLocalized(
   date: Date | string,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
 ): string {
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date
 
     const localeMap: Record<SupportedLanguage, string> = {
-      'en': 'en-US',
-      'kh': 'km-KH',
-      'zh-cn': 'zh-CN'
+      en: 'en-US',
+      kh: 'km-KH',
+      'zh-cn': 'zh-CN',
     }
 
     const locale = localeMap[language] || 'en-US'
 
     // Use 24-hour format for most Asian languages, 12-hour for English
-    const options: Intl.DateTimeFormatOptions = language === 'en'
-      ? { hour: 'numeric', minute: '2-digit', hour12: true }
-      : { hour: '2-digit', minute: '2-digit', hour12: false }
+    const options: Intl.DateTimeFormatOptions =
+      language === 'en'
+        ? { hour: 'numeric', minute: '2-digit', hour12: true }
+        : { hour: '2-digit', minute: '2-digit', hour12: false }
 
     return dateObj.toLocaleTimeString(locale, options)
   } catch (error) {

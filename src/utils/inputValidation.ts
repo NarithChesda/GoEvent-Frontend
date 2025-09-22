@@ -1,6 +1,6 @@
 /**
  * Input Validation and Sanitization Utility
- * 
+ *
  * Provides comprehensive input validation and XSS protection for forms
  */
 
@@ -31,7 +31,7 @@ class InputValidator {
     "'": '&#x27;',
     '/': '&#x2F;',
     '`': '&#x60;',
-    '=': '&#x3D;'
+    '=': '&#x3D;',
   }
 
   /**
@@ -45,7 +45,7 @@ class InputValidator {
     /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,
     /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi,
     /data:text\/html/gi,
-    /vbscript:/gi
+    /vbscript:/gi,
   ]
 
   /**
@@ -53,7 +53,7 @@ class InputValidator {
    */
   sanitizeHtml(input: string): string {
     if (!input || typeof input !== 'string') return ''
-    
+
     return input.replace(/[&<>"'`=\/]/g, (match) => {
       return this.htmlEntities[match] || match
     })
@@ -64,8 +64,8 @@ class InputValidator {
    */
   containsDangerousContent(input: string): boolean {
     if (!input || typeof input !== 'string') return false
-    
-    return this.dangerousPatterns.some(pattern => pattern.test(input))
+
+    return this.dangerousPatterns.some((pattern) => pattern.test(input))
   }
 
   /**
@@ -73,7 +73,7 @@ class InputValidator {
    */
   validateEmail(email: string): ValidationResult {
     const errors: string[] = []
-    
+
     if (!email || email.trim().length === 0) {
       errors.push('Email is required')
       return { isValid: false, errors }
@@ -86,8 +86,9 @@ class InputValidator {
     }
 
     // RFC 5322 compliant email regex (simplified)
-    const emailPattern = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-    
+    const emailPattern =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+
     if (!emailPattern.test(email)) {
       errors.push('Please enter a valid email address')
     }
@@ -101,7 +102,7 @@ class InputValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      sanitizedValue
+      sanitizedValue,
     }
   }
 
@@ -110,7 +111,7 @@ class InputValidator {
    */
   validatePassword(password: string, options: { isNewPassword?: boolean } = {}): ValidationResult {
     const errors: string[] = []
-    
+
     if (!password) {
       errors.push('Password is required')
       return { isValid: false, errors }
@@ -162,7 +163,7 @@ class InputValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      sanitizedValue: password // Don't sanitize passwords
+      sanitizedValue: password, // Don't sanitize passwords
     }
   }
 
@@ -209,7 +210,7 @@ class InputValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      sanitizedValue
+      sanitizedValue,
     }
   }
 
@@ -264,20 +265,23 @@ class InputValidator {
   /**
    * Validate form data with multiple fields
    */
-  validateForm(formData: Record<string, any>, rules: Record<string, ValidationRule>): {
+  validateForm(
+    formData: Record<string, any>,
+    rules: Record<string, ValidationRule>,
+  ): {
     isValid: boolean
     errors: Record<string, string[]>
     sanitizedData: Record<string, any>
   } {
     const errors: Record<string, string[]> = {}
     const sanitizedData: Record<string, any> = {}
-    
-    Object.keys(rules).forEach(field => {
+
+    Object.keys(rules).forEach((field) => {
       const value = formData[field]
       const rule = rules[field]
-      
+
       let result: ValidationResult
-      
+
       if (field === 'email') {
         result = this.validateEmail(value)
       } else if (field === 'password' || field.includes('password')) {
@@ -285,18 +289,18 @@ class InputValidator {
       } else {
         result = this.validateText(value, rule)
       }
-      
+
       if (!result.isValid) {
         errors[field] = result.errors
       }
-      
+
       sanitizedData[field] = result.sanitizedValue !== undefined ? result.sanitizedValue : value
     })
-    
+
     return {
       isValid: Object.keys(errors).length === 0,
       errors,
-      sanitizedData
+      sanitizedData,
     }
   }
 
@@ -305,25 +309,29 @@ class InputValidator {
    */
   private attemptCounts: Map<string, { count: number; lastAttempt: number }> = new Map()
 
-  isRateLimited(identifier: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): boolean {
+  isRateLimited(
+    identifier: string,
+    maxAttempts: number = 5,
+    windowMs: number = 15 * 60 * 1000,
+  ): boolean {
     const now = Date.now()
     const attempts = this.attemptCounts.get(identifier)
-    
+
     if (!attempts) {
       this.attemptCounts.set(identifier, { count: 1, lastAttempt: now })
       return false
     }
-    
+
     // Reset if window has passed
     if (now - attempts.lastAttempt > windowMs) {
       this.attemptCounts.set(identifier, { count: 1, lastAttempt: now })
       return false
     }
-    
+
     // Increment attempts
     attempts.count++
     attempts.lastAttempt = now
-    
+
     return attempts.count > maxAttempts
   }
 
@@ -345,6 +353,12 @@ export const validationRules = {
   confirmPassword: { required: true, sanitize: false },
   firstName: { maxLength: 50, sanitize: true },
   lastName: { maxLength: 50, sanitize: true },
-  username: { required: true, minLength: 3, maxLength: 30, pattern: /^[a-zA-Z0-9_-]+$/, sanitize: true },
-  bio: { maxLength: 500, sanitize: true }
+  username: {
+    required: true,
+    minLength: 3,
+    maxLength: 30,
+    pattern: /^[a-zA-Z0-9_-]+$/,
+    sanitize: true,
+  },
+  bio: { maxLength: 500, sanitize: true },
 }

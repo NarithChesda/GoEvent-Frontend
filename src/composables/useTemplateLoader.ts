@@ -57,10 +57,10 @@ export function useTemplateLoader() {
       const browseResponse = await eventTemplateService.browseTemplates()
       if (browseResponse.success && browseResponse.data) {
         const foundTemplate = browseResponse.data.templates.find(
-          (t: EventTemplate) => String(t.id) === String(templateId)
+          (t: EventTemplate) => String(t.id) === String(templateId),
         )
         selectedTemplateDetails.value = foundTemplate || null
-        
+
         if (!foundTemplate) {
           throw new Error(`Template with ID ${templateId} not found`)
         }
@@ -85,7 +85,7 @@ export function useTemplateLoader() {
    */
   const loadTemplateDetailsWithRetry = async (
     options: LoadTemplateOptions,
-    maxRetries = 2
+    maxRetries = 2,
   ): Promise<void> => {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -93,13 +93,13 @@ export function useTemplateLoader() {
         return // Success, exit retry loop
       } catch (err) {
         console.warn(`Template details load attempt ${attempt + 1} failed:`, err)
-        
+
         if (attempt === maxRetries) {
           error.value = 'Failed to load template details after multiple attempts'
           throw err
         } else {
           // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)))
+          await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, attempt)))
         }
       }
     }
@@ -113,7 +113,7 @@ export function useTemplateLoader() {
       abortController.abort()
       abortController = null
     }
-    
+
     selectedTemplateDetails.value = null
     loading.value = false
     error.value = null
@@ -137,6 +137,6 @@ export function useTemplateLoader() {
     loadTemplateDetails,
     loadTemplateDetailsWithRetry,
     clearTemplate,
-    setTemplateDetails
+    setTemplateDetails,
   }
 }

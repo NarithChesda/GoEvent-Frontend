@@ -4,7 +4,9 @@
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Agenda</h3>
-        <p class="text-lg text-slate-600 mt-1 leading-relaxed">Manage your event schedule and agenda items</p>
+        <p class="text-lg text-slate-600 mt-1 leading-relaxed">
+          Manage your event schedule and agenda items
+        </p>
       </div>
       <button
         v-if="canEdit"
@@ -31,7 +33,7 @@
       <div class="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md mx-auto">
         <AlertCircle class="w-8 h-8 text-red-500 mx-auto mb-2" />
         <p class="text-lg text-red-600 font-semibold leading-relaxed">{{ error }}</p>
-        <button 
+        <button
           @click="fetchAgendaItems"
           class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200"
         >
@@ -41,11 +43,18 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!Array.isArray(agendaItems) || agendaItems.length === 0" class="text-center py-12">
+    <div
+      v-else-if="!Array.isArray(agendaItems) || agendaItems.length === 0"
+      class="text-center py-12"
+    >
       <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 max-w-md mx-auto">
         <Calendar class="w-16 h-16 text-slate-400 mx-auto mb-4" />
-        <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">No Agenda Items Yet</h4>
-        <p class="text-lg text-slate-600 mb-6 leading-relaxed">Start building your event schedule by adding agenda items.</p>
+        <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
+          No Agenda Items Yet
+        </h4>
+        <p class="text-lg text-slate-600 mb-6 leading-relaxed">
+          Start building your event schedule by adding agenda items.
+        </p>
         <button
           v-if="canEdit"
           @click="showCreateModal = true"
@@ -62,19 +71,23 @@
       <!-- Grouped by Date Cards -->
       <div v-for="(group, date) in groupedAgendaItems" :key="date">
         <!-- Date Card -->
-        <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
+        <div
+          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
+        >
           <!-- Date Header (Clickable) -->
-          <div 
+          <div
             @click="toggleDateExpanded(date)"
             class="cursor-pointer p-6 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-purple-50/40 transition-all duration-300"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-4">
                 <!-- Date Icon -->
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center"
+                >
                   <Calendar class="w-6 h-6 text-blue-600" />
                 </div>
-                
+
                 <!-- Date Info -->
                 <div>
                   <h3 class="text-xl font-bold text-slate-900 leading-tight tracking-tight">
@@ -85,10 +98,10 @@
                   </p>
                 </div>
               </div>
-              
+
               <!-- Expand/Collapse Icon -->
               <div class="flex items-center space-x-2">
-                <div 
+                <div
                   class="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center transition-transform duration-300"
                   :class="{ 'rotate-180': expandedDates.has(date) }"
                 >
@@ -108,11 +121,7 @@
           >
             <div v-if="expandedDates.has(date)" class="border-t border-white/20">
               <div class="p-6 pt-4 space-y-3">
-                <div 
-                  ref="sortableContainer"
-                  class="space-y-3"
-                  :data-date="date"
-                >
+                <div ref="sortableContainer" class="space-y-3" :data-date="date">
                   <AgendaItemCard
                     v-for="item in group.items"
                     :key="item.id"
@@ -201,23 +210,23 @@ const formatDateWithOrdinal = (dateString: string | null, dateText: string) => {
   if (dateText && dateText.trim() !== '') {
     return dateText
   }
-  
+
   if (!dateString) {
     return 'Unscheduled'
   }
-  
+
   try {
     const date = new Date(dateString)
     const day = date.getDate()
     const month = date.toLocaleDateString('en-US', { month: 'long' })
-    
+
     // Add ordinal suffix
     const ordinal = (n: number) => {
       const s = ['th', 'st', 'nd', 'rd']
       const v = n % 100
       return n + (s[(v - 20) % 10] || s[v] || s[0])
     }
-    
+
     return `${month} ${ordinal(day)}`
   } catch {
     return dateString
@@ -227,28 +236,28 @@ const formatDateWithOrdinal = (dateString: string | null, dateText: string) => {
 // Computed
 const groupedAgendaItems = computed(() => {
   const groups: Record<string, { date_text: string; items: EventAgendaItem[] }> = {}
-  
+
   // Ensure agendaItems.value is an array before using forEach
   if (!Array.isArray(agendaItems.value)) {
     return groups
   }
-  
-  agendaItems.value.forEach(item => {
+
+  agendaItems.value.forEach((item) => {
     const date = item.date || 'unscheduled'
     if (!groups[date]) {
       groups[date] = {
         date_text: formatDateWithOrdinal(item.date, item.date_text),
-        items: []
+        items: [],
       }
     }
     groups[date].items.push(item)
   })
-  
+
   // Sort items within each group by order
-  Object.values(groups).forEach(group => {
+  Object.values(groups).forEach((group) => {
     group.items.sort((a, b) => a.order - b.order)
   })
-  
+
   return groups
 })
 
@@ -256,7 +265,7 @@ const groupedAgendaItems = computed(() => {
 const fetchAgendaItems = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     const response = await agendaService.getAgendaItems(props.eventId)
     if (response.success && response.data) {
@@ -270,7 +279,7 @@ const fetchAgendaItems = async () => {
         console.warn('API response data is not in expected format:', response.data)
         agendaItems.value = []
       }
-      
+
       // Auto-expand first date group after data is loaded
       await nextTick()
       if (agendaItems.value.length > 0) {
@@ -304,14 +313,14 @@ const deleteAgendaItem = (item: EventAgendaItem) => {
 
 const confirmDelete = async () => {
   if (!itemToDelete.value) return
-  
+
   deleting.value = true
   try {
     const response = await agendaService.deleteAgendaItem(props.eventId, itemToDelete.value.id)
     if (response.success) {
       // Ensure agendaItems.value is an array before filtering
       if (Array.isArray(agendaItems.value)) {
-        agendaItems.value = agendaItems.value.filter(item => item.id !== itemToDelete.value!.id)
+        agendaItems.value = agendaItems.value.filter((item) => item.id !== itemToDelete.value!.id)
       } else {
         agendaItems.value = []
       }
@@ -339,7 +348,7 @@ const handleAgendaItemCreated = (newItem: EventAgendaItem) => {
 
 const handleAgendaItemUpdated = (updatedItem: EventAgendaItem) => {
   if (Array.isArray(agendaItems.value)) {
-    const index = agendaItems.value.findIndex(item => item.id === updatedItem.id)
+    const index = agendaItems.value.findIndex((item) => item.id === updatedItem.id)
     if (index !== -1) {
       agendaItems.value[index] = updatedItem
     }
@@ -374,9 +383,9 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
   }
 
   // Find both items in the current array
-  const draggedIndex = agendaItems.value.findIndex(item => item.id === draggedItem.value!.id)
-  const targetIndex = agendaItems.value.findIndex(item => item.id === targetItem.id)
-  
+  const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
+  const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
+
   if (draggedIndex === -1 || targetIndex === -1) {
     draggedItem.value = null
     return
@@ -394,12 +403,12 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
 
   const updates = newItems.map((item, index) => ({
     id: item.id,
-    order: index
+    order: index,
   }))
 
   // Optimistic update - force reactivity by creating new array reference
   agendaItems.value = [...newItems]
-  
+
   // Force Vue to update the computed property
   await nextTick()
 

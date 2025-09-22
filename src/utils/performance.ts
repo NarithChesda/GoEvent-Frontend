@@ -5,13 +5,13 @@
 /**
  * Throttle utility using requestAnimationFrame for better performance
  * This ensures that the function executes at most once per frame (60fps)
- * 
+ *
  * @param fn - The function to throttle
  * @returns The throttled function
  */
 export function useThrottleFn<T extends (...args: any[]) => any>(fn: T): T {
   let ticking = false
-  
+
   return ((...args: Parameters<T>) => {
     if (!ticking) {
       ticking = true
@@ -25,22 +25,19 @@ export function useThrottleFn<T extends (...args: any[]) => any>(fn: T): T {
 
 /**
  * Debounce utility for delaying function execution
- * 
+ *
  * @param fn - The function to debounce
  * @param delay - Delay in milliseconds
  * @returns The debounced function
  */
-export function useDebounceFn<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number = 300
-): T {
+export function useDebounceFn<T extends (...args: any[]) => any>(fn: T, delay: number = 300): T {
   let timeoutId: number | null = null
-  
+
   return ((...args: Parameters<T>) => {
     if (timeoutId !== null) {
       clearTimeout(timeoutId)
     }
-    
+
     timeoutId = setTimeout(() => {
       fn(...args)
       timeoutId = null
@@ -53,17 +50,17 @@ export function useDebounceFn<T extends (...args: any[]) => any>(
  */
 export class TimeoutManager {
   private timeoutIds: number[] = []
-  
+
   setTimeout(callback: () => void, delay: number): void {
     const id = setTimeout(callback, delay)
     this.timeoutIds.push(id)
   }
-  
+
   clearAll(): void {
-    this.timeoutIds.forEach(id => clearTimeout(id))
+    this.timeoutIds.forEach((id) => clearTimeout(id))
     this.timeoutIds = []
   }
-  
+
   destroy(): void {
     this.clearAll()
   }
@@ -71,7 +68,7 @@ export class TimeoutManager {
 
 /**
  * Enhanced debounce function with immediate execution option
- * 
+ *
  * @param fn - The function to debounce
  * @param delay - Delay in milliseconds
  * @param immediate - Execute immediately on first call
@@ -80,39 +77,39 @@ export class TimeoutManager {
 export function useAdvancedDebounceFn<T extends (...args: any[]) => any>(
   fn: T,
   delay: number = 300,
-  immediate: boolean = false
+  immediate: boolean = false,
 ): T & { cancel: () => void; flush: () => void } {
   let timeoutId: number | null = null
   let result: ReturnType<T>
-  
+
   const debounced = ((...args: Parameters<T>) => {
     const callNow = immediate && !timeoutId
-    
+
     if (timeoutId !== null) {
       clearTimeout(timeoutId)
     }
-    
+
     timeoutId = setTimeout(() => {
       timeoutId = null
       if (!immediate) {
         result = fn(...args)
       }
     }, delay)
-    
+
     if (callNow) {
       result = fn(...args)
     }
-    
+
     return result
   }) as T & { cancel: () => void; flush: () => void }
-  
+
   debounced.cancel = () => {
     if (timeoutId !== null) {
       clearTimeout(timeoutId)
       timeoutId = null
     }
   }
-  
+
   debounced.flush = () => {
     if (timeoutId !== null) {
       clearTimeout(timeoutId)
@@ -121,7 +118,7 @@ export function useAdvancedDebounceFn<T extends (...args: any[]) => any>(
     }
     return result
   }
-  
+
   return debounced
 }
 
@@ -138,14 +135,9 @@ export interface UseIntersectionObserverOptions {
 
 export function useIntersectionObserver(
   callback: (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => void,
-  options: UseIntersectionObserverOptions = {}
+  options: UseIntersectionObserverOptions = {},
 ) {
-  const {
-    threshold = 0.1,
-    root = null,
-    rootMargin = '0px',
-    freezeOnceVisible = false
-  } = options
+  const { threshold = 0.1, root = null, rootMargin = '0px', freezeOnceVisible = false } = options
 
   let observer: IntersectionObserver | null = null
   const observedElements = new WeakSet<Element>()
@@ -154,20 +146,23 @@ export function useIntersectionObserver(
     if (!element || observedElements.has(element)) return
 
     if (!observer) {
-      observer = new IntersectionObserver((entries, obs) => {
-        if (freezeOnceVisible) {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              obs.unobserve(entry.target)
-            }
-          })
-        }
-        callback(entries, obs)
-      }, {
-        threshold,
-        root,
-        rootMargin
-      })
+      observer = new IntersectionObserver(
+        (entries, obs) => {
+          if (freezeOnceVisible) {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                obs.unobserve(entry.target)
+              }
+            })
+          }
+          callback(entries, obs)
+        },
+        {
+          threshold,
+          root,
+          rootMargin,
+        },
+      )
     }
 
     observer.observe(element)
@@ -191,14 +186,14 @@ export function useIntersectionObserver(
   return {
     observe,
     unobserve,
-    disconnect
+    disconnect,
   }
 }
 
 /**
  * Enhanced throttle function for scroll and resize handlers
  * Uses requestAnimationFrame for smooth performance
- * 
+ *
  * @param fn - The function to throttle
  * @param options - Throttling options
  * @returns The throttled function
@@ -212,25 +207,25 @@ export interface ThrottleOptions {
 export function useAdvancedThrottleFn<T extends (...args: any[]) => any>(
   fn: T,
   delay: number = 16, // Default to ~60fps
-  options: ThrottleOptions = {}
+  options: ThrottleOptions = {},
 ): T & { cancel: () => void } {
   const { leading = true, trailing = true, useRAF = true } = options
-  
+
   let lastCallTime = 0
   let timeoutId: number | null = null
   let rafId: number | null = null
   let lastArgs: Parameters<T> | null = null
-  
+
   const throttled = ((...args: Parameters<T>) => {
     const now = Date.now()
-    
+
     if (lastCallTime === 0 && !leading) {
       lastCallTime = now
     }
-    
+
     const remaining = delay - (now - lastCallTime)
     lastArgs = args
-    
+
     if (remaining <= 0 || remaining > delay) {
       if (timeoutId) {
         clearTimeout(timeoutId)
@@ -240,7 +235,7 @@ export function useAdvancedThrottleFn<T extends (...args: any[]) => any>(
         cancelAnimationFrame(rafId)
         rafId = null
       }
-      
+
       lastCallTime = now
       return fn(...args)
     } else if (!timeoutId && trailing) {
@@ -258,11 +253,11 @@ export function useAdvancedThrottleFn<T extends (...args: any[]) => any>(
           }
         }
       }
-      
+
       timeoutId = setTimeout(executeTrailing, remaining)
     }
   }) as T & { cancel: () => void }
-  
+
   throttled.cancel = () => {
     if (timeoutId) {
       clearTimeout(timeoutId)
@@ -274,7 +269,7 @@ export function useAdvancedThrottleFn<T extends (...args: any[]) => any>(
     }
     lastCallTime = 0
   }
-  
+
   return throttled
 }
 
@@ -284,31 +279,31 @@ export function useAdvancedThrottleFn<T extends (...args: any[]) => any>(
  */
 export class AnimationFrameManager {
   private activeFrames = new Set<number>()
-  
+
   requestAnimationFrame(callback: FrameRequestCallback): number {
     const frameId = requestAnimationFrame((time) => {
       this.activeFrames.delete(frameId)
       callback(time)
     })
-    
+
     this.activeFrames.add(frameId)
     return frameId
   }
-  
+
   cancelAnimationFrame(frameId: number): void {
     if (this.activeFrames.has(frameId)) {
       cancelAnimationFrame(frameId)
       this.activeFrames.delete(frameId)
     }
   }
-  
+
   cancelAll(): void {
-    this.activeFrames.forEach(frameId => {
+    this.activeFrames.forEach((frameId) => {
       cancelAnimationFrame(frameId)
     })
     this.activeFrames.clear()
   }
-  
+
   destroy(): void {
     this.cancelAll()
   }
@@ -320,47 +315,44 @@ export class AnimationFrameManager {
  */
 export class ResourceManager {
   private cleanupTasks: (() => void)[] = []
-  
+
   add(cleanupTask: () => void): void {
     this.cleanupTasks.push(cleanupTask)
   }
-  
+
   addEventListener(
     element: Element | Window | Document,
     event: string,
     handler: EventListener,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void {
     element.addEventListener(event, handler, options)
     this.add(() => element.removeEventListener(event, handler, options))
   }
-  
-  addResizeObserver(
-    callback: ResizeObserverCallback,
-    elements: Element[]
-  ): void {
+
+  addResizeObserver(callback: ResizeObserverCallback, elements: Element[]): void {
     if (typeof ResizeObserver === 'undefined') return
-    
+
     const observer = new ResizeObserver(callback)
-    elements.forEach(element => observer.observe(element))
-    
+    elements.forEach((element) => observer.observe(element))
+
     this.add(() => {
       observer.disconnect()
     })
   }
-  
+
   addInterval(callback: () => void, delay: number): void {
     const intervalId = setInterval(callback, delay)
     this.add(() => clearInterval(intervalId))
   }
-  
+
   addTimeout(callback: () => void, delay: number): void {
     const timeoutId = setTimeout(callback, delay)
     this.add(() => clearTimeout(timeoutId))
   }
-  
+
   cleanup(): void {
-    this.cleanupTasks.forEach(task => {
+    this.cleanupTasks.forEach((task) => {
       try {
         task()
       } catch (error) {
@@ -369,7 +361,7 @@ export class ResourceManager {
     })
     this.cleanupTasks = []
   }
-  
+
   destroy(): void {
     this.cleanup()
   }
@@ -381,31 +373,27 @@ export class ResourceManager {
  */
 export class RequestDeduplicator {
   private pendingRequests = new Map<string, Promise<any>>()
-  
-  async deduplicate<T>(
-    key: string,
-    requestFn: () => Promise<T>
-  ): Promise<T> {
+
+  async deduplicate<T>(key: string, requestFn: () => Promise<T>): Promise<T> {
     // If there's already a pending request with this key, return it
     if (this.pendingRequests.has(key)) {
       return this.pendingRequests.get(key)!
     }
-    
+
     // Create new request
-    const request = requestFn()
-      .finally(() => {
-        // Clean up after request completes
-        this.pendingRequests.delete(key)
-      })
-    
+    const request = requestFn().finally(() => {
+      // Clean up after request completes
+      this.pendingRequests.delete(key)
+    })
+
     this.pendingRequests.set(key, request)
     return request
   }
-  
+
   cancel(key: string): void {
     this.pendingRequests.delete(key)
   }
-  
+
   cancelAll(): void {
     this.pendingRequests.clear()
   }
@@ -425,7 +413,7 @@ export const performanceUtils = {
     console.log(`${name} took ${end - start} milliseconds`)
     return result
   },
-  
+
   /**
    * Measure async function execution time
    */
@@ -436,7 +424,7 @@ export const performanceUtils = {
     console.log(`${name} took ${end - start} milliseconds`)
     return result
   },
-  
+
   /**
    * Memory usage information (if available)
    */
@@ -445,7 +433,7 @@ export const performanceUtils = {
       return (performance as any).memory
     }
     return null
-  }
+  },
 }
 
 /**
@@ -455,41 +443,41 @@ export function usePerformance() {
   const animationFrameManager = new AnimationFrameManager()
   const resourceManager = new ResourceManager()
   const requestDeduplicator = new RequestDeduplicator()
-  
+
   const cleanup = () => {
     animationFrameManager.destroy()
     resourceManager.destroy()
     requestDeduplicator.cancelAll()
   }
-  
+
   return {
     // Animation utilities
     requestAnimationFrame: animationFrameManager.requestAnimationFrame.bind(animationFrameManager),
     cancelAnimationFrame: animationFrameManager.cancelAnimationFrame.bind(animationFrameManager),
-    
+
     // Resource management
     addCleanup: resourceManager.add.bind(resourceManager),
     addEventListener: resourceManager.addEventListener.bind(resourceManager),
     addResizeObserver: resourceManager.addResizeObserver.bind(resourceManager),
     addInterval: resourceManager.addInterval.bind(resourceManager),
     addTimeout: resourceManager.addTimeout.bind(resourceManager),
-    
+
     // Request deduplication
     deduplicateRequest: requestDeduplicator.deduplicate.bind(requestDeduplicator),
-    
+
     // Throttle and debounce
     throttle: useAdvancedThrottleFn,
     debounce: useAdvancedDebounceFn,
-    
+
     // Intersection observer
     intersectionObserver: useIntersectionObserver,
-    
+
     // Performance monitoring
     measure: performanceUtils.measure,
     measureAsync: performanceUtils.measureAsync,
     getMemoryUsage: performanceUtils.getMemoryUsage,
-    
+
     // Cleanup
-    cleanup
+    cleanup,
   }
 }

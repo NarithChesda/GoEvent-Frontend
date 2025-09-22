@@ -3,7 +3,10 @@
     <!-- Mobile Horizontal Navigation -->
     <div class="md:hidden mb-6">
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-2">
-        <div class="flex overflow-x-auto scrollbar-hide space-x-1" style="scrollbar-width: none; -ms-overflow-style: none;">
+        <div
+          class="flex overflow-x-auto scrollbar-hide space-x-1"
+          style="scrollbar-width: none; -ms-overflow-style: none"
+        >
           <NavigationTab
             v-for="tab in visibleTabs"
             :key="tab.id"
@@ -22,7 +25,9 @@
       <div class="mb-8">
         <div class="flex items-center space-x-3">
           <div class="w-3 h-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
-          <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Details</h2>
+          <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+            Event Details
+          </h2>
         </div>
       </div>
 
@@ -74,7 +79,7 @@ const props = defineProps<Props>()
 defineEmits<Emits>()
 
 const visibleTabs = computed(() => {
-  return props.tabs.filter(tab => {
+  return props.tabs.filter((tab) => {
     // Permission-based tab visibility
     if (tab.id === 'attendees' && !props.canViewAttendees) return false
     if (tab.id === 'media' && !props.canViewMedia) return false
@@ -83,7 +88,7 @@ const visibleTabs = computed(() => {
     if (tab.id === 'template' && !props.canViewTemplate) return false
     if (tab.id === 'payment' && !props.canViewPayment) return false
     if (tab.id === 'invitation' && !props.canViewInvitation) return false
-    
+
     return tab.visible !== false
   })
 })

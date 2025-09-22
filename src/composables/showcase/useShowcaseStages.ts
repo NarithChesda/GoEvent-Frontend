@@ -4,18 +4,18 @@ export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
 
 /**
  * Showcase Stages Composable
- * 
+ *
  * Manages the three-stage wedding invitation experience:
- * 
+ *
  * **Stage 1 (Cover)**: Static invitation with envelope opening animation
  * **Stage 2 (Event Video)**: Personal video message from couple (optional)
  * **Stage 3 (Main Content)**: Full invitation details, RSVP, gallery, etc.
- * 
+ *
  * The flow is designed for optimal emotional impact:
  * - Cover stage creates anticipation
  * - Event video provides personal touch
  * - Main content delivers all practical information
- * 
+ *
  * Includes intelligent skipping for return visitors and proper audio management.
  */
 export function useShowcaseStages() {
@@ -25,7 +25,7 @@ export function useShowcaseStages() {
   const isPlayingEventVideo = ref(false)
   const videoLoading = ref(false)
   const coverStageReady = ref(false)
-  
+
   // Media references
   const eventVideoRef = ref<HTMLVideoElement | null>(null)
   const audioRef = ref<HTMLAudioElement | null>(null)
@@ -87,23 +87,23 @@ export function useShowcaseStages() {
 
   /**
    * Advanced Showcase Stage Flow Controller
-   * 
+   *
    * Opens the envelope and transitions through stages
    */
   const openEnvelope = async (eventVideoUrl?: string, eventMusicUrl?: string): Promise<void> => {
     isEnvelopeOpened.value = true
-    
+
     // Transition to event video stage
     currentShowcaseStage.value = 'event_video'
-    
+
     if (eventVideoUrl) {
       isPlayingEventVideo.value = true
-      
+
       initializeAudio(eventMusicUrl)
       if (eventMusicUrl) {
         await playMusic()
       }
-      
+
       await nextTick()
       if (eventVideoRef.value) {
         eventVideoRef.value.muted = false
@@ -127,7 +127,7 @@ export function useShowcaseStages() {
       setTimeout(() => {
         isPlayingEventVideo.value = false
         currentShowcaseStage.value = 'main_content'
-        
+
         initializeAudio(eventMusicUrl)
         if (eventMusicUrl) {
           playMusic()
@@ -160,10 +160,10 @@ export function useShowcaseStages() {
    */
   const onEventVideoError = (eventMusicUrl?: string): void => {
     isPlayingEventVideo.value = false
-    
+
     // On video error, skip to main content gracefully
     currentShowcaseStage.value = 'main_content'
-    
+
     // Ensure audio is still available as fallback
     if (!audioRef.value && eventMusicUrl) {
       initializeAudio(eventMusicUrl)
@@ -241,18 +241,18 @@ export function useShowcaseStages() {
     eventVideoRef,
     audioRef,
     isMusicPlaying,
-    
+
     // Computed
     isCoverStage,
     isEventVideoStage,
     isMainContentStage,
-    
+
     // Audio methods
     initializeAudio,
     playMusic,
     pauseMusic,
     toggleMusic,
-    
+
     // Stage flow methods
     openEnvelope,
     onVideoCanPlay,
@@ -261,10 +261,10 @@ export function useShowcaseStages() {
     handleCoverStageReady,
     setStage,
     resetStages,
-    
+
     // Cleanup methods
     cleanupAudio,
     cleanupVideo,
-    cleanup
+    cleanup,
   }
 }

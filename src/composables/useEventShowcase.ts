@@ -218,14 +218,10 @@ export function useEventShowcase() {
   // External Composables
   // ============================
 
-  const {
-    deduplicateRequest,
-    addCleanup,
-    cleanup: cleanupPerformance
-  } = usePerformance()
+  const { deduplicateRequest, addCleanup, cleanup: cleanupPerformance } = usePerformance()
 
   const resourceManager = new ResourceManager()
-  
+
   // Specialized composables for different concerns
   const fontManager = useFontManager()
   const videoManager = useVideoResourceManager()
@@ -241,11 +237,11 @@ export function useEventShowcase() {
   const contentLoading = ref(false)
   const error = ref<string | null>(null)
   const showcaseData = ref<ShowcaseData | null>(null)
-  
+
   // Language state
   const urlLang = (route.query.lang as string) || 'kh'
   const currentLanguage = ref(urlLang)
-  
+
   // Photo modal state
   const isPhotoModalOpen = ref(false)
   const currentModalPhoto = ref<EventPhoto | null>(null)
@@ -260,137 +256,142 @@ export function useEventShowcase() {
   const meta = computed(() => showcaseData.value?.meta || {})
   const guestName = computed(() => {
     const guestNameFromQuery = route.query.guest_name
-    const guestNameStr = Array.isArray(guestNameFromQuery) ? guestNameFromQuery[0] : guestNameFromQuery
+    const guestNameStr = Array.isArray(guestNameFromQuery)
+      ? guestNameFromQuery[0]
+      : guestNameFromQuery
     return meta.value.guest_name || guestNameStr || ''
   })
   const templateAssets = computed(() => event.value?.template_assets?.assets || null)
-  
+
   const templateColors = computed(() => {
     return templateProcessor.normalizeTemplateColors(
-      event.value?.template_colors || event.value?.template_assets?.colors || []
+      event.value?.template_colors || event.value?.template_assets?.colors || [],
     )
   })
-  
+
   const templateFonts = computed(() => {
     return templateProcessor.normalizeTemplateFonts(
-      event.value?.template_fonts || event.value?.template_assets?.fonts || []
+      event.value?.template_fonts || event.value?.template_assets?.fonts || [],
     )
   })
-  
+
   // Font processing delegated to template processor
   const getLanguageFonts = computed(() => {
     return templateProcessor.getLanguageFonts(templateFonts.value, currentLanguage.value)
   })
-  
+
   // Font computed properties using template processor and font manager
   const primaryFont = computed(() => {
     const langFonts = getLanguageFonts.value
     if (!langFonts) return fontManager.getFallbackFontStack('sans-serif', currentLanguage.value)
-    
+
     const font = langFonts.primary
     const customName = templateProcessor.getFontName(font)
-    
+
     if (customName && fontManager.fontsLoaded.value) {
       return `"${customName}", ${fontManager.getFallbackFontStack('sans-serif', currentLanguage.value)}`
     }
-    
+
     return fontManager.getFallbackFontStack('sans-serif', currentLanguage.value)
   })
-  
+
   const secondaryFont = computed(() => {
     const langFonts = getLanguageFonts.value
     if (!langFonts) return primaryFont.value
-    
+
     const font = langFonts.secondary
     const customName = templateProcessor.getFontName(font)
-    
+
     if (customName && fontManager.fontsLoaded.value) {
       return `"${customName}", ${fontManager.getFallbackFontStack('sans-serif', currentLanguage.value)}`
     }
-    
+
     return primaryFont.value
   })
-  
+
   const accentFont = computed(() => {
     const langFonts = getLanguageFonts.value
     if (!langFonts) return primaryFont.value
-    
+
     const font = langFonts.accent
     const customName = templateProcessor.getFontName(font)
-    
+
     if (customName && fontManager.fontsLoaded.value) {
       return `"${customName}", ${fontManager.getFallbackFontStack('decorative', currentLanguage.value)}`
     }
-    
+
     return primaryFont.value
   })
-  
+
   const decorativeFont = computed(() => {
     const langFonts = getLanguageFonts.value
     if (!langFonts) return accentFont.value
-    
+
     const font = langFonts.decorative
     const customName = templateProcessor.getFontName(font)
-    
+
     if (customName && fontManager.fontsLoaded.value) {
       return `"${customName}", ${fontManager.getFallbackFontStack('decorative', currentLanguage.value)}`
     }
-    
+
     return accentFont.value
   })
 
   // Deprecated: Use primaryFont instead
   const currentFont = computed(() => primaryFont.value)
-  
+
   const eventTexts = computed(() => event.value?.event_texts || [])
   const hosts = computed(() => event.value?.hosts || [])
   const agendaItems = computed(() => event.value?.agenda_items || [])
-  
+
   // Photo sorting with cache
-  const photosCache = ref<{ version: number, sorted: EventPhoto[] }>({ version: -1, sorted: [] })
-  
+  const photosCache = ref<{ version: number; sorted: EventPhoto[] }>({ version: -1, sorted: [] })
+
   const eventPhotos = computed(() => {
     const photos = event.value?.photos || event.value?.event_photos || []
     if (photos.length === 0) return []
-    
+
     const currentVersion = photos.length + (photos[0]?.id || 0) + (photos[0]?.order || 0)
-    
-    if (photosCache.value.version === currentVersion && photosCache.value.sorted.length === photos.length) {
+
+    if (
+      photosCache.value.version === currentVersion &&
+      photosCache.value.sorted.length === photos.length
+    ) {
       return photosCache.value.sorted
     }
-    
+
     const sorted = [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
     photosCache.value = { version: currentVersion, sorted }
-    
+
     return sorted
   })
 
   const paymentMethods = computed(() => {
     const methods = event.value?.payment_methods || []
     if (methods.length === 0) return []
-    
+
     return methods
-      .filter(method => method.is_active)
+      .filter((method) => method.is_active)
       .sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
   const availableLanguages = computed(() => event.value?.available_languages || [])
-  
+
   const primaryColor = computed(() => {
     const colors = templateProcessor.extractTemplateColors(templateColors.value)
     return colors.primaryColor
   })
-  
+
   const secondaryColor = computed(() => {
-    const colors = templateProcessor.extractTemplateColors(templateColors.value) 
+    const colors = templateProcessor.extractTemplateColors(templateColors.value)
     return colors.secondaryColor
   })
-  
+
   const accentColor = computed(() => {
     const colors = templateProcessor.extractTemplateColors(templateColors.value)
     return colors.accentColor
   })
-  
+
   const isEventPast = computed(() => {
     if (!event.value?.end_date) return false
     return new Date(event.value.end_date) < new Date()
@@ -405,7 +406,9 @@ export function useEventShowcase() {
 
   const backgroundVideoUrl = computed(() => {
     if (event.value?.template_assets?.assets?.standard_background_video) {
-      return templateProcessor.getMediaUrl(event.value.template_assets.assets.standard_background_video)
+      return templateProcessor.getMediaUrl(
+        event.value.template_assets.assets.standard_background_video,
+      )
     }
     return null
   })
@@ -434,27 +437,24 @@ export function useEventShowcase() {
 
   const validateVideoElement = (element: HTMLVideoElement): boolean => {
     if (!element || !(element instanceof HTMLVideoElement)) return false
-    
+
     // Check if element is attached to document
     if (!document.contains(element)) return false
-    
+
     // Validate src attribute is from trusted domain
     const src = element.src || element.getAttribute('src') || ''
     if (!src) return true // Allow empty src for cleanup
-    
+
     try {
       const url = new URL(src)
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-      const allowedOrigins = [
-        new URL(API_BASE_URL).origin,
-        window.location.origin
-      ]
-      
+      const allowedOrigins = [new URL(API_BASE_URL).origin, window.location.origin]
+
       // Allow data URLs for embedded content
       if (url.protocol === 'data:') {
         return url.href.startsWith('data:video/')
       }
-      
+
       return allowedOrigins.includes(url.origin)
     } catch {
       return false
@@ -464,7 +464,7 @@ export function useEventShowcase() {
   // Helper function for creating safe video queries (reserved for future use)
   // const createSafeVideoQuery = (videoType: 'cover' | 'event' | 'background', eventId?: string): string => {
   //   const sanitizedEventId = eventId ? sanitizeVideoId(eventId) : ''
-  //   
+  //
   //   switch (videoType) {
   //     case 'cover':
   //       return `video[data-video-type="cover"]${sanitizedEventId ? `[data-event-id="${sanitizedEventId}"]` : ''}`
@@ -476,7 +476,6 @@ export function useEventShowcase() {
   //       return 'video[data-video-type]'
   //   }
   // }
-
 
   // Helper functions delegated to specialized composables
   // All helper functions now provided by specialized composables
@@ -493,7 +492,7 @@ export function useEventShowcase() {
       return
     }
 
-    const language = forceLanguage || route.query.lang as string || currentLanguage.value
+    const language = forceLanguage || (route.query.lang as string) || currentLanguage.value
     const guest = guestName.value || ''
     const requestKey = `showcase-${eventId}-${language}-${guest}`
 
@@ -510,11 +509,11 @@ export function useEventShowcase() {
             currentLanguage.value = urlLanguage
           }
         }
-        
+
         const params: { lang?: string; guest_name?: string } = {
-          lang: currentLanguage.value
+          lang: currentLanguage.value,
         }
-        
+
         if (guestName.value) {
           params.guest_name = guestName.value as string
         }
@@ -529,11 +528,10 @@ export function useEventShowcase() {
       })
 
       showcaseData.value = data
-      
+
       if (data.meta?.language) {
         currentLanguage.value = data.meta.language
       }
-
 
       // Update meta tags for social sharing
       updateEventMetaTags(data.event)
@@ -543,30 +541,31 @@ export function useEventShowcase() {
       stageManager.currentShowcaseStage.value = initialStage
 
       // Load custom fonts asynchronously with progressive enhancement
-      const langFonts = templateFonts.value.filter(f => f.language === currentLanguage.value)
-      
-      fontManager.loadCustomFonts(langFonts, { 
-        display: 'swap',
-        timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
-        retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES
-      }).catch((fontError) => {
-        // Log font loading issues but don't block the main showcase
-        console.warn('Font loading failed, falling back to system fonts:', fontError)
-      })
+      const langFonts = templateFonts.value.filter((f) => f.language === currentLanguage.value)
+
+      fontManager
+        .loadCustomFonts(langFonts, {
+          display: 'swap',
+          timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
+          retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
+        })
+        .catch((fontError) => {
+          // Log font loading issues but don't block the main showcase
+          console.warn('Font loading failed, falling back to system fonts:', fontError)
+        })
 
       // Clear language change flags after successful showcase load
       setTimeout(() => {
         redirectManager.clearLanguageChangeFlags()
       }, 1000) // Wait for stage initialization to complete
-      
     } catch (err: unknown) {
       // Improved error handling with proper type safety
       const showcaseError = createShowcaseError(err, {
         eventId,
         language: currentLanguage.value,
-        code: 'LOAD_FAILED'
+        code: 'LOAD_FAILED',
       })
-      
+
       error.value = showcaseError.message
       console.warn('Failed to load showcase:', showcaseError)
     } finally {
@@ -598,9 +597,9 @@ export function useEventShowcase() {
       currentLanguage.value = newLanguage
 
       const params: { lang?: string; guest_name?: string } = {
-        lang: newLanguage
+        lang: newLanguage,
       }
-      
+
       if (guestName.value) {
         params.guest_name = guestName.value as string
       }
@@ -624,12 +623,12 @@ export function useEventShowcase() {
             event_texts: data.event.event_texts,
             hosts: data.event.hosts,
             agenda_items: data.event.agenda_items,
-            available_languages: data.event.available_languages
+            available_languages: data.event.available_languages,
           },
           meta: {
             ...showcaseData.value.meta,
-            language: data.meta?.language || newLanguage
-          }
+            language: data.meta?.language || newLanguage,
+          },
         }
       } else {
         // Fallback to full data update if showcaseData doesn't exist
@@ -637,33 +636,37 @@ export function useEventShowcase() {
       }
 
       // Load custom fonts for the new language asynchronously
-      const langFonts = templateFonts.value.filter(f => f.language === newLanguage)
-      
-      fontManager.loadCustomFonts(langFonts, { 
-        display: 'swap',
-        timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
-        retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES
-      }).catch((fontError) => {
-        // Log font loading issues but don't block the content update
-        console.warn('Font loading failed during language change, falling back to system fonts:', fontError)
-      })
+      const langFonts = templateFonts.value.filter((f) => f.language === newLanguage)
+
+      fontManager
+        .loadCustomFonts(langFonts, {
+          display: 'swap',
+          timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
+          retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
+        })
+        .catch((fontError) => {
+          // Log font loading issues but don't block the content update
+          console.warn(
+            'Font loading failed during language change, falling back to system fonts:',
+            fontError,
+          )
+        })
 
       // Clear language change flags after successful content update
       setTimeout(() => {
         redirectManager.clearLanguageChangeFlags()
       }, 500) // Shorter timeout since we're not doing full stage initialization
-      
     } catch (err: unknown) {
       // Enhanced error handling with proper type safety
       const showcaseError = createShowcaseError(err, {
         eventId,
         language: newLanguage,
-        code: 'LOAD_FAILED'
+        code: 'LOAD_FAILED',
       })
-      
+
       error.value = showcaseError.message
       console.warn('Failed to update language content:', showcaseError)
-      
+
       // Revert language on error
       currentLanguage.value = showcaseData.value?.meta?.language || urlLang
     } finally {
@@ -675,8 +678,8 @@ export function useEventShowcase() {
    * Creates a properly typed ShowcaseError with context
    */
   const createShowcaseError = (
-    originalError: unknown, 
-    context: { eventId?: string; language?: string; code?: ShowcaseError['code'] }
+    originalError: unknown,
+    context: { eventId?: string; language?: string; code?: ShowcaseError['code'] },
   ): ShowcaseError => {
     // Handle API response errors
     interface ApiErrorResponse {
@@ -688,21 +691,21 @@ export function useEventShowcase() {
         status?: number
       }
     }
-    
+
     const apiError = originalError as ApiErrorResponse
     const apiMessage = apiError?.response?.data?.detail || apiError?.response?.data?.message
-    
+
     // Handle standard errors
     const standardError = originalError as Error
     const message = apiMessage || standardError?.message || 'Failed to load event invitation'
-    
+
     // Create enhanced error with context
     const showcaseError = new Error(message) as ShowcaseError
     showcaseError.name = 'ShowcaseError'
     showcaseError.eventId = context.eventId
     showcaseError.language = context.language
     showcaseError.code = context.code || 'LOAD_FAILED'
-    
+
     return showcaseError
   }
 
@@ -718,19 +721,22 @@ export function useEventShowcase() {
     const eventImage = getBestEventImage(event as unknown as Record<string, unknown>)
     const eventDescription = createEventDescription(event as unknown as Record<string, unknown>)
     const eventTitle = `${event.title} - GoEvent`
-    
+
     const startDate = event.start_date ? new Date(event.start_date).toISOString() : undefined
-    
+
     // Type-safe organizer details extraction
     interface OrganizerDetails {
       first_name?: string
       last_name?: string
       username?: string
     }
-    
-    const organizerDetails = (event as EventData & { organizer_details?: OrganizerDetails }).organizer_details
+
+    const organizerDetails = (event as EventData & { organizer_details?: OrganizerDetails })
+      .organizer_details
     const organizerName = organizerDetails
-      ? `${organizerDetails.first_name || ''} ${organizerDetails.last_name || ''}`.trim() || organizerDetails.username || 'GoEvent'
+      ? `${organizerDetails.first_name || ''} ${organizerDetails.last_name || ''}`.trim() ||
+        organizerDetails.username ||
+        'GoEvent'
       : 'GoEvent'
 
     const metaData = {
@@ -743,7 +749,7 @@ export function useEventShowcase() {
       locale: currentLanguage.value === 'kh' ? 'kh_KH' : 'en_US',
       author: organizerName,
       publishedTime: startDate,
-      location: event.location || undefined
+      location: event.location || undefined,
     }
 
     updateMetaTags(metaData)
@@ -751,7 +757,7 @@ export function useEventShowcase() {
 
   // Font loading system delegated to specialized composable
   // All font loading, caching, and validation handled by fontManager
-  
+
   // ============================
   // Media management delegated to stage manager
   // Audio and video lifecycle handled by stageManager
@@ -765,12 +771,12 @@ export function useEventShowcase() {
   const openGoogleMap = () => {
     if (event.value?.google_map_embed_link) {
       let mapUrl = event.value.google_map_embed_link
-      
+
       if (mapUrl.includes('/embed?')) {
         mapUrl = mapUrl.replace('/embed?', '/search?')
         mapUrl = mapUrl.replace('https://www.google.com/maps', 'https://maps.google.com')
       }
-      
+
       window.open(mapUrl, '_blank')
     }
   }
@@ -791,10 +797,10 @@ export function useEventShowcase() {
 
   const changeLanguage = async (newLanguage: string) => {
     if (currentLanguage.value === newLanguage) return
-    
+
     // Check if we're in the main content stage (background video is playing)
     const isInMainContentStage = stageManager.currentShowcaseStage.value === 'main_content'
-    
+
     if (isInMainContentStage) {
       // Use lightweight content update to avoid reloading background video
       await updateLanguageContent(newLanguage)
@@ -803,7 +809,7 @@ export function useEventShowcase() {
       // Always mark main content as seen and set language change flag for consistent behavior
       // This ensures language changes always redirect to main content regardless of login status
       redirectManager.markMainContentSeen()
-      
+
       // Set a session flag to indicate this is a language change
       try {
         sessionStorage.setItem('language_change', 'true')
@@ -812,7 +818,7 @@ export function useEventShowcase() {
       } catch {
         // Ignore sessionStorage errors
       }
-      
+
       await loadShowcase(newLanguage)
     }
   }
@@ -832,20 +838,20 @@ export function useEventShowcase() {
   onUnmounted(() => {
     // Cleanup video resources using specialized video manager
     videoManager.cleanupAllVideos()
-    
+
     // Cleanup stage manager (audio, video refs, etc.)
     // This is handled internally by stageManager
-    
+
     // Cleanup performance manager
     cleanupPerformance()
     resourceManager.destroy()
-    
+
     // Cleanup font resources using font manager
     fontManager.cleanup()
-    
+
     // Clear template processor caches
     templateProcessor.clearCaches()
-    
+
     // Reset local state
     photosCache.value = { version: -1, sorted: [] }
     showcaseData.value = null
@@ -865,7 +871,7 @@ export function useEventShowcase() {
     currentLanguage,
     isPhotoModalOpen,
     currentModalPhoto,
-    
+
     // State from stage manager
     isEnvelopeOpened: stageManager.isEnvelopeOpened,
     isPlayingEventVideo: stageManager.isPlayingEventVideo,
@@ -923,12 +929,12 @@ export function useEventShowcase() {
     toggleMusic: stageManager.toggleMusic,
     handleCoverStageReady: stageManager.handleCoverStageReady,
     setStage: stageManager.setStage,
-    
+
     // Font manager state
     fontsLoaded: fontManager.fontsLoaded,
     fontsLoadedCount: fontManager.fontsLoadedCount,
     fontLoadStats: fontManager.fontLoadStats,
-    
+
     // Redirect State Management
     initializeShowcaseStage: async () => {
       const initialStage = await redirectManager.getInitialStage()
@@ -942,13 +948,13 @@ export function useEventShowcase() {
     getRedirectIndicators: redirectManager.getRedirectIndicators,
     isPageRefresh: redirectManager.isPageRefresh,
     clearLanguageChangeFlags: redirectManager.clearLanguageChangeFlags,
-    
+
     // Video State Preservation
     videoStatePreserved: redirectManager.videoStatePreserved,
     preserveVideoState: redirectManager.preserveVideoState,
     clearVideoStatePreservation: redirectManager.clearVideoStatePreservation,
-    
+
     // Video Resource Manager
-    videoResourceManager: videoManager
+    videoResourceManager: videoManager,
   }
 }

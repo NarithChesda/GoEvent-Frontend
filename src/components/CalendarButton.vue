@@ -23,7 +23,7 @@ interface Emits {
 }
 
 withDefaults(defineProps<Props>(), {
-  icon: 'calendar'
+  icon: 'calendar',
 })
 
 defineEmits<Emits>()

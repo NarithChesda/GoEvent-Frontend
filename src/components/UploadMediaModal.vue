@@ -4,10 +4,10 @@
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="handleBackdropClick">
         <!-- Backdrop -->
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             ref="modalRef"
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
@@ -21,7 +21,9 @@
                   </div>
                   <div>
                     <h2 class="text-2xl font-bold">Upload Media</h2>
-                    <p class="text-white/90 text-sm mt-1">Add photos and visual content to your event</p>
+                    <p class="text-white/90 text-sm mt-1">
+                      Add photos and visual content to your event
+                    </p>
                   </div>
                 </div>
                 <button
@@ -38,7 +40,7 @@
               <!-- File Upload Area -->
               <div class="space-y-4">
                 <label class="block text-sm font-semibold text-slate-700">Select Images</label>
-                
+
                 <!-- Drop Zone -->
                 <div
                   @drop="handleDrop"
@@ -47,9 +49,9 @@
                   @dragleave="handleDragLeave"
                   :class="[
                     'relative border-2 border-dashed rounded-2xl p-8 text-center transition-colors duration-200',
-                    isDragging 
-                      ? 'border-blue-400 bg-blue-50' 
-                      : 'border-gray-300 hover:border-gray-400'
+                    isDragging
+                      ? 'border-blue-400 bg-blue-50'
+                      : 'border-gray-300 hover:border-gray-400',
                   ]"
                 >
                   <input
@@ -60,12 +62,14 @@
                     @change="handleFileSelect"
                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  
+
                   <div class="space-y-4">
-                    <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto">
+                    <div
+                      class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto"
+                    >
                       <Upload class="w-8 h-8 text-blue-600" />
                     </div>
-                    
+
                     <div>
                       <p class="text-lg font-medium text-slate-900 mb-1">
                         {{ isDragging ? 'Drop your images here' : 'Upload your images' }}
@@ -82,7 +86,9 @@
 
                 <!-- Selected Files Preview -->
                 <div v-if="selectedFiles.length > 0" class="space-y-3">
-                  <h4 class="text-sm font-medium text-slate-700">Selected Files ({{ selectedFiles.length }})</h4>
+                  <h4 class="text-sm font-medium text-slate-700">
+                    Selected Files ({{ selectedFiles.length }})
+                  </h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div
                       v-for="(file, index) in selectedFiles"
@@ -101,10 +107,12 @@
                           <ImageIcon class="w-5 h-5 text-gray-400" />
                         </div>
                       </div>
-                      
+
                       <!-- File Info -->
                       <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-slate-900 truncate">{{ file.file.name }}</p>
+                        <p class="text-sm font-medium text-slate-900 truncate">
+                          {{ file.file.name }}
+                        </p>
                         <p class="text-xs text-slate-500">{{ formatFileSize(file.file.size) }}</p>
                       </div>
 
@@ -123,10 +131,13 @@
               <!-- Upload Options -->
               <div class="space-y-4">
                 <h4 class="text-sm font-semibold text-slate-700">Upload Options</h4>
-                
+
                 <!-- Default Caption -->
                 <div>
-                  <label for="defaultCaption" class="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    for="defaultCaption"
+                    class="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Default Caption (Optional)
                   </label>
                   <input
@@ -136,7 +147,9 @@
                     placeholder="Enter a caption for all images"
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
-                  <p class="text-xs text-slate-500 mt-1">This caption will be applied to all uploaded images</p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    This caption will be applied to all uploaded images
+                  </p>
                 </div>
 
                 <!-- Featured Toggle -->
@@ -173,7 +186,7 @@
                   <p class="text-sm text-slate-500">{{ Math.round(uploadProgress) }}%</p>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div 
+                  <div
                     class="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
                     :style="{ width: `${uploadProgress}%` }"
                   ></div>
@@ -182,7 +195,9 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 p-8 border-t border-gray-200">
+            <div
+              class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 p-8 border-t border-gray-200"
+            >
               <button
                 type="button"
                 @click="$emit('close')"
@@ -197,9 +212,16 @@
                 :disabled="selectedFiles.length === 0 || uploading"
                 class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
               >
-                <div v-if="uploading" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div
+                  v-if="uploading"
+                  class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+                ></div>
                 <Upload v-else class="w-5 h-5 mr-2" />
-                {{ uploading ? 'Uploading...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}` }}
+                {{
+                  uploading
+                    ? 'Uploading...'
+                    : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}`
+                }}
               </button>
             </div>
           </div>
@@ -262,7 +284,7 @@ const handleFileSelect = (event: Event) => {
 const handleDrop = (event: DragEvent) => {
   event.preventDefault()
   isDragging.value = false
-  
+
   if (event.dataTransfer?.files) {
     addFiles(Array.from(event.dataTransfer.files))
   }
@@ -278,26 +300,26 @@ const handleDragLeave = (event: DragEvent) => {
 }
 
 const addFiles = (files: File[]) => {
-  const imageFiles = files.filter(file => file.type.startsWith('image/'))
-  
+  const imageFiles = files.filter((file) => file.type.startsWith('image/'))
+
   if (imageFiles.length !== files.length) {
     error.value = 'Only image files are allowed'
-    setTimeout(() => error.value = null, 3000)
+    setTimeout(() => (error.value = null), 3000)
   }
-  
-  imageFiles.forEach(file => {
+
+  imageFiles.forEach((file) => {
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       error.value = `File "${file.name}" is too large. Maximum size is 10MB.`
       return
     }
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
       selectedFiles.value.push({
         file,
-        preview: e.target?.result as string
+        preview: e.target?.result as string,
       })
     }
     reader.readAsDataURL(file)
@@ -318,26 +340,26 @@ const formatFileSize = (bytes: number): string => {
 
 const uploadFiles = async () => {
   if (selectedFiles.value.length === 0) return
-  
+
   uploading.value = true
   uploadProgress.value = 0
   currentUpload.value = 0
   error.value = null
-  
+
   try {
     const totalFiles = selectedFiles.value.length
     let uploadedCount = 0
-    
+
     for (let i = 0; i < selectedFiles.value.length; i++) {
       const fileWithPreview = selectedFiles.value[i]
       currentUpload.value = i + 1
-      
+
       try {
         const response = await mediaService.uploadEventMedia(props.eventId, fileWithPreview.file, {
           caption: defaultCaption.value || undefined,
-          is_featured: markAsFeatured.value
+          is_featured: markAsFeatured.value,
         })
-        
+
         if (response.success && response.data) {
           emit('uploaded', response.data)
           uploadedCount++
@@ -347,10 +369,10 @@ const uploadFiles = async () => {
       } catch (err) {
         console.error(`Error uploading ${fileWithPreview.file.name}:`, err)
       }
-      
+
       uploadProgress.value = ((i + 1) / totalFiles) * 100
     }
-    
+
     if (uploadedCount === totalFiles) {
       // All files uploaded successfully
       emit('close')
@@ -359,7 +381,6 @@ const uploadFiles = async () => {
     } else {
       error.value = 'All uploads failed. Please try again.'
     }
-    
   } catch {
     error.value = 'Upload failed. Please try again.'
   } finally {

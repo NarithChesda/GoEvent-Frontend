@@ -9,7 +9,7 @@
     class="media-card bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 group"
     :class="[
       isDragging ? 'opacity-50 transform rotate-1 scale-105' : '',
-      canEdit && draggable ? 'hover:scale-[1.02]' : ''
+      canEdit && draggable ? 'hover:scale-[1.02]' : '',
     ]"
   >
     <!-- Image Container -->
@@ -20,17 +20,19 @@
         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         @error="handleImageError"
       />
-      
+
       <!-- Featured Badge -->
       <div v-if="media.is_featured" class="absolute top-2 left-2">
-        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
+        <span
+          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg"
+        >
           <Star class="w-3 h-3 mr-1" />
           Featured
         </span>
       </div>
 
       <!-- Drag Handle (only visible if can edit and draggable) -->
-      <div 
+      <div
         v-if="canEdit && draggable"
         class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-1 rounded-lg bg-black/50 backdrop-blur-sm"
       >
@@ -38,7 +40,7 @@
       </div>
 
       <!-- Actions Overlay -->
-      <div 
+      <div
         v-if="canEdit"
         class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
       >
@@ -56,7 +58,11 @@
           <button
             @click="$emit('set-featured', media)"
             class="p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200"
-            :class="media.is_featured ? 'text-yellow-500 hover:text-yellow-600' : 'text-slate-400 hover:text-yellow-500'"
+            :class="
+              media.is_featured
+                ? 'text-yellow-500 hover:text-yellow-600'
+                : 'text-slate-400 hover:text-yellow-500'
+            "
             :title="media.is_featured ? 'Remove from featured' : 'Mark as featured'"
           >
             <Star class="w-4 h-4" :class="media.is_featured ? 'fill-current' : ''" />
@@ -91,7 +97,9 @@
             {{ media.caption || 'Untitled Media' }}
           </h4>
         </div>
-        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 shrink-0">
+        <span
+          class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 shrink-0"
+        >
           #{{ media.order }}
         </span>
       </div>
@@ -104,7 +112,9 @@
 
       <!-- Featured Status (for non-edit mode) -->
       <div v-if="!canEdit && media.is_featured" class="mt-2">
-        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+        <span
+          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
+        >
           <Star class="w-3 h-3 mr-1" />
           Featured
         </span>
@@ -152,7 +162,7 @@ const formatDate = (dateString: string): string => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     })
   } catch {
     return dateString
@@ -162,10 +172,10 @@ const formatDate = (dateString: string): string => {
 // Drag handlers
 const handleDragStart = (event: DragEvent) => {
   if (!props.canEdit || !props.draggable) return
-  
+
   isDragging.value = true
   emit('drag-start', props.media)
-  
+
   // Set drag data
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
@@ -175,14 +185,14 @@ const handleDragStart = (event: DragEvent) => {
 
 const handleDrop = (event: DragEvent) => {
   event.preventDefault()
-  
+
   if (!props.canEdit || !props.draggable) return
-  
+
   const draggedItemId = event.dataTransfer?.getData('text/plain')
   if (draggedItemId && parseInt(draggedItemId) !== props.media.id) {
     emit('drag-end', props.media)
   }
-  
+
   isDragging.value = false
 }
 
@@ -198,6 +208,8 @@ const handleDragEnd = () => {
 }
 
 .media-card:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 </style>

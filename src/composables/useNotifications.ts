@@ -22,49 +22,49 @@ export function useNotifications() {
       id,
       duration: 5000,
       dismissable: true,
-      ...notification
+      ...notification,
     }
-    
+
     notifications.value.push(newNotification)
-    
+
     // Auto-dismiss if duration is set
     if (newNotification.duration && newNotification.duration > 0) {
       setTimeout(() => {
         removeNotification(id)
       }, newNotification.duration)
     }
-    
+
     return id
   }
-  
+
   const removeNotification = (id: string): void => {
-    const index = notifications.value.findIndex(n => n.id === id)
+    const index = notifications.value.findIndex((n) => n.id === id)
     if (index > -1) {
       notifications.value.splice(index, 1)
     }
   }
-  
+
   const clearAllNotifications = (): void => {
     notifications.value = []
   }
-  
+
   // Convenience methods for different notification types
   const success = (title: string, message?: string, duration?: number): string => {
     return addNotification({ type: 'success', title, message, duration })
   }
-  
+
   const error = (title: string, message?: string, duration?: number): string => {
     return addNotification({ type: 'error', title, message, duration: duration || 8000 })
   }
-  
+
   const warning = (title: string, message?: string, duration?: number): string => {
     return addNotification({ type: 'warning', title, message, duration })
   }
-  
+
   const info = (title: string, message?: string, duration?: number): string => {
     return addNotification({ type: 'info', title, message, duration })
   }
-  
+
   return {
     notifications: notifications.value,
     addNotification,
@@ -73,6 +73,6 @@ export function useNotifications() {
     success,
     error,
     warning,
-    info
+    info,
   }
 }

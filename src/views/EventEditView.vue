@@ -1,13 +1,15 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
     <Navigation />
-    
+
     <!-- Loading State -->
     <div v-if="loading" class="pt-24 pb-16">
       <div class="max-w-4xl mx-auto px-6 lg:px-8">
         <div class="animate-pulse">
           <div class="h-8 bg-gray-200 rounded mb-8"></div>
-          <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+          <div
+            class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+          >
             <div class="space-y-6">
               <div class="h-4 bg-gray-200 rounded"></div>
               <div class="h-12 bg-gray-200 rounded"></div>
@@ -36,16 +38,19 @@
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleSubmit" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 space-y-8">
+        <form
+          @submit.prevent="handleSubmit"
+          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 space-y-8"
+        >
           <!-- Basic Information -->
           <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">Basic Information</h2>
-            
+            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+              Basic Information
+            </h2>
+
             <!-- Title -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Event Title *
-              </label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"> Event Title * </label>
               <input
                 v-model="form.title"
                 type="text"
@@ -67,7 +72,9 @@
                 placeholder="Brief description for event cards"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
-              <p class="text-xs text-slate-500 mt-1">{{ form.short_description?.length || 0 }}/300 characters</p>
+              <p class="text-xs text-slate-500 mt-1">
+                {{ form.short_description?.length || 0 }}/300 characters
+              </p>
             </div>
 
             <!-- Description -->
@@ -86,19 +93,13 @@
 
             <!-- Category -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Category
-              </label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"> Category </label>
               <select
                 v-model="form.category"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
                 <option value="">Select a category</option>
-                <option
-                  v-for="category in categories"
-                  :key="category.id"
-                  :value="category.id"
-                >
+                <option v-for="category in categories" :key="category.id" :value="category.id">
                   {{ category.name }}
                 </option>
               </select>
@@ -107,8 +108,10 @@
 
           <!-- Date and Time -->
           <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">Date & Time</h2>
-            
+            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+              Date & Time
+            </h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -136,14 +139,16 @@
 
             <!-- Timezone -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Timezone
-              </label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"> Timezone </label>
               <select
                 v-model="form.timezone"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
-                <optgroup v-for="(timezones, region) in timezonesByRegion" :key="region" :label="region">
+                <optgroup
+                  v-for="(timezones, region) in timezonesByRegion"
+                  :key="region"
+                  :label="region"
+                >
                   <option
                     v-for="timezone in timezones"
                     :key="timezone.value"
@@ -161,8 +166,10 @@
 
           <!-- Location -->
           <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">Location</h2>
-            
+            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+              Location
+            </h2>
+
             <!-- Virtual Event Toggle -->
             <div class="flex items-center space-x-3">
               <input
@@ -202,11 +209,12 @@
             </div>
           </div>
 
-
           <!-- Event Settings -->
           <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">Event Settings</h2>
-            
+            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+              Event Settings
+            </h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Privacy -->
               <div>
@@ -258,7 +266,9 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-8 border-t border-gray-200">
+          <div
+            class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-8 border-t border-gray-200"
+          >
             <button
               type="button"
               @click="$router.back()"
@@ -299,7 +309,7 @@
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
       <div v-if="message" class="fixed bottom-8 right-8 z-50">
-        <div 
+        <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
         >
@@ -317,7 +327,12 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Loader, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
-import { eventsService, eventCategoriesService, type Event, type EventCategory } from '../services/api'
+import {
+  eventsService,
+  eventCategoriesService,
+  type Event,
+  type EventCategory,
+} from '../services/api'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 
 const route = useRoute()
@@ -347,7 +362,7 @@ const form = reactive({
   is_virtual: false,
   privacy: 'public' as 'public' | 'private',
   status: 'published' as 'draft' | 'published' | 'cancelled' | 'completed',
-  category: '' as string | number | null // HTML selects return strings
+  category: '' as string | number | null, // HTML selects return strings
 })
 
 // Methods
@@ -363,7 +378,7 @@ const loadEvent = async () => {
 
   try {
     const response = await eventsService.getEvent(eventId)
-    
+
     if (response.success && response.data) {
       event.value = response.data
       populateForm(response.data)
@@ -412,28 +427,28 @@ const handleSubmit = async () => {
     showMessage('error', 'Event title is required')
     return
   }
-  
+
   if (!form.description.trim()) {
     showMessage('error', 'Event description is required')
     return
   }
-  
+
   if (!form.start_date || !form.end_date) {
     showMessage('error', 'Start date and end date are required')
     return
   }
-  
+
   if (new Date(form.end_date) <= new Date(form.start_date)) {
     showMessage('error', 'End date must be after start date')
     return
   }
-  
+
   // Less strict validation - let API handle what's required
   // if (form.is_virtual && (!form.virtual_link || !form.virtual_link.trim())) {
   //   showMessage('error', 'Virtual meeting link is required for virtual events')
   //   return
   // }
-  
+
   // if (!form.is_virtual && (!form.location || !form.location.trim())) {
   //   showMessage('error', 'Location is required for in-person events')
   //   return
@@ -452,7 +467,7 @@ const handleSubmit = async () => {
       timezone: form.timezone || 'UTC',
       is_virtual: form.is_virtual,
       privacy: form.privacy,
-      status: form.status
+      status: form.status,
     }
 
     // Handle category - convert string to number or set to null
@@ -510,10 +525,7 @@ const getSelectedTimezoneLabel = () => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    loadEvent(),
-    loadCategories()
-  ])
+  await Promise.all([loadEvent(), loadCategories()])
 })
 </script>
 

@@ -9,7 +9,7 @@
           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          backgroundClip: 'text',
         }"
       >
         {{ videoHeaderText }}
@@ -20,23 +20,19 @@
         :src="youtubeEmbedLink"
         width="100%"
         height="100%"
-        style="border:0;"
+        style="border: 0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         :allowfullscreen="true"
         loading="lazy"
         referrerpolicy="strict-origin-when-cross-origin"
       />
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import {
-  translateRSVP,
-  type SupportedLanguage
-} from '../../utils/translations'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface EventText {
   text_type: string
@@ -62,8 +58,8 @@ const props = defineProps<Props>()
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
   if (props.eventTexts && props.currentLanguage) {
-    const text = props.eventTexts.find(text =>
-      text.text_type === textType && text.language === props.currentLanguage
+    const text = props.eventTexts.find(
+      (text) => text.text_type === textType && text.language === props.currentLanguage,
     )
     if (text?.content) {
       return text.content
@@ -74,8 +70,11 @@ const getTextContent = (textType: string, fallback = ''): string => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
 
   // Map text types to translation keys
-  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    'video_header': 'video_header'
+  const keyMap: Record<
+    string,
+    keyof typeof import('../../utils/translations').rsvpTranslations.en
+  > = {
+    video_header: 'video_header',
   }
 
   const translationKey = keyMap[textType]
@@ -86,14 +85,12 @@ const getTextContent = (textType: string, fallback = ''): string => {
   return fallback
 }
 
-const videoHeaderText = computed(() =>
-  getTextContent('video_header', 'Video')
-)
+const videoHeaderText = computed(() => getTextContent('video_header', 'Video'))
 </script>
 
 <style scoped>
 .glass-section {
-  background: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);

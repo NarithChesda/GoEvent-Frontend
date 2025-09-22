@@ -12,13 +12,13 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value && authService.isAuthenticated())
   const userInitials = computed(() => {
     if (!user.value) return ''
-    
+
     const firstName = user.value.first_name || user.value.username || ''
     const lastName = user.value.last_name || ''
-    
+
     const firstInitial = firstName.length > 0 ? firstName.charAt(0) : ''
     const lastInitial = lastName.length > 0 ? lastName.charAt(0) : ''
-    
+
     return `${firstInitial}${lastInitial}`.toUpperCase() || 'U'
   })
 
@@ -46,12 +46,18 @@ export const useAuthStore = defineStore('auth', () => {
 
       console.debug('Auth Store: Starting login process', { email: credentials.email })
       const response = await authService.login(credentials)
-      console.debug('Auth Store: Login response received', { success: response.success, hasData: !!response.data })
+      console.debug('Auth Store: Login response received', {
+        success: response.success,
+        hasData: !!response.data,
+      })
 
       if (response.success && response.data) {
         // Response now has nested tokens object: { tokens: { access, refresh }, user }
         setUser(response.data.user)
-        console.debug('Auth Store: User set successfully', { userId: response.data.user.id, email: response.data.user.email })
+        console.debug('Auth Store: User set successfully', {
+          userId: response.data.user.id,
+          email: response.data.user.email,
+        })
         return { success: true }
       } else {
         const errorMsg = response.message || 'Login failed'
@@ -61,7 +67,10 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err) {
       const errorMsg = 'Network error during login'
-      console.error('Auth Store: Login exception caught', { error: err, message: (err as Error).message })
+      console.error('Auth Store: Login exception caught', {
+        error: err,
+        message: (err as Error).message,
+      })
       setError(errorMsg)
       return { success: false, error: errorMsg }
     } finally {
@@ -80,7 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
         // After successful registration, automatically log in
         const loginResponse = await authService.login({
           email: userData.email,
-          password: userData.password
+          password: userData.password,
         })
 
         if (loginResponse.success && loginResponse.data) {
@@ -166,13 +175,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const initializeAuth = async () => {
-    const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    
+    const isDevelopment =
+      import.meta.env.DEV ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+
     try {
       // Check if user is stored in storage
       let storedUser: User | null = null
       let hasValidAuth = false
-      
+
       try {
         storedUser = authService.getUser()
         hasValidAuth = authService.isAuthenticated()
@@ -192,10 +204,10 @@ export const useAuthStore = defineStore('auth', () => {
         }
         return
       }
-      
+
       if (storedUser && hasValidAuth) {
         setUser(storedUser)
-        
+
         // Only try to verify token if we're in a production environment
         // or if the API is available (to prevent dev mode white screen)
         try {
@@ -205,7 +217,10 @@ export const useAuthStore = defineStore('auth', () => {
             try {
               await fetchProfile()
             } catch (profileError) {
-              console.warn('Failed to fetch fresh profile, continuing with cached data:', profileError)
+              console.warn(
+                'Failed to fetch fresh profile, continuing with cached data:',
+                profileError,
+              )
               // Continue with cached user data
             }
           } else {
@@ -227,7 +242,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err) {
       console.error('Critical error during auth initialization:', err)
-      
+
       // In development, don't clear everything on unexpected errors
       if (!isDevelopment) {
         try {
@@ -285,6 +300,6 @@ export const useAuthStore = defineStore('auth', () => {
     fetchProfile,
     updateProfile,
     initializeAuth,
-    googleLogin
+    googleLogin,
   }
 })

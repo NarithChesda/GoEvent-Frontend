@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Template</h2>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Event Template
+        </h2>
         <p class="text-sm text-slate-600 mt-1">
           {{ headerDescription }}
         </p>
@@ -20,48 +22,68 @@
     </div>
 
     <!-- Current Template Info - Show if template is enabled and has backend details -->
-    <div v-if="event.event_template && isTemplateActivated && event.event_template_details" class="space-y-6">
+    <div
+      v-if="event.event_template && isTemplateActivated && event.event_template_details"
+      class="space-y-6"
+    >
       <!-- Template Overview Card -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
+      >
         <div class="relative">
           <!-- Preview Image -->
-          <div v-if="event.event_template_details?.preview_image" class="relative h-64 overflow-hidden">
-            <img 
-              :src="event.event_template_details?.preview_image" 
+          <div
+            v-if="event.event_template_details?.preview_image"
+            class="relative h-64 overflow-hidden"
+          >
+            <img
+              :src="event.event_template_details?.preview_image"
               :alt="event.event_template_details?.name"
               class="w-full h-full object-cover"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
+            ></div>
             <div class="absolute bottom-4 left-6 right-6">
-              <h3 class="text-2xl font-bold text-white mb-2">{{ event.event_template_details?.name || 'Selected Template' }}</h3>
+              <h3 class="text-2xl font-bold text-white mb-2">
+                {{ event.event_template_details?.name || 'Selected Template' }}
+              </h3>
               <div class="flex items-center space-x-4">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white"
+                >
                   <Package class="w-4 h-4 mr-1" />
                   {{ event.event_template_details?.package_plan.name || 'Template Plan' }}
                 </span>
               </div>
             </div>
           </div>
-          
+
           <!-- Content -->
           <div class="p-6">
             <div class="flex items-center justify-between mb-4">
               <div>
-                <h3 class="text-lg font-semibold text-slate-900">{{ event.event_template_details?.name || 'Template' }}</h3>
-                <p class="text-sm text-slate-600">{{ event.event_template_details?.package_plan.name || 'Plan' }}</p>
+                <h3 class="text-lg font-semibold text-slate-900">
+                  {{ event.event_template_details?.name || 'Template' }}
+                </h3>
+                <p class="text-sm text-slate-600">
+                  {{ event.event_template_details?.package_plan.name || 'Plan' }}
+                </p>
               </div>
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+              >
                 <CheckCircle class="w-4 h-4 mr-1" />
                 Active
               </span>
             </div>
-            
+
             <!-- Features -->
             <div v-if="event.event_template_details?.package_plan.features" class="space-y-2">
               <h4 class="font-medium text-slate-900">Included Features:</h4>
               <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <li 
-                  v-for="feature in event.event_template_details.package_plan.features" 
+                <li
+                  v-for="feature in event.event_template_details.package_plan.features"
                   :key="feature"
                   class="flex items-center text-sm text-slate-600"
                 >
@@ -72,9 +94,12 @@
             </div>
           </div>
         </div>
-        
+
         <!-- YouTube Preview -->
-        <div v-if="event.event_template_details?.youtube_preview_url" class="p-6 border-t border-slate-200">
+        <div
+          v-if="event.event_template_details?.youtube_preview_url"
+          class="p-6 border-t border-slate-200"
+        >
           <h4 class="font-semibold text-slate-900 mb-3 flex items-center">
             <PlayCircle class="w-5 h-5 mr-2 text-red-600" />
             Video Preview
@@ -105,50 +130,66 @@
 
     <!-- Selected Template Preview (when template is selected but not enabled) -->
     <div v-if="selectedTemplateDetails && !isTemplateActivated" class="space-y-6">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
+      >
         <div class="relative">
           <!-- Preview Image -->
           <div v-if="selectedTemplateDetails.preview_image" class="relative h-64 overflow-hidden">
-            <img 
-              :src="selectedTemplateDetails.preview_image" 
+            <img
+              :src="selectedTemplateDetails.preview_image"
               :alt="selectedTemplateDetails.name"
               class="w-full h-full object-cover"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
+            ></div>
             <div class="absolute bottom-4 left-6 right-6">
               <h3 class="text-2xl font-bold text-white mb-2">{{ selectedTemplateDetails.name }}</h3>
               <div class="flex items-center space-x-4">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white"
+                >
                   <Package class="w-4 h-4 mr-1" />
                   {{ selectedTemplateDetails.package_plan.name }}
                 </span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white"
+                >
                   <Eye class="w-4 h-4 mr-1" />
                   Preview
                 </span>
               </div>
             </div>
           </div>
-          
+
           <!-- Content -->
           <div class="p-6">
             <div class="flex items-center justify-between mb-4">
               <div>
-                <h3 class="text-lg font-semibold text-slate-900">{{ selectedTemplateDetails.name }}</h3>
-                <p class="text-sm text-slate-600">{{ selectedTemplateDetails.package_plan.name }} • ${{ selectedTemplateDetails.package_plan.price }}</p>
+                <h3 class="text-lg font-semibold text-slate-900">
+                  {{ selectedTemplateDetails.name }}
+                </h3>
+                <p class="text-sm text-slate-600">
+                  {{ selectedTemplateDetails.package_plan.name }} • ${{
+                    selectedTemplateDetails.package_plan.price
+                  }}
+                </p>
               </div>
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800"
+              >
                 <Eye class="w-4 h-4 mr-1" />
                 Preview
               </span>
             </div>
-            
+
             <!-- Features -->
             <div v-if="selectedTemplateDetails.package_plan.features" class="space-y-2">
               <h4 class="font-medium text-slate-900">Included Features:</h4>
               <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <li 
-                  v-for="feature in selectedTemplateDetails.package_plan.features" 
+                <li
+                  v-for="feature in selectedTemplateDetails.package_plan.features"
                   :key="feature"
                   class="flex items-center text-sm text-slate-600"
                 >
@@ -159,9 +200,12 @@
             </div>
           </div>
         </div>
-        
+
         <!-- YouTube Preview -->
-        <div v-if="selectedTemplateDetails.youtube_preview_url" class="p-6 border-t border-slate-200">
+        <div
+          v-if="selectedTemplateDetails.youtube_preview_url"
+          class="p-6 border-t border-slate-200"
+        >
           <h4 class="font-semibold text-slate-900 mb-3 flex items-center">
             <PlayCircle class="w-5 h-5 mr-2 text-red-600" />
             Video Preview
@@ -182,13 +226,19 @@
     </div>
 
     <!-- No Template Selected State -->
-    <div v-if="!event.event_template && !showTemplateSelector" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
-      <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+    <div
+      v-if="!event.event_template && !showTemplateSelector"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
+      <div
+        class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6"
+      >
         <Palette class="w-10 h-10 text-slate-400" />
       </div>
       <h3 class="text-lg font-semibold text-slate-900 mb-2">No Template Selected</h3>
       <p class="text-slate-600 mb-6 max-w-md mx-auto">
-        Choose a professional template to enhance your event's visual appeal and provide a better experience for your attendees.
+        Choose a professional template to enhance your event's visual appeal and provide a better
+        experience for your attendees.
       </p>
       <button
         v-if="canEdit"
@@ -201,15 +251,21 @@
     </div>
 
     <!-- Template Selected But Not Enabled State -->
-    <div v-if="event.event_template && !isTemplateActivated && !selectedTemplateDetails" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-3xl p-6">
+    <div
+      v-if="event.event_template && !isTemplateActivated && !selectedTemplateDetails"
+      class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-3xl p-6"
+    >
       <div class="flex items-start space-x-4">
-        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+        <div
+          class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
+        >
           <Package class="w-6 h-6 text-blue-600" />
         </div>
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-slate-900">Template Selected</h3>
           <p class="text-slate-600 mt-1">
-            You have selected template ID {{ event.event_template }}. The template is ready to be activated.
+            You have selected template ID {{ event.event_template }}. The template is ready to be
+            activated.
           </p>
         </div>
       </div>
@@ -234,11 +290,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue'
 import { Palette, CheckCircle, AlertCircle, Package, Eye, PlayCircle } from 'lucide-vue-next'
-import { 
-  type Event, 
-  type EventTemplate, 
-  eventTemplateService
-} from '../services/api'
+import { type Event, type EventTemplate, eventTemplateService } from '../services/api'
 import BrowseTemplateModal from './BrowseTemplateModal.vue'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useNotifications } from '../composables/useNotifications'
@@ -262,32 +314,26 @@ const emit = defineEmits<{
 const {
   isTemplateActivated,
   refreshPayments,
-  loadPayments: loadExistingPayments
+  loadPayments: loadExistingPayments,
 } = usePaymentTemplateIntegration(props.event)
 
 const { success: showSuccess, error: showError } = useNotifications()
 
-const {
-  selectedTemplateDetails,
-  loadTemplateDetails,
-  clearTemplate,
-  setTemplateDetails
-} = useTemplateLoader()
+const { selectedTemplateDetails, loadTemplateDetails, clearTemplate, setTemplateDetails } =
+  useTemplateLoader()
 
 // Local state
 const showTemplateSelector = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Computed properties
-const headerDescription = computed((): string => 
-  isTemplateActivated.value 
-    ? 'Manage your event template and styling' 
-    : 'Select a template for your event'
+const headerDescription = computed((): string =>
+  isTemplateActivated.value
+    ? 'Manage your event template and styling'
+    : 'Select a template for your event',
 )
 
-const shouldShowBrowseButton = computed((): boolean => 
-  !showTemplateSelector.value
-)
+const shouldShowBrowseButton = computed((): boolean => !showTemplateSelector.value)
 
 const activeTemplateData = computed((): EventTemplate | null => {
   if (!isTemplateActivated.value || !props.event.event_template_details) {
@@ -303,12 +349,14 @@ const previewTemplateData = computed((): EventTemplate | null => {
   return selectedTemplateDetails.value
 })
 
-const showEmptyState = computed((): boolean => 
-  !props.event.event_template && !showTemplateSelector.value
+const showEmptyState = computed(
+  (): boolean => !props.event.event_template && !showTemplateSelector.value,
 )
 
-const showSelectedState = computed((): boolean => 
-  Boolean(props.event.event_template && !isTemplateActivated.value && !selectedTemplateDetails.value)
+const showSelectedState = computed((): boolean =>
+  Boolean(
+    props.event.event_template && !isTemplateActivated.value && !selectedTemplateDetails.value,
+  ),
 )
 
 // Type guard to ensure template ID is a string
@@ -325,7 +373,7 @@ const sanitizeInput = (input: string): string => {
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#x27;',
-      '&': '&amp;'
+      '&': '&amp;',
     }
     return entities[match] || match
   })
@@ -333,13 +381,13 @@ const sanitizeInput = (input: string): string => {
 
 const showMessage = (type: 'success' | 'error', text: string): void => {
   const sanitizedText = sanitizeInput(text)
-  
+
   if (type === 'success') {
     showSuccess('Template Updated', sanitizedText)
   } else {
     showError('Template Error', sanitizedText)
   }
-  
+
   // Local message for backward compatibility
   message.value = { type, text: sanitizedText }
   setTimeout(() => {
@@ -361,7 +409,10 @@ const handleTemplateSelected = async (template: EventTemplate): Promise<void> =>
     setTemplateDetails(template)
     emit('template-updated', template)
     await refreshPayments()
-    showMessage('success', 'Template selected successfully! You can now proceed with payment when ready.')
+    showMessage(
+      'success',
+      'Template selected successfully! You can now proceed with payment when ready.',
+    )
   } catch (error) {
     console.error('Error handling template selection:', error)
     showMessage('error', 'Failed to process template selection. Please try again.')
@@ -373,12 +424,12 @@ const initializeTemplateData = async (): Promise<void> => {
     clearTemplate()
     return
   }
-  
+
   try {
     await loadTemplateDetails({
       templateId: templateIdAsString.value,
       eventId: props.event.id,
-      existingDetails: props.event.event_template_details
+      existingDetails: props.event.event_template_details,
     })
   } catch (error) {
     console.error('Error initializing template data:', error)
@@ -394,7 +445,7 @@ watch(
       await initializeTemplateData()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 watch(
@@ -404,18 +455,15 @@ watch(
       setTemplateDetails(newDetails)
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // Lifecycle
 onMounted(async () => {
   await nextTick()
-  
+
   // Initialize data concurrently
-  await Promise.allSettled([
-    initializeTemplateData(),
-    loadExistingPayments()
-  ])
+  await Promise.allSettled([initializeTemplateData(), loadExistingPayments()])
 })
 
 onUnmounted(() => {

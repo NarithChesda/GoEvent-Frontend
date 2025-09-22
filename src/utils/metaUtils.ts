@@ -56,7 +56,11 @@ export const updateMetaTags = (meta: EventMeta) => {
   }
 
   if (meta.publishedTime) {
-    updateMetaTag('meta[property="article:published_time"]', meta.publishedTime, 'article:published_time')
+    updateMetaTag(
+      'meta[property="article:published_time"]',
+      meta.publishedTime,
+      'article:published_time',
+    )
   }
 
   if (meta.location) {
@@ -77,27 +81,29 @@ export const updateMetaTags = (meta: EventMeta) => {
 
   // Additional event-specific structured data
   const eventStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "Event",
-    "name": meta.title,
-    "description": meta.description,
-    "url": meta.url,
-    "image": meta.image,
-    "location": meta.location ? {
-      "@type": "Place",
-      "name": meta.location
-    } : undefined,
-    "organizer": {
-      "@type": "Organization",
-      "name": meta.author || "GoEvent"
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: meta.title,
+    description: meta.description,
+    url: meta.url,
+    image: meta.image,
+    location: meta.location
+      ? {
+          '@type': 'Place',
+          name: meta.location,
+        }
+      : undefined,
+    organizer: {
+      '@type': 'Organization',
+      name: meta.author || 'GoEvent',
     },
-    "startDate": meta.publishedTime,
-    "offers": {
-      "@type": "Offer",
-      "availability": "https://schema.org/InStock",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
+    startDate: meta.publishedTime,
+    offers: {
+      '@type': 'Offer',
+      availability: 'https://schema.org/InStock',
+      price: '0',
+      priceCurrency: 'USD',
+    },
   }
 
   // Update structured data
@@ -113,17 +119,18 @@ export const updateMetaTags = (meta: EventMeta) => {
 export const resetMetaTags = () => {
   // Reset to default meta tags when leaving showcase pages
   document.title = 'GoEvent'
-  
+
   const defaultMeta = {
     title: 'GoEvent - Create Amazing Events',
-    description: 'Create, manage, and showcase beautiful events with GoEvent. Perfect for weddings, conferences, parties, and more.',
+    description:
+      'Create, manage, and showcase beautiful events with GoEvent. Perfect for weddings, conferences, parties, and more.',
     url: window.location.origin,
     siteName: 'GoEvent',
-    type: 'website'
+    type: 'website',
   }
-  
+
   updateMetaTags(defaultMeta)
-  
+
   // Remove event-specific structured data
   const structuredDataElement = document.head.querySelector('script[type="application/ld+json"]')
   if (structuredDataElement) {
@@ -135,19 +142,19 @@ export const resetMetaTags = () => {
 export const getBestEventImage = (event: Record<string, unknown>): string | undefined => {
   // Priority: banner_image > logo_one > logo_two > first featured photo > first photo
   if (event.banner_image) return event.banner_image as string
-  if (event.logo_one) return event.logo_one as string  
+  if (event.logo_one) return event.logo_one as string
   if (event.logo_two) return event.logo_two as string
-  
+
   const photos = event.photos as Array<{ image: string; is_featured: boolean }> | undefined
   if (photos && photos.length > 0) {
     // Look for featured photo first
     const featuredPhoto = photos.find((photo) => photo.is_featured)
     if (featuredPhoto) return featuredPhoto.image
-    
+
     // Otherwise use first photo
     return photos[0].image
   }
-  
+
   return undefined
 }
 
@@ -156,23 +163,23 @@ export const createEventDescription = (event: Record<string, unknown>): string =
   const description = event.description as string | undefined
   if (description && description.trim()) {
     // Truncate long descriptions for meta tags (160 chars max for SEO)
-    return description.length > 160 
-      ? description.substring(0, 157) + '...'
-      : description
+    return description.length > 160 ? description.substring(0, 157) + '...' : description
   }
-  
+
   const shortDescription = event.short_description as string | undefined
   if (shortDescription && shortDescription.trim()) {
     return shortDescription
   }
-  
+
   // Fallback description
   const categoryDetails = event.category_details as { name?: string } | undefined
   const eventType = categoryDetails?.name || 'Event'
   const location = event.location ? ` in ${event.location}` : ''
-  const organizerDetails = event.organizer_details as { first_name?: string; username?: string } | undefined
+  const organizerDetails = event.organizer_details as
+    | { first_name?: string; username?: string }
+    | undefined
   const organizer = organizerDetails?.first_name || organizerDetails?.username || 'GoEvent'
-  
+
   return `Join ${organizer} for ${event.title as string}, a ${eventType.toLowerCase()}${location}. RSVP now on GoEvent!`
 }
 
@@ -180,18 +187,31 @@ export const createEventDescription = (event: Record<string, unknown>): string =
 export const debugMetaTags = () => {
   if (import.meta.env.DEV) {
     const relevantTags = [
-      'description', 'author',
-      'og:type', 'og:title', 'og:description', 'og:url', 'og:site_name', 'og:image', 'og:image:alt',
-      'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:site'
+      'description',
+      'author',
+      'og:type',
+      'og:title',
+      'og:description',
+      'og:url',
+      'og:site_name',
+      'og:image',
+      'og:image:alt',
+      'twitter:card',
+      'twitter:title',
+      'twitter:description',
+      'twitter:image',
+      'twitter:site',
     ]
-    
-    relevantTags.forEach(tagName => {
-      const element = document.head.querySelector(`meta[name="${tagName}"], meta[property="${tagName}"]`) as HTMLMetaElement
+
+    relevantTags.forEach((tagName) => {
+      const element = document.head.querySelector(
+        `meta[name="${tagName}"], meta[property="${tagName}"]`,
+      ) as HTMLMetaElement
       if (element) {
         element.getAttribute('content')
       }
     })
-    
+
     const structuredData = document.head.querySelector('script[type="application/ld+json"]')
     if (structuredData && structuredData.textContent) {
       JSON.parse(structuredData.textContent)
@@ -200,10 +220,13 @@ export const debugMetaTags = () => {
 }
 
 // SSR Meta URL utilities for social media sharing
-export const getSSRMetaUrl = (eventId: string, options?: {
-  guestName?: string
-  language?: string
-}): string => {
+export const getSSRMetaUrl = (
+  eventId: string,
+  options?: {
+    guestName?: string
+    language?: string
+  },
+): string => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
   const baseUrl = `${API_BASE_URL}/api/events/${eventId}/meta/`
 

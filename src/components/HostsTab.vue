@@ -4,7 +4,9 @@
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Hosts</h3>
-        <p class="text-lg text-slate-600 mt-1 leading-relaxed">Manage speakers, hosts, and featured guests for your event</p>
+        <p class="text-lg text-slate-600 mt-1 leading-relaxed">
+          Manage speakers, hosts, and featured guests for your event
+        </p>
       </div>
       <button
         v-if="canEdit"
@@ -37,7 +39,7 @@
       <div class="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md mx-auto">
         <AlertCircle class="w-8 h-8 text-red-500 mx-auto mb-2" />
         <p class="text-lg text-red-600 font-semibold leading-relaxed">{{ error }}</p>
-        <button 
+        <button
           @click="fetchHosts"
           class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200"
         >
@@ -50,8 +52,12 @@
     <div v-else-if="!Array.isArray(hosts) || hosts.length === 0" class="text-center py-12">
       <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 max-w-md mx-auto">
         <Users class="w-16 h-16 text-slate-400 mx-auto mb-4" />
-        <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">No Hosts Yet</h4>
-        <p class="text-lg text-slate-600 mb-6 leading-relaxed">Add speakers, hosts, and featured guests to showcase your event's lineup.</p>
+        <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
+          No Hosts Yet
+        </h4>
+        <p class="text-lg text-slate-600 mb-6 leading-relaxed">
+          Add speakers, hosts, and featured guests to showcase your event's lineup.
+        </p>
         <button
           v-if="canEdit"
           @click="showCreateModal = true"
@@ -65,10 +71,7 @@
 
     <!-- Hosts Grid -->
     <div v-else class="space-y-4">
-      <div 
-        ref="sortableContainer"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      <div ref="sortableContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <HostCard
           v-for="host in hosts"
           :key="host.id"
@@ -148,7 +151,7 @@ const draggedHost = ref<EventHost | null>(null)
 const fetchHosts = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     const response = await hostsService.getHosts(props.eventId)
     if (response.success && response.data) {
@@ -185,14 +188,14 @@ const deleteHost = (host: EventHost) => {
 
 const confirmDelete = async () => {
   if (!hostToDelete.value) return
-  
+
   deleting.value = true
   try {
     const response = await hostsService.deleteHost(props.eventId, hostToDelete.value.id)
     if (response.success) {
       // Remove from array
       if (Array.isArray(hosts.value)) {
-        hosts.value = hosts.value.filter(host => host.id !== hostToDelete.value!.id)
+        hosts.value = hosts.value.filter((host) => host.id !== hostToDelete.value!.id)
       } else {
         hosts.value = []
       }
@@ -219,7 +222,7 @@ const handleHostCreated = (newHost: EventHost) => {
 
 const handleHostUpdated = (updatedHost: EventHost) => {
   if (Array.isArray(hosts.value)) {
-    const index = hosts.value.findIndex(host => host.id === updatedHost.id)
+    const index = hosts.value.findIndex((host) => host.id === updatedHost.id)
     if (index !== -1) {
       hosts.value[index] = updatedHost
     }
@@ -248,9 +251,9 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
   }
 
   // Find both hosts in the current array
-  const draggedIndex = hosts.value.findIndex(host => host.id === draggedHost.value!.id)
-  const targetIndex = hosts.value.findIndex(host => host.id === targetHost.id)
-  
+  const draggedIndex = hosts.value.findIndex((host) => host.id === draggedHost.value!.id)
+  const targetIndex = hosts.value.findIndex((host) => host.id === targetHost.id)
+
   if (draggedIndex === -1 || targetIndex === -1) {
     draggedHost.value = null
     return
@@ -268,12 +271,12 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
 
   const updates = newHosts.map((host, index) => ({
     id: host.id,
-    order: index
+    order: index,
   }))
 
   // Optimistic update - force reactivity by creating new array reference
   hosts.value = [...newHosts]
-  
+
   // Force Vue to update
   await nextTick()
 

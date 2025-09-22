@@ -22,8 +22,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const badgeClasses = computed(() => {
-  const baseClasses = 'inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-full shadow-lg'
-  
+  const baseClasses =
+    'inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-full shadow-lg'
+
   switch (props.type) {
     case 'live':
       return `${baseClasses} bg-green-500 text-white`

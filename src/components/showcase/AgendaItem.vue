@@ -3,28 +3,31 @@
     <!-- Icon Section (Left) - Small dot on mobile, full icon on desktop -->
     <div class="flex-shrink-0">
       <!-- Mobile: Small colored dot indicator -->
-      <div class="sm:hidden w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: primaryColor }"></div>
-      
+      <div
+        class="sm:hidden w-3 h-3 rounded-full flex-shrink-0"
+        :style="{ backgroundColor: primaryColor }"
+      ></div>
+
       <!-- Desktop: Full icon -->
       <div class="hidden sm:block">
-      <div
-        v-if="item.icon?.svg_code"
-        class="agenda-icon-large flex items-center justify-center"
-        :style="{
-          '--icon-color': primaryColor,
-          color: primaryColor
-        }"
-        v-html="processedSvgCode"
-      />
-      <Calendar
-        v-else
-        class="agenda-icon-large agenda-fallback-icon"
-        :stroke-width="0.75"
-        :style="{
-          '--icon-color': primaryColor,
-          color: primaryColor
-        }"
-      />
+        <div
+          v-if="item.icon?.svg_code"
+          class="agenda-icon-large flex items-center justify-center"
+          :style="{
+            '--icon-color': primaryColor,
+            color: primaryColor,
+          }"
+          v-html="processedSvgCode"
+        />
+        <Calendar
+          v-else
+          class="agenda-icon-large agenda-fallback-icon"
+          :stroke-width="0.75"
+          :style="{
+            '--icon-color': primaryColor,
+            color: primaryColor,
+          }"
+        />
       </div>
     </div>
 
@@ -32,17 +35,14 @@
     <div class="flex-1 flex flex-col justify-between min-h-[3rem]">
       <!-- Title (Top Right) -->
       <h3
-        :class="[
-          'font-medium leading-loose py-2 capitalize',
-          isKhmerText ? 'text-xs' : 'text-sm'
-        ]"
+        :class="['font-medium leading-loose py-2 capitalize', isKhmerText ? 'text-xs' : 'text-sm']"
         :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
           fontFamily: primaryFont || currentFont,
-          lineHeight: '1.8'
+          lineHeight: '1.8',
         }"
       >
         {{ item.title || 'Event Activity' }}
@@ -158,7 +158,7 @@ const timeText = computed(() => {
     margin-bottom: 0.75rem;
     padding-left: 1rem;
   }
-  
+
   .agenda-card::before {
     content: '';
     position: absolute;

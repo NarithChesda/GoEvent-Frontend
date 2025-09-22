@@ -15,7 +15,7 @@ class UploadService {
       if (!validation.valid) {
         return {
           success: false,
-          message: validation.error || 'File validation failed'
+          message: validation.error || 'File validation failed',
         }
       }
 
@@ -24,17 +24,17 @@ class UploadService {
       if (this.isUploadRateLimited(clientId)) {
         return {
           success: false,
-          message: 'Too many upload attempts. Please wait before trying again.'
+          message: 'Too many upload attempts. Please wait before trying again.',
         }
       }
 
       // Sanitize file name
       const sanitizedFileName = this.sanitizeFileName(file.name)
-      
+
       // Create new file with sanitized name
       const sanitizedFile = new File([file], sanitizedFileName, {
         type: file.type,
-        lastModified: file.lastModified
+        lastModified: file.lastModified,
       })
 
       const formData = new FormData()
@@ -45,7 +45,7 @@ class UploadService {
       if (!accessToken) {
         return {
           success: false,
-          message: 'Authentication required'
+          message: 'Authentication required',
         }
       }
 
@@ -53,32 +53,35 @@ class UploadService {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/auth/profile/`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'X-Requested-With': 'XMLHttpRequest' // CSRF protection
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/auth/profile/`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'X-Requested-With': 'XMLHttpRequest', // CSRF protection
+          },
+          body: formData,
+          signal: controller.signal,
         },
-        body: formData,
-        signal: controller.signal
-      })
+      )
 
       clearTimeout(timeoutId)
 
       const contentType = response.headers.get('content-type')
       const isJson = contentType?.includes('application/json')
-      
+
       try {
         const data = isJson ? await response.json() : await response.text()
-        
+
         if (!response.ok) {
           // Log rate limiting attempt
           this.recordUploadAttempt(clientId)
-          
+
           return {
             success: false,
             message: data.detail || data.message || 'Upload failed',
-            errors: data.errors || data
+            errors: data.errors || data,
           }
         }
 
@@ -87,25 +90,25 @@ class UploadService {
 
         return {
           success: true,
-          data
+          data,
         }
       } catch (error) {
         return {
           success: false,
-          message: 'Invalid server response format'
+          message: 'Invalid server response format',
         }
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
         return {
           success: false,
-          message: 'Upload timeout. Please try again.'
+          message: 'Upload timeout. Please try again.',
         }
       }
-      
+
       return {
         success: false,
-        message: 'Network error during upload'
+        message: 'Network error during upload',
       }
     }
   }
@@ -120,22 +123,22 @@ class UploadService {
     const attempts = this.uploadAttempts.get(identifier)
     const maxAttempts = 5
     const windowMs = 10 * 60 * 1000 // 10 minutes
-    
+
     if (!attempts) return false
-    
+
     // Reset if window has passed
     if (now - attempts.lastAttempt > windowMs) {
       this.uploadAttempts.delete(identifier)
       return false
     }
-    
+
     return attempts.count >= maxAttempts
   }
 
   private recordUploadAttempt(identifier: string): void {
     const now = Date.now()
     const attempts = this.uploadAttempts.get(identifier)
-    
+
     if (attempts) {
       attempts.count++
       attempts.lastAttempt = now
@@ -156,47 +159,60 @@ class UploadService {
     if (!file || !(file instanceof File)) {
       return {
         valid: false,
-        error: 'Invalid file object'
+        error: 'Invalid file object',
       }
     }
 
     // Check file name for malicious patterns
     const fileName = file.name.toLowerCase()
-    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.js', '.jar', '.php', '.asp', '.jsp']
-    const hasDangerousExtension = dangerousExtensions.some(ext => fileName.includes(ext))
-    
+    const dangerousExtensions = [
+      '.exe',
+      '.bat',
+      '.cmd',
+      '.com',
+      '.pif',
+      '.scr',
+      '.vbs',
+      '.js',
+      '.jar',
+      '.php',
+      '.asp',
+      '.jsp',
+    ]
+    const hasDangerousExtension = dangerousExtensions.some((ext) => fileName.includes(ext))
+
     if (hasDangerousExtension) {
       return {
         valid: false,
-        error: 'File type not allowed for security reasons'
+        error: 'File type not allowed for security reasons',
       }
     }
 
     // Strict MIME type validation
     const allowedMimeTypes = [
-      'image/jpeg', 
-      'image/jpg', 
-      'image/png', 
-      'image/gif', 
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
       'image/webp',
-      'image/avif'
+      'image/avif',
     ]
-    
+
     if (!allowedMimeTypes.includes(file.type)) {
       return {
         valid: false,
-        error: 'Please select a valid image file (JPEG, PNG, GIF, WebP, or AVIF)'
+        error: 'Please select a valid image file (JPEG, PNG, GIF, WebP, or AVIF)',
       }
     }
 
     // File extension validation (double-check)
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif']
     const fileExtension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase()
-    
+
     if (!allowedExtensions.includes(fileExtension)) {
       return {
         valid: false,
-        error: 'File extension does not match allowed image types'
+        error: 'File extension does not match allowed image types',
       }
     }
 
@@ -205,7 +221,7 @@ class UploadService {
     if (file.size > maxSize) {
       return {
         valid: false,
-        error: 'File size must be less than 3MB'
+        error: 'File size must be less than 3MB',
       }
     }
 
@@ -213,7 +229,7 @@ class UploadService {
     if (file.size < 100) {
       return {
         valid: false,
-        error: 'File appears to be corrupted or empty'
+        error: 'File appears to be corrupted or empty',
       }
     }
 
@@ -223,7 +239,7 @@ class UploadService {
       if (!magicNumberValid) {
         return {
           valid: false,
-          error: 'File content does not match its declared type'
+          error: 'File content does not match its declared type',
         }
       }
     } catch (error) {
@@ -237,14 +253,14 @@ class UploadService {
       /[<>:"|?*]/g, // Windows reserved characters
       /^\./g, // Hidden files
       /\s{2,}/g, // Multiple spaces
-      /\.{2,}/g // Multiple dots
+      /\.{2,}/g, // Multiple dots
     ]
-    
-    const hasSuspiciousPattern = suspiciousPatterns.some(pattern => pattern.test(fileName))
+
+    const hasSuspiciousPattern = suspiciousPatterns.some((pattern) => pattern.test(fileName))
     if (hasSuspiciousPattern) {
       return {
         valid: false,
-        error: 'File name contains invalid characters'
+        error: 'File name contains invalid characters',
       }
     }
 
@@ -257,26 +273,26 @@ class UploadService {
   private async validateMagicNumber(file: File): Promise<boolean> {
     return new Promise((resolve) => {
       const reader = new FileReader()
-      
+
       reader.onload = (e) => {
         try {
           const arr = new Uint8Array(e.target?.result as ArrayBuffer)
           const header = Array.from(arr.slice(0, 8))
-            .map(byte => byte.toString(16).padStart(2, '0'))
+            .map((byte) => byte.toString(16).padStart(2, '0'))
             .join('')
 
           // Known magic numbers for image types
           const magicNumbers = {
-            'ffd8ff': 'jpeg', // JPEG
+            ffd8ff: 'jpeg', // JPEG
             '89504e47': 'png', // PNG
             '47494638': 'gif', // GIF
             '52494646': 'webp', // WebP (RIFF container)
-            '0000001c667479706176696600': 'avif' // AVIF (partial)
+            '0000001c667479706176696600': 'avif', // AVIF (partial)
           }
 
           // Check if header matches any known image magic number
-          const isValidImage = Object.keys(magicNumbers).some(magic => 
-            header.startsWith(magic.toLowerCase())
+          const isValidImage = Object.keys(magicNumbers).some((magic) =>
+            header.startsWith(magic.toLowerCase()),
           )
 
           resolve(isValidImage)
@@ -287,7 +303,7 @@ class UploadService {
       }
 
       reader.onerror = () => resolve(false)
-      
+
       // Read first 12 bytes for magic number check
       const blob = file.slice(0, 12)
       reader.readAsArrayBuffer(blob)

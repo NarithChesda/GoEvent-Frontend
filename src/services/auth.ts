@@ -76,7 +76,7 @@ class AuthService {
 
   async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await apiService.post<LoginResponse>('/api/auth/login/', data)
-    
+
     if (response.success && response.data) {
       // Enhanced validation and handling of login response
       try {
@@ -94,7 +94,7 @@ class AuthService {
             console.error('Unexpected login response structure:', response.data)
             return {
               success: false,
-              message: 'Invalid response format from server'
+              message: 'Invalid response format from server',
             }
           }
         }
@@ -102,11 +102,11 @@ class AuthService {
         console.error('Error processing login response:', processingError)
         return {
           success: false,
-          message: 'Failed to process login response'
+          message: 'Failed to process login response',
         }
       }
     }
-    
+
     return response
   }
 
@@ -115,43 +115,43 @@ class AuthService {
       // CRITICAL: Capture tokens BEFORE setting logout mode to prevent any storage interference
       const accessToken = this.getAccessTokenDirect()
       const refreshToken = this.getRefreshTokenDirect()
-      
+
       // Now set logout mode to prevent any further storage operations
       secureStorage.setLogoutMode(true)
-      
+
       // Make logout request with refresh token in body as documented
       const response = await fetch(`${API_BASE_URL}/api/auth/logout/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
-          ...(refreshToken ? { refresh: refreshToken } : {})
-        })
+          ...(refreshToken ? { refresh: refreshToken } : {}),
+        }),
       })
-      
+
       // Always clear tokens regardless of response
       this.clearTokens()
       this.clearUser()
-      
+
       // Reset logout mode
       secureStorage.setLogoutMode(false)
-      
+
       // Convert response to ApiResponse format
       if (response.ok || response.status === 404) {
         const responseData = response.ok ? await response.json() : null
-        return { 
-          success: true, 
-          data: responseData || { message: 'Successfully logged out' }
+        return {
+          success: true,
+          data: responseData || { message: 'Successfully logged out' },
         }
       } else {
         // Even if logout API fails, we've cleared local tokens so logout is successful
         console.warn('Logout API failed but local tokens cleared:', response.status)
-        return { 
-          success: true, 
-          data: { message: 'Logged out locally' }
+        return {
+          success: true,
+          data: { message: 'Logged out locally' },
         }
       }
     } catch (error) {
@@ -160,16 +160,16 @@ class AuthService {
       this.clearUser()
       secureStorage.setLogoutMode(false)
       console.error('Logout error:', error)
-      return { 
-        success: true, 
-        data: { message: 'Logged out locally due to network error' }
+      return {
+        success: true,
+        data: { message: 'Logged out locally due to network error' },
       }
     }
   }
 
   async googleLogin(data: GoogleLoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await apiService.post<LoginResponse>('/api/auth/google/login/', data)
-    
+
     if (response.success && response.data) {
       // Enhanced validation for Google login as well
       try {
@@ -185,7 +185,7 @@ class AuthService {
             console.error('Unexpected Google login response structure:', response.data)
             return {
               success: false,
-              message: 'Invalid response format from server'
+              message: 'Invalid response format from server',
             }
           }
         }
@@ -193,11 +193,11 @@ class AuthService {
         console.error('Error processing Google login response:', processingError)
         return {
           success: false,
-          message: 'Failed to process Google login response'
+          message: 'Failed to process Google login response',
         }
       }
     }
-    
+
     return response
   }
 
@@ -208,11 +208,11 @@ class AuthService {
 
   async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
     const response = await apiService.put<User>('/api/auth/profile/', data)
-    
+
     if (response.success && response.data) {
       this.setUser(response.data)
     }
-    
+
     return response
   }
 
@@ -223,16 +223,16 @@ class AuthService {
   // Token management
   async refreshToken(): Promise<ApiResponse<TokenRefreshResponse>> {
     const refreshToken = this.getRefreshToken()
-    
+
     if (!refreshToken) {
       return {
         success: false,
-        message: 'No refresh token available'
+        message: 'No refresh token available',
       }
     }
 
     const response = await apiService.post<TokenRefreshResponse>('/api/auth/token/refresh/', {
-      refresh: refreshToken
+      refresh: refreshToken,
     })
 
     if (response.success && response.data) {
@@ -249,30 +249,33 @@ class AuthService {
 
   async verifyToken(): Promise<ApiResponse<unknown>> {
     const accessToken = this.getAccessToken()
-    
+
     if (!accessToken) {
       return {
         success: false,
-        message: 'No access token available'
+        message: 'No access token available',
       }
     }
 
     return apiService.post('/api/auth/token/verify/', {
-      token: accessToken
+      token: accessToken,
     })
   }
 
   // Secure storage management
   private setTokens(accessToken: string, refreshToken: string): void {
     // Validate token format before storing
-    if (!secureStorage.isValidTokenFormat(accessToken) || !secureStorage.isValidTokenFormat(refreshToken)) {
+    if (
+      !secureStorage.isValidTokenFormat(accessToken) ||
+      !secureStorage.isValidTokenFormat(refreshToken)
+    ) {
       console.warn('Invalid token format detected')
       return
     }
-    
+
     secureStorage.setItem('access_token', accessToken)
     secureStorage.setItem('refresh_token', refreshToken)
-    
+
     // Migrate existing localStorage data if present
     secureStorage.migrateToSecureStorage(['access_token', 'refresh_token', 'user'])
   }
@@ -282,7 +285,7 @@ class AuthService {
       console.warn('Invalid access token format detected')
       return
     }
-    
+
     secureStorage.setItem('access_token', accessToken)
   }
 
@@ -308,7 +311,7 @@ class AuthService {
           '>': '&gt;',
           '"': '&quot;',
           "'": '&#x27;',
-          '&': '&amp;'
+          '&': '&amp;',
         }
         return escapeMap[match] || match
       })
@@ -320,21 +323,21 @@ class AuthService {
       username: sanitize(user.username) || user.username,
       first_name: sanitize(user.first_name),
       last_name: sanitize(user.last_name),
-      bio: sanitize(user.bio)
+      bio: sanitize(user.bio),
     }
   }
 
   getAccessToken(): string | null {
     try {
       const token = secureStorage.getItem('access_token')
-      
+
       // Validate token format if we got a token
       if (token && !secureStorage.isValidTokenFormat(token)) {
         console.warn('Invalid token format in storage, clearing tokens')
         this.clearTokens()
         return null
       }
-      
+
       return token
     } catch (error) {
       console.error('Error retrieving access token from storage:', error)
@@ -358,14 +361,14 @@ class AuthService {
   getRefreshToken(): string | null {
     try {
       const token = secureStorage.getItem('refresh_token')
-      
+
       // Validate token format if we got a token
       if (token && !secureStorage.isValidTokenFormat(token)) {
         console.warn('Invalid refresh token format in storage, clearing tokens')
         this.clearTokens()
         return null
       }
-      
+
       return token
     } catch (error) {
       console.error('Error retrieving refresh token from storage:', error)
@@ -390,22 +393,22 @@ class AuthService {
     try {
       const userData = secureStorage.getItem('user')
       if (!userData) return null
-      
+
       const user = JSON.parse(userData)
-      
+
       // Basic validation of user object
       if (!user || typeof user !== 'object' || !user.id || !user.email) {
         console.warn('Invalid user data in storage:', {
           hasUser: !!user,
           type: typeof user,
-          hasId: !!(user?.id),
-          hasEmail: !!(user?.email),
-          userData: user
+          hasId: !!user?.id,
+          hasEmail: !!user?.email,
+          userData: user,
         })
         this.clearUser()
         return null
       }
-      
+
       return user
     } catch (error) {
       console.error('Failed to parse user data:', error)
@@ -435,19 +438,19 @@ class AuthService {
     try {
       const lastRefresh = secureStorage.getItem('last_token_refresh')
       if (!lastRefresh) return true
-      
+
       const lastRefreshTime = parseInt(lastRefresh, 10)
-      
+
       // Validate parsed timestamp
       if (isNaN(lastRefreshTime) || lastRefreshTime <= 0) {
         console.warn('Invalid timestamp in storage, forcing refresh')
         return true
       }
-      
+
       const now = Date.now()
-      
+
       // Refresh if more than 50 minutes have passed (assuming 60-minute token expiry)
-      return (now - lastRefreshTime) > (50 * 60 * 1000)
+      return now - lastRefreshTime > 50 * 60 * 1000
     } catch (error) {
       console.warn('Error checking refresh timestamp, forcing refresh:', error)
       return true
@@ -469,7 +472,7 @@ class AuthService {
   async ensureValidToken(): Promise<boolean> {
     try {
       const accessToken = this.getAccessToken()
-      
+
       if (!accessToken) {
         return false
       }
@@ -478,7 +481,7 @@ class AuthService {
       if (this.shouldRefreshToken()) {
         // First try to validate current token with server
         const isValid = await this.validateTokenWithServer()
-        
+
         if (isValid) {
           // Update last refresh time
           try {
@@ -489,7 +492,7 @@ class AuthService {
           }
           return true
         }
-        
+
         // Token is invalid, try to refresh
         const refreshResponse = await this.refreshToken()
         if (refreshResponse.success) {
@@ -501,10 +504,10 @@ class AuthService {
           }
           return true
         }
-        
+
         return false
       }
-      
+
       // Token should still be valid based on time heuristic
       return true
     } catch (error) {
@@ -545,9 +548,9 @@ class AuthService {
       return {
         tokens: {
           access: data.access,
-          refresh: data.refresh
+          refresh: data.refresh,
         },
-        user: data.user
+        user: data.user,
       }
     }
 
@@ -557,9 +560,9 @@ class AuthService {
       return {
         tokens: {
           access: data.token.access || data.token,
-          refresh: data.token.refresh || data.refresh_token
+          refresh: data.token.refresh || data.refresh_token,
         },
-        user: data.user
+        user: data.user,
       }
     }
 
@@ -570,9 +573,9 @@ class AuthService {
       return {
         tokens: {
           access: auth.access_token || auth.access,
-          refresh: auth.refresh_token || auth.refresh
+          refresh: auth.refresh_token || auth.refresh,
         },
-        user: data.user
+        user: data.user,
       }
     }
 
@@ -583,8 +586,8 @@ class AuthService {
         hasUser: !!data.user,
         hasAccess: !!data.access,
         hasRefresh: !!data.refresh,
-        hasToken: !!data.token
-      }
+        hasToken: !!data.token,
+      },
     })
 
     return null

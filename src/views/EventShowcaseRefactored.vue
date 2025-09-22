@@ -1,28 +1,17 @@
 <template>
-  <div 
-    class="showcase-wrapper"
-    :style="{ backgroundColor: primaryColor || '#000' }"
-  >
+  <div class="showcase-wrapper" :style="{ backgroundColor: primaryColor || '#000' }">
     <!-- Loading State -->
-    <LoadingSpinner 
-      v-if="loading" 
-      :primary-color="primaryColor" 
-      message="Loading event invitation..." 
+    <LoadingSpinner
+      v-if="loading"
+      :primary-color="primaryColor"
+      message="Loading event invitation..."
     />
 
     <!-- Error State -->
-    <ErrorDisplay 
-      v-else-if="error" 
-      :message="error" 
-      :show-retry="true"
-      @retry="loadShowcase" 
-    />
+    <ErrorDisplay v-else-if="error" :message="error" :show-retry="true" @retry="loadShowcase" />
 
     <!-- Showcase Content -->
-    <div 
-      v-else-if="event.id" 
-      class="showcase-container relative"
-    >
+    <div v-else-if="event.id" class="showcase-container relative">
       <!-- Single Stage: Cover with Sequential Videos and MainContent Overlay -->
       <CoverStage
         ref="coverStageRef"
@@ -103,7 +92,6 @@
         @close="closePhotoModal"
         @navigate="navigateToPhoto"
       />
-
     </div>
   </div>
 </template>
@@ -118,7 +106,12 @@ import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 
 // Meta tags utility
-import { updateMetaTags, getBestEventImage, createEventDescription, debugMetaTags } from '../utils/metaUtils'
+import {
+  updateMetaTags,
+  getBestEventImage,
+  createEventDescription,
+  debugMetaTags,
+} from '../utils/metaUtils'
 
 // Components
 import CoverStage from '../components/showcase/CoverStage.vue'
@@ -187,7 +180,7 @@ const {
   preserveVideoState,
   clearVideoStatePreservation,
   // Video Resource Manager
-  videoResourceManager
+  videoResourceManager,
 } = useEventShowcase()
 
 // Provide video resource manager to child components using Vue's provide/inject
@@ -205,7 +198,6 @@ const { showAuthModal, openAuthModal, onAuthModalClose, onUserAuthenticated } = 
 const registerForEvent = () => {
   router.push(`/events/${event.value.id}`)
 }
-
 
 // Dead code handlers removed - functionality moved to composable
 
@@ -225,7 +217,7 @@ const openEnvelopeWithVideoSync = async () => {
   // First call the original openEnvelope function which handles music
   // Pass the required parameters for music to work
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
-  
+
   // Then trigger the video playbook to synchronize with the music
   if (coverStageRef.value) {
     coverStageRef.value.startEventVideo()
@@ -243,20 +235,20 @@ const handleLogout = async () => {
     const urlWithoutHash = window.location.href.split('#')[0]
     window.history.replaceState(window.history.state, '', urlWithoutHash)
   }
-  
+
   await authStore.logout()
 }
 
 // Watch for event data to handle redirects after login with proper timing
 watch(
-  () => event.value?.id, 
+  () => event.value?.id,
   async (eventId) => {
     if (eventId) {
       // Wait a tick to ensure all reactive updates have been processed
       await nextTick()
       handleLoginRedirect()
     }
-  }
+  },
 )
 
 // Watch for event data changes to update meta tags for social media sharing
@@ -267,7 +259,7 @@ watch(
       updateEventMetaTags(eventData)
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 )
 
 // Helper function to update meta tags for the current event
@@ -275,34 +267,36 @@ const updateEventMetaTags = (eventData: any) => {
   try {
     const bestImage = getBestEventImage(eventData)
     const eventDescription = createEventDescription(eventData)
-    
+
     // Convert relative URLs to absolute URLs for social media
     const getAbsoluteImageUrl = (imageUrl: string | undefined): string | undefined => {
       if (!imageUrl) return undefined
-      
+
       // If it's already a full URL, return as is
       if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl
       }
-      
+
       // If it's a relative URL, prepend the API base URL
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
       if (imageUrl.startsWith('/')) {
         return `${API_BASE_URL}${imageUrl}`
       }
-      
+
       // If it doesn't start with /, assume it needs /media/ prefix
       return `${API_BASE_URL}/media/${imageUrl}`
     }
-    
+
     const absoluteImageUrl = getAbsoluteImageUrl(bestImage)
-    
+
     // Format event date
-    const eventDate = eventData.start_date ? new Date(eventData.start_date).toISOString() : undefined
-    
+    const eventDate = eventData.start_date
+      ? new Date(eventData.start_date).toISOString()
+      : undefined
+
     // Build the current showcase URL
     const currentUrl = window.location.href
-    
+
     // Update meta tags with event information
     updateMetaTags({
       title: `${eventData.title} - Event Invitation`,
@@ -312,11 +306,14 @@ const updateEventMetaTags = (eventData: any) => {
       siteName: 'GoEvent',
       type: 'website',
       locale: 'en_US',
-      author: eventData.organizer_details?.first_name || eventData.organizer_details?.username || 'GoEvent',
+      author:
+        eventData.organizer_details?.first_name ||
+        eventData.organizer_details?.username ||
+        'GoEvent',
       publishedTime: eventDate,
-      location: eventData.location || eventData.virtual_link || undefined
+      location: eventData.location || eventData.virtual_link || undefined,
     })
-    
+
     // Debug current meta tags in development
     debugMetaTags()
   } catch (error) {
@@ -327,7 +324,7 @@ const updateEventMetaTags = (eventData: any) => {
 // Lifecycle hooks
 onMounted(async () => {
   await authStore.initializeAuth()
-  
+
   // Initialize showcase - video resource manager is provided via Vue's provide/inject pattern
   loadShowcase()
 })
@@ -369,8 +366,8 @@ onUnmounted(() => {
 /* All other devices - consistent desktop sizing with 100% height priority */
 @media (min-width: 481px), (min-height: 801px) {
   .showcase-container {
-    width: calc(100vh * (1080/1920));
-    max-width: calc(100vh * (1080/1920));
+    width: calc(100vh * (1080 / 1920));
+    max-width: calc(100vh * (1080 / 1920));
   }
 }
 </style>

@@ -3,9 +3,9 @@
     <Transition name="modal">
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="$emit('close')">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
@@ -16,7 +16,9 @@
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <CreditCard class="w-5 h-5" />
                   </div>
-                  <h2 class="text-2xl font-bold">{{ isEditing ? 'Edit Payment Method' : 'Add Payment Method' }}</h2>
+                  <h2 class="text-2xl font-bold">
+                    {{ isEditing ? 'Edit Payment Method' : 'Add Payment Method' }}
+                  </h2>
                 </div>
                 <button
                   @click="$emit('close')"
@@ -36,7 +38,7 @@
                     <Info class="w-4 h-4 mr-2" />
                     Basic Information
                   </h4>
-                  
+
                   <!-- Name -->
                   <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -139,7 +141,7 @@
                     <Building2 class="w-4 h-4 mr-2" />
                     Bank Transfer Details
                   </h4>
-                  
+
                   <div class="grid grid-cols-1 gap-4">
                     <div>
                       <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -188,15 +190,17 @@
                     <CreditCard class="w-4 h-4 mr-2" />
                     Payment Access Methods
                   </h4>
-                  <p class="text-sm text-slate-600 mb-4">Add multiple ways for users to access this bank account</p>
-                  
+                  <p class="text-sm text-slate-600 mb-4">
+                    Add multiple ways for users to access this bank account
+                  </p>
+
                   <!-- QR Code Section -->
                   <div class="border border-gray-200 rounded-xl p-4">
                     <h5 class="font-medium text-slate-800 flex items-center mb-3">
                       <QrCode class="w-4 h-4 mr-2" />
                       QR Code for Bank Transfer
                     </h5>
-                    
+
                     <div class="space-y-4">
                       <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">
@@ -228,8 +232,13 @@
                       </div>
 
                       <!-- Preview -->
-                      <div v-if="qrCodePreview || (isEditing && existingPaymentMethod?.qr_code_image)" class="mt-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-2">QR Code Preview:</label>
+                      <div
+                        v-if="qrCodePreview || (isEditing && existingPaymentMethod?.qr_code_image)"
+                        class="mt-4"
+                      >
+                        <label class="block text-sm font-medium text-slate-700 mb-2"
+                          >QR Code Preview:</label
+                        >
                         <img
                           :src="qrCodePreview || getMediaUrl(existingPaymentMethod?.qr_code_image)"
                           alt="QR Code Preview"
@@ -245,7 +254,7 @@
                       <Link class="w-4 h-4 mr-2" />
                       Online Payment Link
                     </h5>
-                    
+
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
                         Payment URL (Optional)
@@ -267,7 +276,8 @@
                 <div v-if="formData.payment_method === 'qr_code'" class="space-y-4">
                   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <p class="text-amber-800 text-sm">
-                      <strong>Note:</strong> For bank transfer QR codes, please select "Bank Transfer" as the payment method above.
+                      <strong>Note:</strong> For bank transfer QR codes, please select "Bank
+                      Transfer" as the payment method above.
                     </p>
                   </div>
                 </div>
@@ -275,7 +285,8 @@
                 <div v-if="formData.payment_method === 'payment_url'" class="space-y-4">
                   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <p class="text-amber-800 text-sm">
-                      <strong>Note:</strong> For online banking links, please select "Bank Transfer" as the payment method above.
+                      <strong>Note:</strong> For online banking links, please select "Bank Transfer"
+                      as the payment method above.
                     </p>
                   </div>
                 </div>
@@ -290,7 +301,9 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200"
+              >
                 <button
                   type="button"
                   @click="$emit('close')"
@@ -303,8 +316,19 @@
                   :disabled="loading || !isFormValid"
                   class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
-                  <span v-if="loading" class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                  {{ loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Payment Method' : 'Create Payment Method') }}
+                  <span
+                    v-if="loading"
+                    class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                  ></span>
+                  {{
+                    loading
+                      ? isEditing
+                        ? 'Updating...'
+                        : 'Creating...'
+                      : isEditing
+                        ? 'Update Payment Method'
+                        : 'Create Payment Method'
+                  }}
                 </button>
               </div>
             </form>
@@ -318,7 +342,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { X, CreditCard, Info, Building2, QrCode, Link, Upload, AlertCircle } from 'lucide-vue-next'
-import { paymentMethodsService, type EventPaymentMethod, type CreatePaymentMethodRequest } from '../services/api'
+import {
+  paymentMethodsService,
+  type EventPaymentMethod,
+  type CreatePaymentMethodRequest,
+} from '../services/api'
 
 interface Props {
   eventId: string
@@ -356,7 +384,7 @@ const formData = reactive<CreatePaymentMethodRequest>({
   account_name: '',
   account_number: '',
   // Payment URL fields
-  payment_url: ''
+  payment_url: '',
 })
 
 // Computed form validation
@@ -389,38 +417,38 @@ const isFormValid = computed(() => {
 // Helper methods
 const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
   if (!mediaUrl) return undefined
-  
+
   // If it's already a full URL, return as is
   if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
     return mediaUrl
   }
-  
+
   // If it's a relative URL, prepend the API base URL
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
   if (mediaUrl.startsWith('/')) {
     return `${API_BASE_URL}${mediaUrl}`
   }
-  
+
   // If it doesn't start with /, assume it needs /media/ prefix
   return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
 const validateFile = (file: File): boolean => {
   error.value = null
-  
+
   const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
   const maxSize = 10 * 1024 * 1024 // 10MB
-  
+
   if (!validTypes.includes(file.type)) {
     error.value = 'Invalid file type. Please upload JPG, PNG, GIF, or WebP images.'
     return false
   }
-  
+
   if (file.size > maxSize) {
     error.value = 'File too large. Maximum size is 10MB.'
     return false
   }
-  
+
   return true
 }
 
@@ -435,7 +463,7 @@ const handlePaymentMethodChange = () => {
     qrCodePreview.value = null
     formData.payment_url = ''
   }
-  
+
   // For backward compatibility with standalone qr_code and payment_url
   if (formData.payment_method === 'qr_code') {
     formData.bank_name = ''
@@ -443,7 +471,7 @@ const handlePaymentMethodChange = () => {
     formData.account_number = ''
     formData.payment_url = ''
   }
-  
+
   if (formData.payment_method === 'payment_url') {
     formData.bank_name = ''
     formData.account_name = ''
@@ -451,17 +479,17 @@ const handlePaymentMethodChange = () => {
     qrCodeFile.value = null
     qrCodePreview.value = null
   }
-  
+
   error.value = null
 }
 
 const handleQrCodeUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file && validateFile(file)) {
     qrCodeFile.value = file
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -469,104 +497,113 @@ const handleQrCodeUpload = (event: Event) => {
     }
     reader.readAsDataURL(file)
   }
-  
+
   // Reset input
   target.value = ''
 }
 
 const savePaymentMethod = async () => {
   if (!isFormValid.value) return
-  
+
   loading.value = true
   error.value = null
-  
+
   try {
     let response
-    
+
     // For bank transfer with QR code, handle file upload
     if (formData.payment_method === 'bank_transfer' && qrCodeFile.value) {
       const formDataWithFile = new FormData()
-      
+
       // Add all form fields
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== null && value !== undefined && value !== '') {
           formDataWithFile.append(key, value.toString())
         }
       })
-      
+
       // Add QR code file
       formDataWithFile.append('qr_code_image', qrCodeFile.value)
-      
+
       if (isEditing.value && props.existingPaymentMethod) {
         response = await paymentMethodsService.updatePaymentMethodWithFile(
           props.eventId,
           props.existingPaymentMethod.id,
-          formDataWithFile
+          formDataWithFile,
         )
       } else {
         response = await paymentMethodsService.createPaymentMethodWithFile(
           props.eventId,
-          formDataWithFile
+          formDataWithFile,
         )
       }
-    } 
+    }
     // Legacy support for standalone qr_code type
     else if (formData.payment_method === 'qr_code' && qrCodeFile.value) {
       const formDataWithFile = new FormData()
-      
+
       Object.entries(formData).forEach(([key, value]) => {
-        if (key !== 'bank_name' && key !== 'account_name' && key !== 'account_number' && key !== 'payment_url' && value !== null && value !== undefined && value !== '') {
+        if (
+          key !== 'bank_name' &&
+          key !== 'account_name' &&
+          key !== 'account_number' &&
+          key !== 'payment_url' &&
+          value !== null &&
+          value !== undefined &&
+          value !== ''
+        ) {
           formDataWithFile.append(key, value.toString())
         }
       })
-      
+
       formDataWithFile.append('qr_code_image', qrCodeFile.value)
-      
+
       if (isEditing.value && props.existingPaymentMethod) {
         response = await paymentMethodsService.updatePaymentMethodWithFile(
           props.eventId,
           props.existingPaymentMethod.id,
-          formDataWithFile
+          formDataWithFile,
         )
       } else {
         response = await paymentMethodsService.createPaymentMethodWithFile(
           props.eventId,
-          formDataWithFile
+          formDataWithFile,
         )
       }
     } else {
       // Handle regular JSON update/create
       const requestData = { ...formData }
-      
+
       // Clean up fields based on payment method (for legacy support)
       if (formData.payment_method !== 'bank_transfer') {
         delete requestData.bank_name
         delete requestData.account_name
         delete requestData.account_number
       }
-      
-      if (formData.payment_method !== 'payment_url' && formData.payment_method !== 'bank_transfer') {
+
+      if (
+        formData.payment_method !== 'payment_url' &&
+        formData.payment_method !== 'bank_transfer'
+      ) {
         delete requestData.payment_url
       }
-      
+
       if (isEditing.value && props.existingPaymentMethod) {
         response = await paymentMethodsService.patchPaymentMethod(
           props.eventId,
           props.existingPaymentMethod.id,
-          requestData
+          requestData,
         )
       } else {
-        response = await paymentMethodsService.createPaymentMethod(
-          props.eventId,
-          requestData
-        )
+        response = await paymentMethodsService.createPaymentMethod(props.eventId, requestData)
       }
     }
-    
+
     if (response.success && response.data) {
       emit('saved', response.data)
     } else {
-      error.value = response.message || `Failed to ${isEditing.value ? 'update' : 'create'} payment method`
+      error.value =
+        response.message || `Failed to ${isEditing.value ? 'update' : 'create'} payment method`
     }
   } catch (err) {
     console.error('Error saving payment method:', err)
@@ -580,7 +617,7 @@ const savePaymentMethod = async () => {
 onMounted(() => {
   if (isEditing.value && props.existingPaymentMethod) {
     const existing = props.existingPaymentMethod
-    
+
     Object.assign(formData, {
       name: existing.name,
       payment_type: existing.payment_type,
@@ -594,7 +631,7 @@ onMounted(() => {
       account_name: existing.account_name || '',
       account_number: existing.account_number || '',
       // Payment URL fields
-      payment_url: existing.payment_url || ''
+      payment_url: existing.payment_url || '',
     })
   }
 })

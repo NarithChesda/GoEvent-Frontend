@@ -1,11 +1,14 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+  <div
+    class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+  >
     <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
       <Palette class="w-10 h-10 text-slate-400" />
     </div>
     <h3 class="text-lg font-semibold text-slate-900 mb-2">No Template Selected</h3>
     <p class="text-slate-600 mb-6 max-w-md mx-auto">
-      Choose a professional template to enhance your event's visual appeal and provide a better experience for your attendees.
+      Choose a professional template to enhance your event's visual appeal and provide a better
+      experience for your attendees.
     </p>
     <button
       v-if="canEdit"

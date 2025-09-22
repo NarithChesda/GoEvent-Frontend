@@ -11,7 +11,7 @@
             background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            backgroundClip: 'text',
           }"
         >
           {{ descriptionTitle }}
@@ -26,7 +26,7 @@
             fontFamily: secondaryFont || currentFont,
             color: primaryColor,
             wordWrap: 'break-word',
-            hyphens: 'auto'
+            hyphens: 'auto',
           }"
         >
           {{ capitalizedDescription }}
@@ -41,51 +41,51 @@
         :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
           padding: '2px',
-          borderRadius: '2rem'
+          borderRadius: '2rem',
         }"
       >
         <div
           class="px-4 py-3 backdrop-blur-sm space-y-2 relative"
-          style="border-radius: calc(2rem - 2px); border: 2px solid white;"
+          style="border-radius: calc(2rem - 2px); border: 2px solid white"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
           }"
         >
-        <!-- Date Text -->
-        <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
-          <span
-            class="khmer-text-fix text-white"
-            :style="{
-              fontFamily: secondaryFont || currentFont
-            }"
-          >
-            {{ dateText }}
-          </span>
-        </div>
+          <!-- Date Text -->
+          <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
+            <span
+              class="khmer-text-fix text-white"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+              }"
+            >
+              {{ dateText }}
+            </span>
+          </div>
 
-        <!-- Time Text -->
-        <div class="text-sm sm:text-base font-medium leading-snug" v-if="timeText">
-          <span
-            class="khmer-text-fix text-white"
-            :style="{
-              fontFamily: secondaryFont || currentFont
-            }"
-          >
-            {{ timeText }}
-          </span>
-        </div>
+          <!-- Time Text -->
+          <div class="text-sm sm:text-base font-medium leading-snug" v-if="timeText">
+            <span
+              class="khmer-text-fix text-white"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+              }"
+            >
+              {{ timeText }}
+            </span>
+          </div>
 
-        <!-- Location Text -->
-        <div class="text-sm sm:text-base font-medium leading-snug" v-if="locationText">
-          <span
-            class="khmer-text-fix text-white"
-            :style="{
-              fontFamily: secondaryFont || currentFont
-            }"
-          >
-            {{ locationText }}
-          </span>
-        </div>
+          <!-- Location Text -->
+          <div class="text-sm sm:text-base font-medium leading-snug" v-if="locationText">
+            <span
+              class="khmer-text-fix text-white"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+              }"
+            >
+              {{ locationText }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -128,7 +128,7 @@ const capitalizedDescription = computed(() => {
 
 <style scoped>
 .glass-section {
-  background: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -141,6 +141,5 @@ const capitalizedDescription = computed(() => {
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
-  ;
 }
 </style>

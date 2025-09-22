@@ -1,12 +1,5 @@
 <template>
-  <div 
-    class="card-actions"
-    :class="[
-      alignmentClass,
-      visibilityClass,
-      sizeClass
-    ]"
-  >
+  <div class="card-actions" :class="[alignmentClass, visibilityClass, sizeClass]">
     <slot :buttonClass="buttonClass" />
   </div>
 </template>
@@ -29,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
   align: 'right',
   visibility: 'hover',
   size: 'md',
-  customClass: ''
+  customClass: '',
 })
 
 // Computed classes
@@ -37,7 +30,7 @@ const alignmentClass = computed(() => {
   const alignments = {
     left: 'justify-start',
     center: 'justify-center',
-    right: 'justify-end'
+    right: 'justify-end',
   }
   return alignments[props.align]
 })
@@ -46,7 +39,7 @@ const visibilityClass = computed(() => {
   const visibilities = {
     always: 'opacity-100',
     hover: 'opacity-0 group-hover:opacity-100',
-    focus: 'opacity-0 group-focus-within:opacity-100'
+    focus: 'opacity-0 group-focus-within:opacity-100',
   }
   return visibilities[props.visibility]
 })
@@ -55,7 +48,7 @@ const sizeClass = computed(() => {
   const sizes = {
     sm: 'space-x-1',
     md: 'space-x-2',
-    lg: 'space-x-3'
+    lg: 'space-x-3',
   }
   return sizes[props.size]
 })
@@ -65,9 +58,9 @@ const buttonClass = computed(() => {
   const sizes = {
     sm: 'p-1.5',
     md: 'p-2',
-    lg: 'p-2.5'
+    lg: 'p-2.5',
   }
-  
+
   return [
     'card-action-btn',
     sizes[props.size],
@@ -80,8 +73,10 @@ const buttonClass = computed(() => {
     'focus:ring-2',
     'focus:ring-blue-500',
     'focus:ring-offset-1',
-    props.customClass
-  ].filter(Boolean).join(' ')
+    props.customClass,
+  ]
+    .filter(Boolean)
+    .join(' ')
 })
 </script>
 

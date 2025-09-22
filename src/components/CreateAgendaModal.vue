@@ -3,9 +3,9 @@
     <Transition name="modal">
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
@@ -36,7 +36,7 @@
                     <Calendar class="w-4 h-4 mr-2" />
                     Basic Information
                   </h4>
-                  
+
                   <!-- Title -->
                   <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -91,13 +91,11 @@
                     <Clock class="w-4 h-4 mr-2" />
                     Schedule
                   </h4>
-                  
+
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Date -->
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
-                        Date
-                      </label>
+                      <label class="block text-sm font-semibold text-slate-700 mb-2"> Date </label>
                       <input
                         v-model="formData.date"
                         type="date"
@@ -152,7 +150,7 @@
                     <MapPin class="w-4 h-4 mr-2" />
                     Location
                   </h4>
-                  
+
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Physical Location -->
                     <div>
@@ -201,7 +199,7 @@
                     <Palette class="w-4 h-4 mr-2" />
                     Display Options
                   </h4>
-                  
+
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Color -->
                     <div>
@@ -225,18 +223,22 @@
 
                     <!-- Icon Selection -->
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
-                        Icon
-                      </label>
+                      <label class="block text-sm font-semibold text-slate-700 mb-2"> Icon </label>
                       <button
                         type="button"
                         @click="showIconPicker = true"
                         class="w-full px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between"
                       >
                         <div class="flex items-center space-x-3">
-                          <div v-if="getSelectedIcon()" class="w-8 h-8 flex items-center justify-center" v-html="getSelectedIcon()?.svg_code"></div>
+                          <div
+                            v-if="getSelectedIcon()"
+                            class="w-8 h-8 flex items-center justify-center"
+                            v-html="getSelectedIcon()?.svg_code"
+                          ></div>
                           <Sparkles v-else class="w-5 h-5 text-gray-400" />
-                          <span class="text-slate-700">{{ getSelectedIcon()?.name || 'Select an icon' }}</span>
+                          <span class="text-slate-700">{{
+                            getSelectedIcon()?.name || 'Select an icon'
+                          }}</span>
                         </div>
                         <ChevronDown class="w-4 h-4 text-gray-400" />
                       </button>
@@ -257,7 +259,10 @@
                   </div>
 
                   <!-- Icon Picker Modal -->
-                  <div v-if="showIconPicker" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <div
+                    v-if="showIconPicker"
+                    class="bg-gray-50 border border-gray-200 rounded-xl p-4"
+                  >
                     <div class="flex items-center justify-between mb-4">
                       <h5 class="font-medium text-slate-900">Select Icon</h5>
                       <button
@@ -268,19 +273,23 @@
                         <X class="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     <div class="grid grid-cols-6 gap-2 max-h-60 overflow-y-auto">
                       <!-- No Icon Option -->
                       <button
                         type="button"
                         @click="selectIcon(null)"
                         class="p-3 rounded-lg border-2 transition-all duration-200"
-                        :class="formData.icon_id === null ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                        :class="
+                          formData.icon_id === null
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        "
                       >
                         <X class="w-6 h-6 mx-auto text-gray-400" />
                         <p class="text-xs mt-1 text-gray-600">None</p>
                       </button>
-                      
+
                       <!-- Available Icons -->
                       <button
                         v-for="icon in availableIcons"
@@ -288,7 +297,11 @@
                         type="button"
                         @click="selectIcon(icon.id)"
                         class="p-3 rounded-lg border-2 transition-all duration-200"
-                        :class="formData.icon_id === icon.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                        :class="
+                          formData.icon_id === icon.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        "
                         :title="icon.name"
                       >
                         <div class="w-6 h-6 mx-auto" v-html="icon.svg_code"></div>
@@ -316,7 +329,10 @@
                   </div>
 
                   <!-- Translation List -->
-                  <div v-if="formData.translations && formData.translations.length > 0" class="space-y-3">
+                  <div
+                    v-if="formData.translations && formData.translations.length > 0"
+                    class="space-y-3"
+                  >
                     <div
                       v-for="(translation, index) in formData.translations"
                       :key="index"
@@ -329,14 +345,14 @@
                       >
                         <X class="w-4 h-4" />
                       </button>
-                      
+
                       <div class="space-y-3 pr-8">
                         <div>
                           <label class="block text-xs font-medium text-slate-600 mb-1">
                             Language: {{ getLanguageName(translation.language) }}
                           </label>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <input
@@ -355,7 +371,7 @@
                             />
                           </div>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                           <div>
                             <input
@@ -382,7 +398,7 @@
                             />
                           </div>
                         </div>
-                        
+
                         <textarea
                           v-model="translation.description"
                           rows="2"
@@ -394,7 +410,10 @@
                   </div>
 
                   <!-- Add Translation Modal -->
-                  <div v-if="showAddTranslation" class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div
+                    v-if="showAddTranslation"
+                    class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+                  >
                     <div class="flex items-center justify-between mb-3">
                       <h5 class="font-medium text-slate-900">Add Translation</h5>
                       <button
@@ -405,18 +424,22 @@
                         <X class="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     <div class="space-y-3">
                       <select
                         v-model="newTranslation.language"
                         class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select language</option>
-                        <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
+                        <option
+                          v-for="lang in availableLanguages"
+                          :key="lang.code"
+                          :value="lang.code"
+                        >
                           {{ lang.name }}
                         </option>
                       </select>
-                      
+
                       <div class="flex space-x-2">
                         <button
                           type="button"
@@ -438,9 +461,11 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Action Buttons -->
-              <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200"
+              >
                 <button
                   type="button"
                   @click="$emit('close')"
@@ -453,7 +478,10 @@
                   :disabled="loading || !formData.title"
                   class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
-                  <span v-if="loading" class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                  <span
+                    v-if="loading"
+                    class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                  ></span>
                   {{ loading ? 'Creating...' : 'Create Agenda Item' }}
                 </button>
               </div>
@@ -467,18 +495,25 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { 
-  X, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Palette, 
-  Languages, 
+import {
+  X,
+  Calendar,
+  Clock,
+  MapPin,
+  Palette,
+  Languages,
   Plus,
   Sparkles,
-  ChevronDown 
+  ChevronDown,
 } from 'lucide-vue-next'
-import { agendaService, coreDataService, type CreateAgendaRequest, type EventAgendaItem, type AgendaTranslation, type AgendaIcon } from '../services/api'
+import {
+  agendaService,
+  coreDataService,
+  type CreateAgendaRequest,
+  type EventAgendaItem,
+  type AgendaTranslation,
+  type AgendaIcon,
+} from '../services/api'
 
 interface Props {
   eventId: string
@@ -507,7 +542,7 @@ const availableLanguages = [
   { code: 'ko', name: 'Korean' },
   { code: 'zh-cn', name: 'Chinese (Simplified)' },
   { code: 'th', name: 'Thai' },
-  { code: 'vn', name: 'Vietnamese' }
+  { code: 'vn', name: 'Vietnamese' },
 ]
 
 // Form data
@@ -526,18 +561,20 @@ const formData = reactive<CreateAgendaRequest>({
   is_featured: false,
   color: '#3498db',
   icon_id: null,
-  translations: []
+  translations: [],
 })
 
 // New translation
-const newTranslation = reactive<Omit<AgendaTranslation, 'id' | 'agenda' | 'created_at' | 'updated_at'>>({
+const newTranslation = reactive<
+  Omit<AgendaTranslation, 'id' | 'agenda' | 'created_at' | 'updated_at'>
+>({
   language: '',
   title: '',
   description: '',
   date_text: '',
   start_time_text: '',
   end_time_text: '',
-  speaker: ''
+  speaker: '',
 })
 
 // Methods
@@ -553,7 +590,7 @@ const fetchIcons = async () => {
 }
 
 const getSelectedIcon = () => {
-  return availableIcons.value.find(icon => icon.id === formData.icon_id)
+  return availableIcons.value.find((icon) => icon.id === formData.icon_id)
 }
 
 const selectIcon = (iconId: number | null) => {
@@ -562,24 +599,24 @@ const selectIcon = (iconId: number | null) => {
 }
 
 const getLanguageName = (code: string) => {
-  return availableLanguages.find(lang => lang.code === code)?.name || code
+  return availableLanguages.find((lang) => lang.code === code)?.name || code
 }
 
 const addTranslation = () => {
   if (!newTranslation.language) return
-  
+
   // Check if translation for this language already exists
-  if (formData.translations?.some(t => t.language === newTranslation.language)) {
+  if (formData.translations?.some((t) => t.language === newTranslation.language)) {
     alert('Translation for this language already exists')
     return
   }
-  
+
   if (!formData.translations) {
     formData.translations = []
   }
-  
+
   formData.translations.push({ ...newTranslation })
-  
+
   // Reset form
   Object.assign(newTranslation, {
     language: '',
@@ -588,9 +625,9 @@ const addTranslation = () => {
     date_text: '',
     start_time_text: '',
     end_time_text: '',
-    speaker: ''
+    speaker: '',
   })
-  
+
   showAddTranslation.value = false
 }
 
@@ -602,7 +639,7 @@ const removeTranslation = (index: number) => {
 
 const createAgendaItem = async () => {
   loading.value = true
-  
+
   try {
     const response = await agendaService.createAgendaItem(props.eventId, formData)
     if (response.success && response.data) {

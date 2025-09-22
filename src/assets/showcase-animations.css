@@ -10,7 +10,7 @@
   --animation-duration-normal: 500ms;
   --animation-duration-slow: 800ms;
   --animation-duration-extra-slow: 1200ms;
-  
+
   --animation-easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --animation-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --animation-easing-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -78,7 +78,12 @@
   position: absolute;
   width: 4px;
   height: 4px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.2) 70%, transparent 100%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.2) 70%,
+    transparent 100%
+  );
   border-radius: 50%;
   animation: float 6s ease-in-out infinite;
 }
@@ -126,7 +131,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
     opacity: 0.4;
   }
@@ -206,12 +212,24 @@
 }
 
 /* Stagger Animation Utilities */
-.stagger-delay-1 { animation-delay: 0.1s; }
-.stagger-delay-2 { animation-delay: 0.2s; }
-.stagger-delay-3 { animation-delay: 0.3s; }
-.stagger-delay-4 { animation-delay: 0.4s; }
-.stagger-delay-5 { animation-delay: 0.5s; }
-.stagger-delay-6 { animation-delay: 0.6s; }
+.stagger-delay-1 {
+  animation-delay: 0.1s;
+}
+.stagger-delay-2 {
+  animation-delay: 0.2s;
+}
+.stagger-delay-3 {
+  animation-delay: 0.3s;
+}
+.stagger-delay-4 {
+  animation-delay: 0.4s;
+}
+.stagger-delay-5 {
+  animation-delay: 0.5s;
+}
+.stagger-delay-6 {
+  animation-delay: 0.6s;
+}
 
 /* Micro-interactions */
 .interactive-element {
@@ -247,19 +265,20 @@
   .animate-enhanced-fadeIn {
     transform: translateY(20px) scale(0.98);
   }
-  
+
   .animate-enhanced-slideLeft,
   .animate-enhanced-slideRight {
     transform: translateX(0) translateY(20px);
   }
-  
+
   .particle {
     width: 3px;
     height: 3px;
   }
-  
+
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
       opacity: 0.3;
     }
@@ -280,7 +299,7 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  
+
   .animate-enhanced-fadeIn,
   .animate-enhanced-slideLeft,
   .animate-enhanced-slideRight,
@@ -289,7 +308,7 @@
     transition: opacity 0.3s ease;
     transform: none !important;
   }
-  
+
   .animate-enhanced-fadeIn.is-visible,
   .animate-enhanced-slideLeft.is-visible,
   .animate-enhanced-slideRight.is-visible,
@@ -298,11 +317,11 @@
     opacity: 1;
     transform: none !important;
   }
-  
+
   .particle {
     display: none;
   }
-  
+
   .enhanced-logo:hover,
   .enhanced-text:hover,
   .interactive-element:hover,
@@ -316,7 +335,7 @@
   .particle {
     background: currentColor;
   }
-  
+
   .enhanced-glass {
     background: rgba(0, 0, 0, 0.8);
     border: 2px solid currentColor;
@@ -333,7 +352,7 @@
     opacity: 1 !important;
     transform: none !important;
   }
-  
+
   .particle-container {
     display: none;
   }

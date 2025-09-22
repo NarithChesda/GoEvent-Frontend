@@ -1,10 +1,10 @@
 <template>
-  <div 
-    v-if="isVisible" 
+  <div
+    v-if="isVisible"
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
     @click="handleBackdropClick"
   >
-    <div 
+    <div
       ref="modalContent"
       class="relative w-full max-w-md bg-white/95 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-8 transform transition-all duration-300"
       :class="modalAnimation"
@@ -20,7 +20,9 @@
 
       <!-- Header -->
       <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div
+          class="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4"
+        >
           <CalendarDays class="w-8 h-8 text-white" />
         </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
@@ -33,9 +35,9 @@
           @click="activeTab = 'signin'"
           :class="[
             'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200',
-            activeTab === 'signin' 
-              ? 'bg-white text-gray-900 shadow-sm' 
-              : 'text-gray-600 hover:text-gray-900'
+            activeTab === 'signin'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900',
           ]"
         >
           Sign In
@@ -44,9 +46,9 @@
           @click="activeTab = 'signup'"
           :class="[
             'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200',
-            activeTab === 'signup' 
-              ? 'bg-white text-gray-900 shadow-sm' 
-              : 'text-gray-600 hover:text-gray-900'
+            activeTab === 'signup'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900',
           ]"
         >
           Sign Up
@@ -67,14 +69,21 @@
             v-model="signInForm.email"
             :class="[
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              (!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email 
-                ? 'border-red-300 focus:ring-red-500' 
-                : 'border-gray-200 focus:ring-blue-500'
+              (!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-blue-500',
             ]"
             placeholder="Enter your email"
           />
-          <div v-if="(!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email" class="mt-1">
-            <p v-for="error in fieldErrors.email || emailValidation.errors" :key="error" class="text-sm text-red-600">
+          <div
+            v-if="(!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email"
+            class="mt-1"
+          >
+            <p
+              v-for="error in fieldErrors.email || emailValidation.errors"
+              :key="error"
+              class="text-sm text-red-600"
+            >
               {{ error }}
             </p>
           </div>
@@ -93,9 +102,10 @@
               v-model="signInForm.password"
               :class="[
                 'w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-                (!passwordValidation.isValid && signInForm.password.length > 0) || fieldErrors.password 
-                  ? 'border-red-300 focus:ring-red-500' 
-                  : 'border-gray-200 focus:ring-blue-500'
+                (!passwordValidation.isValid && signInForm.password.length > 0) ||
+                fieldErrors.password
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-blue-500',
               ]"
               placeholder="Enter your password"
             />
@@ -108,8 +118,18 @@
               <EyeOff v-else class="h-5 w-5" />
             </button>
           </div>
-          <div v-if="(!passwordValidation.isValid && signInForm.password.length > 0) || fieldErrors.password" class="mt-1">
-            <p v-for="error in fieldErrors.password || passwordValidation.errors" :key="error" class="text-sm text-red-600">
+          <div
+            v-if="
+              (!passwordValidation.isValid && signInForm.password.length > 0) ||
+              fieldErrors.password
+            "
+            class="mt-1"
+          >
+            <p
+              v-for="error in fieldErrors.password || passwordValidation.errors"
+              :key="error"
+              class="text-sm text-red-600"
+            >
               {{ error }}
             </p>
           </div>
@@ -142,7 +162,9 @@
             v-model="signUpForm.firstName"
             :class="[
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              fieldErrors.first_name ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'
+              fieldErrors.first_name
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-blue-500',
             ]"
             placeholder="Enter your first name"
           />
@@ -164,7 +186,9 @@
             v-model="signUpForm.lastName"
             :class="[
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              fieldErrors.last_name ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'
+              fieldErrors.last_name
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-blue-500',
             ]"
             placeholder="Enter your last name"
           />
@@ -187,14 +211,23 @@
             v-model="signUpForm.email"
             :class="[
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              (!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email 
-                ? 'border-red-300 focus:ring-red-500' 
-                : 'border-gray-200 focus:ring-blue-500'
+              (!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-blue-500',
             ]"
             placeholder="Enter your email"
           />
-          <div v-if="(!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email" class="mt-1">
-            <p v-for="error in fieldErrors.email || signUpEmailValidation.errors" :key="error" class="text-sm text-red-600">
+          <div
+            v-if="
+              (!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email
+            "
+            class="mt-1"
+          >
+            <p
+              v-for="error in fieldErrors.email || signUpEmailValidation.errors"
+              :key="error"
+              class="text-sm text-red-600"
+            >
               {{ error }}
             </p>
           </div>
@@ -212,7 +245,9 @@
             v-model="signUpForm.username"
             :class="[
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              fieldErrors.username ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'
+              fieldErrors.username
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-blue-500',
             ]"
             placeholder="Choose a username"
           />
@@ -236,9 +271,10 @@
               v-model="signUpForm.password"
               :class="[
                 'w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-                (!signUpPasswordValidation.isValid && signUpForm.password.length > 0) || fieldErrors.password 
-                  ? 'border-red-300 focus:ring-red-500' 
-                  : 'border-gray-200 focus:ring-blue-500'
+                (!signUpPasswordValidation.isValid && signUpForm.password.length > 0) ||
+                fieldErrors.password
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-blue-500',
               ]"
               placeholder="Create a password"
             />
@@ -251,8 +287,18 @@
               <EyeOff v-else class="h-5 w-5" />
             </button>
           </div>
-          <div v-if="(!signUpPasswordValidation.isValid && signUpForm.password.length > 0) || fieldErrors.password" class="mt-1">
-            <p v-for="error in fieldErrors.password || signUpPasswordValidation.errors" :key="error" class="text-sm text-red-600">
+          <div
+            v-if="
+              (!signUpPasswordValidation.isValid && signUpForm.password.length > 0) ||
+              fieldErrors.password
+            "
+            class="mt-1"
+          >
+            <p
+              v-for="error in fieldErrors.password || signUpPasswordValidation.errors"
+              :key="error"
+              class="text-sm text-red-600"
+            >
               {{ error }}
             </p>
           </div>
@@ -271,9 +317,10 @@
               v-model="signUpForm.confirmPassword"
               :class="[
                 'w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-                (!passwordsMatch && signUpForm.confirmPassword.length > 0) || fieldErrors.password_confirm 
-                  ? 'border-red-300 focus:ring-red-500' 
-                  : 'border-gray-200 focus:ring-blue-500'
+                (!passwordsMatch && signUpForm.confirmPassword.length > 0) ||
+                fieldErrors.password_confirm
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-blue-500',
               ]"
               placeholder="Confirm your password"
             />
@@ -286,8 +333,18 @@
               <EyeOff v-else class="h-5 w-5" />
             </button>
           </div>
-          <div v-if="(!passwordsMatch && signUpForm.confirmPassword.length > 0) || fieldErrors.password_confirm" class="mt-1">
-            <p v-for="error in fieldErrors.password_confirm || ['Passwords do not match']" :key="error" class="text-sm text-red-600">
+          <div
+            v-if="
+              (!passwordsMatch && signUpForm.confirmPassword.length > 0) ||
+              fieldErrors.password_confirm
+            "
+            class="mt-1"
+          >
+            <p
+              v-for="error in fieldErrors.password_confirm || ['Passwords do not match']"
+              :key="error"
+              class="text-sm text-red-600"
+            >
               {{ error }}
             </p>
           </div>
@@ -333,10 +390,22 @@
       >
         <Loader2 v-if="isGoogleLoading" class="animate-spin h-5 w-5 mr-2" />
         <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          <path
+            fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+          />
+          <path
+            fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+          />
+          <path
+            fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+          />
         </svg>
         <span class="text-sm font-medium text-gray-700">
           {{ isGoogleLoading ? 'Signing in...' : 'Continue with Google' }}
@@ -379,7 +448,7 @@ const showConfirmPassword = ref(false)
 // Sign In Form
 const signInForm = ref({
   email: '',
-  password: ''
+  password: '',
 })
 
 // Sign Up Form
@@ -389,7 +458,7 @@ const signUpForm = ref({
   email: '',
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 // Loading states
@@ -413,10 +482,12 @@ const passwordValidation = computed(() => {
 })
 
 const isSignInFormValid = computed(() => {
-  return emailValidation.value.isValid && 
-         passwordValidation.value.isValid && 
-         signInForm.value.email.length > 0 && 
-         signInForm.value.password.length > 0
+  return (
+    emailValidation.value.isValid &&
+    passwordValidation.value.isValid &&
+    signInForm.value.email.length > 0 &&
+    signInForm.value.password.length > 0
+  )
 })
 
 // Validation for Sign Up
@@ -435,14 +506,16 @@ const passwordsMatch = computed(() => {
 })
 
 const isSignUpFormValid = computed(() => {
-  return signUpEmailValidation.value.isValid && 
-         signUpPasswordValidation.value.isValid && 
-         passwordsMatch.value &&
-         signUpForm.value.firstName.length > 0 &&
-         signUpForm.value.email.length > 0 &&
-         signUpForm.value.username.length > 0 &&
-         signUpForm.value.password.length > 0 &&
-         signUpForm.value.confirmPassword.length > 0
+  return (
+    signUpEmailValidation.value.isValid &&
+    signUpPasswordValidation.value.isValid &&
+    passwordsMatch.value &&
+    signUpForm.value.firstName.length > 0 &&
+    signUpForm.value.email.length > 0 &&
+    signUpForm.value.username.length > 0 &&
+    signUpForm.value.password.length > 0 &&
+    signUpForm.value.confirmPassword.length > 0
+  )
 })
 
 // Modal control methods
@@ -462,7 +535,14 @@ const handleBackdropClick = (event: MouseEvent) => {
 
 const resetForms = () => {
   signInForm.value = { email: '', password: '' }
-  signUpForm.value = { firstName: '', lastName: '', email: '', username: '', password: '', confirmPassword: '' }
+  signUpForm.value = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+  }
   errorMessage.value = ''
   fieldErrors.value = {}
   showPassword.value = false
@@ -474,31 +554,31 @@ const resetForms = () => {
 // Authentication methods
 const handleSignIn = async () => {
   if (isSigningIn.value) return
-  
+
   // Clear previous errors
   errorMessage.value = ''
   fieldErrors.value = {}
-  
+
   // Comprehensive validation
   const validation = inputValidator.validateForm(signInForm.value, {
     email: validationRules.email,
-    password: validationRules.password
+    password: validationRules.password,
   })
-  
+
   if (!validation.isValid) {
     fieldErrors.value = validation.errors
     errorMessage.value = 'Please fix the errors below'
     return
   }
-  
+
   isSigningIn.value = true
-  
+
   try {
     const result = await authStore.login({
       email: validation.sanitizedData.email,
-      password: validation.sanitizedData.password
+      password: validation.sanitizedData.password,
     })
-    
+
     if (result.success) {
       emit('authenticated')
       closeModal()
@@ -515,11 +595,11 @@ const handleSignIn = async () => {
 
 const handleSignUp = async () => {
   if (isSigningUp.value) return
-  
+
   // Clear previous errors
   errorMessage.value = ''
   fieldErrors.value = {}
-  
+
   // Comprehensive validation
   const validation = inputValidator.validateForm(signUpForm.value, {
     firstName: { required: true, minLength: 1 },
@@ -527,9 +607,9 @@ const handleSignUp = async () => {
     email: validationRules.email,
     username: { required: true, minLength: 3, pattern: /^[a-zA-Z0-9_-]+$/ },
     password: validationRules.password,
-    confirmPassword: { required: true }
+    confirmPassword: { required: true },
   })
-  
+
   if (!validation.isValid) {
     fieldErrors.value = validation.errors
     errorMessage.value = 'Please fix the errors below'
@@ -541,9 +621,9 @@ const handleSignUp = async () => {
     errorMessage.value = 'Please fix the errors below'
     return
   }
-  
+
   isSigningUp.value = true
-  
+
   try {
     const result = await authStore.register({
       email: validation.sanitizedData.email,
@@ -551,9 +631,9 @@ const handleSignUp = async () => {
       password: validation.sanitizedData.password,
       password_confirm: validation.sanitizedData.confirmPassword,
       first_name: validation.sanitizedData.firstName,
-      last_name: validation.sanitizedData.lastName || ''
+      last_name: validation.sanitizedData.lastName || '',
     })
-    
+
     if (result.success) {
       emit('authenticated')
       closeModal()
@@ -574,13 +654,13 @@ const handleSignUp = async () => {
 const handleGoogleLogin = async () => {
   isGoogleLoading.value = true
   errorMessage.value = ''
-  
+
   try {
     const response = await googleTokenLogin()
-    
+
     if (response.access_token) {
       const result = await authStore.googleLogin(response.access_token)
-      
+
       if (result.success) {
         emit('authenticated')
         closeModal()
@@ -601,13 +681,16 @@ const handleGoogleLogin = async () => {
 }
 
 // Handle modal animation
-watch(() => props.isVisible, (visible) => {
-  if (visible) {
-    nextTick(() => {
-      modalAnimation.value = 'scale-100 opacity-100'
-    })
-  }
-})
+watch(
+  () => props.isVisible,
+  (visible) => {
+    if (visible) {
+      nextTick(() => {
+        modalAnimation.value = 'scale-100 opacity-100'
+      })
+    }
+  },
+)
 
 // Handle escape key
 const handleEscapeKey = (event: KeyboardEvent) => {

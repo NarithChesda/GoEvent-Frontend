@@ -7,10 +7,7 @@
     >
       {{ feature }}
     </span>
-    <span 
-      v-if="remainingCount > 0" 
-      class="text-xs text-slate-500"
-    >
+    <span v-if="remainingCount > 0" class="text-xs text-slate-500">
       +{{ remainingCount }} more
     </span>
   </div>
@@ -25,14 +22,10 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  maxVisible: 3
+  maxVisible: 3,
 })
 
-const visibleFeatures = computed(() => 
-  props.features.slice(0, props.maxVisible)
-)
+const visibleFeatures = computed(() => props.features.slice(0, props.maxVisible))
 
-const remainingCount = computed(() => 
-  Math.max(0, props.features.length - props.maxVisible)
-)
+const remainingCount = computed(() => Math.max(0, props.features.length - props.maxVisible))
 </script>

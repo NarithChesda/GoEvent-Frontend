@@ -4,7 +4,7 @@
       <AlertTriangle class="w-16 h-16 text-red-500 mx-auto mb-4" />
       <h1 class="text-2xl font-bold text-white mb-2">{{ title }}</h1>
       <p class="text-gray-300">{{ message }}</p>
-      <button 
+      <button
         v-if="showRetry"
         @click="$emit('retry')"
         class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -26,7 +26,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   title: 'Oops! Something went wrong',
-  showRetry: false
+  showRetry: false,
 })
 
 defineEmits<{

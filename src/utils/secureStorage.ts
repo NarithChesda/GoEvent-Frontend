@@ -1,6 +1,6 @@
 /**
  * Secure Storage Utility
- * 
+ *
  * Provides a secure storage mechanism for sensitive data like JWT tokens.
  * Falls back to localStorage for backward compatibility but adds security layers.
  */
@@ -14,7 +14,10 @@ interface StorageData {
 class SecureStorage {
   private readonly storagePrefix = 'goevent_secure_v2_' // Version bump to force migration from unstable fingerprint
   private readonly checksumKey = 'storage_integrity'
-  private readonly isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  private readonly isDevelopment =
+    import.meta.env.DEV ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
   private isLogoutInProgress = false // Flag to prevent migration during logout
 
   /**
@@ -33,7 +36,7 @@ class SecureStorage {
     let hash = 0
     for (let i = 0; i < data.length; i++) {
       const char = data.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32bit integer
     }
     return Math.abs(hash).toString(16)
@@ -46,13 +49,13 @@ class SecureStorage {
     // Create a simple browser fingerprint for XOR key
     const fingerprint = this.getBrowserFingerprint()
     let encrypted = ''
-    
+
     for (let i = 0; i < data.length; i++) {
       const dataChar = data.charCodeAt(i)
       const keyChar = fingerprint.charCodeAt(i % fingerprint.length)
       encrypted += String.fromCharCode(dataChar ^ keyChar)
     }
-    
+
     return btoa(encrypted) // Base64 encode
   }
 
@@ -64,13 +67,13 @@ class SecureStorage {
       const fingerprint = this.getBrowserFingerprint()
       const data = atob(encryptedData) // Base64 decode
       let decrypted = ''
-      
+
       for (let i = 0; i < data.length; i++) {
         const dataChar = data.charCodeAt(i)
         const keyChar = fingerprint.charCodeAt(i % fingerprint.length)
         decrypted += String.fromCharCode(dataChar ^ keyChar)
       }
-      
+
       return decrypted
     } catch (error) {
       if (this.isDevelopment) {
@@ -88,13 +91,13 @@ class SecureStorage {
       const fingerprint = this.getLegacyBrowserFingerprint()
       const data = atob(encryptedData) // Base64 decode
       let decrypted = ''
-      
+
       for (let i = 0; i < data.length; i++) {
         const dataChar = data.charCodeAt(i)
         const keyChar = fingerprint.charCodeAt(i % fingerprint.length)
         decrypted += String.fromCharCode(dataChar ^ keyChar)
       }
-      
+
       return decrypted
     } catch (error) {
       if (this.isDevelopment) {
@@ -114,19 +117,19 @@ class SecureStorage {
       const devFingerprint = [
         'development-mode',
         navigator.language || 'en-US',
-        'stable-dev-key-v2'
+        'stable-dev-key-v2',
       ].join('|')
       return this.generateChecksum(devFingerprint)
     }
-    
+
     // Production fingerprint with truly stable characteristics only
     const fingerprint = [
       navigator.userAgent || 'unknown',
       navigator.language || 'en-US',
       navigator.platform || 'unknown',
-      'stable-goevent-key-v2' // Version bump to force migration
+      'stable-goevent-key-v2', // Version bump to force migration
     ].join('|')
-    
+
     return this.generateChecksum(fingerprint)
   }
 
@@ -139,9 +142,9 @@ class SecureStorage {
       navigator.userAgent,
       navigator.language,
       screen.width + 'x' + screen.height,
-      'stable-goevent-key'
+      'stable-goevent-key',
     ].join('|')
-    
+
     return this.generateChecksum(fingerprint)
   }
 
@@ -151,7 +154,10 @@ class SecureStorage {
   setItem(key: string, value: string): void {
     // Prevent storage operations during logout (except for clearing operations)
     if (this.isLogoutInProgress) {
-      this.devLog('warn', `Attempted to store data during logout for key: ${key} - operation blocked`)
+      this.devLog(
+        'warn',
+        `Attempted to store data during logout for key: ${key} - operation blocked`,
+      )
       return
     }
 
@@ -170,16 +176,16 @@ class SecureStorage {
       const storageData: StorageData = {
         value: encrypted,
         timestamp: Date.now(),
-        checksum: this.generateChecksum(value)
+        checksum: this.generateChecksum(value),
       }
-      
+
       const serialized = JSON.stringify(storageData)
       localStorage.setItem(this.storagePrefix + key, serialized)
-      
+
       // this.devLog('info', `Successfully stored encrypted data for key: ${key}`)
     } catch (error) {
       console.error('Failed to store data securely:', error)
-      
+
       // Fallback to regular localStorage for backward compatibility
       try {
         localStorage.setItem(key, value)
@@ -215,37 +221,44 @@ class SecureStorage {
         try {
           const parsed: StorageData = JSON.parse(secureData)
           const decrypted = this.decrypt(parsed.value)
-          
+
           // Verify integrity with current fingerprint
           if (parsed.checksum && this.generateChecksum(decrypted) === parsed.checksum) {
             return decrypted
           }
-          
+
           // Try legacy decryption as fallback without migration
           const legacyDecrypted = this.decryptWithLegacyFingerprint(parsed.value)
-          if (legacyDecrypted && parsed.checksum && this.generateChecksum(legacyDecrypted) === parsed.checksum) {
+          if (
+            legacyDecrypted &&
+            parsed.checksum &&
+            this.generateChecksum(legacyDecrypted) === parsed.checksum
+          ) {
             return legacyDecrypted
           }
         } catch {
           // Silent error handling for direct access
         }
       }
-      
+
       // Try legacy secure storage (v1) without migration
       const legacySecureData = localStorage.getItem('goevent_secure_' + key)
       if (legacySecureData) {
         try {
           const parsed: StorageData = JSON.parse(legacySecureData)
           const legacyDecrypted = this.decryptWithLegacyFingerprint(parsed.value)
-          
-          if (legacyDecrypted && (!parsed.checksum || this.generateChecksum(legacyDecrypted) === parsed.checksum)) {
+
+          if (
+            legacyDecrypted &&
+            (!parsed.checksum || this.generateChecksum(legacyDecrypted) === parsed.checksum)
+          ) {
             return legacyDecrypted
           }
         } catch {
           // Silent error handling for direct access
         }
       }
-      
+
       // Fallback to regular localStorage without migration
       return localStorage.getItem(key)
     } catch {
@@ -262,7 +275,7 @@ class SecureStorage {
     if (this.isLogoutInProgress) {
       return this.getItemDirect(key)
     }
-    
+
     try {
       // Try secure storage first (v2)
       const secureData = localStorage.getItem(this.storagePrefix + key)
@@ -270,21 +283,29 @@ class SecureStorage {
         try {
           const parsed: StorageData = JSON.parse(secureData)
           const decrypted = this.decrypt(parsed.value)
-          
+
           // Verify integrity with current fingerprint
           if (parsed.checksum && this.generateChecksum(decrypted) === parsed.checksum) {
             return decrypted
           }
-          
+
           if (this.isDevelopment) {
-            console.warn('Data integrity check failed with current fingerprint, attempting legacy decryption')
+            console.warn(
+              'Data integrity check failed with current fingerprint, attempting legacy decryption',
+            )
           }
-          
+
           // Try legacy decryption as fallback
           const legacyDecrypted = this.decryptWithLegacyFingerprint(parsed.value)
-          if (legacyDecrypted && parsed.checksum && this.generateChecksum(legacyDecrypted) === parsed.checksum) {
+          if (
+            legacyDecrypted &&
+            parsed.checksum &&
+            this.generateChecksum(legacyDecrypted) === parsed.checksum
+          ) {
             if (this.isDevelopment) {
-              console.info('Successfully decrypted with legacy fingerprint, migrating to new format')
+              console.info(
+                'Successfully decrypted with legacy fingerprint, migrating to new format',
+              )
             }
             // Re-encrypt with current fingerprint and save (unless logout is in progress)
             if (!this.isLogoutInProgress) {
@@ -292,7 +313,7 @@ class SecureStorage {
             }
             return legacyDecrypted
           }
-          
+
           if (this.isDevelopment) {
             console.warn('Both current and legacy decryption failed, data may be corrupted')
           }
@@ -302,15 +323,18 @@ class SecureStorage {
           }
         }
       }
-      
+
       // Try legacy secure storage (v1)
       const legacySecureData = localStorage.getItem('goevent_secure_' + key)
       if (legacySecureData) {
         try {
           const parsed: StorageData = JSON.parse(legacySecureData)
           const legacyDecrypted = this.decryptWithLegacyFingerprint(parsed.value)
-          
-          if (legacyDecrypted && (!parsed.checksum || this.generateChecksum(legacyDecrypted) === parsed.checksum)) {
+
+          if (
+            legacyDecrypted &&
+            (!parsed.checksum || this.generateChecksum(legacyDecrypted) === parsed.checksum)
+          ) {
             if (this.isDevelopment) {
               console.info('Migrating from legacy secure storage to v2')
             }
@@ -327,7 +351,7 @@ class SecureStorage {
           }
         }
       }
-      
+
       // Fallback to regular localStorage for backward compatibility
       const regularData = localStorage.getItem(key)
       if (regularData) {
@@ -341,7 +365,7 @@ class SecureStorage {
         }
         return regularData
       }
-      
+
       return null
     } catch (error) {
       console.error('Critical error in secure storage retrieval:', error)
@@ -366,16 +390,18 @@ class SecureStorage {
    * Check if an item exists in secure storage (any version)
    */
   hasItem(key: string): boolean {
-    return localStorage.getItem(this.storagePrefix + key) !== null || 
-           localStorage.getItem('goevent_secure_' + key) !== null ||
-           localStorage.getItem(key) !== null
+    return (
+      localStorage.getItem(this.storagePrefix + key) !== null ||
+      localStorage.getItem('goevent_secure_' + key) !== null ||
+      localStorage.getItem(key) !== null
+    )
   }
 
   /**
    * Migrate existing localStorage data to secure storage
    */
   migrateToSecureStorage(keys: string[]): void {
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const existingValue = localStorage.getItem(key)
       if (existingValue && !localStorage.getItem(this.storagePrefix + key)) {
         this.setItem(key, existingValue)
@@ -389,7 +415,7 @@ class SecureStorage {
    */
   clear(): void {
     const keys = Object.keys(localStorage)
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (key.startsWith(this.storagePrefix) || key.startsWith('goevent_secure_')) {
         localStorage.removeItem(key)
       }
@@ -400,7 +426,7 @@ class SecureStorage {
    * Safely clear corrupted data for specific keys
    */
   clearCorruptedData(keys: string[]): void {
-    keys.forEach(key => {
+    keys.forEach((key) => {
       try {
         this.removeItem(key)
         if (this.isDevelopment) {
@@ -417,17 +443,17 @@ class SecureStorage {
    */
   isValidTokenFormat(token: string): boolean {
     if (!token || typeof token !== 'string') return false
-    
+
     // Basic JWT format validation (3 parts separated by dots)
     const parts = token.split('.')
     if (parts.length !== 3) return false
-    
+
     // Check if each part is valid base64
     try {
-      parts.forEach(part => {
+      parts.forEach((part) => {
         if (!part) throw new Error('Empty part')
         // Add padding if needed
-        const padded = part + '='.repeat((4 - part.length % 4) % 4)
+        const padded = part + '='.repeat((4 - (part.length % 4)) % 4)
         atob(padded.replace(/-/g, '+').replace(/_/g, '/'))
       })
       return true

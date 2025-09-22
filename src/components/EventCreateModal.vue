@@ -4,10 +4,10 @@
       <div v-if="isVisible" class="fixed inset-0 z-50 overflow-y-auto" @click="handleBackdropClick">
         <!-- Backdrop -->
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             ref="modalRef"
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
@@ -88,14 +88,16 @@
 
               <!-- Timezone -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                  Timezone
-                </label>
+                <label class="block text-sm font-semibold text-slate-700 mb-2"> Timezone </label>
                 <select
                   v-model="form.timezone"
                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 >
-                  <optgroup v-for="(timezones, region) in timezonesByRegion" :key="region" :label="region">
+                  <optgroup
+                    v-for="(timezones, region) in timezonesByRegion"
+                    :key="region"
+                    :label="region"
+                  >
                     <option
                       v-for="timezone in timezones"
                       :key="timezone.value"
@@ -112,9 +114,7 @@
 
               <!-- Location -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                  Location
-                </label>
+                <label class="block text-sm font-semibold text-slate-700 mb-2"> Location </label>
                 <input
                   v-model="form.location"
                   type="text"
@@ -150,9 +150,10 @@
                 </div>
               </div>
 
-
               <!-- Action Buttons -->
-              <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200"
+              >
                 <button
                   type="button"
                   @click="$emit('close')"
@@ -227,7 +228,7 @@ const form = reactive<EventFormData>({
   end_date: '',
   location: '',
   privacy: 'public',
-  timezone: getUserTimezone()
+  timezone: getUserTimezone(),
 })
 
 // Timezone data
@@ -240,7 +241,6 @@ const handleBackdropClick = (event: MouseEvent) => {
   }
 }
 
-
 const resetForm = () => {
   Object.assign(form, {
     title: '',
@@ -249,7 +249,7 @@ const resetForm = () => {
     end_date: '',
     location: '',
     privacy: 'public',
-    timezone: getUserTimezone()
+    timezone: getUserTimezone(),
   })
   // Reset default dates
   setDefaultDates()
@@ -257,28 +257,29 @@ const resetForm = () => {
 
 const handleSubmit = async () => {
   isSubmitting.value = true
-  
+
   try {
     // Validate end date is after start date
     if (new Date(form.end_date) <= new Date(form.start_date)) {
       alert('End date must be after start date')
       return
     }
-    
+
     // Create form data copy for submission
     const formData = { ...form }
-    
+
     // Convert datetime-local format to ISO format for API
     const startDate = new Date(formData.start_date).toISOString()
     const endDate = new Date(formData.end_date).toISOString()
-    
+
     // Create event data with proper formatting
     const eventData = {
       ...formData,
       start_date: startDate,
       end_date: endDate,
       // Set defaults for required fields
-      short_description: formData.description.substring(0, 150) + (formData.description.length > 150 ? '...' : ''),
+      short_description:
+        formData.description.substring(0, 150) + (formData.description.length > 150 ? '...' : ''),
       is_virtual: false,
       virtual_link: '', // API expects empty string, not null
       max_attendees: null,
@@ -287,9 +288,9 @@ const handleSubmit = async () => {
       category: null,
       banner_image: null,
       timezone: formData.timezone || getUserTimezone(),
-      status: 'published'
+      status: 'published',
     }
-    
+
     emit('submit', eventData)
     resetForm()
     emit('close')
@@ -302,25 +303,28 @@ const handleSubmit = async () => {
 }
 
 // Watch for modal visibility to handle focus
-watch(() => props.isVisible, (isVisible) => {
-  if (isVisible) {
-    // Reset form when modal opens
-    resetForm()
-    
-    // Focus management
-    setTimeout(() => {
-      const firstInput = modalRef.value?.querySelector('input, textarea, select') as HTMLElement
-      firstInput?.focus()
-    }, 100)
-  }
-})
+watch(
+  () => props.isVisible,
+  (isVisible) => {
+    if (isVisible) {
+      // Reset form when modal opens
+      resetForm()
+
+      // Focus management
+      setTimeout(() => {
+        const firstInput = modalRef.value?.querySelector('input, textarea, select') as HTMLElement
+        firstInput?.focus()
+      }, 100)
+    }
+  },
+)
 
 // Set default start date to now + 1 hour
 const setDefaultDates = () => {
   const now = new Date()
   const startDate = new Date(now.getTime() + 60 * 60 * 1000) // +1 hour
   const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000) // +2 hours from start
-  
+
   form.start_date = startDate.toISOString().slice(0, 16)
   form.end_date = endDate.toISOString().slice(0, 16)
 }

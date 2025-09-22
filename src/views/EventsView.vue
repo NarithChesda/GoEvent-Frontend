@@ -6,23 +6,31 @@
     <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- View Toggle -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-          <div class="flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-1 shadow-lg">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4"
+        >
+          <div
+            class="flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-1 shadow-lg"
+          >
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'my'"
-              :class="currentView === 'my' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                : 'text-slate-600 hover:text-blue-600'"
+              :class="
+                currentView === 'my'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:text-blue-600'
+              "
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
               My Events
             </button>
             <button
               @click="currentView = 'all'"
-              :class="currentView === 'all' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                : 'text-slate-600 hover:text-blue-600'"
+              :class="
+                currentView === 'all'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:text-blue-600'
+              "
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
               All Events
@@ -30,9 +38,11 @@
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'registered'"
-              :class="currentView === 'registered' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                : 'text-slate-600 hover:text-blue-600'"
+              :class="
+                currentView === 'registered'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:text-blue-600'
+              "
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
               Registered
@@ -52,16 +62,12 @@
         </div>
 
         <!-- Filters -->
-        <EventFilters 
-          v-model="filters" 
-          :categories="categories"
-          class="mb-8"
-        />
+        <EventFilters v-model="filters" :categories="categories" class="mb-8" />
 
         <!-- Loading State -->
         <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div 
-            v-for="i in 6" 
+          <div
+            v-for="i in 6"
             :key="i"
             class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
           >
@@ -102,21 +108,23 @@
               >
                 <ChevronLeft class="w-4 h-4" />
               </button>
-              
+
               <template v-for="page in getVisiblePages()" :key="page">
                 <button
                   v-if="page !== '...'"
                   @click="loadPage(page as number)"
-                  :class="page === pagination.currentPage 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'"
+                  :class="
+                    page === pagination.currentPage
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                  "
                   class="px-4 py-2 rounded-xl border border-slate-200 transition-all duration-200 min-w-[40px]"
                 >
                   {{ page }}
                 </button>
                 <span v-else class="px-2 text-slate-400">...</span>
               </template>
-              
+
               <button
                 @click="loadPage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage >= pagination.totalPages"
@@ -130,7 +138,9 @@
 
         <!-- Empty State -->
         <div v-else-if="isEmpty" class="text-center py-12 sm:py-16">
-          <div class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+          <div
+            class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center"
+          >
             <Calendar class="w-32 h-32 text-blue-400" />
           </div>
           <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-4">
@@ -154,7 +164,7 @@
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
       <div v-if="message" class="fixed bottom-8 right-8 z-50">
-        <div 
+        <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
         >
@@ -174,7 +184,9 @@
         aria-label="Create Event"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
-        <div class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+        <div
+          class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+        >
           Create Event
         </div>
       </button>
@@ -192,25 +204,25 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  Calendar, 
-  Plus, 
-  ChevronLeft, 
-  ChevronRight, 
-  CheckCircle, 
-  AlertCircle 
+import {
+  Calendar,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
 import EventCard from '../components/EventCard.vue'
 import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
 import { useAuthStore } from '../stores/auth'
-import { 
-  eventsService, 
-  eventCategoriesService, 
-  type Event, 
-  type EventCategory, 
-  type EventFilters as EventFiltersType
+import {
+  eventsService,
+  eventCategoriesService,
+  type Event,
+  type EventCategory,
+  type EventFilters as EventFiltersType,
 } from '../services/api'
 
 type ViewType = 'all' | 'my' | 'registered'
@@ -234,7 +246,7 @@ const pagination = reactive({
   currentPage: 1,
   totalPages: 1,
   totalItems: 0,
-  itemsPerPage: 20 // Match Django REST framework default page size
+  itemsPerPage: 20, // Match Django REST framework default page size
 })
 
 // Computed
@@ -249,33 +261,33 @@ const getEmptyStateTitle = () => {
     case 'registered':
       return "You haven't registered for any events yet"
     default:
-      return "No events found"
+      return 'No events found'
   }
 }
 
 const getEmptyStateMessage = () => {
   switch (currentView.value) {
     case 'my':
-      return "Start organizing amazing events and bring people together for memorable experiences."
+      return 'Start organizing amazing events and bring people together for memorable experiences.'
     case 'registered':
-      return "Explore public events and register for ones that interest you."
+      return 'Explore public events and register for ones that interest you.'
     default:
-      return "Try adjusting your filters or check back later for new events."
+      return 'Try adjusting your filters or check back later for new events.'
   }
 }
 
 // Methods
 const loadEvents = async (page = 1) => {
   loading.value = true
-  
+
   try {
     let response: any = null
-    
+
     const requestParams = {
       page,
-      ...filters.value
+      ...filters.value,
     }
-    
+
     if (currentView.value === 'my') {
       // Use dedicated /api/events/my/ endpoint for user's events
       // Note: This endpoint returns { organized: [...], collaborated: [...] }
@@ -284,7 +296,7 @@ const loadEvents = async (page = 1) => {
         const organized = myEventsResponse.data.organized || []
         const collaborated = myEventsResponse.data.collaborated || []
         const allMyEvents = [...organized, ...collaborated]
-        
+
         // Create a mock pagination response to match expected structure
         response = {
           success: true,
@@ -292,13 +304,13 @@ const loadEvents = async (page = 1) => {
             count: allMyEvents.length,
             results: allMyEvents,
             next: null,
-            previous: null
-          }
+            previous: null,
+          },
         }
       } else {
         response = {
           success: false,
-          message: myEventsResponse.message || 'Failed to load events'
+          message: myEventsResponse.message || 'Failed to load events',
         }
       }
     } else if (currentView.value === 'registered') {
@@ -307,7 +319,7 @@ const loadEvents = async (page = 1) => {
       if (registeredResponse.success && registeredResponse.data) {
         // The API returns an array directly, not a paginated response
         const registeredEvents = registeredResponse.data || []
-        
+
         // Create a mock pagination response to match expected structure
         response = {
           success: true,
@@ -315,13 +327,13 @@ const loadEvents = async (page = 1) => {
             count: registeredEvents.length,
             results: registeredEvents,
             next: null,
-            previous: null
-          }
+            previous: null,
+          },
         }
       } else {
         response = {
           success: false,
-          message: registeredResponse.message || 'Failed to load registered events'
+          message: registeredResponse.message || 'Failed to load registered events',
         }
       }
     } else {
@@ -329,10 +341,10 @@ const loadEvents = async (page = 1) => {
       response = await eventsService.getEvents({
         ...requestParams,
         privacy: 'public',
-        status: 'published'
+        status: 'published',
       })
     }
-    
+
     if (response.success && response.data) {
       events.value = response.data.results || []
       pagination.currentPage = page
@@ -376,7 +388,6 @@ const loadCategories = async () => {
   }
 }
 
-
 const loadPage = (page: number) => {
   if (page >= 1 && page <= pagination.totalPages) {
     loadEvents(page)
@@ -387,7 +398,7 @@ const getVisiblePages = () => {
   const current = pagination.currentPage
   const total = pagination.totalPages
   const pages: (number | string)[] = []
-  
+
   if (total <= 7) {
     // Show all pages if 7 or fewer
     for (let i = 1; i <= total; i++) {
@@ -396,29 +407,29 @@ const getVisiblePages = () => {
   } else {
     // Always show first page
     pages.push(1)
-    
+
     if (current > 3) {
       pages.push('...')
     }
-    
+
     // Show pages around current
     const start = Math.max(2, current - 1)
     const end = Math.min(total - 1, current + 1)
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i)
     }
-    
+
     if (current < total - 2) {
       pages.push('...')
     }
-    
+
     // Always show last page
     if (total > 1) {
       pages.push(total)
     }
   }
-  
+
   return pages
 }
 
@@ -439,7 +450,7 @@ const deleteEvent = async (event: Event) => {
   if (!confirm(`Are you sure you want to delete "${event.title}"?`)) {
     return
   }
-  
+
   try {
     const response = await eventsService.deleteEvent(event.id)
     if (response.success) {
@@ -473,8 +484,8 @@ const setupFloatingButton = () => {
     },
     {
       threshold: 0.1, // Trigger when 10% of the button is visible
-      rootMargin: '0px 0px -10px 0px' // Add some margin to trigger slightly before fully out of view
-    }
+      rootMargin: '0px 0px -10px 0px', // Add some margin to trigger slightly before fully out of view
+    },
   )
 
   observer.observe(createEventButton.value)
@@ -508,68 +519,85 @@ interface EventFormData {
 const handleEventCreate = async (formData: EventFormData) => {
   try {
     console.log('Creating event with data:', formData)
-    
+
     // Prepare event data for API
     const eventData = {
       title: formData.title,
       description: formData.description,
-      short_description: formData.short_description || formData.description.substring(0, 150) + (formData.description.length > 150 ? '...' : ''),
+      short_description:
+        formData.short_description ||
+        formData.description.substring(0, 150) + (formData.description.length > 150 ? '...' : ''),
       start_date: formData.start_date,
       end_date: formData.end_date,
       location: formData.location || '',
       is_virtual: formData.is_virtual || false,
       virtual_link: formData.virtual_link || '', // API expects empty string, not null
       privacy: formData.privacy,
-      status: (formData.status as 'draft' | 'published' | 'cancelled' | 'completed') || 'published' as const,
+      status:
+        (formData.status as 'draft' | 'published' | 'cancelled' | 'completed') ||
+        ('published' as const),
       category: formData.category || null,
       max_attendees: formData.max_attendees || null,
       registration_required: formData.registration_required || false,
       registration_deadline: formData.registration_deadline || null,
-      timezone: formData.timezone || 'UTC'
+      timezone: formData.timezone || 'UTC',
     }
-    
+
     console.log('Sending event data to API:', eventData)
     const response = await eventsService.createEvent(eventData)
     console.log('API response:', response)
-    
+
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
-      
+
       // Reload current events list
       await loadEvents(pagination.currentPage)
     } else {
       console.error('Create event failed:', response)
       let errorMessage = response.message || 'Failed to create event'
-      
+
       // If there are validation errors, show them
       if (response.errors) {
         const errorDetails = Object.entries(response.errors)
-          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .map(
+            ([field, messages]) =>
+              `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`,
+          )
           .join('; ')
         errorMessage = `Validation errors: ${errorDetails}`
       }
-      
+
       showMessage('error', errorMessage)
     }
   } catch (error) {
     console.error('Error creating event:', error)
-    showMessage('error', 'Network error: Failed to create event. Please check your connection and try again.')
+    showMessage(
+      'error',
+      'Network error: Failed to create event. Please check your connection and try again.',
+    )
   }
 }
 
 // Watchers
-watch([() => currentView.value, filters], () => {
-  pagination.currentPage = 1
-  loadEvents()
-}, { deep: true })
+watch(
+  [() => currentView.value, filters],
+  () => {
+    pagination.currentPage = 1
+    loadEvents()
+  },
+  { deep: true },
+)
 
 // Watch authentication state changes
-watch(() => authStore.isAuthenticated, (isAuthenticated) => {
-  // If user logs out and is on "my" or "registered" tab, switch to "all"
-  if (!isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
-    currentView.value = 'all'
-  }
-})
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    // If user logs out and is on "my" or "registered" tab, switch to "all"
+    if (!isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
+      currentView.value = 'all'
+    }
+  },
+)
 
 // Observer cleanup function
 let cleanupObserver: (() => void) | null = null
@@ -578,10 +606,10 @@ let cleanupObserver: (() => void) | null = null
 onMounted(async () => {
   // Load initial data
   await loadCategories()
-  
+
   // Load events after categories
   loadEvents()
-  
+
   // Setup floating button after DOM is updated
   await nextTick()
   cleanupObserver = setupFloatingButton()

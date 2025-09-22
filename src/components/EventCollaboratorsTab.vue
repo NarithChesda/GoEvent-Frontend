@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Team Collaboration</h2>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Team Collaboration
+        </h2>
         <p class="text-sm text-slate-600 mt-1">Manage your event collaborators and team members</p>
       </div>
       <button
@@ -68,13 +70,18 @@
     </div>
 
     <!-- Organizer Card -->
-    <div v-if="organizerDetails" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
+    <div
+      v-if="organizerDetails"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6"
+    >
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
         <Crown class="w-5 h-5 text-purple-600 mr-2" />
         Event Organizer
       </h3>
       <div class="flex items-center space-x-4">
-        <div class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center">
+        <div
+          class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center"
+        >
           <img
             v-if="organizerDetails.profile_picture"
             :src="getMediaUrl(organizerDetails.profile_picture)"
@@ -91,7 +98,9 @@
           </h4>
           <p class="text-sm text-slate-600">@{{ organizerDetails.username }}</p>
           <p class="text-sm text-slate-500">{{ organizerDetails.email }}</p>
-          <span class="inline-block mt-1 px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+          <span
+            class="inline-block mt-1 px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full"
+          >
             Organizer
           </span>
         </div>
@@ -99,7 +108,10 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+    <div
+      v-if="loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+    >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span class="ml-3 text-slate-600">Loading collaborators...</span>
@@ -107,7 +119,10 @@
     </div>
 
     <!-- Collaborators List -->
-    <div v-else-if="collaborators.length > 0" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
+    <div
+      v-else-if="collaborators.length > 0"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6"
+    >
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-slate-900 flex items-center">
           <Users class="w-5 h-5 text-blue-600 mr-2" />
@@ -122,21 +137,31 @@
           class="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl hover:bg-slate-100/50 transition-colors duration-200"
         >
           <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+            <div
+              class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center"
+            >
               <img
                 v-if="collaborator.user_details?.profile_picture"
                 :src="getMediaUrl(collaborator.user_details.profile_picture)"
-                :alt="collaborator.user_details.first_name + ' ' + collaborator.user_details.last_name"
+                :alt="
+                  collaborator.user_details.first_name + ' ' + collaborator.user_details.last_name
+                "
                 class="w-full h-full object-cover"
               />
               <span v-else class="text-white text-sm font-bold">
-                {{ getInitials(collaborator.user_details?.first_name || '', collaborator.user_details?.last_name || collaborator.email.charAt(0)) }}
+                {{
+                  getInitials(
+                    collaborator.user_details?.first_name || '',
+                    collaborator.user_details?.last_name || collaborator.email.charAt(0),
+                  )
+                }}
               </span>
             </div>
             <div class="flex-1">
               <h4 class="font-semibold text-slate-800">
                 <span v-if="collaborator.user_details">
-                  {{ collaborator.user_details.first_name }} {{ collaborator.user_details.last_name }}
+                  {{ collaborator.user_details.first_name }}
+                  {{ collaborator.user_details.last_name }}
                 </span>
                 <span v-else class="text-slate-500">{{ collaborator.email }}</span>
               </h4>
@@ -147,7 +172,8 @@
                 <span v-else>{{ collaborator.email }}</span>
               </p>
               <p class="text-xs text-slate-500 mt-1">
-                Invited by {{ collaborator.invited_by_name }} • {{ formatDate(collaborator.invited_at) }}
+                Invited by {{ collaborator.invited_by_name }} •
+                {{ formatDate(collaborator.invited_at) }}
               </p>
             </div>
           </div>
@@ -161,7 +187,11 @@
                   @blur="cancelRoleEdit"
                   @keydown.escape="cancelRoleEdit"
                   class="px-2 py-1 text-xs font-medium rounded-full border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                  :class="getRoleColor(tempRole).replace('bg-', 'bg-opacity-20 bg-').replace('text-', 'text-')"
+                  :class="
+                    getRoleColor(tempRole)
+                      .replace('bg-', 'bg-opacity-20 bg-')
+                      .replace('text-', 'text-')
+                  "
                 >
                   <option value="viewer">Viewer</option>
                   <option value="editor">Editor</option>
@@ -186,7 +216,10 @@
                   {{ collaborator.role }}
                 </span>
               </div>
-              <p class="text-xs mt-1" :class="collaborator.is_accepted ? 'text-green-600' : 'text-orange-600'">
+              <p
+                class="text-xs mt-1"
+                :class="collaborator.is_accepted ? 'text-green-600' : 'text-orange-600'"
+              >
                 {{ collaborator.is_accepted ? 'Accepted' : 'Pending' }}
               </p>
             </div>
@@ -228,10 +261,15 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="!loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">No Collaborators Yet</h3>
-      <p class="text-slate-600 mb-6">Start building your team by inviting collaborators to help manage this event.</p>
+      <p class="text-slate-600 mb-6">
+        Start building your team by inviting collaborators to help manage this event.
+      </p>
       <button
         v-if="canInvite"
         @click="showInviteModal = true"
@@ -243,13 +281,14 @@
     </div>
 
     <!-- Collaboration Permissions Info -->
-    <div class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6">
+    <div
+      class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6"
+    >
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-slate-900 flex items-center">
           <Shield class="w-5 h-5 text-blue-600 mr-2" />
           Collaboration Roles
         </h3>
-
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white/70 rounded-2xl p-4">
@@ -279,8 +318,12 @@
     <!-- Invite Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showInviteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="closeInviteModal">
-          <div 
+        <div
+          v-if="showInviteModal"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click="closeInviteModal"
+        >
+          <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
             @click.stop
           >
@@ -304,42 +347,45 @@
 
             <!-- Content -->
             <div class="p-8">
-
               <form @submit.prevent="inviteCollaborator">
                 <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
-                <input
-                  v-model="inviteForm.email"
-                  type="email"
-                  required
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                  placeholder="collaborator@example.com"
-                />
-              </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2"
+                      >Email Address</label
+                    >
+                    <input
+                      v-model="inviteForm.email"
+                      type="email"
+                      required
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      placeholder="collaborator@example.com"
+                    />
+                  </div>
 
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Role</label>
-                <select
-                  v-model="inviteForm.role"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                >
-                  <option value="viewer">Viewer - Read-only access</option>
-                  <option value="editor">Editor - Can edit event details</option>
-                  <option value="admin">Admin - Full permissions</option>
-                </select>
-              </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                    <select
+                      v-model="inviteForm.role"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    >
+                      <option value="viewer">Viewer - Read-only access</option>
+                      <option value="editor">Editor - Can edit event details</option>
+                      <option value="admin">Admin - Full permissions</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Message (Optional)</label>
-                <textarea
-                  v-model="inviteForm.message"
-                  rows="3"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                  placeholder="Add a personal message to your invitation..."
-                ></textarea>
-              </div>
-            </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2"
+                      >Message (Optional)</label
+                    >
+                    <textarea
+                      v-model="inviteForm.message"
+                      rows="3"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      placeholder="Add a personal message to your invitation..."
+                    ></textarea>
+                  </div>
+                </div>
 
                 <div class="flex space-x-4 pt-6">
                   <button
@@ -369,7 +415,13 @@
       :show="showRemoveModal"
       :loading="isRemoving"
       title="Remove Collaborator"
-      :item-name="collaboratorToRemove ? (collaboratorToRemove.user_details ? `${collaboratorToRemove.user_details.first_name} ${collaboratorToRemove.user_details.last_name}` : collaboratorToRemove.email) : ''"
+      :item-name="
+        collaboratorToRemove
+          ? collaboratorToRemove.user_details
+            ? `${collaboratorToRemove.user_details.first_name} ${collaboratorToRemove.user_details.last_name}`
+            : collaboratorToRemove.email
+          : ''
+      "
       message="They will lose access to manage this event."
       @confirm="removeCollaborator"
       @cancel="closeRemoveModal"
@@ -402,7 +454,7 @@ import {
   Clock,
   Shield,
   X,
-  Trash2
+  Trash2,
 } from 'lucide-vue-next'
 import { eventsService, type EventCollaborator } from '../services/api'
 import { useAuthStore } from '../stores/auth'
@@ -441,32 +493,34 @@ const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const inviteForm = ref({
   email: '',
   role: 'editor' as 'admin' | 'editor' | 'viewer',
-  message: ''
+  message: '',
 })
 
 // Computed
 const canInvite = computed(() => {
   // Organizers and admin collaborators can invite
-  return props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
+  return (
+    props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
+  )
 })
 
 const canRemoveCollaborator = computed(() => {
   // Organizers and admin collaborators can remove collaborators
-  return props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
+  return (
+    props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
+  )
 })
 
 const canUpdateRole = computed(() => {
   // Organizers and admin collaborators can update roles
-  return props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
+  return (
+    props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
+  )
 })
 
-const acceptedCount = computed(() =>
-  collaborators.value.filter(c => c.is_accepted).length
-)
+const acceptedCount = computed(() => collaborators.value.filter((c) => c.is_accepted).length)
 
-const pendingCount = computed(() =>
-  collaborators.value.filter(c => !c.is_accepted).length
-)
+const pendingCount = computed(() => collaborators.value.filter((c) => !c.is_accepted).length)
 
 // Methods
 const loadCollaborators = async () => {
@@ -494,7 +548,7 @@ const inviteCollaborator = async () => {
     const response = await eventsService.inviteCollaborator(props.eventId, {
       email: inviteForm.value.email,
       role: inviteForm.value.role,
-      message: inviteForm.value.message || undefined
+      message: inviteForm.value.message || undefined,
     })
 
     if (response.success && response.data) {
@@ -517,7 +571,7 @@ const closeInviteModal = () => {
   inviteForm.value = {
     email: '',
     role: 'editor',
-    message: ''
+    message: '',
   }
 }
 
@@ -538,15 +592,20 @@ const removeCollaborator = async () => {
   try {
     console.log('Attempting to remove collaborator:', {
       eventId: props.eventId,
-      collaboratorId: collaboratorToRemove.value.id
+      collaboratorId: collaboratorToRemove.value.id,
     })
 
-    const response = await eventsService.removeCollaborator(props.eventId, collaboratorToRemove.value.id)
+    const response = await eventsService.removeCollaborator(
+      props.eventId,
+      collaboratorToRemove.value.id,
+    )
 
     if (response.success) {
       showMessage('success', 'Collaborator removed successfully!')
       // Remove from local list
-      collaborators.value = collaborators.value.filter(c => c.id !== collaboratorToRemove.value!.id)
+      collaborators.value = collaborators.value.filter(
+        (c) => c.id !== collaboratorToRemove.value!.id,
+      )
       closeRemoveModal()
     } else {
       console.error('Remove collaborator API response:', response)
@@ -581,17 +640,17 @@ const saveRoleUpdate = async (collaborator: EventCollaborator) => {
     console.log('Attempting to update collaborator:', {
       eventId: props.eventId,
       collaboratorId: collaborator.id,
-      newRole: tempRole.value
+      newRole: tempRole.value,
     })
 
     const response = await eventsService.updateCollaborator(props.eventId, collaborator.id, {
-      role: tempRole.value
+      role: tempRole.value,
     })
 
     if (response.success && response.data) {
       showMessage('success', `Role updated to ${tempRole.value}`)
       // Update the collaborator in the local list
-      const index = collaborators.value.findIndex(c => c.id === collaborator.id)
+      const index = collaborators.value.findIndex((c) => c.id === collaborator.id)
       if (index !== -1) {
         collaborators.value[index] = response.data
       }
@@ -645,7 +704,7 @@ const formatDate = (dateString: string): string => {
   return date.toLocaleDateString([], {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 

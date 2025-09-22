@@ -4,12 +4,12 @@ export function useDelayedTypingAnimation(text: string, speed: number = 100, del
   const displayText = ref('')
   const isComplete = ref(false)
   const hasStarted = ref(false)
-  
+
   onMounted(() => {
     setTimeout(() => {
       hasStarted.value = true
       let currentIndex = 0
-      
+
       const typeNextCharacter = () => {
         if (currentIndex < text.length) {
           displayText.value += text[currentIndex]
@@ -19,14 +19,14 @@ export function useDelayedTypingAnimation(text: string, speed: number = 100, del
           isComplete.value = true
         }
       }
-      
+
       typeNextCharacter()
     }, delay)
   })
-  
+
   return {
     displayText,
     isComplete,
-    hasStarted
+    hasStarted,
   }
 }

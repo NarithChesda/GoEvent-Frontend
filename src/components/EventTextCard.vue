@@ -1,5 +1,7 @@
 <template>
-  <div class="event-text-card bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+  <div
+    class="event-text-card bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200"
+  >
     <div class="flex items-start justify-between">
       <!-- Text Content -->
       <div class="flex-1 pr-4">
@@ -7,24 +9,26 @@
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center space-x-3">
             <!-- Language Badge -->
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+            >
               {{ getLanguageName(text.language) }}
             </span>
 
             <!-- Status Badge -->
-            <span 
+            <span
               :class="[
                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                text.is_active 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-gray-100 text-gray-600'
+                text.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600',
               ]"
             >
               {{ text.is_active ? 'Active' : 'Inactive' }}
             </span>
 
             <!-- Order Badge -->
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+            >
               Order: {{ text.order }}
             </span>
           </div>
@@ -54,7 +58,9 @@
         <!-- Full Content (when expanded) -->
         <div v-if="showFullContent && text.content.length > 150" class="mb-3">
           <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <p class="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{{ text.content }}</p>
+            <p class="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
+              {{ text.content }}
+            </p>
           </div>
         </div>
 
@@ -120,14 +126,14 @@ const showFullContent = ref(false)
 
 // Available languages mapping
 const languageNames: Record<string, string> = {
-  'en': 'English',
-  'kh': 'Khmer',
-  'fr': 'French',
-  'ja': 'Japanese',
-  'ko': 'Korean',
+  en: 'English',
+  kh: 'Khmer',
+  fr: 'French',
+  ja: 'Japanese',
+  ko: 'Korean',
   'zh-cn': 'Chinese (Simplified)',
-  'th': 'Thai',
-  'vn': 'Vietnamese'
+  th: 'Thai',
+  vn: 'Vietnamese',
 }
 
 // Methods
@@ -148,7 +154,7 @@ const formatDate = (dateString: string): string => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     })
   } catch {
     return dateString

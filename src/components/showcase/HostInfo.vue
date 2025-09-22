@@ -2,14 +2,13 @@
   <div class="host-info-wrapper" :class="{ 'khmer-text': currentLanguage === 'kh' }">
     <!-- Grid container with 7 rows (added profile picture row) -->
     <div class="host-info-grid">
-
       <!-- Row 1: Welcome Header (moved from MainContentStage) -->
       <div class="welcome-row">
         <div class="welcome-content mt-6">
           <h2
             :class="[
               'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               fontFamily: primaryFont || currentFont,
@@ -17,7 +16,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              backgroundSize: '200% 200%'
+              backgroundSize: '200% 200%',
             }"
           >
             {{ welcomeMessage || 'Welcome to Our Event' }}
@@ -32,13 +31,13 @@
           <p
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
-              hyphens: 'auto'
+              hyphens: 'auto',
             }"
           >
             {{ hosts[0].parent_a_name || 'Father Name' }}
@@ -54,13 +53,13 @@
             v-if="hosts.length > 1"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
-              hyphens: 'auto'
+              hyphens: 'auto',
             }"
           >
             {{ hosts[1]?.parent_a_name || 'Father Name' }}
@@ -75,13 +74,13 @@
           <p
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
-              hyphens: 'auto'
+              hyphens: 'auto',
             }"
           >
             {{ hosts[0].parent_b_name || 'Mother Name' }}
@@ -97,13 +96,13 @@
             v-if="hosts.length > 1"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
-              hyphens: 'auto'
+              hyphens: 'auto',
             }"
           >
             {{ hosts[1]?.parent_b_name || 'Mother Name' }}
@@ -114,17 +113,12 @@
       <!-- Row 4: Logo -->
       <div class="logo-row my-6">
         <div class="logo-content">
-          <img
-            v-if="logoUrl"
-            :src="logoUrl"
-            alt="Event Logo"
-            class="host-logo-showcase"
-          />
+          <img v-if="logoUrl" :src="logoUrl" alt="Event Logo" class="host-logo-showcase" />
           <div
             v-else
             class="logo-fallback"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
             }"
           >
             <span class="logo-initial" :style="{ fontFamily: primaryFont || currentFont }">
@@ -141,16 +135,19 @@
           <p
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
-              hyphens: 'auto'
+              hyphens: 'auto',
             }"
           >
-            {{ hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1') }}
+            {{
+              hosts[0].title ||
+              (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1')
+            }}
           </p>
         </div>
 
@@ -163,13 +160,13 @@
             v-if="hosts.length > 1"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
               fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
-              hyphens: 'auto'
+              hyphens: 'auto',
             }"
           >
             {{ hosts[1]?.title || 'Bride' }}
@@ -184,7 +181,7 @@
           <h3
             :class="[
               'host-name-text font-semibold leading-tight uppercase gleam-animation',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -192,7 +189,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              fontFamily: primaryFont || secondaryFont || currentFont
+              fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
             {{ hosts[0].name }}
@@ -208,7 +205,7 @@
             v-if="hosts.length > 1"
             :class="[
               'host-name-text font-semibold leading-tight uppercase gleam-animation',
-              currentLanguage === 'kh' && 'khmer-text-fix'
+              currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -216,7 +213,7 @@
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              fontFamily: primaryFont || secondaryFont || currentFont
+              fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
             {{ hosts[1]?.name }}
@@ -225,7 +222,10 @@
       </div>
 
       <!-- Row 7: Host Profile Pictures (only show if both hosts have profile images) -->
-      <div v-if="hosts.length === 2 && hosts[0].profile_image && hosts[1].profile_image" class="profile-picture-row">
+      <div
+        v-if="hosts.length === 2 && hosts[0].profile_image && hosts[1].profile_image"
+        class="profile-picture-row"
+      >
         <!-- Host 1 Profile Picture (45% width) -->
         <div class="host-profile-left">
           <div class="profile-picture-container">
@@ -235,14 +235,14 @@
               :alt="`${hosts[0].name} profile`"
               class="profile-picture"
               :style="{
-                borderColor: primaryColor
+                borderColor: primaryColor,
               }"
             />
             <div
               v-else
               class="profile-picture-fallback"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
               }"
             >
               <User class="profile-icon" />
@@ -262,14 +262,14 @@
               :alt="`${hosts[1].name} profile`"
               class="profile-picture"
               :style="{
-                borderColor: primaryColor
+                borderColor: primaryColor,
               }"
             />
             <div
               v-else
               class="profile-picture-fallback"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
               }"
             >
               <User class="profile-icon" />
@@ -277,7 +277,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -451,7 +450,9 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .logo-initial {
@@ -503,17 +504,21 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
-
 
 /* Responsive breakpoints */
 
 /* Small phones (sm: 640px) */
 @media (min-width: 640px) {
-
   .host-info-grid {
     gap: 0.25rem;
   }
@@ -538,7 +543,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
     font-size: 0.95625rem; /* 15.3px - 15% reduction from 18px */
   }
 
-
   .host-logo-showcase {
     max-height: 140px; /* Match CoverStage 640px+ */
     max-width: 350px; /* Match CoverStage 640px+ */
@@ -556,7 +560,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 
 /* Tablets (md: 768px) */
 @media (min-width: 768px) {
-
   .host-info-grid {
     gap: 0.625rem;
   }
@@ -577,7 +580,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
     font-size: 1.0625rem; /* 17px - 15% reduction from 20px */
   }
 
-
   .host-logo-showcase {
     max-height: 150px; /* Match CoverStage 768px+ */
     max-width: 375px; /* Match CoverStage 768px+ */
@@ -595,7 +597,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 
 /* Small laptops (laptop-sm: 1024px) */
 @media (min-width: 1024px) {
-
   .host-info-grid {
     gap: 0.75rem;
   }
@@ -616,7 +617,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
     font-size: 1.0625rem; /* 17px - smaller than welcome header's 24px */
   }
 
-
   .host-logo-showcase {
     max-height: 140px; /* Match CoverStage 1024px+ */
     max-width: 350px; /* Match CoverStage 1024px+ */
@@ -634,7 +634,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 
 /* Medium laptops (laptop-md: 1280px) */
 @media (min-width: 1280px) {
-
   .host-info-grid {
     gap: 0.875rem;
   }
@@ -655,7 +654,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
     font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
   }
 
-
   .host-logo-showcase {
     max-height: 160px; /* Match CoverStage 1280px+ */
     max-width: 400px; /* Match CoverStage 1280px+ */
@@ -673,7 +671,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 
 /* Large laptops (laptop-lg: 1536px) */
 @media (min-width: 1536px) {
-
   .host-info-grid {
     gap: 1rem;
   }
@@ -694,7 +691,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
     font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
   }
 
-
   .host-logo-showcase {
     max-height: 180px; /* Match CoverStage 1536px+ */
     max-width: 450px; /* Match CoverStage 1536px+ */
@@ -712,7 +708,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 
 /* Desktop (desktop: 1920px) */
 @media (min-width: 1920px) {
-
   .host-info-grid {
     gap: 1.125rem;
   }
@@ -732,7 +727,6 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
   .host-name-text {
     font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
   }
-
 
   .host-logo-showcase {
     max-height: 180px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
@@ -760,11 +754,9 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
 
 /* Extra small phones */
 @media (max-width: 374px) {
-
   .host-info-grid {
     gap: 0.25rem;
   }
-
 
   .host-logo-showcase {
     max-height: 100px;

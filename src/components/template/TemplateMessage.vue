@@ -1,8 +1,5 @@
 <template>
-  <div 
-    class="mt-4 p-4 rounded-lg" 
-    :class="messageClasses"
-  >
+  <div class="mt-4 p-4 rounded-lg" :class="messageClasses">
     <div class="flex items-center">
       <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2 flex-shrink-0" />
       <X v-else class="w-5 h-5 mr-2 flex-shrink-0" />

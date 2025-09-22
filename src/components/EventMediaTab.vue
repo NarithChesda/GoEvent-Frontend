@@ -4,7 +4,9 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Media</h2>
-        <p class="text-sm text-slate-600 mt-1">Manage all visual content and media for your event</p>
+        <p class="text-sm text-slate-600 mt-1">
+          Manage all visual content and media for your event
+        </p>
       </div>
       <button
         v-if="canEdit && activeSection === 'gallery'"
@@ -76,7 +78,7 @@
             'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'basic'
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
           ]"
         >
           Basic Media
@@ -87,7 +89,7 @@
             'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'gallery'
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
           ]"
         >
           Photo Gallery
@@ -98,7 +100,7 @@
             'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'embeds'
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
           ]"
         >
           Videos & Maps
@@ -114,9 +116,9 @@
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span class="ml-2 text-lg text-slate-600 leading-relaxed">Loading media...</span>
         </div>
-        <BasicMediaSection 
+        <BasicMediaSection
           v-else
-          :event-data="localEventData" 
+          :event-data="localEventData"
           :can-edit="canEdit"
           @updated="handleEventUpdated"
         />
@@ -125,7 +127,10 @@
       <!-- Photo Gallery Section -->
       <div v-if="activeSection === 'gallery'">
         <!-- Loading State -->
-        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div
+          v-if="loading"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
           <div v-for="i in 8" :key="i" class="animate-pulse">
             <div class="bg-slate-200 aspect-square rounded-2xl"></div>
             <div class="mt-3 space-y-2">
@@ -140,7 +145,7 @@
           <div class="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md mx-auto">
             <AlertCircle class="w-8 h-8 text-red-500 mx-auto mb-2" />
             <p class="text-lg text-red-600 font-semibold leading-relaxed">{{ error }}</p>
-            <button 
+            <button
               @click="fetchMedia"
               class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200"
             >
@@ -151,14 +156,16 @@
 
         <!-- Gallery Content -->
         <div v-else class="space-y-6">
-        
-
           <!-- Empty State -->
           <div v-if="!Array.isArray(media) || media.length === 0" class="text-center py-12">
             <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 max-w-md mx-auto">
               <ImageIcon class="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">No Photos Yet</h4>
-              <p class="text-lg text-slate-600 mb-6 leading-relaxed">Upload photos to showcase your event's atmosphere and venue.</p>
+              <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
+                No Photos Yet
+              </h4>
+              <p class="text-lg text-slate-600 mb-6 leading-relaxed">
+                Upload photos to showcase your event's atmosphere and venue.
+              </p>
               <button
                 v-if="canEdit && eventData && props.eventId"
                 @click="openUploadModal"
@@ -192,8 +199,8 @@
 
       <!-- Videos & Maps Section -->
       <div v-if="activeSection === 'embeds'">
-        <EmbedsSection 
-          :event-data="localEventData" 
+        <EmbedsSection
+          :event-data="localEventData"
           :can-edit="canEdit"
           @updated="handleEventUpdated"
         />
@@ -295,7 +302,7 @@ const totalPhotos = computed(() => {
 
 const featuredCount = computed(() => {
   if (!Array.isArray(media.value)) return 0
-  return media.value.filter(item => item.is_featured).length
+  return media.value.filter((item) => item.is_featured).length
 })
 
 const videosCount = computed(() => {
@@ -312,13 +319,17 @@ const hasBanner = computed(() => {
 })
 
 // Watch for prop changes
-watch(() => props.eventData, (newEventData) => {
-  if (newEventData) {
-    localEventData.value = { ...newEventData }
-  } else {
-    localEventData.value = undefined
-  }
-}, { deep: true })
+watch(
+  () => props.eventData,
+  (newEventData) => {
+    if (newEventData) {
+      localEventData.value = { ...newEventData }
+    } else {
+      localEventData.value = undefined
+    }
+  },
+  { deep: true },
+)
 
 // Methods
 const fetchMedia = async () => {
@@ -336,7 +347,7 @@ const fetchMedia = async () => {
 
   loading.value = true
   error.value = null
-  
+
   try {
     const response = await mediaService.getEventMedia(props.eventId)
     if (response.success && response.data) {
@@ -374,14 +385,14 @@ const deleteMedia = (mediaItem: EventPhoto) => {
 
 const confirmDelete = async () => {
   if (!mediaToDelete.value || !props.eventId) return
-  
+
   deleting.value = true
   try {
     const response = await mediaService.deleteEventMedia(props.eventId, mediaToDelete.value.id)
     if (response.success) {
       // Remove from array
       if (Array.isArray(media.value)) {
-        media.value = media.value.filter(item => item.id !== mediaToDelete.value!.id)
+        media.value = media.value.filter((item) => item.id !== mediaToDelete.value!.id)
       } else {
         media.value = []
       }
@@ -402,14 +413,14 @@ const confirmDelete = async () => {
 
 const toggleFeatured = async (mediaItem: EventPhoto) => {
   if (!props.eventId) return
-  
+
   try {
     const response = await mediaService.updateEventMedia(props.eventId, mediaItem.id, {
-      is_featured: !mediaItem.is_featured
+      is_featured: !mediaItem.is_featured,
     })
     if (response.success && response.data) {
       // Update the item in the array
-      const index = media.value.findIndex(item => item.id === mediaItem.id)
+      const index = media.value.findIndex((item) => item.id === mediaItem.id)
       if (index !== -1) {
         media.value[index] = response.data
         // Emit updated media to parent
@@ -439,7 +450,7 @@ const handleMediaUploaded = (newMedia: EventPhoto) => {
 
 const handleMediaUpdated = (updatedMedia: EventPhoto) => {
   if (Array.isArray(media.value)) {
-    const index = media.value.findIndex(item => item.id === updatedMedia.id)
+    const index = media.value.findIndex((item) => item.id === updatedMedia.id)
     if (index !== -1) {
       media.value[index] = updatedMedia
     }
@@ -466,7 +477,12 @@ const handleDragStart = (mediaItem: EventPhoto) => {
 }
 
 const handleDragEnd = async (targetMedia: EventPhoto | null) => {
-  if (!draggedMedia.value || !targetMedia || draggedMedia.value.id === targetMedia.id || !props.eventId) {
+  if (
+    !draggedMedia.value ||
+    !targetMedia ||
+    draggedMedia.value.id === targetMedia.id ||
+    !props.eventId
+  ) {
     draggedMedia.value = null
     return
   }
@@ -478,9 +494,9 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
   }
 
   // Find both items in the current array
-  const draggedIndex = media.value.findIndex(item => item.id === draggedMedia.value!.id)
-  const targetIndex = media.value.findIndex(item => item.id === targetMedia.id)
-  
+  const draggedIndex = media.value.findIndex((item) => item.id === draggedMedia.value!.id)
+  const targetIndex = media.value.findIndex((item) => item.id === targetMedia.id)
+
   if (draggedIndex === -1 || targetIndex === -1) {
     draggedMedia.value = null
     return
@@ -498,12 +514,12 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
 
   const updates = newMedia.map((item, index) => ({
     id: item.id,
-    order: index
+    order: index,
   }))
 
   // Optimistic update - force reactivity by creating new array reference
   media.value = [...newMedia]
-  
+
   // Emit updated media to parent
   emit('media-updated', media.value)
 

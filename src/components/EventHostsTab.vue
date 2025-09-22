@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Hosts & Speakers</h2>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Hosts & Speakers
+        </h2>
         <p class="text-sm text-slate-600 mt-1">Manage event hosts, speakers, and moderators</p>
       </div>
       <button
@@ -17,10 +19,12 @@
     </div>
 
     <!-- Stats Cards -->
-    
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+    <div
+      v-if="loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+    >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span class="ml-3 text-slate-600">Loading hosts...</span>
@@ -35,10 +39,7 @@
           <Users class="w-5 h-5 text-purple-600 mr-2" />
           All Hosts ({{ hosts.length }})
         </h3>
-        <div 
-          ref="sortableContainer"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <div ref="sortableContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <HostCard
             v-for="host in hosts"
             :key="host.id"
@@ -57,7 +58,10 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="!loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">No Hosts Added Yet</h3>
       <p class="text-slate-600 mb-6">Add hosts and speakers to showcase your event team.</p>
@@ -72,7 +76,9 @@
     </div>
 
     <!-- Host Roles Info -->
-    <div class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6">
+    <div
+      class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6"
+    >
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
         <Info class="w-5 h-5 text-blue-600 mr-2" />
         Host Roles
@@ -140,14 +146,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import {
-  Users,
-  UserPlus,
-  Shield,
-  Info,
-  CheckCircle,
-  AlertCircle
-} from 'lucide-vue-next'
+import { Users, UserPlus, Shield, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { hostsService, type EventHost } from '../services/api'
 import HostCard from './HostCard.vue'
 import CreateHostModal from './CreateHostModal.vue'
@@ -181,14 +180,16 @@ const totalHosts = computed(() => hosts.value.length)
 
 // Removed speakersCount since we removed the speakers section
 
-const moderatorsCount = computed(() => 
-  // Placeholder - no role field available yet
-  0
+const moderatorsCount = computed(
+  () =>
+    // Placeholder - no role field available yet
+    0,
 )
 
-const featuredCount = computed(() => 
-  // Placeholder - no is_featured field available yet
-  0
+const featuredCount = computed(
+  () =>
+    // Placeholder - no is_featured field available yet
+    0,
 )
 
 const loadHosts = async () => {
@@ -236,7 +237,7 @@ const deleteHost = async () => {
     const response = await hostsService.deleteHost(props.eventId, hostToDelete.value.id)
     if (response.success) {
       showMessage('success', 'Host removed successfully')
-      hosts.value = hosts.value.filter(host => host.id !== hostToDelete.value!.id)
+      hosts.value = hosts.value.filter((host) => host.id !== hostToDelete.value!.id)
       closeDeleteModal()
     } else {
       showMessage('error', response.message || 'Failed to remove host')
@@ -256,7 +257,7 @@ const handleHostCreated = (newHost: EventHost) => {
 }
 
 const handleHostUpdated = (updatedHost: EventHost) => {
-  const index = hosts.value.findIndex(host => host.id === updatedHost.id)
+  const index = hosts.value.findIndex((host) => host.id === updatedHost.id)
   if (index !== -1) {
     hosts.value[index] = updatedHost
   }
@@ -289,9 +290,9 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
   }
 
   // Find both hosts in the current array
-  const draggedIndex = hosts.value.findIndex(host => host.id === draggedHost.value!.id)
-  const targetIndex = hosts.value.findIndex(host => host.id === targetHost.id)
-  
+  const draggedIndex = hosts.value.findIndex((host) => host.id === draggedHost.value!.id)
+  const targetIndex = hosts.value.findIndex((host) => host.id === targetHost.id)
+
   if (draggedIndex === -1 || targetIndex === -1) {
     draggedHost.value = null
     return
@@ -309,12 +310,12 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
 
   const updates = newHosts.map((host, index) => ({
     id: host.id,
-    order: index
+    order: index,
   }))
 
   // Optimistic update - force reactivity by creating new array reference
   hosts.value = [...newHosts]
-  
+
   // Force Vue to update
   await nextTick()
 

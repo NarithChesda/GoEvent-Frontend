@@ -126,9 +126,7 @@
                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="0"
                     />
-                    <div class="mt-1 text-xs text-slate-500">
-                      Lower numbers appear first
-                    </div>
+                    <div class="mt-1 text-xs text-slate-500">Lower numbers appear first</div>
                   </div>
 
                   <!-- Active Status -->
@@ -146,12 +144,19 @@
                 </div>
 
                 <!-- Type Description -->
-                <div v-if="formData.text_type" class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div
+                  v-if="formData.text_type"
+                  class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+                >
                   <div class="flex items-start">
                     <Info class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
                     <div>
-                      <h4 class="text-sm font-medium text-blue-900 mb-1">{{ getTypeTitle(formData.text_type) }}</h4>
-                      <p class="text-sm text-blue-700">{{ getTypeDescription(formData.text_type) }}</p>
+                      <h4 class="text-sm font-medium text-blue-900 mb-1">
+                        {{ getTypeTitle(formData.text_type) }}
+                      </h4>
+                      <p class="text-sm text-blue-700">
+                        {{ getTypeDescription(formData.text_type) }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -169,7 +174,9 @@
               </div>
 
               <!-- Footer -->
-              <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 p-8">
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 p-8"
+              >
                 <button
                   type="button"
                   @click="$emit('close')"
@@ -179,7 +186,9 @@
                 </button>
                 <button
                   type="submit"
-                  :disabled="loading || !formData.text_type || !formData.language || !formData.content"
+                  :disabled="
+                    loading || !formData.text_type || !formData.language || !formData.content
+                  "
                   class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <Loader v-if="loading" class="w-5 h-5 mr-2 animate-spin" />
@@ -222,7 +231,7 @@ const formData = reactive({
   title: props.text.title,
   content: props.text.content,
   order: props.text.order,
-  is_active: props.text.is_active
+  is_active: props.text.is_active,
 })
 
 // Methods
@@ -237,7 +246,11 @@ const updateText = async () => {
       requestData.title = ''
     }
 
-    const response = await eventTextsService.updateEventText(props.eventId, props.text.id, requestData)
+    const response = await eventTextsService.updateEventText(
+      props.eventId,
+      props.text.id,
+      requestData,
+    )
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
@@ -252,30 +265,30 @@ const updateText = async () => {
 
 const getTypeTitle = (textType: string): string => {
   const titles: Record<string, string> = {
-    'welcome_message': 'Welcome Message',
-    'instructions': 'Instructions',
-    'description': 'Description',
-    'short_description': 'Short Description',
-    'date_text': 'Date Text',
-    'time_text': 'Time Text',
-    'location_text': 'Location Text',
-    'thank_you_message': 'Thank You Message',
-    'custom': 'Custom Content'
+    welcome_message: 'Welcome Message',
+    instructions: 'Instructions',
+    description: 'Description',
+    short_description: 'Short Description',
+    date_text: 'Date Text',
+    time_text: 'Time Text',
+    location_text: 'Location Text',
+    thank_you_message: 'Thank You Message',
+    custom: 'Custom Content',
   }
   return titles[textType] || textType
 }
 
 const getTypeDescription = (textType: string): string => {
   const descriptions: Record<string, string> = {
-    'welcome_message': 'Greeting message displayed to attendees when they view the event.',
-    'instructions': 'Important guidelines, rules, or step-by-step directions for attendees.',
-    'description': 'Detailed information about the event, its purpose, and what to expect.',
-    'short_description': 'Brief summary of the event for previews and cards.',
-    'date_text': 'Human-readable date information (e.g., "3 days", "August 15-17").',
-    'time_text': 'Human-readable time information (e.g., "9 AM - 5 PM PST").',
-    'location_text': 'Venue or location details beyond the basic address.',
-    'thank_you_message': 'Message shown after registration or event completion.',
-    'custom': 'Any other type of content specific to your event needs.'
+    welcome_message: 'Greeting message displayed to attendees when they view the event.',
+    instructions: 'Important guidelines, rules, or step-by-step directions for attendees.',
+    description: 'Detailed information about the event, its purpose, and what to expect.',
+    short_description: 'Brief summary of the event for previews and cards.',
+    date_text: 'Human-readable date information (e.g., "3 days", "August 15-17").',
+    time_text: 'Human-readable time information (e.g., "9 AM - 5 PM PST").',
+    location_text: 'Venue or location details beyond the basic address.',
+    thank_you_message: 'Message shown after registration or event completion.',
+    custom: 'Any other type of content specific to your event needs.',
   }
   return descriptions[textType] || 'Custom text content for your event.'
 }
@@ -288,7 +301,7 @@ const formatDate = (dateString: string): string => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   } catch {
     return dateString

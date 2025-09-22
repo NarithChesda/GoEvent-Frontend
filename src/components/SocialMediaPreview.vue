@@ -2,7 +2,9 @@
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <div class="mb-4">
       <h5 class="font-semibold text-slate-900 mb-2">Social Media Preview</h5>
-      <p class="text-sm text-slate-600 mb-4">Preview how your event showcase will appear when shared on social media</p>
+      <p class="text-sm text-slate-600 mb-4">
+        Preview how your event showcase will appear when shared on social media
+      </p>
     </div>
 
     <div class="space-y-6">
@@ -16,7 +18,7 @@
             'flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2',
             selectedPlatform === platform.id
               ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:bg-white/50'
+              : 'text-slate-600 hover:bg-white/50',
           ]"
         >
           <component :is="platform.icon" class="w-4 h-4" />
@@ -27,7 +29,9 @@
       <!-- Showcase URL Display -->
       <div class="space-y-2">
         <label class="block text-sm font-medium text-slate-700">Social Media Sharing URL</label>
-        <p class="text-xs text-slate-500 mb-2">This URL is optimized for social media previews and will redirect to your showcase page</p>
+        <p class="text-xs text-slate-500 mb-2">
+          This URL is optimized for social media previews and will redirect to your showcase page
+        </p>
         <div class="flex space-x-2">
           <input
             :value="showcaseUrl"
@@ -38,9 +42,7 @@
             @click="copyToClipboard"
             :class="[
               'px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2',
-              copied 
-                ? 'bg-green-500 text-white'
-                : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+              copied ? 'bg-green-500 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700',
             ]"
           >
             <Check v-if="copied" class="w-4 h-4" />
@@ -53,7 +55,10 @@
       <!-- Social Media Preview Cards -->
       <div class="space-y-4">
         <!-- Facebook/Meta Preview -->
-        <div v-if="selectedPlatform === 'facebook'" class="border border-gray-300 rounded-xl overflow-hidden bg-white">
+        <div
+          v-if="selectedPlatform === 'facebook'"
+          class="border border-gray-300 rounded-xl overflow-hidden bg-white"
+        >
           <div class="aspect-[1.91/1] relative overflow-hidden bg-slate-200">
             <img
               v-if="previewImage"
@@ -73,7 +78,10 @@
         </div>
 
         <!-- Twitter/X Preview -->
-        <div v-if="selectedPlatform === 'twitter'" class="border border-gray-300 rounded-2xl overflow-hidden bg-white">
+        <div
+          v-if="selectedPlatform === 'twitter'"
+          class="border border-gray-300 rounded-2xl overflow-hidden bg-white"
+        >
           <div class="aspect-[2/1] relative overflow-hidden bg-slate-200">
             <img
               v-if="previewImage"
@@ -93,7 +101,10 @@
         </div>
 
         <!-- LinkedIn Preview -->
-        <div v-if="selectedPlatform === 'linkedin'" class="border border-gray-300 rounded-lg overflow-hidden bg-white">
+        <div
+          v-if="selectedPlatform === 'linkedin'"
+          class="border border-gray-300 rounded-lg overflow-hidden bg-white"
+        >
           <div class="aspect-[1.2/1] relative overflow-hidden bg-slate-200">
             <img
               v-if="previewImage"
@@ -127,7 +138,9 @@
               </div>
             </div>
             <div class="p-4">
-              <div class="text-base font-semibold text-gray-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
+              <div class="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
+                {{ metaTitle }}
+              </div>
               <div class="text-sm text-gray-600 mb-2 line-clamp-2">{{ metaDescription }}</div>
               <div class="text-xs text-gray-500 uppercase tracking-wide">{{ hostname }}</div>
             </div>
@@ -141,7 +154,9 @@
           <component :is="TestTube" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
           <div>
             <h6 class="font-medium text-amber-900 mb-2">Test Social Media Preview</h6>
-            <p class="text-sm text-amber-800 mb-3">Use these tools to validate your social media preview:</p>
+            <p class="text-sm text-amber-800 mb-3">
+              Use these tools to validate your social media preview:
+            </p>
             <div class="space-y-2">
               <a
                 :href="`https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(showcaseUrl)}`"
@@ -153,7 +168,7 @@
                 <span>Facebook Sharing Debugger</span>
                 <ExternalLink class="w-3 h-3" />
               </a>
-              <br>
+              <br />
               <a
                 :href="`https://cards-dev.twitter.com/validator?url=${encodeURIComponent(showcaseUrl)}`"
                 target="_blank"
@@ -164,7 +179,7 @@
                 <span>Twitter Card Validator</span>
                 <ExternalLink class="w-3 h-3" />
               </a>
-              <br>
+              <br />
               <a
                 :href="`https://www.linkedin.com/post-inspector/inspect/${encodeURIComponent(showcaseUrl)}`"
                 target="_blank"
@@ -213,7 +228,7 @@
           class="flex-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2"
         >
           <Share2 class="w-4 h-4" />
-          <span>Share on {{ platforms.find(p => p.id === selectedPlatform)?.name }}</span>
+          <span>Share on {{ platforms.find((p) => p.id === selectedPlatform)?.name }}</span>
         </button>
       </div>
     </div>
@@ -222,18 +237,18 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
-  MessageCircle, 
-  Copy, 
-  Check, 
-  ImageIcon, 
-  ExternalLink, 
+import {
+  Facebook,
+  Twitter,
+  Linkedin,
+  MessageCircle,
+  Copy,
+  Check,
+  ImageIcon,
+  ExternalLink,
   Share2,
   Lightbulb,
-  TestTube
+  TestTube,
 } from 'lucide-vue-next'
 import type { Event } from '../services/api'
 import { createEventDescription, getPublicSSRMetaUrl } from '../utils/metaUtils'
@@ -253,7 +268,7 @@ const platforms = [
   { id: 'facebook', name: 'Facebook', icon: Facebook },
   { id: 'twitter', name: 'X (Twitter)', icon: Twitter },
   { id: 'linkedin', name: 'LinkedIn', icon: Linkedin },
-  { id: 'whatsapp', name: 'WhatsApp', icon: MessageCircle }
+  { id: 'whatsapp', name: 'WhatsApp', icon: MessageCircle },
 ]
 
 // Computed properties
@@ -287,20 +302,20 @@ const metaDescription = computed(() => {
 
 const previewImage = computed(() => {
   if (!props.eventData?.banner_image) return null
-  
+
   const bannerImage = props.eventData.banner_image
-  
+
   // If it's already a full URL, return as is
   if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
     return bannerImage
   }
-  
+
   // If it's a relative URL, prepend the API base URL
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
   if (bannerImage.startsWith('/')) {
     return `${API_BASE_URL}${bannerImage}`
   }
-  
+
   // If it doesn't start with /, assume it needs /media/ prefix
   return `${API_BASE_URL}/media/${bannerImage}`
 })
@@ -322,7 +337,7 @@ const copyToClipboard = async () => {
     textArea.select()
     document.execCommand('copy')
     document.body.removeChild(textArea)
-    
+
     copied.value = true
     setTimeout(() => {
       copied.value = false
@@ -334,9 +349,9 @@ const shareOnPlatform = () => {
   const url = encodeURIComponent(showcaseUrl.value)
   const title = encodeURIComponent(metaTitle.value)
   const description = encodeURIComponent(metaDescription.value)
-  
+
   let shareUrl = ''
-  
+
   switch (selectedPlatform.value) {
     case 'facebook':
       shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`
@@ -351,7 +366,7 @@ const shareOnPlatform = () => {
       shareUrl = `https://wa.me/?text=${title}%20${url}`
       break
   }
-  
+
   if (shareUrl) {
     window.open(shareUrl, '_blank', 'width=600,height=400')
   }

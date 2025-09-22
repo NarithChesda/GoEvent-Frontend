@@ -1,14 +1,11 @@
 <template>
   <div class="showcase-container flex items-center justify-center bg-black">
     <div class="text-center">
-      <div 
-        class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" 
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
         :style="{ borderBottomColor: primaryColor || '#3B82F6' }"
       />
-      <p 
-        class="text-xl font-medium" 
-        :style="{ color: primaryColor || '#FFFFFF' }"
-      >
+      <p class="text-xl font-medium" :style="{ color: primaryColor || '#FFFFFF' }">
         {{ message }}
       </p>
     </div>
@@ -23,7 +20,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   primaryColor: '#3B82F6',
-  message: 'Loading...'
+  message: 'Loading...',
 })
 </script>
 

@@ -7,24 +7,27 @@
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text'
+        backgroundClip: 'text',
       }"
     >
       {{ commentHeaderText }}
     </h2>
 
     <!-- Comment Form -->
-    <div 
+    <div
       ref="commentFormRef"
-      class="comment-form-liquid mb-4 animate-form-reveal" 
+      class="comment-form-liquid mb-4 animate-form-reveal"
       :style="{
         backgroundColor: `${primaryColor}20`,
-        border: `1px solid ${primaryColor}50`
+        border: `1px solid ${primaryColor}50`,
       }"
     >
       <!-- Sign In Prompt for Unauthenticated Users -->
       <div v-if="!isUserAuthenticated" class="text-center py-4">
-        <p class="text-sm mb-3" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+        <p
+          class="text-sm mb-3"
+          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+        >
           {{ commentSigninPromptText }}
         </p>
         <button
@@ -33,16 +36,21 @@
           :style="{
             background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
             color: '#ffffff',
-            border: `1px solid ${primaryColor}60`
+            border: `1px solid ${primaryColor}60`,
           }"
         >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{ commentSigninButtonText }}</span>
+          <span :style="{ fontFamily: secondaryFont || currentFont }">{{
+            commentSigninButtonText
+          }}</span>
         </button>
       </div>
 
       <!-- Already Commented Message -->
       <div v-else-if="hasAlreadyCommented" class="text-center py-4">
-        <p class="text-sm" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+        <p
+          class="text-sm"
+          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+        >
           {{ commentAlreadyCommentedText }}
         </p>
       </div>
@@ -62,7 +70,7 @@
               '--tw-ring-color': primaryColor + '80',
               color: primaryColor,
               border: `1px solid ${commentValidation.isValid ? primaryColor + '30' : '#dc262630'}`,
-              fontFamily: secondaryFont || currentFont
+              fontFamily: secondaryFont || currentFont,
             }"
             @input="handleCommentInput"
             @blur="validateCommentOnBlur"
@@ -70,7 +78,10 @@
           />
           <div class="text-xs text-right mt-1 flex justify-between items-center">
             <!-- Validation Errors -->
-            <div v-if="!commentValidation.isValid && commentValidation.errors.length > 0" class="text-red-500 text-xs">
+            <div
+              v-if="!commentValidation.isValid && commentValidation.errors.length > 0"
+              class="text-red-500 text-xs"
+            >
               {{ commentValidation.errors[0] }}
             </div>
             <div v-else></div>
@@ -84,15 +95,19 @@
         <!-- Submit Button -->
         <button
           type="submit"
-          :disabled="isSubmittingComment || !newComment.message.trim() || !commentValidation.isValid"
+          :disabled="
+            isSubmittingComment || !newComment.message.trim() || !commentValidation.isValid
+          "
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           :style="{
             background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
             color: '#ffffff',
-            border: `1px solid ${primaryColor}60`
+            border: `1px solid ${primaryColor}60`,
           }"
         >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{ isSubmittingComment ? commentPostingButtonText : commentPostButtonText }}</span>
+          <span :style="{ fontFamily: secondaryFont || currentFont }">{{
+            isSubmittingComment ? commentPostingButtonText : commentPostButtonText
+          }}</span>
         </button>
       </form>
     </div>
@@ -105,25 +120,54 @@
         @scroll="handleScroll"
       >
         <!-- Loading State -->
-        <div v-if="loadingComments" class="liquid-glass-state text-center py-8" :style="{
-          backgroundColor: `${primaryColor}18`,
-          border: `1px solid ${primaryColor}40`
-        }">
+        <div
+          v-if="loadingComments"
+          class="liquid-glass-state text-center py-8"
+          :style="{
+            backgroundColor: `${primaryColor}18`,
+            border: `1px solid ${primaryColor}40`,
+          }"
+        >
           <div class="inline-flex items-center gap-2">
-            <div class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
-            <span class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">{{ commentLoadingText }}</span>
+            <div
+              class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
+              :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"
+            ></div>
+            <span
+              class="text-sm"
+              :style="{
+                color: primaryColor,
+                opacity: '0.8',
+                fontFamily: secondaryFont || currentFont,
+              }"
+              >{{ commentLoadingText }}</span
+            >
           </div>
         </div>
 
         <!-- No Comments State -->
-        <div v-else-if="comments.length === 0" class="liquid-glass-state text-center py-8" :style="{
-          backgroundColor: `${primaryColor}18`,
-          border: `1px solid ${primaryColor}40`
-        }">
-          <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" :style="{ backgroundColor: `${primaryColor}15` }">
+        <div
+          v-else-if="comments.length === 0"
+          class="liquid-glass-state text-center py-8"
+          :style="{
+            backgroundColor: `${primaryColor}18`,
+            border: `1px solid ${primaryColor}40`,
+          }"
+        >
+          <div
+            class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
+            :style="{ backgroundColor: `${primaryColor}15` }"
+          >
             <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
           </div>
-          <p class="text-sm" :style="{ color: primaryColor, opacity: '0.8', fontFamily: secondaryFont || currentFont }">
+          <p
+            class="text-sm"
+            :style="{
+              color: primaryColor,
+              opacity: '0.8',
+              fontFamily: secondaryFont || currentFont,
+            }"
+          >
             {{ commentNoCommentsText }}
           </p>
         </div>
@@ -133,23 +177,29 @@
           <div
             v-for="(comment, index) in comments"
             :key="comment.id"
-            :ref="el => setupCommentAnimation(el, `comment-${comment.id}`, index)"
+            :ref="(el) => setupCommentAnimation(el, `comment-${comment.id}`, index)"
             class="comment-card-liquid p-4 mb-3 last:mb-0 animate-comment-reveal"
             :class="{ 'mt-6': index === 0 }"
-            :style="isUserCommentOwner(comment) ? {
-              backgroundColor: `${primaryColor}25`,
-              border: `1px solid ${primaryColor}60`,
-              transform: 'translateY(-2px)'
-            } : {
-              backgroundColor: `${primaryColor}15`,
-              border: `1px solid ${primaryColor}40`
-            }"
+            :style="
+              isUserCommentOwner(comment)
+                ? {
+                    backgroundColor: `${primaryColor}25`,
+                    border: `1px solid ${primaryColor}60`,
+                    transform: 'translateY(-2px)',
+                  }
+                : {
+                    backgroundColor: `${primaryColor}15`,
+                    border: `1px solid ${primaryColor}40`,
+                  }
+            "
           >
             <!-- Comment Header -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
                 <!-- User Avatar -->
-                <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center relative">
+                <div
+                  class="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center relative"
+                >
                   <img
                     v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
                     :src="getCommentAvatarUrl(comment)!"
@@ -167,18 +217,31 @@
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
-                    <p class="text-sm font-medium" :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }">
+                    <p
+                      class="text-sm font-medium"
+                      :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
+                    >
                       {{ getCommentDisplayName(comment) }}
                     </p>
                     <span
                       v-if="isUserCommentOwner(comment)"
                       class="text-xs px-2 py-0.5 rounded-full text-white font-medium"
-                      :style="{ backgroundColor: primaryColor + '80', fontFamily: secondaryFont || currentFont }"
+                      :style="{
+                        backgroundColor: primaryColor + '80',
+                        fontFamily: secondaryFont || currentFont,
+                      }"
                     >
                       {{ commentYouBadgeText }}
                     </span>
                   </div>
-                  <p class="text-xs" :style="{ color: primaryColor, opacity: 0.7, fontFamily: secondaryFont || currentFont }">
+                  <p
+                    class="text-xs"
+                    :style="{
+                      color: primaryColor,
+                      opacity: 0.7,
+                      fontFamily: secondaryFont || currentFont,
+                    }"
+                  >
                     {{ formatCommentDate(comment.created_at) }}
                   </p>
                 </div>
@@ -192,31 +255,48 @@
                   :style="{
                     backgroundColor: `${primaryColor}08`,
                     color: primaryColor,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`
+                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`,
                   }"
                   title="Edit comment"
                 >
                   <Edit class="w-3.5 h-3.5" />
                 </button>
                 <button
-                  @click="openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')"
+                  @click="
+                    openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')
+                  "
                   class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110 group"
                   :style="{
                     backgroundColor: `${primaryColor}08`,
                     color: primaryColor,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`
+                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`,
                   }"
                   title="Delete comment"
                   :disabled="isDeletingComment === comment.id"
                 >
-                  <Trash2 v-if="isDeletingComment !== comment.id" class="w-3.5 h-3.5 group-hover:text-red-400 transition-colors" />
-                  <div v-else class="w-3.5 h-3.5 border border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60` }"></div>
+                  <Trash2
+                    v-if="isDeletingComment !== comment.id"
+                    class="w-3.5 h-3.5 group-hover:text-red-400 transition-colors"
+                  />
+                  <div
+                    v-else
+                    class="w-3.5 h-3.5 border border-t-transparent rounded-full animate-spin"
+                    :style="{ borderColor: `${primaryColor}60` }"
+                  ></div>
                 </button>
               </div>
             </div>
 
             <!-- Comment Message (Read Mode) -->
-            <p v-if="editingCommentId !== comment.id" class="text-sm leading-relaxed" :style="{ color: primaryColor, opacity: 0.9, fontFamily: secondaryFont || currentFont }">
+            <p
+              v-if="editingCommentId !== comment.id"
+              class="text-sm leading-relaxed"
+              :style="{
+                color: primaryColor,
+                opacity: 0.9,
+                fontFamily: secondaryFont || currentFont,
+              }"
+            >
               {{ capitalizeFirstLetter(comment.comment_text) }}
             </p>
 
@@ -230,14 +310,17 @@
                   boxShadow: `inset 0 2px 4px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
                   '--tw-ring-color': primaryColor + '60',
                   color: primaryColor,
-                  fontFamily: secondaryFont || currentFont
+                  fontFamily: secondaryFont || currentFont,
                 }"
                 rows="3"
                 maxlength="500"
                 placeholder="Edit your comment..."
               />
               <div class="flex items-center justify-between">
-                <div class="text-xs" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+                <div
+                  class="text-xs"
+                  :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+                >
                   {{ editCommentText.length }}/500
                 </div>
                 <div class="flex items-center gap-2">
@@ -249,7 +332,7 @@
                       color: primaryColor,
                       opacity: '0.8',
                       boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}10`,
-                      fontFamily: secondaryFont || currentFont
+                      fontFamily: secondaryFont || currentFont,
                     }"
                     :disabled="isUpdatingComment"
                   >
@@ -257,7 +340,11 @@
                   </button>
                   <button
                     @click="updateComment(comment.id)"
-                    :disabled="isUpdatingComment || !editCommentText.trim() || editCommentText === comment.comment_text"
+                    :disabled="
+                      isUpdatingComment ||
+                      !editCommentText.trim() ||
+                      editCommentText === comment.comment_text
+                    "
                     class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     :style="{
                       background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
@@ -267,12 +354,14 @@
                         inset 0 2px 4px rgba(255, 255, 255, 0.1),
                         inset 0 -1px 2px ${primaryColor}10
                       `,
-                      fontFamily: secondaryFont || currentFont
+                      fontFamily: secondaryFont || currentFont,
                     }"
                   >
                     <span v-if="!isUpdatingComment">Save</span>
                     <span v-else class="flex items-center gap-1">
-                      <div class="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin"></div>
+                      <div
+                        class="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin"
+                      ></div>
                       Saving...
                     </span>
                   </button>
@@ -282,12 +371,27 @@
           </div>
 
           <!-- Loading More Indicator -->
-          <div v-if="loadingMoreComments" class="liquid-glass-state text-center py-4 mt-2" :style="{
-            backgroundColor: `${primaryColor}04`
-          }">
+          <div
+            v-if="loadingMoreComments"
+            class="liquid-glass-state text-center py-4 mt-2"
+            :style="{
+              backgroundColor: `${primaryColor}04`,
+            }"
+          >
             <div class="inline-flex items-center gap-2">
-              <div class="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin" :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"></div>
-              <span class="text-xs" :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }">Loading more comments...</span>
+              <div
+                class="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
+                :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"
+              ></div>
+              <span
+                class="text-xs"
+                :style="{
+                  color: primaryColor,
+                  opacity: '0.7',
+                  fontFamily: secondaryFont || currentFont,
+                }"
+                >Loading more comments...</span
+              >
             </div>
           </div>
         </div>
@@ -295,14 +399,22 @@
     </div>
 
     <!-- Error Message -->
-    <div v-if="errorMessage" class="liquid-glass-error mt-3 p-3" :style="{
-      backgroundColor: '#dc262620',
-      boxShadow: '0 4px 16px -2px #dc262615, inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-      border: '1px solid #dc262640'
-    }">
-      <p class="text-sm" :style="{ color: '#dc2626', opacity: 0.9, fontFamily: secondaryFont || currentFont }">{{ errorMessage }}</p>
+    <div
+      v-if="errorMessage"
+      class="liquid-glass-error mt-3 p-3"
+      :style="{
+        backgroundColor: '#dc262620',
+        boxShadow: '0 4px 16px -2px #dc262615, inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+        border: '1px solid #dc262640',
+      }"
+    >
+      <p
+        class="text-sm"
+        :style="{ color: '#dc2626', opacity: 0.9, fontFamily: secondaryFont || currentFont }"
+      >
+        {{ errorMessage }}
+      </p>
     </div>
-
   </div>
 
   <!-- Delete Confirmation Modal -->
@@ -333,14 +445,17 @@ import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import AuthModal from '../AuthModal.vue'
-import {
-  translateRSVP,
-  type SupportedLanguage
-} from '../../utils/translations'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useStaggerAnimation, useEntranceAnimation } from '../../composables/useAdvancedAnimations'
 import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 import { useAuthModal } from '../../composables/useAuthModal'
-import { sanitizeComment, sanitizePlainText, validateAndSanitize, containsSuspiciousContent, type ValidationResult } from '../../utils/sanitize'
+import {
+  sanitizeComment,
+  sanitizePlainText,
+  validateAndSanitize,
+  containsSuspiciousContent,
+  type ValidationResult,
+} from '../../utils/sanitize'
 
 interface EventText {
   text_type: string
@@ -373,22 +488,22 @@ const { observeStaggerElement } = useStaggerAnimation({
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
   staggerDelay: 100,
   easing: ANIMATION_CONSTANTS.EASING.EXPO,
-  threshold: 0.2
+  threshold: 0.2,
 })
 
 // Entrance animation for form interactions
 const { triggerEntrance } = useEntranceAnimation({
   type: 'elastic',
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-  easing: ANIMATION_CONSTANTS.EASING.ELASTIC
+  easing: ANIMATION_CONSTANTS.EASING.ELASTIC,
 })
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
   if (props.eventTexts && props.currentLanguage) {
-    const text = props.eventTexts.find(text =>
-      text.text_type === textType && text.language === props.currentLanguage
+    const text = props.eventTexts.find(
+      (text) => text.text_type === textType && text.language === props.currentLanguage,
     )
     if (text?.content) {
       return text.content
@@ -399,18 +514,21 @@ const getTextContent = (textType: string, fallback = ''): string => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
 
   // Map text types to translation keys
-  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    'comment_header': 'comment_header',
-    'comment_placeholder': 'comment_placeholder',
-    'comment_signin_prompt': 'comment_signin_prompt',
-    'comment_signin_button': 'comment_signin_button',
-    'comment_post_button': 'comment_post_button',
-    'comment_posting_button': 'comment_posting_button',
-    'comment_no_comments': 'comment_no_comments',
-    'comment_loading': 'comment_loading',
-    'comment_already_commented': 'comment_already_commented',
-    'comment_one_per_user': 'comment_one_per_user',
-    'comment_you_badge': 'comment_you_badge'
+  const keyMap: Record<
+    string,
+    keyof typeof import('../../utils/translations').rsvpTranslations.en
+  > = {
+    comment_header: 'comment_header',
+    comment_placeholder: 'comment_placeholder',
+    comment_signin_prompt: 'comment_signin_prompt',
+    comment_signin_button: 'comment_signin_button',
+    comment_post_button: 'comment_post_button',
+    comment_posting_button: 'comment_posting_button',
+    comment_no_comments: 'comment_no_comments',
+    comment_loading: 'comment_loading',
+    comment_already_commented: 'comment_already_commented',
+    comment_one_per_user: 'comment_one_per_user',
+    comment_you_badge: 'comment_you_badge',
   }
 
   const translationKey = keyMap[textType]
@@ -423,15 +541,29 @@ const getTextContent = (textType: string, fallback = ''): string => {
 
 // Computed properties for all translatable text
 const commentHeaderText = computed(() => getTextContent('comment_header', 'Comments & Wishes'))
-const commentPlaceholderText = computed(() => getTextContent('comment_placeholder', 'Share your thoughts, wishes, or congratulations...'))
-const commentSigninPromptText = computed(() => getTextContent('comment_signin_prompt', 'Please sign in to leave a comment'))
-const commentSigninButtonText = computed(() => getTextContent('comment_signin_button', 'Sign In to Comment'))
+const commentPlaceholderText = computed(() =>
+  getTextContent('comment_placeholder', 'Share your thoughts, wishes, or congratulations...'),
+)
+const commentSigninPromptText = computed(() =>
+  getTextContent('comment_signin_prompt', 'Please sign in to leave a comment'),
+)
+const commentSigninButtonText = computed(() =>
+  getTextContent('comment_signin_button', 'Sign In to Comment'),
+)
 const commentPostButtonText = computed(() => getTextContent('comment_post_button', 'Post Comment'))
-const commentPostingButtonText = computed(() => getTextContent('comment_posting_button', 'Posting...'))
-const commentNoCommentsText = computed(() => getTextContent('comment_no_comments', 'Be the first to leave a comment!'))
+const commentPostingButtonText = computed(() =>
+  getTextContent('comment_posting_button', 'Posting...'),
+)
+const commentNoCommentsText = computed(() =>
+  getTextContent('comment_no_comments', 'Be the first to leave a comment!'),
+)
 const commentLoadingText = computed(() => getTextContent('comment_loading', 'Loading comments...'))
-const commentAlreadyCommentedText = computed(() => getTextContent('comment_already_commented', 'You have already left a comment for this event'))
-const commentOnePerUserText = computed(() => getTextContent('comment_one_per_user', 'Each user can only comment once per event'))
+const commentAlreadyCommentedText = computed(() =>
+  getTextContent('comment_already_commented', 'You have already left a comment for this event'),
+)
+const commentOnePerUserText = computed(() =>
+  getTextContent('comment_one_per_user', 'Each user can only comment once per event'),
+)
 const commentYouBadgeText = computed(() => getTextContent('comment_you_badge', 'You'))
 
 // Router and Auth
@@ -442,7 +574,7 @@ const authStore = useAuthStore()
 // Comment form state
 const newComment = ref({
   guestName: props.guestName || '',
-  message: ''
+  message: '',
 })
 
 // Input validation state
@@ -483,7 +615,7 @@ const {
   openAuthModal,
   onAuthModalClose,
   onUserAuthenticated: handleUserAuthenticated,
-  withAuth
+  withAuth,
 } = useAuthModal({
   onAuthenticated: () => {
     // User successfully authenticated via modal
@@ -491,7 +623,7 @@ const {
     nextTick(() => {
       scrollToCommentSection()
     })
-  }
+  },
 })
 
 // Computed
@@ -499,10 +631,10 @@ const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments
 
 // Helper function to process comments (simplified since backend now provides user_info)
 const processComments = (comments: EventComment[]): EventComment[] => {
-  const processedComments = comments.map(comment => {
+  const processedComments = comments.map((comment) => {
     // Backend now provides user_info, so we sanitize and return the comment
     const sanitizedComment = sanitizeApiResponse(comment)
-    
+
     // If for some reason user_info is missing, we can add minimal fallback
     if (!sanitizedComment.user_info) {
       sanitizedComment.user_info = {
@@ -510,7 +642,7 @@ const processComments = (comments: EventComment[]): EventComment[] => {
         username: sanitizePlainText(`user_${sanitizedComment.user}`, 50),
         first_name: '',
         last_name: '',
-        profile_picture: ''
+        profile_picture: '',
       }
     }
     return sanitizedComment
@@ -527,8 +659,8 @@ const sortCommentsWithUserFirst = (comments: EventComment[]): EventComment[] => 
   }
 
   const currentUserId = authStore.user.id
-  const userComment = comments.find(comment => comment.user === currentUserId)
-  const otherComments = comments.filter(comment => comment.user !== currentUserId)
+  const userComment = comments.find((comment) => comment.user === currentUserId)
+  const otherComments = comments.filter((comment) => comment.user !== currentUserId)
 
   // If user has a comment, put it first, otherwise return original order
   if (userComment) {
@@ -618,7 +750,7 @@ const validateCommentInput = (input: string): ValidationResult => {
     return {
       isValid: false,
       sanitized: '',
-      errors: ['Input contains potentially malicious content']
+      errors: ['Input contains potentially malicious content'],
     }
   }
 
@@ -627,26 +759,26 @@ const validateCommentInput = (input: string): ValidationResult => {
     required: true,
     minLength: 1,
     maxLength: 500,
-    trimWhitespace: true
+    trimWhitespace: true,
   })
 }
 
 const sanitizeApiResponse = (comment: EventComment): EventComment => {
   const sanitizedComment = { ...comment }
-  
+
   // Sanitize comment text
   sanitizedComment.comment_text = sanitizeComment(comment.comment_text)
-  
+
   // Sanitize user info if present
   if (sanitizedComment.user_info) {
     sanitizedComment.user_info = {
       ...sanitizedComment.user_info,
       first_name: sanitizePlainText(sanitizedComment.user_info.first_name || '', 50),
       last_name: sanitizePlainText(sanitizedComment.user_info.last_name || '', 50),
-      username: sanitizePlainText(sanitizedComment.user_info.username || '', 50)
+      username: sanitizePlainText(sanitizedComment.user_info.username || '', 50),
     }
   }
-  
+
   return sanitizedComment
 }
 
@@ -696,13 +828,13 @@ const updateComment = async (commentId: number) => {
     if (response.success && response.data) {
       // Sanitize the response data
       const sanitizedComment = sanitizeApiResponse(response.data)
-      
+
       // Update the comment in the local array
-      const commentIndex = comments.value.findIndex(c => c.id === commentId)
+      const commentIndex = comments.value.findIndex((c) => c.id === commentId)
       if (commentIndex !== -1) {
         comments.value[commentIndex] = {
           ...comments.value[commentIndex],
-          ...sanitizedComment
+          ...sanitizedComment,
         }
       }
 
@@ -735,7 +867,7 @@ const handleDeleteConfirm = async () => {
 
     if (response.success) {
       // Remove comment from local array
-      comments.value = comments.value.filter(c => c.id !== commentToDelete.value)
+      comments.value = comments.value.filter((c) => c.id !== commentToDelete.value)
       totalComments.value--
 
       // Reset already commented state if this was the user's comment
@@ -809,7 +941,9 @@ const submitComment = async () => {
   // Check if user has already commented (API constraint: one comment per user per event)
   if (hasAlreadyCommented.value) {
     errorMessage.value = 'You have already commented on this event.'
-    setTimeout(() => { errorMessage.value = '' }, 5000)
+    setTimeout(() => {
+      errorMessage.value = ''
+    }, 5000)
     return
   }
 
@@ -818,10 +952,7 @@ const submitComment = async () => {
 
   try {
     // Call the actual API with sanitized content
-    const response = await commentsService.createComment(
-      props.eventId,
-      validation.sanitized
-    )
+    const response = await commentsService.createComment(props.eventId, validation.sanitized)
 
     if (response.success && response.data) {
       // Add user info to the comment for display (if not provided by backend)
@@ -832,8 +963,8 @@ const submitComment = async () => {
           username: authStore.user?.username || '',
           first_name: authStore.user?.first_name || '',
           last_name: authStore.user?.last_name || '',
-          profile_picture: authStore.user?.profile_picture || ''
-        }
+          profile_picture: authStore.user?.profile_picture || '',
+        },
       }
 
       // Sanitize the response data
@@ -874,11 +1005,7 @@ const loadComments = async () => {
 
   try {
     // Load comments from API
-    const response = await commentsService.getEventComments(
-      props.eventId,
-      1,
-      commentsPerPage
-    )
+    const response = await commentsService.getEventComments(props.eventId, 1, commentsPerPage)
 
     if (response.success && response.data) {
       // Process comments (backend now provides user_info directly)
@@ -917,15 +1044,15 @@ const loadMoreComments = async () => {
     const response = await commentsService.getEventComments(
       props.eventId,
       nextPage,
-      commentsPerPage
+      commentsPerPage,
     )
 
     if (response.success && response.data) {
       // Process new comments (backend now provides user_info directly)
-      const processedNewComments = response.data.results.map(comment => {
+      const processedNewComments = response.data.results.map((comment) => {
         // Sanitize the comment data
         const sanitizedComment = sanitizeApiResponse(comment)
-        
+
         // If for some reason user_info is missing, we can add minimal fallback
         if (!sanitizedComment.user_info) {
           sanitizedComment.user_info = {
@@ -933,7 +1060,7 @@ const loadMoreComments = async () => {
             username: sanitizePlainText(`user_${sanitizedComment.user}`, 50),
             first_name: '',
             last_name: '',
-            profile_picture: ''
+            profile_picture: '',
           }
         }
         return sanitizedComment
@@ -944,14 +1071,24 @@ const loadMoreComments = async () => {
       const currentUserId = authStore.user?.id
       if (currentUserId) {
         // Check if any of the new comments belongs to current user
-        const userCommentFromNewPage = processedNewComments.find(comment => comment.user === currentUserId)
-        const otherNewComments = processedNewComments.filter(comment => comment.user !== currentUserId)
+        const userCommentFromNewPage = processedNewComments.find(
+          (comment) => comment.user === currentUserId,
+        )
+        const otherNewComments = processedNewComments.filter(
+          (comment) => comment.user !== currentUserId,
+        )
 
         if (userCommentFromNewPage) {
           // Remove user's comment from existing comments if it exists there
-          const existingCommentsWithoutUser = comments.value.filter(comment => comment.user !== currentUserId)
+          const existingCommentsWithoutUser = comments.value.filter(
+            (comment) => comment.user !== currentUserId,
+          )
           // Put user comment at the top, then existing comments, then other new comments
-          comments.value = [userCommentFromNewPage, ...existingCommentsWithoutUser, ...otherNewComments]
+          comments.value = [
+            userCommentFromNewPage,
+            ...existingCommentsWithoutUser,
+            ...otherNewComments,
+          ]
         } else {
           // No user comment in new batch, just append normally
           comments.value.push(...processedNewComments)
@@ -991,26 +1128,29 @@ const handleScroll = () => {
 }
 
 // Watchers
-watch(() => authStore.isAuthenticated, async (isAuth, wasAuth) => {
-  if (isAuth && !wasAuth) {
-    // User just logged in, check if they have already commented
-    hasAlreadyCommented.value = await commentsService.hasUserCommented(props.eventId)
+watch(
+  () => authStore.isAuthenticated,
+  async (isAuth, wasAuth) => {
+    if (isAuth && !wasAuth) {
+      // User just logged in, check if they have already commented
+      hasAlreadyCommented.value = await commentsService.hasUserCommented(props.eventId)
 
-    // Reload comments to get proper sorting with user's comment at top
-    await loadComments()
+      // Reload comments to get proper sorting with user's comment at top
+      await loadComments()
 
-    // Check if we should scroll to comment section (after login redirect)
-    checkForCommentRedirect()
-  } else if (!isAuth) {
-    // User logged out, reset comment state
-    hasAlreadyCommented.value = false
-    newComment.value.message = ''
-    errorMessage.value = ''
+      // Check if we should scroll to comment section (after login redirect)
+      checkForCommentRedirect()
+    } else if (!isAuth) {
+      // User logged out, reset comment state
+      hasAlreadyCommented.value = false
+      newComment.value.message = ''
+      errorMessage.value = ''
 
-    // Cancel any ongoing edit
-    cancelEditComment()
-  }
-})
+      // Cancel any ongoing edit
+      cancelEditComment()
+    }
+  },
+)
 
 // Function to scroll to comment section
 const scrollToCommentSection = () => {
@@ -1018,7 +1158,7 @@ const scrollToCommentSection = () => {
   if (commentSection) {
     commentSection.scrollIntoView({
       behavior: 'smooth',
-      block: 'center'
+      block: 'center',
     })
 
     // Add a gentle highlight animation using the event's primary color

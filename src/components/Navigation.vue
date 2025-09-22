@@ -1,9 +1,11 @@
 <template>
   <nav
     class="sticky top-0 z-50 transition-all duration-500 ease-out"
-    :class="isScrolled 
-      ? 'bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-xl shadow-blue-500/10' 
-      : 'bg-transparent border-b border-transparent'"
+    :class="
+      isScrolled
+        ? 'bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-xl shadow-blue-500/10'
+        : 'bg-transparent border-b border-transparent'
+    "
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
@@ -30,9 +32,11 @@
           <RouterLink
             to="/"
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
-            :class="isScrolled 
-              ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50' 
-              : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'"
+            :class="
+              isScrolled
+                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
+                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+            "
             active-class="text-blue-600 bg-white/80 shadow-lg shadow-blue-100/50"
           >
             Home
@@ -43,9 +47,11 @@
           <RouterLink
             to="/about"
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
-            :class="isScrolled 
-              ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50' 
-              : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'"
+            :class="
+              isScrolled
+                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
+                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+            "
             active-class="text-blue-600 bg-white/80 shadow-lg shadow-blue-100/50"
           >
             About
@@ -56,9 +62,11 @@
           <RouterLink
             to="/events"
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
-            :class="isScrolled 
-              ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50' 
-              : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'"
+            :class="
+              isScrolled
+                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
+                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+            "
             active-class="text-blue-600 bg-white/80 shadow-lg shadow-blue-100/50"
           >
             Events
@@ -69,9 +77,11 @@
           <button
             @click="scrollToPricing"
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
-            :class="isScrolled 
-              ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50' 
-              : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'"
+            :class="
+              isScrolled
+                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
+                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+            "
           >
             Pricing
             <div
@@ -86,9 +96,11 @@
             <RouterLink
               :to="signinLink"
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
-              :class="isScrolled 
-                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50' 
-                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'"
+              :class="
+                isScrolled
+                  ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
+                  : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+              "
             >
               Sign In
             </RouterLink>
@@ -106,10 +118,15 @@
                 @mouseenter="userMenuOpen = true"
                 class="flex items-center space-x-3 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300 group"
               >
-                <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105">
-                  <img 
-                    v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
-                    :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''" 
+                <div
+                  class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105"
+                >
+                  <img
+                    v-if="
+                      authStore.user?.profile_picture &&
+                      apiService.getProfilePictureUrl(authStore.user.profile_picture)
+                    "
+                    :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
                     :alt="authStore.user.first_name || authStore.user.username"
                     class="w-full h-full object-cover"
                     loading="lazy"
@@ -139,9 +156,14 @@
                   <div class="px-4 py-3 border-b border-blue-100/50">
                     <div class="flex items-center space-x-3">
                       <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-blue-100">
-                        <img 
-                          v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
-                          :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''" 
+                        <img
+                          v-if="
+                            authStore.user?.profile_picture &&
+                            apiService.getProfilePictureUrl(authStore.user.profile_picture)
+                          "
+                          :src="
+                            apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''
+                          "
                           :alt="authStore.user.first_name || authStore.user.username"
                           class="w-full h-full object-cover"
                           loading="lazy"
@@ -174,11 +196,13 @@
                       <span class="font-medium">Settings</span>
                     </RouterLink>
 
-
                     <div class="border-t border-blue-100/50 my-1"></div>
 
                     <button
-                      @click="handleLogout(); userMenuOpen = false"
+                      @click="
+                        handleLogout();
+                        userMenuOpen = false
+                      "
                       class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left"
                     >
                       <LogOut class="w-5 h-5" />
@@ -235,7 +259,10 @@
             Events
           </RouterLink>
           <button
-            @click="scrollToPricing(); mobileMenuOpen = false"
+            @click="
+              scrollToPricing();
+              mobileMenuOpen = false
+            "
             class="block w-full text-left text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
           >
             Pricing
@@ -265,9 +292,12 @@
               <!-- User Info -->
               <div class="flex items-center space-x-3 px-4 py-3 bg-blue-50 rounded-xl">
                 <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white">
-                  <img 
-                    v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
-                    :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''" 
+                  <img
+                    v-if="
+                      authStore.user?.profile_picture &&
+                      apiService.getProfilePictureUrl(authStore.user.profile_picture)
+                    "
+                    :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
                     :alt="authStore.user.first_name || authStore.user.username"
                     class="w-full h-full object-cover"
                     loading="lazy"
@@ -298,9 +328,11 @@
                 <span class="font-medium">Settings</span>
               </RouterLink>
 
-
               <button
-                @click="handleLogout(); mobileMenuOpen = false"
+                @click="
+                  handleLogout();
+                  mobileMenuOpen = false
+                "
                 class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 w-full text-left"
               >
                 <LogOut class="w-5 h-5" />
@@ -317,14 +349,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
-import {
-  CalendarDays,
-  Menu,
-  X,
-  ChevronDown,
-  Settings,
-  LogOut,
-} from 'lucide-vue-next'
+import { CalendarDays, Menu, X, ChevronDown, Settings, LogOut } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useNavbarScroll } from '../composables/useNavbarScroll'

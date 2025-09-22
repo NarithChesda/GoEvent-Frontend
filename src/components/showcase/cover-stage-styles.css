@@ -52,12 +52,18 @@
 /* Extra small screens adjustment */
 @media (max-width: 375px) and (max-height: 700px) {
   /* Reduce spacing for very small mobile screens */
-  .mb-4 { margin-bottom: 0.75rem !important; }
-  .mb-6 { margin-bottom: 1rem !important; }
+  .mb-4 {
+    margin-bottom: 0.75rem !important;
+  }
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
 }
 
 /* Text rendering improvements to prevent cut-off */
-h1, h2, p {
+h1,
+h2,
+p {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

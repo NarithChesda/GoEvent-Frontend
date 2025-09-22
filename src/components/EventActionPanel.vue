@@ -1,18 +1,26 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl shadow-blue-500/25 border border-white/20">
+  <div
+    class="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl shadow-blue-500/25 border border-white/20"
+  >
     <!-- Attendance Info -->
     <div class="mb-6">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Attendance</span>
+        <span class="text-sm font-semibold text-slate-700 uppercase tracking-wider"
+          >Attendance</span
+        >
         <span class="text-xl font-bold text-slate-900 leading-none">
           {{ event.registrations_count }}
-          <span v-if="event.max_attendees" class="text-base text-slate-500">/ {{ event.max_attendees }}</span>
+          <span v-if="event.max_attendees" class="text-base text-slate-500"
+            >/ {{ event.max_attendees }}</span
+          >
         </span>
       </div>
       <div v-if="event.max_attendees" class="w-full bg-slate-200 rounded-full h-2">
         <div
           class="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-          :style="{ width: `${Math.min(100, (event.registrations_count / event.max_attendees) * 100)}%` }"
+          :style="{
+            width: `${Math.min(100, (event.registrations_count / event.max_attendees) * 100)}%`,
+          }"
         ></div>
       </div>
     </div>
@@ -50,21 +58,13 @@
 
       <!-- Secondary Actions - Calendar Integration -->
       <div class="pt-2 border-t border-slate-200">
-        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-3 text-center">Add to Calendar</p>
+        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-3 text-center">
+          Add to Calendar
+        </p>
         <div class="grid grid-cols-3 gap-2">
-          <CalendarButton
-            provider="Google"
-            @click="$emit('add-to-google-calendar')"
-          />
-          <CalendarButton
-            provider="Outlook"
-            @click="$emit('add-to-outlook-calendar')"
-          />
-          <CalendarButton
-            provider=".ics"
-            icon="download"
-            @click="$emit('download-ics')"
-          />
+          <CalendarButton provider="Google" @click="$emit('add-to-google-calendar')" />
+          <CalendarButton provider="Outlook" @click="$emit('add-to-outlook-calendar')" />
+          <CalendarButton provider=".ics" icon="download" @click="$emit('download-ics')" />
         </div>
       </div>
     </div>

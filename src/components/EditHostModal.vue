@@ -3,9 +3,9 @@
     <Transition name="modal">
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="$emit('close')">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
@@ -39,7 +39,7 @@
                     <User class="w-4 h-4 mr-2" />
                     Basic Information
                   </h4>
-                  
+
                   <!-- Name -->
                   <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -102,14 +102,23 @@
                     <div class="flex items-start space-x-4">
                       <!-- Preview -->
                       <div class="flex-shrink-0">
-                        <div v-if="profilePicturePreview || (formData.profile_image && formData.profile_image !== '')" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200">
+                        <div
+                          v-if="
+                            profilePicturePreview ||
+                            (formData.profile_image && formData.profile_image !== '')
+                          "
+                          class="w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200"
+                        >
                           <img
                             :src="profilePicturePreview || formData.profile_image || ''"
                             alt="Profile preview"
                             class="w-full h-full object-cover"
                           />
                         </div>
-                        <div v-else class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                        <div
+                          v-else
+                          class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center"
+                        >
                           <User class="w-8 h-8 text-gray-400" />
                         </div>
                       </div>
@@ -134,7 +143,10 @@
                             <span>{{ profilePictureUploading ? 'Uploading...' : 'Upload' }}</span>
                           </button>
                           <button
-                            v-if="profilePicturePreview || (formData.profile_image && formData.profile_image !== '')"
+                            v-if="
+                              profilePicturePreview ||
+                              (formData.profile_image && formData.profile_image !== '')
+                            "
                             type="button"
                             @click="removeProfilePicture"
                             class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
@@ -167,13 +179,11 @@
                     <Mail class="w-4 h-4 mr-2" />
                     Contact & Social Media
                   </h4>
-                  
+
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Email -->
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
-                        Email
-                      </label>
+                      <label class="block text-sm font-semibold text-slate-700 mb-2"> Email </label>
                       <input
                         v-model="formData.email"
                         type="email"
@@ -241,7 +251,10 @@
                   </div>
 
                   <!-- Translation List -->
-                  <div v-if="formData.translations && formData.translations.length > 0" class="space-y-3">
+                  <div
+                    v-if="formData.translations && formData.translations.length > 0"
+                    class="space-y-3"
+                  >
                     <div
                       v-for="(translation, index) in formData.translations"
                       :key="translation.id || index"
@@ -254,17 +267,20 @@
                       >
                         <X class="w-4 h-4" />
                       </button>
-                      
+
                       <div class="space-y-3 pr-8">
                         <div class="flex items-center justify-between">
                           <label class="block text-xs font-medium text-slate-600">
                             Language: {{ getLanguageName(translation.language) }}
                           </label>
-                          <span v-if="translation.id" class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                          <span
+                            v-if="translation.id"
+                            class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full"
+                          >
                             Saved
                           </span>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <input
@@ -283,7 +299,7 @@
                             />
                           </div>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <input
@@ -302,7 +318,7 @@
                             />
                           </div>
                         </div>
-                        
+
                         <textarea
                           v-model="translation.bio"
                           rows="2"
@@ -314,7 +330,10 @@
                   </div>
 
                   <!-- Add Translation Modal -->
-                  <div v-if="showAddTranslation" class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div
+                    v-if="showAddTranslation"
+                    class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+                  >
                     <div class="flex items-center justify-between mb-3">
                       <h5 class="font-medium text-slate-900">Add Translation</h5>
                       <button
@@ -325,18 +344,22 @@
                         <X class="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     <div class="space-y-3">
                       <select
                         v-model="newTranslation.language"
                         class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select language</option>
-                        <option v-for="lang in availableLanguagesForAdd" :key="lang.code" :value="lang.code">
+                        <option
+                          v-for="lang in availableLanguagesForAdd"
+                          :key="lang.code"
+                          :value="lang.code"
+                        >
                           {{ lang.name }}
                         </option>
                       </select>
-                      
+
                       <div class="flex space-x-2">
                         <button
                           type="button"
@@ -360,7 +383,9 @@
               </div>
 
               <!-- Footer -->
-              <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 p-8">
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 p-8"
+              >
                 <button
                   type="button"
                   @click="$emit('close')"
@@ -420,7 +445,7 @@ const availableLanguages = [
   { code: 'ko', name: 'Korean' },
   { code: 'zh-cn', name: 'Chinese (Simplified)' },
   { code: 'th', name: 'Thai' },
-  { code: 'vn', name: 'Vietnamese' }
+  { code: 'vn', name: 'Vietnamese' },
 ]
 
 // Form data - initialize with host data
@@ -436,42 +461,44 @@ const formData = reactive({
   twitter_url: props.host.twitter_url,
   website_url: props.host.website_url,
   order: props.host.order,
-  translations: [...props.host.translations] // Create a copy
+  translations: [...props.host.translations], // Create a copy
 })
 
 // New translation
-const newTranslation = reactive<Omit<HostTranslation, 'id' | 'host' | 'created_at' | 'updated_at'>>({
-  language: '',
-  name: '',
-  parent_a_name: '',
-  parent_b_name: '',
-  title: '',
-  bio: ''
-})
+const newTranslation = reactive<Omit<HostTranslation, 'id' | 'host' | 'created_at' | 'updated_at'>>(
+  {
+    language: '',
+    name: '',
+    parent_a_name: '',
+    parent_b_name: '',
+    title: '',
+    bio: '',
+  },
+)
 
 // Computed
 const availableLanguagesForAdd = computed(() => {
-  return availableLanguages.filter(lang => 
-    !formData.translations.some(t => t.language === lang.code)
+  return availableLanguages.filter(
+    (lang) => !formData.translations.some((t) => t.language === lang.code),
   )
 })
 
 // Methods
 const getLanguageName = (code: string) => {
-  return availableLanguages.find(lang => lang.code === code)?.name || code
+  return availableLanguages.find((lang) => lang.code === code)?.name || code
 }
 
 const addTranslation = () => {
   if (!newTranslation.language) return
-  
+
   // Check if translation for this language already exists
-  if (formData.translations.some(t => t.language === newTranslation.language)) {
+  if (formData.translations.some((t) => t.language === newTranslation.language)) {
     alert('Translation for this language already exists')
     return
   }
-  
+
   formData.translations.push({ ...newTranslation })
-  
+
   // Reset form
   Object.assign(newTranslation, {
     language: '',
@@ -479,9 +506,9 @@ const addTranslation = () => {
     parent_a_name: '',
     parent_b_name: '',
     title: '',
-    bio: ''
+    bio: '',
   })
-  
+
   showAddTranslation.value = false
 }
 
@@ -506,7 +533,8 @@ const handleProfilePictureSelect = async (event: Event) => {
     return
   }
 
-  if (file.size > 3 * 1024 * 1024) { // 3MB limit
+  if (file.size > 3 * 1024 * 1024) {
+    // 3MB limit
     alert('File size must be less than 3MB')
     return
   }
@@ -536,13 +564,13 @@ const updateHost = async () => {
 
   try {
     // Clean the translations data - remove server-generated fields
-    const cleanedTranslations = formData.translations.map(translation => ({
+    const cleanedTranslations = formData.translations.map((translation) => ({
       language: translation.language,
       name: translation.name || '',
       parent_a_name: translation.parent_a_name || '',
       parent_b_name: translation.parent_b_name || '',
       title: translation.title || '',
-      bio: translation.bio || ''
+      bio: translation.bio || '',
       // Note: Exclude server-generated fields like id, host, created_at, updated_at
     }))
 
@@ -558,7 +586,7 @@ const updateHost = async () => {
       twitter_url: formData.twitter_url || '',
       website_url: formData.website_url || '',
       order: formData.order || 0,
-      translations: cleanedTranslations.filter(t => t.language && t.language.trim() !== '')
+      translations: cleanedTranslations.filter((t) => t.language && t.language.trim() !== ''),
     }
 
     // Only include profile_image in request if we're not uploading a new file
@@ -568,7 +596,12 @@ const updateHost = async () => {
 
     // Use the appropriate method based on whether we have a new file
     const response = selectedProfileImageFile.value
-      ? await hostsService.updateHostWithFile(props.eventId, props.host.id, requestData, selectedProfileImageFile.value)
+      ? await hostsService.updateHostWithFile(
+          props.eventId,
+          props.host.id,
+          requestData,
+          selectedProfileImageFile.value,
+        )
       : await hostsService.updateHost(props.eventId, props.host.id, requestData)
 
     if (response.success && response.data) {

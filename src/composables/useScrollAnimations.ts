@@ -7,27 +7,27 @@ export const ANIMATION_CONSTANTS = {
     FAST: 300,
     NORMAL: 500,
     SLOW: 800,
-    EXTRA_SLOW: 1200
+    EXTRA_SLOW: 1200,
   },
   DELAY: {
     NONE: 0,
     SHORT: 100,
     MEDIUM: 200,
     LONG: 300,
-    STAGGER: 150
+    STAGGER: 150,
   },
   EASING: {
     SMOOTH: 'cubic-bezier(0.4, 0, 0.2, 1)',
     BOUNCE: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     ELASTIC: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-    EXPO: 'cubic-bezier(0.19, 1, 0.22, 1)'
+    EXPO: 'cubic-bezier(0.19, 1, 0.22, 1)',
   },
   THRESHOLD: {
     MINIMAL: 0.05,
     NORMAL: 0.1,
     HALF: 0.5,
-    FULL: 1.0
-  }
+    FULL: 1.0,
+  },
 }
 
 interface RevealAnimationOptions {
@@ -45,12 +45,12 @@ export function useScrollAnimations() {
   const isVisible = ref<{ [key: string]: boolean }>({})
   const observer = ref<IntersectionObserver | null>(null)
   const observedElements = ref<Set<Element>>(new Set())
-  
+
   const createObserver = () => {
     if (observer.value) {
       observer.value.disconnect()
     }
-    
+
     observer.value = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -62,22 +62,22 @@ export function useScrollAnimations() {
       },
       {
         threshold: ANIMATION_CONSTANTS.THRESHOLD.NORMAL,
-        rootMargin: '0px 0px -50px 0px'
-      }
+        rootMargin: '0px 0px -50px 0px',
+      },
     )
   }
-  
+
   const observeElement = (element: Element | { $el?: Element }, id: string) => {
     // Handle Vue component refs that have $el property
     const domElement = 'tagName' in element ? element : element.$el
-    
+
     if (domElement && domElement.setAttribute) {
       domElement.setAttribute('data-scroll-id', id)
       observer.value?.observe(domElement)
       observedElements.value.add(domElement)
     }
   }
-  
+
   const cleanup = () => {
     if (observer.value) {
       observer.value.disconnect()
@@ -85,19 +85,19 @@ export function useScrollAnimations() {
     }
     observedElements.value.clear()
   }
-  
+
   onMounted(() => {
     createObserver()
   })
-  
+
   onUnmounted(() => {
     cleanup()
   })
-  
+
   return {
     isVisible,
     observeElement,
-    cleanup
+    cleanup,
   }
 }
 
@@ -110,7 +110,7 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
     delay = ANIMATION_CONSTANTS.DELAY.NONE,
     easing = ANIMATION_CONSTANTS.EASING.SMOOTH,
     stagger = false,
-    staggerDelay = ANIMATION_CONSTANTS.DELAY.STAGGER
+    staggerDelay = ANIMATION_CONSTANTS.DELAY.STAGGER,
   } = options
 
   const isVisible = ref<{ [key: string]: boolean }>({})
@@ -132,7 +132,7 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
           const elementId = entry.target.getAttribute('data-reveal-id')
           if (elementId) {
             isVisible.value[elementId] = entry.isIntersecting
-            
+
             if (entry.isIntersecting && !animatedElements.value[elementId]) {
               animatedElements.value[elementId] = true
               triggerRevealAnimation(entry.target as HTMLElement, index)
@@ -142,8 +142,8 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
       },
       {
         threshold,
-        rootMargin
-      }
+        rootMargin,
+      },
     )
   }
 
@@ -161,13 +161,13 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
     element.style.willChange = 'transform, opacity'
 
     // Calculate delay for staggered animations
-    const animationDelay = stagger ? delay + (index * staggerDelay) : delay
+    const animationDelay = stagger ? delay + index * staggerDelay : delay
 
     // Trigger animation after delay
     setTimeout(() => {
       element.style.opacity = '1'
       element.style.transform = 'none'
-      
+
       // Clean up will-change after animation
       setTimeout(() => {
         element.style.willChange = 'auto'
@@ -193,9 +193,13 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
     }
   }
 
-  const observeRevealElement = (element: Element | { $el?: Element }, id: string, elementIndex: number = 0) => {
+  const observeRevealElement = (
+    element: Element | { $el?: Element },
+    id: string,
+    elementIndex: number = 0,
+  ) => {
     const domElement = 'tagName' in element ? element : element.$el
-    
+
     if (domElement && domElement.setAttribute) {
       domElement.setAttribute('data-reveal-id', id)
       domElement.setAttribute('data-element-index', elementIndex.toString())
@@ -223,7 +227,7 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
   return {
     isVisible,
     observeRevealElement,
-    cleanup
+    cleanup,
   }
 }
 
@@ -233,12 +237,12 @@ export function useParallaxScroll() {
 
   const updateParallax = useThrottleFn(() => {
     scrollY.value = window.scrollY
-    
+
     parallaxElements.value.forEach((element, id) => {
       const speed = parseFloat(element.getAttribute('data-parallax-speed') || '0.5')
       const direction = element.getAttribute('data-parallax-direction') || 'up'
       const offset = scrollY.value * speed
-      
+
       let transform = ''
       switch (direction) {
         case 'up':
@@ -254,20 +258,25 @@ export function useParallaxScroll() {
           transform = `translateX(${offset}px)`
           break
       }
-      
+
       element.style.transform = transform
     })
   }, 16) // ~60fps
 
-  const addParallaxElement = (element: Element | { $el?: Element }, id: string, speed: number = 0.5, direction: string = 'up') => {
+  const addParallaxElement = (
+    element: Element | { $el?: Element },
+    id: string,
+    speed: number = 0.5,
+    direction: string = 'up',
+  ) => {
     const domElement = 'tagName' in element ? element : element.$el
-    
+
     if (domElement) {
       const htmlElement = domElement as HTMLElement
       htmlElement.setAttribute('data-parallax-speed', speed.toString())
       htmlElement.setAttribute('data-parallax-direction', direction)
       htmlElement.style.willChange = 'transform'
-      
+
       parallaxElements.value.set(id, htmlElement)
     }
   }
@@ -302,25 +311,25 @@ export function useParallaxScroll() {
     scrollY,
     addParallaxElement,
     removeParallaxElement,
-    cleanup
+    cleanup,
   }
 }
 
 export function useSmoothScroll() {
   const isScrolling = ref(false)
-  
+
   const smoothScrollTo = (target: string | Element, options: ScrollIntoViewOptions = {}) => {
     const element = typeof target === 'string' ? document.querySelector(target) : target
-    
+
     if (!element) return
 
     isScrolling.value = true
-    
+
     const defaultOptions: ScrollIntoViewOptions = {
       behavior: 'smooth',
       block: 'center',
       inline: 'nearest',
-      ...options
+      ...options,
     }
 
     element.scrollIntoView(defaultOptions)
@@ -335,7 +344,7 @@ export function useSmoothScroll() {
     isScrolling.value = true
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     })
 
     setTimeout(() => {
@@ -346,39 +355,39 @@ export function useSmoothScroll() {
   return {
     isScrolling,
     smoothScrollTo,
-    smoothScrollToTop
+    smoothScrollToTop,
   }
 }
 
 export function useScrollToTop() {
   const showScrollTop = ref(false)
-  
+
   const handleScroll = useThrottleFn(() => {
     showScrollTop.value = window.scrollY > 300
   })
-  
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     })
   }
-  
+
   const cleanup = () => {
     window.removeEventListener('scroll', handleScroll)
   }
-  
+
   onMounted(() => {
     window.addEventListener('scroll', handleScroll, { passive: true })
   })
-  
+
   onUnmounted(() => {
     cleanup()
   })
-  
+
   return {
     showScrollTop,
     scrollToTop,
-    cleanup
+    cleanup,
   }
 }

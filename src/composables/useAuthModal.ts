@@ -45,7 +45,7 @@ export function useAuthModal(options: UseAuthModalOptions = {}) {
    * Requires authentication before executing an action
    * If user is authenticated, executes the action immediately
    * If not authenticated, opens the auth modal
-   * 
+   *
    * @param action - Function to execute after authentication
    * @returns Promise that resolves when action is completed or user cancels
    */
@@ -104,7 +104,7 @@ export function useAuthModal(options: UseAuthModalOptions = {}) {
   /**
    * Executes an action if user is authenticated, otherwise shows auth modal
    * This is a simpler version of requireAuth that doesn't return a promise
-   * 
+   *
    * @param action - Function to execute if authenticated
    */
   const withAuth = (action: () => void | Promise<void>) => {
@@ -145,7 +145,7 @@ export function useAuthModal(options: UseAuthModalOptions = {}) {
     showAuthModal,
     isAuthenticated,
     user,
-    
+
     // Methods
     openAuthModal,
     closeAuthModal,
@@ -154,10 +154,10 @@ export function useAuthModal(options: UseAuthModalOptions = {}) {
     withAuth,
     authRequired,
     protectAction,
-    
+
     // Event handlers (for use in templates)
     onAuthModalClose: closeAuthModal,
-    onUserAuthenticated: handleAuthenticated
+    onUserAuthenticated: handleAuthenticated,
   }
 }
 
@@ -167,7 +167,7 @@ export function useAuthModal(options: UseAuthModalOptions = {}) {
  */
 const globalAuthModalState = ref({
   isVisible: false,
-  pendingAction: null as (() => void | Promise<void>) | null
+  pendingAction: null as (() => void | Promise<void>) | null,
 })
 
 export function useGlobalAuthModal() {
@@ -194,7 +194,7 @@ export function useGlobalAuthModal() {
 
   const handleGlobalAuthenticated = async () => {
     const { pendingAction } = globalAuthModalState.value
-    
+
     // Close modal first
     globalAuthModalState.value.isVisible = false
     globalAuthModalState.value.pendingAction = null
@@ -217,13 +217,13 @@ export function useGlobalAuthModal() {
     globalAuthModalState,
     isAuthenticated,
     user,
-    
+
     // Methods
     showGlobalAuthModal,
     closeGlobalAuthModal,
     handleGlobalAuthenticated,
-    
+
     // Computed for template usage
-    isGlobalAuthModalVisible: computed(() => globalAuthModalState.value.isVisible)
+    isGlobalAuthModalVisible: computed(() => globalAuthModalState.value.isVisible),
   }
 }

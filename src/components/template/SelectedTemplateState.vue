@@ -1,7 +1,9 @@
 <template>
   <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-3xl p-6">
     <div class="flex items-start space-x-4">
-      <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
+      >
         <Package class="w-6 h-6 text-blue-600" />
       </div>
       <div class="flex-1">

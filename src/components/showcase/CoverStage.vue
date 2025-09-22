@@ -37,9 +37,9 @@
       :getMediaUrl="getMediaUrl"
       @openEnvelope="handleOpenEnvelope"
     />
-    
+
     <!-- Main Content Overlay (Stage 3 - Background Video) -->
-    <div 
+    <div
       v-if="videoState.currentVideoPhase.value === 'background' || shouldSkipToMainContent"
       class="absolute inset-0 z-20"
     >
@@ -51,7 +51,10 @@
 
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
-import { useCoverStageVideo, type ShowcaseStage } from '../../composables/showcase/useCoverStageVideo'
+import {
+  useCoverStageVideo,
+  type ShowcaseStage,
+} from '../../composables/showcase/useCoverStageVideo'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 
@@ -113,7 +116,7 @@ const videoState = useCoverStageVideo(
     eventVideoPreloader: () => videoContainerRef.value?.eventVideoPreloader || null,
     sequentialVideoContainer: () => videoContainerRef.value?.sequentialVideoContainer || null,
     coverVideoElement: () => videoContainerRef.value?.coverVideoElement || null,
-    backgroundVideoElement: () => videoContainerRef.value?.backgroundVideoElement || null
+    backgroundVideoElement: () => videoContainerRef.value?.backgroundVideoElement || null,
   },
   {
     eventVideoUrl: props.eventVideoUrl,
@@ -121,12 +124,12 @@ const videoState = useCoverStageVideo(
     currentShowcaseStage: props.currentShowcaseStage,
     shouldSkipToMainContent: props.shouldSkipToMainContent,
     videoStatePreserved: props.videoStatePreserved,
-    templateAssets: props.templateAssets
+    templateAssets: props.templateAssets,
   },
   (event, ...args) => {
     // Forward events from composable to parent
-    (emit as any)(event, ...args)
-  }
+    ;(emit as any)(event, ...args)
+  },
 )
 
 // Handle envelope opening - emit to parent first, parent will handle music and then trigger video
@@ -145,7 +148,7 @@ const startEventVideo = () => {
 
 // Expose to parent via defineExpose
 defineExpose({
-  startEventVideo
+  startEventVideo,
 })
 
 // Cleanup on component unmount

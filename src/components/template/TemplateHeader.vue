@@ -1,9 +1,15 @@
 <template>
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-      <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Template</h2>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+        Event Template
+      </h2>
       <p class="text-sm text-slate-600 mt-1">
-        {{ event.event_template_enabled ? 'Manage your event template and styling' : 'Select a template for your event' }}
+        {{
+          event.event_template_enabled
+            ? 'Manage your event template and styling'
+            : 'Select a template for your event'
+        }}
       </p>
     </div>
     <div v-if="canEdit" class="flex items-center space-x-3">

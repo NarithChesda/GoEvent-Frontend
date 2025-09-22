@@ -4,7 +4,7 @@
     <video
       ref="sequentialVideoContainer"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
-      style="z-index: -10;"
+      style="z-index: -10"
       data-video-type="sequential"
       muted
       playsinline
@@ -21,7 +21,7 @@
       playsinline
       preload="none"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
-      style="z-index: 5;"
+      style="z-index: 5"
       data-video-type="event"
       @loadeddata="$emit('eventVideoPreloaded')"
       @canplaythrough="$emit('eventVideoReady')"
@@ -38,13 +38,13 @@
       playsinline
       preload="none"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
-      style="z-index: 4;"
+      style="z-index: 4"
       data-video-type="background"
       @loadeddata="$emit('backgroundVideoPreloaded')"
       @canplaythrough="$emit('backgroundVideoReady')"
       @playing="handleBackgroundVideoPlaying"
     />
-    
+
     <!-- Standard Cover Video Loop - Only show when not in event/background phase -->
     <video
       v-if="templateAssets?.standard_cover_video && isCoverVideoPlaying"
@@ -56,15 +56,19 @@
       playsinline
       class="absolute inset-0 w-full h-full desktop-video-sizing"
       data-video-type="cover"
-      style="z-index: -1;"
+      style="z-index: -1"
       @loadeddata="$emit('coverVideoLoaded')"
     />
 
     <!-- Fallback Background Image -->
-    <div 
-      v-if="templateAssets?.basic_background_photo && isCoverVideoPlaying && !templateAssets?.standard_cover_video" 
-      class="absolute inset-0" 
-      style="z-index: -1;"
+    <div
+      v-if="
+        templateAssets?.basic_background_photo &&
+        isCoverVideoPlaying &&
+        !templateAssets?.standard_cover_video
+      "
+      class="absolute inset-0"
+      style="z-index: -1"
     >
       <img
         :src="getMediaUrl(templateAssets.basic_background_photo)"
@@ -113,13 +117,12 @@ const eventVideoPreloader = ref<HTMLVideoElement | null>(null)
 const backgroundVideoElement = ref<HTMLVideoElement | null>(null)
 const coverVideoElement = ref<HTMLVideoElement | null>(null)
 
-
 // Handle background video playing event to ensure visibility and notify parent
 const handleBackgroundVideoPlaying = () => {
   if (backgroundVideoElement.value) {
     // Ensure the video is visible when it starts playing
     backgroundVideoElement.value.style.opacity = '1'
-    backgroundVideoElement.value.style.zIndex = '5'  // Same level as event video to replace it
+    backgroundVideoElement.value.style.zIndex = '5' // Same level as event video to replace it
   }
   // Emit event to parent so it can change the video phase and show main content
   emit('backgroundVideoPlaying')
@@ -130,7 +133,7 @@ defineExpose({
   sequentialVideoContainer,
   eventVideoPreloader,
   backgroundVideoElement,
-  coverVideoElement
+  coverVideoElement,
 })
 </script>
 

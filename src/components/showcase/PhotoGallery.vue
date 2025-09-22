@@ -7,7 +7,7 @@
         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text'
+        backgroundClip: 'text',
       }"
     >
       {{ galleryHeaderText }}
@@ -15,9 +15,23 @@
 
     <!-- No Photos Placeholder -->
     <div v-if="photos.length === 0" class="p-6 sm:p-8 rounded-xl text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" :style="{ backgroundColor: primaryColor + '20' }">
-        <svg class="w-8 h-8" :style="{ color: primaryColor }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      <div
+        class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+        :style="{ backgroundColor: primaryColor + '20' }"
+      >
+        <svg
+          class="w-8 h-8"
+          :style="{ color: primaryColor }"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          ></path>
         </svg>
       </div>
       <p class="text-sm" :style="{ color: primaryColor, opacity: '0.8' }">
@@ -31,10 +45,10 @@
     <!-- Photos Content -->
     <div v-else>
       <!-- Featured Photo -->
-      <div 
-        v-if="featuredPhoto" 
+      <div
+        v-if="featuredPhoto"
         class="mb-4 sm:mb-6 featured-photo-container"
-        :ref="el => setupPhotoAnimation(el, 'featured-photo', 0)"
+        :ref="(el) => setupPhotoAnimation(el, 'featured-photo', 0)"
       >
         <div class="rounded-xl overflow-hidden photo-reveal-container">
           <img
@@ -55,10 +69,10 @@
       </div>
 
       <!-- Clean Photo Gallery -->
-      <div 
-        class="clean-gallery-container overflow-hidden momentum-scroll-container" 
+      <div
+        class="clean-gallery-container overflow-hidden momentum-scroll-container"
         style="margin-bottom: 0px"
-        :ref="el => setupPhotoAnimation(el, 'photo-gallery', 1)"
+        :ref="(el) => setupPhotoAnimation(el, 'photo-gallery', 1)"
       >
         <!-- Photo strip with optimized infinite scroll -->
         <div class="photo-strip-wrapper overflow-hidden flex items-center enhanced-scroll">
@@ -67,7 +81,7 @@
             style="gap: var(--gallery-spacing, 16px)"
             :style="{
               '--strip-width': `${stripWidth}px`,
-              animationDuration: `${animationDuration}s`
+              animationDuration: `${animationDuration}s`,
             }"
           >
             <!-- First set of photos (virtualized) -->
@@ -78,7 +92,7 @@
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
-                width: `${getPhotoWidth(photo)}px`
+                width: `${getPhotoWidth(photo)}px`,
               }"
               @click="handlePhotoClick(photo)"
             >
@@ -108,7 +122,7 @@
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
-                width: `${getPhotoWidth(photo)}px`
+                width: `${getPhotoWidth(photo)}px`,
               }"
               @click="handlePhotoClick(photo)"
             >
@@ -133,10 +147,10 @@
       </div>
 
       <!-- Reverse Scroll Gallery -->
-      <div 
-        class="clean-gallery-reverse overflow-hidden momentum-scroll-container" 
+      <div
+        class="clean-gallery-reverse overflow-hidden momentum-scroll-container"
         style="margin-top: 0px"
-        :ref="el => setupPhotoAnimation(el, 'reverse-gallery', 2)"
+        :ref="(el) => setupPhotoAnimation(el, 'reverse-gallery', 2)"
       >
         <!-- Photo strip with optimized reverse infinite scroll -->
         <div class="photo-strip-wrapper overflow-hidden flex items-center enhanced-scroll">
@@ -145,7 +159,7 @@
             style="gap: var(--gallery-spacing, 16px)"
             :style="{
               '--strip-width': `${stripWidth}px`,
-              animationDuration: `${reverseAnimationDuration}s`
+              animationDuration: `${reverseAnimationDuration}s`,
             }"
           >
             <!-- First set of photos (reversed order, virtualized) -->
@@ -156,7 +170,7 @@
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
-                width: `${getPhotoWidth(photo)}px`
+                width: `${getPhotoWidth(photo)}px`,
               }"
               @click="handlePhotoClick(photo)"
             >
@@ -186,7 +200,7 @@
               :data-photo-id="photo.id"
               :style="{
                 height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
-                width: `${getPhotoWidth(photo)}px`
+                width: `${getPhotoWidth(photo)}px`,
               }"
               @click="handlePhotoClick(photo)"
             >
@@ -209,19 +223,14 @@
           </div>
         </div>
       </div>
-
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
-import {
-  translateRSVP,
-  type SupportedLanguage
-} from '../../utils/translations'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useStaggerAnimation } from '../../composables/useAdvancedAnimations'
 import { useMomentumScroll } from '../../composables/useAdvancedAnimations'
 import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
@@ -258,22 +267,22 @@ const { observeStaggerElement } = useStaggerAnimation({
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
   staggerDelay: 80,
   easing: ANIMATION_CONSTANTS.EASING.EXPO,
-  threshold: 0.3
+  threshold: 0.3,
 })
 
 // Enhanced momentum scrolling for smoother gallery experience
 const { scrollToElement, isScrolling } = useMomentumScroll({
   friction: 0.95,
   acceleration: 0.08,
-  maxVelocity: 30
+  maxVelocity: 30,
 })
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
   if (props.eventTexts && props.currentLanguage) {
-    const text = props.eventTexts.find(text =>
-      text.text_type === textType && text.language === props.currentLanguage
+    const text = props.eventTexts.find(
+      (text) => text.text_type === textType && text.language === props.currentLanguage,
     )
     if (text?.content) {
       return text.content
@@ -284,8 +293,11 @@ const getTextContent = (textType: string, fallback = ''): string => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
 
   // Map text types to translation keys
-  const keyMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    'gallery_header': 'gallery_header'
+  const keyMap: Record<
+    string,
+    keyof typeof import('../../utils/translations').rsvpTranslations.en
+  > = {
+    gallery_header: 'gallery_header',
   }
 
   const translationKey = keyMap[textType]
@@ -296,21 +308,14 @@ const getTextContent = (textType: string, fallback = ''): string => {
   return fallback
 }
 
-const galleryHeaderText = computed(() =>
-  getTextContent('gallery_header', 'Photo Gallery')
-)
+const galleryHeaderText = computed(() => getTextContent('gallery_header', 'Photo Gallery'))
 
 // Gallery spacing constant - must match CSS custom property
 const GALLERY_SPACING = 16
 
-const featuredPhoto = computed(() =>
-  props.photos.find(photo => photo.is_featured)
-)
+const featuredPhoto = computed(() => props.photos.find((photo) => photo.is_featured))
 
-const nonFeaturedPhotos = computed(() =>
-  props.photos.filter(photo => !photo.is_featured)
-)
-
+const nonFeaturedPhotos = computed(() => props.photos.filter((photo) => !photo.is_featured))
 
 // Performance utilities with automatic cleanup
 const {
@@ -320,26 +325,26 @@ const {
   requestAnimationFrame,
   cancelAnimationFrame,
   deduplicateRequest,
-  cleanup: cleanupPerformance
+  cleanup: cleanupPerformance,
 } = usePerformance()
 
 // Single Image Cache System - eliminates 4× duplicate network requests
 class SingleImageCache {
   private cache = new Map<string, HTMLImageElement>()
   private loadingPromises = new Map<string, Promise<HTMLImageElement>>()
-  
+
   async getImage(src: string): Promise<HTMLImageElement> {
     // Return cached image immediately if available
     if (this.cache.has(src)) {
       return this.cache.get(src)!.cloneNode(false) as HTMLImageElement
     }
-    
+
     // Return existing promise if image is already loading
     if (this.loadingPromises.has(src)) {
       const originalImg = await this.loadingPromises.get(src)!
       return originalImg.cloneNode(false) as HTMLImageElement
     }
-    
+
     // Start loading new image
     const loadPromise = new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image()
@@ -354,27 +359,27 @@ class SingleImageCache {
       }
       img.src = src
     })
-    
+
     this.loadingPromises.set(src, loadPromise)
     const originalImg = await loadPromise
     return originalImg.cloneNode(false) as HTMLImageElement
   }
-  
+
   preload(src: string): Promise<void> {
     return this.getImage(src).then(() => void 0)
   }
-  
+
   getDimensions(src: string): { width: number; height: number } | null {
     const img = this.cache.get(src)
     if (img && img.naturalWidth && img.naturalHeight) {
       return {
         width: img.naturalWidth,
-        height: img.naturalHeight
+        height: img.naturalHeight,
       }
     }
     return null
   }
-  
+
   clear(): void {
     this.cache.clear()
     this.loadingPromises.clear()
@@ -391,11 +396,15 @@ const imageDimensions = ref<Record<string, { width: number; height: number }>>({
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
 // Throttled resize handler to prevent excessive recalculations
-const updateWindowWidth = useAdvancedThrottleFn(() => {
-  if (typeof window !== 'undefined') {
-    windowWidth.value = window.innerWidth
-  }
-}, 100, { trailing: true, useRAF: true })
+const updateWindowWidth = useAdvancedThrottleFn(
+  () => {
+    if (typeof window !== 'undefined') {
+      windowWidth.value = window.innerWidth
+    }
+  },
+  100,
+  { trailing: true, useRAF: true },
+)
 
 // Animation frame IDs for cleanup
 const activeAnimationFrames = new Set<number>()
@@ -441,7 +450,7 @@ const getPhotoWidth = (photo: EventPhoto): number => {
 // Calculate strip width for animation (using visible photos for performance)
 const stripWidth = computed((): number => {
   let totalWidth = 0
-  visiblePhotos.value.forEach(photo => {
+  visiblePhotos.value.forEach((photo) => {
     totalWidth += getPhotoWidth(photo) + GALLERY_SPACING // Consistent spacing throughout gallery
   })
   return totalWidth || 1000 // Fallback width to prevent division by zero
@@ -474,40 +483,51 @@ const containerWidth = ref(1024) // Default width
 // Calculate visible photos based on current animation progress and container width
 const calculateVisiblePhotos = (photos: EventPhoto[], isReverse = false): EventPhoto[] => {
   if (photos.length === 0) return []
-  
+
   // For infinite scroll, we need to show enough photos to fill the visible area plus buffer
   const averagePhotoWidth = 200 // Approximate average photo width
   const photosNeededForVisibleArea = Math.ceil(containerWidth.value / averagePhotoWidth)
-  const totalPhotosToRender = Math.min(photos.length, photosNeededForVisibleArea + (BUFFER_SIZE * 2))
-  
+  const totalPhotosToRender = Math.min(photos.length, photosNeededForVisibleArea + BUFFER_SIZE * 2)
+
   // Always show at least the minimum needed for smooth animation
   const minPhotos = Math.min(photos.length, 8)
   const photosToShow = Math.max(totalPhotosToRender, minPhotos)
-  
+
   // For performance, limit maximum photos rendered at once
   const maxPhotos = Math.min(photos.length, 16)
   const finalCount = Math.min(photosToShow, maxPhotos)
-  
+
   return photos.slice(0, finalCount)
 }
 
 // Throttled update function for virtual scrolling
-const updateVisiblePhotos = useAdvancedThrottleFn(() => {
-  visiblePhotos.value = calculateVisiblePhotos(allPhotosForStrip.value, false)
-  visibleReversePhotos.value = calculateVisiblePhotos(reversePhotosForStrip.value, true)
-}, 100, { trailing: true, useRAF: true })
+const updateVisiblePhotos = useAdvancedThrottleFn(
+  () => {
+    visiblePhotos.value = calculateVisiblePhotos(allPhotosForStrip.value, false)
+    visibleReversePhotos.value = calculateVisiblePhotos(reversePhotosForStrip.value, true)
+  },
+  100,
+  { trailing: true, useRAF: true },
+)
 
 // Update container width on resize
-const updateContainerWidth = useAdvancedThrottleFn(() => {
-  if (typeof window !== 'undefined') {
-    containerWidth.value = window.innerWidth
-    updateVisiblePhotos()
-  }
-}, 100, { trailing: true, useRAF: true })
+const updateContainerWidth = useAdvancedThrottleFn(
+  () => {
+    if (typeof window !== 'undefined') {
+      containerWidth.value = window.innerWidth
+      updateVisiblePhotos()
+    }
+  },
+  100,
+  { trailing: true, useRAF: true },
+)
 
 // Memory cleanup with intersection observer
 const photoIntersectionObserver = ref<IntersectionObserver | null>(null)
-const observedPhotoElements = new WeakMap<Element, { photoId: string; cleanupTimer: number | null }>()
+const observedPhotoElements = new WeakMap<
+  Element,
+  { photoId: string; cleanupTimer: number | null }
+>()
 
 // Clean up resources for photos that scroll out of view
 const createPhotoIntersectionObserver = () => {
@@ -535,7 +555,7 @@ const createPhotoIntersectionObserver = () => {
               // Photo is definitely out of view, perform cleanup
               imgElement.src = '' // Clear src to stop any pending loads
               imgElement.removeAttribute('data-optimized-id')
-              
+
               // Remove from observed elements
               observedPhotoElements.delete(entry.target)
               photoIntersectionObserver.value?.unobserve(entry.target)
@@ -547,8 +567,8 @@ const createPhotoIntersectionObserver = () => {
     {
       root: null,
       rootMargin: '100px', // Start observing 100px before element enters/exits viewport
-      threshold: 0.1
-    }
+      threshold: 0.1,
+    },
   )
 }
 
@@ -557,7 +577,7 @@ const observePhotoForCleanup = (element: Element, photoId: string) => {
   if (photoIntersectionObserver.value && element) {
     observedPhotoElements.set(element, {
       photoId,
-      cleanupTimer: null
+      cleanupTimer: null,
     })
     photoIntersectionObserver.value.observe(element)
   }
@@ -566,15 +586,16 @@ const observePhotoForCleanup = (element: Element, photoId: string) => {
 // Enhanced image load handler using centralized cache
 const onImageLoad = (event: Event) => {
   const img = event.target as HTMLImageElement
-  const photoId = img.closest('.floating-photo-card')?.getAttribute('data-photo-id') ||
-                 img.closest('.photo-card')?.getAttribute('data-photo-id')
+  const photoId =
+    img.closest('.floating-photo-card')?.getAttribute('data-photo-id') ||
+    img.closest('.photo-card')?.getAttribute('data-photo-id')
 
   if (photoId && img.naturalWidth && img.naturalHeight) {
     const dimensions = {
       width: img.naturalWidth,
-      height: img.naturalHeight
+      height: img.naturalHeight,
     }
-    
+
     // Store dimensions for aspect ratio calculations
     imageDimensions.value[photoId] = dimensions
   }
@@ -586,34 +607,37 @@ const preloadQueue = ref<EventPhoto[]>([])
 const isPreloading = ref(false)
 
 // Preload images in batches based on priority
-const smartPreloadImages = async (photos: EventPhoto[], priority: 'high' | 'medium' | 'low' = 'medium') => {
+const smartPreloadImages = async (
+  photos: EventPhoto[],
+  priority: 'high' | 'medium' | 'low' = 'medium',
+) => {
   if (isPreloading.value && priority === 'low') return // Skip low priority if already preloading
-  
-  const photosToPreload = photos.filter(photo => !preloadedPhotoIds.has(photo.id))
+
+  const photosToPreload = photos.filter((photo) => !preloadedPhotoIds.has(photo.id))
   if (photosToPreload.length === 0) return
 
   // Batch size based on priority
   const batchSize = priority === 'high' ? photosToPreload.length : priority === 'medium' ? 6 : 3
   const batches = []
-  
+
   for (let i = 0; i < photosToPreload.length; i += batchSize) {
     batches.push(photosToPreload.slice(i, i + batchSize))
   }
 
   isPreloading.value = true
-  
+
   try {
     // Process batches sequentially to avoid overwhelming the network
     for (const batch of batches) {
-      const batchPromises = batch.map(photo => 
+      const batchPromises = batch.map((photo) =>
         deduplicateRequest(`smart-preload-${photo.id}`, async () => {
           try {
             const src = props.getMediaUrl(photo.image)
             await globalImageCache.preload(src)
-            
+
             // Mark as preloaded
             preloadedPhotoIds.add(photo.id)
-            
+
             // Get dimensions from cache and store for aspect ratio calculations
             const dimensions = globalImageCache.getDimensions(src)
             if (dimensions) {
@@ -622,14 +646,14 @@ const smartPreloadImages = async (photos: EventPhoto[], priority: 'high' | 'medi
           } catch (error) {
             console.debug(`Failed to preload image for photo ${photo.id}:`, error)
           }
-        })
+        }),
       )
-      
+
       await Promise.allSettled(batchPromises)
-      
+
       // Add small delay between batches to prevent blocking
       if (batches.indexOf(batch) < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, priority === 'high' ? 50 : 100))
+        await new Promise((resolve) => setTimeout(resolve, priority === 'high' ? 50 : 100))
       }
     }
   } finally {
@@ -643,19 +667,23 @@ const preloadImageDimensions = (photos: EventPhoto[]) => {
 }
 
 // Preload next batch of photos intelligently
-const preloadNextBatch = useAdvancedThrottleFn(async () => {
-  if (isPreloading.value) return
-  
-  const allPhotos = allPhotosForStrip.value
-  const visibleCount = visiblePhotos.value.length
-  const nextBatchStart = visibleCount
-  const nextBatchSize = Math.min(8, allPhotos.length - nextBatchStart)
-  
-  if (nextBatchSize > 0) {
-    const nextBatch = allPhotos.slice(nextBatchStart, nextBatchStart + nextBatchSize)
-    await smartPreloadImages(nextBatch, 'low')
-  }
-}, 2000, { trailing: true }) // 2 second throttle for low priority preloading
+const preloadNextBatch = useAdvancedThrottleFn(
+  async () => {
+    if (isPreloading.value) return
+
+    const allPhotos = allPhotosForStrip.value
+    const visibleCount = visiblePhotos.value.length
+    const nextBatchStart = visibleCount
+    const nextBatchSize = Math.min(8, allPhotos.length - nextBatchStart)
+
+    if (nextBatchSize > 0) {
+      const nextBatch = allPhotos.slice(nextBatchStart, nextBatchStart + nextBatchSize)
+      await smartPreloadImages(nextBatch, 'low')
+    }
+  },
+  2000,
+  { trailing: true },
+) // 2 second throttle for low priority preloading
 
 // Enhanced photo click with immediate response
 const handlePhotoClick = (photo: EventPhoto) => {
@@ -690,7 +718,7 @@ onMounted(async () => {
 
   // Preload visible photos with high priority
   await smartPreloadImages(visiblePhotos.value, 'high')
-  
+
   // Start background preloading of next batch
   preloadNextBatch()
 
@@ -705,36 +733,36 @@ onUnmounted(() => {
   updateVisiblePhotos.cancel()
   updateContainerWidth.cancel()
   preloadNextBatch.cancel()
-  
+
   // Clean up intersection observer and photo elements
   if (photoIntersectionObserver.value) {
     photoIntersectionObserver.value.disconnect()
     photoIntersectionObserver.value = null
   }
-  
+
   // Clear any pending cleanup timers
   observedPhotoElements.forEach((photoData) => {
     if (photoData.cleanupTimer) {
       clearTimeout(photoData.cleanupTimer)
     }
   })
-  
+
   // Clear image dimensions cache
   imageDimensions.value = {}
-  
+
   // Clear virtual scrolling data
   visiblePhotos.value = []
   visibleReversePhotos.value = []
-  
+
   // Cancel any active animation frames
-  activeAnimationFrames.forEach(frameId => {
+  activeAnimationFrames.forEach((frameId) => {
     cancelAnimationFrame(frameId)
   })
   activeAnimationFrames.clear()
-  
+
   // Use the performance utility's comprehensive cleanup
   cleanupPerformance()
-  
+
   // Clear the global image cache when component unmounts
   // Note: In production, you might want to keep cache across components
   // globalImageCache.clear()
@@ -745,7 +773,6 @@ onUnmounted(() => {
 :root {
   --gallery-spacing: 16px;
 }
-
 
 /* ===== CLEAN GALLERY DESIGN ===== */
 
@@ -861,7 +888,8 @@ onUnmounted(() => {
 }
 
 /* Clean Gallery Styles */
-.clean-gallery-container, .clean-gallery-reverse {
+.clean-gallery-container,
+.clean-gallery-reverse {
   height: 208px;
 }
 
@@ -882,7 +910,7 @@ onUnmounted(() => {
   .momentum-scroll-container {
     transform: translateY(20px);
   }
-  
+
   .enhanced-photo-card:hover {
     transform: translateY(-2px) translateZ(0);
   }
@@ -895,26 +923,26 @@ onUnmounted(() => {
     transition: opacity 0.3s ease;
     transform: none !important;
   }
-  
+
   .featured-photo-container.is-visible,
   .momentum-scroll-container.is-visible {
     opacity: 1;
     transform: none !important;
   }
-  
+
   .photo-reveal-container {
     transform: none !important;
     transition: none;
   }
-  
+
   .enhanced-photo-card {
     transition: box-shadow 0.2s ease;
   }
-  
+
   .enhanced-photo-card:hover {
     transform: none !important;
   }
-  
+
   .animate-infinite-scroll,
   .animate-infinite-scroll-reverse {
     animation-duration: 60s !important; /* Slower for reduced motion */
@@ -967,8 +995,8 @@ onUnmounted(() => {
 }
 
 /* Memory optimization for duplicate images with content-visibility */
-.enhanced-photo-card img[data-optimized-id^="opt-dup-"],
-.enhanced-photo-card img[data-optimized-id^="opt-rev-dup-"] {
+.enhanced-photo-card img[data-optimized-id^='opt-dup-'],
+.enhanced-photo-card img[data-optimized-id^='opt-rev-dup-'] {
   /* Second instances should leverage cached images */
   content-visibility: auto;
   contain-intrinsic-size: 188px 188px;
@@ -992,22 +1020,18 @@ onUnmounted(() => {
 
 /* Responsive gallery heights */
 @media (max-width: 768px) {
-  .clean-gallery-container, .clean-gallery-reverse,
+  .clean-gallery-container,
+  .clean-gallery-reverse,
   .momentum-scroll-container {
     height: 190px;
   }
 }
 
 @media (max-width: 640px) {
-  .clean-gallery-container, .clean-gallery-reverse,
+  .clean-gallery-container,
+  .clean-gallery-reverse,
   .momentum-scroll-container {
     height: 208px;
   }
 }
-
-
-
-
-
-
 </style>

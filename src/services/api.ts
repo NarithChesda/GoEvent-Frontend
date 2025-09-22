@@ -14,7 +14,7 @@ interface NetworkState {
 const networkState: NetworkState = {
   isOnline: navigator.onLine,
   retryQueue: [],
-  isRetrying: false
+  isRetrying: false,
 }
 
 export interface ApiResponse<T = any> {
@@ -110,14 +110,14 @@ class ApiService {
   private getAuthHeaders(): Record<string, string> {
     const token = secureStorage.getItem('access_token')
     const headers: Record<string, string> = {}
-    
+
     if (token) {
       headers.Authorization = `Bearer ${token}`
     }
-    
+
     // Add security headers
     headers['X-Requested-With'] = 'XMLHttpRequest'
-    
+
     return headers
   }
 
@@ -125,7 +125,7 @@ class ApiService {
    * Check network connectivity and queue requests if offline
    */
   private async handleNetworkRequest<T>(
-    requestFn: () => Promise<Response>
+    requestFn: () => Promise<Response>,
   ): Promise<ApiResponse<T>> {
     // Update network state
     networkState.isOnline = navigator.onLine
@@ -133,16 +133,16 @@ class ApiService {
     if (!networkState.isOnline) {
       return {
         success: false,
-        message: 'You are currently offline. Please check your internet connection.'
+        message: 'You are currently offline. Please check your internet connection.',
       }
     }
 
     try {
       const response = await Promise.race([
         requestFn(),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 30000)
-        )
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), 30000),
+        ),
       ])
 
       return this.handleResponse<T>(response)
@@ -152,20 +152,20 @@ class ApiService {
         networkState.isOnline = false
         return {
           success: false,
-          message: 'Network error. Please check your internet connection and try again.'
+          message: 'Network error. Please check your internet connection and try again.',
         }
       }
 
       if (error.message === 'Request timeout') {
         return {
           success: false,
-          message: 'Request timeout. Please try again.'
+          message: 'Request timeout. Please try again.',
         }
       }
 
       return {
         success: false,
-        message: 'An unexpected error occurred'
+        message: 'An unexpected error occurred',
       }
     }
   }
@@ -182,16 +182,16 @@ class ApiService {
           const fieldErrors = Object.entries(data)
             .filter(([key, value]) => Array.isArray(value) && value.length > 0)
             .map(([field, errors]: [string, any]) => `${field}: ${errors[0]}`)
-          
+
           if (fieldErrors.length > 0) {
             return fieldErrors.join(', ')
           }
         }
-        
+
         if (data?.detail) return data.detail
         if (data?.message) return data.message
         return 'Invalid request. Please check your input and try again.'
-      
+
       case 401:
         // Handle documented auth error format: { "detail": "Authentication credentials were not provided." }
         // or token errors: { "detail": "Token is invalid or expired", "code": "token_not_valid" }
@@ -202,30 +202,30 @@ class ApiService {
           return data.detail
         }
         return 'Authentication required. Please sign in.'
-      
+
       case 403:
         return data?.detail || 'You do not have permission to perform this action.'
-      
+
       case 404:
         return 'The requested resource was not found.'
-      
+
       case 409:
         return data?.detail || data?.message || 'This action conflicts with existing data.'
-      
+
       case 422:
         return 'Please check your input and try again.'
-      
+
       case 429:
         return 'Too many requests. Please wait a moment and try again.'
-      
+
       case 500:
         return 'A server error occurred. Please try again later.'
-      
+
       case 502:
       case 503:
       case 504:
         return 'Service is temporarily unavailable. Please try again later.'
-      
+
       default:
         return data?.detail || data?.message || 'An unexpected error occurred.'
     }
@@ -240,13 +240,13 @@ class ApiService {
       if (response.status === 204) {
         return {
           success: true,
-          data: null as any
+          data: null as any,
         }
       }
 
       // Check if response has a body before trying to parse it
       const text = await response.text()
-      
+
       // DEBUG: Log response details for authentication requests
       if (response.url.includes('/api/auth/')) {
         console.debug('Auth API Response Debug:', {
@@ -256,12 +256,12 @@ class ApiService {
           contentType: contentType,
           isJson: isJson,
           textLength: text?.length,
-          textPreview: text?.substring(0, 200)
+          textPreview: text?.substring(0, 200),
         })
       }
-      
+
       let data
-      
+
       // Enhanced JSON parsing for auth responses
       if (text) {
         if (isJson) {
@@ -273,7 +273,7 @@ class ApiService {
               console.error('JSON Parse Error for Auth Response:', {
                 error: (parseError as Error).message,
                 rawText: text,
-                contentType: contentType
+                contentType: contentType,
               })
             }
             throw parseError // Re-throw to be caught by outer catch block
@@ -300,7 +300,10 @@ class ApiService {
           if (data.translations && Array.isArray(data.translations)) {
             console.error('Translation validation errors:', data.translations)
           }
-          console.error('All validation errors:', Object.keys(data).map(key => `${key}: ${JSON.stringify(data[key])}`))
+          console.error(
+            'All validation errors:',
+            Object.keys(data).map((key) => `${key}: ${JSON.stringify(data[key])}`),
+          )
         } else if (response.status >= 500) {
           console.error(`${response.status} Server Error - Response:`, data)
         }
@@ -318,7 +321,7 @@ class ApiService {
         return {
           success: false,
           message,
-          errors: data?.errors || (isJson ? data : undefined)
+          errors: data?.errors || (isJson ? data : undefined),
         }
       }
 
@@ -328,13 +331,13 @@ class ApiService {
           dataType: typeof data,
           dataKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A',
           hasTokens: data && typeof data === 'object' && 'tokens' in data,
-          hasUser: data && typeof data === 'object' && 'user' in data
+          hasUser: data && typeof data === 'object' && 'user' in data,
         })
       }
 
       return {
         success: true,
-        data: data || null
+        data: data || null,
       }
     } catch (error) {
       // Enhanced error logging for auth requests
@@ -343,13 +346,13 @@ class ApiService {
           error: (error as Error).message,
           url: response.url,
           status: response.status,
-          contentType: contentType
+          contentType: contentType,
         })
       }
-      
+
       return {
         success: false,
-        message: 'Network error or invalid response format'
+        message: 'Network error or invalid response format',
       }
     }
   }
@@ -370,8 +373,8 @@ class ApiService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        }
+          ...this.getAuthHeaders(),
+        },
       })
     })
   }
@@ -396,8 +399,8 @@ class ApiService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest' // Only add security header, no auth
-        }
+          'X-Requested-With': 'XMLHttpRequest', // Only add security header, no auth
+        },
       })
     })
   }
@@ -408,9 +411,9 @@ class ApiService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
+          ...this.getAuthHeaders(),
         },
-        body: data ? JSON.stringify(data) : undefined
+        body: data ? JSON.stringify(data) : undefined,
       })
     })
   }
@@ -421,9 +424,9 @@ class ApiService {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
+          ...this.getAuthHeaders(),
         },
-        body: data ? JSON.stringify(data) : undefined
+        body: data ? JSON.stringify(data) : undefined,
       })
     })
   }
@@ -437,9 +440,9 @@ class ApiService {
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
           ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-          ...this.getAuthHeaders()
+          ...this.getAuthHeaders(),
         },
-        body: data ? (isFormData ? data : JSON.stringify(data)) : undefined
+        body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
       })
     })
   }
@@ -450,9 +453,9 @@ class ApiService {
         method: 'POST',
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
-          ...this.getAuthHeaders()
+          ...this.getAuthHeaders(),
         },
-        body: data
+        body: data,
       })
     })
   }
@@ -463,9 +466,9 @@ class ApiService {
         method: 'PUT',
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
-          ...this.getAuthHeaders()
+          ...this.getAuthHeaders(),
         },
-        body: data
+        body: data,
       })
     })
   }
@@ -476,9 +479,9 @@ class ApiService {
         method: 'PATCH',
         headers: {
           // Don't set Content-Type for FormData, let the browser handle it
-          ...this.getAuthHeaders()
+          ...this.getAuthHeaders(),
         },
-        body: data
+        body: data,
       })
     })
   }
@@ -489,8 +492,8 @@ class ApiService {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        }
+          ...this.getAuthHeaders(),
+        },
       })
     })
   }
@@ -506,14 +509,14 @@ export const coreDataService = {
     if (response.success && response.data) {
       return {
         success: true,
-        data: response.data.results
+        data: response.data.results,
       }
     }
     return {
       success: false,
-      message: response.message
+      message: response.message,
     }
-  }
+  },
 }
 
 // Team Member Types
@@ -541,7 +544,7 @@ export const teamMembersService = {
 
   async getTeamMember(id: number): Promise<ApiResponse<TeamMember>> {
     return apiService.get<TeamMember>(`/api/core-data/team-members/${id}/`)
-  }
+  },
 }
 
 // Event Types and Interfaces
@@ -869,7 +872,13 @@ export const eventsService = {
 
   // Get current user's events using dedicated endpoint
   // Supports pagination and filtering: page, search, category, status, ordering
-  async getMyEvents(params?: { page?: number; search?: string; category?: number | string; status?: string; ordering?: string }): Promise<ApiResponse<MyEventsResponse>> {
+  async getMyEvents(params?: {
+    page?: number
+    search?: string
+    category?: number | string
+    status?: string
+    ordering?: string
+  }): Promise<ApiResponse<MyEventsResponse>> {
     return apiService.get<MyEventsResponse>('/api/events/my/', params)
   },
 
@@ -879,17 +888,27 @@ export const eventsService = {
   },
 
   // Register for an event
-  async registerForEvent(eventId: string, data: { guest_count?: number; notes?: string }): Promise<ApiResponse<EventRegistration>> {
+  async registerForEvent(
+    eventId: string,
+    data: { guest_count?: number; notes?: string },
+  ): Promise<ApiResponse<EventRegistration>> {
     return apiService.post<EventRegistration>(`/api/events/${eventId}/register/`, data)
   },
 
   // Get event registrations (for organizers)
-  async getEventRegistrations(eventId: string): Promise<ApiResponse<PaginatedResponse<EventRegistration>>> {
-    return apiService.get<PaginatedResponse<EventRegistration>>(`/api/events/${eventId}/registrations/`)
+  async getEventRegistrations(
+    eventId: string,
+  ): Promise<ApiResponse<PaginatedResponse<EventRegistration>>> {
+    return apiService.get<PaginatedResponse<EventRegistration>>(
+      `/api/events/${eventId}/registrations/`,
+    )
   },
 
   // RSVP for an event (create or update registration)
-  async rsvpForEvent(eventId: string, data: { guest_count?: number; notes?: string }): Promise<ApiResponse<EventRegistration>> {
+  async rsvpForEvent(
+    eventId: string,
+    data: { guest_count?: number; notes?: string },
+  ): Promise<ApiResponse<EventRegistration>> {
     return apiService.post<EventRegistration>(`/api/events/${eventId}/rsvp/`, data)
   },
 
@@ -904,8 +923,13 @@ export const eventsService = {
   },
 
   // Admin check-in using confirmation code
-  async adminCheckin(eventId: string, confirmationCode: string): Promise<ApiResponse<EventRegistration>> {
-    return apiService.post<EventRegistration>(`/api/events/${eventId}/checkin/`, { confirmation_code: confirmationCode })
+  async adminCheckin(
+    eventId: string,
+    confirmationCode: string,
+  ): Promise<ApiResponse<EventRegistration>> {
+    return apiService.post<EventRegistration>(`/api/events/${eventId}/checkin/`, {
+      confirmation_code: confirmationCode,
+    })
   },
 
   // Get current user's registration for an event
@@ -918,39 +942,54 @@ export const eventsService = {
     return apiService.get<EventPhoto[]>(`/api/events/${eventId}/photos/`)
   },
 
-  async uploadEventPhoto(eventId: string, file: File, photoData: { caption?: string; order?: number; is_featured?: boolean }): Promise<ApiResponse<EventPhoto>> {
+  async uploadEventPhoto(
+    eventId: string,
+    file: File,
+    photoData: { caption?: string; order?: number; is_featured?: boolean },
+  ): Promise<ApiResponse<EventPhoto>> {
     const formData = new FormData()
     formData.append('image', file)
     if (photoData.caption) formData.append('caption', photoData.caption)
     if (photoData.order) formData.append('order', photoData.order.toString())
-    if (photoData.is_featured !== undefined) formData.append('is_featured', photoData.is_featured.toString())
+    if (photoData.is_featured !== undefined)
+      formData.append('is_featured', photoData.is_featured.toString())
 
     try {
       const response = await fetch(`${apiService['baseURL']}/api/events/${eventId}/photos/`, {
         method: 'POST',
         headers: {
-          ...apiService['getAuthHeaders']()
+          ...apiService['getAuthHeaders'](),
         },
-        body: formData
+        body: formData,
       })
 
       return apiService['handleResponse']<EventPhoto>(response)
     } catch (error) {
       return {
         success: false,
-        message: 'Network error'
+        message: 'Network error',
       }
     }
   },
 
   // Update photo
-  async updateEventPhoto(eventId: string, photoId: number, data: Partial<EventPhoto>): Promise<ApiResponse<EventPhoto>> {
+  async updateEventPhoto(
+    eventId: string,
+    photoId: number,
+    data: Partial<EventPhoto>,
+  ): Promise<ApiResponse<EventPhoto>> {
     return apiService.patch<EventPhoto>(`/api/events/${eventId}/photos/${photoId}/`, data)
   },
 
   // Reorder photo
-  async reorderEventPhoto(eventId: string, photoId: number, order: number): Promise<ApiResponse<EventPhoto>> {
-    return apiService.patch<EventPhoto>(`/api/events/${eventId}/photos/${photoId}/reorder/`, { order })
+  async reorderEventPhoto(
+    eventId: string,
+    photoId: number,
+    order: number,
+  ): Promise<ApiResponse<EventPhoto>> {
+    return apiService.patch<EventPhoto>(`/api/events/${eventId}/photos/${photoId}/reorder/`, {
+      order,
+    })
   },
 
   // Delete photo
@@ -958,8 +997,11 @@ export const eventsService = {
     return apiService.delete(`/api/events/${eventId}/photos/${photoId}/`)
   },
 
- // Collaboration management
-  async inviteCollaborator(eventId: string, data: { email: string; role: 'admin' | 'editor' | 'viewer'; message?: string }): Promise<ApiResponse<EventCollaborator>> {
+  // Collaboration management
+  async inviteCollaborator(
+    eventId: string,
+    data: { email: string; role: 'admin' | 'editor' | 'viewer'; message?: string },
+  ): Promise<ApiResponse<EventCollaborator>> {
     return apiService.post<EventCollaborator>(`/api/events/${eventId}/invite-collaborator/`, data)
   },
 
@@ -968,8 +1010,15 @@ export const eventsService = {
   },
 
   // Update collaborator role
-  async updateCollaborator(eventId: string, collaboratorId: number, data: { role: 'admin' | 'editor' | 'viewer' }): Promise<ApiResponse<EventCollaborator>> {
-    return apiService.patch<EventCollaborator>(`/api/events/${eventId}/collaborators/${collaboratorId}/`, data)
+  async updateCollaborator(
+    eventId: string,
+    collaboratorId: number,
+    data: { role: 'admin' | 'editor' | 'viewer' },
+  ): Promise<ApiResponse<EventCollaborator>> {
+    return apiService.patch<EventCollaborator>(
+      `/api/events/${eventId}/collaborators/${collaboratorId}/`,
+      data,
+    )
   },
 
   // Remove collaborator
@@ -978,9 +1027,12 @@ export const eventsService = {
   },
 
   // Get event showcase data (public endpoint for invitations)
-  async getEventShowcase(eventId: string, params?: { lang?: string; guest_name?: string }): Promise<ApiResponse<any>> {
+  async getEventShowcase(
+    eventId: string,
+    params?: { lang?: string; guest_name?: string },
+  ): Promise<ApiResponse<any>> {
     return apiService.getPublic<any>(`/api/events/${eventId}/showcase/`, params)
-  }
+  },
 }
 
 // Additional interfaces for event photos and collaboration
@@ -1007,17 +1059,28 @@ export const agendaService = {
   },
 
   // Create a new agenda item
-  async createAgendaItem(eventId: string, data: CreateAgendaRequest): Promise<ApiResponse<EventAgendaItem>> {
+  async createAgendaItem(
+    eventId: string,
+    data: CreateAgendaRequest,
+  ): Promise<ApiResponse<EventAgendaItem>> {
     return apiService.post<EventAgendaItem>(`/api/events/${eventId}/agenda/`, data)
   },
 
   // Update an agenda item (full update)
-  async updateAgendaItem(eventId: string, agendaId: number, data: Partial<CreateAgendaRequest>): Promise<ApiResponse<EventAgendaItem>> {
+  async updateAgendaItem(
+    eventId: string,
+    agendaId: number,
+    data: Partial<CreateAgendaRequest>,
+  ): Promise<ApiResponse<EventAgendaItem>> {
     return apiService.put<EventAgendaItem>(`/api/events/${eventId}/agenda/${agendaId}/`, data)
   },
 
   // Partially update an agenda item
-  async patchAgendaItem(eventId: string, agendaId: number, data: Partial<CreateAgendaRequest>): Promise<ApiResponse<EventAgendaItem>> {
+  async patchAgendaItem(
+    eventId: string,
+    agendaId: number,
+    data: Partial<CreateAgendaRequest>,
+  ): Promise<ApiResponse<EventAgendaItem>> {
     return apiService.patch<EventAgendaItem>(`/api/events/${eventId}/agenda/${agendaId}/`, data)
   },
 
@@ -1027,9 +1090,15 @@ export const agendaService = {
   },
 
   // Bulk reorder agenda items
-  async bulkReorderAgendaItems(eventId: string, data: BulkReorderRequest): Promise<ApiResponse<{ status: string; count: number }>> {
-    return apiService.patch<{ status: string; count: number }>(`/api/events/${eventId}/agenda/bulk-reorder/`, data)
-  }
+  async bulkReorderAgendaItems(
+    eventId: string,
+    data: BulkReorderRequest,
+  ): Promise<ApiResponse<{ status: string; count: number }>> {
+    return apiService.patch<{ status: string; count: number }>(
+      `/api/events/${eventId}/agenda/bulk-reorder/`,
+      data,
+    )
+  },
 }
 
 // Event Categories API Service
@@ -1040,7 +1109,7 @@ export const eventCategoriesService = {
 
   async getCategory(id: number): Promise<ApiResponse<EventCategory>> {
     return apiService.get<EventCategory>(`/api/core-data/event-categories/${id}/`)
-  }
+  },
 }
 
 // Event Text Types and Interfaces
@@ -1078,24 +1147,35 @@ export const eventTextsService = {
   },
 
   // Create a new text
-  async createEventText(eventId: string, data: CreateEventTextRequest): Promise<ApiResponse<EventText>> {
+  async createEventText(
+    eventId: string,
+    data: CreateEventTextRequest,
+  ): Promise<ApiResponse<EventText>> {
     return apiService.post<EventText>(`/api/events/${eventId}/texts/`, data)
   },
 
   // Update a text (full update)
-  async updateEventText(eventId: string, textId: number, data: Partial<CreateEventTextRequest>): Promise<ApiResponse<EventText>> {
+  async updateEventText(
+    eventId: string,
+    textId: number,
+    data: Partial<CreateEventTextRequest>,
+  ): Promise<ApiResponse<EventText>> {
     return apiService.put<EventText>(`/api/events/${eventId}/texts/${textId}/`, data)
   },
 
   // Partially update a text
-  async patchEventText(eventId: string, textId: number, data: Partial<CreateEventTextRequest>): Promise<ApiResponse<EventText>> {
+  async patchEventText(
+    eventId: string,
+    textId: number,
+    data: Partial<CreateEventTextRequest>,
+  ): Promise<ApiResponse<EventText>> {
     return apiService.patch<EventText>(`/api/events/${eventId}/texts/${textId}/`, data)
   },
 
   // Delete a text
   async deleteEventText(eventId: string, textId: number): Promise<ApiResponse<void>> {
     return apiService.delete(`/api/events/${eventId}/texts/${textId}/`)
-  }
+  },
 }
 
 // Event Media API Service
@@ -1106,33 +1186,42 @@ export const mediaService = {
   },
 
   // Upload new media/photo
-  async uploadEventMedia(eventId: string, file: File, mediaData: { caption?: string; order?: number; is_featured?: boolean }): Promise<ApiResponse<EventPhoto>> {
+  async uploadEventMedia(
+    eventId: string,
+    file: File,
+    mediaData: { caption?: string; order?: number; is_featured?: boolean },
+  ): Promise<ApiResponse<EventPhoto>> {
     const formData = new FormData()
     formData.append('image', file)
     if (mediaData.caption) formData.append('caption', mediaData.caption)
     if (mediaData.order !== undefined) formData.append('order', mediaData.order.toString())
-    if (mediaData.is_featured !== undefined) formData.append('is_featured', mediaData.is_featured.toString())
+    if (mediaData.is_featured !== undefined)
+      formData.append('is_featured', mediaData.is_featured.toString())
 
     try {
       const response = await fetch(`${apiService['baseURL']}/api/events/${eventId}/photos/`, {
         method: 'POST',
         headers: {
-          ...apiService['getAuthHeaders']()
+          ...apiService['getAuthHeaders'](),
         },
-        body: formData
+        body: formData,
       })
 
       return apiService['handleResponse']<EventPhoto>(response)
     } catch (error) {
       return {
         success: false,
-        message: 'Network error while uploading media'
+        message: 'Network error while uploading media',
       }
     }
   },
 
   // Update media/photo
-  async updateEventMedia(eventId: string, mediaId: number, data: Partial<EventPhoto>): Promise<ApiResponse<EventPhoto>> {
+  async updateEventMedia(
+    eventId: string,
+    mediaId: number,
+    data: Partial<EventPhoto>,
+  ): Promise<ApiResponse<EventPhoto>> {
     return apiService.patch<EventPhoto>(`/api/events/${eventId}/photos/${mediaId}/`, data)
   },
 
@@ -1142,9 +1231,15 @@ export const mediaService = {
   },
 
   // Bulk reorder media/photos
-  async bulkReorderEventMedia(eventId: string, data: { updates: { id: number; order: number }[] }): Promise<ApiResponse<{ status: string; count: number }>> {
-    return apiService.patch<{ status: string; count: number }>(`/api/events/${eventId}/photos/bulk-reorder/`, data)
-  }
+  async bulkReorderEventMedia(
+    eventId: string,
+    data: { updates: { id: number; order: number }[] },
+  ): Promise<ApiResponse<{ status: string; count: number }>> {
+    return apiService.patch<{ status: string; count: number }>(
+      `/api/events/${eventId}/photos/bulk-reorder/`,
+      data,
+    )
+  },
 }
 
 // Event Hosts API Service
@@ -1165,7 +1260,11 @@ export const hostsService = {
   },
 
   // Create a new host with file upload
-  async createHostWithFile(eventId: string, data: CreateHostRequest, profileImageFile?: File): Promise<ApiResponse<EventHost>> {
+  async createHostWithFile(
+    eventId: string,
+    data: CreateHostRequest,
+    profileImageFile?: File,
+  ): Promise<ApiResponse<EventHost>> {
     if (profileImageFile) {
       const formData = new FormData()
 
@@ -1196,12 +1295,21 @@ export const hostsService = {
   },
 
   // Update a host (full update)
-  async updateHost(eventId: string, hostId: number, data: Partial<CreateHostRequest>): Promise<ApiResponse<EventHost>> {
+  async updateHost(
+    eventId: string,
+    hostId: number,
+    data: Partial<CreateHostRequest>,
+  ): Promise<ApiResponse<EventHost>> {
     return apiService.put<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, data)
   },
 
   // Update a host with file upload
-  async updateHostWithFile(eventId: string, hostId: number, data: Partial<CreateHostRequest>, profileImageFile?: File): Promise<ApiResponse<EventHost>> {
+  async updateHostWithFile(
+    eventId: string,
+    hostId: number,
+    data: Partial<CreateHostRequest>,
+    profileImageFile?: File,
+  ): Promise<ApiResponse<EventHost>> {
     if (profileImageFile) {
       const formData = new FormData()
 
@@ -1232,7 +1340,11 @@ export const hostsService = {
   },
 
   // Partially update a host
-  async patchHost(eventId: string, hostId: number, data: Partial<CreateHostRequest>): Promise<ApiResponse<EventHost>> {
+  async patchHost(
+    eventId: string,
+    hostId: number,
+    data: Partial<CreateHostRequest>,
+  ): Promise<ApiResponse<EventHost>> {
     return apiService.patch<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, data)
   },
 
@@ -1242,9 +1354,15 @@ export const hostsService = {
   },
 
   // Bulk reorder hosts
-  async bulkReorderHosts(eventId: string, data: BulkReorderHostsRequest): Promise<ApiResponse<{ status: string; count: number }>> {
-    return apiService.patch<{ status: string; count: number }>(`/api/events/${eventId}/hosts/bulk-reorder/`, data)
-  }
+  async bulkReorderHosts(
+    eventId: string,
+    data: BulkReorderHostsRequest,
+  ): Promise<ApiResponse<{ status: string; count: number }>> {
+    return apiService.patch<{ status: string; count: number }>(
+      `/api/events/${eventId}/hosts/bulk-reorder/`,
+      data,
+    )
+  },
 }
 
 // Event Template Types and Interfaces
@@ -1302,17 +1420,20 @@ export interface BrowseTemplatesResponse {
   templates: EventTemplate[]
 }
 
-
 // Event Template API Service
 export const eventTemplateService = {
   // Browse available templates (requires auth)
   async browseTemplates(): Promise<ApiResponse<BrowseTemplatesResponse>> {
-    return apiService.get<BrowseTemplatesResponse>('/api/core-data/event-templates/browse_templates/')
+    return apiService.get<BrowseTemplatesResponse>(
+      '/api/core-data/event-templates/browse_templates/',
+    )
   },
 
   // Get public template assets (no auth required)
   async getPublicTemplateAssets(templateId: number): Promise<ApiResponse<any>> {
-    return apiService.get<any>(`/api/core-data/event-templates/${templateId}/public_template_assets/`)
+    return apiService.get<any>(
+      `/api/core-data/event-templates/${templateId}/public_template_assets/`,
+    )
   },
 
   // Get event template info
@@ -1323,9 +1444,9 @@ export const eventTemplateService = {
   // Select template for event (using event update endpoint since select_template doesn't exist)
   async selectEventTemplate(eventId: string, templateId: number): Promise<ApiResponse<any>> {
     return apiService.patch<any>(`/api/events/${eventId}/`, {
-      event_template: templateId
+      event_template: templateId,
     })
-  }
+  },
 }
 
 // Event Guest Management Types and Interfaces
@@ -1370,7 +1491,10 @@ export interface GuestStats {
 // Event Guest Management API Service
 export const guestService = {
   // List all guests for an event
-  async getGuests(eventId: string, filters?: GuestListFilters): Promise<ApiResponse<PaginatedResponse<EventGuest>>> {
+  async getGuests(
+    eventId: string,
+    filters?: GuestListFilters,
+  ): Promise<ApiResponse<PaginatedResponse<EventGuest>>> {
     return apiService.get<PaginatedResponse<EventGuest>>(`/api/events/${eventId}/guests/`, filters)
   },
 
@@ -1390,7 +1514,11 @@ export const guestService = {
   },
 
   // Update a guest (name)
-  async updateGuest(eventId: string, guestId: number, data: Partial<CreateGuestRequest>): Promise<ApiResponse<EventGuest>> {
+  async updateGuest(
+    eventId: string,
+    guestId: number,
+    data: Partial<CreateGuestRequest>,
+  ): Promise<ApiResponse<EventGuest>> {
     return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/`, data)
   },
 
@@ -1407,7 +1535,7 @@ export const guestService = {
   // Mark invitation as viewed
   async markInvitationViewed(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
     return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-viewed/`, {})
-  }
+  },
 }
 
 // Event Comment Types and Interfaces
@@ -1441,16 +1569,22 @@ export interface CommentFilters {
 // Event Comments API Service
 export const commentsService = {
   // List all comments (with optional filtering)
-  async getComments(filters?: CommentFilters): Promise<ApiResponse<PaginatedResponse<EventComment>>> {
+  async getComments(
+    filters?: CommentFilters,
+  ): Promise<ApiResponse<PaginatedResponse<EventComment>>> {
     return apiService.get<PaginatedResponse<EventComment>>('/api/feedback/comments/', filters)
   },
 
   // Get comments for a specific event
-  async getEventComments(eventId: string, page?: number, pageSize?: number): Promise<ApiResponse<PaginatedResponse<EventComment>>> {
+  async getEventComments(
+    eventId: string,
+    page?: number,
+    pageSize?: number,
+  ): Promise<ApiResponse<PaginatedResponse<EventComment>>> {
     const params: CommentFilters = {
       event: eventId,
       page: page || 1,
-      page_size: pageSize || 20
+      page_size: pageSize || 20,
     }
     return apiService.get<PaginatedResponse<EventComment>>('/api/feedback/comments/', params)
   },
@@ -1462,29 +1596,29 @@ export const commentsService = {
 
   // Create a new comment
   async createComment(eventId: string, commentText: string): Promise<ApiResponse<EventComment>> {
-    const authStore = await import('../stores/auth').then(m => m.useAuthStore())
+    const authStore = await import('../stores/auth').then((m) => m.useAuthStore())
     const userId = authStore.user?.id
-    
+
     if (!userId) {
       return {
         success: false,
-        message: 'User not authenticated'
+        message: 'User not authenticated',
       }
     }
 
     const data = {
       event: eventId,
       user: userId,
-      comment_text: commentText
+      comment_text: commentText,
     }
-    
+
     return apiService.post<EventComment>('/api/feedback/comments/', data)
   },
 
   // Update a comment (partial update)
   async updateComment(commentId: number, commentText: string): Promise<ApiResponse<EventComment>> {
     return apiService.patch<EventComment>(`/api/feedback/comments/${commentId}/`, {
-      comment_text: commentText
+      comment_text: commentText,
     })
   },
 
@@ -1498,17 +1632,17 @@ export const commentsService = {
     try {
       const response = await this.getEventComments(eventId)
       if (response.success && response.data) {
-        const authStore = await import('../stores/auth').then(m => m.useAuthStore())
+        const authStore = await import('../stores/auth').then((m) => m.useAuthStore())
         const userId = authStore.user?.id
         if (userId) {
-          return response.data.results.some(comment => comment.user === userId)
+          return response.data.results.some((comment) => comment.user === userId)
         }
       }
       return false
     } catch {
       return false
     }
-  }
+  },
 }
 
 // Event Payment Method Types and Interfaces
@@ -1556,38 +1690,77 @@ export interface BulkReorderPaymentMethodsRequest {
 // Event Payment Methods API Service
 export const paymentMethodsService = {
   // List all payment methods for an event
-  async getPaymentMethods(eventId: string): Promise<ApiResponse<PaginatedResponse<EventPaymentMethod>>> {
-    return apiService.get<PaginatedResponse<EventPaymentMethod>>(`/api/events/${eventId}/payment-methods/`)
+  async getPaymentMethods(
+    eventId: string,
+  ): Promise<ApiResponse<PaginatedResponse<EventPaymentMethod>>> {
+    return apiService.get<PaginatedResponse<EventPaymentMethod>>(
+      `/api/events/${eventId}/payment-methods/`,
+    )
   },
 
   // Get a specific payment method
-  async getPaymentMethod(eventId: string, paymentMethodId: number): Promise<ApiResponse<EventPaymentMethod>> {
-    return apiService.get<EventPaymentMethod>(`/api/events/${eventId}/payment-methods/${paymentMethodId}/`)
+  async getPaymentMethod(
+    eventId: string,
+    paymentMethodId: number,
+  ): Promise<ApiResponse<EventPaymentMethod>> {
+    return apiService.get<EventPaymentMethod>(
+      `/api/events/${eventId}/payment-methods/${paymentMethodId}/`,
+    )
   },
 
   // Create a new payment method
-  async createPaymentMethod(eventId: string, data: CreatePaymentMethodRequest): Promise<ApiResponse<EventPaymentMethod>> {
+  async createPaymentMethod(
+    eventId: string,
+    data: CreatePaymentMethodRequest,
+  ): Promise<ApiResponse<EventPaymentMethod>> {
     return apiService.post<EventPaymentMethod>(`/api/events/${eventId}/payment-methods/`, data)
   },
 
   // Create payment method with file upload (for QR code)
-  async createPaymentMethodWithFile(eventId: string, formData: FormData): Promise<ApiResponse<EventPaymentMethod>> {
-    return apiService.postFormData<EventPaymentMethod>(`/api/events/${eventId}/payment-methods/`, formData)
+  async createPaymentMethodWithFile(
+    eventId: string,
+    formData: FormData,
+  ): Promise<ApiResponse<EventPaymentMethod>> {
+    return apiService.postFormData<EventPaymentMethod>(
+      `/api/events/${eventId}/payment-methods/`,
+      formData,
+    )
   },
 
   // Update a payment method (full update)
-  async updatePaymentMethod(eventId: string, paymentMethodId: number, data: Partial<CreatePaymentMethodRequest>): Promise<ApiResponse<EventPaymentMethod>> {
-    return apiService.put<EventPaymentMethod>(`/api/events/${eventId}/payment-methods/${paymentMethodId}/`, data)
+  async updatePaymentMethod(
+    eventId: string,
+    paymentMethodId: number,
+    data: Partial<CreatePaymentMethodRequest>,
+  ): Promise<ApiResponse<EventPaymentMethod>> {
+    return apiService.put<EventPaymentMethod>(
+      `/api/events/${eventId}/payment-methods/${paymentMethodId}/`,
+      data,
+    )
   },
 
   // Partially update a payment method
-  async patchPaymentMethod(eventId: string, paymentMethodId: number, data: Partial<CreatePaymentMethodRequest>): Promise<ApiResponse<EventPaymentMethod>> {
-    return apiService.patch<EventPaymentMethod>(`/api/events/${eventId}/payment-methods/${paymentMethodId}/`, data)
+  async patchPaymentMethod(
+    eventId: string,
+    paymentMethodId: number,
+    data: Partial<CreatePaymentMethodRequest>,
+  ): Promise<ApiResponse<EventPaymentMethod>> {
+    return apiService.patch<EventPaymentMethod>(
+      `/api/events/${eventId}/payment-methods/${paymentMethodId}/`,
+      data,
+    )
   },
 
   // Update payment method with file upload (for QR code)
-  async updatePaymentMethodWithFile(eventId: string, paymentMethodId: number, formData: FormData): Promise<ApiResponse<EventPaymentMethod>> {
-    return apiService.patchFormData<EventPaymentMethod>(`/api/events/${eventId}/payment-methods/${paymentMethodId}/`, formData)
+  async updatePaymentMethodWithFile(
+    eventId: string,
+    paymentMethodId: number,
+    formData: FormData,
+  ): Promise<ApiResponse<EventPaymentMethod>> {
+    return apiService.patchFormData<EventPaymentMethod>(
+      `/api/events/${eventId}/payment-methods/${paymentMethodId}/`,
+      formData,
+    )
   },
 
   // Delete a payment method
@@ -1596,21 +1769,34 @@ export const paymentMethodsService = {
   },
 
   // Bulk reorder payment methods
-  async bulkReorderPaymentMethods(eventId: string, data: BulkReorderPaymentMethodsRequest): Promise<ApiResponse<{ status: string; count: number }>> {
-    return apiService.patch<{ status: string; count: number }>(`/api/events/${eventId}/payment-methods/bulk-reorder/`, data)
-  }
+  async bulkReorderPaymentMethods(
+    eventId: string,
+    data: BulkReorderPaymentMethodsRequest,
+  ): Promise<ApiResponse<{ status: string; count: number }>> {
+    return apiService.patch<{ status: string; count: number }>(
+      `/api/events/${eventId}/payment-methods/bulk-reorder/`,
+      data,
+    )
+  },
 }
 
 // User Details API Service
 export const userService = {
   // Simple cache to avoid repeated API calls for the same user
-  userCache: new Map<number, { data: any, timestamp: number }>(),
-  
+  userCache: new Map<number, { data: any; timestamp: number }>(),
+
   // Cache duration: 5 minutes
   CACHE_DURATION: 5 * 60 * 1000,
 
   // Try to get user details from potential /api/users/ endpoint
-  async getUserDetails(userId: number): Promise<{ username?: string; first_name?: string; last_name?: string; profile_picture?: string } | null> {
+  async getUserDetails(
+    userId: number,
+  ): Promise<{
+    username?: string
+    first_name?: string
+    last_name?: string
+    profile_picture?: string
+  } | null> {
     // Check cache first
     const cached = this.userCache.get(userId)
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
@@ -1620,34 +1806,33 @@ export const userService = {
     try {
       // Try to fetch user details from a potential users API
       const response = await apiService.get<any>(`/api/users/${userId}/`)
-      
+
       if (response.success && response.data) {
         const userDetails = {
           username: response.data.username,
           first_name: response.data.first_name,
           last_name: response.data.last_name,
-          profile_picture: response.data.profile_picture
+          profile_picture: response.data.profile_picture,
         }
-        
+
         // Cache the result
         this.userCache.set(userId, {
           data: userDetails,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
-        
+
         return userDetails
       }
     } catch (error) {
       // If the API doesn't exist or fails, silently fail
       console.debug('Failed to fetch user details for user', userId, '- API might not be available')
     }
-    
+
     return null
   },
 
   // Clear cache (useful for testing or when needed)
   clearCache() {
     this.userCache.clear()
-  }
+  },
 }
-

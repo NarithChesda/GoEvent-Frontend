@@ -28,6 +28,6 @@ export function useNavbarScroll() {
   return {
     isScrolled,
     scrollY,
-    cleanup
+    cleanup,
   }
 }

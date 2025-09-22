@@ -28,7 +28,7 @@ const props = defineProps<Props>()
 
 const iconContainerClasses = computed(() => {
   const baseClasses = 'w-12 h-12 rounded-xl flex items-center justify-center'
-  
+
   switch (props.icon) {
     case 'calendar':
       return `${baseClasses} bg-blue-100`

@@ -5,18 +5,18 @@
       'group cursor-pointer bg-white/80 backdrop-blur-sm border rounded-2xl overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300',
       isSelected
         ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
-        : 'border-white/40 hover:border-blue-300'
+        : 'border-white/40 hover:border-blue-300',
     ]"
   >
     <!-- Template Preview -->
     <div class="relative h-32 sm:h-40 overflow-hidden">
-      <img 
-        :src="template.preview_image || '/api/placeholder/400/300'" 
+      <img
+        :src="template.preview_image || '/api/placeholder/400/300'"
         :alt="template.name"
         class="w-full h-full object-cover"
         loading="lazy"
       />
-      
+
       <!-- Price Badge -->
       <div class="absolute top-2 right-2">
         <span class="bg-white/90 text-slate-900 text-sm font-bold px-2 py-1 rounded">
@@ -30,10 +30,10 @@
           <Check class="w-4 h-4 text-white" />
         </div>
       </div>
-      
+
       <!-- Overlay -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-      
+
       <!-- Template Title Overlay -->
       <div class="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 right-1 sm:right-2">
         <h4 class="font-semibold text-white text-xs sm:text-sm truncate">
@@ -44,7 +44,7 @@
         </p>
       </div>
     </div>
-    
+
     <!-- Template Details -->
     <div class="p-2 sm:p-3">
       <div class="flex items-center justify-between mb-2">
@@ -56,7 +56,7 @@
           ${{ template.package_plan.price }}
         </span>
       </div>
-      
+
       <!-- Features Preview -->
       <TemplateFeatures
         v-if="template.package_plan.features?.length"

@@ -22,7 +22,7 @@ interface Props {
 defineProps<Props>()
 
 const emit = defineEmits<{
-  'selectTemplate': [template: EventTemplate]
+  selectTemplate: [template: EventTemplate]
 }>()
 
 const handleTemplateSelect = (template: EventTemplate): void => {

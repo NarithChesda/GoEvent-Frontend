@@ -2,8 +2,8 @@
   <div class="space-y-2">
     <h4 class="font-medium text-slate-900">Included Features:</h4>
     <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-      <li 
-        v-for="feature in features" 
+      <li
+        v-for="feature in features"
         :key="feature"
         class="flex items-center text-sm text-slate-600"
       >

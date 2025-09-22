@@ -1,8 +1,5 @@
 <template>
-  <button
-    @click="$emit('click')"
-    :class="buttonClasses"
-  >
+  <button @click="$emit('click')" :class="buttonClasses">
     <component :is="iconComponent" class="w-4 h-4" :class="{ 'lg:w-5 lg:h-5': !isMobile }" />
     <span>{{ displayLabel }}</span>
   </button>
@@ -17,7 +14,7 @@ import {
   UserPlus,
   ImageIcon,
   Monitor,
-  CreditCard
+  CreditCard,
 } from 'lucide-vue-next'
 import type { TabConfig } from './EventNavigationTabs.vue'
 
@@ -36,13 +33,13 @@ defineEmits<Emits>()
 
 const iconComponent = computed(() => {
   const iconMap = {
-    'calendar': Calendar,
+    calendar: Calendar,
     'file-text': FileText,
-    'users': Users,
+    users: Users,
     'user-plus': UserPlus,
-    'image': ImageIcon,
-    'monitor': Monitor,
-    'credit-card': CreditCard
+    image: ImageIcon,
+    monitor: Monitor,
+    'credit-card': CreditCard,
   }
   return iconMap[props.tab.icon as keyof typeof iconMap] || Calendar
 })
@@ -58,7 +55,7 @@ const buttonClasses = computed(() => {
   const baseClasses = 'flex items-center font-medium text-sm transition-all duration-200'
   const activeClasses = 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
   const inactiveClasses = 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
-  
+
   if (props.isMobile) {
     return `${baseClasses} space-x-2 px-4 py-2 rounded-xl whitespace-nowrap flex-shrink-0 ${
       props.isActive ? activeClasses : inactiveClasses

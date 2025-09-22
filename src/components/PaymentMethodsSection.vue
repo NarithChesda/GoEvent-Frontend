@@ -7,7 +7,9 @@
           <CreditCard class="w-5 h-5 mr-2" />
           Payment Methods
         </h5>
-        <p class="text-sm text-slate-600 mt-1">Manage payment options for gifts, donations, and sponsorships</p>
+        <p class="text-sm text-slate-600 mt-1">
+          Manage payment options for gifts, donations, and sponsorships
+        </p>
       </div>
       <button
         v-if="canEdit"
@@ -42,11 +44,15 @@
 
     <!-- Empty State -->
     <div v-else-if="paymentMethods.length === 0" class="text-center py-12">
-      <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div
+        class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
         <CreditCard class="w-8 h-8 text-slate-400" />
       </div>
       <h3 class="text-lg font-medium text-slate-900 mb-2">No Payment Methods</h3>
-      <p class="text-slate-600 mb-4">Add payment methods to allow guests to send gifts or make donations</p>
+      <p class="text-slate-600 mb-4">
+        Add payment methods to allow guests to send gifts or make donations
+      </p>
       <button
         v-if="canEdit"
         @click="showAddModal = true"
@@ -60,11 +66,7 @@
     <!-- Payment Methods List -->
     <div v-else>
       <!-- Sortable Payment Methods -->
-      <div
-        class="space-y-4"
-        @dragover.prevent
-        @drop="handleDrop"
-      >
+      <div class="space-y-4" @dragover.prevent @drop="handleDrop">
         <div
           v-for="(paymentMethod, index) in paymentMethods"
           :key="paymentMethod.id"
@@ -77,7 +79,7 @@
             'cursor-grab': canEdit,
             'cursor-grabbing': isDragging,
             'opacity-50': !paymentMethod.is_active,
-            'drag-over': dragOverIndex === index
+            'drag-over': dragOverIndex === index,
           }"
         >
           <div class="flex items-center justify-between">
@@ -90,9 +92,11 @@
                 </div>
 
                 <!-- Payment Method Icon -->
-                <div class="w-10 h-10 rounded-full flex items-center justify-center"
-                     :class="getPaymentMethodIconBg(paymentMethod.payment_method)">
-                  <component 
+                <div
+                  class="w-10 h-10 rounded-full flex items-center justify-center"
+                  :class="getPaymentMethodIconBg(paymentMethod.payment_method)"
+                >
+                  <component
                     :is="getPaymentMethodIcon(paymentMethod.payment_method)"
                     class="w-5 h-5"
                     :class="getPaymentMethodIconColor(paymentMethod.payment_method)"
@@ -103,57 +107,80 @@
                 <div class="flex-1">
                   <div class="flex items-center space-x-2">
                     <h6 class="font-medium text-slate-900">{{ paymentMethod.name }}</h6>
-                    <span 
+                    <span
                       class="px-2 py-1 rounded-full text-xs font-medium"
                       :class="getPaymentTypeStyle(paymentMethod.payment_type)"
                     >
                       {{ formatPaymentType(paymentMethod.payment_type) }}
                     </span>
-                    <span v-if="!paymentMethod.is_active" class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                    <span
+                      v-if="!paymentMethod.is_active"
+                      class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium"
+                    >
                       Inactive
                     </span>
                   </div>
-                  
+
                   <div class="text-sm text-slate-600 mt-1">
-                    <span class="font-medium">{{ formatPaymentMethod(paymentMethod.payment_method) }}</span>
-                    <span v-if="paymentMethod.currency" class="ml-2">• {{ paymentMethod.currency }}</span>
+                    <span class="font-medium">{{
+                      formatPaymentMethod(paymentMethod.payment_method)
+                    }}</span>
+                    <span v-if="paymentMethod.currency" class="ml-2"
+                      >• {{ paymentMethod.currency }}</span
+                    >
                   </div>
 
                   <!-- Method-specific details -->
-                  <div v-if="paymentMethod.payment_method === 'bank_transfer'" class="space-y-1 mt-2">
+                  <div
+                    v-if="paymentMethod.payment_method === 'bank_transfer'"
+                    class="space-y-1 mt-2"
+                  >
                     <div class="text-xs text-slate-600">
                       <span class="font-medium">Bank:</span> {{ paymentMethod.bank_name }}
                     </div>
                     <div class="text-xs text-slate-600">
-                      <span class="font-medium">Account:</span> {{ paymentMethod.account_name }} - {{ paymentMethod.account_number }}
+                      <span class="font-medium">Account:</span> {{ paymentMethod.account_name }} -
+                      {{ paymentMethod.account_number }}
                     </div>
-                    
+
                     <!-- Access Methods -->
                     <div class="flex flex-wrap gap-2 mt-2">
-                      <span v-if="paymentMethod.qr_code_image" 
-                            class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs">
+                      <span
+                        v-if="paymentMethod.qr_code_image"
+                        class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs"
+                      >
                         <QrCode class="w-3 h-3 mr-1" />
                         QR Code Available
                       </span>
-                      <span v-if="paymentMethod.payment_url" 
-                            class="inline-flex items-center px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs">
+                      <span
+                        v-if="paymentMethod.payment_url"
+                        class="inline-flex items-center px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs"
+                      >
                         <Link class="w-3 h-3 mr-1" />
                         Online Payment
                       </span>
-                      <span v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url" 
-                            class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs">
+                      <span
+                        v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
+                        class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs"
+                      >
                         <Building2 class="w-3 h-3 mr-1" />
                         Manual Transfer Only
                       </span>
                     </div>
                   </div>
-                  <div v-else-if="paymentMethod.payment_method === 'payment_url'" class="text-xs text-slate-500 mt-1">
+                  <div
+                    v-else-if="paymentMethod.payment_method === 'payment_url'"
+                    class="text-xs text-slate-500 mt-1"
+                  >
                     {{ paymentMethod.payment_url }}
                   </div>
-                  <div v-else-if="paymentMethod.payment_method === 'qr_code'" class="text-xs text-slate-500 mt-1">
+                  <div
+                    v-else-if="paymentMethod.payment_method === 'qr_code'"
+                    class="text-xs text-slate-500 mt-1"
+                  >
                     QR Code Payment
                   </div>
-                  
+
                   <p v-if="paymentMethod.description" class="text-sm text-slate-600 mt-2">
                     {{ paymentMethod.description }}
                   </p>
@@ -165,14 +192,18 @@
             <div v-if="canEdit" class="flex items-center space-x-2 ml-4">
               <!-- QR Code Preview - Show for bank transfer with QR or standalone QR code -->
               <button
-                v-if="(paymentMethod.payment_method === 'bank_transfer' || paymentMethod.payment_method === 'qr_code') && paymentMethod.qr_code_image"
+                v-if="
+                  (paymentMethod.payment_method === 'bank_transfer' ||
+                    paymentMethod.payment_method === 'qr_code') &&
+                  paymentMethod.qr_code_image
+                "
                 @click="showQRPreview(paymentMethod)"
                 class="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
                 title="View QR Code"
               >
                 <QrCode class="w-4 h-4" />
               </button>
-              
+
               <!-- Payment URL - Show external link for bank transfer with URL -->
               <a
                 v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
@@ -206,7 +237,6 @@
           </div>
         </div>
       </div>
-
     </div>
 
     <!-- Modals -->
@@ -221,15 +251,18 @@
     <!-- QR Code Preview Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showQRModal" class="fixed inset-0 z-50 overflow-y-auto" @click="showQRModal = false">
+        <div
+          v-if="showQRModal"
+          class="fixed inset-0 z-50 overflow-y-auto"
+          @click="showQRModal = false"
+        >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div 
-              class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full"
-              @click.stop
-            >
+            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full" @click.stop>
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-slate-900">{{ previewingPaymentMethod?.name }}</h3>
+                <h3 class="text-lg font-semibold text-slate-900">
+                  {{ previewingPaymentMethod?.name }}
+                </h3>
                 <button
                   @click="showQRModal = false"
                   class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
@@ -265,18 +298,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { 
-  CreditCard, 
-  Plus, 
-  AlertCircle, 
-  GripVertical, 
-  Edit, 
-  Trash2, 
+import {
+  CreditCard,
+  Plus,
+  AlertCircle,
+  GripVertical,
+  Edit,
+  Trash2,
   QrCode,
   Building2,
   Link,
   ExternalLink,
-  X
+  X,
 } from 'lucide-vue-next'
 import { paymentMethodsService, type EventPaymentMethod } from '../services/api'
 import PaymentMethodModal from './PaymentMethodModal.vue'
@@ -310,20 +343,19 @@ const dragOverIndex = ref<number | null>(null)
 const draggedPaymentMethod = ref<EventPaymentMethod | null>(null)
 const draggedIndex = ref<number | null>(null)
 
-
 // Helper methods
 const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
   if (!mediaUrl) return undefined
-  
+
   if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
     return mediaUrl
   }
-  
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
   if (mediaUrl.startsWith('/')) {
     return `${API_BASE_URL}${mediaUrl}`
   }
-  
+
   return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
@@ -400,7 +432,7 @@ const formatPaymentMethod = (method: string) => {
 const loadPaymentMethods = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     const response = await paymentMethodsService.getPaymentMethods(props.eventId)
     if (response.success && response.data) {
@@ -441,7 +473,7 @@ const confirmDeletePaymentMethod = (paymentMethod: EventPaymentMethod) => {
 const handlePaymentMethodSaved = (paymentMethod: EventPaymentMethod) => {
   if (editingPaymentMethod.value) {
     // Update existing payment method
-    const index = paymentMethods.value.findIndex(pm => pm.id === paymentMethod.id)
+    const index = paymentMethods.value.findIndex((pm) => pm.id === paymentMethod.id)
     if (index !== -1) {
       paymentMethods.value[index] = paymentMethod
     }
@@ -449,27 +481,27 @@ const handlePaymentMethodSaved = (paymentMethod: EventPaymentMethod) => {
     // Add new payment method
     paymentMethods.value.push(paymentMethod)
   }
-  
+
   // Sort by order
   paymentMethods.value.sort((a, b) => a.order - b.order)
-  
+
   closeModals()
 }
 
 const handleDeleteConfirm = async () => {
   if (!deletingPaymentMethod.value) return
-  
+
   deleting.value = true
-  
+
   try {
     const response = await paymentMethodsService.deletePaymentMethod(
       props.eventId,
-      deletingPaymentMethod.value.id
+      deletingPaymentMethod.value.id,
     )
-    
+
     if (response.success) {
       paymentMethods.value = paymentMethods.value.filter(
-        pm => pm.id !== deletingPaymentMethod.value!.id
+        (pm) => pm.id !== deletingPaymentMethod.value!.id,
       )
       showDeleteModal.value = false
       deletingPaymentMethod.value = null
@@ -487,11 +519,11 @@ const handleDeleteConfirm = async () => {
 // Drag and drop handlers
 const handleDragStart = (event: DragEvent, paymentMethod: EventPaymentMethod, index: number) => {
   if (!props.canEdit) return
-  
+
   isDragging.value = true
   draggedPaymentMethod.value = paymentMethod
   draggedIndex.value = index
-  
+
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
   }
@@ -506,39 +538,46 @@ const handleDragEnd = () => {
 
 const handleDragOver = (event: DragEvent, index: number) => {
   if (!props.canEdit || !isDragging.value) return
-  
+
   event.preventDefault()
   dragOverIndex.value = index
 }
 
 const handleDrop = async (event: DragEvent) => {
-  if (!props.canEdit || !isDragging.value || draggedPaymentMethod.value === null || draggedIndex.value === null || dragOverIndex.value === null) return
-  
+  if (
+    !props.canEdit ||
+    !isDragging.value ||
+    draggedPaymentMethod.value === null ||
+    draggedIndex.value === null ||
+    dragOverIndex.value === null
+  )
+    return
+
   event.preventDefault()
-  
+
   const draggedItem = draggedPaymentMethod.value
   const fromIndex = draggedIndex.value
   const toIndex = dragOverIndex.value
-  
+
   if (fromIndex === toIndex) return
-  
+
   // Update local state immediately
   const newPaymentMethods = [...paymentMethods.value]
   newPaymentMethods.splice(fromIndex, 1)
   newPaymentMethods.splice(toIndex, 0, draggedItem)
-  
+
   // Update order values
   const updates = newPaymentMethods.map((pm, index) => ({
     id: pm.id,
-    order: index
+    order: index,
   }))
-  
+
   // Update local state
   paymentMethods.value = newPaymentMethods.map((pm, index) => ({
     ...pm,
-    order: index
+    order: index,
   }))
-  
+
   // Update on server
   try {
     await paymentMethodsService.bulkReorderPaymentMethods(props.eventId, { updates })
@@ -547,7 +586,7 @@ const handleDrop = async (event: DragEvent) => {
     // Reload on error to sync with server
     loadPaymentMethods()
   }
-  
+
   handleDragEnd()
 }
 
@@ -569,7 +608,9 @@ onMounted(() => {
 
 .payment-method-card:hover:not(.drag-over) {
   border-color: #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .modal-enter-active,

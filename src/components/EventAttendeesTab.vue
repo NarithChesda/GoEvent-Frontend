@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Attendees</h2>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Event Attendees
+        </h2>
         <p class="text-sm text-slate-600 mt-1">Manage registrations and check-ins</p>
       </div>
       <div class="flex items-center space-x-3">
@@ -81,7 +83,9 @@
     <div class="flex flex-col sm:flex-row gap-4">
       <div class="flex-1">
         <div class="relative">
-          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"
+          />
           <input
             v-model="searchQuery"
             type="text"
@@ -104,7 +108,10 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8">
+    <div
+      v-if="loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+    >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span class="ml-3 text-slate-600">Loading attendees...</span>
@@ -122,14 +129,29 @@
           <div class="flex items-center space-x-4">
             <!-- Avatar -->
             <div class="relative">
-              <div class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {{ getInitials(registration.user_details?.first_name || '', registration.user_details?.last_name || '') }}
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              >
+                {{
+                  getInitials(
+                    registration.user_details?.first_name || '',
+                    registration.user_details?.last_name || '',
+                  )
+                }}
               </div>
               <!-- Status Indicator -->
-              <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center"
-                   :class="getStatusBadgeColor(registration.status)">
-                <CheckCircle v-if="registration.status === 'checked_in'" class="w-3 h-3 text-white" />
-                <Clock v-else-if="registration.status === 'registered'" class="w-3 h-3 text-white" />
+              <div
+                class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center"
+                :class="getStatusBadgeColor(registration.status)"
+              >
+                <CheckCircle
+                  v-if="registration.status === 'checked_in'"
+                  class="w-3 h-3 text-white"
+                />
+                <Clock
+                  v-else-if="registration.status === 'registered'"
+                  class="w-3 h-3 text-white"
+                />
                 <X v-else class="w-3 h-3 text-white" />
               </div>
             </div>
@@ -137,9 +159,12 @@
             <!-- User Info -->
             <div>
               <h4 class="font-semibold text-slate-800 text-lg mb-1 leading-snug">
-                {{ registration.user_details?.first_name }} {{ registration.user_details?.last_name }}
+                {{ registration.user_details?.first_name }}
+                {{ registration.user_details?.last_name }}
               </h4>
-              <p class="text-base text-slate-600 leading-relaxed">@{{ registration.user_details?.username }}</p>
+              <p class="text-base text-slate-600 leading-relaxed">
+                @{{ registration.user_details?.username }}
+              </p>
               <div class="flex items-center space-x-4 mt-2">
                 <span v-if="registration.registered_at" class="text-sm text-slate-500">
                   Registered: {{ formatDate(registration.registered_at) }}
@@ -155,21 +180,27 @@
           <div class="text-right space-y-2">
             <!-- Attendee Count -->
             <div class="text-base font-semibold text-slate-800 leading-tight">
-              {{ registration.total_attendees }} {{ registration.total_attendees === 1 ? 'person' : 'people' }}
+              {{ registration.total_attendees }}
+              {{ registration.total_attendees === 1 ? 'person' : 'people' }}
               <span v-if="registration.guest_count > 0" class="text-sm text-slate-500">
-                ({{ registration.guest_count }} {{ registration.guest_count === 1 ? 'guest' : 'guests' }})
+                ({{ registration.guest_count }}
+                {{ registration.guest_count === 1 ? 'guest' : 'guests' }})
               </span>
             </div>
-            
+
             <!-- Confirmation Code -->
-            <div class="text-sm font-mono text-slate-500 tracking-wide bg-slate-100 px-2 py-1 rounded">
+            <div
+              class="text-sm font-mono text-slate-500 tracking-wide bg-slate-100 px-2 py-1 rounded"
+            >
               {{ registration.confirmation_code }}
             </div>
 
             <!-- Status Badge -->
             <div class="flex justify-end">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                    :class="getStatusTextColor(registration.status)">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                :class="getStatusTextColor(registration.status)"
+              >
                 {{ getStatusLabel(registration.status) }}
               </span>
             </div>
@@ -184,13 +215,20 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!loading" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-else-if="!loading"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">
         {{ searchQuery || statusFilter ? 'No attendees found' : 'No registrations yet' }}
       </h3>
       <p class="text-slate-600 mb-6">
-        {{ searchQuery || statusFilter ? 'Try adjusting your search or filter criteria.' : 'Share your event to start getting registrations!' }}
+        {{
+          searchQuery || statusFilter
+            ? 'Try adjusting your search or filter criteria.'
+            : 'Share your event to start getting registrations!'
+        }}
       </p>
       <button
         v-if="searchQuery || statusFilter"
@@ -204,8 +242,12 @@
     <!-- Admin Check-in Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showCheckinModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" @click="closeCheckinModal">
-          <div 
+        <div
+          v-if="showCheckinModal"
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          @click="closeCheckinModal"
+        >
+          <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
             @click.stop
           >
@@ -229,10 +271,11 @@
 
             <!-- Content -->
             <div class="p-8">
-
               <div class="space-y-6">
                 <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-2">Confirmation Code</label>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2"
+                    >Confirmation Code</label
+                  >
                   <input
                     v-model="checkinCode"
                     type="text"
@@ -256,7 +299,10 @@
                     :disabled="!checkinCode.trim() || isChecking"
                   >
                     <UserCheck v-if="!isChecking" class="w-4 h-4 mr-2" />
-                    <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div
+                      v-else
+                      class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                    ></div>
                     {{ isChecking ? 'Checking in...' : 'Check In' }}
                   </button>
                 </div>
@@ -294,9 +340,13 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  X
+  X,
 } from 'lucide-vue-next'
-import { eventsService, type EventRegistration, type EventRegistrationDetail } from '../services/api'
+import {
+  eventsService,
+  type EventRegistration,
+  type EventRegistrationDetail,
+} from '../services/api'
 
 interface Props {
   eventId: string
@@ -317,27 +367,25 @@ const isChecking = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Computed
-const totalRegistrations = computed(() => 
-  registrations.value.filter(r => r.status !== 'cancelled').length
+const totalRegistrations = computed(
+  () => registrations.value.filter((r) => r.status !== 'cancelled').length,
 )
 
-const checkedInCount = computed(() => 
-  registrations.value.filter(r => r.status === 'checked_in').length
+const checkedInCount = computed(
+  () => registrations.value.filter((r) => r.status === 'checked_in').length,
 )
 
-const totalAttendees = computed(() => 
+const totalAttendees = computed(() =>
   registrations.value
-    .filter(r => r.status !== 'cancelled')
-    .reduce((sum, r) => sum + (r.total_attendees || 1), 0)
+    .filter((r) => r.status !== 'cancelled')
+    .reduce((sum, r) => sum + (r.total_attendees || 1), 0),
 )
 
-const pendingCount = computed(() => 
-  registrations.value.filter(r => r.status === 'registered').length
+const pendingCount = computed(
+  () => registrations.value.filter((r) => r.status === 'registered').length,
 )
 
-const showAdminCheckin = computed(() => 
-  registrations.value.some(r => r.status === 'registered')
-)
+const showAdminCheckin = computed(() => registrations.value.some((r) => r.status === 'registered'))
 
 const filteredRegistrations = computed(() => {
   let filtered = registrations.value
@@ -345,17 +393,18 @@ const filteredRegistrations = computed(() => {
   // Filter by search query
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(r => 
-      r.user_details?.first_name?.toLowerCase().includes(query) ||
-      r.user_details?.last_name?.toLowerCase().includes(query) ||
-      r.user_details?.username?.toLowerCase().includes(query) ||
-      r.confirmation_code?.toLowerCase().includes(query)
+    filtered = filtered.filter(
+      (r) =>
+        r.user_details?.first_name?.toLowerCase().includes(query) ||
+        r.user_details?.last_name?.toLowerCase().includes(query) ||
+        r.user_details?.username?.toLowerCase().includes(query) ||
+        r.confirmation_code?.toLowerCase().includes(query),
     )
   }
 
   // Filter by status
   if (statusFilter.value) {
-    filtered = filtered.filter(r => r.status === statusFilter.value)
+    filtered = filtered.filter((r) => r.status === statusFilter.value)
   }
 
   // Sort by registration date (newest first)
@@ -378,7 +427,7 @@ const loadRegistrations = async () => {
   loading.value = true
   try {
     const response = await eventsService.getEventRegistrations(props.eventId)
-    
+
     if (response.success && response.data) {
       // Transform EventRegistration[] to EventRegistrationDetail[] format
       const registrationData = response.data.results || []
@@ -390,7 +439,7 @@ const loadRegistrations = async () => {
           username: 'Unknown',
           email: '',
           first_name: '',
-          last_name: ''
+          last_name: '',
         },
         status: reg.status,
         guest_count: reg.guest_count,
@@ -398,7 +447,7 @@ const loadRegistrations = async () => {
         confirmation_code: reg.confirmation_code,
         registered_at: reg.registered_at,
         checked_in_at: reg.checked_in_at,
-        notes: reg.notes
+        notes: reg.notes,
       }))
     } else {
       showMessage('error', response.message || 'Failed to load registrations')
@@ -418,7 +467,7 @@ const performCheckin = async () => {
   try {
     // Call the admin checkin API
     const response = await eventsService.adminCheckin(props.eventId, checkinCode.value.trim())
-    
+
     if (response.success) {
       showMessage('success', 'Attendee checked in successfully!')
       closeCheckinModal()
@@ -498,7 +547,7 @@ const formatDate = (dateString: string): string => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
@@ -510,11 +559,15 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 }
 
 // Watchers
-watch(() => props.registrations, (newRegistrations) => {
-  if (newRegistrations) {
-    registrations.value = newRegistrations
-  }
-}, { immediate: true })
+watch(
+  () => props.registrations,
+  (newRegistrations) => {
+    if (newRegistrations) {
+      registrations.value = newRegistrations
+    }
+  },
+  { immediate: true },
+)
 
 // Lifecycle
 onMounted(() => {

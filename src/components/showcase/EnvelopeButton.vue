@@ -1,19 +1,13 @@
 <template>
   <!-- Loading Animation when video is not ready -->
-  <div
-    v-if="shouldShowLoading"
-    class="loading-container flex items-center justify-center h-full"
-  >
+  <div v-if="shouldShowLoading" class="loading-container flex items-center justify-center h-full">
     <div class="loading-spinner-wrapper">
-      <div 
-        class="loading-spinner"
-        :style="{ borderTopColor: primaryColor }"
-      ></div>
-      <p 
+      <div class="loading-spinner" :style="{ borderTopColor: primaryColor }"></div>
+      <p
         class="loading-text mt-3 text-center"
-        :style="{ 
-          color: primaryColor, 
-          fontFamily: secondaryFont || currentFont 
+        :style="{
+          color: primaryColor,
+          fontFamily: secondaryFont || currentFont,
         }"
       >
         Loading...
@@ -78,7 +72,7 @@ defineEmits<{
 
 const fallbackButtonStyle = computed(() => ({
   background: props.gradientStyle,
-  backdropFilter: 'blur(10px)'
+  backdropFilter: 'blur(10px)',
 }))
 </script>
 
@@ -96,7 +90,7 @@ const fallbackButtonStyle = computed(() => ({
   width: clamp(40px, 8vh, 80px);
   height: clamp(40px, 8vh, 80px);
   border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid #3B82F6; /* Will be overridden by dynamic color */
+  border-top: 3px solid #3b82f6; /* Will be overridden by dynamic color */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   backdrop-filter: blur(2px);
@@ -125,7 +119,7 @@ const fallbackButtonStyle = computed(() => ({
     height: clamp(35px, 6vh, 60px);
     border-width: 2px;
   }
-  
+
   .loading-text {
     font-size: clamp(0.625rem, 1.5vh, 0.875rem);
     margin-top: 0.5rem;
@@ -138,7 +132,7 @@ const fallbackButtonStyle = computed(() => ({
     height: clamp(50px, 10vh, 100px);
     border-width: 4px;
   }
-  
+
   .loading-text {
     font-size: clamp(0.875rem, 2.5vh, 1.25rem);
   }
@@ -151,7 +145,9 @@ const fallbackButtonStyle = computed(() => ({
   height: auto;
   width: auto;
   object-fit: contain;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .scaled-envelope-button:not(.opacity-50) {
@@ -168,7 +164,8 @@ const fallbackButtonStyle = computed(() => ({
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

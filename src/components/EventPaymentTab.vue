@@ -3,17 +3,25 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Payment Management</h2>
-        <p class="text-sm text-slate-600 mt-1">Manage payment packages and transactions for your event</p>
+        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          Payment Management
+        </h2>
+        <p class="text-sm text-slate-600 mt-1">
+          Manage payment packages and transactions for your event
+        </p>
       </div>
     </div>
 
     <!-- Template-Based Package Selection -->
-    <div v-if="!hasSelectedTemplate" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center">
+    <div
+      v-if="!hasSelectedTemplate"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+    >
       <FileText class="w-16 h-16 text-slate-300 mx-auto mb-4" />
       <h3 class="text-lg font-semibold text-slate-900 mb-2">Select a Template First</h3>
       <p class="text-slate-600 mb-6 max-w-md mx-auto">
-        You need to select an event template before you can view payment packages. Templates determine the available pricing plans for your event.
+        You need to select an event template before you can view payment packages. Templates
+        determine the available pricing plans for your event.
       </p>
       <button
         @click="redirectToTemplateTab"
@@ -32,20 +40,29 @@
           <FileText class="w-5 h-5 text-blue-600 mr-2" />
           Selected Template Package
         </h3>
-        <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-200/50">
+        <div
+          class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-200/50"
+        >
           <div class="flex items-center justify-between mb-3">
             <div>
               <h4 class="font-semibold text-slate-900">{{ templateName }}</h4>
-              <p class="text-sm text-slate-700">{{ templatePackageDetails?.name || 'Standard Package' }}</p>
+              <p class="text-sm text-slate-700">
+                {{ templatePackageDetails?.name || 'Standard Package' }}
+              </p>
             </div>
             <div class="text-right">
-              <span class="text-2xl font-bold text-slate-900">${{ templatePackageDetails?.price || '0.00' }}</span>
+              <span class="text-2xl font-bold text-slate-900"
+                >${{ templatePackageDetails?.price || '0.00' }}</span
+              >
               <p class="text-xs text-slate-600">USD</p>
             </div>
           </div>
 
           <!-- Package Features -->
-          <div v-if="templatePackageDetails?.features && templatePackageDetails.features.length > 0" class="mt-4 pt-4 border-t border-blue-200/50">
+          <div
+            v-if="templatePackageDetails?.features && templatePackageDetails.features.length > 0"
+            class="mt-4 pt-4 border-t border-blue-200/50"
+          >
             <p class="text-sm font-medium text-slate-800 mb-2">Included Features:</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div
@@ -71,8 +88,6 @@
           </button>
         </div>
       </div>
-
-
     </div>
 
     <!-- Referrer Section -->
@@ -86,49 +101,73 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
+      >
         <div class="flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
-            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">{{ confirmedPaymentsCount }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">
+              {{ confirmedPaymentsCount }}
+            </p>
             <p class="text-xs sm:text-sm text-slate-600 mt-1">Confirmed</p>
           </div>
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"
+          >
             <CreditCard class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
+      >
         <div class="flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
-            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">{{ pendingPaymentsCount }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">
+              {{ pendingPaymentsCount }}
+            </p>
             <p class="text-xs sm:text-sm text-slate-600 mt-1">Pending</p>
           </div>
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0"
+          >
             <Clock class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
+      >
         <div class="flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
-            <p class="text-lg sm:text-2xl font-semibold text-slate-900 truncate">${{ totalAmount }}</p>
+            <p class="text-lg sm:text-2xl font-semibold text-slate-900 truncate">
+              ${{ totalAmount }}
+            </p>
             <p class="text-xs sm:text-sm text-slate-600 mt-1">Total Value</p>
           </div>
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"
+          >
             <DollarSign class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
+      >
         <div class="flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
-            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">{{ activePackage ? '1' : '0' }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">
+              {{ activePackage ? '1' : '0' }}
+            </p>
             <p class="text-xs sm:text-sm text-slate-600 mt-1">Active</p>
           </div>
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0"
+          >
             <Package class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
           </div>
         </div>
@@ -165,8 +204,10 @@
             </div>
             <div class="text-right">
               <p class="text-lg font-bold text-slate-900">${{ payment.amount }}</p>
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                    :class="getStatusBadgeClass(payment.status)">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                :class="getStatusBadgeClass(payment.status)"
+              >
                 {{ getStatusDisplay(payment.status) }}
               </span>
             </div>
@@ -201,19 +242,24 @@
     <!-- Payment Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="closePaymentModal">
+        <div
+          v-if="showPaymentModal"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click="closePaymentModal"
+        >
           <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
             @click.stop
           >
-
             <!-- Step 1: Payment Summary & Method Selection -->
             <div v-if="paymentStep === 1">
               <!-- Header -->
               <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <div
+                      class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                    >
                       <CreditCard class="w-5 h-5" />
                     </div>
                     <div>
@@ -232,67 +278,81 @@
 
               <!-- Content -->
               <div class="p-8">
-
                 <!-- Current Payment Status (if exists) -->
-                <div v-if="currentPayment" class="mb-6 p-4 bg-slate-50/50 rounded-xl border border-slate-200/50 backdrop-blur-sm">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-slate-700">Current Payment</p>
-                <p class="text-xs text-slate-500">{{ currentPayment.plan_name }}</p>
-              </div>
-              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                    :class="getStatusBadgeClass(currentPayment.status)">
-                {{ getStatusDisplay(currentPayment.status) }}
-              </span>
-            </div>
-          </div>
-
-                <!-- Amount Display -->
-                <div class="text-center mb-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-            <p class="text-sm text-slate-600 mb-2">Amount to Pay</p>
-            <p class="text-3xl font-bold text-slate-900">${{ templatePackageDetails?.price || '0.00' }}</p>
-            <p class="text-sm text-slate-500 mt-1">{{ templatePackageDetails?.name || 'Standard Package' }}</p>
-          </div>
-
-          <!-- Payment Methods -->
-          <div class="mb-6">
-            <p class="text-sm font-medium text-slate-700 mb-3">Choose Payment Method</p>
-
-            <div v-if="loadingMethods" class="text-center py-8">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-              <p class="text-slate-500 mt-2 text-sm">Loading...</p>
-            </div>
-
-            <div v-else-if="paymentMethods.length > 0" class="space-y-2">
-              <div
-                v-for="method in paymentMethods"
-                :key="method.id"
-                class="p-4 rounded-xl border cursor-pointer transition-all duration-200"
-                :class="{
-                  'border-blue-500 bg-blue-50/50 backdrop-blur-sm': selectedMethod?.id === method.id,
-                  'border-slate-200 hover:border-slate-300 bg-white/50': selectedMethod?.id !== method.id
-                }"
-                @click="selectMethod(method)"
-              >
-                <div class="flex items-center">
-                  <input
-                    type="radio"
-                    :checked="selectedMethod?.id === method.id"
-                    class="h-4 w-4 text-blue-600 mr-3"
-                    readonly
-                  />
-                  <div class="flex-1">
-                    <p class="font-medium text-slate-900 text-sm">{{ method.name }}</p>
-                    <p class="text-xs text-slate-500">{{ method.payment_type_display }}</p>
+                <div
+                  v-if="currentPayment"
+                  class="mb-6 p-4 bg-slate-50/50 rounded-xl border border-slate-200/50 backdrop-blur-sm"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-slate-700">Current Payment</p>
+                      <p class="text-xs text-slate-500">{{ currentPayment.plan_name }}</p>
+                    </div>
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                      :class="getStatusBadgeClass(currentPayment.status)"
+                    >
+                      {{ getStatusDisplay(currentPayment.status) }}
+                    </span>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div v-else class="text-center py-6">
-              <p class="text-slate-500 text-sm">No payment methods available</p>
-            </div>
-          </div>
+                <!-- Amount Display -->
+                <div
+                  class="text-center mb-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl"
+                >
+                  <p class="text-sm text-slate-600 mb-2">Amount to Pay</p>
+                  <p class="text-3xl font-bold text-slate-900">
+                    ${{ templatePackageDetails?.price || '0.00' }}
+                  </p>
+                  <p class="text-sm text-slate-500 mt-1">
+                    {{ templatePackageDetails?.name || 'Standard Package' }}
+                  </p>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="mb-6">
+                  <p class="text-sm font-medium text-slate-700 mb-3">Choose Payment Method</p>
+
+                  <div v-if="loadingMethods" class="text-center py-8">
+                    <div
+                      class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"
+                    ></div>
+                    <p class="text-slate-500 mt-2 text-sm">Loading...</p>
+                  </div>
+
+                  <div v-else-if="paymentMethods.length > 0" class="space-y-2">
+                    <div
+                      v-for="method in paymentMethods"
+                      :key="method.id"
+                      class="p-4 rounded-xl border cursor-pointer transition-all duration-200"
+                      :class="{
+                        'border-blue-500 bg-blue-50/50 backdrop-blur-sm':
+                          selectedMethod?.id === method.id,
+                        'border-slate-200 hover:border-slate-300 bg-white/50':
+                          selectedMethod?.id !== method.id,
+                      }"
+                      @click="selectMethod(method)"
+                    >
+                      <div class="flex items-center">
+                        <input
+                          type="radio"
+                          :checked="selectedMethod?.id === method.id"
+                          class="h-4 w-4 text-blue-600 mr-3"
+                          readonly
+                        />
+                        <div class="flex-1">
+                          <p class="font-medium text-slate-900 text-sm">{{ method.name }}</p>
+                          <p class="text-xs text-slate-500">{{ method.payment_type_display }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-else class="text-center py-6">
+                    <p class="text-slate-500 text-sm">No payment methods available</p>
+                  </div>
+                </div>
 
                 <!-- Continue Button -->
                 <button
@@ -317,7 +377,9 @@
                     >
                       <ChevronLeft class="w-4 h-4" />
                     </button>
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <div
+                      class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                    >
                       <FileSignature class="w-5 h-5" />
                     </div>
                     <div>
@@ -336,55 +398,60 @@
 
               <!-- Content -->
               <div class="p-8">
+                <!-- Amount Reminder -->
+                <div class="text-center mb-6 p-4 bg-blue-50 rounded-xl">
+                  <p class="text-sm text-blue-700 mb-1">Transfer Amount</p>
+                  <p class="text-2xl font-bold text-blue-900">
+                    ${{ templatePackageDetails?.price }}
+                  </p>
+                </div>
 
-          <!-- Amount Reminder -->
-          <div class="text-center mb-6 p-4 bg-blue-50 rounded-xl">
-            <p class="text-sm text-blue-700 mb-1">Transfer Amount</p>
-            <p class="text-2xl font-bold text-blue-900">${{ templatePackageDetails?.price }}</p>
-          </div>
+                <!-- Payment Details -->
+                <div v-if="selectedMethod" class="mb-6">
+                  <div
+                    v-if="selectedMethod.bank_name || selectedMethod.account_number"
+                    class="mb-4 p-4 bg-slate-50 rounded-xl"
+                  >
+                    <p class="text-sm font-medium text-slate-700 mb-2">Payment Details</p>
+                    <div class="space-y-1 text-sm">
+                      <p v-if="selectedMethod.bank_name" class="text-slate-600">
+                        <span class="font-medium">Bank:</span> {{ selectedMethod.bank_name }}
+                      </p>
+                      <p v-if="selectedMethod.account_number" class="text-slate-600">
+                        <span class="font-medium">Account:</span>
+                        {{ selectedMethod.account_number }}
+                      </p>
+                      <p v-if="selectedMethod.account_name" class="text-slate-600">
+                        <span class="font-medium">Name:</span> {{ selectedMethod.account_name }}
+                      </p>
+                    </div>
+                  </div>
 
-          <!-- Payment Details -->
-          <div v-if="selectedMethod" class="mb-6">
-            <div v-if="selectedMethod.bank_name || selectedMethod.account_number" class="mb-4 p-4 bg-slate-50 rounded-xl">
-              <p class="text-sm font-medium text-slate-700 mb-2">Payment Details</p>
-              <div class="space-y-1 text-sm">
-                <p v-if="selectedMethod.bank_name" class="text-slate-600">
-                  <span class="font-medium">Bank:</span> {{ selectedMethod.bank_name }}
-                </p>
-                <p v-if="selectedMethod.account_number" class="text-slate-600">
-                  <span class="font-medium">Account:</span> {{ selectedMethod.account_number }}
-                </p>
-                <p v-if="selectedMethod.account_name" class="text-slate-600">
-                  <span class="font-medium">Name:</span> {{ selectedMethod.account_name }}
-                </p>
-              </div>
-            </div>
+                  <!-- QR Code -->
+                  <div v-if="selectedMethod.qr_code_image" class="text-center mb-4">
+                    <div class="inline-block p-4 bg-white rounded-xl shadow-sm border">
+                      <img
+                        :src="selectedMethod.qr_code_image"
+                        :alt="`QR Code for ${selectedMethod.name}`"
+                        class="w-32 h-32 object-contain mx-auto"
+                        loading="lazy"
+                        @error="handleImageError"
+                      />
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Scan with your banking app</p>
+                  </div>
 
-            <!-- QR Code -->
-            <div v-if="selectedMethod.qr_code_image" class="text-center mb-4">
-              <div class="inline-block p-4 bg-white rounded-xl shadow-sm border">
-                <img
-                  :src="selectedMethod.qr_code_image"
-                  :alt="`QR Code for ${selectedMethod.name}`"
-                  class="w-32 h-32 object-contain mx-auto"
-                  loading="lazy"
-                  @error="handleImageError"
-                />
-              </div>
-              <p class="text-xs text-slate-500 mt-2">Scan with your banking app</p>
-            </div>
-
-            <!-- Payment Link -->
-            <div v-if="selectedMethod.payment_link" class="mb-4">
-              <button
-                @click="openPaymentLink(selectedMethod.payment_link)"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors inline-flex items-center justify-center"
-              >
-                <ExternalLink class="w-4 h-4 mr-2" />
-                Open {{ selectedMethod.name }}
-              </button>
-            </div>
-          </div>
+                  <!-- Payment Link -->
+                  <div v-if="selectedMethod.payment_link" class="mb-4">
+                    <button
+                      @click="openPaymentLink(selectedMethod.payment_link)"
+                      class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors inline-flex items-center justify-center"
+                    >
+                      <ExternalLink class="w-4 h-4 mr-2" />
+                      Open {{ selectedMethod.name }}
+                    </button>
+                  </div>
+                </div>
 
                 <!-- Next Step Button -->
                 <button
@@ -408,7 +475,9 @@
                     >
                       <ChevronLeft class="w-4 h-4" />
                     </button>
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <div
+                      class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                    >
                       <CheckCircle class="w-5 h-5" />
                     </div>
                     <div>
@@ -427,73 +496,77 @@
 
               <!-- Content -->
               <div class="p-8">
-
                 <!-- Form -->
                 <form @submit.prevent="submitPaymentWithSync" class="space-y-6">
-            <!-- Transaction Reference -->
-            <div>
-              <label for="transactionRef" class="block text-sm font-medium text-slate-700 mb-2">
-                Transaction Reference <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="transactionRef"
-                v-model="paymentForm.transaction_reference"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                placeholder="Enter transaction ID"
-              />
-              <p class="text-xs text-slate-500 mt-1">From your payment confirmation</p>
-            </div>
+                  <!-- Transaction Reference -->
+                  <div>
+                    <label
+                      for="transactionRef"
+                      class="block text-sm font-medium text-slate-700 mb-2"
+                    >
+                      Transaction Reference <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="transactionRef"
+                      v-model="paymentForm.transaction_reference"
+                      type="text"
+                      required
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      placeholder="Enter transaction ID"
+                    />
+                    <p class="text-xs text-slate-500 mt-1">From your payment confirmation</p>
+                  </div>
 
-            <!-- File Upload -->
-            <div>
-              <label for="paymentProof" class="block text-sm font-medium text-slate-700 mb-2">
-                Payment Receipt <span class="text-red-500">*</span>
-              </label>
-              <div class="relative">
-                <input
-                  id="paymentProof"
-                  ref="fileInput"
-                  type="file"
-                  required
-                  accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
-                  @change="handleFileSelect"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700"
-                />
-                <p class="text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB)</p>
-              </div>
-            </div>
+                  <!-- File Upload -->
+                  <div>
+                    <label for="paymentProof" class="block text-sm font-medium text-slate-700 mb-2">
+                      Payment Receipt <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input
+                        id="paymentProof"
+                        ref="fileInput"
+                        type="file"
+                        required
+                        accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
+                        @change="handleFileSelect"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700"
+                      />
+                      <p class="text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB)</p>
+                    </div>
+                  </div>
 
-            <!-- Notes (Optional) -->
-            <div>
-              <label for="paymentNotes" class="block text-sm font-medium text-slate-700 mb-2">
-                Notes <span class="text-slate-400">(Optional)</span>
-              </label>
-              <textarea
-                id="paymentNotes"
-                v-model="paymentForm.user_notes"
-                rows="2"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                placeholder="Any additional notes..."
-              ></textarea>
-            </div>
+                  <!-- Notes (Optional) -->
+                  <div>
+                    <label for="paymentNotes" class="block text-sm font-medium text-slate-700 mb-2">
+                      Notes <span class="text-slate-400">(Optional)</span>
+                    </label>
+                    <textarea
+                      id="paymentNotes"
+                      v-model="paymentForm.user_notes"
+                      rows="2"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      placeholder="Any additional notes..."
+                    ></textarea>
+                  </div>
 
-            <!-- Submit Button -->
-            <button
-              type="submit"
-              :disabled="submittingPayment || !isFormValid"
-              class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
-            >
-              <span v-if="submittingPayment" class="flex items-center">
-                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Submitting...
-              </span>
-              <span v-else class="flex items-center">
-                <CheckCircle class="w-4 h-4 mr-2" />
-                Submit Payment
-              </span>
-            </button>
+                  <!-- Submit Button -->
+                  <button
+                    type="submit"
+                    :disabled="submittingPayment || !isFormValid"
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
+                  >
+                    <span v-if="submittingPayment" class="flex items-center">
+                      <div
+                        class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                      ></div>
+                      Submitting...
+                    </span>
+                    <span v-else class="flex items-center">
+                      <CheckCircle class="w-4 h-4 mr-2" />
+                      Submit Payment
+                    </span>
+                  </button>
                 </form>
               </div>
             </div>
@@ -505,7 +578,11 @@
                   v-for="step in 3"
                   :key="step"
                   class="w-3 h-3 rounded-full transition-all duration-200"
-                  :class="step <= paymentStep ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-slate-300'"
+                  :class="
+                    step <= paymentStep
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                      : 'bg-slate-300'
+                  "
                 ></div>
               </div>
             </div>
@@ -517,7 +594,11 @@
     <!-- Update Payment Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showUpdateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click="cancelUpdate">
+        <div
+          v-if="showUpdateModal"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click="cancelUpdate"
+        >
           <div
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
             @click.stop
@@ -541,41 +622,41 @@
 
             <div class="p-8">
               <form @submit.prevent="updatePayment" class="space-y-6">
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">
-                Transaction Reference <span class="text-red-500">*</span>
-              </label>
-              <input
-                v-model="updateForm.transaction_reference"
-                type="text"
-                required
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
-              />
-            </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Transaction Reference <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="updateForm.transaction_reference"
+                    type="text"
+                    required
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  />
+                </div>
 
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">
-                Payment Notes
-              </label>
-              <textarea
-                v-model="updateForm.user_notes"
-                rows="3"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-              ></textarea>
-            </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Payment Notes
+                  </label>
+                  <textarea
+                    v-model="updateForm.user_notes"
+                    rows="3"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                  ></textarea>
+                </div>
 
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">
-                Payment Proof <span class="text-slate-500">(Optional)</span>
-              </label>
-              <input
-                ref="updateFileInput"
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
-                @change="handleUpdateFileSelect"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-            </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Payment Proof <span class="text-slate-500">(Optional)</span>
+                  </label>
+                  <input
+                    ref="updateFileInput"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
+                    @change="handleUpdateFileSelect"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                </div>
 
                 <div class="flex space-x-4 pt-6">
                   <button
@@ -631,7 +712,7 @@ import {
   FileSignature,
   History,
   Pencil,
-  ChevronLeft
+  ChevronLeft,
 } from 'lucide-vue-next'
 import { apiService } from '../services/api'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
@@ -742,7 +823,7 @@ const {
   payments: existingPayments,
   loadingPayments,
   refreshPayments,
-  loadPayments: loadExistingPayments
+  loadPayments: loadExistingPayments,
 } = usePaymentTemplateIntegration(props.event as Event)
 
 const { success: showSuccess, error: showError } = useNotifications()
@@ -763,13 +844,13 @@ const error = ref<string | null>(null)
 const paymentForm = ref<PaymentFormData>({
   transaction_reference: '',
   user_notes: '',
-  payment_proof: null
+  payment_proof: null,
 })
 
 const updateForm = ref<UpdateFormData>({
   transaction_reference: '',
   user_notes: '',
-  payment_proof: null
+  payment_proof: null,
 })
 
 // Update modal
@@ -792,7 +873,9 @@ let abortController: AbortController | null = null
 
 // Computed properties with proper typing and memoization
 const currentPayment = computed(() => {
-  return existingPayments.value.find(p => p.status === 'confirmed' || p.status === 'pending') || null
+  return (
+    existingPayments.value.find((p) => p.status === 'confirmed' || p.status === 'pending') || null
+  )
 })
 
 const hasSelectedTemplate = computed(() => {
@@ -814,31 +897,29 @@ const templatePackageDetails = computed(() => {
 const isFormValid = computed(() => {
   return Boolean(
     selectedMethod.value &&
-    paymentForm.value.transaction_reference.trim() &&
-    paymentForm.value.payment_proof &&
-    templatePackageDetails.value
+      paymentForm.value.transaction_reference.trim() &&
+      paymentForm.value.payment_proof &&
+      templatePackageDetails.value,
   )
 })
 
 // Stats computed properties
-const confirmedPaymentsCount = computed(() =>
-  existingPayments.value.filter(p => p.status === 'confirmed').length
+const confirmedPaymentsCount = computed(
+  () => existingPayments.value.filter((p) => p.status === 'confirmed').length,
 )
 
-const pendingPaymentsCount = computed(() =>
-  existingPayments.value.filter(p => p.status === 'pending').length
+const pendingPaymentsCount = computed(
+  () => existingPayments.value.filter((p) => p.status === 'pending').length,
 )
 
 const totalAmount = computed(() =>
   existingPayments.value
-    .filter(p => p.status === 'confirmed')
+    .filter((p) => p.status === 'confirmed')
     .reduce((sum, p) => sum + parseFloat(p.amount), 0)
-    .toFixed(2)
+    .toFixed(2),
 )
 
-const activePackage = computed(() =>
-  currentPayment.value?.status === 'confirmed'
-)
+const activePackage = computed(() => currentPayment.value?.status === 'confirmed')
 
 // Input sanitization helper
 const sanitizeInput = (input: string): string => {
@@ -848,7 +929,7 @@ const sanitizeInput = (input: string): string => {
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#x27;',
-      '&': '&amp;'
+      '&': '&amp;',
     }
     return entities[match] || match
   })
@@ -865,7 +946,7 @@ const closePaymentModal = () => {
   paymentForm.value = {
     transaction_reference: '',
     user_notes: '',
-    payment_proof: null
+    payment_proof: null,
   }
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -902,7 +983,14 @@ const validateTransactionReference = (ref: string): string | null => {
 
 const validateFile = (file: File): string | null => {
   const maxSize = 10 * 1024 * 1024 // 10MB
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
+  const allowedTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+  ]
 
   if (file.size > maxSize) {
     return 'File size must be less than 10MB'
@@ -914,7 +1002,6 @@ const validateFile = (file: File): string | null => {
 
   return null
 }
-
 
 const loadPaymentMethods = async (): Promise<void> => {
   if (loadingMethods.value) return
@@ -929,7 +1016,10 @@ const loadPaymentMethods = async (): Promise<void> => {
   error.value = null
 
   try {
-    const response = await apiService.get<{ results: PaymentMethod[] }>('/api/payment/payment-methods/', undefined)
+    const response = await apiService.get<{ results: PaymentMethod[] }>(
+      '/api/payment/payment-methods/',
+      undefined,
+    )
 
     if (response.success && response.data) {
       paymentMethods.value = Object.freeze(response.data.results || [])
@@ -959,7 +1049,6 @@ const submitPaymentWithSync = async (): Promise<void> => {
   }
 }
 
-
 const selectMethod = (method: PaymentMethod): void => {
   selectedMethod.value = method
 }
@@ -982,7 +1071,6 @@ const openPaymentLink = (paymentLink: string): void => {
     console.error('Invalid payment link format:', err)
   }
 }
-
 
 const handleImageError = (event: globalThis.Event): void => {
   const img = event.target as HTMLImageElement
@@ -1089,7 +1177,7 @@ const submitPayment = async (): Promise<void> => {
     paymentForm.value = {
       transaction_reference: '',
       user_notes: '',
-      payment_proof: null
+      payment_proof: null,
     }
 
     // Clear file input
@@ -1100,9 +1188,13 @@ const submitPayment = async (): Promise<void> => {
     // Refresh payments with composable
     await refreshPayments()
 
-    showSuccess('Payment Submitted', 'Your payment has been submitted successfully and is pending review.')
+    showSuccess(
+      'Payment Submitted',
+      'Your payment has been submitted successfully and is pending review.',
+    )
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Error submitting payment. Please try again.'
+    const errorMessage =
+      err instanceof Error ? err.message : 'Error submitting payment. Please try again.'
     console.error('Error submitting payment:', err)
     error.value = errorMessage
     showError('Payment Failed', errorMessage)
@@ -1116,7 +1208,7 @@ const startUpdatePayment = (payment: Payment) => {
   updateForm.value = {
     transaction_reference: payment.transaction_reference,
     user_notes: payment.user_notes || '',
-    payment_proof: null
+    payment_proof: null,
   }
   showUpdateModal.value = true
 }
@@ -1156,7 +1248,7 @@ const updatePayment = async (): Promise<void> => {
 
     const response = await apiService.patchFormData<Payment>(
       `/api/payment/payments/${sanitizeInput(paymentToUpdate.value.id)}/`,
-      formData
+      formData,
     )
 
     if (!response.success) {
@@ -1169,7 +1261,8 @@ const updatePayment = async (): Promise<void> => {
 
     showSuccess('Payment Updated', 'Your payment details have been updated successfully.')
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Error updating payment. Please try again.'
+    const errorMessage =
+      err instanceof Error ? err.message : 'Error updating payment. Please try again.'
     console.error('Error updating payment:', err)
     error.value = errorMessage
     showError('Update Failed', errorMessage)
@@ -1184,7 +1277,7 @@ const cancelUpdate = () => {
   updateForm.value = {
     transaction_reference: '',
     user_notes: '',
-    payment_proof: null
+    payment_proof: null,
   }
   if (updateFileInput.value) {
     updateFileInput.value.value = ''
@@ -1231,7 +1324,7 @@ const formatDate = (dateString: string) => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
@@ -1265,7 +1358,7 @@ watch(
       selectedMethod.value = null
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 watch(
@@ -1275,7 +1368,7 @@ watch(
       loadExistingPayments()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // Cleanup function

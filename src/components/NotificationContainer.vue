@@ -1,10 +1,6 @@
 <template>
   <div class="fixed bottom-8 right-8 z-50 space-y-4 max-w-sm">
-    <TransitionGroup
-      name="notification"
-      tag="div"
-      class="space-y-4"
-    >
+    <TransitionGroup name="notification" tag="div" class="space-y-4">
       <div
         v-for="notification in notifications"
         :key="notification.id"
@@ -17,41 +13,26 @@
           class="absolute top-0 left-0 h-1 bg-white/30 animate-pulse"
           :style="{ animationDuration: `${notification.duration}ms` }"
         ></div>
-        
+
         <div class="flex items-start">
           <!-- Icon -->
           <div class="flex-shrink-0">
-            <CheckCircle 
-              v-if="notification.type === 'success'" 
-              class="w-5 h-5 text-white" 
-            />
-            <AlertCircle 
-              v-else-if="notification.type === 'error'" 
-              class="w-5 h-5 text-white" 
-            />
-            <AlertTriangle 
-              v-else-if="notification.type === 'warning'" 
-              class="w-5 h-5 text-white" 
-            />
-            <Info 
-              v-else-if="notification.type === 'info'" 
-              class="w-5 h-5 text-white" 
-            />
+            <CheckCircle v-if="notification.type === 'success'" class="w-5 h-5 text-white" />
+            <AlertCircle v-else-if="notification.type === 'error'" class="w-5 h-5 text-white" />
+            <AlertTriangle v-else-if="notification.type === 'warning'" class="w-5 h-5 text-white" />
+            <Info v-else-if="notification.type === 'info'" class="w-5 h-5 text-white" />
           </div>
-          
+
           <!-- Content -->
           <div class="ml-3 flex-1">
             <h4 class="text-sm font-semibold text-white">
               {{ notification.title }}
             </h4>
-            <p 
-              v-if="notification.message" 
-              class="text-sm text-white/90 mt-1"
-            >
+            <p v-if="notification.message" class="text-sm text-white/90 mt-1">
               {{ notification.message }}
             </p>
           </div>
-          
+
           <!-- Dismiss button -->
           <button
             v-if="notification.dismissable"
@@ -69,20 +50,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  AlertTriangle, 
-  Info, 
-  X 
-} from 'lucide-vue-next'
+import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-vue-next'
 import { useNotifications, type Notification } from '../composables/useNotifications'
 
 const { notifications, removeNotification } = useNotifications()
 
 const getNotificationClasses = (type: Notification['type']): string => {
   const baseClasses = 'border-white/20'
-  
+
   switch (type) {
     case 'success':
       return `${baseClasses} bg-green-500/90`

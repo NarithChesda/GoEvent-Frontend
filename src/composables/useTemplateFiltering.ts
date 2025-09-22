@@ -23,18 +23,18 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
   // Extract categories from templates
   const categories = computed(() => {
     const categoryMap = new Map<number, Category>()
-    
-    templates.value.forEach(template => {
+
+    templates.value.forEach((template) => {
       if (template.package_plan.category) {
         const cat = template.package_plan.category
         categoryMap.set(cat.id, {
           id: cat.id,
           name: cat.name,
-          color: cat.color
+          color: cat.color,
         })
       }
     })
-    
+
     return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
   })
 
@@ -44,21 +44,23 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
 
     // Filter by category
     if (selectedCategoryId.value !== null) {
-      filtered = filtered.filter(template => 
-        template.package_plan.category?.id === selectedCategoryId.value
+      filtered = filtered.filter(
+        (template) => template.package_plan.category?.id === selectedCategoryId.value,
       )
     }
 
     // Filter by search query
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase()
-      filtered = filtered.filter(template =>
-        template.name.toLowerCase().includes(query) ||
-        template.package_plan.name.toLowerCase().includes(query) ||
-        template.package_plan.category?.name.toLowerCase().includes(query) ||
-        (template.package_plan.features && template.package_plan.features.some(feature => 
-          feature.toLowerCase().includes(query)
-        ))
+      filtered = filtered.filter(
+        (template) =>
+          template.name.toLowerCase().includes(query) ||
+          template.package_plan.name.toLowerCase().includes(query) ||
+          template.package_plan.category?.name.toLowerCase().includes(query) ||
+          (template.package_plan.features &&
+            template.package_plan.features.some((feature) =>
+              feature.toLowerCase().includes(query),
+            )),
       )
     }
 
@@ -85,14 +87,14 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
     // State
     searchQuery,
     selectedCategoryId,
-    
+
     // Computed
     categories,
     filteredTemplates,
-    
+
     // Actions
     clearFilters,
     resetFilters,
-    setCategoryFilter
+    setCategoryFilter,
   }
 }

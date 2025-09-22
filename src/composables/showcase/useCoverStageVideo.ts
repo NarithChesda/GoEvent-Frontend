@@ -33,8 +33,12 @@ interface VideoProps extends VideoUrls {
 }
 
 // Basic device detection
-const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-const isLowEndDevice = (navigator as any).deviceMemory ? (navigator as any).deviceMemory <= 2 : navigator.hardwareConcurrency <= 2
+const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+  navigator.userAgent,
+)
+const isLowEndDevice = (navigator as any).deviceMemory
+  ? (navigator as any).deviceMemory <= 2
+  : navigator.hardwareConcurrency <= 2
 
 // Development logging utility - disabled
 const isDevelopment = false // Completely disabled
@@ -51,7 +55,7 @@ const devError = (message: string, ...args: any[]) => {
 export function useCoverStageVideo(
   videoRefs: VideoElementRefs,
   props: VideoProps,
-  emit: (event: keyof VideoEmits, ...args: any[]) => void
+  emit: (event: keyof VideoEmits, ...args: any[]) => void,
 ) {
   // Video state management
   const currentVideoPhase = ref<VideoPhase>('none')
@@ -59,21 +63,30 @@ export function useCoverStageVideo(
   const eventVideoReady = ref(false)
   const backgroundVideoPreloaded = ref(false)
   const backgroundVideoReady = ref(false)
-  
+
   // Video state control
-  const isCoverVideoPlaying = ref(!props.shouldSkipToMainContent && props.currentShowcaseStage !== 'main_content')
+  const isCoverVideoPlaying = ref(
+    !props.shouldSkipToMainContent && props.currentShowcaseStage !== 'main_content',
+  )
   const isContentHidden = ref(false)
-  
+
   // Store blob URLs for cleanup
   const videoBlobUrls = ref<Map<string, string>>(new Map())
 
   // Video resource manager with WeakMap
-  const videoListenerRefs = new WeakMap<HTMLVideoElement, Array<{ event: string; handler: EventListener; controller: AbortController }>>()
+  const videoListenerRefs = new WeakMap<
+    HTMLVideoElement,
+    Array<{ event: string; handler: EventListener; controller: AbortController }>
+  >()
 
-  const addVideoEventListener = (video: HTMLVideoElement, event: string, handler: EventListener) => {
+  const addVideoEventListener = (
+    video: HTMLVideoElement,
+    event: string,
+    handler: EventListener,
+  ) => {
     const controller = new AbortController()
     video.addEventListener(event, handler, { signal: controller.signal })
-    
+
     if (!videoListenerRefs.has(video)) {
       videoListenerRefs.set(video, [])
     }
@@ -84,7 +97,7 @@ export function useCoverStageVideo(
   const createVideoElementManager = () => {
     const cleanupVideoElement = (video: HTMLVideoElement | null) => {
       if (!video) return
-      
+
       // Abort all event listeners for this video element
       const listeners = videoListenerRefs.get(video)
       if (listeners) {
@@ -93,13 +106,13 @@ export function useCoverStageVideo(
         })
         videoListenerRefs.delete(video)
       }
-      
+
       // Cleanup video resources with error handling
       try {
         video.pause()
         video.src = ''
         video.load()
-        
+
         // Clear any remaining blob URL if it exists
         const currentSrc = video.currentSrc
         if (currentSrc && currentSrc.startsWith('blob:')) {
@@ -109,28 +122,36 @@ export function useCoverStageVideo(
         // Silently handle cleanup errors
       }
     }
-    
-    const setVideoVisibility = (video: HTMLVideoElement | null, visible: boolean, zIndex?: string) => {
+
+    const setVideoVisibility = (
+      video: HTMLVideoElement | null,
+      visible: boolean,
+      zIndex?: string,
+    ) => {
       if (!video) return
       video.style.opacity = visible ? '1' : '0'
       if (zIndex) {
         video.style.zIndex = zIndex
       }
     }
-    
-    const setupVideoForPlayback = (video: HTMLVideoElement, muted: boolean = false, loop: boolean = false) => {
+
+    const setupVideoForPlayback = (
+      video: HTMLVideoElement,
+      muted: boolean = false,
+      loop: boolean = false,
+    ) => {
       video.muted = muted
       video.loop = loop
       video.style.pointerEvents = 'none'
     }
-    
+
     return {
       cleanup: cleanupVideoElement,
       setVisibility: setVideoVisibility,
-      setupForPlayback: setupVideoForPlayback
+      setupForPlayback: setupVideoForPlayback,
     }
   }
-  
+
   const videoManager = createVideoElementManager()
 
   const cleanupAllVideoResources = () => {
@@ -139,7 +160,7 @@ export function useCoverStageVideo(
     videoManager.cleanup(videoRefs.sequentialVideoContainer())
     videoManager.cleanup(videoRefs.coverVideoElement())
     videoManager.cleanup(videoRefs.backgroundVideoElement())
-    
+
     // Cleanup all blob URLs
     videoBlobUrls.value.forEach((blobUrl) => {
       try {
@@ -149,10 +170,10 @@ export function useCoverStageVideo(
       }
     })
     videoBlobUrls.value.clear()
-    
+
     // Force garbage collection hint for mobile browsers
     if (isMobile && typeof window !== 'undefined' && 'gc' in window) {
-      (window as any).gc()
+      ;(window as any).gc()
     }
   }
 
@@ -164,47 +185,47 @@ export function useCoverStageVideo(
       if (existingBlob) {
         return existingBlob
       }
-      
+
       // Skip background video for low-end devices
       if (videoType === 'background' && isLowEndDevice) {
         return null
       }
-      
+
       // Get the full URL if it's relative
-      const fullUrl = videoUrl.startsWith('http') 
-        ? videoUrl 
+      const fullUrl = videoUrl.startsWith('http')
+        ? videoUrl
         : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${videoUrl.startsWith('/') ? videoUrl : `/media/${videoUrl}`}`
-      
+
       // Basic fetch configuration
       const fetchOptions: RequestInit = {}
-      
+
       // Mobile optimizations
       if (isMobile) {
         fetchOptions.cache = 'force-cache'
         fetchOptions.keepalive = true
       }
-      
+
       // Skip large videos on low-end devices
       if (isLowEndDevice) {
         const headResponse = await fetch(fullUrl, { ...fetchOptions, method: 'HEAD' })
         const contentLength = headResponse.headers.get('content-length')
         const videoSizeInMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0
-        
+
         if (videoSizeInMB > 10) {
           return null
         }
       }
-      
+
       const response = await fetch(fullUrl, fetchOptions)
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch ${videoType} video: ${response.status}`)
       }
-      
+
       const blob = await response.blob()
       const blobUrl = URL.createObjectURL(blob)
       videoBlobUrls.value.set(videoUrl, blobUrl)
-      
+
       return blobUrl
     } catch (error) {
       return null
@@ -214,28 +235,28 @@ export function useCoverStageVideo(
   // Background video loading with progressive streaming
   const loadBackgroundVideo = async () => {
     if (!props.backgroundVideoUrl) return
-    
+
     const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) return
-    
+
     // Check if already loading or loaded
     if (bgVideo.src && bgVideo.readyState > 0) {
       return
     }
-    
+
     // Emit event that background video loading has started
     emit('backgroundVideoLoadStarted')
-    
+
     // Use progressive streaming for background video
-    const fullUrl = props.backgroundVideoUrl.startsWith('http') 
-      ? props.backgroundVideoUrl 
+    const fullUrl = props.backgroundVideoUrl.startsWith('http')
+      ? props.backgroundVideoUrl
       : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${props.backgroundVideoUrl.startsWith('/') ? props.backgroundVideoUrl : `/media/${props.backgroundVideoUrl}`}`
-    
+
     // Set the source directly for progressive download
     bgVideo.src = fullUrl
     bgVideo.preload = 'auto'
     bgVideo.load()
-    
+
     devLog('Background video load initiated:', fullUrl)
   }
 
@@ -245,7 +266,6 @@ export function useCoverStageVideo(
     eventVideoPreloaded.value = true
     emit('eventVideoPreloaded')
   }
-
 
   const handleEventVideoReady = () => {
     if (eventVideoReady.value) return
@@ -258,10 +278,10 @@ export function useCoverStageVideo(
   // Event video loading (triggered after cover video is loaded)
   const loadEventVideo = async () => {
     if (!props.eventVideoUrl) return
-    
+
     // Emit event that event video loading has started
     emit('eventVideoLoadStarted')
-    
+
     const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
     if (eventBlobUrl && videoRefs.eventVideoPreloader()) {
       videoRefs.eventVideoPreloader()!.src = eventBlobUrl
@@ -289,8 +309,6 @@ export function useCoverStageVideo(
     backgroundVideoReady.value = true
   }
 
-
-
   // Sequential video handlers
   const handleSequentialVideoEnded = () => {
     if (currentVideoPhase.value === 'event') {
@@ -308,26 +326,26 @@ export function useCoverStageVideo(
 
   const playEventVideo = () => {
     if (!props.eventVideoUrl) return
-    
+
     isCoverVideoPlaying.value = false
     currentVideoPhase.value = 'event'
-    
+
     const videoToUse = videoRefs.eventVideoPreloader() || videoRefs.sequentialVideoContainer()
     if (!videoToUse) return
-    
+
     // Setup video for playback
     videoManager.setupForPlayback(videoToUse, false, false)
     videoManager.setVisibility(videoToUse, true, '10')
-    
+
     // Set source if using sequential container
     if (videoToUse === videoRefs.sequentialVideoContainer()) {
       videoToUse.src = props.eventVideoUrl
     }
-    
+
     videoToUse.play().catch(() => {
       handleSequentialVideoEnded()
     })
-    
+
     emit('playEventVideo')
   }
 
@@ -337,63 +355,64 @@ export function useCoverStageVideo(
     let playAttempts = 0
     const maxPlayAttempts = 10
     let debugInterval: number | null = null
-    
+
     const hideEventVideos = () => {
       videoManager.setVisibility(videoRefs.eventVideoPreloader(), false)
       videoManager.setVisibility(videoRefs.sequentialVideoContainer(), false)
     }
-    
+
     const showBackgroundVideo = () => {
       videoManager.setVisibility(bgVideo, true, '5') // Same level as event video to replace it
     }
-    
+
     const clearDebugInterval = () => {
       if (debugInterval) {
         clearInterval(debugInterval)
         debugInterval = null
       }
     }
-    
+
     const startDebugInterval = () => {
       if (debugInterval) return // Already running
-      
+
       debugInterval = setInterval(() => {
         if (hasStartedPlaying || playAttempts >= maxPlayAttempts) {
           clearDebugInterval()
           return
         }
-        
+
         const bufferedRanges = []
         for (let i = 0; i < bgVideo.buffered.length; i++) {
           bufferedRanges.push(`${bgVideo.buffered.start(i)}-${bgVideo.buffered.end(i)}`)
         }
-        
+
         devLog('Background video state:', {
           readyState: bgVideo.readyState,
           networkState: bgVideo.networkState,
           paused: bgVideo.paused,
           currentTime: bgVideo.currentTime,
           buffered: bufferedRanges.join(', '),
-          src: bgVideo.src ? 'set' : 'not set'
+          src: bgVideo.src ? 'set' : 'not set',
         })
       }, 5000) // Check every 5 seconds
     }
-    
+
     const tryPlayBackgroundVideo = () => {
       if (hasStartedPlaying) return
-      
+
       if (playAttempts >= maxPlayAttempts) {
         devWarn('Max play attempts reached for background video')
         clearDebugInterval()
         return
       }
-      
+
       // Check if video has enough data to start playing
       if (bgVideo.readyState >= 1) {
         playAttempts++
         showBackgroundVideo()
-        
-        bgVideo.play()
+
+        bgVideo
+          .play()
           .then(() => {
             hasStartedPlaying = true
             devLog('Background video started playing successfully')
@@ -416,53 +435,61 @@ export function useCoverStageVideo(
         }, 500)
       }
     }
-    
+
     return {
       tryPlay: tryPlayBackgroundVideo,
       startDebugInterval,
       clearDebugInterval,
       hasStartedPlaying: () => hasStartedPlaying,
-      setStartedPlaying: (value: boolean) => { hasStartedPlaying = value }
+      setStartedPlaying: (value: boolean) => {
+        hasStartedPlaying = value
+      },
     }
   }
-  
-  const createBackgroundVideoEventHandlers = (playbackManager: ReturnType<typeof createBackgroundVideoPlaybackManager>) => {
+
+  const createBackgroundVideoEventHandlers = (
+    playbackManager: ReturnType<typeof createBackgroundVideoPlaybackManager>,
+  ) => {
     return {
       handleLoadStart: () => {
         devLog('Background video started loading')
       },
-      
+
       handleLoadedMetadata: (bgVideo: HTMLVideoElement) => {
         devLog(`Background video metadata loaded - duration: ${bgVideo.duration}s`)
         playbackManager.tryPlay()
       },
-      
+
       handleCanPlay: () => {
         playbackManager.tryPlay()
       },
-      
+
       handleCanPlayThrough: () => {
         playbackManager.tryPlay()
       },
-      
+
       handleProgress: () => {
         playbackManager.tryPlay()
       },
-      
+
       handleStalled: (bgVideo: HTMLVideoElement) => {
-        devWarn(`Background video stalled at readyState: ${bgVideo.readyState}, buffered: ${bgVideo.buffered.length > 0 ? bgVideo.buffered.end(0) : 0}s`)
+        devWarn(
+          `Background video stalled at readyState: ${bgVideo.readyState}, buffered: ${bgVideo.buffered.length > 0 ? bgVideo.buffered.end(0) : 0}s`,
+        )
         setTimeout(() => {
           if (!playbackManager.hasStartedPlaying()) {
             playbackManager.tryPlay()
           }
         }, 2000)
       },
-      
+
       handleWaiting: (bgVideo: HTMLVideoElement) => {
         const bufferedTime = bgVideo.buffered.length > 0 ? bgVideo.buffered.end(0) : 0
-        devLog(`Background video waiting for data - buffered: ${bufferedTime}s, currentTime: ${bgVideo.currentTime}s`)
+        devLog(
+          `Background video waiting for data - buffered: ${bufferedTime}s, currentTime: ${bgVideo.currentTime}s`,
+        )
       },
-      
+
       handlePlaying: () => {
         playbackManager.setStartedPlaying(true)
         devLog('Background video is now playing')
@@ -470,13 +497,13 @@ export function useCoverStageVideo(
         videoManager.setVisibility(videoRefs.eventVideoPreloader(), false)
         videoManager.setVisibility(videoRefs.sequentialVideoContainer(), false)
       },
-      
+
       handleError: (e: Event) => {
         const error = (e.target as HTMLVideoElement).error
         devError('Background video error:', error?.message || 'Unknown error', 'Code:', error?.code)
         playbackManager.clearDebugInterval()
       },
-      
+
       handleSuspend: (bgVideo: HTMLVideoElement) => {
         devWarn('Background video loading suspended by browser')
         setTimeout(() => {
@@ -486,44 +513,46 @@ export function useCoverStageVideo(
             playbackManager.tryPlay()
           }
         }, 3000)
-      }
+      },
     }
   }
-  
+
   const playBackgroundVideo = () => {
     if (!props.backgroundVideoUrl) {
       emit('sequentialVideoEnded')
       return
     }
-    
+
     const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) {
       emit('sequentialVideoEnded')
       return
     }
-    
+
     // Immediately transition to main content stage while background video loads
     currentVideoPhase.value = 'background'
     emit('sequentialVideoEnded')
-    
+
     // Start loading background video if not already loaded
     if (!bgVideo.src) {
       loadBackgroundVideo()
     }
-    
+
     // Create playback manager and event handlers
     const playbackManager = createBackgroundVideoPlaybackManager(bgVideo)
     const eventHandlers = createBackgroundVideoEventHandlers(playbackManager)
-    
+
     // Try to play immediately if video is ready
     playbackManager.tryPlay()
-    
+
     // Start debug monitoring
     playbackManager.startDebugInterval()
-    
+
     // Set up event listeners
     addVideoEventListener(bgVideo, 'loadstart', eventHandlers.handleLoadStart)
-    addVideoEventListener(bgVideo, 'loadedmetadata', () => eventHandlers.handleLoadedMetadata(bgVideo))
+    addVideoEventListener(bgVideo, 'loadedmetadata', () =>
+      eventHandlers.handleLoadedMetadata(bgVideo),
+    )
     addVideoEventListener(bgVideo, 'canplay', eventHandlers.handleCanPlay)
     addVideoEventListener(bgVideo, 'canplaythrough', eventHandlers.handleCanPlayThrough)
     addVideoEventListener(bgVideo, 'progress', eventHandlers.handleProgress)
@@ -542,12 +571,12 @@ export function useCoverStageVideo(
     if (props.shouldSkipToMainContent || props.currentShowcaseStage === 'main_content') {
       isContentHidden.value = true
       isCoverVideoPlaying.value = false
-      
+
       if (props.videoStatePreserved) {
         // If video state is preserved, load event video immediately
         loadEventVideo()
       }
-      
+
       if (props.backgroundVideoUrl) {
         playBackgroundVideo()
       } else {
@@ -557,12 +586,12 @@ export function useCoverStageVideo(
     } else if (props.currentShowcaseStage === 'event_video') {
       isContentHidden.value = true
       isCoverVideoPlaying.value = false
-      
+
       if (props.videoStatePreserved && props.eventVideoUrl) {
         // If video state is preserved, load event video immediately
         loadEventVideo()
       }
-      
+
       if (props.eventVideoUrl) {
         playEventVideo()
       }
@@ -570,7 +599,7 @@ export function useCoverStageVideo(
       currentVideoPhase.value = 'none'
       isCoverVideoPlaying.value = true
       isContentHidden.value = false
-      
+
       if (props.videoStatePreserved) {
         // If video state is preserved, load event video immediately
         loadEventVideo()
@@ -584,7 +613,7 @@ export function useCoverStageVideo(
   // Handle envelope opening
   const handleOpenEnvelope = () => {
     isContentHidden.value = true
-    
+
     setTimeout(() => {
       if (props.eventVideoUrl) {
         playEventVideo()
@@ -602,45 +631,57 @@ export function useCoverStageVideo(
   })
 
   // Watchers
-  watch(() => props.currentShowcaseStage, (newStage) => {
-    if (newStage === 'event_video' && currentVideoPhase.value === 'none') {
-      isContentHidden.value = true
-      if (props.eventVideoUrl) {
-        playEventVideo()
+  watch(
+    () => props.currentShowcaseStage,
+    (newStage) => {
+      if (newStage === 'event_video' && currentVideoPhase.value === 'none') {
+        isContentHidden.value = true
+        if (props.eventVideoUrl) {
+          playEventVideo()
+        }
+      } else if (newStage === 'main_content' && currentVideoPhase.value !== 'background') {
+        isContentHidden.value = true
+        if (props.backgroundVideoUrl) {
+          playBackgroundVideo()
+        } else {
+          emit('sequentialVideoEnded')
+        }
       }
-    } else if (newStage === 'main_content' && currentVideoPhase.value !== 'background') {
-      isContentHidden.value = true
-      if (props.backgroundVideoUrl) {
-        playBackgroundVideo()
-      } else {
-        emit('sequentialVideoEnded')
-      }
-    }
-  }, { immediate: true })
+    },
+    { immediate: true },
+  )
 
-  watch(() => props.shouldSkipToMainContent, (shouldSkip) => {
-    if (shouldSkip) {
-      isContentHidden.value = true
-      isCoverVideoPlaying.value = false
-      
-      if (props.backgroundVideoUrl) {
-        playBackgroundVideo()
-      } else {
-        currentVideoPhase.value = 'background'
-        emit('sequentialVideoEnded')
-      }
-    }
-  }, { immediate: true })
+  watch(
+    () => props.shouldSkipToMainContent,
+    (shouldSkip) => {
+      if (shouldSkip) {
+        isContentHidden.value = true
+        isCoverVideoPlaying.value = false
 
-  watch(() => props.videoStatePreserved, (isPreserved) => {
-    if (isPreserved) {
-      // When video state is being preserved, load event video immediately
-      loadEventVideo()
-      nextTick(() => {
-        initializeVideoState()
-      })
-    }
-  }, { immediate: true })
+        if (props.backgroundVideoUrl) {
+          playBackgroundVideo()
+        } else {
+          currentVideoPhase.value = 'background'
+          emit('sequentialVideoEnded')
+        }
+      }
+    },
+    { immediate: true },
+  )
+
+  watch(
+    () => props.videoStatePreserved,
+    (isPreserved) => {
+      if (isPreserved) {
+        // When video state is being preserved, load event video immediately
+        loadEventVideo()
+        nextTick(() => {
+          initializeVideoState()
+        })
+      }
+    },
+    { immediate: true },
+  )
 
   watch(isCoverVideoPlaying, (isPlaying) => {
     const coverVideo = videoRefs.coverVideoElement()
@@ -671,10 +712,10 @@ export function useCoverStageVideo(
     backgroundVideoReady: readonly(backgroundVideoReady),
     isCoverVideoPlaying,
     isContentHidden,
-    
+
     // Computed
     shouldShowButtonLoading,
-    
+
     // Methods
     handleEventVideoPreloaded,
     handleEventVideoReady,
@@ -691,6 +732,6 @@ export function useCoverStageVideo(
     startEventVideo,
     triggerBackgroundVideoLoad,
     loadBackgroundVideo,
-    loadEventVideo
+    loadEventVideo,
   }
 }

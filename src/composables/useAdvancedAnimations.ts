@@ -37,7 +37,7 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
     easing = ANIMATION_CONSTANTS.EASING.SMOOTH,
     threshold = ANIMATION_CONSTANTS.THRESHOLD.NORMAL,
     rootMargin = '0px 0px -50px 0px',
-    once = true
+    once = true,
   } = options
 
   const animatedElements = ref<Set<string>>(new Set())
@@ -53,13 +53,13 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
       (entries) => {
         // Group entries by container to stagger them together
         const containerGroups = new Map<string, HTMLElement[]>()
-        
+
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const element = entry.target as HTMLElement
             const containerId = element.getAttribute('data-stagger-container') || 'default'
             const elementId = element.getAttribute('data-stagger-id')
-            
+
             if (elementId && (!once || !animatedElements.value.has(elementId))) {
               if (!containerGroups.has(containerId)) {
                 containerGroups.set(containerId, [])
@@ -78,7 +78,7 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
           })
         })
       },
-      { threshold, rootMargin }
+      { threshold, rootMargin },
     )
   }
 
@@ -96,12 +96,12 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
     element.style.willChange = 'transform, opacity'
 
     // Staggered delay
-    const animationDelay = delay + (index * staggerDelay)
+    const animationDelay = delay + index * staggerDelay
 
     setTimeout(() => {
       element.style.opacity = '1'
       element.style.transform = getAnimationTransform(animationType, false)
-      
+
       // Clean up will-change after animation
       setTimeout(() => {
         element.style.willChange = 'auto'
@@ -130,12 +130,12 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
   }
 
   const observeStaggerElement = (
-    element: Element | { $el?: Element }, 
-    id: string, 
-    containerId: string = 'default'
+    element: Element | { $el?: Element },
+    id: string,
+    containerId: string = 'default',
   ) => {
     const domElement = 'tagName' in element ? element : element.$el
-    
+
     if (domElement && domElement.setAttribute) {
       domElement.setAttribute('data-stagger-id', id)
       domElement.setAttribute('data-stagger-container', containerId)
@@ -163,7 +163,7 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
 
   return {
     observeStaggerElement,
-    cleanup
+    cleanup,
   }
 }
 
@@ -174,7 +174,7 @@ export function useEntranceAnimation(options: EntranceAnimationOptions = {}) {
     duration = ANIMATION_CONSTANTS.DURATION.SLOW,
     delay = ANIMATION_CONSTANTS.DELAY.MEDIUM,
     easing = ANIMATION_CONSTANTS.EASING.ELASTIC,
-    direction = 'up'
+    direction = 'up',
   } = options
 
   const animatedElements = ref<Set<HTMLElement>>(new Set())
@@ -204,7 +204,7 @@ export function useEntranceAnimation(options: EntranceAnimationOptions = {}) {
     setTimeout(() => {
       htmlElement.style.opacity = '1'
       htmlElement.style.transform = getEntranceTransform(type, direction, false)
-      
+
       // Clean up will-change after animation
       setTimeout(() => {
         htmlElement.style.willChange = 'auto'
@@ -217,31 +217,43 @@ export function useEntranceAnimation(options: EntranceAnimationOptions = {}) {
 
     switch (animType) {
       case 'bounce':
-        return dir === 'up' ? 'translateY(100px) scale(0.8)' : 
-               dir === 'down' ? 'translateY(-100px) scale(0.8)' :
-               dir === 'left' ? 'translateX(100px) scale(0.8)' :
-               'translateX(-100px) scale(0.8)'
+        return dir === 'up'
+          ? 'translateY(100px) scale(0.8)'
+          : dir === 'down'
+            ? 'translateY(-100px) scale(0.8)'
+            : dir === 'left'
+              ? 'translateX(100px) scale(0.8)'
+              : 'translateX(-100px) scale(0.8)'
       case 'elastic':
-        return dir === 'up' ? 'translateY(80px) scale(0.9) rotate(5deg)' :
-               dir === 'down' ? 'translateY(-80px) scale(0.9) rotate(-5deg)' :
-               dir === 'left' ? 'translateX(80px) scale(0.9) rotate(5deg)' :
-               'translateX(-80px) scale(0.9) rotate(-5deg)'
+        return dir === 'up'
+          ? 'translateY(80px) scale(0.9) rotate(5deg)'
+          : dir === 'down'
+            ? 'translateY(-80px) scale(0.9) rotate(-5deg)'
+            : dir === 'left'
+              ? 'translateX(80px) scale(0.9) rotate(5deg)'
+              : 'translateX(-80px) scale(0.9) rotate(-5deg)'
       case 'scale':
         return 'scale(0.5) rotate(180deg)'
       case 'rotate':
         return 'rotate(90deg) scale(0.8)'
       case 'slide':
-        return dir === 'up' ? 'translateY(60px)' :
-               dir === 'down' ? 'translateY(-60px)' :
-               dir === 'left' ? 'translateX(60px)' :
-               'translateX(-60px)'
+        return dir === 'up'
+          ? 'translateY(60px)'
+          : dir === 'down'
+            ? 'translateY(-60px)'
+            : dir === 'left'
+              ? 'translateX(60px)'
+              : 'translateX(-60px)'
       case 'fade':
       default:
         return 'translateY(30px) scale(0.95)'
     }
   }
 
-  const triggerSequence = (elements: (Element | { $el?: Element })[], sequenceDelay: number = 200) => {
+  const triggerSequence = (
+    elements: (Element | { $el?: Element })[],
+    sequenceDelay: number = 200,
+  ) => {
     elements.forEach((element, index) => {
       triggerEntrance(element, index * sequenceDelay)
     })
@@ -249,18 +261,13 @@ export function useEntranceAnimation(options: EntranceAnimationOptions = {}) {
 
   return {
     triggerEntrance,
-    triggerSequence
+    triggerSequence,
   }
 }
 
 // Momentum-based smooth scrolling
 export function useMomentumScroll(options: MomentumScrollOptions = {}) {
-  const {
-    friction = 0.92,
-    acceleration = 0.1,
-    maxVelocity = 50,
-    threshold = 0.5
-  } = options
+  const { friction = 0.92, acceleration = 0.1, maxVelocity = 50, threshold = 0.5 } = options
 
   const velocity = ref(0)
   const isScrolling = ref(false)
@@ -270,14 +277,14 @@ export function useMomentumScroll(options: MomentumScrollOptions = {}) {
 
   const updateScroll = () => {
     const diff = targetScroll.value - currentScroll.value
-    
+
     if (Math.abs(diff) > threshold) {
       velocity.value += diff * acceleration
       velocity.value = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.value))
       velocity.value *= friction
-      
+
       currentScroll.value += velocity.value
-      
+
       if (Math.abs(velocity.value) > 0.1) {
         animationFrame = requestAnimationFrame(updateScroll)
       } else {
@@ -291,7 +298,7 @@ export function useMomentumScroll(options: MomentumScrollOptions = {}) {
 
   const scrollToPosition = (position: number, smooth: boolean = true) => {
     targetScroll.value = position
-    
+
     if (!smooth) {
       currentScroll.value = position
       velocity.value = 0
@@ -304,13 +311,17 @@ export function useMomentumScroll(options: MomentumScrollOptions = {}) {
     }
   }
 
-  const scrollToElement = (element: Element | string, offset: number = 0, smooth: boolean = true) => {
+  const scrollToElement = (
+    element: Element | string,
+    offset: number = 0,
+    smooth: boolean = true,
+  ) => {
     const target = typeof element === 'string' ? document.querySelector(element) : element
     if (!target) return
 
     const rect = target.getBoundingClientRect()
     const position = window.scrollY + rect.top + offset
-    
+
     scrollToPosition(position, smooth)
   }
 
@@ -329,14 +340,14 @@ export function useMomentumScroll(options: MomentumScrollOptions = {}) {
     isScrolling,
     scrollToPosition,
     scrollToElement,
-    cleanup
+    cleanup,
   }
 }
 
 // CSS-based scroll-driven animations utility
 export function useScrollDrivenAnimations() {
-  const supportsScrollTimeline = 'scrollTimeline' in document.documentElement.style ||
-                                'ScrollTimeline' in window
+  const supportsScrollTimeline =
+    'scrollTimeline' in document.documentElement.style || 'ScrollTimeline' in window
 
   const createScrollAnimation = (
     element: Element,
@@ -345,13 +356,9 @@ export function useScrollDrivenAnimations() {
       duration?: number
       easing?: string
       fill?: FillMode
-    } = {}
+    } = {},
   ) => {
-    const {
-      duration = 1000,
-      easing = 'linear',
-      fill = 'both'
-    } = options
+    const { duration = 1000, easing = 'linear', fill = 'both' } = options
 
     if (!supportsScrollTimeline) {
       // Fallback to intersection observer
@@ -362,17 +369,17 @@ export function useScrollDrivenAnimations() {
             const animation = element.animate(keyframes, {
               duration,
               easing,
-              fill
+              fill,
             })
             animation.currentTime = progress * duration
             animation.pause()
           })
         },
         {
-          threshold: Array.from({ length: 101 }, (_, i) => i / 100)
-        }
+          threshold: Array.from({ length: 101 }, (_, i) => i / 100),
+        },
       )
-      
+
       observer.observe(element)
       return () => observer.disconnect()
     }
@@ -386,10 +393,10 @@ export function useScrollDrivenAnimations() {
         timeline: new (window as any).ScrollTimeline({
           source: document.scrollingElement,
           orientation: 'block',
-          scrollOffsets: [0, element.offsetTop + element.offsetHeight]
-        })
+          scrollOffsets: [0, element.offsetTop + element.offsetHeight],
+        }),
       })
-      
+
       return () => animation.cancel()
     } catch (error) {
       console.warn('Scroll-driven animations not supported:', error)
@@ -400,27 +407,28 @@ export function useScrollDrivenAnimations() {
   const createParallaxAnimation = (
     element: Element,
     speed: number = 0.5,
-    direction: 'vertical' | 'horizontal' = 'vertical'
+    direction: 'vertical' | 'horizontal' = 'vertical',
   ) => {
-    const keyframes: Keyframe[] = direction === 'vertical'
-      ? [
-          { transform: `translateY(${100 * speed}px)` },
-          { transform: `translateY(${-100 * speed}px)` }
-        ]
-      : [
-          { transform: `translateX(${100 * speed}px)` },
-          { transform: `translateX(${-100 * speed}px)` }
-        ]
+    const keyframes: Keyframe[] =
+      direction === 'vertical'
+        ? [
+            { transform: `translateY(${100 * speed}px)` },
+            { transform: `translateY(${-100 * speed}px)` },
+          ]
+        : [
+            { transform: `translateX(${100 * speed}px)` },
+            { transform: `translateX(${-100 * speed}px)` },
+          ]
 
     return createScrollAnimation(element, keyframes, {
       duration: 1000,
-      easing: 'linear'
+      easing: 'linear',
     })
   }
 
   return {
     supportsScrollTimeline,
     createScrollAnimation,
-    createParallaxAnimation
+    createParallaxAnimation,
   }
 }

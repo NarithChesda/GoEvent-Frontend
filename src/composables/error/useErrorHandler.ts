@@ -28,7 +28,7 @@ export function useErrorHandler() {
   const errorStats = reactive<ErrorStats>({
     totalErrors: 0,
     errorsByType: {},
-    recentErrors: []
+    recentErrors: [],
   })
 
   const maxRecentErrors = 50
@@ -41,7 +41,7 @@ export function useErrorHandler() {
     error: Error | string,
     type: ErrorInfo['type'] = 'unknown',
     context?: string,
-    recoverable: boolean = true
+    recoverable: boolean = true,
   ): ErrorInfo => {
     const id = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     const timestamp = Date.now()
@@ -64,7 +64,7 @@ export function useErrorHandler() {
       context,
       recoverable,
       retryCount: 0,
-      stack
+      stack,
     }
   }
 
@@ -75,16 +75,24 @@ export function useErrorHandler() {
     error: Error | string,
     type?: ErrorInfo['type'],
     context?: string,
-    recoverable?: boolean
+    recoverable?: boolean,
   ): ErrorInfo => {
     // Auto-detect error type if not provided
     if (!type) {
       const errorString = error instanceof Error ? error.message : String(error)
-      
-      if (errorString.includes('network') || errorString.includes('fetch') || errorString.includes('timeout')) {
+
+      if (
+        errorString.includes('network') ||
+        errorString.includes('fetch') ||
+        errorString.includes('timeout')
+      ) {
         type = 'network'
-      } else if (errorString.includes('security') || errorString.includes('unsafe') || errorString.includes('invalid')) {
-        type = 'security'  
+      } else if (
+        errorString.includes('security') ||
+        errorString.includes('unsafe') ||
+        errorString.includes('invalid')
+      ) {
+        type = 'security'
       } else if (errorString.includes('validation') || errorString.includes('required')) {
         type = 'validation'
       } else if (errorString.includes('load') || errorString.includes('resource')) {
@@ -95,14 +103,14 @@ export function useErrorHandler() {
     }
 
     const errorInfo = createErrorInfo(error, type, context, recoverable)
-    
+
     // Store error
     errors.value.set(errorInfo.id, errorInfo)
 
     // Update statistics
     errorStats.totalErrors++
     errorStats.errorsByType[type] = (errorStats.errorsByType[type] || 0) + 1
-    
+
     // Add to recent errors (with size limit)
     errorStats.recentErrors.unshift(errorInfo)
     if (errorStats.recentErrors.length > maxRecentErrors) {
@@ -110,7 +118,9 @@ export function useErrorHandler() {
     }
 
     // Log error for debugging
-    console.error(`[${type.toUpperCase()}] ${errorInfo.context || 'Unknown context'}: ${errorInfo.message}`)
+    console.error(
+      `[${type.toUpperCase()}] ${errorInfo.context || 'Unknown context'}: ${errorInfo.message}`,
+    )
     if (errorInfo.stack) {
       console.error(errorInfo.stack)
     }
@@ -125,16 +135,16 @@ export function useErrorHandler() {
     operation: () => Promise<T>,
     context: string,
     maxRetries: number = 3,
-    retryDelay: number = 1000
+    retryDelay: number = 1000,
   ): Promise<T> => {
     let lastError: Error
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return await operation()
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
-        
+
         if (attempt === maxRetries) {
           // Final attempt failed - record error
           handleError(lastError, 'resource', context, false)
@@ -143,9 +153,9 @@ export function useErrorHandler() {
 
         // Record retry attempt
         console.warn(`Retry ${attempt}/${maxRetries} for ${context}: ${lastError.message}`)
-        
+
         // Wait before retry with exponential backoff
-        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt))
+        await new Promise((resolve) => setTimeout(resolve, retryDelay * attempt))
       }
     }
 
@@ -162,13 +172,13 @@ export function useErrorHandler() {
     const safeUpdate = async <R>(
       operation: () => Promise<R>,
       onSuccess: (result: R, currentOpId: number) => void,
-      onError?: (error: Error, currentOpId: number) => void
+      onError?: (error: Error, currentOpId: number) => void,
     ) => {
       const currentOpId = ++operationId.value
 
       try {
         const result = await operation()
-        
+
         // Only update if this is still the latest operation
         if (currentOpId === operationId.value) {
           onSuccess(result, currentOpId)
@@ -191,7 +201,7 @@ export function useErrorHandler() {
     return {
       state,
       safeUpdate,
-      operationId: () => operationId.value
+      operationId: () => operationId.value,
     }
   }
 
@@ -199,25 +209,28 @@ export function useErrorHandler() {
    * Debounced error handler to prevent spam
    */
   const errorTimeouts = new Map<string, number>()
-  
+
   const debouncedError = (
     error: Error | string,
     type: ErrorInfo['type'],
     context: string,
-    delay: number = 1000
+    delay: number = 1000,
   ) => {
     const key = `${type}_${context}`
-    
+
     // Clear existing timeout
     if (errorTimeouts.has(key)) {
       clearTimeout(errorTimeouts.get(key)!)
     }
-    
+
     // Set new timeout
-    errorTimeouts.set(key, setTimeout(() => {
-      handleError(error, type, context)
-      errorTimeouts.delete(key)
-    }, delay))
+    errorTimeouts.set(
+      key,
+      setTimeout(() => {
+        handleError(error, type, context)
+        errorTimeouts.delete(key)
+      }, delay),
+    )
   }
 
   /**
@@ -233,16 +246,16 @@ export function useErrorHandler() {
 
     if (filter) {
       if (filter.type) {
-        result = result.filter(e => e.type === filter.type)
+        result = result.filter((e) => e.type === filter.type)
       }
       if (filter.context) {
-        result = result.filter(e => e.context === filter.context)
+        result = result.filter((e) => e.context === filter.context)
       }
       if (filter.recoverable !== undefined) {
-        result = result.filter(e => e.recoverable === filter.recoverable)
+        result = result.filter((e) => e.recoverable === filter.recoverable)
       }
       if (filter.since) {
-        result = result.filter(e => e.timestamp >= filter.since!)
+        result = result.filter((e) => e.timestamp >= filter.since!)
       }
     }
 
@@ -282,9 +295,7 @@ export function useErrorHandler() {
     }
 
     // Rebuild recent errors
-    errorStats.recentErrors = errorStats.recentErrors.filter(error => 
-      errors.value.has(error.id)
-    )
+    errorStats.recentErrors = errorStats.recentErrors.filter((error) => errors.value.has(error.id))
   }
 
   /**
@@ -299,22 +310,22 @@ export function useErrorHandler() {
         suggestions.push('Try refreshing the page')
         suggestions.push('Contact support if the problem persists')
         break
-      
+
       case 'security':
         suggestions.push('This content has been blocked for security reasons')
         suggestions.push('Contact the site administrator')
         break
-      
+
       case 'validation':
         suggestions.push('Please check your input and try again')
         suggestions.push('Ensure all required fields are filled')
         break
-      
+
       case 'resource':
         suggestions.push('The requested resource could not be loaded')
         suggestions.push('Try refreshing the page')
         break
-      
+
       default:
         suggestions.push('An unexpected error occurred')
         suggestions.push('Please try again or contact support')
@@ -332,7 +343,7 @@ export function useErrorHandler() {
       stats: { ...errorStats },
       errors: Array.from(errors.value.values()),
       userAgent: navigator.userAgent,
-      url: window.location.href
+      url: window.location.href,
     }
 
     return JSON.stringify(report, null, 2)
@@ -342,26 +353,26 @@ export function useErrorHandler() {
     // Error handling
     handleError,
     debouncedError,
-    
+
     // Retry logic
     withRetry,
-    
+
     // Race condition protection
     createRaceConditionSafeState,
-    
+
     // Error querying
     getErrors,
     clearErrors,
     getRecoverySuggestions,
-    
+
     // Statistics
     errorStats,
-    
+
     // Utilities
     exportErrorReport,
-    
+
     // Reactive state
     errors: errors.value,
-    hasErrors: () => errors.value.size > 0
+    hasErrors: () => errors.value.size > 0,
   }
 }

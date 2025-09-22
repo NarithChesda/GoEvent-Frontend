@@ -4,10 +4,10 @@
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="handleBackdropClick">
         <!-- Backdrop -->
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">
-          <div 
+          <div
             ref="modalRef"
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
@@ -46,10 +46,12 @@
                       class="w-full h-full object-cover"
                       @error="handleImageError"
                     />
-                    
+
                     <!-- Featured Badge -->
                     <div v-if="formData.is_featured" class="absolute top-3 left-3">
-                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
+                      <span
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg"
+                      >
                         <Star class="w-3 h-3 mr-1" />
                         Featured
                       </span>
@@ -87,7 +89,9 @@
                     <label for="is_featured" class="text-sm font-semibold text-slate-700">
                       Mark as featured content
                     </label>
-                    <p class="text-xs text-slate-500 mt-1">Featured images are highlighted and may appear in special sections</p>
+                    <p class="text-xs text-slate-500 mt-1">
+                      Featured images are highlighted and may appear in special sections
+                    </p>
                   </div>
                 </div>
               </div>
@@ -102,18 +106,23 @@
                   </div>
                   <div>
                     <span class="text-slate-500">Status:</span>
-                    <span :class="[
-                      'ml-2 px-2 py-0.5 rounded-full text-xs font-medium',
-                      media.is_featured 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    ]">
+                    <span
+                      :class="[
+                        'ml-2 px-2 py-0.5 rounded-full text-xs font-medium',
+                        media.is_featured
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800',
+                      ]"
+                    >
                       {{ media.is_featured ? 'Featured' : 'Standard' }}
                     </span>
                   </div>
                 </div>
                 <div class="text-xs text-slate-500 mt-2">
-                  <p><strong>Note:</strong> Use drag and drop in the media gallery to change the display order.</p>
+                  <p>
+                    <strong>Note:</strong> Use drag and drop in the media gallery to change the
+                    display order.
+                  </p>
                 </div>
               </div>
 
@@ -130,7 +139,9 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 p-8 border-t border-gray-200">
+            <div
+              class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 p-8 border-t border-gray-200"
+            >
               <button
                 type="button"
                 @click="$emit('close')"
@@ -145,7 +156,10 @@
                 :disabled="updating || !hasChanges"
                 class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
               >
-                <div v-if="updating" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div
+                  v-if="updating"
+                  class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+                ></div>
                 <Save v-else class="w-5 h-5 mr-2" />
                 {{ updating ? 'Updating...' : 'Save Changes' }}
               </button>
@@ -181,7 +195,7 @@ const modalRef = ref<HTMLElement>()
 // State
 const formData = ref({
   caption: '',
-  is_featured: false
+  is_featured: false,
 })
 
 const updating = ref(false)
@@ -214,7 +228,7 @@ const formatDate = (dateString: string): string => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   } catch {
     return dateString
@@ -223,16 +237,16 @@ const formatDate = (dateString: string): string => {
 
 const updateMedia = async () => {
   if (!hasChanges.value) return
-  
+
   updating.value = true
   error.value = null
-  
+
   try {
     const response = await mediaService.updateEventMedia(props.eventId, props.media.id, {
       caption: formData.value.caption || undefined,
-      is_featured: formData.value.is_featured
+      is_featured: formData.value.is_featured,
     })
-    
+
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
@@ -250,7 +264,7 @@ onMounted(() => {
   // Initialize form with current media data
   formData.value = {
     caption: props.media.caption || '',
-    is_featured: props.media.is_featured
+    is_featured: props.media.is_featured,
   }
 })
 </script>

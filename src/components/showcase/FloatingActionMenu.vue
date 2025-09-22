@@ -1,21 +1,17 @@
 <template>
   <div class="floating-action-menu">
     <!-- Blur Overlay -->
-    <div
-      v-if="isMenuOpen || showLanguageModal"
-      class="blur-overlay"
-      @click="closeAllMenus"
-    ></div>
+    <div v-if="isMenuOpen || showLanguageModal" class="blur-overlay" @click="closeAllMenus"></div>
 
     <!-- Floating Action Button -->
     <button
       @click="toggleMenu"
       class="fab-button"
-      :class="{ 'active': isMenuOpen }"
+      :class="{ active: isMenuOpen }"
       :style="{
         background: primaryColor,
         border: `2px solid ${primaryColor}`,
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
       }"
     >
       <component
@@ -47,7 +43,7 @@
           <button
             @click="handleMusicToggle"
             class="menu-button glass-section"
-            :class="{ 'active': props.isMusicPlaying }"
+            :class="{ active: props.isMusicPlaying }"
             :style="{ borderColor: primaryColor }"
           >
             <component
@@ -55,7 +51,9 @@
               :size="20"
               :color="primaryColor"
             />
-            <span class="menu-text">{{ props.isMusicPlaying ? menuTranslations.musicOff : menuTranslations.musicOn }}</span>
+            <span class="menu-text">{{
+              props.isMusicPlaying ? menuTranslations.musicOff : menuTranslations.musicOn
+            }}</span>
           </button>
         </div>
 
@@ -82,7 +80,6 @@
             <span class="menu-text">{{ menuTranslations.reminder }}</span>
           </button>
         </div>
-
 
         <!-- Agenda -->
         <div class="menu-item">
@@ -161,9 +158,9 @@
           <button
             @click="handleLogout"
             class="menu-button glass-section logout-button"
-            :style="{ 
+            :style="{
               borderColor: primaryColor,
-              background: primaryColor 
+              background: primaryColor,
             }"
           >
             <LogOut :size="20" color="white" />
@@ -178,7 +175,9 @@
       <div v-if="showLanguageModal" class="modal-overlay" @click="closeLanguageModal">
         <div class="language-modal glass-section" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title" :style="{ color: primaryColor }">{{ menuTranslations.selectLanguage }}</h3>
+            <h3 class="modal-title" :style="{ color: primaryColor }">
+              {{ menuTranslations.selectLanguage }}
+            </h3>
             <button @click="closeLanguageModal" class="close-button">
               <X :size="20" :color="primaryColor" />
             </button>
@@ -189,10 +188,10 @@
               :key="lang.code"
               @click="selectLanguage(lang.code)"
               class="language-option glass-inner"
-              :class="{ 'active': currentLanguage === lang.code }"
+              :class="{ active: currentLanguage === lang.code }"
               :style="{
                 borderColor: currentLanguage === lang.code ? primaryColor : 'transparent',
-                color: currentLanguage === lang.code ? primaryColor : 'white'
+                color: currentLanguage === lang.code ? primaryColor : 'white',
               }"
             >
               <span class="language-flag">{{ lang.flag }}</span>
@@ -221,12 +220,9 @@ import {
   Play,
   Image,
   MessageCircle,
-  LogOut
+  LogOut,
 } from 'lucide-vue-next'
-import {
-  translateRSVP,
-  type SupportedLanguage
-} from '../../utils/translations'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface Props {
   primaryColor?: string
@@ -249,7 +245,7 @@ const props = withDefaults(defineProps<Props>(), {
   currentLanguage: 'en',
   availableLanguages: () => [],
   isMusicPlaying: false,
-  isAuthenticated: false
+  isAuthenticated: false,
 })
 
 const emit = defineEmits<{
@@ -270,14 +266,14 @@ const isMenuOpen = ref(false)
 const showLanguageModal = ref(false)
 
 const languageFlags: Record<string, string> = {
-  'en': '🇺🇸',
-  'kh': '🇰🇭',
-  'fr': '🇫🇷',
-  'ja': '🇯🇵',
-  'ko': '🇰🇷',
+  en: '🇺🇸',
+  kh: '🇰🇭',
+  fr: '🇫🇷',
+  ja: '🇯🇵',
+  ko: '🇰🇷',
   'zh-cn': '🇨🇳',
-  'th': '🇹🇭',
-  'vn': '🇻🇳'
+  th: '🇹🇭',
+  vn: '🇻🇳',
 }
 
 const displayLanguages = computed(() => {
@@ -285,15 +281,17 @@ const displayLanguages = computed(() => {
     return []
   }
 
-  return props.availableLanguages.map(lang => ({
+  return props.availableLanguages.map((lang) => ({
     code: lang.language,
     name: lang.language_display,
-    flag: languageFlags[lang.language] || '🌐'
+    flag: languageFlags[lang.language] || '🌐',
   }))
 })
 
 // Translation helpers
-const getTranslation = (key: keyof typeof import('../../utils/translations').rsvpTranslations.en): string => {
+const getTranslation = (
+  key: keyof typeof import('../../utils/translations').rsvpTranslations.en,
+): string => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
   return translateRSVP(key, currentLang)
 }
@@ -312,7 +310,7 @@ const menuTranslations = computed(() => ({
   gift: getTranslation('floating_menu_gift'),
   comment: getTranslation('floating_menu_comment'),
   logout: getTranslation('floating_menu_logout'),
-  selectLanguage: getTranslation('floating_menu_select_language')
+  selectLanguage: getTranslation('floating_menu_select_language'),
 }))
 
 const toggleMenu = () => {
@@ -597,17 +595,39 @@ const handleLogout = () => {
   animation: slideUp 0.2s ease-out forwards;
 }
 
-.menu-item:nth-child(1) { animation-delay: 0.02s; }
-.menu-item:nth-child(2) { animation-delay: 0.04s; }
-.menu-item:nth-child(3) { animation-delay: 0.06s; }
-.menu-item:nth-child(4) { animation-delay: 0.08s; }
-.menu-item:nth-child(5) { animation-delay: 0.10s; }
-.menu-item:nth-child(6) { animation-delay: 0.12s; }
-.menu-item:nth-child(7) { animation-delay: 0.14s; }
-.menu-item:nth-child(8) { animation-delay: 0.16s; }
-.menu-item:nth-child(9) { animation-delay: 0.18s; }
-.menu-item:nth-child(10) { animation-delay: 0.20s; }
-.menu-item:nth-child(11) { animation-delay: 0.22s; }
+.menu-item:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.menu-item:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.menu-item:nth-child(3) {
+  animation-delay: 0.06s;
+}
+.menu-item:nth-child(4) {
+  animation-delay: 0.08s;
+}
+.menu-item:nth-child(5) {
+  animation-delay: 0.1s;
+}
+.menu-item:nth-child(6) {
+  animation-delay: 0.12s;
+}
+.menu-item:nth-child(7) {
+  animation-delay: 0.14s;
+}
+.menu-item:nth-child(8) {
+  animation-delay: 0.16s;
+}
+.menu-item:nth-child(9) {
+  animation-delay: 0.18s;
+}
+.menu-item:nth-child(10) {
+  animation-delay: 0.2s;
+}
+.menu-item:nth-child(11) {
+  animation-delay: 0.22s;
+}
 
 .menu-button {
   display: flex;
@@ -971,11 +991,7 @@ const handleLogout = () => {
 }
 
 .glass-button-primary {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);

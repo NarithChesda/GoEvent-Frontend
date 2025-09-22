@@ -1,5 +1,5 @@
 <template>
-  <span 
+  <span
     class="text-xs px-2 py-1 rounded text-white truncate flex-shrink-0"
     :style="{ backgroundColor: category.color || '#64748b' }"
   >
