@@ -9,7 +9,7 @@
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
       >
         <Plus class="w-4 h-4 mr-2" />
         Add Agenda Item
@@ -22,7 +22,7 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
         <span class="ml-3 text-slate-600">Loading agenda...</span>
       </div>
     </div>
@@ -37,12 +37,12 @@
         <!-- Date Header -->
         <div
           @click="toggleDay(day.date)"
-          class="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 border-b border-white/20 cursor-pointer hover:from-blue-600/10 hover:to-purple-600/10 transition-all duration-200"
+          class="bg-gradient-to-r from-emerald-600/5 to-sky-600/5 p-6 border-b border-white/20 cursor-pointer hover:from-emerald-600/10 hover:to-sky-600/10 transition-all duration-200"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
               <div
-                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold"
+                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold"
               >
                 {{ new Date(day.date).getDate() }}
               </div>
@@ -96,7 +96,7 @@
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
       >
         <Plus class="w-4 h-4 mr-2" />
         Add Your First Agenda Item
@@ -105,16 +105,16 @@
 
     <!-- Session Types Info -->
     <div
-      class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6"
+      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-6"
     >
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <Info class="w-5 h-5 text-blue-600 mr-2" />
+        <Info class="w-5 h-5 text-[#1e90ff] mr-2" />
         Session Types
       </h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div class="bg-white/70 rounded-xl p-3">
           <div class="flex items-center mb-1">
-            <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+            <div class="w-3 h-3 bg-[#E6F4FF]0 rounded-full mr-2"></div>
             <span class="text-sm font-semibold text-slate-700">Keynote</span>
           </div>
           <p class="text-xs text-slate-600">Main presentations</p>
@@ -293,7 +293,7 @@ const formatDayHeader = (date: string): string => {
 const getSessionTypeColor = (type: string): string => {
   switch (type?.toLowerCase()) {
     case 'keynote':
-      return 'bg-blue-100 text-blue-700'
+      return 'bg-[#B0E0E6] text-[#1873cc]'
     case 'workshop':
       return 'bg-purple-100 text-purple-700'
     case 'break':

@@ -4,7 +4,7 @@
     <button
       v-if="commission.status === 'pending'"
       @click="$emit('requestClaim', commission)"
-      class="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200"
+      class="inline-flex items-center space-x-1 px-3 py-1.5 bg-[#1e90ff] hover:bg-[#1873cc] text-white text-sm font-medium rounded-lg transition-all duration-200"
     >
       <FileText class="w-3.5 h-3.5" />
       <span>Request Claim</span>

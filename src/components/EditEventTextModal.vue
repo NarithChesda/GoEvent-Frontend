@@ -10,7 +10,7 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -18,7 +18,7 @@
                   </div>
                   <div>
                     <h2 class="text-2xl font-bold">Edit Text Content</h2>
-                    <p class="text-blue-100 mt-1">Update your event text content</p>
+                    <p class="text-[#B0E0E6] mt-1">Update your event text content</p>
                   </div>
                 </div>
                 <button
@@ -43,7 +43,7 @@
                     <select
                       v-model="formData.text_type"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="">Select type</option>
                       <option value="cover_header">Cover Header</option>
@@ -67,7 +67,7 @@
                     <select
                       v-model="formData.language"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="">Select language</option>
                       <option value="en">English</option>
@@ -90,7 +90,7 @@
                   <input
                     v-model="formData.title"
                     type="text"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     placeholder="Enter title for this text content"
                   />
                 </div>
@@ -104,7 +104,7 @@
                     v-model="formData.content"
                     rows="6"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                     placeholder="Enter the text content..."
                   ></textarea>
                   <div class="mt-1 text-xs text-slate-500">
@@ -123,7 +123,7 @@
                       v-model.number="formData.order"
                       type="number"
                       min="0"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="0"
                     />
                     <div class="mt-1 text-xs text-slate-500">Lower numbers appear first</div>
@@ -135,7 +135,7 @@
                       v-model="formData.is_active"
                       type="checkbox"
                       id="is_active_edit"
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
                     />
                     <label for="is_active_edit" class="ml-2 text-sm font-semibold text-slate-700">
                       Active (visible to users)
@@ -146,15 +146,15 @@
                 <!-- Type Description -->
                 <div
                   v-if="formData.text_type"
-                  class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+                  class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
                 >
                   <div class="flex items-start">
-                    <Info class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <Info class="w-5 h-5 text-[#1e90ff] mt-0.5 mr-3 flex-shrink-0" />
                     <div>
-                      <h4 class="text-sm font-medium text-blue-900 mb-1">
+                      <h4 class="text-sm font-medium text-[#1873cc] mb-1">
                         {{ getTypeTitle(formData.text_type) }}
                       </h4>
-                      <p class="text-sm text-blue-700">
+                      <p class="text-sm text-[#1873cc]">
                         {{ getTypeDescription(formData.text_type) }}
                       </p>
                     </div>
@@ -189,7 +189,7 @@
                   :disabled="
                     loading || !formData.text_type || !formData.language || !formData.content
                   "
-                  class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <Loader v-if="loading" class="w-5 h-5 mr-2 animate-spin" />
                   {{ loading ? 'Updating...' : 'Update Text Content' }}

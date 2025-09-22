@@ -10,7 +10,7 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -46,7 +46,7 @@
                       v-model="formData.name"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="Enter host name"
                     />
                   </div>
@@ -60,7 +60,7 @@
                       <input
                         v-model="formData.parent_a_name"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="First parent's name"
                       />
                     </div>
@@ -72,7 +72,7 @@
                       <input
                         v-model="formData.parent_b_name"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="Second parent's name"
                       />
                     </div>
@@ -86,7 +86,7 @@
                     <input
                       v-model="formData.title"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="e.g., Chief Technology Officer"
                     />
                   </div>
@@ -111,7 +111,7 @@
                         </div>
                         <div
                           v-else
-                          class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center"
+                          class="w-20 h-20 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center"
                         >
                           <User class="w-8 h-8 text-gray-400" />
                         </div>
@@ -131,7 +131,7 @@
                             type="button"
                             @click="triggerProfilePictureUpload"
                             :disabled="profilePictureUploading"
-                            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
+                            class="px-3 py-2 bg-[#1e90ff] hover:bg-[#1873cc] disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
                           >
                             <Upload class="w-4 h-4" />
                             <span>{{ profilePictureUploading ? 'Uploading...' : 'Upload' }}</span>
@@ -161,7 +161,7 @@
                     <textarea
                       v-model="formData.bio"
                       rows="3"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Brief biography or description"
                     ></textarea>
                   </div>
@@ -181,7 +181,7 @@
                       <input
                         v-model="formData.email"
                         type="email"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="email@example.com"
                       />
                     </div>
@@ -194,7 +194,7 @@
                       <input
                         v-model="formData.linkedin_url"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="https://linkedin.com/in/username"
                       />
                     </div>
@@ -207,7 +207,7 @@
                       <input
                         v-model="formData.twitter_url"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="https://twitter.com/username"
                       />
                     </div>
@@ -220,7 +220,7 @@
                       <input
                         v-model="formData.website_url"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -237,7 +237,7 @@
                     <button
                       type="button"
                       @click="showAddTranslation = true"
-                      class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+                      class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center space-x-1"
                     >
                       <Plus class="w-4 h-4" />
                       <span>Add Translation</span>
@@ -275,7 +275,7 @@
                               v-model="translation.name"
                               type="text"
                               placeholder="Translated name"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -283,7 +283,7 @@
                               v-model="translation.title"
                               type="text"
                               placeholder="Translated title"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -294,7 +294,7 @@
                               v-model="translation.parent_a_name"
                               type="text"
                               placeholder="Translated parent A name"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -302,7 +302,7 @@
                               v-model="translation.parent_b_name"
                               type="text"
                               placeholder="Translated parent B name"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -311,7 +311,7 @@
                           v-model="translation.bio"
                           rows="2"
                           placeholder="Translated biography"
-                          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent resize-none"
                         ></textarea>
                       </div>
                     </div>
@@ -320,7 +320,7 @@
                   <!-- Add Translation Modal -->
                   <div
                     v-if="showAddTranslation"
-                    class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+                    class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
                   >
                     <div class="flex items-center justify-between mb-3">
                       <h5 class="font-medium text-slate-900">Add Translation</h5>
@@ -336,7 +336,7 @@
                     <div class="space-y-3">
                       <select
                         v-model="newTranslation.language"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                       >
                         <option value="">Select language</option>
                         <option
@@ -353,7 +353,7 @@
                           type="button"
                           @click="addTranslation"
                           :disabled="!newTranslation.language"
-                          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                          class="px-4 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                         >
                           Add
                         </button>
@@ -384,7 +384,7 @@
                 <button
                   type="submit"
                   :disabled="loading || !formData.name"
-                  class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <span
                     v-if="loading"

@@ -63,7 +63,7 @@
           <div class="bg-slate-50 rounded-xl p-4 space-y-3">
             <div class="flex items-start space-x-4">
               <div
-                class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl"
+                class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-sky-600 rounded-xl flex items-center justify-center text-white font-bold text-xl"
               >
                 {{ commission?.event_detail?.title?.substring(0, 2).toUpperCase() || 'EV' }}
               </div>

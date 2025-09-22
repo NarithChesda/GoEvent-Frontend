@@ -25,7 +25,7 @@
       </p>
       <button
         @click="redirectToTemplateTab"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
       >
         <FileText class="w-4 h-4 mr-2" />
         Select Template
@@ -37,11 +37,11 @@
       <!-- Current Template Info -->
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
         <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-          <FileText class="w-5 h-5 text-blue-600 mr-2" />
+          <FileText class="w-5 h-5 text-[#1e90ff] mr-2" />
           Selected Template Package
         </h3>
         <div
-          class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-200/50"
+          class="bg-gradient-to-br from-emerald-50 to-sky-50 rounded-2xl p-4 border border-[#87CEEB]/50"
         >
           <div class="flex items-center justify-between mb-3">
             <div>
@@ -61,7 +61,7 @@
           <!-- Package Features -->
           <div
             v-if="templatePackageDetails?.features && templatePackageDetails.features.length > 0"
-            class="mt-4 pt-4 border-t border-blue-200/50"
+            class="mt-4 pt-4 border-t border-[#87CEEB]/50"
           >
             <p class="text-sm font-medium text-slate-800 mb-2">Included Features:</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -81,7 +81,7 @@
         <div class="mt-6 text-center">
           <button
             @click="showPaymentModal = true"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center text-lg"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-lg"
           >
             <CreditCard class="w-6 h-6 mr-3" />
             {{ currentPayment ? 'Make New Payment' : 'Make Payment' }}
@@ -148,9 +148,9 @@
             <p class="text-xs sm:text-sm text-slate-600 mt-1">Total Value</p>
           </div>
           <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#B0E0E6] flex items-center justify-center flex-shrink-0"
           >
-            <DollarSign class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+            <DollarSign class="w-5 h-5 sm:w-6 sm:h-6 text-[#1e90ff]" />
           </div>
         </div>
       </div>
@@ -177,12 +177,12 @@
     <!-- Existing Payments -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <History class="w-5 h-5 text-blue-600 mr-2" />
+        <History class="w-5 h-5 text-[#1e90ff] mr-2" />
         Payment History
       </h3>
 
       <div v-if="loadingPayments" class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
         <p class="text-slate-600 mt-2">Loading payment history...</p>
       </div>
 
@@ -229,7 +229,7 @@
           <div v-if="payment.status === 'pending'" class="mt-3 pt-3 border-t border-slate-200">
             <button
               @click="startUpdatePayment(payment)"
-              class="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center"
+              class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium inline-flex items-center"
             >
               <Pencil class="w-3 h-3 mr-1" />
               Update Payment Details
@@ -254,7 +254,7 @@
             <!-- Step 1: Payment Summary & Method Selection -->
             <div v-if="paymentStep === 1">
               <!-- Header -->
-              <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+              <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
                     <div
@@ -299,7 +299,7 @@
 
                 <!-- Amount Display -->
                 <div
-                  class="text-center mb-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl"
+                  class="text-center mb-6 p-6 bg-gradient-to-br from-[#E6F4FF] to-indigo-50 rounded-xl"
                 >
                   <p class="text-sm text-slate-600 mb-2">Amount to Pay</p>
                   <p class="text-3xl font-bold text-slate-900">
@@ -316,7 +316,7 @@
 
                   <div v-if="loadingMethods" class="text-center py-8">
                     <div
-                      class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"
+                      class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1e90ff] mx-auto"
                     ></div>
                     <p class="text-slate-500 mt-2 text-sm">Loading...</p>
                   </div>
@@ -327,7 +327,7 @@
                       :key="method.id"
                       class="p-4 rounded-xl border cursor-pointer transition-all duration-200"
                       :class="{
-                        'border-blue-500 bg-blue-50/50 backdrop-blur-sm':
+                        'border-[#1e90ff] bg-[#E6F4FF]/50 backdrop-blur-sm':
                           selectedMethod?.id === method.id,
                         'border-slate-200 hover:border-slate-300 bg-white/50':
                           selectedMethod?.id !== method.id,
@@ -338,7 +338,7 @@
                         <input
                           type="radio"
                           :checked="selectedMethod?.id === method.id"
-                          class="h-4 w-4 text-blue-600 mr-3"
+                          class="h-4 w-4 text-[#1e90ff] mr-3"
                           readonly
                         />
                         <div class="flex-1">
@@ -358,7 +358,7 @@
                 <button
                   @click="nextStep"
                   :disabled="!selectedMethod"
-                  class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                  class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200"
                 >
                   Continue
                 </button>
@@ -399,9 +399,9 @@
               <!-- Content -->
               <div class="p-8">
                 <!-- Amount Reminder -->
-                <div class="text-center mb-6 p-4 bg-blue-50 rounded-xl">
-                  <p class="text-sm text-blue-700 mb-1">Transfer Amount</p>
-                  <p class="text-2xl font-bold text-blue-900">
+                <div class="text-center mb-6 p-4 bg-[#E6F4FF] rounded-xl">
+                  <p class="text-sm text-[#1873cc] mb-1">Transfer Amount</p>
+                  <p class="text-2xl font-bold text-[#1873cc]">
                     ${{ templatePackageDetails?.price }}
                   </p>
                 </div>
@@ -466,7 +466,7 @@
             <!-- Step 3: Upload Proof -->
             <div v-if="paymentStep === 3">
               <!-- Header -->
-              <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6 text-white">
+              <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
                     <button
@@ -511,7 +511,7 @@
                       v-model="paymentForm.transaction_reference"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="Enter transaction ID"
                     />
                     <p class="text-xs text-slate-500 mt-1">From your payment confirmation</p>
@@ -530,7 +530,7 @@
                         required
                         accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                         @change="handleFileSelect"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc]"
                       />
                       <p class="text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB)</p>
                     </div>
@@ -545,7 +545,7 @@
                       id="paymentNotes"
                       v-model="paymentForm.user_notes"
                       rows="2"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Any additional notes..."
                     ></textarea>
                   </div>
@@ -554,7 +554,7 @@
                   <button
                     type="submit"
                     :disabled="submittingPayment || !isFormValid"
-                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
+                    class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
                   >
                     <span v-if="submittingPayment" class="flex items-center">
                       <div
@@ -580,7 +580,7 @@
                   class="w-3 h-3 rounded-full transition-all duration-200"
                   :class="
                     step <= paymentStep
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
                       : 'bg-slate-300'
                   "
                 ></div>
@@ -603,7 +603,7 @@
             class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
             @click.stop
           >
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -630,7 +630,7 @@
                     v-model="updateForm.transaction_reference"
                     type="text"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                 </div>
 
@@ -641,7 +641,7 @@
                   <textarea
                     v-model="updateForm.user_notes"
                     rows="3"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                   ></textarea>
                 </div>
 
@@ -654,7 +654,7 @@
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                     @change="handleUpdateFileSelect"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc] hover:file:bg-[#B0E0E6]"
                   />
                 </div>
 
@@ -669,7 +669,7 @@
                   <button
                     type="submit"
                     :disabled="updatingPayment"
-                    class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {{ updatingPayment ? 'Updating...' : 'Update Payment' }}
                   </button>

@@ -10,7 +10,7 @@
           <div class="flex items-center space-x-3">
             <!-- Language Badge -->
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#B0E0E6] text-[#1873cc]"
             >
               {{ getLanguageName(text.language) }}
             </span>
@@ -48,7 +48,7 @@
             <button
               v-if="text.content.length > 150"
               @click="showFullContent = !showFullContent"
-              class="text-blue-600 hover:text-blue-700 font-medium ml-1"
+              class="text-[#1e90ff] hover:text-[#1873cc] font-medium ml-1"
             >
               {{ showFullContent ? 'Show less' : 'Show more' }}
             </button>
@@ -86,7 +86,7 @@
       <div class="flex items-center space-x-2">
         <button
           @click="$emit('edit', text)"
-          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+          class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors duration-200"
           title="Edit text"
         >
           <Edit2 class="w-4 h-4" />

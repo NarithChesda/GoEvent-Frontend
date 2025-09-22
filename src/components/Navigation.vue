@@ -3,7 +3,7 @@
     class="sticky top-0 z-50 transition-all duration-500 ease-out"
     :class="
       isScrolled
-        ? 'bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-xl shadow-blue-500/10'
+        ? 'bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-xl shadow-[#1e90ff]/10'
         : 'bg-transparent border-b border-transparent'
     "
   >
@@ -11,20 +11,12 @@
       <div class="flex justify-between items-center h-20">
         <!-- Logo -->
         <button @click="handleLogoClick" class="flex items-center space-x-3 group cursor-pointer">
-          <div class="relative">
-            <div
-              class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-all duration-300"
-            >
-              <CalendarDays class="w-7 h-7 text-white" />
-            </div>
-            <div
-              class="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            ></div>
-          </div>
-          <span
-            class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-            >GoEvent</span
-          >
+          <img
+            :src="LogoSvg"
+            alt="GoEvent Logo"
+            class="h-32 w-auto transition-all duration-300 group-hover:scale-110"
+          />
+
         </button>
 
         <!-- Desktop Navigation -->
@@ -34,14 +26,14 @@
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
             :class="
               isScrolled
-                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
-                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+                ? 'text-slate-800 hover:text-[#1e90ff] hover:bg-white/70 hover:shadow-lg hover:shadow-[#B0E0E6]/50'
+                : 'text-slate-900 hover:text-[#1873cc] hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
             "
-            active-class="text-blue-600 bg-white/80 shadow-lg shadow-blue-100/50"
+            active-class="text-[#1e90ff] bg-white/80 shadow-lg shadow-[#B0E0E6]/50"
           >
             Home
             <div
-              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full group-hover:left-0"
+              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] transition-all duration-300 group-hover:w-full group-hover:left-0"
             ></div>
           </RouterLink>
           <RouterLink
@@ -49,14 +41,14 @@
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
             :class="
               isScrolled
-                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
-                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+                ? 'text-slate-800 hover:text-[#1e90ff] hover:bg-white/70 hover:shadow-lg hover:shadow-[#B0E0E6]/50'
+                : 'text-slate-900 hover:text-[#1873cc] hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
             "
-            active-class="text-blue-600 bg-white/80 shadow-lg shadow-blue-100/50"
+            active-class="text-[#1e90ff] bg-white/80 shadow-lg shadow-[#B0E0E6]/50"
           >
             About
             <div
-              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full group-hover:left-0"
+              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] transition-all duration-300 group-hover:w-full group-hover:left-0"
             ></div>
           </RouterLink>
           <RouterLink
@@ -64,14 +56,14 @@
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
             :class="
               isScrolled
-                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
-                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+                ? 'text-slate-800 hover:text-[#1e90ff] hover:bg-white/70 hover:shadow-lg hover:shadow-[#B0E0E6]/50'
+                : 'text-slate-900 hover:text-[#1873cc] hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
             "
-            active-class="text-blue-600 bg-white/80 shadow-lg shadow-blue-100/50"
+            active-class="text-[#1e90ff] bg-white/80 shadow-lg shadow-[#B0E0E6]/50"
           >
             Events
             <div
-              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full group-hover:left-0"
+              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] transition-all duration-300 group-hover:w-full group-hover:left-0"
             ></div>
           </RouterLink>
           <button
@@ -79,13 +71,13 @@
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
             :class="
               isScrolled
-                ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
-                : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+                ? 'text-slate-800 hover:text-[#1e90ff] hover:bg-white/70 hover:shadow-lg hover:shadow-[#B0E0E6]/50'
+                : 'text-slate-900 hover:text-[#1873cc] hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
             "
           >
             Pricing
             <div
-              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full group-hover:left-0"
+              class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] transition-all duration-300 group-hover:w-full group-hover:left-0"
             ></div>
           </button>
         </div>
@@ -98,15 +90,15 @@
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
               :class="
                 isScrolled
-                  ? 'text-slate-800 hover:text-blue-600 hover:bg-white/70 hover:shadow-lg hover:shadow-blue-100/50'
-                  : 'text-slate-900 hover:text-blue-900 hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
+                  ? 'text-slate-800 hover:text-[#1e90ff] hover:bg-white/70 hover:shadow-lg hover:shadow-[#B0E0E6]/50'
+                  : 'text-slate-900 hover:text-[#1873cc] hover:bg-white/40 hover:backdrop-blur-md hover:shadow-lg hover:shadow-white/25'
               "
             >
               Sign In
             </RouterLink>
             <RouterLink
               to="/signup"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105"
             >
               Get Started
             </RouterLink>
@@ -116,10 +108,10 @@
               <button
                 @click="userMenuOpen = !userMenuOpen"
                 @mouseenter="userMenuOpen = true"
-                class="flex items-center space-x-3 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300 group"
+                class="flex items-center space-x-3 p-2 rounded-xl hover:bg-[#E6F4FF] transition-all duration-300 group"
               >
                 <div
-                  class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105"
+                  class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white group-hover:ring-[#87CEEB] transition-all duration-300 group-hover:scale-105"
                 >
                   <img
                     v-if="
@@ -134,13 +126,13 @@
                   />
                   <div
                     v-else
-                    class="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm"
+                    class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
                   >
                     {{ authStore.userInitials }}
                   </div>
                 </div>
                 <ChevronDown
-                  class="w-4 h-4 text-slate-600 group-hover:text-blue-600 transition-colors duration-300"
+                  class="w-4 h-4 text-slate-600 group-hover:text-[#1e90ff] transition-colors duration-300"
                   :class="{ 'rotate-180': userMenuOpen }"
                 />
               </button>
@@ -150,12 +142,12 @@
                 <div
                   v-if="userMenuOpen"
                   @mouseleave="userMenuOpen = false"
-                  class="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl shadow-blue-100/50 py-2 z-50"
+                  class="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl shadow-[#B0E0E6]/50 py-2 z-50"
                 >
                   <!-- User Info -->
-                  <div class="px-4 py-3 border-b border-blue-100/50">
+                  <div class="px-4 py-3 border-b border-[#B0E0E6]/50">
                     <div class="flex items-center space-x-3">
-                      <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-blue-100">
+                      <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#B0E0E6]">
                         <img
                           v-if="
                             authStore.user?.profile_picture &&
@@ -171,7 +163,7 @@
                         />
                         <div
                           v-else
-                          class="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold"
+                          class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold"
                         >
                           {{ authStore.userInitials }}
                         </div>
@@ -190,13 +182,13 @@
                     <RouterLink
                       to="/settings"
                       @click="userMenuOpen = false"
-                      class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+                      class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
                     >
                       <Settings class="w-5 h-5" />
                       <span class="font-medium">Settings</span>
                     </RouterLink>
 
-                    <div class="border-t border-blue-100/50 my-1"></div>
+                    <div class="border-t border-[#B0E0E6]/50 my-1"></div>
 
                     <button
                       @click="
@@ -219,7 +211,7 @@
         <div class="lg:hidden">
           <button
             @click="mobileMenuOpen = !mobileMenuOpen"
-            class="text-slate-700 hover:text-blue-600 p-3 rounded-xl transition-all duration-300 hover:bg-blue-50"
+            class="text-slate-700 hover:text-[#1e90ff] p-3 rounded-xl transition-all duration-300 hover:bg-[#E6F4FF]"
           >
             <Menu v-if="!mobileMenuOpen" class="w-6 h-6" />
             <X v-else class="w-6 h-6" />
@@ -230,31 +222,31 @@
       <!-- Mobile Navigation Menu -->
       <div
         v-show="mobileMenuOpen"
-        class="lg:hidden border-t border-blue-100/50 backdrop-blur-md"
+        class="lg:hidden border-t border-[#B0E0E6]/50 backdrop-blur-md"
         :class="{ 'animate-slideDown': mobileMenuOpen }"
       >
         <div class="px-4 pt-4 pb-6 space-y-2">
           <RouterLink
             to="/"
             @click="mobileMenuOpen = false"
-            class="block text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-            active-class="text-blue-600 bg-blue-50"
+            class="block text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
+            active-class="text-[#1e90ff] bg-[#E6F4FF]"
           >
             Home
           </RouterLink>
           <RouterLink
             to="/about"
             @click="mobileMenuOpen = false"
-            class="block text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-            active-class="text-blue-600 bg-blue-50"
+            class="block text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
+            active-class="text-[#1e90ff] bg-[#E6F4FF]"
           >
             About
           </RouterLink>
           <RouterLink
             to="/events"
             @click="mobileMenuOpen = false"
-            class="block text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-            active-class="text-blue-600 bg-blue-50"
+            class="block text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
+            active-class="text-[#1e90ff] bg-[#E6F4FF]"
           >
             Events
           </RouterLink>
@@ -263,25 +255,25 @@
               scrollToPricing();
               mobileMenuOpen = false
             "
-            class="block w-full text-left text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
+            class="block w-full text-left text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
           >
             Pricing
           </button>
         </div>
-        <div class="px-4 pb-6 border-t border-blue-100/50 pt-4">
+        <div class="px-4 pb-6 border-t border-[#B0E0E6]/50 pt-4">
           <template v-if="!authStore.isAuthenticated">
             <div class="space-y-3">
               <RouterLink
                 :to="signinLink"
                 @click="mobileMenuOpen = false"
-                class="block text-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
+                class="block text-center text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
               >
                 Sign In
               </RouterLink>
               <RouterLink
                 to="/signup"
                 @click="mobileMenuOpen = false"
-                class="block text-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-4 rounded-xl text-base font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105"
+                class="block text-center bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-4 rounded-xl text-base font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105"
               >
                 Get Started
               </RouterLink>
@@ -290,7 +282,7 @@
           <template v-else>
             <div class="space-y-2">
               <!-- User Info -->
-              <div class="flex items-center space-x-3 px-4 py-3 bg-blue-50 rounded-xl">
+              <div class="flex items-center space-x-3 px-4 py-3 bg-[#E6F4FF] rounded-xl">
                 <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white">
                   <img
                     v-if="
@@ -305,7 +297,7 @@
                   />
                   <div
                     v-else
-                    class="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold"
+                    class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold"
                   >
                     {{ authStore.userInitials }}
                   </div>
@@ -322,7 +314,7 @@
               <RouterLink
                 to="/settings"
                 @click="mobileMenuOpen = false"
-                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200"
+                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] rounded-xl transition-all duration-200"
               >
                 <Settings class="w-5 h-5" />
                 <span class="font-medium">Settings</span>
@@ -349,10 +341,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
-import { CalendarDays, Menu, X, ChevronDown, Settings, LogOut } from 'lucide-vue-next'
+import { Menu, X, ChevronDown, Settings, LogOut } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useNavbarScroll } from '../composables/useNavbarScroll'
+import LogoSvg from '@/assets/logo.svg'
 
 const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)

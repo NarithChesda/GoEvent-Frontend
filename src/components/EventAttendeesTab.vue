@@ -32,8 +32,8 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <Users class="w-5 h-5 text-blue-600" />
+          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <Users class="w-5 h-5 text-[#1e90ff]" />
           </div>
           <div>
             <p class="text-2xl font-bold text-slate-900">{{ totalRegistrations }}</p>
@@ -90,14 +90,14 @@
             v-model="searchQuery"
             type="text"
             placeholder="Search attendees..."
-            class="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            class="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200"
           />
         </div>
       </div>
       <div class="flex gap-2">
         <select
           v-model="statusFilter"
-          class="px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          class="px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200"
         >
           <option value="">All Status</option>
           <option value="registered">Registered</option>
@@ -113,7 +113,7 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
         <span class="ml-3 text-slate-600">Loading attendees...</span>
       </div>
     </div>
@@ -130,7 +130,7 @@
             <!-- Avatar -->
             <div class="relative">
               <div
-                class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                class="w-14 h-14 bg-gradient-to-br from-emerald-600 to-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
               >
                 {{
                   getInitials(
@@ -233,7 +233,7 @@
       <button
         v-if="searchQuery || statusFilter"
         @click="clearFilters"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30"
       >
         Clear Filters
       </button>
@@ -280,7 +280,7 @@
                     v-model="checkinCode"
                     type="text"
                     placeholder="Enter confirmation code..."
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     :disabled="isChecking"
                   />
                 </div>
@@ -506,7 +506,7 @@ const getStatusBadgeColor = (status: string): string => {
     case 'checked_in':
       return 'bg-green-500'
     case 'registered':
-      return 'bg-blue-500'
+      return 'bg-[#E6F4FF]0'
     case 'cancelled':
       return 'bg-red-500'
     default:
@@ -519,7 +519,7 @@ const getStatusTextColor = (status: string): string => {
     case 'checked_in':
       return 'bg-green-100 text-green-800'
     case 'registered':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-[#B0E0E6] text-[#1873cc]'
     case 'cancelled':
       return 'bg-red-100 text-red-800'
     default:

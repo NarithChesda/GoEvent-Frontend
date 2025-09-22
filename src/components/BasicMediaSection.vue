@@ -26,7 +26,7 @@
             v-if="canEdit && !eventData?.banner_image"
             @click="($refs.bannerInput as HTMLInputElement)?.click()"
             :disabled="uploading.banner_image"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload class="w-4 h-4" />
             <span>{{ uploading.banner_image ? 'Uploading...' : 'Upload Banner' }}</span>
@@ -104,7 +104,7 @@
               v-if="canEdit && !eventData?.logo_one"
               @click="($refs.logoOneInput as HTMLInputElement)?.click()"
               :disabled="uploading.logo_one"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ uploading.logo_one ? 'Uploading...' : 'Upload' }}</span>
@@ -180,7 +180,7 @@
               v-if="canEdit && !eventData?.logo_two"
               @click="($refs.logoTwoInput as HTMLInputElement)?.click()"
               :disabled="uploading.logo_two"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ uploading.logo_two ? 'Uploading...' : 'Upload' }}</span>
@@ -257,7 +257,7 @@
             v-if="canEdit && !eventData?.event_video"
             @click="($refs.videoInput as HTMLInputElement)?.click()"
             :disabled="uploading.event_video"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload class="w-4 h-4" />
             <span>{{ uploading.event_video ? 'Uploading...' : 'Upload Video' }}</span>
@@ -336,7 +336,7 @@
             v-if="canEdit && !eventData?.music"
             @click="($refs.musicInput as HTMLInputElement)?.click()"
             :disabled="uploading.music"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload class="w-4 h-4" />
             <span>{{ uploading.music ? 'Uploading...' : 'Upload Music' }}</span>

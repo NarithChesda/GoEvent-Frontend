@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl shadow-blue-500/25 border border-white/20"
+    class="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl shadow-emerald-500/25 border border-white/20"
   >
     <!-- Attendance Info -->
     <div class="mb-6">
@@ -17,7 +17,7 @@
       </div>
       <div v-if="event.max_attendees" class="w-full bg-slate-200 rounded-full h-2">
         <div
-          class="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-2 rounded-full transition-all duration-300"
           :style="{
             width: `${Math.min(100, (event.registrations_count / event.max_attendees) * 100)}%`,
           }"
@@ -32,7 +32,7 @@
         v-if="canRegister"
         @click="$emit('register')"
         :disabled="isRegistering"
-        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-[1.03] hover:-translate-y-1 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+        class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-xl shadow-[#1e90ff]/30 hover:shadow-2xl hover:shadow-[#1e90ff]/40 hover:scale-[1.03] hover:-translate-y-1 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-lg"
       >
         <UserPlus class="w-5 h-5 mr-3" />
         {{ isRegistering ? 'Registering...' : 'Register Now' }}

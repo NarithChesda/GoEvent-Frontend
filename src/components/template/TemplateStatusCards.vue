@@ -32,7 +32,7 @@
                 ${{ selectedTemplate.package_plan?.price || '0.00' }}
               </span>
               <span
-                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-blue-500 text-white"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-[#E6F4FF]0 text-white"
               >
                 Preview Mode
               </span>
@@ -64,7 +64,7 @@
                 </div>
                 <p
                   v-if="selectedTemplate.package_plan.features.length > 4"
-                  class="text-sm text-blue-600 font-medium mt-2"
+                  class="text-sm text-[#1e90ff] font-medium mt-2"
                 >
                   +{{ selectedTemplate.package_plan.features.length - 4 }} more features
                 </p>
@@ -97,9 +97,9 @@
     >
       <div class="text-center">
         <div
-          class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-16 h-16 bg-[#B0E0E6] rounded-full flex items-center justify-center mx-auto mb-4"
         >
-          <Package class="w-8 h-8 text-blue-600" />
+          <Package class="w-8 h-8 text-[#1e90ff]" />
         </div>
         <h3 class="text-lg font-semibold text-slate-900 mb-2">Template Selected</h3>
         <p class="text-slate-600 mb-4">
@@ -141,7 +141,7 @@
       <button
         v-if="canEdit"
         @click="$emit('browse-templates')"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30"
       >
         Browse Templates
       </button>

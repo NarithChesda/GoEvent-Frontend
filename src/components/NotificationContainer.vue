@@ -66,7 +66,7 @@ const getNotificationClasses = (type: Notification['type']): string => {
     case 'warning':
       return `${baseClasses} bg-yellow-500/90`
     case 'info':
-      return `${baseClasses} bg-blue-500/90`
+      return `${baseClasses} bg-[#E6F4FF]0/90`
     default:
       return `${baseClasses} bg-gray-500/90`
   }

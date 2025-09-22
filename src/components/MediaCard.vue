@@ -48,7 +48,7 @@
           <!-- Edit Button -->
           <button
             @click="$emit('edit', media)"
-            class="p-2 bg-white/90 hover:bg-white text-slate-700 hover:text-blue-600 rounded-lg transition-colors duration-200"
+            class="p-2 bg-white/90 hover:bg-white text-slate-700 hover:text-[#1e90ff] rounded-lg transition-colors duration-200"
             title="Edit media"
           >
             <Edit2 class="w-4 h-4" />

@@ -4,12 +4,12 @@
     <div class="p-4">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-3">
-          <div class="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+          <div class="w-2 h-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"></div>
           <h3 class="text-sm font-semibold text-slate-700">Filter Commissions</h3>
         </div>
         <button
           @click="toggleAdvancedFilters"
-          class="inline-flex items-center space-x-1 text-xs text-slate-500 hover:text-blue-600 transition-all duration-300 bg-slate-50 hover:bg-blue-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-blue-200"
+          class="inline-flex items-center space-x-1 text-xs text-slate-500 hover:text-[#1e90ff] transition-all duration-300 bg-slate-50 hover:bg-[#E6F4FF] px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#87CEEB]"
         >
           <span>{{ showAdvancedFilters ? 'Less' : 'More' }} filters</span>
           <ChevronDown
@@ -53,7 +53,7 @@
               @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
               type="text"
               placeholder="Event title, reference, or payment ID..."
-              class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
+              class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
             />
             <Search
               class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"
@@ -76,14 +76,14 @@
               :value="startDate"
               @input="$emit('update:startDate', ($event.target as HTMLInputElement).value)"
               type="date"
-              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
+              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
             />
             <span class="text-slate-400 text-sm font-medium">to</span>
             <input
               :value="endDate"
               @input="$emit('update:endDate', ($event.target as HTMLInputElement).value)"
               type="date"
-              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
+              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
             />
           </div>
         </div>

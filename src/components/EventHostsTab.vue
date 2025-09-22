@@ -11,7 +11,7 @@
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
       >
         <UserPlus class="w-4 h-4 mr-2" />
         Add Host
@@ -26,7 +26,7 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
         <span class="ml-3 text-slate-600">Loading hosts...</span>
       </div>
     </div>
@@ -68,7 +68,7 @@
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
       >
         <UserPlus class="w-4 h-4 mr-2" />
         Add Your First Host
@@ -77,10 +77,10 @@
 
     <!-- Host Roles Info -->
     <div
-      class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6"
+      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-6"
     >
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <Info class="w-5 h-5 text-blue-600 mr-2" />
+        <Info class="w-5 h-5 text-[#1e90ff] mr-2" />
         Host Roles
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

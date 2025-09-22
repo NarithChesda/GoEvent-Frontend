@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between mb-4">
       <div>
         <h3 class="text-lg font-bold text-slate-900 flex items-center">
-          <UserPlus class="w-5 h-5 text-blue-600 mr-2" />
+          <UserPlus class="w-5 h-5 text-[#1e90ff] mr-2" />
           Event Referrer
         </h3>
         <p class="text-sm text-slate-600 mt-1">Manage who referred this event</p>
@@ -13,12 +13,12 @@
     <!-- Current Referrer Display -->
     <div v-if="referrerDetails && !isEditing" class="mb-4">
       <div
-        class="p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-200/50"
+        class="p-4 bg-gradient-to-br from-emerald-50 to-sky-50 rounded-2xl border border-[#87CEEB]/50"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <User class="w-5 h-5 text-blue-600" />
+            <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+              <User class="w-5 h-5 text-[#1e90ff]" />
             </div>
             <div>
               <p class="font-semibold text-slate-900">
@@ -30,7 +30,7 @@
           <div v-if="canEdit" class="flex items-center space-x-2">
             <button
               @click="startEditing"
-              class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+              class="p-2 text-[#1e90ff] hover:bg-[#B0E0E6] rounded-lg transition-colors"
               title="Edit referrer"
             >
               <Pencil class="w-4 h-4" />
@@ -55,7 +55,7 @@
         <button
           v-if="canEdit"
           @click="startEditing"
-          class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
         >
           <UserPlus class="w-4 h-4 mr-2" />
           Add Referrer
@@ -77,7 +77,7 @@
               type="email"
               required
               :disabled="isSaving"
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm disabled:opacity-50"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm disabled:opacity-50"
               placeholder="Enter referrer's email address"
             />
             <Mail
@@ -100,7 +100,7 @@
           <button
             type="submit"
             :disabled="isSaving || !referrerEmail"
-            class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-500 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
+            class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:from-slate-400 disabled:to-slate-500 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
           >
             <span v-if="isSaving" class="flex items-center">
               <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -116,9 +116,9 @@
     </div>
 
     <!-- Referrer Benefits Info -->
-    <div class="mt-6 p-4 bg-blue-50/50 rounded-xl border border-blue-200/50">
+    <div class="mt-6 p-4 bg-[#E6F4FF]/50 rounded-xl border border-[#87CEEB]/50">
       <div class="flex items-start space-x-3">
-        <Info class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <Info class="w-5 h-5 text-[#1e90ff] flex-shrink-0 mt-0.5" />
         <div class="text-sm text-slate-700">
           <p class="font-medium mb-1">About Event Referrers</p>
           <p>

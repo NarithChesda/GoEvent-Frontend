@@ -14,7 +14,7 @@
       <button
         v-if="canEdit"
         @click="showAddModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2"
       >
         <Plus class="w-4 h-4" />
         <span>Add Payment Method</span>
@@ -23,7 +23,7 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
     </div>
 
     <!-- Error State -->
@@ -56,7 +56,7 @@
       <button
         v-if="canEdit"
         @click="showAddModal = true"
-        class="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors duration-200"
+        class="inline-flex items-center space-x-2 bg-[#1e90ff] text-white px-4 py-2 rounded-xl hover:bg-[#1873cc] transition-colors duration-200"
       >
         <Plus class="w-4 h-4" />
         <span>Add First Payment Method</span>
@@ -147,7 +147,7 @@
                     <div class="flex flex-wrap gap-2 mt-2">
                       <span
                         v-if="paymentMethod.qr_code_image"
-                        class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs"
+                        class="inline-flex items-center px-2 py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-xs"
                       >
                         <QrCode class="w-3 h-3 mr-1" />
                         QR Code Available
@@ -198,7 +198,7 @@
                   paymentMethod.qr_code_image
                 "
                 @click="showQRPreview(paymentMethod)"
-                class="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
                 title="View QR Code"
               >
                 <QrCode class="w-4 h-4" />
@@ -219,7 +219,7 @@
               <!-- Edit Button -->
               <button
                 @click="editPaymentMethod(paymentMethod)"
-                class="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
                 title="Edit"
               >
                 <Edit class="w-4 h-4" />
@@ -375,7 +375,7 @@ const getPaymentMethodIcon = (method: string) => {
 const getPaymentMethodIconBg = (method: string) => {
   switch (method) {
     case 'bank_transfer':
-      return 'bg-blue-100'
+      return 'bg-[#B0E0E6]'
     case 'qr_code':
       return 'bg-purple-100'
     case 'payment_url':
@@ -388,7 +388,7 @@ const getPaymentMethodIconBg = (method: string) => {
 const getPaymentMethodIconColor = (method: string) => {
   switch (method) {
     case 'bank_transfer':
-      return 'text-blue-600'
+      return 'text-[#1e90ff]'
     case 'qr_code':
       return 'text-purple-600'
     case 'payment_url':
@@ -405,7 +405,7 @@ const getPaymentTypeStyle = (type: string) => {
     case 'gift':
       return 'bg-purple-100 text-purple-800'
     case 'sponsorship':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-[#B0E0E6] text-[#1873cc]'
     default:
       return 'bg-gray-100 text-gray-800'
   }

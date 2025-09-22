@@ -4,13 +4,13 @@
     <BaseCard variant="featured" size="lg" class="shadow-xl">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center space-x-3">
-          <div class="w-3 h-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+          <div class="w-3 h-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"></div>
           <h2 class="text-xl font-bold text-slate-900">Commission Dashboard</h2>
         </div>
         <button
           @click="refreshData"
           :disabled="isLoading || isStatsLoading"
-          class="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw :class="['w-4 h-4', { 'animate-spin': isLoading || isStatsLoading }]" />
           <span>Refresh</span>

@@ -36,7 +36,7 @@
           <input
             :value="showcaseUrl"
             readonly
-            class="flex-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50 text-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+            class="flex-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50 text-slate-600 focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
           />
           <button
             @click="copyToClipboard"
@@ -196,12 +196,12 @@
       </div>
 
       <!-- Tips Section -->
-      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <div class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4">
         <div class="flex items-start space-x-3">
-          <Lightbulb class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <Lightbulb class="w-5 h-5 text-[#1e90ff] mt-0.5 flex-shrink-0" />
           <div>
-            <h6 class="font-medium text-blue-900 mb-2">Tips for Better Social Sharing</h6>
-            <ul class="text-sm text-blue-800 space-y-1">
+            <h6 class="font-medium text-[#1873cc] mb-2">Tips for Better Social Sharing</h6>
+            <ul class="text-sm text-[#1873cc] space-y-1">
               <li>• Use a high-quality banner image (1200x630px recommended)</li>
               <li>• Keep your event title concise and engaging</li>
               <li>• Write a compelling description under 160 characters</li>
@@ -218,7 +218,7 @@
           :href="directShowcaseUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-500/25 flex items-center justify-center space-x-2"
+          class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2"
         >
           <ExternalLink class="w-4 h-4" />
           <span>Open Showcase</span>

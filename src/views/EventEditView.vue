@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
     <Navigation />
 
     <!-- Loading State -->
@@ -28,7 +28,7 @@
           <div class="flex items-center space-x-4 mb-4">
             <button
               @click="$router.back()"
-              class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+              class="p-2 text-slate-500 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-all duration-200"
             >
               <ArrowLeft class="w-6 h-6" />
             </button>
@@ -56,7 +56,7 @@
                 type="text"
                 required
                 placeholder="Enter event title"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
             </div>
 
@@ -70,7 +70,7 @@
                 type="text"
                 maxlength="300"
                 placeholder="Brief description for event cards"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
               <p class="text-xs text-slate-500 mt-1">
                 {{ form.short_description?.length || 0 }}/300 characters
@@ -87,7 +87,7 @@
                 required
                 rows="6"
                 placeholder="Detailed event description"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
               ></textarea>
             </div>
 
@@ -96,7 +96,7 @@
               <label class="block text-sm font-semibold text-slate-700 mb-2"> Category </label>
               <select
                 v-model="form.category"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
                 <option value="">Select a category</option>
                 <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -121,7 +121,7 @@
                   v-model="form.start_date"
                   type="datetime-local"
                   required
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
               <div>
@@ -132,7 +132,7 @@
                   v-model="form.end_date"
                   type="datetime-local"
                   required
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
             </div>
@@ -142,7 +142,7 @@
               <label class="block text-sm font-semibold text-slate-700 mb-2"> Timezone </label>
               <select
                 v-model="form.timezone"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
                 <optgroup
                   v-for="(timezones, region) in timezonesByRegion"
@@ -176,7 +176,7 @@
                 v-model="form.is_virtual"
                 type="checkbox"
                 id="is_virtual"
-                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                class="w-5 h-5 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
               />
               <label for="is_virtual" class="text-sm font-medium text-slate-700">
                 This is a virtual event
@@ -192,7 +192,7 @@
                 v-model="form.location"
                 rows="3"
                 placeholder="Event location address"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
               ></textarea>
             </div>
 
@@ -204,7 +204,7 @@
                 v-model="form.virtual_link"
                 type="url"
                 placeholder="https://zoom.us/meeting/..."
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
             </div>
           </div>
@@ -227,7 +227,7 @@
                       v-model="form.privacy"
                       type="radio"
                       value="public"
-                      class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
                     <span class="ml-3 text-sm text-slate-700">
                       <span class="font-medium">Public</span> - Anyone can view and register
@@ -238,7 +238,7 @@
                       v-model="form.privacy"
                       type="radio"
                       value="private"
-                      class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
                     <span class="ml-3 text-sm text-slate-700">
                       <span class="font-medium">Private</span> - Only invited users can view
@@ -254,7 +254,7 @@
                 </label>
                 <select
                   v-model="form.status"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
@@ -279,7 +279,7 @@
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+              class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
             >
               <Loader v-if="isSubmitting" class="w-5 h-5 mr-2 animate-spin" />
               {{ isSubmitting ? 'Updating...' : 'Update Event' }}
@@ -298,7 +298,7 @@
           <p class="text-slate-600 mb-8">{{ error }}</p>
           <button
             @click="$router.push('/events')"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105"
           >
             Back to Events
           </button>

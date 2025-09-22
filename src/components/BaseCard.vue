@@ -23,7 +23,7 @@
     <!-- Hover background effect -->
     <div
       v-if="interactive"
-      class="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-blue-50/30 rounded-2xl transition-all duration-300 -z-10 pointer-events-none"
+      class="absolute inset-0 bg-gradient-to-br from-emerald-50/0 via-sky-50/0 to-emerald-50/0 group-hover:from-emerald-50/30 group-hover:via-sky-50/20 group-hover:to-emerald-50/30 rounded-2xl transition-all duration-300 -z-10 pointer-events-none"
     />
   </component>
 </template>
@@ -98,12 +98,12 @@ const cardClasses = computed(() => {
       'rounded-2xl',
       'cursor-pointer',
       'group',
-      'hover:border-blue-200/50',
+      'hover:border-[#87CEEB]/50',
       'hover:shadow-xl',
       'hover:-translate-y-1',
       'hover:scale-[1.02]',
       'focus-within:ring-2',
-      'focus-within:ring-blue-500',
+      'focus-within:ring-[#1e90ff]',
       'focus-within:ring-offset-2',
     ],
     compact: ['rounded-xl'],
@@ -123,12 +123,12 @@ const cardClasses = computed(() => {
     ? [
         'cursor-pointer',
         'group',
-        'hover:border-blue-200/50',
+        'hover:border-[#87CEEB]/50',
         'hover:shadow-xl',
         'hover:-translate-y-1',
         'focus:outline-none',
         'focus:ring-2',
-        'focus:ring-blue-500',
+        'focus:ring-[#1e90ff]',
         'focus:ring-offset-2',
       ]
     : []

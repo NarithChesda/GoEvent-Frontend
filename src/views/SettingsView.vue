@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
     <Navigation />
 
     <!-- Settings Content -->
@@ -12,7 +12,7 @@
             <div class="mb-6">
               <div class="flex items-center space-x-3">
                 <div
-                  class="w-3 h-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"
+                  class="w-3 h-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
                 ></div>
                 <h1 class="text-xl font-bold text-slate-900">Account Settings</h1>
               </div>
@@ -26,8 +26,8 @@
                 :class="[
                   'flex items-center space-x-3 w-full px-4 py-3 text-left rounded-xl transition-all duration-200 font-medium',
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600',
+                    ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+                    : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]',
                 ]"
               >
                 <component :is="tab.icon" class="w-5 h-5" />
@@ -50,7 +50,7 @@
               <!-- Profile Picture Section -->
               <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
                 <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <div class="w-2 h-2 bg-[#1e90ff] rounded-full"></div>
                   <span>Profile Picture</span>
                 </h3>
 
@@ -61,7 +61,7 @@
                   <div class="relative group">
                     <div
                       v-if="profilePicturePreview || authStore.user?.profile_picture"
-                      class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white group-hover:ring-blue-200 transition-all duration-300"
+                      class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white group-hover:ring-[#87CEEB] transition-all duration-300"
                     >
                       <img
                         :src="
@@ -75,7 +75,7 @@
                     </div>
                     <div
                       v-else
-                      class="w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg ring-4 ring-white group-hover:ring-blue-200 transition-all duration-300"
+                      class="w-24 h-24 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg ring-4 ring-white group-hover:ring-[#87CEEB] transition-all duration-300"
                     >
                       {{ authStore.userInitials }}
                     </div>
@@ -103,7 +103,7 @@
                         type="button"
                         @click="triggerFileUpload"
                         :disabled="uploadLoading"
-                        class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+                        class="inline-flex items-center space-x-2 px-4 py-2 bg-[#1e90ff] hover:bg-[#1873cc] disabled:bg-gray-400 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-emerald-500/25"
                       >
                         <Upload class="w-4 h-4" />
                         <span>{{ uploadLoading ? 'Uploading...' : 'Upload New' }}</span>
@@ -145,7 +145,7 @@
                       id="firstName"
                       v-model="profileForm.first_name"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                       placeholder="Enter your first name"
                     />
                   </div>
@@ -159,7 +159,7 @@
                       id="lastName"
                       v-model="profileForm.last_name"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                       placeholder="Enter your last name"
                     />
                   </div>
@@ -173,7 +173,7 @@
                       id="email"
                       v-model="profileForm.email"
                       type="email"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                       placeholder="Enter your email"
                     />
                   </div>
@@ -187,7 +187,7 @@
                       id="username"
                       v-model="profileForm.username"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                       placeholder="Enter your username"
                     />
                   </div>
@@ -253,7 +253,7 @@
                     id="bio"
                     v-model="profileForm.bio"
                     rows="4"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent resize-none"
                     placeholder="Tell us about yourself..."
                   ></textarea>
                   <p class="text-sm text-slate-500 mt-2">
@@ -282,7 +282,7 @@
                 <button
                   type="submit"
                   :disabled="authStore.isLoading"
-                  class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
+                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
                 >
                   <div class="flex items-center space-x-2">
                     <Loader2 v-if="authStore.isLoading" class="animate-spin w-5 h-5" />
@@ -324,7 +324,7 @@
                       'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
                       fieldErrors.old_password
                         ? 'border-red-300 focus:ring-red-500'
-                        : 'border-slate-200 focus:ring-blue-500',
+                        : 'border-slate-200 focus:ring-[#1e90ff]',
                     ]"
                     placeholder="Enter your current password"
                   />
@@ -363,7 +363,7 @@
                       'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
                       fieldErrors.new_password
                         ? 'border-red-300 focus:ring-red-500'
-                        : 'border-slate-200 focus:ring-blue-500',
+                        : 'border-slate-200 focus:ring-[#1e90ff]',
                     ]"
                     placeholder="Enter your new password"
                   />
@@ -405,7 +405,7 @@
                       'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
                       fieldErrors.new_password_confirm
                         ? 'border-red-300 focus:ring-red-500'
-                        : 'border-slate-200 focus:ring-blue-500',
+                        : 'border-slate-200 focus:ring-[#1e90ff]',
                     ]"
                     placeholder="Confirm your new password"
                   />
@@ -504,7 +504,7 @@
                     !isPasswordStrongEnough ||
                     !passwordForm.old_password
                   "
-                  class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
+                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
                 >
                   <div class="flex items-center space-x-2">
                     <Loader2 v-if="authStore.isLoading" class="animate-spin w-5 h-5" />
@@ -605,7 +605,7 @@ const passwordStrengthText = computed(() => {
 })
 
 const passwordStrengthColor = computed(() => {
-  const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500']
+  const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-[#E6F4FF]0', 'bg-green-500']
   return colors[passwordStrength.value] || 'bg-gray-200'
 })
 

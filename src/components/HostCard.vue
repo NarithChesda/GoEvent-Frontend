@@ -32,9 +32,9 @@
         </div>
         <div
           v-else
-          class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center"
+          class="w-20 h-20 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
         >
-          <User class="w-10 h-10 text-blue-600" />
+          <User class="w-10 h-10 text-[#1e90ff]" />
         </div>
       </div>
 
@@ -42,7 +42,7 @@
       <div class="flex-1 min-w-0 space-y-2">
         <div>
           <h4 class="text-lg font-semibold text-slate-900 truncate">{{ host.name }}</h4>
-          <p v-if="host.title" class="text-sm font-medium text-blue-600 truncate">
+          <p v-if="host.title" class="text-sm font-medium text-[#1e90ff] truncate">
             {{ host.title }}
           </p>
         </div>
@@ -65,7 +65,7 @@
         <a
           v-if="host.email"
           :href="`mailto:${host.email}`"
-          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+          class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors duration-200"
           title="Email"
         >
           <Mail class="w-4 h-4" />
@@ -75,7 +75,7 @@
           :href="host.linkedin_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+          class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors duration-200"
           title="LinkedIn"
         >
           <Linkedin class="w-4 h-4" />
@@ -85,7 +85,7 @@
           :href="host.twitter_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+          class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors duration-200"
           title="Twitter"
         >
           <Twitter class="w-4 h-4" />
@@ -95,7 +95,7 @@
           :href="host.website_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+          class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors duration-200"
           title="Website"
         >
           <ExternalLink class="w-4 h-4" />
@@ -120,7 +120,7 @@
       >
         <button
           @click.stop="$emit('edit', host)"
-          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+          class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors duration-200"
           title="Edit host"
         >
           <Edit2 class="w-4 h-4" />
@@ -137,7 +137,7 @@
 
     <!-- Hover effect background -->
     <div
-      class="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/40 group-hover:via-purple-50/20 group-hover:to-blue-50/40 rounded-2xl transition-all duration-300 -z-10 pointer-events-none"
+      class="absolute inset-0 bg-gradient-to-br from-emerald-50/0 via-sky-50/0 to-emerald-50/0 group-hover:from-emerald-50/40 group-hover:via-sky-50/20 group-hover:to-emerald-50/40 rounded-2xl transition-all duration-300 -z-10 pointer-events-none"
     ></div>
   </div>
 </template>

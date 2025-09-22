@@ -14,7 +14,7 @@
     <button
       v-if="hasFilters"
       @click="$emit('clearFilters')"
-      class="mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25"
+      class="mt-4 px-6 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25"
       type="button"
     >
       Clear Filters

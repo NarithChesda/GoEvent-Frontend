@@ -1,9 +1,9 @@
 <template>
   <div class="flex items-center space-x-4">
     <div :class="iconContainerClasses">
-      <Calendar v-if="icon === 'calendar'" class="w-5 h-5 text-blue-600" />
+      <Calendar v-if="icon === 'calendar'" class="w-5 h-5 text-[#1e90ff]" />
       <MapPin v-else-if="icon === 'map-pin'" class="w-5 h-5 text-green-600" />
-      <Monitor v-else-if="icon === 'monitor'" class="w-5 h-5 text-blue-600" />
+      <Monitor v-else-if="icon === 'monitor'" class="w-5 h-5 text-[#1e90ff]" />
       <Users v-else-if="icon === 'users'" class="w-5 h-5 text-purple-600" />
       <Clock v-else-if="icon === 'clock'" class="w-5 h-5 text-orange-600" />
     </div>
@@ -31,11 +31,11 @@ const iconContainerClasses = computed(() => {
 
   switch (props.icon) {
     case 'calendar':
-      return `${baseClasses} bg-blue-100`
+      return `${baseClasses} bg-[#B0E0E6]`
     case 'map-pin':
       return `${baseClasses} bg-green-100`
     case 'monitor':
-      return `${baseClasses} bg-blue-100`
+      return `${baseClasses} bg-[#B0E0E6]`
     case 'users':
       return `${baseClasses} bg-purple-100`
     case 'clock':

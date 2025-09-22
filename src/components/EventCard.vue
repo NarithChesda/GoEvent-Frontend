@@ -113,7 +113,7 @@
         </span>
         <span
           v-else-if="event.is_upcoming"
-          class="inline-flex items-center bg-blue-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg shadow-sm"
+          class="inline-flex items-center bg-[#1e90ff] text-white text-xs font-medium px-2.5 py-1 rounded-lg shadow-sm"
         >
           Upcoming
         </span>
@@ -136,7 +136,7 @@
         </span>
         <span
           v-if="event.is_virtual"
-          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-medium px-2 py-1 rounded-lg border border-blue-200/50"
+          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-[#1873cc] text-xs font-medium px-2 py-1 rounded-lg border border-[#87CEEB]/50"
         >
           <Monitor class="w-3 h-3 mr-1" />
           Virtual
@@ -258,8 +258,8 @@ const emit = defineEmits<Emits>()
 const getFallbackBgClass = () => {
   const categoryName = props.event.category_name?.toLowerCase() || ''
   const gradients = [
-    'bg-gradient-to-br from-blue-50 to-blue-100',
-    'bg-gradient-to-br from-purple-50 to-purple-100',
+    'bg-gradient-to-br from-[#E6F4FF] to-[#B0E0E6]',
+    'bg-gradient-to-br from-emerald-50 to-emerald-100',
     'bg-gradient-to-br from-green-50 to-green-100',
     'bg-gradient-to-br from-orange-50 to-orange-100',
     'bg-gradient-to-br from-pink-50 to-pink-100',

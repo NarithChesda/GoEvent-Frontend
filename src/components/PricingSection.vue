@@ -3,7 +3,7 @@
     <!-- Background elements -->
     <div class="absolute inset-0">
       <div
-        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
       ></div>
       <div class="absolute bottom-0 right-0 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
     </div>
@@ -11,14 +11,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div class="text-center mb-20">
         <div
-          class="inline-flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full mb-6"
+          class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-sm font-medium px-4 py-2 rounded-full mb-6"
         >
           <Star class="h-4 w-4 mr-2" />
           Simple & Transparent
         </div>
         <h2 class="text-5xl font-bold text-slate-900 mb-6 leading-tight">
           Choose Your
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
             >Perfect Plan</span
           >
         </h2>
@@ -30,7 +30,7 @@
       <!-- Loading State -->
       <div v-if="loading" class="text-center">
         <div
-          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"
         ></div>
         <p class="text-slate-700 mt-4">Loading pricing plans...</p>
       </div>
@@ -40,7 +40,7 @@
         <p class="text-red-500 mb-4">{{ error }}</p>
         <button
           @click="fetchPricingPlans"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+          class="bg-[#1e90ff] hover:bg-[#1873cc] text-white px-6 py-2 rounded-lg"
         >
           Retry
         </button>
@@ -62,8 +62,8 @@
                   class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-300"
                   :class="
                     activeCategory === categoryName
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                      : 'text-slate-700 hover:text-blue-600 hover:bg-white/50'
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                      : 'text-slate-700 hover:text-[#1e90ff] hover:bg-white/50'
                   "
                 >
                   {{ categoryName }}
@@ -91,7 +91,7 @@
               class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20"
             >
               <div
-                class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-lg"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-lg"
               >
                 <Star class="w-4 h-4 fill-current" />
                 <span class="text-sm font-bold uppercase tracking-wide">Best Seller</span>
@@ -119,7 +119,7 @@
                       class="text-5xl font-bold leading-none"
                       :class="
                         plan.is_best_seller
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600'
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
                           : 'text-slate-900'
                       "
                       >{{ parseFloat(plan.price).toFixed(0) }}</span
@@ -140,7 +140,7 @@
                   class="text-slate-700 font-medium text-sm uppercase tracking-wider mb-4 flex items-center"
                 >
                   <div
-                    class="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-2"
+                    class="w-2 h-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mr-2"
                   ></div>
                   What's Included
                 </h5>
@@ -154,7 +154,7 @@
                       class="flex items-start text-slate-700"
                     >
                       <div
-                        class="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3 mt-0.5 shadow-lg shadow-blue-500/25"
+                        class="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center mr-3 mt-0.5 shadow-lg shadow-emerald-500/25"
                       >
                         <Check class="w-3 h-3 text-white stroke-2" />
                       </div>
@@ -171,7 +171,7 @@
                   class="w-full text-center block py-4 px-8 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-lg"
                   :class="
                     plan.is_best_seller
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-blue-500/25'
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-emerald-500/25'
                       : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
                   "
                 >
@@ -181,13 +181,13 @@
 
               <!-- Enhanced hover effect -->
               <div
-                class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
               ></div>
 
               <!-- Best seller glow effect -->
               <div
                 v-if="plan.is_best_seller"
-                class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl pointer-events-none"
+                class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-sky-500/10 rounded-3xl pointer-events-none"
               ></div>
             </div>
           </div>

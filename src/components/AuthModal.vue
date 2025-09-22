@@ -20,11 +20,11 @@
 
       <!-- Header -->
       <div class="text-center mb-8">
-        <div
-          class="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4"
-        >
-          <CalendarDays class="w-8 h-8 text-white" />
-        </div>
+        <img
+          :src="LogoSvg"
+          alt="GoEvent Logo"
+          class="h-24 w-auto mx-auto mb-4"
+        />
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
         <p class="text-gray-600">Sign in to leave a comment</p>
       </div>
@@ -71,7 +71,7 @@
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
               (!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-blue-500',
+                : 'border-gray-200 focus:ring-[#1e90ff]',
             ]"
             placeholder="Enter your email"
           />
@@ -105,7 +105,7 @@
                 (!passwordValidation.isValid && signInForm.password.length > 0) ||
                 fieldErrors.password
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-blue-500',
+                  : 'border-gray-200 focus:ring-[#1e90ff]',
               ]"
               placeholder="Enter your password"
             />
@@ -139,7 +139,7 @@
         <button
           type="submit"
           :disabled="isSigningIn || !isSignInFormValid"
-          class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
           <div class="flex items-center justify-center">
             <Loader2 v-if="isSigningIn" class="animate-spin -ml-1 mr-3 h-5 w-5" />
@@ -164,7 +164,7 @@
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
               fieldErrors.first_name
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-blue-500',
+                : 'border-gray-200 focus:ring-[#1e90ff]',
             ]"
             placeholder="Enter your first name"
           />
@@ -188,7 +188,7 @@
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
               fieldErrors.last_name
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-blue-500',
+                : 'border-gray-200 focus:ring-[#1e90ff]',
             ]"
             placeholder="Enter your last name"
           />
@@ -213,7 +213,7 @@
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
               (!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-blue-500',
+                : 'border-gray-200 focus:ring-[#1e90ff]',
             ]"
             placeholder="Enter your email"
           />
@@ -247,7 +247,7 @@
               'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
               fieldErrors.username
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-blue-500',
+                : 'border-gray-200 focus:ring-[#1e90ff]',
             ]"
             placeholder="Choose a username"
           />
@@ -274,7 +274,7 @@
                 (!signUpPasswordValidation.isValid && signUpForm.password.length > 0) ||
                 fieldErrors.password
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-blue-500',
+                  : 'border-gray-200 focus:ring-[#1e90ff]',
               ]"
               placeholder="Create a password"
             />
@@ -320,7 +320,7 @@
                 (!passwordsMatch && signUpForm.confirmPassword.length > 0) ||
                 fieldErrors.password_confirm
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-blue-500',
+                  : 'border-gray-200 focus:ring-[#1e90ff]',
               ]"
               placeholder="Confirm your password"
             />
@@ -354,7 +354,7 @@
         <button
           type="submit"
           :disabled="isSigningUp || !isSignUpFormValid"
-          class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
           <div class="flex items-center justify-center">
             <Loader2 v-if="isSigningUp" class="animate-spin -ml-1 mr-3 h-5 w-5" />
@@ -386,7 +386,7 @@
         type="button"
         @click="handleGoogleLogin"
         :disabled="isGoogleLoading"
-        class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl bg-white/50 hover:bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl bg-white/50 hover:bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Loader2 v-if="isGoogleLoading" class="animate-spin h-5 w-5 mr-2" />
         <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24">
@@ -417,7 +417,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { CalendarDays, X, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
+import { X, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
+import LogoSvg from '@/assets/logo.svg'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
 import { inputValidator, validationRules } from '../utils/inputValidation'

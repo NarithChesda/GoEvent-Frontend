@@ -56,7 +56,7 @@
               :class="[
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
                 categoryFilterActive
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                  ? 'bg-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200',
               ]"
               v-if="event.category && availableCategories.length > 0"
@@ -77,7 +77,7 @@
               :class="[
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
                 activeCategoryFilter?.id === category.id
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                  ? 'bg-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200',
               ]"
             >
@@ -109,7 +109,7 @@
       <div class="flex-1 overflow-y-auto p-3 sm:p-6 custom-scrollbar template-grid">
         <!-- Loading State -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mb-4"></div>
           <p class="text-slate-600 text-sm">Loading templates...</p>
         </div>
 
@@ -130,9 +130,9 @@
               <div
                 class="bg-white border-2 rounded-xl sm:rounded-2xl overflow-hidden template-selection-transition hover:shadow-xl template-card"
                 :class="{
-                  'border-blue-500 ring-2 ring-blue-200 shadow-lg':
+                  'border-[#1e90ff] ring-2 ring-[#87CEEB] shadow-lg':
                     selectedTemplate?.id === template.id,
-                  'border-slate-200 hover:border-blue-300': selectedTemplate?.id !== template.id,
+                  'border-slate-200 hover:border-[#5eb3f6]': selectedTemplate?.id !== template.id,
                 }"
                 tabindex="0"
                 @keydown.enter="selectTemplate(template)"
@@ -162,9 +162,9 @@
                   <!-- Selection Indicator -->
                   <div
                     v-if="selectedTemplate?.id === template.id"
-                    class="absolute inset-0 bg-blue-600/20 flex items-center justify-center"
+                    class="absolute inset-0 bg-[#1e90ff]/20 flex items-center justify-center"
                   >
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <div class="w-8 h-8 bg-[#1e90ff] rounded-full flex items-center justify-center">
                       <CheckCircle class="w-5 h-5 text-white" />
                     </div>
                   </div>
@@ -247,7 +247,7 @@
                     </div>
                     <p
                       v-if="(template.package_plan?.features || []).length > 2"
-                      class="text-xs text-blue-600 font-medium"
+                      class="text-xs text-[#1e90ff] font-medium"
                     >
                       +{{ (template.package_plan?.features || []).length - 2 }} more features
                     </p>
@@ -270,7 +270,7 @@
           <button
             v-if="categoryFilterActive || activeCategoryFilter"
             @click="clearCategoryFilter()"
-            class="text-blue-600 hover:text-blue-700 font-medium"
+            class="text-[#1e90ff] hover:text-[#1873cc] font-medium"
           >
             View All Templates
           </button>
@@ -313,7 +313,7 @@
           <button
             @click="confirmSelection"
             :disabled="!selectedTemplate || isSelecting"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             <div
               v-if="isSelecting"

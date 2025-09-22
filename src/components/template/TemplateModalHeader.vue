@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-8 py-4 sm:py-6 text-white flex-shrink-0"
+    class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white flex-shrink-0"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">

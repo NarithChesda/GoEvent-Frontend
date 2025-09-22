@@ -10,7 +10,7 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -46,7 +46,7 @@
                       v-model="formData.title"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="Enter agenda item title"
                     />
                   </div>
@@ -59,7 +59,7 @@
                     <textarea
                       v-model="formData.description"
                       rows="3"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Describe this agenda item"
                     ></textarea>
                   </div>
@@ -72,7 +72,7 @@
                     <select
                       v-model="formData.agenda_type"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="session">Session</option>
                       <option value="keynote">Keynote</option>
@@ -99,7 +99,7 @@
                       <input
                         v-model="formData.date"
                         type="date"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                       />
                     </div>
 
@@ -111,7 +111,7 @@
                       <input
                         v-model="formData.start_time_text"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="e.g., 9:00 AM"
                       />
                     </div>
@@ -124,7 +124,7 @@
                       <input
                         v-model="formData.end_time_text"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="e.g., 10:00 AM"
                       />
                     </div>
@@ -138,7 +138,7 @@
                     <input
                       v-model="formData.date_text"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                       placeholder="e.g., Day 1 - Monday"
                     />
                   </div>
@@ -160,7 +160,7 @@
                       <input
                         v-model="formData.location"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="e.g., Conference Room A"
                       />
                     </div>
@@ -173,7 +173,7 @@
                       <input
                         v-model="formData.virtual_link"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                         placeholder="https://zoom.us/j/..."
                       />
                     </div>
@@ -187,7 +187,7 @@
                     <input
                       v-model="formData.speaker"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                       placeholder="e.g., Dr. Jane Smith, CEO of TechCorp"
                     />
                   </div>
@@ -215,7 +215,7 @@
                         <input
                           v-model="formData.color"
                           type="text"
-                          class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                          class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
                           placeholder="#3498db"
                         />
                       </div>
@@ -251,7 +251,7 @@
                       v-model="formData.is_featured"
                       type="checkbox"
                       id="is_featured"
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
                     />
                     <label for="is_featured" class="text-sm font-medium text-slate-700">
                       Mark as featured item
@@ -282,7 +282,7 @@
                         class="p-3 rounded-lg border-2 transition-all duration-200"
                         :class="
                           formData.icon_id === null
-                            ? 'border-blue-500 bg-blue-50'
+                            ? 'border-[#1e90ff] bg-[#E6F4FF]'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         "
                       >
@@ -299,7 +299,7 @@
                         class="p-3 rounded-lg border-2 transition-all duration-200"
                         :class="
                           formData.icon_id === icon.id
-                            ? 'border-blue-500 bg-blue-50'
+                            ? 'border-[#1e90ff] bg-[#E6F4FF]'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         "
                         :title="icon.name"
@@ -321,7 +321,7 @@
                     <button
                       type="button"
                       @click="showAddTranslation = true"
-                      class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+                      class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center space-x-1"
                     >
                       <Plus class="w-4 h-4" />
                       <span>Add Translation</span>
@@ -365,7 +365,7 @@
                               v-model="translation.title"
                               type="text"
                               placeholder="Translated title"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -373,7 +373,7 @@
                               v-model="translation.speaker"
                               type="text"
                               placeholder="Translated speaker"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -384,7 +384,7 @@
                               v-model="translation.date_text"
                               type="text"
                               placeholder="Translated date text"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -392,7 +392,7 @@
                               v-model="translation.start_time_text"
                               type="text"
                               placeholder="Translated start time"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -400,7 +400,7 @@
                               v-model="translation.end_time_text"
                               type="text"
                               placeholder="Translated end time"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -409,7 +409,7 @@
                           v-model="translation.description"
                           rows="2"
                           placeholder="Translated description"
-                          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent resize-none"
                         ></textarea>
                       </div>
                     </div>
@@ -418,7 +418,7 @@
                   <!-- Add Translation Modal -->
                   <div
                     v-if="showAddTranslation"
-                    class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+                    class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
                   >
                     <div class="flex items-center justify-between mb-3">
                       <h5 class="font-medium text-slate-900">Add Translation</h5>
@@ -434,7 +434,7 @@
                     <div class="space-y-3">
                       <select
                         v-model="newTranslation.language"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
                       >
                         <option value="">Select language</option>
                         <option
@@ -451,7 +451,7 @@
                           type="button"
                           @click="addTranslation"
                           :disabled="!newTranslation.language"
-                          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                          class="px-4 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                         >
                           Add
                         </button>
@@ -482,7 +482,7 @@
                 <button
                   type="submit"
                   :disabled="loading || !formData.title"
-                  class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <span
                     v-if="loading"

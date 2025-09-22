@@ -24,7 +24,7 @@
       <!-- Title -->
       <div class="mb-8">
         <div class="flex items-center space-x-3">
-          <div class="w-3 h-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+          <div class="w-3 h-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"></div>
           <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
             Event Details
           </h2>

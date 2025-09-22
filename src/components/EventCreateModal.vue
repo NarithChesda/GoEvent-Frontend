@@ -13,7 +13,7 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -42,7 +42,7 @@
                   type="text"
                   required
                   placeholder="Enter event title"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
 
@@ -56,7 +56,7 @@
                   required
                   rows="4"
                   placeholder="Detailed event description"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                 ></textarea>
               </div>
 
@@ -70,7 +70,7 @@
                     v-model="form.start_date"
                     type="datetime-local"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                 </div>
                 <div>
@@ -81,7 +81,7 @@
                     v-model="form.end_date"
                     type="datetime-local"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                 </div>
               </div>
@@ -91,7 +91,7 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2"> Timezone </label>
                 <select
                   v-model="form.timezone"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 >
                   <optgroup
                     v-for="(timezones, region) in timezonesByRegion"
@@ -119,7 +119,7 @@
                   v-model="form.location"
                   type="text"
                   placeholder="Event location address (optional)"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
 
@@ -134,7 +134,7 @@
                       v-model="form.privacy"
                       type="radio"
                       value="public"
-                      class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
                     <span class="ml-2 text-sm text-slate-700">Public</span>
                   </label>
@@ -143,7 +143,7 @@
                       v-model="form.privacy"
                       type="radio"
                       value="private"
-                      class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
                     <span class="ml-2 text-sm text-slate-700">Private</span>
                   </label>
@@ -164,7 +164,7 @@
                 <button
                   type="submit"
                   :disabled="isSubmitting"
-                  class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <Loader v-if="isSubmitting" class="w-5 h-5 mr-2 animate-spin" />
                   {{ isSubmitting ? 'Creating...' : 'Create Event' }}

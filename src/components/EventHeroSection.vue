@@ -121,7 +121,7 @@
                 v-if="canRegister"
                 @click="$emit('register')"
                 :disabled="isRegistering"
-                class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 flex items-center disabled:opacity-50 disabled:cursor-not-allowed shadow-blue-500/25 hover:shadow-blue-600/30"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 flex items-center disabled:opacity-50 disabled:cursor-not-allowed shadow-emerald-500/25 hover:shadow-emerald-600/30"
               >
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

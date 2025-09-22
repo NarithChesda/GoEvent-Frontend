@@ -71,7 +71,7 @@ const buttonClass = computed(() => {
     'hover:scale-105',
     'focus:outline-none',
     'focus:ring-2',
-    'focus:ring-blue-500',
+    'focus:ring-[#1e90ff]',
     'focus:ring-offset-1',
     props.customClass,
   ]

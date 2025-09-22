@@ -21,7 +21,7 @@
             @click="$emit('goToPage', page)"
             :class="[
               'px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200',
-              currentPage === page ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100',
+              currentPage === page ? 'bg-[#1e90ff] text-white' : 'text-slate-600 hover:bg-slate-100',
             ]"
           >
             {{ page }}
@@ -33,7 +33,7 @@
             :class="[
               'px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200',
               currentPage === totalPages
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#1e90ff] text-white'
                 : 'text-slate-600 hover:bg-slate-100',
             ]"
           >

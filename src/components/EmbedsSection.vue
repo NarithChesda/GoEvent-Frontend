@@ -20,7 +20,7 @@
             type="url"
             :disabled="!canEdit"
             placeholder="https://www.youtube.com/embed/VIDEO_ID"
-            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
           <p class="text-xs text-slate-500 mt-1">
             Get this from YouTube → Share → Embed, then copy the src URL
@@ -66,7 +66,7 @@
             type="url"
             :disabled="!canEdit"
             placeholder="https://www.google.com/maps/embed?pb=..."
-            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
           <p class="text-xs text-slate-500 mt-1">
             Get this from Google Maps → Share → Embed a map, then copy the src URL
@@ -103,7 +103,7 @@
       <button
         @click="saveChanges"
         :disabled="saving"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 disabled:opacity-50"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50"
       >
         <div
           v-if="saving"

@@ -11,7 +11,7 @@
       <button
         v-if="canInvite"
         @click="showInviteModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
       >
         <UserPlus class="w-4 h-4 mr-2" />
         Invite Collaborator
@@ -34,8 +34,8 @@
 
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <Users class="w-5 h-5 text-blue-600" />
+          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <Users class="w-5 h-5 text-[#1e90ff]" />
           </div>
           <div>
             <p class="text-2xl font-bold text-slate-900">{{ collaborators.length }}</p>
@@ -80,7 +80,7 @@
       </h3>
       <div class="flex items-center space-x-4">
         <div
-          class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center"
+          class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center"
         >
           <img
             v-if="organizerDetails.profile_picture"
@@ -113,7 +113,7 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
         <span class="ml-3 text-slate-600">Loading collaborators...</span>
       </div>
     </div>
@@ -125,7 +125,7 @@
     >
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-slate-900 flex items-center">
-          <Users class="w-5 h-5 text-blue-600 mr-2" />
+          <Users class="w-5 h-5 text-[#1e90ff] mr-2" />
           Collaborators ({{ collaborators.length }})
         </h3>
         <p v-if="canUpdateRole" class="text-xs text-slate-500 italic">Click role badges to edit</p>
@@ -138,7 +138,7 @@
         >
           <div class="flex items-center space-x-4">
             <div
-              class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center"
+              class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center"
             >
               <img
                 v-if="collaborator.user_details?.profile_picture"
@@ -186,7 +186,7 @@
                   @change="saveRoleUpdate(collaborator)"
                   @blur="cancelRoleEdit"
                   @keydown.escape="cancelRoleEdit"
-                  class="px-2 py-1 text-xs font-medium rounded-full border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  class="px-2 py-1 text-xs font-medium rounded-full border border-slate-300 focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white"
                   :class="
                     getRoleColor(tempRole)
                       .replace('bg-', 'bg-opacity-20 bg-')
@@ -202,7 +202,7 @@
                 <button
                   v-if="canUpdateRole"
                   @click="startRoleEdit(collaborator)"
-                  class="inline-block px-3 py-1 text-xs font-medium rounded-full hover:ring-2 hover:ring-blue-300 transition-all duration-200"
+                  class="inline-block px-3 py-1 text-xs font-medium rounded-full hover:ring-2 hover:ring-[#5eb3f6] transition-all duration-200"
                   :class="getRoleColor(collaborator.role)"
                   title="Click to change role"
                 >
@@ -273,7 +273,7 @@
       <button
         v-if="canInvite"
         @click="showInviteModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
       >
         <UserPlus class="w-4 h-4 mr-2" />
         Invite Your First Collaborator
@@ -282,11 +282,11 @@
 
     <!-- Collaboration Permissions Info -->
     <div
-      class="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50 rounded-3xl p-6"
+      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-6"
     >
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-slate-900 flex items-center">
-          <Shield class="w-5 h-5 text-blue-600 mr-2" />
+          <Shield class="w-5 h-5 text-[#1e90ff] mr-2" />
           Collaboration Roles
         </h3>
       </div>
@@ -300,7 +300,7 @@
         </div>
         <div class="bg-white/70 rounded-2xl p-4">
           <div class="flex items-center mb-2">
-            <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+            <div class="w-3 h-3 bg-[#E6F4FF]0 rounded-full mr-2"></div>
             <span class="font-semibold text-slate-900">Editor</span>
           </div>
           <p class="text-sm text-slate-600">Can edit event details and manage content</p>
@@ -328,7 +328,7 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -357,7 +357,7 @@
                       v-model="inviteForm.email"
                       type="email"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="collaborator@example.com"
                     />
                   </div>
@@ -366,7 +366,7 @@
                     <label class="block text-sm font-medium text-slate-700 mb-2">Role</label>
                     <select
                       v-model="inviteForm.role"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="viewer">Viewer - Read-only access</option>
                       <option value="editor">Editor - Can edit event details</option>
@@ -381,7 +381,7 @@
                     <textarea
                       v-model="inviteForm.message"
                       rows="3"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Add a personal message to your invitation..."
                     ></textarea>
                   </div>
@@ -398,7 +398,7 @@
                   <button
                     type="submit"
                     :disabled="isInviting"
-                    class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {{ isInviting ? 'Inviting...' : 'Send Invitation' }}
                   </button>
@@ -672,7 +672,7 @@ const getRoleColor = (role: string) => {
     case 'admin':
       return 'bg-red-100 text-red-700'
     case 'editor':
-      return 'bg-blue-100 text-blue-700'
+      return 'bg-[#B0E0E6] text-[#1873cc]'
     case 'viewer':
       return 'bg-green-100 text-green-700'
     default:

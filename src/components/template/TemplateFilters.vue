@@ -12,7 +12,7 @@
         :class="[
           'px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0',
           selectedCategory === null
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
             : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow-md',
         ]"
         type="button"
@@ -44,7 +44,7 @@
         @input="handleSearchInput"
         type="text"
         placeholder="Search templates..."
-        class="w-full pl-10 pr-4 py-2 sm:py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+        class="w-full pl-10 pr-4 py-2 sm:py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
       />
     </div>
   </div>

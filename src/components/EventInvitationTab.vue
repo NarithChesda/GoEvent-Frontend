@@ -17,8 +17,8 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <Send class="w-5 h-5 text-blue-600" />
+          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <Send class="w-5 h-5 text-[#1e90ff]" />
           </div>
           <div>
             <p v-if="loadingStats" class="text-2xl font-bold text-slate-900">...</p>
@@ -70,7 +70,7 @@
 
     <!-- Loading State -->
     <div v-if="loadingPayments" class="text-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto mb-2"></div>
       <p class="text-slate-600">Checking template status...</p>
     </div>
 
@@ -86,7 +86,7 @@
       </p>
       <button
         @click="redirectToTemplateTab"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
       >
         <Mail class="w-4 h-4 mr-2" />
         Select Template
@@ -106,7 +106,7 @@
       </p>
       <button
         @click="redirectToPaymentTab"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
       >
         <CreditCard class="w-4 h-4 mr-2" />
         Complete Payment
@@ -119,7 +119,7 @@
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-bold text-slate-900 flex items-center">
-            <Users class="w-5 h-5 text-blue-600 mr-2" />
+            <Users class="w-5 h-5 text-[#1e90ff] mr-2" />
             Guest List
           </h3>
           <div class="flex gap-2">
@@ -132,14 +132,14 @@
             </button>
             <button
               @click="sendInvitations"
-              class="bg-white/80 backdrop-blur-sm border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center"
+              class="bg-white/80 backdrop-blur-sm border-2 border-[#1e90ff] text-[#1e90ff] hover:bg-[#E6F4FF] font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center"
             >
               <Send class="w-4 h-4 mr-2" />
               <span class="hidden sm:inline">Bulk Send</span>
             </button>
             <button
               @click="showAddGuestModal = true"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 inline-flex items-center"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
             >
               <UserPlus class="w-4 h-4 mr-2" />
               Add Guest
@@ -155,7 +155,7 @@
               @input="handleSearch"
               type="text"
               placeholder="Search guests by name..."
-              class="w-full px-4 py-2 pl-10 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
+              class="w-full px-4 py-2 pl-10 rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
             />
             <svg
               class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"
@@ -175,7 +175,7 @@
 
         <!-- Guest List Table -->
         <div v-if="loading" class="text-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
           <p class="text-slate-600 mt-2">Loading guest list...</p>
         </div>
 
@@ -222,7 +222,7 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div
-                      class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm"
+                      class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-sm"
                     >
                       {{ getInitials(guest.name) }}
                     </div>
@@ -249,7 +249,7 @@
                     <button
                       v-if="guest.invitation_status === 'not_sent'"
                       @click="sendIndividualInvitation(guest)"
-                      class="text-blue-600 hover:text-blue-700"
+                      class="text-[#1e90ff] hover:text-[#1873cc]"
                       title="Mark as Sent"
                     >
                       <Send class="w-4 h-4" />
@@ -304,7 +304,7 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -333,7 +333,7 @@
                   type="text"
                   required
                   placeholder="Enter guest's full name"
-                  class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
                 />
               </div>
 
@@ -348,7 +348,7 @@
                 <button
                   type="submit"
                   :disabled="!newGuestName.trim() || isAddingGuest"
-                  class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+                  class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
                 >
                   <span v-if="isAddingGuest" class="inline-flex items-center">
                     <div

@@ -10,7 +10,7 @@
       </div>
       <button
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
       >
         <Plus class="w-4 h-4 mr-2" />
         Add Text Content
@@ -20,7 +20,7 @@
     <!-- Filters -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
       <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <FileText class="w-5 h-5 text-blue-600 mr-2" />
+        <FileText class="w-5 h-5 text-[#1e90ff] mr-2" />
         Content Filters
       </h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -29,7 +29,7 @@
           <select
             v-model="filters.textType"
             @change="applyFilters"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
+            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Types</option>
             <option value="cover_header">Cover Header</option>
@@ -52,7 +52,7 @@
           <select
             v-model="filters.language"
             @change="applyFilters"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
+            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Languages</option>
             <option value="en">English</option>
@@ -71,7 +71,7 @@
           <select
             v-model="filters.isActive"
             @change="applyFilters"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
+            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Statuses</option>
             <option value="true">Active</option>
@@ -87,7 +87,7 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
         <span class="ml-3 text-slate-600">Loading text content...</span>
       </div>
     </div>
@@ -125,7 +125,7 @@
       <button
         v-if="allTexts.length === 0"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
       >
         <Plus class="w-4 h-4 mr-2" />
         Add Your First Text Content
@@ -142,7 +142,7 @@
       >
         <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-white/20">
           <h3 class="text-lg font-bold text-slate-900 flex items-center">
-            <component :is="getTextTypeIcon(textType)" class="w-5 h-5 mr-2 text-blue-600" />
+            <component :is="getTextTypeIcon(textType)" class="w-5 h-5 mr-2 text-[#1e90ff]" />
             {{ getTextTypeLabel(textType) }}
             <span class="ml-2 text-sm text-slate-500"
               >({{ group.length }} item{{ group.length !== 1 ? 's' : '' }})</span

@@ -14,8 +14,8 @@
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg">
       <div class="p-6">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-            <FileText class="w-5 h-5 text-blue-600" />
+          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center mr-3">
+            <FileText class="w-5 h-5 text-[#1e90ff]" />
           </div>
           <div>
             <h3 class="text-lg font-bold text-slate-900">Event Description</h3>
@@ -34,7 +34,7 @@
           <button
             v-if="event.description.length > 300"
             @click="isDescriptionExpanded = !isDescriptionExpanded"
-            class="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center transition-colors"
+            class="mt-4 text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center transition-colors"
           >
             <span>{{ isDescriptionExpanded ? 'Show Less' : 'Read More' }}</span>
             <ChevronDown
@@ -76,7 +76,7 @@
           <button
             v-if="event.is_ongoing"
             @click="$emit('join-virtual')"
-            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center justify-center"
+            class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
           >
             <ExternalLink class="w-4 h-4 mr-2" />
             Join Meeting

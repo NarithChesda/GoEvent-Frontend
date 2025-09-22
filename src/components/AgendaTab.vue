@@ -11,7 +11,7 @@
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2"
       >
         <Plus class="w-4 h-4" />
         <span>Add Agenda Item</span>
@@ -58,7 +58,7 @@
         <button
           v-if="canEdit"
           @click="showCreateModal = true"
-          class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 mx-auto"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 mx-auto"
         >
           <Plus class="w-4 h-4" />
           <span>Add First Item</span>
@@ -77,15 +77,15 @@
           <!-- Date Header (Clickable) -->
           <div
             @click="toggleDateExpanded(date)"
-            class="cursor-pointer p-6 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-purple-50/40 transition-all duration-300"
+            class="cursor-pointer p-6 hover:bg-gradient-to-r hover:from-emerald-50/40 hover:to-sky-50/40 transition-all duration-300"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-4">
                 <!-- Date Icon -->
                 <div
-                  class="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center"
+                  class="w-12 h-12 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-2xl flex items-center justify-center"
                 >
-                  <Calendar class="w-6 h-6 text-blue-600" />
+                  <Calendar class="w-6 h-6 text-[#1e90ff]" />
                 </div>
 
                 <!-- Date Info -->
@@ -102,10 +102,10 @@
               <!-- Expand/Collapse Icon -->
               <div class="flex items-center space-x-2">
                 <div
-                  class="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center transition-transform duration-300"
+                  class="w-8 h-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center transition-transform duration-300"
                   :class="{ 'rotate-180': expandedDates.has(date) }"
                 >
-                  <ChevronDown class="w-4 h-4 text-blue-600" />
+                  <ChevronDown class="w-4 h-4 text-[#1e90ff]" />
                 </div>
               </div>
             </div>

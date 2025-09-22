@@ -49,7 +49,7 @@ const emit = defineEmits<Emits>()
 
 // Variant color mappings
 const variantClasses = {
-  edit: 'hover:text-blue-600 hover:bg-blue-50 focus:ring-blue-500',
+  edit: 'hover:text-[#1e90ff] hover:bg-[#E6F4FF] focus:ring-[#1e90ff]',
   delete: 'hover:text-red-600 hover:bg-red-50 focus:ring-red-500',
   view: 'hover:text-green-600 hover:bg-green-50 focus:ring-green-500',
   share: 'hover:text-purple-600 hover:bg-purple-50 focus:ring-purple-500',

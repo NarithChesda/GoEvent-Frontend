@@ -13,7 +13,7 @@
       <div v-if="canEdit" class="flex items-center space-x-3">
         <button
           @click="openTemplateSelector"
-          class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
         >
           <Palette class="w-4 h-4 mr-2" />
           Browse Templates
@@ -243,7 +243,7 @@
       <button
         v-if="canEdit"
         @click="openTemplateSelector"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
       >
         <Palette class="w-5 h-5 mr-2" />
         Browse Templates
@@ -253,13 +253,13 @@
     <!-- Template Selected But Not Enabled State -->
     <div
       v-if="event.event_template && !isTemplateActivated && !selectedTemplateDetails"
-      class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-3xl p-6"
+      class="bg-gradient-to-r from-[#E6F4FF] to-indigo-50 border border-[#87CEEB] rounded-3xl p-6"
     >
       <div class="flex items-start space-x-4">
         <div
-          class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
+          class="w-12 h-12 bg-[#B0E0E6] rounded-full flex items-center justify-center flex-shrink-0"
         >
-          <Package class="w-6 h-6 text-blue-600" />
+          <Package class="w-6 h-6 text-[#1e90ff]" />
         </div>
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-slate-900">Template Selected</h3>
@@ -474,9 +474,9 @@ onUnmounted(() => {
 <style scoped>
 /* Button Styles */
 .btn-gradient {
-  @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
+  @apply bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] 
          text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 
-         hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30;
+         hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30;
 }
 
 /* Transition Animations */

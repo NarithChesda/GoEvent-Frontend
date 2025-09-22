@@ -7,7 +7,7 @@
       <button
         v-if="showRetry"
         @click="$emit('retry')"
-        class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        class="mt-4 px-6 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] transition-colors"
       >
         Try Again
       </button>

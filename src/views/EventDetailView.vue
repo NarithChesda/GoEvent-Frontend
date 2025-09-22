@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
     <Navigation />
 
     <!-- Loading State -->
@@ -78,7 +78,7 @@
               <div v-if="!canViewEventTexts || !event?.id" class="text-center py-12">
                 <div v-if="!event?.id">
                   <div
-                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"
+                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto mb-2"
                   ></div>
                   <span class="text-lg text-slate-600 leading-relaxed">Loading event data...</span>
                 </div>
@@ -239,8 +239,8 @@
       <div v-if="event?.can_edit" class="fixed bottom-8 right-8 z-40" @click.stop>
         <button
           @click="toggleActionMenu"
-          class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
-          :class="{ 'ring-4 ring-blue-200': showActionMenu }"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
+          :class="{ 'ring-4 ring-[#87CEEB]': showActionMenu }"
         >
           <Pencil class="w-6 h-6" />
         </button>
@@ -263,7 +263,7 @@
     <div v-else-if="error" class="pt-24 pb-16">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div
-          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-blue-500/25 p-12"
+          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-emerald-500/25 p-12"
         >
           <AlertTriangle class="w-16 h-16 text-red-600 mx-auto mb-6" />
           <h1 class="text-2xl font-bold text-slate-900 mb-4 leading-tight tracking-tight">
@@ -272,7 +272,7 @@
           <p class="text-lg text-slate-600 mb-8 leading-relaxed max-w-prose mx-auto">{{ error }}</p>
           <button
             @click="$router.push('/events')"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-600/30"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-600/30"
           >
             Back to Events
           </button>

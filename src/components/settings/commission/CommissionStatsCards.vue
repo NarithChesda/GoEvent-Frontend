@@ -2,14 +2,14 @@
   <!-- 3-Tier Minimalist Information Hierarchy -->
   <div class="space-y-6">
     <!-- Primary Metric - Total Earnings -->
-    <BaseCard variant="featured" size="lg" accent-color="bg-gradient-to-r from-blue-600 to-purple-600">
+    <BaseCard variant="featured" size="lg" accent-color="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]">
       <div class="text-center">
-        <div class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl mb-3">
-          <DollarSign class="w-6 h-6 text-blue-600" />
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-xl mb-3">
+          <DollarSign class="w-6 h-6 text-[#1e90ff]" />
         </div>
         <div class="space-y-1">
           <p class="text-sm font-medium text-slate-600">Total Earnings</p>
-          <p class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <p class="text-3xl font-bold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent">
             {{ isStatsLoading ? '...' : formatCurrency(stats?.total_commission_amount || 0) }}
           </p>
           <p class="text-xs text-slate-500">All time commission</p>

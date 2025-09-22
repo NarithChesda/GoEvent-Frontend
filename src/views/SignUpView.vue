@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative overflow-hidden"
+    class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative overflow-hidden"
   >
     <!-- Background Elements -->
     <div class="absolute inset-0">
@@ -8,7 +8,7 @@
         class="absolute top-0 right-0 w-96 h-96 bg-purple-300/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
       ></div>
       <div
-        class="absolute bottom-0 left-0 w-80 h-80 bg-blue-300/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"
+        class="absolute bottom-0 left-0 w-80 h-80 bg-[#5eb3f6]/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"
       ></div>
     </div>
 
@@ -16,15 +16,12 @@
       <!-- Logo and Header -->
       <div class="text-center mb-8">
         <RouterLink to="/" class="inline-flex items-center space-x-3 mb-8">
-          <div
-            class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg"
-          >
-            <CalendarDays class="w-7 h-7 text-white" />
-          </div>
-          <span
-            class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-            >GoEvent</span
-          >
+          <img
+            :src="LogoSvg"
+            alt="GoEvent Logo"
+            class="h-32 w-auto"
+          />
+
         </RouterLink>
         <h2
           class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-2 leading-tight tracking-tight"
@@ -54,7 +51,7 @@
                   autocomplete="given-name"
                   required
                   v-model="form.firstName"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+                  class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
                   placeholder="John"
                 />
               </div>
@@ -72,7 +69,7 @@
                   autocomplete="family-name"
                   required
                   v-model="form.lastName"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+                  class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
                   placeholder="Doe"
                 />
               </div>
@@ -91,7 +88,7 @@
                 autocomplete="email"
                 required
                 v-model="form.email"
-                class="w-full px-4 py-3 border rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+                class="w-full px-4 py-3 border rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
                 :class="
                   fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-slate-200'
                 "
@@ -115,7 +112,7 @@
                 autocomplete="new-password"
                 required
                 v-model="form.password"
-                class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium pr-12"
+                class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium pr-12"
                 placeholder="Create a password"
               />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -156,7 +153,7 @@
                 autocomplete="new-password"
                 required
                 v-model="form.confirmPassword"
-                class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+                class="w-full px-4 py-3 border border-slate-200 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
                 placeholder="Confirm your password"
               />
             </div>
@@ -172,13 +169,13 @@
               type="checkbox"
               required
               v-model="form.agreeTerms"
-              class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-2"
+              class="w-4 h-4 text-[#1e90ff] border-slate-300 rounded focus:ring-[#1e90ff] focus:ring-2"
             />
             <label for="agree-terms" class="ml-2 block text-sm font-medium text-slate-700">
               I agree to the
-              <a href="#" class="text-blue-600 hover:text-blue-500">Terms of Service</a>
+              <a href="#" class="text-[#1e90ff] hover:text-[#1e90ff]">Terms of Service</a>
               and
-              <a href="#" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+              <a href="#" class="text-[#1e90ff] hover:text-[#1e90ff]">Privacy Policy</a>
             </label>
           </div>
 
@@ -204,7 +201,7 @@
             <button
               type="submit"
               :disabled="authStore.isLoading || !passwordsMatch || !form.agreeTerms"
-              class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg flex justify-center items-center"
+              class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg flex justify-center items-center"
             >
               <Loader2 v-if="authStore.isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5" />
               {{ authStore.isLoading ? 'Creating account...' : 'Create account' }}
@@ -226,7 +223,7 @@
                 type="button"
                 @click="handleGoogleSignUp"
                 :disabled="isGoogleLoading"
-                class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <Loader2 v-if="isGoogleLoading" class="animate-spin h-5 w-5 mr-2" />
                 <svg v-else class="h-5 w-5" viewBox="0 0 24 24">
@@ -261,7 +258,7 @@
             Already have an account?
             <RouterLink
               to="/signin"
-              class="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              class="font-semibold text-[#1e90ff] hover:text-[#1873cc] transition-colors"
             >
               Sign in here
             </RouterLink>
@@ -275,7 +272,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
-import { CalendarDays, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
+import LogoSvg from '@/assets/logo.svg'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
 

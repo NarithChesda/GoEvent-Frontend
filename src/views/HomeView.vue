@@ -5,24 +5,24 @@
     <!-- Hero Section -->
     <section
       id="hero"
-      class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20"
+      class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 overflow-hidden -mt-20"
     >
       <!-- Optimized Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
         <div
-          class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"
+          class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-500/5"
         ></div>
 
         <!-- Reduced animated background shapes for better performance -->
         <div
-          class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full mix-blend-multiply hero-blur-shape animate-float"
+          class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-emerald-400/20 to-green-500/20 rounded-full mix-blend-multiply hero-blur-shape animate-float"
         ></div>
         <div
-          class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/15 to-pink-400/15 rounded-full mix-blend-multiply hero-blur-shape animate-float-delayed"
+          class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-green-400/15 to-emerald-400/15 rounded-full mix-blend-multiply hero-blur-shape animate-float-delayed"
         ></div>
         <div
-          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-blue-300/8 to-purple-300/8 rounded-full mix-blend-multiply hero-blur-large"
+          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-emerald-200/8 to-green-300/8 rounded-full mix-blend-multiply hero-blur-large"
         ></div>
       </div>
 
@@ -33,7 +33,7 @@
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
             <div class="space-y-4 sm:space-y-6">
               <div
-                class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-blue-200/30"
+                class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-[#87CEEB]/30"
               >
                 <Sparkles class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 #1 Event Management Platform
@@ -59,7 +59,7 @@
             >
               <RouterLink
                 to="/signup"
-                class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
+                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
               >
                 Start Creating Events
                 <ArrowRight
@@ -68,7 +68,7 @@
               </RouterLink>
               <button
                 @click="scrollToDemo"
-                class="flex items-center justify-center bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg border-2 border-blue-200 text-base shadow-sm transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md hover:scale-[1.02] active:bg-blue-100 active:scale-[0.98] group"
+                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-8 py-4 rounded-lg border-2 border-[#87CEEB] text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group"
               >
                 <Play
                   class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
@@ -111,7 +111,7 @@
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main Dashboard Card -->
               <div
-                class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
+                class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-[#1e90ff]/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
               >
                 <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
                   <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">
@@ -129,14 +129,14 @@
                   class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8"
                 >
                   <div
-                    class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50"
+                    class="bg-gradient-to-br from-[#E6F4FF] to-[#B0E0E6] rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-[#87CEEB]/50"
                   >
                     <div
-                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2"
+                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-[#1e90ff] mb-1 sm:mb-2"
                     >
                       1,247
                     </div>
-                    <div class="text-xs sm:text-sm text-blue-700 font-medium">Total Attendees</div>
+                    <div class="text-xs sm:text-sm text-[#1873cc] font-medium">Total Attendees</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ +23% this week</div>
                   </div>
                   <div
@@ -159,7 +159,7 @@
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-3">
                     <div
-                      class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
+                      class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-3 rounded-full transition-all duration-1000"
                       style="width: 87%"
                     ></div>
                   </div>
@@ -167,8 +167,8 @@
                   <div class="flex justify-between items-center pt-4">
                     <span class="text-xs text-gray-500">Next milestone in 3 days</span>
                     <div class="flex space-x-1">
-                      <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
-                      <div class="w-2 h-2 bg-blue-300 rounded-full"></div>
+                      <div class="w-2 h-2 bg-[#4fa3d9] rounded-full"></div>
+                      <div class="w-2 h-2 bg-[#5eb3f6] rounded-full"></div>
                       <div class="w-2 h-2 bg-gray-200 rounded-full"></div>
                     </div>
                   </div>
@@ -230,7 +230,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <Star class="w-4 h-4" />
             Features That Matter
@@ -240,7 +240,7 @@
           >
             Everything You Need to
             <span
-              class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
             >
               Succeed</span
             >
@@ -255,12 +255,12 @@
           <div
             v-for="(feature, index) in features"
             :key="feature.title"
-            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            :class="index === 1 ? 'md:scale-105 md:z-10 border-blue-100' : ''"
+            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+            :class="index === 1 ? 'md:scale-105 md:z-10 border-[#B0E0E6]' : ''"
           >
             <!-- Top accent bar -->
             <div
-              class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
+              class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
             ></div>
 
             <div class="relative">
@@ -278,14 +278,14 @@
                 </div>
                 <!-- Floating accent -->
                 <div
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
+                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
                 ></div>
               </div>
 
               <!-- Content with design guide typography -->
               <div class="space-y-4">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ feature.title }}
                 </h3>
@@ -297,7 +297,7 @@
 
             <!-- Hover effect background -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-purple-50/0 group-hover:from-blue-50/30 group-hover:to-purple-50/30 rounded-xl transition-all duration-300 -z-10"
+              class="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-sky-50/0 group-hover:from-emerald-50/30 group-hover:to-sky-50/30 rounded-xl transition-all duration-300 -z-10"
             ></div>
           </div>
         </div>
@@ -317,7 +317,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <MessageCircle class="h-4 w-4" />
             Client Success Stories
@@ -326,7 +326,7 @@
             class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
           >
             Loved by
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
               >10,000+</span
             >
             organizers
@@ -347,7 +347,7 @@
           >
             <!-- Quote icon -->
             <div
-              class="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm sm:text-lg font-bold"
+              class="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center text-white text-sm sm:text-lg font-bold"
             >
               "
             </div>
@@ -367,9 +367,9 @@
             <!-- Author info -->
             <div class="flex items-center">
               <div
-                class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 group-hover:scale-110 transition-transform duration-300"
+                class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 group-hover:scale-110 transition-transform duration-300"
               >
-                <span class="text-blue-600 font-bold text-sm sm:text-base lg:text-lg">{{
+                <span class="text-[#1e90ff] font-bold text-sm sm:text-base lg:text-lg">{{
                   testimonial.name.charAt(0)
                 }}</span>
               </div>
@@ -377,7 +377,7 @@
                 <h4 class="font-bold text-slate-900 text-sm sm:text-base lg:text-lg">
                   {{ testimonial.name }}
                 </h4>
-                <p class="text-blue-600 font-medium text-xs sm:text-sm lg:text-base">
+                <p class="text-[#1e90ff] font-medium text-xs sm:text-sm lg:text-base">
                   {{ testimonial.role }}
                 </p>
               </div>
@@ -385,7 +385,7 @@
 
             <!-- Hover effect background -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
+              class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-sky-50/50 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
             ></div>
           </div>
         </div>
@@ -401,14 +401,14 @@
             </div>
             <div class="hidden sm:block w-px h-6 bg-slate-300"></div>
             <div class="flex items-center space-x-2">
-              <Shield class="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              <Shield class="h-4 w-4 sm:h-5 sm:w-5 text-[#1e90ff]" />
               <span class="text-slate-700 font-medium text-sm sm:text-base"
                 >Enterprise Security</span
               >
             </div>
             <div class="hidden sm:block w-px h-6 bg-slate-300"></div>
             <div class="flex items-center space-x-2">
-              <Award class="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              <Award class="h-4 w-4 sm:h-5 sm:w-5 text-[#1e90ff]" />
               <span class="text-slate-700 font-medium text-sm sm:text-base">Award Winning</span>
             </div>
           </div>
@@ -427,7 +427,7 @@
         <!-- Header Section -->
         <div class="text-center mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <HelpCircle class="h-4 w-4" />
             Frequently Asked Questions
@@ -437,7 +437,7 @@
           >
             Got Questions? We've Got
             <span
-              class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+              class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
             >
               Answers</span
             >
@@ -453,25 +453,25 @@
           <div
             v-for="(faq, index) in faqs"
             :key="index"
-            class="group bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm hover:shadow-lg hover:border-blue-200/50 transition-all duration-300 overflow-hidden"
+            class="group bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm hover:shadow-lg hover:border-[#87CEEB]/50 transition-all duration-300 overflow-hidden"
           >
             <button
               @click="toggleFaq(index)"
-              class="w-full px-8 py-6 text-left flex items-start justify-between font-medium text-slate-900 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-purple-50/30 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group"
+              class="w-full px-8 py-6 text-left flex items-start justify-between font-medium text-slate-900 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-sky-50/30 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2 group"
             >
               <div class="flex-1 pr-6">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-tight tracking-tight group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-xl font-bold text-slate-900 leading-tight tracking-tight group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ faq.question }}
                 </h3>
               </div>
               <div class="flex-shrink-0 ml-4">
                 <div
-                  class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-purple-100 flex items-center justify-center transition-all duration-300"
+                  class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 flex items-center justify-center transition-all duration-300"
                 >
                   <ChevronDown
-                    class="w-5 h-5 text-slate-500 group-hover:text-blue-600 transition-all duration-300"
+                    class="w-5 h-5 text-slate-500 group-hover:text-[#1e90ff] transition-all duration-300"
                     :class="{ 'rotate-180': openFaq === index }"
                   />
                 </div>
@@ -489,7 +489,7 @@
                 <div class="px-8 pb-8 pt-2">
                   <!-- Visual separator -->
                   <div
-                    class="w-16 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6"
+                    class="w-16 h-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mb-6"
                   ></div>
                   <!-- Answer content with better typography -->
                   <div class="prose prose-slate max-w-none">
@@ -518,17 +518,17 @@
       <div class="absolute inset-0">
         <!-- Subtle gradient orbs -->
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div
-          class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-8 lg:p-10 xl:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10"
+          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-3xl p-8 lg:p-10 xl:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
         >
           <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
             <!-- Left side - Content -->
@@ -545,13 +545,14 @@
               >
                 Ready to Transform Your
                 <span
-                  class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
+                  class="text-white bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400"
+
                 >
                   Event Management?</span
                 >
               </h2>
 
-              <p class="text-lg text-slate-300 mb-6 leading-relaxed">
+              <p class="text-lg text-white mb-6 leading-relaxed">
                 Join thousands of event organizers who trust GoEvent to deliver exceptional
                 experiences. Start your free trial today and see the difference.
               </p>
@@ -564,7 +565,7 @@
                   >
                     10K+
                   </div>
-                  <div class="text-xs sm:text-sm text-slate-400">Events Created</div>
+                  <div class="text-xs sm:text-sm text-white">Events Created</div>
                 </div>
                 <div class="text-center lg:text-left">
                   <div
@@ -572,7 +573,7 @@
                   >
                     99.9%
                   </div>
-                  <div class="text-xs sm:text-sm text-slate-400">Uptime</div>
+                  <div class="text-xs sm:text-sm text-white">Uptime</div>
                 </div>
                 <div class="text-center lg:text-left">
                   <div
@@ -580,7 +581,7 @@
                   >
                     24/7
                   </div>
-                  <div class="text-xs sm:text-sm text-slate-400">Support</div>
+                  <div class="text-xs sm:text-sm text-white">Support</div>
                 </div>
               </div>
 
@@ -588,7 +589,7 @@
               <div class="flex flex-col sm:flex-row gap-4">
                 <RouterLink
                   to="/signup"
-                  class="group bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 font-semibold px-8 py-4 rounded-lg text-base transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-black/10 flex items-center justify-center"
+                  class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-semibold px-8 py-4 rounded-lg text-base transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-black/10 flex items-center justify-center"
                 >
                   Start Your Free Trial
                   <ArrowRight
@@ -646,7 +647,7 @@
                       </div>
                       <div class="w-full bg-slate-200 rounded-full h-3">
                         <div
-                          class="bg-gradient-to-r from-blue-500 to-cyan-400 h-3 rounded-full transition-all duration-1000"
+                          class="bg-gradient-to-r from-[#1e90ff] to-cyan-400 h-3 rounded-full transition-all duration-1000"
                           style="width: 87%"
                         ></div>
                       </div>
@@ -656,13 +657,13 @@
 
                 <!-- Floating elements -->
                 <div
-                  class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block"
+                  class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-br from-[#1e90ff] to-cyan-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block"
                 >
                   <Star class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
 
                 <div
-                  class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-br from-purple-500 to-pink-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block"
+                  class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-br from-emerald-500 to-sky-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block"
                 >
                   <Bell class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
@@ -680,7 +681,7 @@
       <button
         v-show="showScrollTop"
         @click="scrollToTop"
-        class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white p-4 rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
       >
         <ArrowUp class="w-6 h-6" />
       </button>
@@ -767,16 +768,16 @@ const features = computed(() => [
     title: 'Smart Event Planning',
     description:
       'Create and manage events with our intuitive planning tools. Set dates, venues, and track progress effortlessly with AI-powered suggestions.',
-    bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
-    iconColor: 'text-blue-600',
+    bgColor: 'bg-gradient-to-br from-[#B0E0E6] to-[#87CEEB]',
+    iconColor: 'text-[#1e90ff]',
   },
   {
     icon: Users,
     title: 'Advanced Guest Management',
     description:
       'Manage attendee lists, send personalized invitations, and track RSVPs with automated follow-ups and custom registration forms.',
-    bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
-    iconColor: 'text-blue-600',
+    bgColor: 'bg-gradient-to-br from-[#B0E0E6] to-[#87CEEB]',
+    iconColor: 'text-[#1e90ff]',
   },
   {
     icon: BarChart3,
@@ -1010,7 +1011,7 @@ const faqs = computed(() => [
 /* Typing animation */
 .typing-text {
   position: relative;
-  background: linear-gradient(to right, #2563eb, #9333ea);
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

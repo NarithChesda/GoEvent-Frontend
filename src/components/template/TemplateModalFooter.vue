@@ -19,7 +19,7 @@
         :class="[
           'px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2',
           hasSelection && !isSelecting
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:scale-[1.02]'
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-lg hover:scale-[1.02]'
             : 'bg-slate-200 text-slate-400 cursor-not-allowed',
         ]"
         type="button"

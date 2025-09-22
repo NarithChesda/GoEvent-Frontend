@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
     <Navigation />
 
     <!-- Main Content -->
@@ -17,8 +17,8 @@
               @click="currentView = 'my'"
               :class="
                 currentView === 'my'
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                  : 'text-slate-600 hover:text-blue-600'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+                  : 'text-slate-600 hover:text-[#1e90ff]'
               "
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
@@ -28,8 +28,8 @@
               @click="currentView = 'all'"
               :class="
                 currentView === 'all'
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                  : 'text-slate-600 hover:text-blue-600'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+                  : 'text-slate-600 hover:text-[#1e90ff]'
               "
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
@@ -40,8 +40,8 @@
               @click="currentView = 'registered'"
               :class="
                 currentView === 'registered'
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                  : 'text-slate-600 hover:text-blue-600'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+                  : 'text-slate-600 hover:text-[#1e90ff]'
               "
               class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
             >
@@ -54,7 +54,7 @@
             v-if="authStore.isAuthenticated"
             @click="createEvent"
             ref="createEventButton"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 flex items-center"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 flex items-center"
           >
             <Plus class="w-5 h-5 mr-2" />
             Create Event
@@ -104,7 +104,7 @@
               <button
                 @click="loadPage(pagination.currentPage - 1)"
                 :disabled="pagination.currentPage <= 1"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 <ChevronLeft class="w-4 h-4" />
               </button>
@@ -115,8 +115,8 @@
                   @click="loadPage(page as number)"
                   :class="
                     page === pagination.currentPage
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
+                      : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
                   "
                   class="px-4 py-2 rounded-xl border border-slate-200 transition-all duration-200 min-w-[40px]"
                 >
@@ -128,7 +128,7 @@
               <button
                 @click="loadPage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage >= pagination.totalPages"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 <ChevronRight class="w-4 h-4" />
               </button>
@@ -139,9 +139,9 @@
         <!-- Empty State -->
         <div v-else-if="isEmpty" class="text-center py-12 sm:py-16">
           <div
-            class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center"
+            class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
           >
-            <Calendar class="w-32 h-32 text-blue-400" />
+            <Calendar class="w-32 h-32 text-[#5eb3f6]" />
           </div>
           <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-4">
             {{ getEmptyStateTitle() }}
@@ -152,7 +152,7 @@
           <button
             v-if="authStore.isAuthenticated && currentView !== 'registered'"
             @click="createEvent"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 hover:scale-105 inline-flex items-center"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 inline-flex items-center"
           >
             <Plus class="w-5 h-5 mr-2" />
             Create Your First Event
@@ -180,7 +180,7 @@
       <button
         v-if="authStore.isAuthenticated && showFloatingButton"
         @click="createEvent"
-        class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
+        class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
         aria-label="Create Event"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />

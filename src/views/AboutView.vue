@@ -5,32 +5,32 @@
     <!-- Hero Section -->
     <section
       id="hero"
-      class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden -mt-20"
+      class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 overflow-hidden -mt-20"
     >
       <!-- Enhanced Background Elements -->
       <div class="absolute inset-0">
         <!-- Primary gradient overlay -->
         <div
-          class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-500/5 to-indigo-600/5"
+          class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-500/5"
         ></div>
 
         <!-- Animated background shapes -->
         <div
-          class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"
+          class="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-emerald-400/30 to-green-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"
         ></div>
         <div
-          class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"
+          class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-green-400/25 to-emerald-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"
         ></div>
         <div
-          class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-indigo-400/30 to-blue-500/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"
+          class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-emerald-300/30 to-green-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"
         ></div>
         <div
-          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/10 to-purple-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"
+          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-emerald-200/10 to-green-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"
         ></div>
 
         <!-- Geometric patterns -->
         <div
-          class="absolute top-32 right-32 w-4 h-4 bg-blue-500/30 rounded-full animate-pulse delay-300"
+          class="absolute top-32 right-32 w-4 h-4 bg-emerald-500/30 rounded-full animate-pulse delay-300"
         ></div>
         <div
           class="absolute bottom-32 left-32 w-6 h-6 bg-purple-500/30 rounded-full animate-pulse delay-900"
@@ -47,7 +47,7 @@
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
             <div class="space-y-4 sm:space-y-6">
               <div
-                class="inline-flex items-center bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/30 text-blue-900 text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-blue-200/30"
+                class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-[#87CEEB]/30"
               >
                 <Heart class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Our Story
@@ -68,7 +68,7 @@
               >
                 We are on a mission to Build intelligent, tech-driven solutions that redefine how
                 businesses manage and deliver
-                <span class="text-blue-600 font-semibold"> experiences</span>.
+                <span class="text-[#1e90ff] font-semibold"> experiences</span>.
               </p>
             </div>
 
@@ -77,7 +77,7 @@
             >
               <RouterLink
                 to="/events"
-                class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-blue-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
+                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
               >
                 Explore Our Events
                 <ArrowRight
@@ -86,7 +86,7 @@
               </RouterLink>
               <RouterLink
                 to="/"
-                class="flex items-center justify-center bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg border-2 border-blue-200 text-base shadow-sm transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md hover:scale-[1.02] active:bg-blue-100 active:scale-[0.98] group"
+                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-8 py-4 rounded-lg border-2 border-[#87CEEB] text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group"
               >
                 <Heart
                   class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
@@ -100,22 +100,22 @@
             >
               <div class="flex -space-x-2">
                 <div
-                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
                 >
                   A
                 </div>
                 <div
-                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-[#1e90ff] rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
                 >
                   S
                 </div>
                 <div
-                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#1e90ff] to-[#2ecc71] rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
                 >
                   M
                 </div>
                 <div
-                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
+                  class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full border-3 sm:border-4 border-white flex items-center justify-center text-white font-bold text-sm sm:text-base"
                 >
                   +
                 </div>
@@ -130,7 +130,7 @@
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main About Card -->
               <div
-                class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
+                class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-[#1e90ff]/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
               >
                 <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
                   <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">
@@ -148,14 +148,14 @@
                   class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8"
                 >
                   <div
-                    class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-blue-200/50"
+                    class="bg-gradient-to-br from-[#E6F4FF] to-[#B0E0E6] rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-[#87CEEB]/50"
                   >
                     <div
-                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-blue-600 mb-1 sm:mb-2"
+                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-[#1e90ff] mb-1 sm:mb-2"
                     >
                       50K+
                     </div>
-                    <div class="text-xs sm:text-sm text-blue-700 font-medium">Events Created</div>
+                    <div class="text-xs sm:text-sm text-[#1873cc] font-medium">Events Created</div>
                     <div class="text-xs text-green-600 font-medium mt-1">↗ Growing daily</div>
                   </div>
                   <div
@@ -178,7 +178,7 @@
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-3">
                     <div
-                      class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
+                      class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-3 rounded-full transition-all duration-1000"
                       style="width: 92%"
                     ></div>
                   </div>
@@ -186,8 +186,8 @@
                   <div class="flex justify-between items-center pt-4">
                     <span class="text-xs text-gray-500">Transforming event management</span>
                     <div class="flex space-x-1">
-                      <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
-                      <div class="w-2 h-2 bg-blue-300 rounded-full"></div>
+                      <div class="w-2 h-2 bg-[#4fa3d9] rounded-full"></div>
+                      <div class="w-2 h-2 bg-[#5eb3f6] rounded-full"></div>
                       <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
                     </div>
                   </div>
@@ -248,10 +248,10 @@
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
@@ -259,7 +259,7 @@
         <!-- Section Header -->
         <div class="text-center mb-12 sm:mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <Target class="w-4 h-4" />
             Our Purpose
@@ -268,7 +268,7 @@
             class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight"
           >
             Mission &
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
               >Vision</span
             >
           </h2>
@@ -284,14 +284,14 @@
           <!-- Mission Card -->
           <div class="group relative">
             <div
-              class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10 hover:scale-105 transition-all duration-500"
+              class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-8 xl:p-10 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10 hover:scale-105 transition-all duration-500"
             >
               <!-- Floating icon -->
               <div class="absolute -top-4 sm:-top-6 left-6 sm:left-8">
                 <div
-                  class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300"
+                  class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform duration-300"
                 >
-                  <Target class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+                  <Target class="w-6 h-6 sm:w-8 sm:h-8 text-[#1e90ff]" />
                 </div>
               </div>
 
@@ -301,7 +301,7 @@
                 >
                   Our Mission
                 </h3>
-                <p class="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed">
+                <p class="text-sm sm:text-base lg:text-lg text-[#B0E0E6] leading-relaxed">
                   To become a leading force in transforming businesses through AI-driven innovation
                   — starting with event management and expanding into broader industries — by
                   empowering people and organizations to unlock the full potential of artificial
@@ -327,7 +327,7 @@
               <!-- Floating icon -->
               <div class="absolute -top-4 sm:-top-6 left-6 sm:left-8">
                 <div
-                  class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform duration-300"
+                  class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform duration-300"
                 >
                   <Eye class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
@@ -349,10 +349,10 @@
 
               <!-- Decorative elements -->
               <div
-                class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full"
+                class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-100/50 to-sky-100/50 rounded-full"
               ></div>
               <div
-                class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full"
+                class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-100/30 to-sky-100/30 rounded-full"
               ></div>
             </div>
           </div>
@@ -365,15 +365,15 @@
       <!-- Background elements -->
       <div class="absolute inset-0">
         <div
-          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
         ></div>
-        <div class="absolute bottom-0 right-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-72 h-72 bg-[#E6F4FF]0/10 rounded-full blur-3xl"></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <BarChart3 class="h-4 w-4" />
             Our Impact
@@ -382,7 +382,7 @@
             class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6"
           >
             GoEvent by the
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
               >Numbers</span
             >
           </h2>
@@ -402,7 +402,7 @@
             >
               {{ stat.value }}
             </div>
-            <div class="text-blue-100 text-sm sm:text-base lg:text-lg font-medium">
+            <div class="text-[#B0E0E6] text-sm sm:text-base lg:text-lg font-medium">
               {{ stat.label }}
             </div>
           </div>
@@ -419,7 +419,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <Star class="w-4 h-4" />
             Our Core Values
@@ -429,7 +429,7 @@
           >
             What Drives Us to
             <span
-              class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
             >
               Succeed</span
             >
@@ -444,12 +444,12 @@
           <div
             v-for="(value, index) in values"
             :key="value.title"
-            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            :class="index === 1 ? 'md:scale-105 md:z-10 border-blue-100' : ''"
+            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+            :class="index === 1 ? 'md:scale-105 md:z-10 border-[#B0E0E6]' : ''"
           >
             <!-- Top accent bar -->
             <div
-              class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
+              class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-t-xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
             ></div>
 
             <div class="relative">
@@ -467,14 +467,14 @@
                 </div>
                 <!-- Floating accent -->
                 <div
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
+                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
                 ></div>
               </div>
 
               <!-- Content with design guide typography -->
               <div class="space-y-4">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ value.title }}
                 </h3>
@@ -486,7 +486,7 @@
 
             <!-- Hover effect background -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-purple-50/0 group-hover:from-blue-50/30 group-hover:to-purple-50/30 rounded-xl transition-all duration-300 -z-10"
+              class="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-sky-50/0 group-hover:from-emerald-50/30 group-hover:to-sky-50/30 rounded-xl transition-all duration-300 -z-10"
             ></div>
           </div>
         </div>
@@ -500,13 +500,13 @@
       :class="{ 'animate-fade-in-up': isVisible.team }"
     >
       <!-- Background decoration -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl"></div>
+      <div class="absolute top-0 right-0 w-96 h-96 bg-[#5eb3f6]/20 rounded-full blur-3xl"></div>
       <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16 lg:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
           >
             <Users class="w-4 h-4" />
             Our Amazing Team
@@ -515,7 +515,7 @@
             class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight"
           >
             Meet the
-            <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
               >Innovators</span
             >
           </h2>
@@ -529,7 +529,7 @@
 
         <!-- Loading State -->
         <div v-if="teamLoading" class="flex justify-center items-center py-12 sm:py-16">
-          <div class="flex items-center space-x-3 sm:space-x-4 text-blue-600">
+          <div class="flex items-center space-x-3 sm:space-x-4 text-[#1e90ff]">
             <Loader class="w-6 h-6 sm:w-8 sm:h-8 animate-spin" />
             <span class="text-sm sm:text-base lg:text-lg font-medium"
               >Loading our amazing team...</span
@@ -601,7 +601,7 @@
               <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">
                 {{ member.name }}
               </h3>
-              <p class="text-blue-600 font-semibold text-base sm:text-lg">{{ member.role }}</p>
+              <p class="text-[#1e90ff] font-semibold text-base sm:text-lg">{{ member.role }}</p>
               <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
                 {{ member.bio || `${member.name} is a valuable member of our team at GoEvent.` }}
               </p>
@@ -613,7 +613,7 @@
                   :href="member.linkedin_url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center text-blue-600 hover:scale-110 transition-all duration-200"
+                  class="w-8 h-8 sm:w-10 sm:h-10 bg-[#B0E0E6] hover:bg-[#87CEEB] rounded-full flex items-center justify-center text-[#1e90ff] hover:scale-110 transition-all duration-200"
                 >
                   <Linkedin class="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
@@ -622,7 +622,7 @@
                   :href="member.twitter_url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center text-blue-600 hover:scale-110 transition-all duration-200"
+                  class="w-8 h-8 sm:w-10 sm:h-10 bg-[#B0E0E6] hover:bg-[#87CEEB] rounded-full flex items-center justify-center text-[#1e90ff] hover:scale-110 transition-all duration-200"
                 >
                   <Twitter class="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
@@ -631,7 +631,7 @@
                   :href="member.github_url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center text-blue-600 hover:scale-110 transition-all duration-200"
+                  class="w-8 h-8 sm:w-10 sm:h-10 bg-[#B0E0E6] hover:bg-[#87CEEB] rounded-full flex items-center justify-center text-[#1e90ff] hover:scale-110 transition-all duration-200"
                 >
                   <Github class="w-4 h-4 sm:w-5 sm:h-5" />
                 </a>
@@ -640,7 +640,7 @@
 
             <!-- Hover effect background -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
+              class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-sky-50/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
             ></div>
           </div>
         </div>
@@ -652,13 +652,13 @@
           >
             <div class="flex -space-x-2">
               <div
-                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full border-2 border-white"
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full border-2 border-white"
               ></div>
               <div
-                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full border-2 border-white"
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-[#1e90ff] rounded-full border-2 border-white"
               ></div>
               <div
-                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs sm:text-sm"
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#1e90ff] to-[#2ecc71] rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs sm:text-sm"
               >
                 ?
               </div>
@@ -677,17 +677,17 @@
       <div class="absolute inset-0">
         <!-- Subtle gradient orbs -->
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-purple-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-purple-100/35 to-blue-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div
-          class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-blue-500/20 backdrop-blur-sm border border-white/10"
+          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
         >
           <div class="text-center max-w-4xl mx-auto">
             <div
@@ -702,14 +702,14 @@
             >
               Be Part of the
               <span
-                class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200"
+                class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-sky-200"
               >
                 Future</span
               >
             </h2>
 
             <p
-              class="text-base sm:text-lg lg:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
+              class="text-base sm:text-lg lg:text-xl text-[#B0E0E6] mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
             >
               We're always looking for talented individuals who share our passion for innovation and
               creating exceptional user experiences. Be part of the team that's transforming the
@@ -722,19 +722,19 @@
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
                   20+
                 </div>
-                <div class="text-xs sm:text-sm text-blue-200">Team Members</div>
+                <div class="text-xs sm:text-sm text-[#87CEEB]">Team Members</div>
               </div>
               <div class="text-center">
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
                   5+
                 </div>
-                <div class="text-xs sm:text-sm text-blue-200">Open Roles</div>
+                <div class="text-xs sm:text-sm text-[#87CEEB]">Open Roles</div>
               </div>
               <div class="text-center">
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
                   100%
                 </div>
-                <div class="text-xs sm:text-sm text-blue-200">Remote OK</div>
+                <div class="text-xs sm:text-sm text-[#87CEEB]">Remote OK</div>
               </div>
             </div>
 
@@ -742,7 +742,7 @@
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <a
                 href="#careers"
-                class="group bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/10 flex items-center justify-center"
+                class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/10 flex items-center justify-center"
               >
                 View Open Positions
                 <Users
@@ -768,7 +768,7 @@
       <button
         v-show="showScrollTop"
         @click="scrollToTop"
-        class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white p-4 rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
       >
         <ArrowUp class="w-6 h-6" />
       </button>
@@ -824,8 +824,8 @@ const values = [
     title: 'Collaboration',
     description:
       'We believe the best results come from diverse teams working together towards common goals.',
-    bgColor: 'bg-gradient-to-br from-purple-100 to-purple-200',
-    iconColor: 'text-purple-600',
+    bgColor: 'bg-gradient-to-br from-emerald-100 to-sky-200',
+    iconColor: 'text-emerald-600',
   },
   {
     icon: Shield,
@@ -840,8 +840,8 @@ const values = [
     title: 'Efficiency',
     description:
       'We streamline complex processes to help you achieve more with less effort and time.',
-    bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
-    iconColor: 'text-blue-600',
+    bgColor: 'bg-gradient-to-br from-[#B0E0E6] to-[#87CEEB]',
+    iconColor: 'text-[#1e90ff]',
   },
   {
     icon: Award,
@@ -860,14 +860,14 @@ const teamError = ref<string | null>(null)
 
 // Avatar gradient options for fallback when no profile picture
 const avatarGradients = [
-  'from-blue-500 to-purple-600',
-  'from-emerald-500 to-blue-500',
-  'from-purple-500 to-blue-600',
-  'from-blue-600 to-purple-600',
+  'from-[#2ecc71] to-[#1e90ff]',
+  'from-emerald-500 to-[#1e90ff]',
+  'from-[#1e90ff] to-[#2ecc71]',
+  'from-[#2ecc71] to-[#1e90ff]',
   'from-orange-500 to-red-500',
-  'from-emerald-500 to-blue-600',
-  'from-blue-500 to-purple-500',
-  'from-purple-600 to-blue-600',
+  'from-emerald-500 to-[#1e90ff]',
+  'from-[#2ecc71] to-[#1e90ff]',
+  'from-[#1e90ff] to-[#2ecc71]',
 ]
 
 // Function to get avatar gradient based on member ID
@@ -1061,7 +1061,7 @@ const stats = [
 }
 
 .typing-text-goevent {
-  background: linear-gradient(to right, #2563eb, #9333ea);
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -4,8 +4,8 @@
     :class="[
       'group cursor-pointer bg-white/80 backdrop-blur-sm border rounded-2xl overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300',
       isSelected
-        ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
-        : 'border-white/40 hover:border-blue-300',
+        ? 'border-[#1e90ff] ring-2 ring-[#87CEEB] shadow-lg'
+        : 'border-white/40 hover:border-[#5eb3f6]',
     ]"
   >
     <!-- Template Preview -->
@@ -26,7 +26,7 @@
 
       <!-- Selection Indicator -->
       <div v-if="isSelected" class="absolute top-2 left-2">
-        <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+        <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center">
           <Check class="w-4 h-4 text-white" />
         </div>
       </div>

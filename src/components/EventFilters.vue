@@ -7,20 +7,20 @@
     >
       <div class="flex items-center space-x-3">
         <div
-          class="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center"
+          class="w-6 h-6 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center"
         >
           <Search class="w-3 h-3 text-white" />
         </div>
         <h3 class="text-lg font-semibold text-slate-900">Search & Filter Events</h3>
         <span
           v-if="hasActiveFilters"
-          class="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+          class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-xs font-medium px-2.5 py-0.5 rounded-full"
         >
           {{ activeFilterCount }} active
         </span>
       </div>
       <div
-        class="inline-flex items-center text-slate-600 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
+        class="inline-flex items-center text-slate-600 hover:text-[#1e90ff] font-medium text-sm transition-colors duration-200"
       >
         <ChevronDown
           class="w-5 h-5 transition-transform duration-200"
@@ -50,7 +50,7 @@
                 @input="debouncedEmitFilters"
                 type="text"
                 placeholder="Search by title, description, or organizer..."
-                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
               />
             </div>
           </div>
@@ -61,7 +61,7 @@
             <select
               v-model="localFilters.category"
               @change="emitFilters"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
             >
               <option value="">All Categories</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -76,7 +76,7 @@
             <select
               v-model="localFilters.status"
               @change="emitFilters"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
             >
               <option value="">All Status</option>
               <option value="published">Published</option>
@@ -93,10 +93,10 @@
             @click="toggleFilter('is_virtual', true)"
             :class="
               localFilters.is_virtual === true
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                : 'bg-white/70 text-slate-700 hover:bg-blue-50 hover:text-blue-600'
+                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
+                : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-blue-200"
+            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-[#87CEEB]"
           >
             <Monitor class="w-4 h-4 mr-2" />
             Virtual Only
@@ -106,10 +106,10 @@
             @click="toggleFilter('is_virtual', false)"
             :class="
               localFilters.is_virtual === false
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                : 'bg-white/70 text-slate-700 hover:bg-blue-50 hover:text-blue-600'
+                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
+                : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-blue-200"
+            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-[#87CEEB]"
           >
             <MapPin class="w-4 h-4 mr-2" />
             In-Person Only
@@ -159,7 +159,7 @@
         <div>
           <button
             @click="showAdvanced = !showAdvanced"
-            class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors duration-200"
+            class="inline-flex items-center text-[#1e90ff] hover:text-[#1873cc] font-medium text-sm transition-colors duration-200"
           >
             <ChevronDown
               class="w-4 h-4 mr-1 transition-transform duration-200"
@@ -185,7 +185,7 @@
                 v-model="localFilters.start_date_after"
                 @change="emitFilters"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
               />
             </div>
 
@@ -195,7 +195,7 @@
                 v-model="localFilters.start_date_before"
                 @change="emitFilters"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
               />
             </div>
 
@@ -205,7 +205,7 @@
               <select
                 v-model="localFilters.privacy"
                 @change="emitFilters"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
               >
                 <option value="">All Events</option>
                 <option value="public">Public</option>
@@ -219,7 +219,7 @@
               <select
                 v-model="localFilters.ordering"
                 @change="emitFilters"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
               >
                 <option value="">Default</option>
                 <option value="start_date">Start Date (Earliest)</option>

@@ -11,7 +11,7 @@
       <button
         v-if="canEdit && activeSection === 'gallery'"
         @click="openUploadModal"
-        class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
       >
         <Upload class="w-4 h-4 mr-2" />
         Upload Media
@@ -22,8 +22,8 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <ImageIcon class="w-5 h-5 text-blue-600" />
+          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <ImageIcon class="w-5 h-5 text-[#1e90ff]" />
           </div>
           <div>
             <p class="text-2xl font-bold text-slate-900">{{ totalPhotos }}</p>
@@ -77,8 +77,8 @@
           :class="[
             'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'basic'
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+              : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
           ]"
         >
           Basic Media
@@ -88,8 +88,8 @@
           :class="[
             'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'gallery'
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+              : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
           ]"
         >
           Photo Gallery
@@ -99,8 +99,8 @@
           :class="[
             'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
             activeSection === 'embeds'
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+              : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
           ]"
         >
           Videos & Maps
@@ -113,7 +113,7 @@
       <!-- Basic Media Section -->
       <div v-if="activeSection === 'basic'">
         <div v-if="!localEventData && props.eventId" class="flex justify-center items-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
           <span class="ml-2 text-lg text-slate-600 leading-relaxed">Loading media...</span>
         </div>
         <BasicMediaSection
@@ -169,7 +169,7 @@
               <button
                 v-if="canEdit && eventData && props.eventId"
                 @click="openUploadModal"
-                class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 flex items-center space-x-2 mx-auto"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 mx-auto"
               >
                 <Upload class="w-4 h-4" />
                 <span>Upload First Photos</span>

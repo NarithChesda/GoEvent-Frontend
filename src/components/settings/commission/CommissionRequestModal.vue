@@ -59,7 +59,7 @@
               <div class="flex-1">
                 <p class="font-medium text-slate-900 text-sm">Bank Transfer</p>
                 <p class="text-xs text-slate-500 mt-1">Transfer to your registered bank account</p>
-                <div class="mt-2 text-xs text-slate-600 bg-blue-50 rounded-lg p-2">
+                <div class="mt-2 text-xs text-slate-600 bg-[#E6F4FF] rounded-lg p-2">
                   Account: ****1234 (Chase Bank)
                 </div>
               </div>
@@ -86,7 +86,7 @@
             @input="$emit('update:notes', ($event.target as HTMLTextAreaElement).value)"
             rows="3"
             placeholder="Add any special instructions or notes for processing..."
-            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] resize-none text-sm"
           ></textarea>
         </div>
 
@@ -118,7 +118,7 @@
         <button
           @click="$emit('submit')"
           :disabled="isSubmitting"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-2 bg-[#1e90ff] hover:bg-[#1873cc] text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="isSubmitting" class="flex items-center space-x-2">
             <RefreshCw class="w-4 h-4 animate-spin" />

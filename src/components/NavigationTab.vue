@@ -53,8 +53,8 @@ const displayLabel = computed(() => {
 
 const buttonClasses = computed(() => {
   const baseClasses = 'flex items-center font-medium text-sm transition-all duration-200'
-  const activeClasses = 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-  const inactiveClasses = 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+  const activeClasses = 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
+  const inactiveClasses = 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]'
 
   if (props.isMobile) {
     return `${baseClasses} space-x-2 px-4 py-2 rounded-xl whitespace-nowrap flex-shrink-0 ${

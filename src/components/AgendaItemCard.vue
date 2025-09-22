@@ -8,7 +8,7 @@
     @drop="handleDrop"
     class="group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
     :class="[
-      item.is_featured ? 'ring-1 ring-blue-200 bg-blue-50/30' : '',
+      item.is_featured ? 'ring-1 ring-[#87CEEB] bg-[#E6F4FF]/30' : '',
       isDragging ? 'opacity-60 transform rotate-1 scale-105 shadow-xl' : '',
       canEdit && draggable ? 'hover:scale-[1.01] hover:-translate-y-0.5' : '',
     ]"
@@ -111,7 +111,7 @@
       >
         <button
           @click.stop="$emit('edit', item)"
-          class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+          class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors"
           title="Edit"
         >
           <Edit2 class="w-3.5 h-3.5" />

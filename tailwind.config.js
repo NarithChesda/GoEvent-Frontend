@@ -10,6 +10,10 @@ export default {
         sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
       },
       colors: {
+        'primary': {
+          green: '#2ecc71',
+          blue: '#1e90ff',
+        },
         'blue': {
           50: '#eff6ff',
           100: '#dbeafe',
