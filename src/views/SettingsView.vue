@@ -266,6 +266,9 @@
             </form>
           </div>
 
+          <!-- Commission Settings -->
+          <CommissionTab v-if="activeTab === 'commission'" />
+
           <!-- Security Settings -->
           <div v-if="activeTab === 'security'" class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl">
             <h2 class="text-2xl font-bold text-slate-900 mb-6">Security Settings</h2>
@@ -445,6 +448,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
+import CommissionTab from '../components/settings/CommissionTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { authService } from '../services/auth'
 import { uploadService } from '../services/upload'
@@ -463,6 +467,7 @@ import {
   Camera,
   Upload,
   Trash2,
+  Wallet,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -472,7 +477,8 @@ const authStore = useAuthStore()
 const activeTab = ref('profile')
 const tabs = [
   { id: 'profile', name: 'Profile', icon: User },
-  { id: 'security', name: 'Security', icon: Lock }
+  { id: 'security', name: 'Security', icon: Lock },
+  { id: 'commission', name: 'Commission', icon: Wallet }
 ]
 
 // Profile form
