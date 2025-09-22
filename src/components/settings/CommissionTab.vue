@@ -1,13 +1,16 @@
 <template>
   <div class="space-y-6">
     <!-- Commission Overview Dashboard -->
-    <div class="bg-white rounded-xl p-6 border border-slate-200">
+    <BaseCard variant="featured" size="lg" class="shadow-xl">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-slate-900">Commission Dashboard</h2>
+        <div class="flex items-center space-x-3">
+          <div class="w-3 h-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+          <h2 class="text-xl font-bold text-slate-900">Commission Dashboard</h2>
+        </div>
         <button
           @click="refreshData"
           :disabled="isLoading || isStatsLoading"
-          class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw :class="['w-4 h-4', { 'animate-spin': isLoading || isStatsLoading }]" />
           <span>Refresh</span>
@@ -19,7 +22,7 @@
         <CommissionStatsCards :stats="stats" :is-stats-loading="isStatsLoading" />
       </div>
 
-    </div>
+    </BaseCard>
 
     <!-- Filters Section -->
     <CommissionFilters
@@ -42,7 +45,7 @@
     />
 
     <!-- Pagination -->
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <BaseCard variant="compact" size="sm">
       <CommissionPagination
         :current-page="currentPage"
         :total-pages="totalPages"
@@ -51,7 +54,7 @@
         @previous-page="goToPreviousPage"
         @next-page="goToNextPage"
       />
-    </div>
+    </BaseCard>
 
     <!-- Modals -->
     <CommissionRequestModal
@@ -102,6 +105,7 @@ import { useCommissionActions } from '../../composables/useCommissionActions'
 import { useNotifications } from '../../composables/useNotifications'
 
 // Components
+import BaseCard from '../BaseCard.vue'
 import CommissionStatsCards from './commission/CommissionStatsCards.vue'
 import CommissionFilters from './commission/CommissionFilters.vue'
 import CommissionTable from './commission/CommissionTable.vue'

@@ -295,7 +295,9 @@
           </div>
 
           <!-- Commission Settings -->
-          <CommissionTab v-if="activeTab === 'commission'" />
+          <div v-if="activeTab === 'commission'">
+            <CommissionTab />
+          </div>
 
           <!-- Security Settings -->
           <div

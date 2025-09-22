@@ -1,16 +1,19 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200">
+  <BaseCard variant="base" size="md" class="overflow-hidden">
     <!-- Always visible: Status Filter -->
     <div class="p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-slate-700">Filter Commissions</h3>
+        <div class="flex items-center space-x-3">
+          <div class="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+          <h3 class="text-sm font-semibold text-slate-700">Filter Commissions</h3>
+        </div>
         <button
           @click="toggleAdvancedFilters"
-          class="inline-flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+          class="inline-flex items-center space-x-1 text-xs text-slate-500 hover:text-blue-600 transition-all duration-300 bg-slate-50 hover:bg-blue-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-blue-200"
         >
           <span>{{ showAdvancedFilters ? 'Less' : 'More' }} filters</span>
           <ChevronDown
-            :class="['w-4 h-4 transition-transform', showAdvancedFilters && 'rotate-180']"
+            :class="['w-4 h-4 transition-transform duration-300', showAdvancedFilters && 'rotate-180']"
           />
         </button>
       </div>
@@ -21,17 +24,17 @@
           :key="status.value"
           @click="$emit('selectStatus', status.value)"
           :class="[
-            'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+            'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-[1.02] hover:shadow-sm',
             selectedStatus === status.value
               ? status.activeClass
-              : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100',
+              : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 shadow-sm',
           ]"
         >
           <div class="flex items-center space-x-2">
             <div :class="status.dotClass" class="w-2 h-2 rounded-full"></div>
             <span>{{ status.label }}</span>
-            <span v-if="status.count > 0" class="ml-1 text-xs opacity-75"
-              >({{ status.count }})</span
+            <span v-if="status.count > 0" class="ml-1 text-xs opacity-75 bg-slate-100 px-1.5 py-0.5 rounded-full"
+              >{{ status.count }}</span
             >
           </div>
         </button>
@@ -39,7 +42,7 @@
     </div>
 
     <!-- Progressive disclosure: Advanced filters -->
-    <div v-if="showAdvancedFilters" class="border-t border-slate-200 p-4 bg-slate-50">
+    <div v-if="showAdvancedFilters" class="border-t border-slate-200 p-4 bg-gradient-to-br from-slate-50 to-slate-100/50">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Search -->
         <div>
@@ -50,7 +53,7 @@
               @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
               type="text"
               placeholder="Event title, reference, or payment ID..."
-              class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+              class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
             />
             <Search
               class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"
@@ -73,14 +76,14 @@
               :value="startDate"
               @input="$emit('update:startDate', ($event.target as HTMLInputElement).value)"
               type="date"
-              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
             />
-            <span class="text-slate-400 text-sm">to</span>
+            <span class="text-slate-400 text-sm font-medium">to</span>
             <input
               :value="endDate"
               @input="$emit('update:endDate', ($event.target as HTMLInputElement).value)"
               type="date"
-              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+              class="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
             />
           </div>
         </div>
@@ -105,12 +108,13 @@
         </button>
       </div>
     </div>
-  </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Search, ChevronDown, Filter, X } from 'lucide-vue-next'
+import BaseCard from '../../BaseCard.vue'
 
 interface StatusFilter {
   value: 'all' | 'pending' | 'requested' | 'claimed' | 'rejected' | 'cancelled'

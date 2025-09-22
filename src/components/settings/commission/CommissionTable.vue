@@ -1,10 +1,13 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+  <BaseCard variant="base" size="sm" class="overflow-hidden">
     <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-      <h3 class="text-lg font-semibold text-slate-900">Commission History</h3>
+      <div class="flex items-center space-x-3">
+        <div class="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+        <h3 class="text-lg font-semibold text-slate-900">Commission History</h3>
+      </div>
       <button
         @click="$emit('exportData')"
-        class="inline-flex items-center space-x-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors"
+        class="inline-flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-slate-100 to-slate-200 hover:from-blue-50 hover:to-purple-50 text-slate-700 hover:text-blue-600 text-sm font-medium rounded-lg transition-all duration-300 border border-slate-200 hover:border-blue-200"
       >
         <Download class="w-4 h-4" />
         <span>Export CSV</span>
@@ -173,7 +176,7 @@
         @view-details="$emit('viewDetails', commission)"
       />
     </div>
-  </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
@@ -188,6 +191,7 @@ import {
 } from '../../../utils/commissionHelpers'
 import CommissionActions from './CommissionActions.vue'
 import CommissionMobileCard from './CommissionMobileCard.vue'
+import BaseCard from '../../BaseCard.vue'
 import type { Commission } from '../../../services/commission'
 
 interface Props {
