@@ -1,6 +1,6 @@
 <template>
   <div class="host-info-wrapper" :class="{ 'khmer-text': currentLanguage === 'kh' }">
-    <!-- Grid container with 6 rows -->
+    <!-- Grid container with 7 rows (added profile picture row) -->
     <div class="host-info-grid">
 
       <!-- Row 1: Welcome Header (moved from MainContentStage) -->
@@ -224,12 +224,68 @@
         </div>
       </div>
 
+      <!-- Row 7: Host Profile Pictures (only show if both hosts have profile images) -->
+      <div v-if="hosts.length === 2 && hosts[0].profile_image && hosts[1].profile_image" class="profile-picture-row">
+        <!-- Host 1 Profile Picture (45% width) -->
+        <div class="host-profile-left">
+          <div class="profile-picture-container">
+            <img
+              v-if="hosts[0].profile_image"
+              :src="getMediaUrl(hosts[0].profile_image)"
+              :alt="`${hosts[0].name} profile`"
+              class="profile-picture"
+              :style="{
+                borderColor: primaryColor
+              }"
+            />
+            <div
+              v-else
+              class="profile-picture-fallback"
+              :style="{
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+              }"
+            >
+              <User class="profile-icon" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Center spacer (10% width) -->
+        <div class="center-spacer"></div>
+
+        <!-- Host 2 Profile Picture (45% width) -->
+        <div class="host-profile-right">
+          <div v-if="hosts.length > 1" class="profile-picture-container">
+            <img
+              v-if="hosts[1]?.profile_image"
+              :src="getMediaUrl(hosts[1].profile_image)"
+              :alt="`${hosts[1].name} profile`"
+              class="profile-picture"
+              :style="{
+                borderColor: primaryColor
+              }"
+            />
+            <div
+              v-else
+              class="profile-picture-fallback"
+              :style="{
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+              }"
+            >
+              <User class="profile-icon" />
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { User } from 'lucide-vue-next'
 import type { Host } from '../../composables/useEventShowcase'
+import { apiService } from '../../services/api'
 
 interface Props {
   hosts: Host[]
@@ -246,6 +302,11 @@ interface Props {
 }
 
 defineProps<Props>()
+
+// Utility method to get full URL for media
+const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
+  return apiService.getProfilePictureUrl(mediaUrl)
+}
 </script>
 
 <style scoped>
@@ -257,10 +318,10 @@ defineProps<Props>()
   box-sizing: border-box;
 }
 
-/* Grid container with 6 rows */
+/* Grid container with 7 rows (added profile picture row) */
 .host-info-grid {
   display: grid;
-  grid-template-rows: auto auto auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto auto auto;
   width: 100%;
   gap: 0.25rem;
   overflow: hidden;
@@ -270,7 +331,8 @@ defineProps<Props>()
 /* Row layouts with flexible 3-column structure */
 .parent-row,
 .title-row,
-.name-row {
+.name-row,
+.profile-picture-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   width: 100%;
@@ -326,7 +388,8 @@ defineProps<Props>()
 /* Column alignments */
 .host-parent-left,
 .host-title-left,
-.host-name-left {
+.host-name-left,
+.host-profile-left {
   text-align: center;
   overflow: hidden;
   min-width: 0;
@@ -336,7 +399,8 @@ defineProps<Props>()
 
 .host-parent-right,
 .host-title-right,
-.host-name-right {
+.host-name-right,
+.host-profile-right {
   text-align: center;
   overflow: hidden;
   min-width: 0;
@@ -394,6 +458,43 @@ defineProps<Props>()
   color: white;
   font-weight: 700;
   font-size: 1.5rem;
+}
+
+/* Profile Picture Styles */
+.profile-picture-row {
+  margin-top: 0.5rem;
+}
+
+.profile-picture-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.profile-picture {
+  width: 60%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-picture-fallback {
+  width: 60%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-icon {
+  width: 50%;
+  height: 50%;
+  color: white;
 }
 
 /* Gleam Animation */
