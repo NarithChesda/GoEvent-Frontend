@@ -57,15 +57,15 @@
             <div
               class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200"
             >
-              <RouterLink
-                to="/signup"
+              <button
+                @click="handleStartCreatingEvents"
                 class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
               >
                 Start Creating Events
                 <ArrowRight
                   class="inline w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
                 />
-              </RouterLink>
+              </button>
               <button
                 @click="scrollToDemo"
                 class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-8 py-4 rounded-lg border-2 border-[#87CEEB] text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group"
@@ -691,7 +691,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
 import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
@@ -722,6 +722,11 @@ import {
 const { isVisible, observeElement } = useScrollAnimations()
 const { showScrollTop, scrollToTop } = useScrollToTop()
 
+// Router and auth
+const router = useRouter()
+import { useAuthStore } from '../stores/auth'
+const authStore = useAuthStore()
+
 // Typing animation for hero text
 const { displayText, isComplete } = useTypingAnimation('Create Unforgettable Events', 30)
 
@@ -742,6 +747,14 @@ const scrollToDemo = () => {
   const features = document.getElementById('features')
   if (features) {
     features.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+const handleStartCreatingEvents = () => {
+  if (authStore.isAuthenticated) {
+    router.push('/events')
+  } else {
+    router.push('/signin?redirect=/events')
   }
 }
 
