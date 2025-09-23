@@ -19,6 +19,10 @@ export interface User {
   date_joined: string
   is_active: boolean
   is_verified?: boolean
+  is_partner?: boolean
+  phone_number?: string
+  telegram_link?: string
+  payment_link?: string
 }
 
 export interface LoginRequest {
@@ -324,6 +328,9 @@ class AuthService {
       first_name: sanitize(user.first_name),
       last_name: sanitize(user.last_name),
       bio: sanitize(user.bio),
+      phone_number: sanitize(user.phone_number),
+      telegram_link: sanitize(user.telegram_link),
+      payment_link: sanitize(user.payment_link),
     }
   }
 
