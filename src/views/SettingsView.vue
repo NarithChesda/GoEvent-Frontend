@@ -192,6 +192,51 @@
                     />
                   </div>
                 </div>
+
+                <!-- Partner Information Section (only for partners) -->
+                <div v-if="authStore.user?.is_partner" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <!-- Phone Number -->
+                  <div>
+                    <label for="phone_number" class="block text-sm font-semibold text-slate-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      id="phone_number"
+                      v-model="profileForm.phone_number"
+                      type="tel"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+
+                  <!-- Telegram Link -->
+                  <div>
+                    <label for="telegram_link" class="block text-sm font-semibold text-slate-700 mb-2">
+                      Telegram Link
+                    </label>
+                    <input
+                      id="telegram_link"
+                      v-model="profileForm.telegram_link"
+                      type="text"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      placeholder="t.me/yourusername or @yourusername"
+                    />
+                  </div>
+
+                  <!-- Payment Link -->
+                  <div class="md:col-span-2">
+                    <label for="payment_link" class="block text-sm font-semibold text-slate-700 mb-2">
+                      Payment URL
+                    </label>
+                    <input
+                      id="payment_link"
+                      v-model="profileForm.payment_link"
+                      type="text"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      placeholder="your-payment-platform.com/username"
+                    />
+                  </div>
+                </div>
               </div>
 
               <!-- User Status -->
@@ -200,6 +245,7 @@
                   <div class="w-2 h-2 bg-yellow-600 rounded-full"></div>
                   <span>Account Status</span>
                 </h3>
+
 
                 <div class="flex flex-wrap gap-3">
                   <!-- Verification Status -->
@@ -219,23 +265,51 @@
                       authStore.user?.is_verified ? 'Verified Account' : 'Unverified Account'
                     }}</span>
                   </div>
+
+                  <!-- Partner Status -->
+                  <div
+                    v-if="authStore.user?.is_partner"
+                    class="inline-flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border border-purple-200"
+                  >
+                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span>Partner Account</span>
+                  </div>
                 </div>
 
-                <!-- Account Creation Date -->
-                <div class="mt-4 pt-4 border-t border-slate-200">
-                  <p class="text-sm text-slate-600">
-                    <span class="font-medium">Member since:</span>
-                    {{
-                      authStore.user?.date_joined
-                        ? new Date(authStore.user.date_joined).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })
-                        : 'Unknown'
-                    }}
-                  </p>
+                <!-- Partner Information (shown only for partners) -->
+                <div v-if="authStore.user?.is_partner" class="mt-4 pt-4 border-t border-slate-200">
+                  <h4 class="text-sm font-semibold text-slate-700 mb-3">Partner Information</h4>
+                  <div class="space-y-3">
+                    <div v-if="authStore.user.phone_number" class="flex items-center justify-between">
+                      <span class="text-sm text-slate-600 font-medium">Phone Number:</span>
+                      <span class="text-sm text-slate-900">{{ authStore.user.phone_number }}</span>
+                    </div>
+                    <div v-if="authStore.user.telegram_link" class="flex items-center justify-between">
+                      <span class="text-sm text-slate-600 font-medium">Telegram:</span>
+                      <a
+                        :href="authStore.user.telegram_link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-sm text-[#1e90ff] hover:text-[#1873cc] underline"
+                      >
+                        {{ authStore.user.telegram_link }}
+                      </a>
+                    </div>
+                    <div v-if="authStore.user.payment_link" class="flex items-center justify-between">
+                      <span class="text-sm text-slate-600 font-medium">Payment URL:</span>
+                      <a
+                        :href="authStore.user.payment_link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-sm text-[#1e90ff] hover:text-[#1873cc] underline"
+                      >
+                        {{ authStore.user.payment_link }}
+                      </a>
+                    </div>
+                  </div>
                 </div>
+
+
               </div>
 
               <!-- Bio Section -->
@@ -565,6 +639,9 @@ const profileForm = ref({
   email: '',
   username: '',
   bio: '',
+  phone_number: '',
+  telegram_link: '',
+  payment_link: '',
 })
 
 // Password form
@@ -671,6 +748,9 @@ onMounted(() => {
       email: authStore.user.email || '',
       username: authStore.user.username || '',
       bio: authStore.user.bio || '',
+      phone_number: authStore.user.phone_number || '',
+      telegram_link: authStore.user.telegram_link || '',
+      payment_link: authStore.user.payment_link || '',
     }
   }
 })
@@ -682,13 +762,34 @@ const handleProfileUpdate = async () => {
   fieldErrors.value = {}
 
   // Comprehensive validation
-  const validation = inputValidator.validateForm(profileForm.value, {
+  const validationConfig: Record<string, any> = {
     email: validationRules.email,
     username: validationRules.username,
     first_name: validationRules.firstName,
     last_name: validationRules.lastName,
     bio: validationRules.bio,
-  })
+  }
+
+  // Add partner field validation if user is a partner
+  if (authStore.user?.is_partner) {
+    validationConfig.phone_number = {
+      required: false,
+      pattern: /^[\+]?[\d\s\-\(\)]+$/,
+      message: 'Please enter a valid phone number'
+    }
+    validationConfig.telegram_link = {
+      required: false,
+      pattern: /^(https?:\/\/)?(t\.me\/|telegram\.me\/).+$/i,
+      message: 'Please enter a valid Telegram URL (e.g., https://t.me/username)'
+    }
+    validationConfig.payment_link = {
+      required: false,
+      pattern: /^https?:\/\/.+/,
+      message: 'Please enter a valid URL starting with http:// or https://'
+    }
+  }
+
+  const validation = inputValidator.validateForm(profileForm.value, validationConfig)
 
   if (!validation.isValid) {
     fieldErrors.value = validation.errors
@@ -697,10 +798,47 @@ const handleProfileUpdate = async () => {
   }
 
   try {
-    // Use sanitized data
-    const updateData = Object.fromEntries(
-      Object.entries(validation.sanitizedData).filter(([key, value]) => value !== ''),
-    )
+    // Use sanitized data, but handle partner fields specially
+    const updateData: Record<string, any> = {}
+
+    // Process all fields from the form
+    Object.entries(profileForm.value).forEach(([key, value]) => {
+      const partnerFields = ['phone_number', 'telegram_link', 'payment_link']
+      const urlFields = ['telegram_link', 'payment_link']
+
+      if (partnerFields.includes(key) && authStore.user?.is_partner) {
+        // For URL fields, handle both empty and filled values
+        if (urlFields.includes(key)) {
+          if (value === '' || value === null) {
+            updateData[key] = null
+          } else {
+            // Ensure URLs are properly formatted
+            let formattedUrl = value.trim()
+            if (key === 'telegram_link' && !formattedUrl.startsWith('http')) {
+              // Auto-prepend https:// for telegram links if missing
+              if (formattedUrl.startsWith('t.me/')) {
+                formattedUrl = 'https://' + formattedUrl
+              } else if (!formattedUrl.includes('t.me/') && !formattedUrl.includes('telegram.me/')) {
+                // Assume it's just the username
+                formattedUrl = 'https://t.me/' + formattedUrl.replace('@', '')
+              }
+            } else if (key === 'payment_link' && !formattedUrl.startsWith('http')) {
+              // Auto-prepend https:// for payment links if missing
+              formattedUrl = 'https://' + formattedUrl
+            }
+            updateData[key] = formattedUrl
+          }
+        } else {
+          // Phone number field
+          updateData[key] = value || null
+        }
+      } else if (!partnerFields.includes(key)) {
+        // For non-partner fields, include the value
+        if (value !== undefined && value !== null && value !== '') {
+          updateData[key] = value
+        }
+      }
+    })
 
     const result = await authStore.updateProfile(updateData)
 
@@ -716,6 +854,9 @@ const handleProfileUpdate = async () => {
           email: authStore.user.email || '',
           username: authStore.user.username || '',
           bio: authStore.user.bio || '',
+          phone_number: authStore.user.phone_number || '',
+          telegram_link: authStore.user.telegram_link || '',
+          payment_link: authStore.user.payment_link || '',
         }
       }
       setTimeout(() => {
@@ -872,6 +1013,36 @@ const removeProfilePicture = async () => {
     }, 3000)
   } catch (error) {
     errorMessage.value = 'Failed to remove profile picture'
+  }
+}
+
+// Temporary function for testing partner features
+const togglePartnerStatus = () => {
+  if (authStore.user) {
+    // Temporarily modify the user object for testing
+    authStore.user.is_partner = !authStore.user.is_partner
+
+    // Add some sample data if becoming a partner
+    if (authStore.user.is_partner) {
+      authStore.user.phone_number = authStore.user.phone_number || '+1234567890'
+      authStore.user.telegram_link = authStore.user.telegram_link || 'https://t.me/sample_user'
+      authStore.user.payment_link = authStore.user.payment_link || 'https://paypal.me/sample_user'
+
+      // Update form with sample data
+      profileForm.value.phone_number = authStore.user.phone_number
+      profileForm.value.telegram_link = authStore.user.telegram_link
+      profileForm.value.payment_link = authStore.user.payment_link
+    } else {
+      // Clear partner data when removing partner status
+      authStore.user.phone_number = undefined
+      authStore.user.telegram_link = undefined
+      authStore.user.payment_link = undefined
+
+      // Clear form data
+      profileForm.value.phone_number = ''
+      profileForm.value.telegram_link = ''
+      profileForm.value.payment_link = ''
+    }
   }
 }
 </script>
