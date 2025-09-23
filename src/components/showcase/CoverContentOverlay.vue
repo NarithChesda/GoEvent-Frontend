@@ -169,8 +169,8 @@ const inviteTextStyle = computed(() => ({
 
 const hasCustomButton = computed(
   () =>
-    props.templateAssets?.open_envelope_button &&
-    props.templateAssets.open_envelope_button.trim() !== '',
+    Boolean(props.templateAssets?.open_envelope_button) &&
+    props.templateAssets?.open_envelope_button?.trim() !== '',
 )
 
 // Text content helpers

@@ -346,9 +346,10 @@ export class ResourceManager {
     this.add(() => clearInterval(intervalId))
   }
 
-  addTimeout(callback: () => void, delay: number): void {
+  addTimeout(callback: () => void, delay: number): number {
     const timeoutId = setTimeout(callback, delay)
     this.add(() => clearTimeout(timeoutId))
+    return timeoutId
   }
 
   cleanup(): void {

@@ -393,7 +393,7 @@ export function useScrollDrivenAnimations() {
         timeline: new (window as any).ScrollTimeline({
           source: document.scrollingElement,
           orientation: 'block',
-          scrollOffsets: [0, element.offsetTop + element.offsetHeight],
+          scrollOffsets: [0, (element as HTMLElement).offsetTop + (element as HTMLElement).offsetHeight],
         }),
       })
 

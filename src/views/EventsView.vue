@@ -612,7 +612,7 @@ onMounted(async () => {
 
   // Setup floating button after DOM is updated
   await nextTick()
-  cleanupObserver = setupFloatingButton()
+  cleanupObserver = setupFloatingButton() || null
 })
 
 onUnmounted(() => {

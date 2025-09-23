@@ -286,7 +286,7 @@ const saveReferrer = async () => {
       console.log('Referrer update response:', response.data)
 
       // If the response doesn't include referrer_details, fetch the full event
-      if (!response.data.referrer_details && response.data.referrer) {
+      if (!(response.data as any)?.referrer_details && (response.data as any)?.referrer) {
         try {
           const fullEventResponse = await apiService.get(`/api/events/${props.eventId}/`)
           if (fullEventResponse.success && fullEventResponse.data) {
@@ -352,7 +352,7 @@ const removeReferrer = async () => {
 
     if (response.success) {
       showSuccess('Referrer Removed', 'Referrer has been removed from this event')
-      emit('referrer-updated', { ...response.data, referrer_details: null })
+      emit('referrer-updated', { ...(response.data || {}), referrer_details: null })
       showRemoveConfirm.value = false
     } else {
       throw new Error(response.message || 'Failed to remove referrer')

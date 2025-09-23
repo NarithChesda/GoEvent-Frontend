@@ -627,7 +627,7 @@ export function useCoverStageVideo(
 
   // Computed properties
   const shouldShowButtonLoading = computed(() => {
-    return props.eventVideoUrl && !eventVideoReady.value
+    return Boolean(props.eventVideoUrl) && !eventVideoReady.value
   })
 
   // Watchers

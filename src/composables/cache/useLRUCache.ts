@@ -5,7 +5,7 @@ import { ref, onUnmounted } from 'vue'
  * Provides efficient caching with automatic eviction based on size and memory limits
  */
 export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number = 100) {
-  const cache = ref<Map<string, T>>(new Map())
+  const cache = ref<Map<string, T>>(new Map<string, T>())
   const accessOrder = ref<string[]>([])
   const maxMemory = maxMemoryMB * 1024 * 1024 // Convert MB to bytes
   let currentMemory = 0
@@ -13,7 +13,7 @@ export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number =
   /**
    * Estimates memory usage of cached item
    */
-  const estimateMemoryUsage = (item: T): number => {
+  const estimateMemoryUsage = (item: any): number => {
     if (item instanceof HTMLImageElement) {
       return (item.naturalWidth || 100) * (item.naturalHeight || 100) * 4
     }
@@ -70,7 +70,7 @@ export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number =
    * Sets cache item with automatic eviction if needed
    */
   const set = (key: string, item: T): void => {
-    const itemSize = estimateMemoryUsage(item)
+    const itemSize = estimateMemoryUsage(item as any)
 
     // Check if adding this item would exceed memory limits
     while (currentMemory + itemSize > maxMemory && accessOrder.value.length > 0) {
@@ -85,11 +85,11 @@ export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number =
     // Remove existing item if updating
     if (cache.value.has(key)) {
       const existingItem = cache.value.get(key)!
-      currentMemory -= estimateMemoryUsage(existingItem)
+      currentMemory -= estimateMemoryUsage(existingItem as any)
     }
 
     // Add to cache
-    cache.value.set(key, item)
+    cache.value.set(key, item as any)
     currentMemory += itemSize
 
     // Update access order
@@ -102,7 +102,7 @@ export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number =
   const get = (key: string): T | undefined => {
     if (cache.value.has(key)) {
       updateAccessOrder(key)
-      return cache.value.get(key)
+      return cache.value.get(key) as T
     }
     return undefined
   }

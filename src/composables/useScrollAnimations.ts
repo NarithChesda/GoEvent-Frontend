@@ -261,7 +261,7 @@ export function useParallaxScroll() {
 
       element.style.transform = transform
     })
-  }, 16) // ~60fps
+  }) // Uses requestAnimationFrame (~60fps)
 
   const addParallaxElement = (
     element: Element | { $el?: Element },

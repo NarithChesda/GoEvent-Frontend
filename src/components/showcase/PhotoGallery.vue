@@ -613,7 +613,7 @@ const smartPreloadImages = async (
 ) => {
   if (isPreloading.value && priority === 'low') return // Skip low priority if already preloading
 
-  const photosToPreload = photos.filter((photo) => !preloadedPhotoIds.has(photo.id))
+  const photosToPreload = photos.filter((photo) => !preloadedPhotoIds.has(photo.id.toString()))
   if (photosToPreload.length === 0) return
 
   // Batch size based on priority
@@ -636,7 +636,7 @@ const smartPreloadImages = async (
             await globalImageCache.preload(src)
 
             // Mark as preloaded
-            preloadedPhotoIds.add(photo.id)
+            preloadedPhotoIds.add(photo.id.toString())
 
             // Get dimensions from cache and store for aspect ratio calculations
             const dimensions = globalImageCache.getDimensions(src)
@@ -740,12 +740,7 @@ onUnmounted(() => {
     photoIntersectionObserver.value = null
   }
 
-  // Clear any pending cleanup timers
-  observedPhotoElements.forEach((photoData) => {
-    if (photoData.cleanupTimer) {
-      clearTimeout(photoData.cleanupTimer)
-    }
-  })
+  // WeakMap entries will be garbage collected automatically when elements are removed
 
   // Clear image dimensions cache
   imageDimensions.value = {}

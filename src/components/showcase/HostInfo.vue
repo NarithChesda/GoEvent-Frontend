@@ -303,8 +303,8 @@ interface Props {
 defineProps<Props>()
 
 // Utility method to get full URL for media
-const getMediaUrl = (mediaUrl: string | null | undefined): string | null => {
-  return apiService.getProfilePictureUrl(mediaUrl)
+const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
+  return apiService.getProfilePictureUrl(mediaUrl) || undefined
 }
 </script>
 

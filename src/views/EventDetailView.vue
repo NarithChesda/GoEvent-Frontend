@@ -179,7 +179,7 @@
               <EventPaymentTab
                 v-else-if="event?.id"
                 :event-id="event.id"
-                :event="event"
+                :event="event as any"
                 :can-edit="event.can_edit || false"
                 @tab-change="activeTab = $event"
                 @event-updated="handleEventUpdated"
@@ -545,7 +545,7 @@ const handleMediaUpdated = (updatedMedia: EventPhoto[]) => {
   }
 }
 
-const handleEventUpdated = (updatedEvent: Partial<Event> | Event) => {
+const handleEventUpdated = (updatedEvent: any) => {
   if (event.value && updatedEvent) {
     // Ensure critical properties are preserved
     const mergedEvent: Event = {
@@ -570,8 +570,9 @@ const handleEventUpdated = (updatedEvent: Partial<Event> | Event) => {
     }
 
     event.value = mergedEvent
-  } else if (updatedEvent) {
-    event.value = updatedEvent
+  } else if (updatedEvent && 'id' in updatedEvent && updatedEvent.id) {
+    // Only assign directly if it's a complete Event (has required id property)
+    event.value = updatedEvent as Event
   }
 }
 

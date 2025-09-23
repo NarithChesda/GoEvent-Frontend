@@ -75,7 +75,7 @@ export function usePerformanceOptimizations() {
 
     // Check hardware acceleration support
     const canvas = document.createElement('canvas')
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null
 
     if (!gl) {
       isHighPerformanceDevice.value = false
