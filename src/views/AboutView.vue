@@ -722,19 +722,19 @@
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
                   20+
                 </div>
-                <div class="text-xs sm:text-sm text-[#87CEEB]">Team Members</div>
+                <div class="text-xs sm:text-sm text-white">Team Members</div>
               </div>
               <div class="text-center">
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
                   5+
                 </div>
-                <div class="text-xs sm:text-sm text-[#87CEEB]">Open Roles</div>
+                <div class="text-xs sm:text-sm text-white">Open Roles</div>
               </div>
               <div class="text-center">
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
                   100%
                 </div>
-                <div class="text-xs sm:text-sm text-[#87CEEB]">Remote OK</div>
+                <div class="text-xs sm:text-sm text-white">Remote OK</div>
               </div>
             </div>
 

@@ -84,7 +84,7 @@
               class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"
             />
           </div>
-          <p class="text-xs text-slate-500 mt-1">The referrer must have an account in the system</p>
+          <p class="text-xs text-slate-500 mt-1">The referrer must have an account in the system and is our partner</p>
           <p v-if="error" class="text-xs text-red-600 mt-1">{{ error }}</p>
         </div>
 
@@ -122,8 +122,9 @@
         <div class="text-sm text-slate-700">
           <p class="font-medium mb-1">About Event Referrers</p>
           <p>
-            Referrers help promote your event and may receive special benefits or commissions based
-            on your agreement.
+            A referrer is the person or vendor who introduced you to our platform. They may earn rewards or commissions based on your purchases.
+            <br />
+            <span class="italic">Note: The referrer must have an existing account in the system and is our partner to be assigned.</span>
           </p>
         </div>
       </div>
