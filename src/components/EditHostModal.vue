@@ -413,7 +413,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { X, UserPen, User, Mail, Languages, Plus, Loader, Upload } from 'lucide-vue-next'
-import { hostsService, type EventHost, type HostTranslation } from '../services/api'
+import { hostsService, type EventHost, type HostTranslation, type CreateHostRequest } from '../services/api'
 
 interface Props {
   eventId: string
@@ -574,8 +574,8 @@ const updateHost = async () => {
       // Note: Exclude server-generated fields like id, host, created_at, updated_at
     }))
 
-    // Build request data - include ALL required fields for PUT request
-    const requestData: any = {
+    // Build request data
+    const requestData: Partial<CreateHostRequest> = {
       name: formData.name,
       parent_a_name: formData.parent_a_name || '',
       parent_b_name: formData.parent_b_name || '',
@@ -589,27 +589,33 @@ const updateHost = async () => {
       translations: cleanedTranslations.filter((t) => t.language && t.language.trim() !== ''),
     }
 
-    // Only include profile_image in request if we're not uploading a new file
-    if (!selectedProfileImageFile.value) {
-      requestData.profile_image = formData.profile_image || ''
-    }
+    // Determine if user is removing the image
+    const isRemovingImage = !selectedProfileImageFile.value &&
+                           formData.profile_image === '' &&
+                           props.host.profile_image
 
-    // Use the appropriate method based on whether we have a new file
-    const response = selectedProfileImageFile.value
-      ? await hostsService.updateHostWithFile(
-          props.eventId,
-          props.host.id,
-          requestData,
-          selectedProfileImageFile.value,
-        )
-      : await hostsService.updateHost(props.eventId, props.host.id, requestData)
+    let response
+
+    if (selectedProfileImageFile.value || isRemovingImage) {
+      // Use FormData for both uploading new file and removing image
+      // When removing, we'll pass undefined as the file which should clear it
+      response = await hostsService.updateHostWithFile(
+        props.eventId,
+        props.host.id,
+        requestData,
+        selectedProfileImageFile.value || undefined,
+      )
+    } else {
+      // No image changes, use PATCH for other fields
+      response = await hostsService.patchHost(props.eventId, props.host.id, requestData)
+    }
 
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
       alert(response.message || 'Failed to update host')
     }
-  } catch (error) {
+  } catch {
     alert('Network error while updating host')
   } finally {
     loading.value = false
