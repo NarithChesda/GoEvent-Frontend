@@ -126,13 +126,13 @@ export function useVideoResourceManager() {
             try {
               video.removeEventListener(event, handler)
             } catch (error) {
-              console.warn('Error removing video event listener:', error)
+              // Silently handle listener removal errors
             }
           })
           videoEventListeners.value.delete(video)
         }
 
-        // Cleanup video resources with error boundary and abort handling
+        // Cleanup video resources with enhanced error boundary
         try {
           // Handle any pending play promises to prevent AbortErrors
           if (!video.paused) {
@@ -141,14 +141,24 @@ export function useVideoResourceManager() {
               // Small delay to let any pending promises settle
               await new Promise((resolve) => setTimeout(resolve, VIDEO_CONFIG.PAUSE_DELAY))
             } catch (pauseError) {
-              console.warn('Error pausing video during cleanup:', pauseError)
+              // Silently handle pause errors
+            }
+          }
+
+          // Clear blob URLs if present
+          const currentSrc = video.currentSrc || video.src
+          if (currentSrc && currentSrc.startsWith('blob:')) {
+            try {
+              URL.revokeObjectURL(currentSrc)
+            } catch {
+              // Ignore blob URL revocation errors
             }
           }
 
           // Clear source with error handling
           try {
-            video.src = ''
             video.removeAttribute('src')
+            video.srcObject = null
             video.load()
           } catch {
             // Silently handle source clearing errors
@@ -249,44 +259,65 @@ export function useVideoResourceManager() {
    * This ensures the most "ready" video is kept while others are safely cleaned up.
    */
   const deduplicateVideos = (sourcePattern: string): HTMLVideoElement | null => {
-    const videos = Array.from(
-      document.querySelectorAll(`video[src*="${sourcePattern}"]`),
-    ) as HTMLVideoElement[]
+    // Find all videos with matching source patterns (including blob URLs)
+    const allVideos = Array.from(document.querySelectorAll('video')) as HTMLVideoElement[]
+    const videos = allVideos.filter((video) => {
+      const src = video.src || video.currentSrc || ''
+      return src.includes(sourcePattern) ||
+             (src.startsWith('blob:') && video.dataset.originalSrc === sourcePattern)
+    })
 
     if (videos.length <= 1) {
       return videos[0] || null
     }
 
-    // Keep the most ready video using intelligent scoring, cleanup others
+    // Enhanced scoring algorithm for better deduplication
     const sortedVideos = videos.sort((a, b) => {
       // Priority: in document, higher readyState, not paused, has proper styling
       const scoreA =
-        (document.contains(a) ? 8 : 0) +
-        a.readyState +
-        (a.paused ? 0 : 4) +
-        (a.style.opacity === '1' ? 2 : 0)
+        (document.contains(a) ? 16 : 0) +  // Increased weight for DOM attachment
+        (a.readyState * 2) +  // Double weight for ready state
+        (a.paused ? 0 : 8) +  // Increased weight for playing videos
+        (a.style.opacity === '1' ? 2 : 0) +
+        (a.style.display !== 'none' ? 2 : 0) +
+        (a.offsetParent !== null ? 2 : 0)  // Is visible in layout
       const scoreB =
-        (document.contains(b) ? 8 : 0) +
-        b.readyState +
-        (b.paused ? 0 : 4) +
-        (b.style.opacity === '1' ? 2 : 0)
+        (document.contains(b) ? 16 : 0) +
+        (b.readyState * 2) +
+        (b.paused ? 0 : 8) +
+        (b.style.opacity === '1' ? 2 : 0) +
+        (b.style.display !== 'none' ? 2 : 0) +
+        (b.offsetParent !== null ? 2 : 0)
       return scoreB - scoreA
     })
 
     const keepVideo = sortedVideos[0]
     const removeVideos = sortedVideos.slice(1)
 
-    // Cleanup duplicate videos with proper error handling
-    removeVideos.forEach((video) => {
-      // Pause and clear any pending play promises before cleanup
+    // Enhanced cleanup for duplicate videos
+    removeVideos.forEach(async (video) => {
+      // Pause and wait for any pending operations
       if (!video.paused) {
         try {
           video.pause()
+          // Give time for play promises to settle
+          await new Promise(resolve => setTimeout(resolve, 50))
         } catch {
           // Silently handle pause errors
         }
       }
 
+      // Clear source immediately to free resources
+      const currentSrc = video.currentSrc || video.src
+      if (currentSrc && currentSrc.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(currentSrc)
+        } catch {
+          // Ignore revoke errors
+        }
+      }
+
+      // Clean up the video element
       cleanupVideo(video).catch(() => {
         // Silently handle cleanup errors
       })

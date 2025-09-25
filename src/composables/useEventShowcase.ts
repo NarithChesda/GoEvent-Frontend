@@ -222,6 +222,19 @@ export function useEventShowcase() {
 
   const resourceManager = new ResourceManager()
 
+  // Network condition detection for adaptive loading
+  const getNetworkCondition = (): 'fast' | 'slow' | 'unknown' => {
+    if ('connection' in navigator) {
+      const conn = (navigator as any).connection
+      if (conn?.effectiveType === '4g' && (conn?.downlink > 5 || !conn?.downlink)) {
+        return 'fast'
+      } else if (conn?.effectiveType === 'slow-2g' || conn?.effectiveType === '2g') {
+        return 'slow'
+      }
+    }
+    return 'unknown'
+  }
+
   // Specialized composables for different concerns
   const fontManager = useFontManager()
   const videoManager = useVideoResourceManager()
@@ -494,6 +507,7 @@ export function useEventShowcase() {
 
     const language = forceLanguage || (route.query.lang as string) || currentLanguage.value
     const guest = guestName.value || ''
+    const networkCondition = getNetworkCondition()
     const requestKey = `showcase-${eventId}-${language}-${guest}`
 
     try {
@@ -533,6 +547,15 @@ export function useEventShowcase() {
         currentLanguage.value = data.meta.language
       }
 
+      // Adaptive resource loading based on network conditions
+      if (networkCondition === 'slow' && data.event.event_photos) {
+        // For slow connections, limit photos to improve performance
+        if (data.event.event_photos.length > 5) {
+          console.info('Limiting photos for slow connection')
+          data.event.event_photos = data.event.event_photos.slice(0, 5)
+        }
+      }
+
       // Update meta tags for social sharing
       updateEventMetaTags(data.event)
 
@@ -543,12 +566,19 @@ export function useEventShowcase() {
       // Load custom fonts asynchronously with progressive enhancement
       const langFonts = templateFonts.value.filter((f) => f.language === currentLanguage.value)
 
+      // Adjust font loading strategy based on network
+      const fontLoadConfig = {
+        display: 'swap' as const,
+        timeout: networkCondition === 'slow'
+          ? fontManager.FONT_CONFIG.DEFAULT_TIMEOUT * 2
+          : fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
+        retryAttempts: networkCondition === 'slow'
+          ? 1
+          : fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
+      }
+
       fontManager
-        .loadCustomFonts(langFonts, {
-          display: 'swap',
-          timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
-          retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
-        })
+        .loadCustomFonts(langFonts, fontLoadConfig)
         .catch((fontError) => {
           // Log font loading issues but don't block the main showcase
           console.warn('Font loading failed, falling back to system fonts:', fontError)
