@@ -186,6 +186,31 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
+// Mobile memory management
+const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+const memoryCleanupTimer = ref<number | null>(null)
+
+// Periodic cleanup for mobile devices to prevent memory buildup
+const setupMobileMemoryManagement = () => {
+  if (!isMobile) return
+
+  // Setting up mobile memory management
+
+  // Clean up memory every 2 minutes on mobile
+  memoryCleanupTimer.value = window.setInterval(() => {
+    if (videoResourceManager) {
+      const stats = videoResourceManager.getMemoryStats()
+      // Periodic mobile memory check
+
+      // Force cleanup if too many resources are active
+      if (stats.activeBlobUrls > 3 || stats.managedVideos > 2) {
+        // Triggering mobile memory cleanup
+        videoResourceManager.triggerMemoryCleanup()
+      }
+    }
+  }, 120000) // 2 minutes
+}
+
 // CoverStage component ref
 const coverStageRef = ref<InstanceType<typeof CoverStage> | null>(null)
 
@@ -325,13 +350,31 @@ const updateEventMetaTags = (eventData: any) => {
 onMounted(async () => {
   await authStore.initializeAuth()
 
+  // Setup mobile memory management before loading showcase
+  setupMobileMemoryManagement()
+
   // Initialize showcase - video resource manager is provided via Vue's provide/inject pattern
-  loadShowcase()
+  await loadShowcase()
+
+  // Mobile memory management initialized
 })
 
 onUnmounted(() => {
-  // All cleanup is handled by the composable's onUnmounted hook
-  // No manual cleanup needed as we're using proper Vue provide/inject pattern
+  // Clear mobile memory cleanup timer
+  if (memoryCleanupTimer.value) {
+    clearInterval(memoryCleanupTimer.value)
+    memoryCleanupTimer.value = null
+    console.log('📱 Mobile memory management timer cleared')
+  }
+
+  // Final memory cleanup for mobile
+  if (isMobile && videoResourceManager) {
+    console.log('📱 Final mobile memory cleanup')
+    videoResourceManager.triggerMemoryCleanup()
+  }
+
+  // All other cleanup is handled by the composable's onUnmounted hook
+  // No additional manual cleanup needed as we're using proper Vue provide/inject pattern
 })
 </script>
 

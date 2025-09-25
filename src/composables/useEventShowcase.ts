@@ -865,28 +865,45 @@ export function useEventShowcase() {
   // ============================
   // Lifecycle Hooks
   // ============================
-  onUnmounted(() => {
-    // Cleanup video resources using specialized video manager
-    videoManager.cleanupAllVideos()
+  onUnmounted(async () => {
+    try {
+      // Enhanced cleanup with proper async handling for mobile optimization
 
-    // Cleanup stage manager (audio, video refs, etc.)
-    // This is handled internally by stageManager
+      // 1. Cleanup video resources using specialized video manager (priority)
+      await videoManager.cleanupAllVideos()
 
-    // Cleanup performance manager
-    cleanupPerformance()
-    resourceManager.destroy()
+      // 2. Cleanup stage manager with enhanced video cleanup
+      await stageManager.cleanup()
 
-    // Cleanup font resources using font manager
-    fontManager.cleanup()
+      // 3. Cleanup performance manager
+      cleanupPerformance()
+      resourceManager.destroy()
 
-    // Clear template processor caches
-    templateProcessor.clearCaches()
+      // 4. Cleanup font resources using font manager
+      fontManager.cleanup()
 
-    // Reset local state
-    photosCache.value = { version: -1, sorted: [] }
-    showcaseData.value = null
-    error.value = null
-    currentModalPhoto.value = null
+      // 5. Clear template processor caches
+      templateProcessor.clearCaches()
+
+      // 6. Reset local state
+      photosCache.value = { version: -1, sorted: [] }
+      showcaseData.value = null
+      error.value = null
+      currentModalPhoto.value = null
+
+      // 7. Force memory cleanup on mobile devices
+      if (videoManager.isMobileDevice()) {
+        // Trigger final garbage collection hint
+        videoManager.triggerMemoryCleanup()
+      }
+
+    } catch (error) {
+      console.warn('Error during showcase cleanup:', error)
+      // Ensure critical state is reset even if cleanup fails
+      showcaseData.value = null
+      error.value = null
+      currentModalPhoto.value = null
+    }
   })
 
   // ============================
@@ -984,7 +1001,12 @@ export function useEventShowcase() {
     preserveVideoState: redirectManager.preserveVideoState,
     clearVideoStatePreservation: redirectManager.clearVideoStatePreservation,
 
-    // Video Resource Manager
+    // Video Resource Manager with enhanced capabilities
     videoResourceManager: videoManager,
+
+    // Memory management utilities
+    getVideoMemoryStats: () => videoManager.getMemoryStats(),
+    forceVideoCleanup: () => videoManager.cleanupAllVideos(),
+    triggerGarbageCollection: () => videoManager.triggerMemoryCleanup(),
   }
 }

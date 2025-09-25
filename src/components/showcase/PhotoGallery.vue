@@ -617,18 +617,7 @@ const observePhotoForCleanup = (element: Element, photoId: string) => {
 
 // Performance monitoring function
 const logPerformanceMetrics = () => {
-  if (import.meta.env.DEV) {
-    const cacheMetrics = globalImageCache.getMetrics()
-    console.group('📸 PhotoGallery Performance Metrics')
-    console.log('🎯 Cache Performance:', cacheMetrics)
-    console.log('🧠 Memory Management:', memoryMetrics.value)
-    console.log('👁️ Visible Photos:', {
-      forward: visiblePhotos.value.length,
-      reverse: visibleReversePhotos.value.length,
-      total: visiblePhotos.value.length + visibleReversePhotos.value.length
-    })
-    console.groupEnd()
-  }
+  // Removed console logging for cleaner production output
 }
 
 // Enhanced image load handler using centralized cache

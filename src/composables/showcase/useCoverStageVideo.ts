@@ -1,4 +1,5 @@
 import { ref, computed, onUnmounted, nextTick, watch, readonly, type Ref } from 'vue'
+import { useVideoResourceManager } from './useVideoResourceManager'
 
 export type VideoPhase = 'none' | 'event' | 'background'
 export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
@@ -57,6 +58,9 @@ export function useCoverStageVideo(
   props: VideoProps,
   emit: (event: keyof VideoEmits, ...args: any[]) => void,
 ) {
+  // Initialize enhanced video resource manager
+  const videoResourceManager = useVideoResourceManager()
+
   // Video state management
   const currentVideoPhase = ref<VideoPhase>('none')
   const eventVideoPreloaded = ref(false)
@@ -70,173 +74,108 @@ export function useCoverStageVideo(
   )
   const isContentHidden = ref(false)
 
-  // Store blob URLs for cleanup with proper tracking
-  const videoBlobUrls = ref<Map<string, string>>(new Map())
+  // Video download tracking (simplified with resource manager)
   const videoDownloadPromises = new Map<string, Promise<string | null>>()
   const preloadedVideos = new Set<string>()
 
-  // Video resource manager with WeakMap for automatic memory management
-  const videoListenerRefs = new WeakMap<
-    HTMLVideoElement,
-    Array<{ event: string; handler: EventListener; controller: AbortController }>
-  >()
+  // Mobile optimization flags
+  const isMobile = videoResourceManager.isMobileDevice()
+  const isLowMemory = videoResourceManager.isLowMemoryDevice()
+  const maxConcurrentVideos = videoResourceManager.maxVideoLimit()
 
-  // Track all video elements for guaranteed cleanup
-  const trackedVideoElements = new Set<HTMLVideoElement>()
-
+  // Use the resource manager's event listener system
   const addVideoEventListener = (
     video: HTMLVideoElement,
     event: string,
     handler: EventListener,
   ) => {
-    const controller = new AbortController()
-    video.addEventListener(event, handler, { signal: controller.signal })
-
-    if (!videoListenerRefs.has(video)) {
-      videoListenerRefs.set(video, [])
-    }
-    videoListenerRefs.get(video)?.push({ event, handler, controller })
-
-    // Track this video element for cleanup
-    trackedVideoElements.add(video)
+    videoResourceManager.addVideoEventListener(video, event, handler)
   }
 
-  // Centralized video element management
-  const createVideoElementManager = () => {
-    const cleanupVideoElement = (video: HTMLVideoElement | null) => {
-      if (!video) return
+  // Register video elements with the resource manager
+  const registerVideoForCleanup = (video: HTMLVideoElement, identifier?: string) => {
+    videoResourceManager.registerVideo(video, identifier)
+  }
 
-      // Remove from tracked elements
-      trackedVideoElements.delete(video)
-
-      // Abort all event listeners for this video element
-      const listeners = videoListenerRefs.get(video)
-      if (listeners) {
-        listeners.forEach(({ controller }) => {
-          try {
-            controller.abort()
-          } catch (e) {
-            // Ignore abort errors
-          }
-        })
-        videoListenerRefs.delete(video)
+  // Simplified video element management using resource manager
+  const videoManager = {
+    cleanup: (video: HTMLVideoElement | null) => {
+      if (video) {
+        return videoResourceManager.cleanupVideo(video)
       }
-
-      // Cleanup video resources with enhanced error handling
-      try {
-        // First pause to stop any pending operations
-        if (!video.paused) {
-          video.pause()
-        }
-
-        // Clear the source URL if it's a blob
-        const currentSrc = video.currentSrc || video.src
-        if (currentSrc && currentSrc.startsWith('blob:')) {
-          // Revoke the blob URL to free memory
-          URL.revokeObjectURL(currentSrc)
-
-          // Also check our blob URL map
-          videoBlobUrls.value.forEach((blobUrl, key) => {
-            if (blobUrl === currentSrc) {
-              videoBlobUrls.value.delete(key)
-            }
-          })
-        }
-
-        // Clear the video source
-        video.removeAttribute('src')
-        video.srcObject = null
-        video.load() // Reset the video element
-      } catch (error) {
-        // Silently handle cleanup errors
-      }
-    }
-
-    const setVideoVisibility = (
-      video: HTMLVideoElement | null,
-      visible: boolean,
-      zIndex?: string,
-    ) => {
+      return Promise.resolve()
+    },
+    setVisibility: (video: HTMLVideoElement | null, visible: boolean, zIndex?: string) => {
       if (!video) return
       video.style.opacity = visible ? '1' : '0'
       if (zIndex) {
         video.style.zIndex = zIndex
       }
-    }
-
-    const setupVideoForPlayback = (
-      video: HTMLVideoElement,
-      muted: boolean = false,
-      loop: boolean = false,
-    ) => {
+    },
+    setupForPlayback: (video: HTMLVideoElement, muted: boolean = false, loop: boolean = false) => {
       video.muted = muted
       video.loop = loop
       video.style.pointerEvents = 'none'
-    }
 
-    return {
-      cleanup: cleanupVideoElement,
-      setVisibility: setVideoVisibility,
-      setupForPlayback: setupVideoForPlayback,
+      // Mobile-specific optimizations
+      if (isMobile) {
+        video.playsInline = true
+        // Ensure preload is appropriate for mobile
+        if (!video.preload || video.preload === 'auto') {
+          video.preload = isLowMemory ? 'none' : 'metadata'
+        }
+      }
+    },
+  }
+
+  const cleanupAllVideoResources = async () => {
+    try {
+      // Use the enhanced resource manager for comprehensive cleanup
+      await videoResourceManager.cleanupAllVideos()
+
+      // Clear local state
+      videoDownloadPromises.clear()
+      preloadedVideos.clear()
+
+      // Clean up specific video refs as backup
+      const videoElements = [
+        videoRefs.eventVideoPreloader(),
+        videoRefs.sequentialVideoContainer(),
+        videoRefs.coverVideoElement(),
+        videoRefs.backgroundVideoElement()
+      ].filter(Boolean)
+
+      // Cleanup remaining elements in parallel
+      await Promise.allSettled(
+        videoElements.map(video => videoManager.cleanup(video))
+      )
+
+    } catch (error) {
+      console.warn('Error during video resource cleanup:', error)
+      // Ensure state is cleared even if cleanup fails
+      videoDownloadPromises.clear()
+      preloadedVideos.clear()
     }
   }
 
-  const videoManager = createVideoElementManager()
-
-  const cleanupAllVideoResources = () => {
-    // Cleanup all tracked video elements
-    trackedVideoElements.forEach((video) => {
-      videoManager.cleanup(video)
-    })
-    trackedVideoElements.clear()
-
-    // Cleanup specific video refs as backup
-    videoManager.cleanup(videoRefs.eventVideoPreloader())
-    videoManager.cleanup(videoRefs.sequentialVideoContainer())
-    videoManager.cleanup(videoRefs.coverVideoElement())
-    videoManager.cleanup(videoRefs.backgroundVideoElement())
-
-    // Cleanup all blob URLs with enhanced tracking
-    videoBlobUrls.value.forEach((blobUrl) => {
-      try {
-        URL.revokeObjectURL(blobUrl)
-      } catch (error) {
-        // Silently handle revocation errors
-      }
-    })
-    videoBlobUrls.value.clear()
-
-    // Clear download promises to prevent memory leaks
-    videoDownloadPromises.clear()
-    preloadedVideos.clear()
-
-    // Force garbage collection hint for mobile browsers
-    if (isMobile && typeof window !== 'undefined' && 'gc' in window) {
-      try {
-        ;(window as any).gc()
-      } catch (e) {
-        // Ignore GC errors
-      }
-    }
-  }
-
-  // Video download with device optimization and deduplication
+  // Enhanced video download with mobile optimizations and resource management
   const forceFullVideoDownload = async (videoUrl: string, videoType: 'event' | 'background') => {
     try {
-      // Check if already downloaded
-      const existingBlob = videoBlobUrls.value.get(videoUrl)
-      if (existingBlob) {
-        return existingBlob
-      }
-
       // Check if download is already in progress
       const existingPromise = videoDownloadPromises.get(videoUrl)
       if (existingPromise) {
         return await existingPromise
       }
 
-      // Skip background video for low-end devices
-      if (videoType === 'background' && isLowEndDevice) {
+      // Mobile-specific constraints
+      if (videoType === 'background' && isLowMemory) {
+        devLog('Skipping background video download on low-memory device')
+        return null
+      }
+
+      // Enforce video limits for mobile
+      if (isMobile && videoResourceManager.managedVideoCount() >= maxConcurrentVideos) {
+        devWarn('Video limit reached on mobile, skipping download')
         return null
       }
 
@@ -245,27 +184,38 @@ export function useCoverStageVideo(
         ? videoUrl
         : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${videoUrl.startsWith('/') ? videoUrl : `/media/${videoUrl}`}`
 
-      // Basic fetch configuration
+      // Mobile-optimized fetch configuration
       const fetchOptions: RequestInit = {}
 
-      // Mobile optimizations
       if (isMobile) {
         fetchOptions.cache = 'force-cache'
         fetchOptions.keepalive = true
-      }
-
-      // Skip large videos on low-end devices
-      if (isLowEndDevice) {
-        const headResponse = await fetch(fullUrl, { ...fetchOptions, method: 'HEAD' })
-        const contentLength = headResponse.headers.get('content-length')
-        const videoSizeInMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0
-
-        if (videoSizeInMB > 10) {
-          return null
+        // Add priority hints if supported
+        if ('priority' in fetchOptions) {
+          (fetchOptions as any).priority = videoType === 'event' ? 'high' : 'low'
         }
       }
 
-      // Create and store the download promise for deduplication
+      // Enhanced size checking for low-memory devices
+      if (isLowMemory) {
+        try {
+          const headResponse = await fetch(fullUrl, { ...fetchOptions, method: 'HEAD' })
+          const contentLength = headResponse.headers.get('content-length')
+          const videoSizeInMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0
+
+          // More aggressive size limits for low-memory devices
+          const maxSize = videoType === 'event' ? 15 : 8 // MB
+          if (videoSizeInMB > maxSize) {
+            devWarn(`Video too large for low-memory device: ${videoSizeInMB}MB > ${maxSize}MB`)
+            return null
+          }
+        } catch (error) {
+          // Continue with download if HEAD request fails
+          devWarn('Failed to check video size, proceeding with download')
+        }
+      }
+
+      // Create and store the download promise
       const downloadPromise = (async () => {
         const response = await fetch(fullUrl, fetchOptions)
 
@@ -275,7 +225,9 @@ export function useCoverStageVideo(
 
         const blob = await response.blob()
         const blobUrl = URL.createObjectURL(blob)
-        videoBlobUrls.value.set(videoUrl, blobUrl)
+
+        // Register the blob URL with the resource manager
+        videoResourceManager.registerBlobUrl(videoUrl, blobUrl)
         preloadedVideos.add(videoUrl)
 
         return blobUrl
@@ -283,21 +235,25 @@ export function useCoverStageVideo(
 
       videoDownloadPromises.set(videoUrl, downloadPromise)
       const result = await downloadPromise
-      videoDownloadPromises.delete(videoUrl) // Clean up promise after completion
+      videoDownloadPromises.delete(videoUrl)
 
       return result
     } catch (error) {
-      videoDownloadPromises.delete(videoUrl) // Clean up on error
+      videoDownloadPromises.delete(videoUrl)
+      devError(`Video download failed for ${videoType}:`, error)
       return null
     }
   }
 
-  // Background video loading with progressive streaming
+  // Background video loading with progressive streaming and resource management
   const loadBackgroundVideo = async () => {
     if (!props.backgroundVideoUrl) return
 
     const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) return
+
+    // Register video with resource manager
+    registerVideoForCleanup(bgVideo, 'background-video')
 
     // Check if already loading or loaded
     if (bgVideo.src && bgVideo.readyState > 0) {
@@ -312,12 +268,15 @@ export function useCoverStageVideo(
       ? props.backgroundVideoUrl
       : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${props.backgroundVideoUrl.startsWith('/') ? props.backgroundVideoUrl : `/media/${props.backgroundVideoUrl}`}`
 
+    // Mobile-specific preload strategy
+    const preloadMode = isMobile ? (isLowMemory ? 'none' : 'metadata') : 'auto'
+
     // Set the source directly for progressive download
     bgVideo.src = fullUrl
-    bgVideo.preload = 'auto'
+    bgVideo.preload = preloadMode
     bgVideo.load()
 
-    devLog('Background video load initiated:', fullUrl)
+    devLog('Background video load initiated:', fullUrl, 'preload:', preloadMode)
   }
 
   // Event video preloading handlers
@@ -334,34 +293,56 @@ export function useCoverStageVideo(
     // Background video is already loading in parallel, no need to start here
   }
 
-  // Parallel video loading for improved performance
+  // Enhanced parallel video loading with mobile resource management
   const startParallelVideoLoading = async () => {
     const loadPromises: Promise<void>[] = []
 
     // Load event video if available
     if (props.eventVideoUrl) {
       const eventLoadPromise = (async () => {
-        emit('eventVideoLoadStarted')
-        const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
-        if (eventBlobUrl && videoRefs.eventVideoPreloader()) {
-          videoRefs.eventVideoPreloader()!.src = eventBlobUrl
+        try {
+          emit('eventVideoLoadStarted')
+          const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
+          if (eventBlobUrl && videoRefs.eventVideoPreloader()) {
+            const eventVideo = videoRefs.eventVideoPreloader()!
+            registerVideoForCleanup(eventVideo, 'event-video-preloader')
+            eventVideo.src = eventBlobUrl
+          }
+        } catch (error) {
+          devError('Event video loading failed:', error)
         }
       })()
       loadPromises.push(eventLoadPromise)
     }
 
-    // Load background video if available (in parallel)
-    if (props.backgroundVideoUrl && !isLowEndDevice) {
+    // Load background video if available (mobile-aware)
+    if (props.backgroundVideoUrl && !isLowMemory) {
       const bgLoadPromise = (async () => {
-        // Small delay to prioritize event video slightly
-        await new Promise(resolve => setTimeout(resolve, 100))
-        await loadBackgroundVideo()
+        try {
+          // Prioritize event video on mobile with longer delay
+          const delay = isMobile ? 500 : 100
+          await new Promise(resolve => setTimeout(resolve, delay))
+          await loadBackgroundVideo()
+        } catch (error) {
+          devError('Background video loading failed:', error)
+        }
       })()
       loadPromises.push(bgLoadPromise)
     }
 
-    // Wait for all videos to load in parallel
-    await Promise.allSettled(loadPromises)
+    // Wait for all videos to load with timeout for mobile
+    const timeout = isMobile ? 15000 : 30000 // Shorter timeout for mobile
+    const timeoutPromise = new Promise<void>(resolve => {
+      setTimeout(() => {
+        devWarn('Video loading timeout reached')
+        resolve()
+      }, timeout)
+    })
+
+    await Promise.race([
+      Promise.allSettled(loadPromises),
+      timeoutPromise
+    ])
   }
 
   // Event video loading (can be called independently)
@@ -428,8 +409,11 @@ export function useCoverStageVideo(
     const videoToUse = videoRefs.eventVideoPreloader() || videoRefs.sequentialVideoContainer()
     if (!videoToUse) return
 
-    // Setup video for playback
-    videoManager.setupForPlayback(videoToUse, false, false)
+    // Register video with resource manager if not already registered
+    registerVideoForCleanup(videoToUse, 'event-video')
+
+    // Setup video for playback with mobile optimizations
+    videoManager.setupForPlayback(videoToUse, isMobile, false) // Mobile needs muted start
     videoManager.setVisibility(videoToUse, true, '10')
 
     // Set source if using sequential container
@@ -437,10 +421,30 @@ export function useCoverStageVideo(
       videoToUse.src = props.eventVideoUrl
     }
 
-    videoToUse.play().catch(() => {
-      handleSequentialVideoEnded()
-    })
+    // Enhanced play handling for mobile
+    const playVideo = async () => {
+      try {
+        await videoToUse.play()
 
+        // Try to unmute after play starts on mobile if user interacted
+        if (isMobile && videoToUse.muted) {
+          // Small delay to ensure playback is stable
+          setTimeout(() => {
+            try {
+              videoToUse.muted = false
+            } catch (error) {
+              // Keep muted if unmuting fails
+              devWarn('Could not unmute video on mobile:', error)
+            }
+          }, 500)
+        }
+      } catch (error) {
+        devWarn('Event video play failed:', error)
+        handleSequentialVideoEnded()
+      }
+    }
+
+    playVideo()
     emit('playEventVideo')
   }
 
@@ -661,13 +665,33 @@ export function useCoverStageVideo(
     addVideoEventListener(bgVideo, 'error', eventHandlers.handleError)
   }
 
-  // Initialize video state with parallel loading
+  // Enhanced video state initialization with resource management
   const initializeVideoState = () => {
-    // Start parallel loading immediately for better performance
-    if (props.eventVideoUrl || props.backgroundVideoUrl) {
-      startParallelVideoLoading()
+    // Register cover video if available
+    const coverVideo = videoRefs.coverVideoElement()
+    if (coverVideo) {
+      registerVideoForCleanup(coverVideo, 'cover-video')
     }
 
+    // Register sequential video container
+    const sequentialVideo = videoRefs.sequentialVideoContainer()
+    if (sequentialVideo) {
+      registerVideoForCleanup(sequentialVideo, 'sequential-video')
+    }
+
+    // Start parallel loading with mobile consideration
+    if (props.eventVideoUrl || props.backgroundVideoUrl) {
+      // Delay loading slightly on mobile to ensure UI is ready
+      if (isMobile) {
+        setTimeout(() => {
+          startParallelVideoLoading()
+        }, 200)
+      } else {
+        startParallelVideoLoading()
+      }
+    }
+
+    // Stage-specific initialization
     if (props.shouldSkipToMainContent || props.currentShowcaseStage === 'main_content') {
       isContentHidden.value = true
       isCoverVideoPlaying.value = false
@@ -765,20 +789,31 @@ export function useCoverStageVideo(
     { immediate: true },
   )
 
-  watch(isCoverVideoPlaying, (isPlaying) => {
+  watch(isCoverVideoPlaying, async (isPlaying) => {
     const coverVideo = videoRefs.coverVideoElement()
     if (coverVideo) {
+      // Ensure video is registered for cleanup
+      registerVideoForCleanup(coverVideo, 'cover-video-watcher')
+
       if (isPlaying) {
-        coverVideo.play().catch(() => {})
+        try {
+          // Mobile-specific play handling
+          if (isMobile) {
+            videoManager.setupForPlayback(coverVideo, true, true) // Muted and looped
+          }
+          await coverVideo.play()
+        } catch (error) {
+          devWarn('Cover video play failed:', error)
+        }
       } else {
         coverVideo.pause()
       }
     }
   })
 
-  // Cleanup on component unmount
-  onUnmounted(() => {
-    cleanupAllVideoResources()
+  // Enhanced cleanup on component unmount
+  onUnmounted(async () => {
+    await cleanupAllVideoResources()
   })
 
   const startEventVideo = () => {
