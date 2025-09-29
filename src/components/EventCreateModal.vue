@@ -13,28 +13,28 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 text-white">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Plus class="w-5 h-5" />
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                  <div class="w-8 sm:w-9 md:w-10 h-8 sm:h-9 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Plus class="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5" />
                   </div>
-                  <h2 class="text-2xl font-bold">Create New Event</h2>
+                  <h2 class="text-lg sm:text-xl md:text-2xl font-bold">Create New Event</h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-7 sm:w-7.5 md:w-8 h-7 sm:h-7.5 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4" />
                 </button>
               </div>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="handleSubmit" class="p-8 space-y-6">
+            <form @submit.prevent="handleSubmit" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
               <!-- Title -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Event Title *
                 </label>
                 <input
@@ -42,56 +42,56 @@
                   type="text"
                   required
                   placeholder="Enter event title"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
 
               <!-- Description -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Full Description *
                 </label>
                 <textarea
                   v-model="form.description"
                   required
-                  rows="4"
+                  rows="3"
                   placeholder="Detailed event description"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                 ></textarea>
               </div>
 
               <!-- Date and Time -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-2">
+                  <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                     Start Date & Time *
                   </label>
                   <input
                     v-model="form.start_date"
                     type="datetime-local"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-2">
+                  <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                     End Date & Time *
                   </label>
                   <input
                     v-model="form.end_date"
                     type="datetime-local"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                   />
                 </div>
               </div>
 
               <!-- Timezone -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2"> Timezone </label>
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Timezone </label>
                 <select
                   v-model="form.timezone"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 >
                   <optgroup
                     v-for="(timezones, region) in timezonesByRegion"
@@ -114,59 +114,59 @@
 
               <!-- Location -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2"> Location </label>
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Location </label>
                 <input
                   v-model="form.location"
                   type="text"
-                  placeholder="Event location address (optional)"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  placeholder="Event location (optional)"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
 
               <!-- Privacy Setting -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Event Privacy
                 </label>
-                <div class="flex space-x-4">
+                <div class="flex space-x-3 sm:space-x-4">
                   <label class="flex items-center">
                     <input
                       v-model="form.privacy"
                       type="radio"
                       value="public"
-                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
+                      class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
-                    <span class="ml-2 text-sm text-slate-700">Public</span>
+                    <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-700">Public</span>
                   </label>
                   <label class="flex items-center">
                     <input
                       v-model="form.privacy"
                       type="radio"
                       value="private"
-                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
+                      class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
-                    <span class="ml-2 text-sm text-slate-700">Private</span>
+                    <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-700">Private</span>
                   </label>
                 </div>
               </div>
 
               <!-- Action Buttons -->
               <div
-                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200"
+                class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 md:space-x-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
               >
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+                  class="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="isSubmitting"
-                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
-                  <Loader v-if="isSubmitting" class="w-5 h-5 mr-2 animate-spin" />
+                  <Loader v-if="isSubmitting" class="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5 mr-1.5 sm:mr-2 animate-spin" />
                   {{ isSubmitting ? 'Creating...' : 'Create Event' }}
                 </button>
               </div>

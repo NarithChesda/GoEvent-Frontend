@@ -1,17 +1,17 @@
 <template>
-  <div class="rounded-3xl mb-8 overflow-hidden transition-all duration-300 shadow-lg shadow-emerald-300/20 focus-within:shadow-xl focus-within:shadow-[#1e90ff]/30 hover:shadow-xl hover:shadow-emerald-300/30 border-2 border-emerald-100 focus-within:border-[#1e90ff] hover:border-emerald-200">
+  <div class="rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 overflow-hidden transition-all duration-300 shadow-md sm:shadow-lg shadow-emerald-300/20 focus-within:shadow-lg sm:focus-within:shadow-xl focus-within:shadow-[#1e90ff]/30 hover:shadow-lg sm:hover:shadow-xl hover:shadow-emerald-300/30 border sm:border-2 border-emerald-100 focus-within:border-[#1e90ff] hover:border-emerald-200">
     <!-- Search Bar (Always Visible) - White Background -->
-    <div class="bg-white p-6 pb-4">
+    <div class="bg-white p-3 sm:p-5 md:p-6 pb-2 sm:pb-3 md:pb-4">
       <div class="relative">
-        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 search-icon-gradient">
+        <div class="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 search-icon-gradient">
           <Search class="w-full h-full" />
         </div>
         <input
           v-model="localFilters.search"
           @input="debouncedEmitFilters"
           type="text"
-          placeholder="Search by title, description, or organizer..."
-          class="w-full pl-12 pr-4 py-3 rounded-xl transition-all duration-200 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:text-slate-900 focus:placeholder-slate-400 outline-none border-none"
+          placeholder="Search events..."
+          class="w-full pl-9 sm:pl-11 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl transition-all duration-200 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:text-slate-900 focus:placeholder-slate-400 outline-none border-none"
           style="outline: none !important; border: none !important; box-shadow: none !important;"
         />
       </div>
@@ -23,21 +23,21 @@
       <!-- Filter Header -->
       <div
         @click="showFilters = !showFilters"
-        class="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-emerald-100/70 transition-colors duration-200"
+        class="flex items-center justify-between px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 md:py-4 cursor-pointer hover:bg-emerald-100/70 transition-colors duration-200"
       >
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 sm:space-x-3">
           <span
             v-if="hasActiveFilters"
-            class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-xs font-medium px-3 py-1.5 rounded-full shadow-lg shadow-[#87CEEB]/30"
+            class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-md sm:shadow-lg shadow-[#87CEEB]/30"
           >
             {{ activeFilterCount }} active
           </span>
         </div>
         <div
-          class="inline-flex items-center text-slate-700 hover:text-[#1e90ff] font-medium text-sm transition-colors duration-200"
+          class="inline-flex items-center text-slate-700 hover:text-[#1e90ff] font-medium text-xs sm:text-sm transition-colors duration-200"
         >
           <ChevronDown
-            class="w-5 h-5 transition-transform duration-200 text-[#1e90ff]"
+            class="w-4 sm:w-5 h-4 sm:h-5 transition-transform duration-200 text-[#1e90ff]"
             :class="{ 'rotate-180': showFilters }"
           />
           {{ showFilters ? 'Hide' : 'Show' }} Filters
@@ -46,21 +46,22 @@
 
       <!-- Filters Content -->
       <div
-        class="filter-content px-6 transition-all duration-300 ease-in-out overflow-hidden"
-        :class="showFilters ? 'max-h-[2000px] pb-6' : 'max-h-0 pb-0'"
+        class="filter-content px-3 sm:px-5 md:px-6 transition-all duration-300 ease-in-out overflow-hidden"
+        :class="showFilters ? 'max-h-[2000px] pb-3 sm:pb-5 md:pb-6' : 'max-h-0 pb-0'"
       >
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-5 md:space-y-6">
           <!-- Primary Filters -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <!-- Category Filter -->
             <div>
-              <label for="category-filter" class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+              <label for="category-filter" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Category</label>
               <div class="relative">
                 <select
                   id="category-filter"
                   :value="localFilters.category || ''"
 @change="(e) => {
-                    const selectedValue = e.target.value
+                    const target = e.target as HTMLSelectElement
+                    const selectedValue = target?.value
                     if (selectedValue === '') {
                       localFilters.category = undefined
                     } else {
@@ -68,7 +69,7 @@
                     }
                     emitFilters()
                   }"
-                  class="custom-select w-full px-4 py-3 pr-10 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
                   aria-label="Filter events by category"
                   aria-describedby="category-helper"
                 >
@@ -91,13 +92,13 @@
 
             <!-- Status Filter -->
             <div>
-              <label for="status-filter" class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+              <label for="status-filter" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Status</label>
               <div class="relative">
                 <select
                   id="status-filter"
                   v-model="localFilters.status"
                   @change="emitFilters"
-                  class="custom-select w-full px-4 py-3 pr-10 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
                   aria-label="Filter events by status"
                   aria-describedby="status-helper"
                 >
@@ -121,7 +122,7 @@
           </div>
 
           <!-- Quick Filter Buttons -->
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-2 sm:gap-3">
             <button
               @click="toggleFilter('is_virtual', true)"
               :class="
@@ -129,10 +130,10 @@
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
                   : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
               "
-              class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2 border-emerald-300/60 shadow-md hover:shadow-lg hover:scale-105"
+              class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
             >
-              <Monitor class="w-4 h-4 mr-2" />
-              Virtual Only
+              <Monitor class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+              Virtual
             </button>
 
             <button
@@ -142,10 +143,10 @@
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
                   : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
               "
-              class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2 border-emerald-300/60 shadow-md hover:shadow-lg hover:scale-105"
+              class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
             >
-              <MapPin class="w-4 h-4 mr-2" />
-              In-Person Only
+              <MapPin class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+              In-Person
             </button>
 
           <button
@@ -155,9 +156,9 @@
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25'
                 : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2 border-emerald-300/60 shadow-md hover:shadow-lg hover:scale-105"
+            class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
           >
-            <Calendar class="w-4 h-4 mr-2" />
+            <Calendar class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
             Today
           </button>
 
@@ -168,10 +169,10 @@
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25'
                 : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2 border-emerald-300/60 shadow-md hover:shadow-lg hover:scale-105"
+            class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
           >
-            <Calendar class="w-4 h-4 mr-2" />
-            This Week
+            <Calendar class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+            Week
           </button>
 
           <button
@@ -181,10 +182,10 @@
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25'
                 : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2 border-emerald-300/60 shadow-md hover:shadow-lg hover:scale-105"
+            class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
           >
-            <Calendar class="w-4 h-4 mr-2" />
-            This Month
+            <Calendar class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+            Month
           </button>
         </div>
 
@@ -192,13 +193,13 @@
         <div>
           <button
             @click="showAdvanced = !showAdvanced"
-            class="inline-flex items-center text-[#1e90ff] hover:text-[#1873cc] font-medium text-sm transition-colors duration-200"
+            class="inline-flex items-center text-[#1e90ff] hover:text-[#1873cc] font-medium text-xs sm:text-sm transition-colors duration-200"
           >
             <ChevronDown
-              class="w-4 h-4 mr-1 transition-transform duration-200"
+              class="w-3 sm:w-4 h-3 sm:h-4 mr-0.5 sm:mr-1 transition-transform duration-200"
               :class="{ 'rotate-180': showAdvanced }"
             />
-            {{ showAdvanced ? 'Hide' : 'Show' }} Advanced Filters
+            {{ showAdvanced ? 'Hide' : 'Show' }} Advanced
           </button>
         </div>
 
@@ -213,22 +214,22 @@
           >
             <!-- Date Range -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Start Date From</label>
+              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Start Date From</label>
               <input
                 v-model="localFilters.start_date_after"
                 @change="emitFilters"
                 type="date"
-                class="w-full px-4 py-3 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Start Date To</label>
+              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Start Date To</label>
               <input
                 v-model="localFilters.start_date_before"
                 @change="emitFilters"
                 type="date"
-                class="w-full px-4 py-3 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm"
               />
             </div>
 
@@ -240,7 +241,7 @@
                   id="privacy-filter"
                   v-model="localFilters.privacy"
                   @change="emitFilters"
-                  class="custom-select w-full px-4 py-3 pr-10 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
                   aria-label="Filter events by privacy setting"
                   aria-describedby="privacy-helper"
                 >
@@ -268,7 +269,7 @@
                   id="sort-filter"
                   v-model="localFilters.ordering"
                   @change="emitFilters"
-                  class="custom-select w-full px-4 py-3 pr-10 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
                   aria-label="Sort events by specific criteria"
                   aria-describedby="sort-helper"
                 >
@@ -298,10 +299,10 @@
         <div v-if="hasActiveFilters" class="flex justify-end">
           <button
             @click="clearFilters"
-            class="inline-flex items-center text-slate-600 hover:text-red-600 text-sm font-medium transition-all duration-200 hover:bg-red-50 px-4 py-2.5 rounded-xl border-2 border-red-200/60 hover:border-red-300 shadow-sm hover:shadow-md"
+            class="inline-flex items-center text-slate-600 hover:text-red-600 text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 hover:bg-red-50 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl border sm:border-2 border-red-200/60 hover:border-red-300 shadow-sm hover:shadow-md"
           >
-            <X class="w-4 h-4 mr-1" />
-            Clear All Filters
+            <X class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-0.5 sm:mr-1" />
+            Clear All
           </button>
         </div>
       </div>
