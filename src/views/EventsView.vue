@@ -8,7 +8,11 @@
         <!-- Header -->
         <div class="text-center mb-8 sm:mb-12">
           <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
-            Discover what's happening around you
+
+            <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent">
+              Discover What's
+              Happening Around You!!!
+            </span>
           </h1>
         </div>
 
@@ -18,12 +22,12 @@
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'my'"
-              :class="
+              :class="[
+                'flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105',
                 currentView === 'my'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
-                  : 'bg-white/80 text-slate-600 hover:text-[#1e90ff] hover:bg-white border-white/20 hover:border-[#1e90ff]/20'
-              "
-              class="flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105"
+                  : 'bg-white/80 hover:bg-white shadow-lg shadow-emerald-500/20 tab-inactive'
+              ]"
             >
               <User class="w-4 h-4 mr-2" />
               <span class="text-sm">My Events</span>
@@ -31,12 +35,12 @@
 
             <button
               @click="currentView = 'all'"
-              :class="
+              :class="[
+                'flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105',
                 currentView === 'all'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
-                  : 'bg-white/80 text-slate-600 hover:text-[#1e90ff] hover:bg-white border-white/20 hover:border-[#1e90ff]/20'
-              "
-              class="flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105"
+                  : 'bg-white/80 hover:bg-white shadow-lg shadow-emerald-500/20 tab-inactive'
+              ]"
             >
               <Globe class="w-4 h-4 mr-2" />
               <span class="text-sm">Public Events</span>
@@ -45,12 +49,12 @@
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'registered'"
-              :class="
+              :class="[
+                'flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105',
                 currentView === 'registered'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
-                  : 'bg-white/80 text-slate-600 hover:text-[#1e90ff] hover:bg-white border-white/20 hover:border-[#1e90ff]/20'
-              "
-              class="flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105"
+                  : 'bg-white/80 hover:bg-white shadow-lg shadow-emerald-500/20 tab-inactive'
+              ]"
             >
               <CheckCircle class="w-4 h-4 mr-2" />
               <span class="text-sm">Registered</span>
@@ -629,5 +633,34 @@ onMounted(async () => {
 .fab-fade-leave-to {
   opacity: 0;
   transform: scale(0.8) translateY(20px);
+}
+
+/* Tab Button Unified Gradient Styling */
+.tab-inactive {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #2ecc71, #1e90ff) border-box;
+}
+
+.tab-inactive span {
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Icon styling for inactive tabs - primary green color */
+.tab-inactive svg {
+  color: #2ecc71 !important;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* Hover state for unified gradient */
+.tab-inactive:hover {
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #27ae60, #1873cc) border-box;
 }
 </style>
