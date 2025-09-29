@@ -58,14 +58,22 @@
               <div class="relative">
                 <select
                   id="category-filter"
-                  v-model="localFilters.category"
-                  @change="emitFilters"
+                  :value="localFilters.category || ''"
+@change="(e) => {
+                    const selectedValue = e.target.value
+                    if (selectedValue === '') {
+                      localFilters.category = undefined
+                    } else {
+                      localFilters.category = selectedValue
+                    }
+                    emitFilters()
+                  }"
                   class="custom-select w-full px-4 py-3 pr-10 border-2 border-emerald-300/60 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
                   aria-label="Filter events by category"
                   aria-describedby="category-helper"
                 >
                   <option value="">All Categories</option>
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
+                  <option v-for="category in categories" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>

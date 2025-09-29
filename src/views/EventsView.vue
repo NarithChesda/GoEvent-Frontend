@@ -302,6 +302,7 @@ const loadEvents = async (page = 1) => {
       ...filters.value,
     }
 
+
     if (currentView.value === 'my') {
       // Use dedicated /api/events/my/ endpoint for user's events
       // Note: This endpoint returns { organized: [...], collaborated: [...] }
@@ -351,18 +352,22 @@ const loadEvents = async (page = 1) => {
         }
       }
     } else {
-      // For all public events - explicitly filter for public and published events
-      response = await eventsService.getEvents({
+      // For all public events - use user's filter choices, but default to public/published if not specified
+      const publicEventParams = {
         ...requestParams,
-        privacy: 'public',
-        status: 'published',
-      })
+        // Only set defaults if user hasn't specified these filters
+        privacy: requestParams.privacy || 'public',
+        status: requestParams.status || 'published',
+      }
+      response = await eventsService.getEvents(publicEventParams)
     }
 
     if (response.success && response.data) {
       events.value = response.data.results || []
       pagination.currentPage = page
       pagination.totalItems = response.data.count || 0
+
+
       // Use the presence of next/previous to determine if there are more pages
       if (response.data.next || response.data.previous) {
         // If there's pagination metadata, calculate total pages properly
@@ -394,6 +399,7 @@ const loadCategories = async () => {
     const response = await eventCategoriesService.getCategories()
     if (response.success && response.data) {
       categories.value = response.data.results || []
+
     } else {
       console.error('Failed to load categories:', response.message)
     }
@@ -401,6 +407,7 @@ const loadCategories = async () => {
     console.error('Failed to load categories:', error)
   }
 }
+
 
 const loadPage = (page: number) => {
   if (page >= 1 && page <= pagination.totalPages) {
