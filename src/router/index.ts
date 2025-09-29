@@ -113,14 +113,9 @@ router.beforeEach(async (to, from, next) => {
     if (typeof document !== 'undefined') {
       // Prevent iframe embedding on sensitive pages
       if (to.meta.requiresAuth) {
-        // Note: This is client-side only, server should set X-Frame-Options
-        const metaTag = document.querySelector('meta[http-equiv="X-Frame-Options"]')
-        if (!metaTag) {
-          const newMetaTag = document.createElement('meta')
-          newMetaTag.setAttribute('http-equiv', 'X-Frame-Options')
-          newMetaTag.setAttribute('content', 'DENY')
-          document.head.appendChild(newMetaTag)
-        }
+        // X-Frame-Options should be set via HTTP headers, not meta tags
+        // This is a security feature that prevents clickjacking
+        // Remove the meta tag approach as it's not effective and causes console warnings
       }
     }
 

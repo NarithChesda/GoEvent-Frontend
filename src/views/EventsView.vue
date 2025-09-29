@@ -65,20 +65,43 @@
         <EventFilters v-model="filters" :categories="categories" class="mb-6 sm:mb-8" />
 
         <!-- Loading State -->
-        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div
-            v-for="i in 6"
-            :key="i"
-            class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
-          >
-            <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
-            <div class="p-6 space-y-4">
-              <div class="h-4 bg-slate-200 rounded"></div>
-              <div class="h-6 bg-slate-200 rounded"></div>
-              <div class="h-16 bg-slate-200 rounded"></div>
-              <div class="flex justify-between">
-                <div class="h-4 bg-slate-200 rounded w-20"></div>
-                <div class="h-4 bg-slate-200 rounded w-16"></div>
+        <div v-if="loading">
+          <!-- Mobile loading skeleton -->
+          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 scrollbar-hide -mx-4 px-4">
+            <div
+              v-for="i in 2"
+              :key="`mobile-skeleton-${i}`"
+              class="flex-none w-[85vw] max-w-[360px] min-w-[280px] bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
+            >
+              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
+              <div class="p-6 space-y-4">
+                <div class="h-4 bg-slate-200 rounded"></div>
+                <div class="h-6 bg-slate-200 rounded"></div>
+                <div class="h-16 bg-slate-200 rounded"></div>
+                <div class="flex justify-between">
+                  <div class="h-4 bg-slate-200 rounded w-20"></div>
+                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop loading skeleton -->
+          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div
+              v-for="i in 6"
+              :key="`desktop-skeleton-${i}`"
+              class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
+            >
+              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
+              <div class="p-6 space-y-4">
+                <div class="h-4 bg-slate-200 rounded"></div>
+                <div class="h-6 bg-slate-200 rounded"></div>
+                <div class="h-16 bg-slate-200 rounded"></div>
+                <div class="flex justify-between">
+                  <div class="h-4 bg-slate-200 rounded w-20"></div>
+                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -96,16 +119,33 @@
             </span>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            <EventCard
-              v-for="event in safeEvents"
-              :key="event.id"
-              :event="event"
-              @click="viewEvent(event)"
-              @edit="editEvent"
-              @delete="deleteEvent"
-              class="cursor-pointer"
-            />
+          <!-- Mobile horizontal scroll, Desktop grid -->
+          <div class="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
+            <!-- Mobile: Horizontal scrolling container -->
+            <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+              <EventCard
+                v-for="event in safeEvents"
+                :key="`mobile-${event.id}`"
+                :event="event"
+                @click="viewEvent(event)"
+                @edit="editEvent"
+                @delete="deleteEvent"
+                class="cursor-pointer flex-none w-[85vw] max-w-[360px] min-w-[280px] snap-center mobile-card"
+              />
+            </div>
+
+            <!-- Desktop: Grid layout -->
+            <template v-if="safeEvents.length > 0">
+              <EventCard
+                v-for="event in safeEvents"
+                :key="`desktop-${event.id}`"
+                :event="event"
+                @click="viewEvent(event)"
+                @edit="editEvent"
+                @delete="deleteEvent"
+                class="cursor-pointer hidden md:block"
+              />
+            </template>
           </div>
 
           <!-- Pagination -->
@@ -668,5 +708,43 @@ onMounted(async () => {
 .tab-inactive:hover {
   background: linear-gradient(white, white) padding-box,
               linear-gradient(to right, #27ae60, #1873cc) border-box;
+}
+
+/* Hide scrollbar for horizontal scroll on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Add subtle shadow indicators for scrollability */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    position: relative;
+  }
+
+  /* Make edit/delete buttons visible on mobile cards */
+  .mobile-card :deep(.group) .absolute.top-3.right-3 {
+    opacity: 1 !important;
+  }
+
+  /* Adjust mobile card styling */
+  .mobile-card {
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Improve touch targets on mobile */
+  .mobile-card :deep(button) {
+    min-width: 36px;
+    min-height: 36px;
+  }
 }
 </style>
