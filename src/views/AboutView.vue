@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen">
+  <div class="min-h-screen pb-20 lg:pb-0">
     <Navigation />
 
     <!-- Hero Section -->
@@ -44,7 +44,7 @@
         class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32"
       >
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
-          <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
+          <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
             <div class="space-y-4 sm:space-y-6">
               <div
                 class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-[#87CEEB]/30"
@@ -73,30 +73,30 @@
             </div>
 
             <div
-              class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200"
+              class="flex flex-row gap-2 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200"
             >
               <RouterLink
                 to="/events"
-                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
+                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-sm sm:text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center flex-1 sm:flex-none"
               >
-                Explore Our Events
+                <span class="hidden sm:inline">Explore Our Events</span><span class="sm:hidden">Explore Events</span>
                 <ArrowRight
-                  class="inline w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                  class="inline w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
                 />
               </RouterLink>
               <RouterLink
                 to="/"
-                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-8 py-4 rounded-lg border-2 border-[#87CEEB] text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group"
+                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg border-2 border-[#87CEEB] text-sm sm:text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group flex-1 sm:flex-none"
               >
                 <Heart
-                  class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
+                  class="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
                 />
-                Learn More
+                <span class="hidden sm:inline">Learn More</span><span class="sm:hidden">Learn</span>
               </RouterLink>
             </div>
 
             <div
-              class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400"
+              class="hidden lg:flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400"
             >
               <div class="flex -space-x-2">
                 <div
@@ -126,7 +126,7 @@
             </div>
           </div>
 
-          <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
+          <div class="hidden lg:block lg:col-span-5 relative animate-slide-in-right animation-delay-200">
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main About Card -->
               <div
@@ -768,7 +768,7 @@
       <button
         v-show="showScrollTop"
         @click="scrollToTop"
-        class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white p-4 rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+        class="fixed bottom-28 lg:bottom-8 right-6 w-14 h-14 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2 flex items-center justify-center"
       >
         <ArrowUp class="w-6 h-6" />
       </button>

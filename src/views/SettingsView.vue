@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
     <Navigation />
 
     <!-- Settings Content -->

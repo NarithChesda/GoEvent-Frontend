@@ -1,64 +1,61 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
     <Navigation />
 
     <!-- Main Content -->
     <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8 sm:mb-12">
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
+            Discover what's happening around you
+          </h1>
+        </div>
+
         <!-- View Toggle -->
-        <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4"
-        >
-          <div
-            class="flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-1 shadow-lg"
-          >
+        <div class="flex justify-center mb-8 sm:mb-12">
+          <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'my'"
               :class="
                 currentView === 'my'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                  : 'text-slate-600 hover:text-[#1e90ff]'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
+                  : 'bg-white/80 text-slate-600 hover:text-[#1e90ff] hover:bg-white border-white/20 hover:border-[#1e90ff]/20'
               "
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+              class="flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105"
             >
-              My Events
+              <User class="w-4 h-4 mr-2" />
+              <span class="text-sm">My Events</span>
             </button>
+
             <button
               @click="currentView = 'all'"
               :class="
                 currentView === 'all'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                  : 'text-slate-600 hover:text-[#1e90ff]'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
+                  : 'bg-white/80 text-slate-600 hover:text-[#1e90ff] hover:bg-white border-white/20 hover:border-[#1e90ff]/20'
               "
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+              class="flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105"
             >
-              All Events
+              <Globe class="w-4 h-4 mr-2" />
+              <span class="text-sm">Public Events</span>
             </button>
+
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'registered'"
               :class="
                 currentView === 'registered'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                  : 'text-slate-600 hover:text-[#1e90ff]'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
+                  : 'bg-white/80 text-slate-600 hover:text-[#1e90ff] hover:bg-white border-white/20 hover:border-[#1e90ff]/20'
               "
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+              class="flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105"
             >
-              Registered
+              <CheckCircle class="w-4 h-4 mr-2" />
+              <span class="text-sm">Registered</span>
             </button>
           </div>
-
-          <!-- Create Event Button -->
-          <button
-            v-if="authStore.isAuthenticated"
-            @click="createEvent"
-            ref="createEventButton"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 flex items-center"
-          >
-            <Plus class="w-5 h-5 mr-2" />
-            Create Event
-          </button>
         </div>
 
         <!-- Filters -->
@@ -86,6 +83,16 @@
 
         <!-- Events Grid -->
         <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
+          <!-- Section Label -->
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">
+              {{ getSectionLabel() }}
+            </h2>
+            <span v-if="pagination.totalItems > 0" class="text-sm text-slate-500">
+              {{ pagination.totalItems }} {{ pagination.totalItems === 1 ? 'event' : 'events' }}
+            </span>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             <EventCard
               v-for="event in safeEvents"
@@ -149,21 +156,13 @@
           <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto">
             {{ getEmptyStateMessage() }}
           </p>
-          <button
-            v-if="authStore.isAuthenticated && currentView !== 'registered'"
-            @click="createEvent"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 inline-flex items-center"
-          >
-            <Plus class="w-5 h-5 mr-2" />
-            Create Your First Event
-          </button>
         </div>
       </div>
     </section>
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-28 lg:bottom-8 right-6 z-50">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
@@ -178,9 +177,9 @@
     <!-- Floating Action Button -->
     <Transition name="fab-fade">
       <button
-        v-if="authStore.isAuthenticated && showFloatingButton"
+        v-if="authStore.isAuthenticated"
         @click="createEvent"
-        class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
+        class="fixed bottom-28 lg:bottom-8 right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
         aria-label="Create Event"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
@@ -202,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Calendar,
@@ -211,6 +210,8 @@ import {
   ChevronRight,
   CheckCircle,
   AlertCircle,
+  User,
+  Globe,
 } from 'lucide-vue-next'
 import Navigation from '../components/Navigation.vue'
 import EventCard from '../components/EventCard.vue'
@@ -238,8 +239,6 @@ const loading = ref(false)
 const filters = ref<EventFiltersType>({})
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
-const showFloatingButton = ref(false)
-const createEventButton = ref<HTMLButtonElement | null>(null)
 
 // Pagination
 const pagination = reactive({
@@ -273,6 +272,17 @@ const getEmptyStateMessage = () => {
       return 'Explore public events and register for ones that interest you.'
     default:
       return 'Try adjusting your filters or check back later for new events.'
+  }
+}
+
+const getSectionLabel = () => {
+  switch (currentView.value) {
+    case 'my':
+      return 'My Events'
+    case 'registered':
+      return 'Events I\'m Attending'
+    default:
+      return 'Public Events'
   }
 }
 
@@ -473,26 +483,6 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   }, 5000)
 }
 
-// Floating Action Button visibility logic
-const setupFloatingButton = () => {
-  if (!createEventButton.value) return
-
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      // Show floating button when main button is NOT visible
-      showFloatingButton.value = !entry.isIntersecting
-    },
-    {
-      threshold: 0.1, // Trigger when 10% of the button is visible
-      rootMargin: '0px 0px -10px 0px', // Add some margin to trigger slightly before fully out of view
-    },
-  )
-
-  observer.observe(createEventButton.value)
-
-  // Cleanup observer when component unmounts
-  return () => observer.disconnect()
-}
 
 interface EventFormData {
   title: string
@@ -599,9 +589,6 @@ watch(
   },
 )
 
-// Observer cleanup function
-let cleanupObserver: (() => void) | null = null
-
 // Lifecycle
 onMounted(async () => {
   // Load initial data
@@ -609,17 +596,6 @@ onMounted(async () => {
 
   // Load events after categories
   loadEvents()
-
-  // Setup floating button after DOM is updated
-  await nextTick()
-  cleanupObserver = setupFloatingButton() || null
-})
-
-onUnmounted(() => {
-  // Cleanup intersection observer
-  if (cleanupObserver) {
-    cleanupObserver()
-  }
 })
 </script>
 

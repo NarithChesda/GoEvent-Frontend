@@ -1,17 +1,27 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl mb-8">
+    <!-- Search Bar (Always Visible) -->
+    <div class="p-6 pb-4">
+      <div class="relative">
+        <Search
+          class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"
+        />
+        <input
+          v-model="localFilters.search"
+          @input="debouncedEmitFilters"
+          type="text"
+          placeholder="Search by title, description, or organizer..."
+          class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
+        />
+      </div>
+    </div>
+
     <!-- Filter Header -->
     <div
       @click="showFilters = !showFilters"
-      class="flex items-center justify-between p-6 pb-4 cursor-pointer hover:bg-white/50 transition-colors duration-200 rounded-t-3xl"
+      class="flex items-center justify-between px-6 pb-4 cursor-pointer hover:bg-white/50 transition-colors duration-200"
     >
       <div class="flex items-center space-x-3">
-        <div
-          class="w-6 h-6 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center"
-        >
-          <Search class="w-3 h-3 text-white" />
-        </div>
-        <h3 class="text-lg font-semibold text-slate-900">Search & Filter Events</h3>
         <span
           v-if="hasActiveFilters"
           class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-xs font-medium px-2.5 py-0.5 rounded-full"
@@ -36,25 +46,8 @@
       :class="showFilters ? 'max-h-[2000px] pb-6' : 'max-h-0 pb-0'"
     >
       <div class="space-y-6">
-        <!-- Search and Primary Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Search -->
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Search Events</label>
-            <div class="relative">
-              <Search
-                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"
-              />
-              <input
-                v-model="localFilters.search"
-                @input="debouncedEmitFilters"
-                type="text"
-                placeholder="Search by title, description, or organizer..."
-                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
-              />
-            </div>
-          </div>
-
+        <!-- Primary Filters -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Category Filter -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
@@ -271,6 +264,8 @@ const localFilters = reactive<EventFilters>({ ...props.modelValue })
 
 const activeFilterCount = computed(() => {
   return Object.keys(localFilters).filter((key) => {
+    // Exclude search from active filter count since it's always visible
+    if (key === 'search') return false
     const value = localFilters[key as keyof EventFilters]
     return value !== undefined && value !== null && value !== ''
   }).length
