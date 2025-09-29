@@ -18,46 +18,46 @@
 
         <!-- View Toggle -->
         <div class="flex justify-center mb-8 sm:mb-12">
-          <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
+          <div class="flex justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 w-full max-w-4xl px-2 sm:px-0">
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'my'"
               :class="[
-                'flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105',
+                'flex-1 sm:flex-none flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105 min-w-0',
                 currentView === 'my'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
                   : 'bg-white/80 hover:bg-white shadow-lg shadow-emerald-500/20 tab-inactive'
               ]"
             >
-              <User class="w-4 h-4 mr-2" />
-              <span class="text-sm">My Events</span>
+              <User class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <span class="text-xs sm:text-sm font-medium truncate">My Events</span>
             </button>
 
             <button
               @click="currentView = 'all'"
               :class="[
-                'flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105',
+                'flex-1 sm:flex-none flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105 min-w-0',
                 currentView === 'all'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
                   : 'bg-white/80 hover:bg-white shadow-lg shadow-emerald-500/20 tab-inactive'
               ]"
             >
-              <Globe class="w-4 h-4 mr-2" />
-              <span class="text-sm">Public Events</span>
+              <Globe class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <span class="text-xs sm:text-sm font-medium truncate">Public Events</span>
             </button>
 
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'registered'"
               :class="[
-                'flex items-center px-4 py-2.5 rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105',
+                'flex-1 sm:flex-none flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-medium transition-all duration-300 backdrop-blur-sm border shadow-md hover:shadow-lg hover:scale-105 min-w-0',
                 currentView === 'registered'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
                   : 'bg-white/80 hover:bg-white shadow-lg shadow-emerald-500/20 tab-inactive'
               ]"
             >
-              <CheckCircle class="w-4 h-4 mr-2" />
-              <span class="text-sm">Registered</span>
+              <CheckCircle class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <span class="text-xs sm:text-sm font-medium truncate">Registered</span>
             </button>
           </div>
         </div>
