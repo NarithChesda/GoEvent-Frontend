@@ -8,7 +8,7 @@
     <!-- Registration Status Badge -->
     <div v-if="event.is_registered" class="absolute top-3 left-3 z-10">
       <div
-        class="inline-flex items-center bg-green-600 text-white text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-sm"
+        class="inline-flex items-center bg-green-600 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md"
       >
         <div class="w-1.5 h-1.5 bg-white rounded-full mr-1 sm:mr-1.5"></div>
         Registered
@@ -23,24 +23,24 @@
         <button
           v-if="event.can_edit"
           @click="handleAction('edit', $event)"
-          class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
+          class="w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
           title="Edit Event"
         >
-          <Edit2 class="w-4 h-4 text-gray-600" />
+          <Edit2 class="w-4 h-4 sm:w-4 md:w-4 text-gray-600" />
         </button>
         <button
           v-if="event.can_delete"
           @click="handleAction('delete', $event)"
-          class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
+          class="w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
           title="Delete Event"
         >
-          <Trash2 class="w-4 h-4 text-gray-600 hover:text-red-500" />
+          <Trash2 class="w-4 h-4 sm:w-4 md:w-4 text-gray-600 hover:text-red-500" />
         </button>
       </div>
     </div>
 
     <!-- Banner Image -->
-    <div class="relative h-44 overflow-hidden">
+    <div class="relative h-32 sm:h-40 md:h-44 overflow-hidden">
       <img
         v-if="event.banner_image"
         :src="getBannerImageUrl(event.banner_image)"
@@ -81,12 +81,12 @@
             />
           </div>
           <h4
-            class="text-xs sm:text-sm font-semibold mb-1 line-clamp-2"
+            class="text-sm sm:text-base font-semibold mb-1 line-clamp-2"
             :style="{ color: event.category_color || '#3B82F6' }"
           >
             {{ event.title }}
           </h4>
-          <p class="text-[10px] sm:text-xs text-gray-500 line-clamp-1">
+          <p class="text-xs sm:text-sm text-gray-500 line-clamp-1">
             {{ event.category_name || 'Event' }}
           </p>
         </div>
@@ -106,20 +106,20 @@
       <div class="absolute bottom-3 left-3">
         <span
           v-if="event.is_ongoing"
-          class="inline-flex items-center bg-green-600 text-white text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-sm"
+          class="inline-flex items-center bg-green-600 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md"
         >
           <div class="w-1.5 h-1.5 bg-white rounded-full mr-1 sm:mr-1.5 animate-pulse"></div>
           Live
         </span>
         <span
           v-else-if="event.is_upcoming"
-          class="inline-flex items-center bg-[#1e90ff] text-white text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-sm"
+          class="inline-flex items-center bg-[#1e90ff] text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md"
         >
           Upcoming
         </span>
         <span
           v-else-if="event.is_past"
-          class="inline-flex items-center bg-gray-600 text-white text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-sm"
+          class="inline-flex items-center bg-gray-600 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md"
         >
           Past
         </span>
@@ -129,27 +129,27 @@
       <div class="absolute bottom-3 right-3 flex space-x-1 sm:space-x-1.5">
         <span
           v-if="event.privacy === 'private'"
-          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-purple-700 text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-purple-200/50"
+          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-purple-700 text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border border-purple-200/50 shadow-sm"
         >
-          <Lock class="w-2.5 sm:w-3 h-2.5 sm:h-3 mr-0.5 sm:mr-1" />
+          <Lock class="w-3 sm:w-3.5 h-3 sm:h-3.5 mr-1 sm:mr-1.5" />
           Private
         </span>
         <span
           v-if="event.is_virtual"
-          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-[#1873cc] text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-[#87CEEB]/50"
+          class="inline-flex items-center bg-white/90 backdrop-blur-sm text-[#1873cc] text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border border-[#87CEEB]/50 shadow-sm"
         >
-          <Monitor class="w-2.5 sm:w-3 h-2.5 sm:h-3 mr-0.5 sm:mr-1" />
+          <Monitor class="w-3 sm:w-3.5 h-3 sm:h-3.5 mr-1 sm:mr-1.5" />
           Virtual
         </span>
       </div>
     </div>
 
     <!-- Content -->
-    <div class="p-5">
+    <div class="p-4 sm:p-5 md:p-6">
       <!-- Category -->
-      <div v-if="event.category_name" class="mb-2 sm:mb-3">
+      <div v-if="event.category_name" class="mb-3 sm:mb-4">
         <span
-          class="inline-flex items-center text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg"
+          class="inline-flex items-center text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg"
           :style="{
             backgroundColor: `${event.category_color || '#3B82F6'}15`,
             color: event.category_color || '#3B82F6',
@@ -164,35 +164,35 @@
       </div>
 
       <!-- Title -->
-      <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1.5 sm:mb-2 line-clamp-2 leading-tight">
+      <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-2.5 line-clamp-2 leading-tight">
         {{ event.title }}
       </h3>
 
       <!-- Description -->
-      <p class="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 leading-relaxed">
+      <p class="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2 leading-relaxed">
         {{ event.short_description || 'No description available' }}
       </p>
 
       <!-- Date and Location -->
-      <div class="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
-        <div class="flex items-center text-xs sm:text-sm text-gray-600">
-          <Calendar class="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-2 sm:mr-2.5 text-gray-500 flex-shrink-0" />
+      <div class="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4">
+        <div class="flex items-center text-sm sm:text-base text-gray-600">
+          <Calendar class="w-4 sm:w-4.5 h-4 sm:h-4.5 mr-2 sm:mr-2.5 text-gray-500 flex-shrink-0" />
           <span class="truncate">{{ formatDate(event.start_date) }}</span>
         </div>
         <div
           v-if="!event.is_virtual && event.location"
-          class="flex items-center text-xs sm:text-sm text-gray-600"
+          class="flex items-center text-sm sm:text-base text-gray-600"
         >
-          <MapPin class="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-2 sm:mr-2.5 text-gray-500 flex-shrink-0" />
+          <MapPin class="w-4 sm:w-4.5 h-4 sm:h-4.5 mr-2 sm:mr-2.5 text-gray-500 flex-shrink-0" />
           <span class="truncate">{{ event.location }}</span>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100">
+      <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
         <!-- Attendees -->
-        <div class="flex items-center text-xs sm:text-sm text-gray-600">
-          <Users class="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1 sm:mr-1.5 text-gray-500 flex-shrink-0" />
+        <div class="flex items-center text-sm sm:text-base text-gray-600">
+          <Users class="w-4 sm:w-4.5 h-4 sm:h-4.5 mr-1.5 sm:mr-2 text-gray-500 flex-shrink-0" />
           <span class="truncate">
             {{ event.registrations_count }}
             <span v-if="event.max_attendees" class="text-gray-400"
@@ -202,13 +202,13 @@
         </div>
 
         <!-- Organizer -->
-        <div class="flex items-center text-xs sm:text-sm text-gray-600 min-w-0">
-          <div class="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center mr-1.5 sm:mr-2 flex-shrink-0">
-            <span class="text-[10px] sm:text-xs font-medium text-gray-700">
+        <div class="flex items-center text-sm sm:text-base text-gray-600 min-w-0">
+          <div class="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-gray-100 flex items-center justify-center mr-2 sm:mr-2.5 flex-shrink-0">
+            <span class="text-xs sm:text-sm font-medium text-gray-700">
               {{ (event.organizer_name || 'U').charAt(0).toUpperCase() }}
             </span>
           </div>
-          <span class="truncate max-w-20 sm:max-w-24">{{ event.organizer_name || 'Unknown' }}</span>
+          <span class="truncate max-w-32 sm:max-w-40 md:max-w-48">{{ event.organizer_name || 'Unknown' }}</span>
         </div>
       </div>
     </div>
