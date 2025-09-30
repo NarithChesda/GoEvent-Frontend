@@ -1,29 +1,39 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen bg-gray-50 pb-20 lg:pb-0">
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
 
     <!-- Settings Content -->
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="flex flex-col gap-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div class="flex flex-col gap-6">
         <!-- Profile Settings -->
-        <div class="bg-white rounded-lg shadow-sm">
-            <h1 class="text-3xl font-normal text-slate-900 text-center py-12">Your profile</h1>
+        <BaseCard class="p-0 overflow-hidden">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 text-center py-8 sm:py-12 bg-gradient-to-br from-white via-emerald-50/30 to-sky-50/30">Your Profile</h1>
 
-            <form @submit.prevent="handleProfileUpdate" class="p-8 space-y-10">
+            <form @submit.prevent="handleProfileUpdate" class="p-6 sm:p-8 space-y-8 sm:space-y-10">
               <!-- Success/Error Messages -->
-              <div v-if="successMessage" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-                {{ successMessage }}
+              <div v-if="successMessage" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
+                <div class="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span class="font-medium">{{ successMessage }}</span>
               </div>
-              <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-                {{ errorMessage }}
+              <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
+                <div class="w-5 h-5 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <span class="font-medium">{{ errorMessage }}</span>
               </div>
 
               <!-- Profile Picture Section -->
-              <div class="pb-8">
-                <div class="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4">
-                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-4 flex-1">
-                    <div class="flex flex-col items-center lg:items-start gap-2">
-                      <label class="block text-sm font-medium text-gray-700">Profile Photo</label>
+              <div class="pb-8 border-b border-slate-200">
+                <div class="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6">
+                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 flex-1">
+                    <div class="flex flex-col items-center lg:items-start gap-3">
+                      <label class="block text-sm font-semibold text-slate-700">Profile Photo</label>
 
                       <!-- Current Profile Picture -->
                       <div class="relative w-20 h-20">
@@ -57,7 +67,7 @@
                   </div>
 
                   <!-- Upload Controls -->
-                  <div class="flex items-center space-x-2 lg:mt-7">
+                  <div class="flex flex-col sm:flex-row items-center gap-3 lg:mt-7">
                     <input
                       ref="fileInput"
                       type="file"
@@ -70,7 +80,7 @@
                       v-if="authStore.user?.profile_picture || profilePicturePreview"
                       type="button"
                       @click="removeProfilePicture"
-                      class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                      class="w-full sm:w-auto px-5 py-2.5 text-slate-700 hover:text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-all duration-200 border border-transparent hover:border-slate-200"
                     >
                       Remove photo
                     </button>
@@ -79,7 +89,7 @@
                       type="button"
                       @click="triggerFileUpload"
                       :disabled="uploadLoading"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       {{ uploadLoading ? 'Uploading...' : 'Change photo' }}
                     </button>
@@ -88,40 +98,40 @@
               </div>
 
               <!-- Name Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                    <div v-if="!editingField || editingField !== 'name'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Name</label>
+                    <div v-if="!editingField || editingField !== 'name'" class="text-base text-slate-900 font-medium">
                       {{ fullName || 'Not set' }}
                     </div>
-                    <div v-else class="flex space-x-3">
+                    <div v-else class="flex flex-col sm:flex-row gap-3">
                       <input
                         v-model="profileForm.first_name"
                         type="text"
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                         placeholder="First name"
                       />
                       <input
                         v-model="profileForm.last_name"
                         type="text"
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                         placeholder="Last name"
                       />
                     </div>
                   </div>
-                  <div v-if="editingField === 'name'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'name'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('name')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('name')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -130,7 +140,7 @@
                     v-else
                     type="button"
                     @click="startEdit('name')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -138,33 +148,33 @@
               </div>
 
               <!-- Email Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email address</label>
-                    <div v-if="!editingField || editingField !== 'email'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email address</label>
+                    <div v-if="!editingField || editingField !== 'email'" class="text-base text-slate-900 font-medium break-all">
                       {{ profileForm.email || 'Not set' }}
                     </div>
                     <input
                       v-else
                       v-model="profileForm.email"
                       type="email"
-                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Enter your email"
                     />
                   </div>
-                  <div v-if="editingField === 'email'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'email'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('email')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('email')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -173,7 +183,7 @@
                     v-else
                     type="button"
                     @click="startEdit('email')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -181,33 +191,33 @@
               </div>
 
               <!-- Username Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                    <div v-if="!editingField || editingField !== 'username'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Username</label>
+                    <div v-if="!editingField || editingField !== 'username'" class="text-base text-slate-900 font-medium">
                       {{ profileForm.username || 'Not set' }}
                     </div>
                     <input
                       v-else
                       v-model="profileForm.username"
                       type="text"
-                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Enter your username"
                     />
                   </div>
-                  <div v-if="editingField === 'username'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'username'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('username')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('username')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -216,7 +226,7 @@
                     v-else
                     type="button"
                     @click="startEdit('username')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -224,33 +234,33 @@
               </div>
 
               <!-- Bio Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                    <div v-if="!editingField || editingField !== 'bio'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Bio</label>
+                    <div v-if="!editingField || editingField !== 'bio'" class="text-base text-slate-900 font-medium whitespace-pre-wrap">
                       {{ profileForm.bio || 'Not set' }}
                     </div>
                     <textarea
                       v-else
                       v-model="profileForm.bio"
                       rows="4"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Tell us about yourself..."
                     ></textarea>
                   </div>
-                  <div v-if="editingField === 'bio'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'bio'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('bio')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('bio')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -259,7 +269,7 @@
                     v-else
                     type="button"
                     @click="startEdit('bio')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -267,33 +277,33 @@
               </div>
 
               <!-- Phone Number Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                    <div v-if="!editingField || editingField !== 'phone_number'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
+                    <div v-if="!editingField || editingField !== 'phone_number'" class="text-base text-slate-900 font-medium">
                       {{ profileForm.phone_number || 'Not set' }}
                     </div>
                     <input
                       v-else
                       v-model="profileForm.phone_number"
                       type="tel"
-                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Enter your phone number"
                     />
                   </div>
-                  <div v-if="editingField === 'phone_number'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'phone_number'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('phone_number')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('phone_number')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -302,7 +312,7 @@
                     v-else
                     type="button"
                     @click="startEdit('phone_number')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -310,33 +320,33 @@
               </div>
 
               <!-- Telegram URL Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Telegram URL</label>
-                    <div v-if="!editingField || editingField !== 'telegram_link'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Telegram URL</label>
+                    <div v-if="!editingField || editingField !== 'telegram_link'" class="text-base text-slate-900 font-medium break-all">
                       {{ profileForm.telegram_link || 'Not set' }}
                     </div>
                     <input
                       v-else
                       v-model="profileForm.telegram_link"
                       type="text"
-                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="t.me/yourusername or @yourusername"
                     />
                   </div>
-                  <div v-if="editingField === 'telegram_link'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'telegram_link'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('telegram_link')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('telegram_link')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -345,7 +355,7 @@
                     v-else
                     type="button"
                     @click="startEdit('telegram_link')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -353,33 +363,33 @@
               </div>
 
               <!-- Payment URL Field -->
-              <div class="border-b border-gray-200 pb-8">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment URL</label>
-                    <div v-if="!editingField || editingField !== 'payment_link'" class="text-base text-gray-900">
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Payment URL</label>
+                    <div v-if="!editingField || editingField !== 'payment_link'" class="text-base text-slate-900 font-medium break-all">
                       {{ profileForm.payment_link || 'Not set' }}
                     </div>
                     <input
                       v-else
                       v-model="profileForm.payment_link"
                       type="text"
-                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="your-payment-platform.com/username"
                     />
                   </div>
-                  <div v-if="editingField === 'payment_link'" class="flex items-center space-x-2 mt-7">
+                  <div v-if="editingField === 'payment_link'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
                     <button
                       type="button"
                       @click="cancelEdit('payment_link')"
-                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="saveEdit('payment_link')"
-                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       Save
                     </button>
@@ -388,7 +398,7 @@
                     v-else
                     type="button"
                     @click="startEdit('payment_link')"
-                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
                     Edit
                   </button>
@@ -397,29 +407,29 @@
 
               <!-- Connected Social Accounts -->
               <div>
-                <h3 class="text-base font-medium text-gray-900 mb-1">Connected social accounts</h3>
-                <p class="text-sm text-gray-600 mb-6">Services that you use to log in to GoEvent</p>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Connected social accounts</h3>
+                <p class="text-sm text-slate-600 mb-6">Services that you use to log in to GoEvent</p>
 
                 <div class="space-y-3">
                   <!-- Google Account -->
-                  <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                  <div class="flex items-center justify-between p-4 sm:p-5 border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
                           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                       </div>
-                      <div>
-                        <div class="text-sm font-medium text-gray-900">Google</div>
-                        <div class="text-xs text-gray-600">{{ profileForm.email }}</div>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-sm font-semibold text-slate-900">Google</div>
+                        <div class="text-xs sm:text-sm text-slate-600 truncate">{{ profileForm.email }}</div>
                       </div>
                     </div>
                     <button
                       type="button"
-                      class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      class="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors duration-200 flex-shrink-0 ml-2"
                     >
                       Disconnect
                     </button>
@@ -428,7 +438,7 @@
               </div>
 
             </form>
-        </div>
+        </BaseCard>
       </div>
     </div>
     </div>
@@ -439,6 +449,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
+import BaseCard from '../components/BaseCard.vue'
 import { useAuthStore } from '../stores/auth'
 import { uploadService } from '../services/upload'
 import { apiService } from '../services/api'
