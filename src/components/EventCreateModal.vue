@@ -46,6 +46,22 @@
                 />
               </div>
 
+              <!-- Category -->
+              <div>
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                  Event Category
+                </label>
+                <select
+                  v-model="form.category"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                >
+                  <option value="">Select a category</option>
+                  <option v-for="category in categories" :key="category.id" :value="category.id">
+                    {{ category.name }}
+                  </option>
+                </select>
+              </div>
+
               <!-- Description -->
               <div>
                 <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
@@ -179,9 +195,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { Plus, X, Loader } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
+import { eventCategoriesService, type EventCategory } from '../services/api'
 
 // Types
 interface EventFormData {
@@ -192,6 +209,7 @@ interface EventFormData {
   location: string
   privacy: 'public' | 'private'
   timezone: string
+  category?: number | string | null
   // Additional fields that will be added during submission
   short_description?: string
   is_virtual?: boolean
@@ -199,7 +217,6 @@ interface EventFormData {
   max_attendees?: number | null
   registration_required?: boolean
   registration_deadline?: string | null
-  category?: number | null
   banner_image?: string | null
   status?: string
 }
@@ -219,6 +236,7 @@ const emit = defineEmits<Emits>()
 // Refs
 const modalRef = ref<HTMLElement>()
 const isSubmitting = ref(false)
+const categories = ref<EventCategory[]>([])
 
 // Form data
 const form = reactive<EventFormData>({
@@ -229,12 +247,24 @@ const form = reactive<EventFormData>({
   location: '',
   privacy: 'public',
   timezone: getUserTimezone(),
+  category: '',
 })
 
 // Timezone data
 const timezonesByRegion = getTimezonesByRegion()
 
 // Methods
+const loadCategories = async () => {
+  try {
+    const response = await eventCategoriesService.getCategories()
+    if (response.success && response.data) {
+      categories.value = response.data.results || []
+    }
+  } catch (error) {
+    console.error('Failed to load categories:', error)
+  }
+}
+
 const handleBackdropClick = (event: MouseEvent) => {
   if (event.target === event.currentTarget) {
     emit('close')
@@ -250,6 +280,7 @@ const resetForm = () => {
     location: '',
     privacy: 'public',
     timezone: getUserTimezone(),
+    category: '',
   })
   // Reset default dates
   setDefaultDates()
@@ -272,6 +303,14 @@ const handleSubmit = async () => {
     const startDate = new Date(formData.start_date).toISOString()
     const endDate = new Date(formData.end_date).toISOString()
 
+    // Handle category - convert string to number or set to null
+    let categoryValue: number | null = null
+    if (formData.category && formData.category !== '') {
+      categoryValue = typeof formData.category === 'string'
+        ? parseInt(formData.category, 10)
+        : formData.category
+    }
+
     // Create event data with proper formatting
     const eventData = {
       ...formData,
@@ -285,7 +324,7 @@ const handleSubmit = async () => {
       max_attendees: null,
       registration_required: false,
       registration_deadline: null,
-      category: null,
+      category: categoryValue,
       banner_image: null,
       timezone: formData.timezone || getUserTimezone(),
       status: 'published',
@@ -335,8 +374,11 @@ const getSelectedTimezoneLabel = () => {
   return option ? option.label : form.timezone
 }
 
-// Set defaults when component mounts
-setDefaultDates()
+// Load categories when component mounts
+onMounted(() => {
+  loadCategories()
+  setDefaultDates()
+})
 </script>
 
 <style scoped>
