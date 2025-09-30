@@ -71,7 +71,7 @@
             <div
               v-for="i in 2"
               :key="`mobile-skeleton-${i}`"
-              class="flex-none w-[85vw] max-w-[360px] min-w-[280px] bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
+              class="flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
             >
               <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
               <div class="p-6 space-y-4">
@@ -111,10 +111,10 @@
         <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
           <!-- Section Label -->
           <div class="flex items-center justify-between">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
               {{ getSectionLabel() }}
             </h2>
-            <span v-if="pagination.totalItems > 0" class="text-sm text-slate-500">
+            <span v-if="pagination.totalItems > 0" class="text-xs sm:text-sm text-slate-500">
               {{ pagination.totalItems }} {{ pagination.totalItems === 1 ? 'event' : 'events' }}
             </span>
           </div>
@@ -130,7 +130,7 @@
                 @click="viewEvent(event)"
                 @edit="editEvent"
                 @delete="deleteEvent"
-                class="cursor-pointer flex-none w-[85vw] max-w-[360px] min-w-[280px] snap-center mobile-card"
+                class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
               />
             </div>
 
@@ -150,13 +150,13 @@
 
           <!-- Pagination -->
           <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
               <button
                 @click="loadPage(pagination.currentPage - 1)"
                 :disabled="pagination.currentPage <= 1"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
-                <ChevronLeft class="w-4 h-4" />
+                <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               </button>
 
               <template v-for="page in getVisiblePages()" :key="page">
@@ -168,19 +168,19 @@
                       ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
                       : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
                   "
-                  class="px-4 py-2 rounded-xl border border-slate-200 transition-all duration-200 min-w-[40px]"
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
                 >
                   {{ page }}
                 </button>
-                <span v-else class="px-2 text-slate-400">...</span>
+                <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
               </template>
 
               <button
                 @click="loadPage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage >= pagination.totalPages"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
-                <ChevronRight class="w-4 h-4" />
+                <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               </button>
             </div>
           </div>
