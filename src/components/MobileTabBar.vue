@@ -115,23 +115,43 @@
             </div>
 
             <!-- Menu Items -->
-            <div class="grid grid-cols-2 gap-2">
+            <div class="space-y-2">
               <RouterLink
                 to="/settings"
                 @click="userMenuOpen = false"
                 class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] rounded-xl transition-all duration-200"
               >
-                <Settings class="w-4 h-4" />
-                <span class="text-sm font-medium">Settings</span>
+                <User class="w-4 h-4" />
+                <span class="text-sm font-medium">Profile</span>
               </RouterLink>
 
-              <button
-                @click="handleLogout(); userMenuOpen = false"
-                class="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200"
+              <RouterLink
+                to="/security"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] rounded-xl transition-all duration-200"
               >
-                <LogOut class="w-4 h-4" />
-                <span class="text-sm font-medium">Logout</span>
-              </button>
+                <Lock class="w-4 h-4" />
+                <span class="text-sm font-medium">Security</span>
+              </RouterLink>
+
+              <RouterLink
+                to="/commission"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] rounded-xl transition-all duration-200"
+              >
+                <Wallet class="w-4 h-4" />
+                <span class="text-sm font-medium">Commission</span>
+              </RouterLink>
+
+              <div class="border-t border-slate-200 pt-2">
+                <button
+                  @click="handleLogout(); userMenuOpen = false"
+                  class="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 w-full"
+                >
+                  <LogOut class="w-4 h-4" />
+                  <span class="text-sm font-medium">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -143,7 +163,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
-import { Settings, LogOut, Home, Info, Calendar, DollarSign, User } from 'lucide-vue-next'
+import { Lock, Wallet, LogOut, Home, Info, Calendar, DollarSign, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 

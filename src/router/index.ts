@@ -57,7 +57,19 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),
-      meta: { requiresAuth: true, title: 'Settings - GoEvent' },
+      meta: { requiresAuth: true, title: 'Profile - GoEvent' },
+    },
+    {
+      path: '/security',
+      name: 'security',
+      component: () => import('../views/SecurityView.vue'),
+      meta: { requiresAuth: true, title: 'Security - GoEvent' },
+    },
+    {
+      path: '/commission',
+      name: 'commission',
+      component: () => import('../views/CommissionView.vue'),
+      meta: { requiresAuth: true, title: 'Commission - GoEvent' },
     },
     {
       path: '/contact',
@@ -85,7 +97,7 @@ router.beforeEach(async (to, from, next) => {
       }
 
       // Enhanced security: Validate token with server for sensitive routes
-      const sensitiveRoutes = ['settings', 'event-edit']
+      const sensitiveRoutes = ['settings', 'security', 'commission', 'event-edit']
       if (sensitiveRoutes.includes(to.name as string)) {
         try {
           const isTokenValid = await authService.ensureValidToken()

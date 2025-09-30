@@ -92,7 +92,7 @@
       <div class="border-t border-slate-200 p-4">
         <!-- Authenticated User -->
         <template v-if="authStore.isAuthenticated">
-          <div class="relative">
+          <div ref="userMenuRef" class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
               class="w-full flex items-center p-3 rounded-xl hover:bg-[#E6F4FF] transition-all duration-200"
@@ -128,27 +128,47 @@
             </button>
 
             <!-- User Dropdown Menu -->
-            <Transition name="slideUp">
+            <Transition name="slideRight">
               <div
                 v-if="userMenuOpen"
-                class="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden"
+                :class="[
+                  'fixed bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-[100] min-w-[200px]',
+                  isCollapsed
+                    ? 'left-[6.5rem] bottom-4'
+                    : 'left-[17rem] bottom-4'
+                ]"
               >
                 <RouterLink
                   to="/settings"
                   @click="userMenuOpen = false"
                   class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
-                  :class="isCollapsed ? 'justify-center' : ''"
                 >
-                  <Settings class="w-5 h-5" />
-                  <span v-if="!isCollapsed" class="font-medium">Settings</span>
+                  <User class="w-5 h-5" />
+                  <span class="font-medium">Profile</span>
                 </RouterLink>
+                <RouterLink
+                  to="/security"
+                  @click="userMenuOpen = false"
+                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
+                >
+                  <Lock class="w-5 h-5" />
+                  <span class="font-medium">Security</span>
+                </RouterLink>
+                <RouterLink
+                  to="/commission"
+                  @click="userMenuOpen = false"
+                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
+                >
+                  <Wallet class="w-5 h-5" />
+                  <span class="font-medium">Commission</span>
+                </RouterLink>
+                <div class="border-t border-slate-200"></div>
                 <button
                   @click="handleLogout"
                   class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 text-left"
-                  :class="isCollapsed ? 'justify-center' : ''"
                 >
                   <LogOut class="w-5 h-5" />
-                  <span v-if="!isCollapsed" class="font-medium">Logout</span>
+                  <span class="font-medium">Logout</span>
                 </button>
               </div>
             </Transition>
@@ -182,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   Home,
@@ -191,7 +211,8 @@ import {
   DollarSign,
   User,
   UserPlus,
-  Settings,
+  Lock,
+  Wallet,
   LogOut,
   ChevronLeft,
   ChevronUp
@@ -207,6 +228,23 @@ const authStore = useAuthStore()
 const { isCollapsed, toggleCollapse } = useSidebar()
 
 const userMenuOpen = ref(false)
+const userMenuRef = ref<HTMLElement>()
+
+// Close menu when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target as Node)) {
+    userMenuOpen.value = false
+  }
+}
+
+// Add and remove click listener
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 // Navigation items configuration
 const navigationItems = [
@@ -280,9 +318,21 @@ const handleLogout = async () => {
 }
 
 .slideUp-enter-from,
-.slideUp-leave-from {
+.slideUp-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+/* SlideRight animation for collapsed state dropdown */
+.slideRight-enter-active,
+.slideRight-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slideRight-enter-from,
+.slideRight-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 
 /* Custom gradient text */
