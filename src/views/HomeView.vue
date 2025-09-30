@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen pb-20 lg:pb-0">
-    <Navigation />
+  <MainLayout>
+    <div class="min-h-screen pb-20 lg:pb-0">
 
     <!-- Hero Section -->
     <section
@@ -686,13 +686,14 @@
         <ArrowUp class="w-6 h-6" />
       </button>
     </Transition>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import Navigation from '../components/Navigation.vue'
+import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'

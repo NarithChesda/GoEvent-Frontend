@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
-    <Navigation />
+  <MainLayout>
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
 
     <!-- Loading State -->
     <div v-if="loading" class="pt-24 pb-16">
@@ -293,14 +293,15 @@
         </div>
       </div>
     </Transition>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Lock, Pencil, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
-import Navigation from '../components/Navigation.vue'
+import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import EventHeroSection from '../components/EventHeroSection.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
