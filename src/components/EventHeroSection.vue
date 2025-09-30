@@ -23,9 +23,9 @@
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 gap-8 items-start">
           <!-- Main Event Info -->
-          <div class="space-y-8 max-w-5xl">
+          <div class="space-y-6 md:space-y-8 max-w-5xl">
             <!-- Top Row: Status & Category -->
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 md:gap-3">
               <EventStatusBadge v-if="event.is_ongoing" type="live" label="Live Now" />
               <EventStatusBadge v-else-if="event.is_upcoming" type="upcoming" label="Upcoming" />
               <EventStatusBadge v-else-if="event.is_past" type="past" label="Past Event" />
@@ -33,7 +33,7 @@
               <!-- Category Tag -->
               <div
                 v-if="event.category_details"
-                class="px-3 py-1 rounded-full text-sm font-medium text-white/90 border border-white/30"
+                class="px-2.5 py-1 md:px-3 rounded-full text-xs md:text-sm font-medium text-white/90 border border-white/30"
                 :style="{ backgroundColor: event.category_details.color + '40' }"
               >
                 {{ event.category_details.name }}
@@ -42,34 +42,34 @@
 
             <!-- Title -->
             <h1
-              class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight tracking-tight"
+              class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight tracking-tight"
             >
               {{ event.title }}
             </h1>
 
             <!-- Key Details Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
               <!-- Date & Time -->
-              <div class="flex items-center space-x-4 text-white/90">
+              <div class="flex items-center space-x-3 md:space-x-4 text-white/90">
                 <div class="flex-shrink-0">
-                  <Calendar class="w-6 h-6" />
+                  <Calendar class="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <div>
-                  <p class="font-semibold text-lg">{{ formatEventDate(event.start_date) }}</p>
-                  <p class="text-white/80">{{ formatEventTime(event.start_date) }}</p>
+                  <p class="font-semibold text-base md:text-lg">{{ formatEventDate(event.start_date) }}</p>
+                  <p class="text-sm md:text-base text-white/80">{{ formatEventTime(event.start_date) }}</p>
                 </div>
               </div>
 
               <!-- Location -->
-              <div class="flex items-center space-x-4 text-white/90">
+              <div class="flex items-center space-x-3 md:space-x-4 text-white/90">
                 <div class="flex-shrink-0">
-                  <component :is="event.is_virtual ? Monitor : MapPin" class="w-6 h-6" />
+                  <component :is="event.is_virtual ? Monitor : MapPin" class="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <div>
-                  <p class="font-semibold text-lg">
+                  <p class="font-semibold text-base md:text-lg">
                     {{ event.is_virtual ? 'Virtual Event' : event.location || 'Location TBA' }}
                   </p>
-                  <p class="text-white/80">
+                  <p class="text-sm md:text-base text-white/80">
                     {{ event.is_virtual ? 'Join online' : 'In-person' }}
                   </p>
                 </div>
@@ -77,10 +77,10 @@
             </div>
 
             <!-- Social Proof & Metrics -->
-            <div class="flex flex-wrap items-center gap-8 text-white/90">
+            <div class="flex flex-wrap items-center gap-4 md:gap-6 lg:gap-8 text-white/90 text-sm md:text-base">
               <!-- Attendees -->
-              <div class="flex items-center space-x-3">
-                <Users class="w-5 h-5" />
+              <div class="flex items-center space-x-2 md:space-x-3">
+                <Users class="w-4 h-4 md:w-5 md:h-5" />
                 <span class="font-medium">
                   {{ event.registrations_count || 0
                   }}{{ event.max_attendees ? `/${event.max_attendees}` : '' }} attending
@@ -88,19 +88,19 @@
               </div>
 
               <!-- Host Preview -->
-              <div v-if="primaryHost" class="flex items-center space-x-3">
+              <div v-if="primaryHost" class="flex items-center space-x-2 md:space-x-3">
                 <img
                   :src="getHostProfileUrl(primaryHost.profile_image)"
                   :alt="primaryHost.name"
-                  class="w-8 h-8 rounded-full border-2 border-white/40 ring-1 ring-white/20"
+                  class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white/40 ring-1 ring-white/20"
                   @error="handleHostImageError"
                 />
                 <span class="font-medium">Hosted by {{ primaryHost.name }}</span>
               </div>
 
               <!-- Price -->
-              <div v-if="eventPrice" class="flex items-center space-x-2">
-                <DollarSign class="w-5 h-5" />
+              <div v-if="eventPrice" class="flex items-center space-x-1.5 md:space-x-2">
+                <DollarSign class="w-4 h-4 md:w-5 md:h-5" />
                 <span class="font-medium">{{ eventPrice }}</span>
               </div>
             </div>
@@ -108,22 +108,22 @@
             <!-- Urgency Indicator -->
             <div
               v-if="urgencyMessage"
-              class="inline-flex items-center space-x-3 bg-red-500/20 border border-red-400/40 rounded-xl px-4 py-3 backdrop-blur-sm"
+              class="inline-flex items-center space-x-2 md:space-x-3 bg-red-500/20 border border-red-400/40 rounded-lg md:rounded-xl px-3 py-2 md:px-4 md:py-3 backdrop-blur-sm"
             >
-              <Clock class="w-5 h-5 text-red-300" />
-              <span class="font-semibold text-red-200">{{ urgencyMessage }}</span>
+              <Clock class="w-4 h-4 md:w-5 md:h-5 text-red-300" />
+              <span class="font-semibold text-sm md:text-base text-red-200">{{ urgencyMessage }}</span>
             </div>
 
             <!-- Primary Action Buttons -->
-            <div class="flex flex-wrap gap-3 md:gap-4 pt-4">
+            <div class="flex flex-wrap gap-2 md:gap-3 lg:gap-4 pt-2 md:pt-4">
               <!-- Main Registration CTA -->
               <button
                 v-if="canRegister"
                 @click="$emit('register')"
                 :disabled="isRegistering"
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 flex items-center disabled:opacity-50 disabled:cursor-not-allowed shadow-emerald-500/25 hover:shadow-emerald-600/30"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-lg md:rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 flex items-center disabled:opacity-50 disabled:cursor-not-allowed shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm md:text-base"
               >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -137,9 +137,9 @@
               <!-- Registered Status -->
               <div
                 v-else-if="event.is_registered"
-                class="inline-flex items-center bg-green-500/20 border border-green-400/40 text-green-200 px-8 py-4 rounded-xl font-semibold backdrop-blur-sm"
+                class="inline-flex items-center bg-green-500/20 border border-green-400/40 text-green-200 px-6 py-3 md:px-8 md:py-4 rounded-lg md:rounded-xl font-semibold backdrop-blur-sm text-sm md:text-base"
               >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -154,9 +154,9 @@
               <button
                 v-if="event.virtual_link && (event.is_ongoing || event.is_registered)"
                 @click="$emit('join-virtual')"
-                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 flex items-center shadow-green-500/25 hover:shadow-green-600/30"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 md:py-4 md:px-8 rounded-lg md:rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 flex items-center shadow-green-500/25 hover:shadow-green-600/30 text-sm md:text-base"
               >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -170,9 +170,9 @@
               <!-- Quick Calendar Add -->
               <button
                 @click="$emit('add-to-google-calendar')"
-                class="bg-white/20 hover:bg-white/30 text-white border border-white/40 font-semibold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 flex items-center backdrop-blur-sm hover:bg-white/40"
+                class="bg-white/20 hover:bg-white/30 text-white border border-white/40 font-semibold py-3 px-6 md:py-4 md:px-8 rounded-lg md:rounded-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 flex items-center backdrop-blur-sm hover:bg-white/40 text-sm md:text-base"
               >
-                <Calendar class="w-5 h-5 mr-2" />
+                <Calendar class="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" />
                 Add to Calendar
               </button>
             </div>

@@ -232,8 +232,10 @@
         </div>
       </div>
 
-      <!-- Footer -->
-      <Footer />
+      <!-- Footer - Hidden on mobile -->
+      <div class="hidden md:block">
+        <Footer />
+      </div>
 
       <!-- Floating Edit Button -->
       <div v-if="event?.can_edit" class="fixed bottom-8 right-8 z-40" @click.stop>
