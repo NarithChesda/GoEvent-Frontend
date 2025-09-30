@@ -155,6 +155,7 @@
                   <span class="font-medium">Security</span>
                 </RouterLink>
                 <RouterLink
+                  v-if="authStore.user?.is_partner"
                   to="/commission"
                   @click="userMenuOpen = false"
                   class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"

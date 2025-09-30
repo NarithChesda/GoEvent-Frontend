@@ -1,333 +1,432 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
+    <div class="min-h-screen bg-gray-50 pb-20 lg:pb-0">
 
     <!-- Settings Content -->
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="flex flex-col gap-8">
         <!-- Profile Settings -->
-        <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">Profile Information</h2>
+        <div class="bg-white rounded-lg shadow-sm">
+            <h1 class="text-3xl font-normal text-slate-900 text-center py-12">Your profile</h1>
 
-            <form @submit.prevent="handleProfileUpdate" class="space-y-8">
+            <form @submit.prevent="handleProfileUpdate" class="p-8 space-y-10">
+              <!-- Success/Error Messages -->
+              <div v-if="successMessage" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+                {{ successMessage }}
+              </div>
+              <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+                {{ errorMessage }}
+              </div>
+
               <!-- Profile Picture Section -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-[#1e90ff] rounded-full"></div>
-                  <span>Profile Picture</span>
-                </h3>
+              <div class="pb-8">
+                <div class="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4">
+                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-4 flex-1">
+                    <div class="flex flex-col items-center lg:items-start gap-2">
+                      <label class="block text-sm font-medium text-gray-700">Profile Photo</label>
 
-                <div
-                  class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6"
-                >
-                  <!-- Current Profile Picture -->
-                  <div class="relative group">
-                    <div
-                      v-if="profilePicturePreview || authStore.user?.profile_picture"
-                      class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white group-hover:ring-[#87CEEB] transition-all duration-300"
-                    >
-                      <img
-                        :src="
-                          profilePicturePreview ||
-                          apiService.getProfilePictureUrl(authStore.user?.profile_picture) ||
-                          ''
-                        "
-                        alt="Profile"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div
-                      v-else
-                      class="w-24 h-24 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg ring-4 ring-white group-hover:ring-[#87CEEB] transition-all duration-300"
-                    >
-                      {{ authStore.userInitials }}
-                    </div>
+                      <!-- Current Profile Picture -->
+                      <div class="relative w-20 h-20">
+                        <!-- Partner Badge Ring -->
+                        <div
+                          v-if="authStore.user?.is_partner"
+                          class="absolute -inset-1 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse"
+                        ></div>
 
-                    <!-- Upload Overlay -->
-                    <div
-                      class="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
-                    >
-                      <Camera class="w-8 h-8 text-white" />
+                        <div
+                          v-if="profilePictureUrl"
+                          class="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200"
+                        >
+                          <img
+                            :src="profilePictureUrl"
+                            :key="profilePictureUrl"
+                            alt="Profile"
+                            class="w-full h-full object-cover"
+                            @error="handleImageError"
+                            @load="handleImageLoad"
+                          />
+                        </div>
+                        <div
+                          v-else
+                          class="relative w-20 h-20 bg-pink-600 rounded-full flex items-center justify-center text-white font-medium text-2xl"
+                        >
+                          {{ authStore.userInitials }}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Upload Controls -->
-                  <div class="flex-1">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                      <input
-                        ref="fileInput"
-                        type="file"
-                        accept="image/*"
-                        @change="handleFileSelect"
-                        class="hidden"
-                      />
+                  <div class="flex items-center space-x-2 lg:mt-7">
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept="image/*"
+                      @change="handleFileSelect"
+                      class="hidden"
+                    />
 
-                      <button
-                        type="button"
-                        @click="triggerFileUpload"
-                        :disabled="uploadLoading"
-                        class="inline-flex items-center space-x-2 px-4 py-2 bg-[#1e90ff] hover:bg-[#1873cc] disabled:bg-gray-400 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-emerald-500/25"
-                      >
-                        <Upload class="w-4 h-4" />
-                        <span>{{ uploadLoading ? 'Uploading...' : 'Upload New' }}</span>
-                      </button>
+                    <button
+                      v-if="authStore.user?.profile_picture || profilePicturePreview"
+                      type="button"
+                      @click="removeProfilePicture"
+                      class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      Remove photo
+                    </button>
 
-                      <button
-                        v-if="authStore.user?.profile_picture || profilePicturePreview"
-                        type="button"
-                        @click="removeProfilePicture"
-                        class="inline-flex items-center space-x-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl transition-all duration-200"
-                      >
-                        <Trash2 class="w-4 h-4" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
-
-                    <p class="text-sm text-slate-500 mt-2">
-                      JPG, PNG, GIF, WebP, or AVIF. Max size 3MB. Recommended: 400x400px. Files are
-                      scanned for security.
-                    </p>
+                    <button
+                      type="button"
+                      @click="triggerFileUpload"
+                      :disabled="uploadLoading"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      {{ uploadLoading ? 'Uploading...' : 'Change photo' }}
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Basic Information -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-purple-600 rounded-full"></div>
-                  <span>Basic Information</span>
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <!-- First Name -->
-                  <div>
-                    <label for="firstName" class="block text-sm font-semibold text-slate-700 mb-2">
-                      First Name
-                    </label>
-                    <input
-                      id="firstName"
-                      v-model="profileForm.first_name"
-                      type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
-                      placeholder="Enter your first name"
-                    />
+              <!-- Name Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                    <div v-if="!editingField || editingField !== 'name'" class="text-base text-gray-900">
+                      {{ fullName || 'Not set' }}
+                    </div>
+                    <div v-else class="flex space-x-3">
+                      <input
+                        v-model="profileForm.first_name"
+                        type="text"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="First name"
+                      />
+                      <input
+                        v-model="profileForm.last_name"
+                        type="text"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Last name"
+                      />
+                    </div>
                   </div>
-
-                  <!-- Last Name -->
-                  <div>
-                    <label for="lastName" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Last Name
-                    </label>
-                    <input
-                      id="lastName"
-                      v-model="profileForm.last_name"
-                      type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
-                      placeholder="Enter your last name"
-                    />
+                  <div v-if="editingField === 'name'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('name')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('name')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
                   </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('name')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Email -->
-                  <div>
-                    <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Email Address
-                    </label>
+              <!-- Email Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                    <div v-if="!editingField || editingField !== 'email'" class="text-base text-gray-900">
+                      {{ profileForm.email || 'Not set' }}
+                    </div>
                     <input
-                      id="email"
+                      v-else
                       v-model="profileForm.email"
                       type="email"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter your email"
                     />
                   </div>
+                  <div v-if="editingField === 'email'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('email')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('email')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('email')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Username -->
-                  <div>
-                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Username
-                    </label>
+              <!-- Username Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <div v-if="!editingField || editingField !== 'username'" class="text-base text-gray-900">
+                      {{ profileForm.username || 'Not set' }}
+                    </div>
                     <input
-                      id="username"
+                      v-else
                       v-model="profileForm.username"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter your username"
                     />
                   </div>
+                  <div v-if="editingField === 'username'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('username')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('username')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('username')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                  >
+                    Edit
+                  </button>
                 </div>
+              </div>
 
-                <!-- Partner Information Section (only for partners) -->
-                <div v-if="authStore.user?.is_partner" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                  <!-- Phone Number -->
-                  <div>
-                    <label for="phone_number" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Phone Number
-                    </label>
+              <!-- Bio Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                    <div v-if="!editingField || editingField !== 'bio'" class="text-base text-gray-900">
+                      {{ profileForm.bio || 'Not set' }}
+                    </div>
+                    <textarea
+                      v-else
+                      v-model="profileForm.bio"
+                      rows="4"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Tell us about yourself..."
+                    ></textarea>
+                  </div>
+                  <div v-if="editingField === 'bio'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('bio')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('bio')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('bio')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+
+              <!-- Phone Number Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <div v-if="!editingField || editingField !== 'phone_number'" class="text-base text-gray-900">
+                      {{ profileForm.phone_number || 'Not set' }}
+                    </div>
                     <input
-                      id="phone_number"
+                      v-else
                       v-model="profileForm.phone_number"
                       type="tel"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter your phone number"
                     />
                   </div>
+                  <div v-if="editingField === 'phone_number'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('phone_number')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('phone_number')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('phone_number')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Telegram Link -->
-                  <div>
-                    <label for="telegram_link" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Telegram Link
-                    </label>
+              <!-- Telegram URL Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Telegram URL</label>
+                    <div v-if="!editingField || editingField !== 'telegram_link'" class="text-base text-gray-900">
+                      {{ profileForm.telegram_link || 'Not set' }}
+                    </div>
                     <input
-                      id="telegram_link"
+                      v-else
                       v-model="profileForm.telegram_link"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="t.me/yourusername or @yourusername"
                     />
                   </div>
+                  <div v-if="editingField === 'telegram_link'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('telegram_link')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('telegram_link')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('telegram_link')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Payment Link -->
-                  <div class="md:col-span-2">
-                    <label for="payment_link" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Payment URL
-                    </label>
+              <!-- Payment URL Field -->
+              <div class="border-b border-gray-200 pb-8">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment URL</label>
+                    <div v-if="!editingField || editingField !== 'payment_link'" class="text-base text-gray-900">
+                      {{ profileForm.payment_link || 'Not set' }}
+                    </div>
                     <input
-                      id="payment_link"
+                      v-else
                       v-model="profileForm.payment_link"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="your-payment-platform.com/username"
                     />
                   </div>
-                </div>
-              </div>
-
-              <!-- User Status -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-yellow-600 rounded-full"></div>
-                  <span>Account Status</span>
-                </h3>
-
-
-                <div class="flex flex-wrap gap-3">
-                  <!-- Verification Status -->
-                  <div
-                    class="inline-flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium"
-                    :class="
-                      authStore.user?.is_verified
-                        ? 'bg-green-100 text-green-800 border border-green-200'
-                        : 'bg-orange-100 text-orange-800 border border-orange-200'
-                    "
+                  <div v-if="editingField === 'payment_link'" class="flex items-center space-x-2 mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('payment_link')"
+                      class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('payment_link')"
+                      class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('payment_link')"
+                    class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-200 mt-7"
                   >
-                    <div
-                      :class="authStore.user?.is_verified ? 'bg-green-500' : 'bg-orange-500'"
-                      class="w-2 h-2 rounded-full"
-                    ></div>
-                    <span>{{
-                      authStore.user?.is_verified ? 'Verified Account' : 'Unverified Account'
-                    }}</span>
-                  </div>
-
-                  <!-- Partner Status -->
-                  <div
-                    v-if="authStore.user?.is_partner"
-                    class="inline-flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border border-purple-200"
-                  >
-                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span>Partner Account</span>
-                  </div>
+                    Edit
+                  </button>
                 </div>
+              </div>
 
-                <!-- Partner Information (shown only for partners) -->
-                <div v-if="authStore.user?.is_partner" class="mt-4 pt-4 border-t border-slate-200">
-                  <h4 class="text-sm font-semibold text-slate-700 mb-3">Partner Information</h4>
-                  <div class="space-y-3">
-                    <div v-if="authStore.user.phone_number" class="flex items-center justify-between">
-                      <span class="text-sm text-slate-600 font-medium">Phone Number:</span>
-                      <span class="text-sm text-slate-900">{{ authStore.user.phone_number }}</span>
+              <!-- Connected Social Accounts -->
+              <div>
+                <h3 class="text-base font-medium text-gray-900 mb-1">Connected social accounts</h3>
+                <p class="text-sm text-gray-600 mb-6">Services that you use to log in to GoEvent</p>
+
+                <div class="space-y-3">
+                  <!-- Google Account -->
+                  <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">Google</div>
+                        <div class="text-xs text-gray-600">{{ profileForm.email }}</div>
+                      </div>
                     </div>
-                    <div v-if="authStore.user.telegram_link" class="flex items-center justify-between">
-                      <span class="text-sm text-slate-600 font-medium">Telegram:</span>
-                      <a
-                        :href="authStore.user.telegram_link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-sm text-[#1e90ff] hover:text-[#1873cc] underline"
-                      >
-                        {{ authStore.user.telegram_link }}
-                      </a>
-                    </div>
-                    <div v-if="authStore.user.payment_link" class="flex items-center justify-between">
-                      <span class="text-sm text-slate-600 font-medium">Payment URL:</span>
-                      <a
-                        :href="authStore.user.payment_link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-sm text-[#1e90ff] hover:text-[#1873cc] underline"
-                      >
-                        {{ authStore.user.payment_link }}
-                      </a>
-                    </div>
+                    <button
+                      type="button"
+                      class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Disconnect
+                    </button>
                   </div>
                 </div>
-
-
               </div>
 
-              <!-- Bio Section -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-green-600 rounded-full"></div>
-                  <span>About You</span>
-                </h3>
-
-                <div>
-                  <label for="bio" class="block text-sm font-semibold text-slate-700 mb-2">
-                    Bio
-                  </label>
-                  <textarea
-                    id="bio"
-                    v-model="profileForm.bio"
-                    rows="4"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent resize-none"
-                    placeholder="Tell us about yourself..."
-                  ></textarea>
-                  <p class="text-sm text-slate-500 mt-2">
-                    Brief description for your profile. Maximum 500 characters.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Success/Error Messages -->
-              <div v-if="successMessage" class="p-4 bg-green-50 border border-green-200 rounded-xl">
-                <div class="flex items-center">
-                  <CheckCircle class="h-5 w-5 text-green-600 mr-2" />
-                  <span class="text-green-700 text-sm">{{ successMessage }}</span>
-                </div>
-              </div>
-
-              <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                <div class="flex items-center">
-                  <AlertCircle class="h-5 w-5 text-red-600 mr-2" />
-                  <span class="text-red-700 text-sm">{{ errorMessage }}</span>
-                </div>
-              </div>
-
-              <!-- Save Button -->
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  :disabled="authStore.isLoading"
-                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
-                >
-                  <div class="flex items-center space-x-2">
-                    <Loader2 v-if="authStore.isLoading" class="animate-spin w-5 h-5" />
-                    <Save class="w-5 h-5" />
-                    <span>{{ authStore.isLoading ? 'Saving...' : 'Save Changes' }}</span>
-                  </div>
-                </button>
-              </div>
             </form>
         </div>
       </div>
@@ -337,22 +436,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
 import { useAuthStore } from '../stores/auth'
 import { uploadService } from '../services/upload'
 import { apiService } from '../services/api'
 import { inputValidator, validationRules } from '../utils/inputValidation'
-import {
-  Save,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  Camera,
-  Upload,
-  Trash2,
-} from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -369,6 +459,10 @@ const profileForm = ref({
   payment_link: '',
 })
 
+// Add editing state and original values for canceling
+const editingField = ref<string | null>(null)
+const originalValues = ref<any>({})
+
 // UI state
 const successMessage = ref('')
 const errorMessage = ref('')
@@ -376,7 +470,33 @@ const uploadLoading = ref(false)
 const fileInput = ref<HTMLInputElement>()
 const profilePicturePreview = ref<string>('')
 const fieldErrors = ref<Record<string, string[]>>({})
+const profilePictureTimestamp = ref(Date.now()) // Track when profile picture changes
 
+
+// Computed properties
+const fullName = computed(() => {
+  const first = profileForm.value.first_name || ''
+  const last = profileForm.value.last_name || ''
+  return `${first} ${last}`.trim()
+})
+
+// Profile picture URL with cache busting to force browser refresh
+const profilePictureUrl = computed(() => {
+  if (profilePicturePreview.value) {
+    return profilePicturePreview.value
+  }
+
+  if (authStore.user?.profile_picture) {
+    const baseUrl = apiService.getProfilePictureUrl(authStore.user.profile_picture)
+    if (baseUrl) {
+      // Add timestamp to bust browser cache when image changes
+      const separator = baseUrl.includes('?') ? '&' : '?'
+      return `${baseUrl}${separator}t=${profilePictureTimestamp.value}`
+    }
+  }
+
+  return null
+})
 
 // Real-time validation for form fields
 const profileValidation = computed(() => {
@@ -393,14 +513,131 @@ const profileValidation = computed(() => {
   })
 })
 
-
-// Initialize form with user data
-onMounted(() => {
-  if (!authStore.isAuthenticated) {
-    router.push('/signin')
-    return
+// Enter edit mode for a field
+const startEdit = (field: string) => {
+  // Store original values for potential cancel
+  if (field === 'name') {
+    originalValues.value = {
+      first_name: profileForm.value.first_name,
+      last_name: profileForm.value.last_name,
+    }
+  } else {
+    originalValues.value = {
+      [field]: profileForm.value[field as keyof typeof profileForm.value],
+    }
   }
+  editingField.value = field
+}
 
+// Save the field
+const saveEdit = async (field: string) => {
+  await handleFieldUpdate(field)
+  if (!errorMessage.value) {
+    editingField.value = null
+    originalValues.value = {}
+  }
+}
+
+// Cancel editing and restore original values
+const cancelEdit = (field: string) => {
+  if (field === 'name') {
+    profileForm.value.first_name = originalValues.value.first_name || ''
+    profileForm.value.last_name = originalValues.value.last_name || ''
+  } else {
+    profileForm.value[field as keyof typeof profileForm.value] = originalValues.value[field] || ''
+  }
+  editingField.value = null
+  originalValues.value = {}
+}
+
+// Handle individual field update
+const handleFieldUpdate = async (field: string) => {
+  try {
+    errorMessage.value = ''
+    let updateData: any = {}
+
+    if (field === 'name') {
+      // Validate name fields
+      if (!profileForm.value.first_name?.trim()) {
+        errorMessage.value = 'First name is required'
+        return
+      }
+      updateData = {
+        first_name: profileForm.value.first_name.trim(),
+        last_name: profileForm.value.last_name?.trim() || '',
+      }
+    } else if (field === 'email') {
+      // Validate email
+      if (!profileForm.value.email?.trim()) {
+        errorMessage.value = 'Email is required'
+        return
+      }
+      updateData = { email: profileForm.value.email.trim() }
+    } else if (field === 'username') {
+      // Validate username
+      if (!profileForm.value.username?.trim()) {
+        errorMessage.value = 'Username is required'
+        return
+      }
+      updateData = { username: profileForm.value.username.trim() }
+    } else if (field === 'bio') {
+      // Bio is optional
+      const bioValue = profileForm.value.bio?.trim() || ''
+      updateData = { bio: bioValue }
+    } else if (field === 'telegram_link') {
+      // Format telegram link properly
+      let telegramValue = profileForm.value.telegram_link?.trim() || ''
+
+      if (telegramValue) {
+        // Auto-format telegram links
+        if (!telegramValue.startsWith('http')) {
+          if (telegramValue.startsWith('t.me/') || telegramValue.startsWith('telegram.me/')) {
+            telegramValue = 'https://' + telegramValue
+          } else if (telegramValue.startsWith('@')) {
+            telegramValue = 'https://t.me/' + telegramValue.substring(1)
+          } else if (!telegramValue.includes('/')) {
+            telegramValue = 'https://t.me/' + telegramValue
+          }
+        }
+      }
+
+      updateData = { telegram_link: telegramValue }
+    } else if (field === 'payment_link') {
+      // Format payment link properly
+      let paymentValue = profileForm.value.payment_link?.trim() || ''
+
+      if (paymentValue && !paymentValue.startsWith('http')) {
+        paymentValue = 'https://' + paymentValue
+      }
+
+      updateData = { payment_link: paymentValue }
+    } else if (field === 'phone_number') {
+      // Phone number is optional
+      updateData = { phone_number: profileForm.value.phone_number?.trim() || '' }
+    }
+
+    const result = await authStore.updateProfile(updateData)
+    if (result.success) {
+      // Form will be synced automatically by the watcher on authStore.user
+      // The watcher will trigger once editingField is cleared by saveEdit()
+
+      successMessage.value = 'Updated successfully!'
+      setTimeout(() => {
+        successMessage.value = ''
+      }, 3000)
+    } else {
+      console.error('Failed to update field:', result.error)
+      errorMessage.value = result.error || 'Failed to update'
+    }
+  } catch (error) {
+    console.error('Error updating field:', error)
+    errorMessage.value = 'An error occurred'
+  }
+}
+
+
+// Sync profileForm with authStore.user whenever it changes
+const syncFormWithStore = () => {
   if (authStore.user) {
     profileForm.value = {
       first_name: authStore.user.first_name || '',
@@ -413,7 +650,29 @@ onMounted(() => {
       payment_link: authStore.user.payment_link || '',
     }
   }
+}
+
+// Initialize form with user data
+onMounted(() => {
+  if (!authStore.isAuthenticated) {
+    router.push('/signin')
+    return
+  }
+
+  syncFormWithStore()
 })
+
+// Watch for changes to authStore.user and sync the form
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser && !editingField.value) {
+      // Only sync if not currently editing a field to avoid overwriting user's input
+      syncFormWithStore()
+    }
+  },
+  { deep: true }
+)
 
 // Profile update handler
 const handleProfileUpdate = async () => {
@@ -506,19 +765,8 @@ const handleProfileUpdate = async () => {
       successMessage.value = 'Profile updated successfully!'
       fieldErrors.value = {}
 
-      // Refresh the form with updated user data
-      if (authStore.user) {
-        profileForm.value = {
-          first_name: authStore.user.first_name || '',
-          last_name: authStore.user.last_name || '',
-          email: authStore.user.email || '',
-          username: authStore.user.username || '',
-          bio: authStore.user.bio || '',
-          phone_number: authStore.user.phone_number || '',
-          telegram_link: authStore.user.telegram_link || '',
-          payment_link: authStore.user.payment_link || '',
-        }
-      }
+      // Form will be synced automatically by the watcher on authStore.user
+
       setTimeout(() => {
         successMessage.value = ''
       }, 3000)
@@ -558,11 +806,38 @@ const handleFileSelect = async (event: Event) => {
     const response = await uploadService.uploadProfilePicture(file)
 
     if (response.success && response.data) {
-      // The API returns the user object with updated profile_picture
-      const profilePictureUrl = response.data.profile_picture || response.data.url
-      await authStore.updateProfile({ profile_picture: profilePictureUrl })
-      successMessage.value = 'Profile picture updated successfully!'
+      // The API can return the user object in different formats:
+      // Format 1: { user: {...} } - nested user object
+      // Format 2: { id, email, ... } - direct user object
+      let userData = null
+
+      if (response.data.user && response.data.user.id) {
+        // Nested user object
+        userData = response.data.user
+      } else if (response.data.id && response.data.email) {
+        // Direct user object
+        userData = response.data
+      }
+
+      if (userData) {
+        // Update the entire user in the store
+        authStore.setUser(userData as any)
+      } else {
+        // Fallback: just update profile_picture field
+        const profilePictureUrl = response.data.profile_picture || response.data.url
+        await authStore.updateProfile({ profile_picture: profilePictureUrl })
+      }
+
+      // Wait for Vue to update the DOM, then update timestamp and clear preview
+      await nextTick()
+
+      // Update timestamp to force image reload
+      profilePictureTimestamp.value = Date.now()
+
+      // Clear preview AFTER store is updated
       profilePicturePreview.value = ''
+
+      successMessage.value = 'Profile picture updated successfully!'
 
       setTimeout(() => {
         successMessage.value = ''
@@ -587,7 +862,14 @@ const removeProfilePicture = async () => {
     errorMessage.value = ''
 
     await authStore.updateProfile({ profile_picture: '' })
+
+    // Wait for Vue to update
+    await nextTick()
+
+    // Update timestamp to force UI refresh
+    profilePictureTimestamp.value = Date.now()
     profilePicturePreview.value = ''
+
     successMessage.value = 'Profile picture removed successfully!'
 
     setTimeout(() => {
@@ -596,6 +878,17 @@ const removeProfilePicture = async () => {
   } catch (error) {
     errorMessage.value = 'Failed to remove profile picture'
   }
+}
+
+// Image error handler
+const handleImageError = (event: Event) => {
+  console.error('Image failed to load:', (event.target as HTMLImageElement)?.src)
+  errorMessage.value = 'Failed to load profile picture. Please try refreshing the page.'
+}
+
+// Image load handler - Silent success, no logging needed
+const handleImageLoad = () => {
+  // Image loaded successfully
 }
 
 // Temporary function for testing partner features
