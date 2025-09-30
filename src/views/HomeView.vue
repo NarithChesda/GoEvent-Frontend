@@ -224,19 +224,19 @@
     <section
       id="features"
       ref="featuresSection"
-      class="py-16 scroll-animate features-bg"
+      class="py-12 sm:py-16 md:py-20 scroll-animate features-bg"
       :class="{ 'animate-fade-in-up': isVisible.features }"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
+        <div class="text-center mb-12 sm:mb-16 md:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Star class="w-4 h-4" />
+            <Star class="h-3 w-3 sm:h-4 sm:w-4" />
             Features That Matter
           </div>
           <h2
-            class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Everything You Need to
             <span
@@ -245,17 +245,17 @@
               Succeed</span
             >
           </h2>
-          <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
             Powerful features designed to make event planning effortless, engaging, and memorable
             for both organizers and attendees.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           <div
             v-for="(feature, index) in features"
             :key="feature.title"
-            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+            class="group relative bg-white rounded-xl border border-slate-200 p-6 sm:p-7 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
             :class="index === 1 ? 'md:scale-105 md:z-10 border-[#B0E0E6]' : ''"
           >
             <!-- Top accent bar -->
@@ -265,31 +265,31 @@
 
             <div class="relative">
               <!-- Icon with design guide styling -->
-              <div class="relative mb-6">
+              <div class="relative mb-4 sm:mb-5 md:mb-6">
                 <div
-                  class="w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                   :class="feature.bgColor"
                 >
                   <component
                     :is="feature.icon"
-                    class="w-8 h-8 transition-all duration-300"
+                    class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 transition-all duration-300"
                     :class="feature.iconColor"
                   />
                 </div>
                 <!-- Floating accent -->
                 <div
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
+                  class="absolute -top-1.5 sm:-top-2 -right-1.5 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
                 ></div>
               </div>
 
               <!-- Content with design guide typography -->
-              <div class="space-y-4">
+              <div class="space-y-3 sm:space-y-3.5 md:space-y-4">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-lg sm:text-xl md:text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ feature.title }}
                 </h3>
-                <p class="text-base text-slate-700 leading-relaxed">
+                <p class="text-sm sm:text-base md:text-base text-slate-700 leading-relaxed">
                   {{ feature.description }}
                 </p>
               </div>
@@ -308,22 +308,22 @@
     <section
       id="testimonials"
       ref="testimonialsSection"
-      class="py-16 relative overflow-hidden scroll-animate"
+      class="py-12 sm:py-16 md:py-20 relative overflow-hidden scroll-animate"
       :class="{ 'animate-fade-in-up': isVisible.testimonials }"
     >
       <!-- Background gradient -->
       <div class="absolute inset-0 testimonials-bg"></div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-16">
+        <div class="text-center mb-12 sm:mb-16 md:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <MessageCircle class="h-4 w-4" />
+            <MessageCircle class="h-3 w-3 sm:h-4 sm:w-4" />
             Client Success Stories
           </div>
           <h2
-            class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Loved by
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
@@ -331,35 +331,48 @@
             >
             organizers
           </h2>
-          <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
             From intimate gatherings to large-scale conferences, see how GoEvent transforms event
             planning
           </p>
         </div>
 
+        <!-- Swipe Indicator (Mobile Only) -->
+        <div class="md:hidden text-center mb-4 px-4">
+          <div class="inline-flex items-center gap-2 text-slate-600 text-sm animate-pulse">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            <span>Swipe to see reviews</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </div>
+        </div>
+
         <!-- Testimonials Grid -->
-        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
+        <div class="md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-12 sm:mb-16 md:mb-20 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide flex md:flex-none -mx-4 px-4 md:mx-0 md:px-0 py-2">
           <div
             v-for="(testimonial, index) in testimonials"
             :key="testimonial.name"
-            class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
+            class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl p-6 sm:p-7 md:p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 w-[85vw] md:w-full flex-shrink-0 md:flex-shrink snap-center"
             :class="index === 1 ? 'md:scale-105 md:z-10' : ''"
           >
             <!-- Quote icon -->
             <div
-              class="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center text-white text-sm sm:text-lg font-bold"
+              class="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center text-white text-sm sm:text-base md:text-lg font-bold"
             >
               "
             </div>
 
             <!-- Rating stars -->
-            <div class="flex text-yellow-400 mb-4 sm:mb-6">
-              <Star v-for="i in 5" :key="i" class="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
+            <div class="flex gap-0.5 sm:gap-1 text-yellow-400 mb-4 sm:mb-5 md:mb-6">
+              <Star v-for="i in 5" :key="i" class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 fill-current" />
             </div>
 
             <!-- Testimonial content -->
             <blockquote
-              class="text-slate-700 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 font-medium"
+              class="text-slate-700 text-sm sm:text-base md:text-base leading-relaxed mb-5 sm:mb-6 md:mb-8 font-medium"
             >
               "{{ testimonial.content }}"
             </blockquote>
@@ -367,17 +380,17 @@
             <!-- Author info -->
             <div class="flex items-center">
               <div
-                class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 group-hover:scale-110 transition-transform duration-300"
+                class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center mr-3 sm:mr-3.5 md:mr-4 group-hover:scale-110 transition-transform duration-300"
               >
-                <span class="text-[#1e90ff] font-bold text-sm sm:text-base lg:text-lg">{{
+                <span class="text-[#1e90ff] font-bold text-sm sm:text-base md:text-lg">{{
                   testimonial.name.charAt(0)
                 }}</span>
               </div>
               <div>
-                <h4 class="font-bold text-slate-900 text-sm sm:text-base lg:text-lg">
+                <h4 class="font-bold text-slate-900 text-sm sm:text-base md:text-base">
                   {{ testimonial.name }}
                 </h4>
-                <p class="text-[#1e90ff] font-medium text-xs sm:text-sm lg:text-base">
+                <p class="text-[#1e90ff] font-medium text-xs sm:text-sm md:text-sm">
                   {{ testimonial.role }}
                 </p>
               </div>
@@ -393,23 +406,23 @@
         <!-- Trust indicators -->
         <div class="text-center">
           <div
-            class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 lg:space-x-8 bg-white/60 backdrop-blur-sm rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border border-white/20"
+            class="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 bg-white/60 backdrop-blur-sm rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-8 py-3 sm:py-5 md:py-6 border border-white/20 flex-wrap sm:flex-nowrap"
           >
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span class="text-slate-700 font-medium text-sm sm:text-base">99.9% Uptime</span>
+            <div class="flex items-center gap-1 sm:gap-2">
+              <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+              <span class="text-slate-700 font-medium text-xs sm:text-sm md:text-base whitespace-nowrap">99.9% Uptime</span>
             </div>
-            <div class="hidden sm:block w-px h-6 bg-slate-300"></div>
-            <div class="flex items-center space-x-2">
-              <Shield class="h-4 w-4 sm:h-5 sm:w-5 text-[#1e90ff]" />
-              <span class="text-slate-700 font-medium text-sm sm:text-base"
+            <div class="hidden sm:block w-px h-4 sm:h-5 md:h-6 bg-slate-300 flex-shrink-0"></div>
+            <div class="flex items-center gap-1 sm:gap-2">
+              <Shield class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-[#1e90ff] flex-shrink-0" />
+              <span class="text-slate-700 font-medium text-xs sm:text-sm md:text-base whitespace-nowrap"
                 >Enterprise Security</span
               >
             </div>
-            <div class="hidden sm:block w-px h-6 bg-slate-300"></div>
-            <div class="flex items-center space-x-2">
-              <Award class="h-4 w-4 sm:h-5 sm:w-5 text-[#1e90ff]" />
-              <span class="text-slate-700 font-medium text-sm sm:text-base">Award Winning</span>
+            <div class="hidden sm:block w-px h-4 sm:h-5 md:h-6 bg-slate-300 flex-shrink-0"></div>
+            <div class="flex items-center gap-1 sm:gap-2">
+              <Award class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-[#1e90ff] flex-shrink-0" />
+              <span class="text-slate-700 font-medium text-xs sm:text-sm md:text-base whitespace-nowrap">Award Winning</span>
             </div>
           </div>
         </div>
@@ -420,20 +433,20 @@
     <section
       id="faq"
       ref="faqSection"
-      class="py-16 scroll-animate faq-bg"
+      class="py-12 sm:py-16 md:py-20 scroll-animate faq-bg"
       :class="{ 'animate-fade-in-up': isVisible.faq }"
     >
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header Section -->
-        <div class="text-center mb-16">
+        <div class="text-center mb-12 sm:mb-16 md:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <HelpCircle class="h-4 w-4" />
+            <HelpCircle class="h-3 w-3 sm:h-4 sm:w-4" />
             Frequently Asked Questions
           </div>
           <h2
-            class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Got Questions? We've Got
             <span
@@ -442,36 +455,36 @@
               Answers</span
             >
           </h2>
-          <p class="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4">
             Everything you need to know about GoEvent and how it can transform your event planning
             experience.
           </p>
         </div>
 
         <!-- FAQ Items - Redesigned with Better Spacing and Typography -->
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-5 md:space-y-6">
           <div
             v-for="(faq, index) in faqs"
             :key="index"
-            class="group bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm hover:shadow-lg hover:border-[#87CEEB]/50 transition-all duration-300 overflow-hidden"
+            class="group bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-200/50 shadow-sm hover:shadow-lg hover:border-[#87CEEB]/50 transition-all duration-300 overflow-hidden"
           >
             <button
               @click="toggleFaq(index)"
-              class="w-full px-8 py-6 text-left flex items-start justify-between font-medium text-slate-900 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-sky-50/30 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2 group"
+              class="w-full px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 text-left flex items-start justify-between font-medium text-slate-900 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-sky-50/30 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2 group min-h-[44px]"
             >
-              <div class="flex-1 pr-6">
+              <div class="flex-1 pr-3 sm:pr-4 md:pr-6">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-tight tracking-tight group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-base sm:text-lg md:text-xl font-bold text-slate-900 leading-tight tracking-tight group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ faq.question }}
                 </h3>
               </div>
-              <div class="flex-shrink-0 ml-4">
+              <div class="flex-shrink-0 ml-2 sm:ml-3 md:ml-4">
                 <div
-                  class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 flex items-center justify-center transition-all duration-300"
+                  class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 flex items-center justify-center transition-all duration-300"
                 >
                   <ChevronDown
-                    class="w-5 h-5 text-slate-500 group-hover:text-[#1e90ff] transition-all duration-300"
+                    class="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 group-hover:text-[#1e90ff] transition-all duration-300"
                     :class="{ 'rotate-180': openFaq === index }"
                   />
                 </div>
@@ -486,14 +499,14 @@
               leave-to-class="max-h-0 opacity-0"
             >
               <div v-show="openFaq === index" class="overflow-hidden">
-                <div class="px-8 pb-8 pt-2">
+                <div class="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8 pt-2">
                   <!-- Visual separator -->
                   <div
-                    class="w-16 h-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mb-6"
+                    class="w-12 sm:w-14 md:w-16 h-0.5 sm:h-0.5 md:h-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mb-4 sm:mb-5 md:mb-6"
                   ></div>
                   <!-- Answer content with better typography -->
                   <div class="prose prose-slate max-w-none">
-                    <p class="text-lg text-slate-700 leading-relaxed font-medium">
+                    <p class="text-sm sm:text-base md:text-lg text-slate-700 leading-relaxed font-medium">
                       {{ faq.answer }}
                     </p>
                   </div>
@@ -513,7 +526,7 @@
     />
 
     <!-- CTA Section -->
-    <section class="py-16 bg-white relative overflow-hidden">
+    <section class="py-12 sm:py-16 md:py-20 bg-white relative overflow-hidden">
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <!-- Subtle gradient orbs -->
@@ -528,20 +541,20 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div
-          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-3xl p-8 lg:p-10 xl:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
+          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-10 xl:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
         >
-          <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
+          <div class="grid lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-16 items-center">
             <!-- Left side - Content -->
             <div class="text-left">
               <div
-                class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6"
+                class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-4 sm:mb-5 md:mb-6"
               >
-                <Sparkles class="w-4 h-4" />
+                <Sparkles class="h-3 w-3 sm:h-4 sm:w-4" />
                 Start Your Journey Today
               </div>
 
               <h2
-                class="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 leading-tight tracking-tight"
+                class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 md:mb-5 leading-tight tracking-tight"
               >
                 Ready to Transform Your
                 <span
@@ -552,53 +565,53 @@
                 >
               </h2>
 
-              <p class="text-lg text-white mb-6 leading-relaxed">
+              <p class="text-base sm:text-lg md:text-xl text-white/95 mb-5 sm:mb-6 md:mb-8 leading-relaxed">
                 Join thousands of event organizers who trust GoEvent to deliver exceptional
                 experiences. Start your free trial today and see the difference.
               </p>
 
               <!-- Stats -->
-              <div class="grid grid-cols-3 gap-4 lg:gap-6 mb-8">
+              <div class="grid grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-6 sm:mb-7 md:mb-8">
                 <div class="text-center lg:text-left">
                   <div
-                    class="text-lg sm:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white mb-1"
+                    class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1"
                   >
                     10K+
                   </div>
-                  <div class="text-xs sm:text-sm text-white">Events Created</div>
+                  <div class="text-xs sm:text-sm md:text-base text-white/90">Events Created</div>
                 </div>
                 <div class="text-center lg:text-left">
                   <div
-                    class="text-lg sm:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white mb-1"
+                    class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1"
                   >
                     99.9%
                   </div>
-                  <div class="text-xs sm:text-sm text-white">Uptime</div>
+                  <div class="text-xs sm:text-sm md:text-base text-white/90">Uptime</div>
                 </div>
                 <div class="text-center lg:text-left">
                   <div
-                    class="text-lg sm:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white mb-1"
+                    class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1"
                   >
                     24/7
                   </div>
-                  <div class="text-xs sm:text-sm text-white">Support</div>
+                  <div class="text-xs sm:text-sm md:text-base text-white/90">Support</div>
                 </div>
               </div>
 
               <!-- Buttons -->
-              <div class="flex flex-col sm:flex-row gap-4">
+              <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <RouterLink
                   to="/signup"
-                  class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-semibold px-8 py-4 rounded-lg text-base transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-black/10 flex items-center justify-center"
+                  class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-semibold px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-black/10 flex items-center justify-center"
                 >
                   Start Your Free Trial
                   <ArrowRight
-                    class="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                    class="h-4 w-4 sm:h-5 sm:w-5 ml-1.5 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
                   />
                 </RouterLink>
                 <RouterLink
                   to="/contact"
-                  class="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-semibold px-8 py-4 rounded-lg text-base transition-all duration-200 hover:scale-[1.02] flex items-center justify-center"
+                  class="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-semibold px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-200 hover:scale-[1.02] flex items-center justify-center"
                 >
                   Talk to Sales
                 </RouterLink>
@@ -606,7 +619,7 @@
             </div>
 
             <!-- Right side - Visual Element -->
-            <div class="relative lg:pl-8">
+            <div class="relative lg:pl-8 hidden lg:block">
               <div class="relative">
                 <!-- Main feature card -->
                 <div
@@ -627,27 +640,27 @@
                   <!-- Mock analytics -->
                   <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                      <span class="text-slate-600">Active Events</span>
-                      <span class="font-bold text-slate-900">47</span>
+                      <span class="text-sm sm:text-base text-slate-600">Active Events</span>
+                      <span class="text-sm sm:text-base font-bold text-slate-900">47</span>
                     </div>
                     <div class="flex justify-between items-center">
-                      <span class="text-slate-600">Total Attendees</span>
-                      <span class="font-bold text-slate-900">2,847</span>
+                      <span class="text-sm sm:text-base text-slate-600">Total Attendees</span>
+                      <span class="text-sm sm:text-base font-bold text-slate-900">2,847</span>
                     </div>
                     <div class="flex justify-between items-center">
-                      <span class="text-slate-600">Success Rate</span>
-                      <span class="font-bold text-green-600">98.5%</span>
+                      <span class="text-sm sm:text-base text-slate-600">Success Rate</span>
+                      <span class="text-sm sm:text-base font-bold text-green-600">98.5%</span>
                     </div>
 
                     <!-- Progress bar -->
                     <div class="mt-6">
-                      <div class="flex justify-between text-sm mb-2">
+                      <div class="flex justify-between text-xs sm:text-sm mb-2">
                         <span class="text-slate-600">Monthly Goal</span>
                         <span class="text-slate-900 font-medium">87%</span>
                       </div>
-                      <div class="w-full bg-slate-200 rounded-full h-3">
+                      <div class="w-full bg-slate-200 rounded-full h-2.5 sm:h-3">
                         <div
-                          class="bg-gradient-to-r from-[#1e90ff] to-cyan-400 h-3 rounded-full transition-all duration-1000"
+                          class="bg-gradient-to-r from-[#1e90ff] to-cyan-400 h-2.5 sm:h-3 rounded-full transition-all duration-1000"
                           style="width: 87%"
                         ></div>
                       </div>
@@ -978,6 +991,16 @@ const faqs = computed(() => [
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Animation classes */

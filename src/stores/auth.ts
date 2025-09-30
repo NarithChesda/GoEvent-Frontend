@@ -25,6 +25,12 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   const setUser = (userData: User | null) => {
     user.value = userData
+    // Persist user data to storage for consistency across page refreshes
+    if (userData) {
+      authService.setUser(userData)
+    } else {
+      authService.clearUser()
+    }
   }
 
   const setLoading = (loading: boolean) => {
@@ -157,8 +163,12 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (response.success && response.data) {
         // Merge the updated data with existing user data to avoid losing fields
-        const updatedUser = { ...user.value, ...response.data }
+        // The backend response.data should contain the complete updated user object
+        const updatedUser = { ...user.value, ...response.data } as User
+
+        // setUser now handles both reactive state AND storage persistence
         setUser(updatedUser)
+
         return { success: true }
       } else {
         const errorMsg = response.message || 'Failed to update profile'

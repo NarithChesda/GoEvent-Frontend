@@ -1,10 +1,15 @@
 import { apiService, type ApiResponse } from './api'
 import { secureStorage } from '../utils/secureStorage'
+import type { User } from './auth'
 
 export interface UploadResponse {
   url?: string
   profile_picture?: string
   message?: string
+  user?: User
+  id?: number
+  email?: string
+  [key: string]: any // Allow additional user fields
 }
 
 class UploadService {

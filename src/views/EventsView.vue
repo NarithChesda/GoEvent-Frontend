@@ -188,16 +188,16 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16">
+        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16 px-4">
           <div
-            class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
+            class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
           >
-            <Calendar class="w-32 h-32 text-[#5eb3f6]" />
+            <Calendar class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
           </div>
-          <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-4">
+          <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
             {{ getEmptyStateTitle() }}
           </h3>
-          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto">
+          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
             {{ getEmptyStateMessage() }}
           </p>
         </div>

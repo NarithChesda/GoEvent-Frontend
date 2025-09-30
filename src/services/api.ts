@@ -310,10 +310,11 @@ class ApiService {
 
         // Handle 401 specifically for auth token issues
         if (response.status === 401) {
-          // Clear potentially invalid tokens
+          // Clear potentially invalid tokens, but preserve user data
+          // User data should only be cleared during explicit logout
           secureStorage.removeItem('access_token')
           secureStorage.removeItem('refresh_token')
-          secureStorage.removeItem('user')
+          // Don't clear user data here - let the auth service handle it
         }
 
         const message = this.getUserFriendlyErrorMessage(response.status, data)
