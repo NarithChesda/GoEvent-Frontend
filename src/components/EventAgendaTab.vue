@@ -3,27 +3,28 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Agenda</h2>
-        <p class="text-sm text-slate-600 mt-1">Manage your event schedule and agenda items</p>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Agenda</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage your event schedule and agenda items</p>
       </div>
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
       >
-        <Plus class="w-4 h-4 mr-2" />
-        Add Agenda Item
+        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span class="hidden sm:inline">Add Agenda Item</span>
+        <span class="sm:hidden">Add Item</span>
       </button>
     </div>
 
     <!-- Loading State -->
     <div
       v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-3 text-slate-600">Loading agenda...</span>
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading agenda...</span>
       </div>
     </div>
 
@@ -37,23 +38,23 @@
         <!-- Date Header -->
         <div
           @click="toggleDay(day.date)"
-          class="bg-gradient-to-r from-emerald-600/5 to-sky-600/5 p-6 border-b border-white/20 cursor-pointer hover:from-emerald-600/10 hover:to-sky-600/10 transition-all duration-200"
+          class="bg-gradient-to-r from-emerald-600/5 to-sky-600/5 p-4 sm:p-6 border-b border-white/20 cursor-pointer hover:from-emerald-600/10 hover:to-sky-600/10 transition-all duration-200"
         >
           <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3 sm:space-x-4">
               <div
-                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold"
+                class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-sm sm:text-base font-bold"
               >
                 {{ new Date(day.date).getDate() }}
               </div>
               <div>
-                <h3 class="text-xl font-bold text-slate-900">{{ formatDayHeader(day.date) }}</h3>
-                <p class="text-sm text-slate-600">{{ day.items.length }} agenda items</p>
+                <h3 class="text-base sm:text-xl font-bold text-slate-900">{{ formatDayHeader(day.date) }}</h3>
+                <p class="text-xs sm:text-sm text-slate-600">{{ day.items.length }} agenda items</p>
               </div>
             </div>
-            <div class="p-2">
+            <div class="p-1 sm:p-2">
               <ChevronDown
-                class="w-5 h-5 text-slate-600 transition-transform duration-200"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 transition-transform duration-200"
                 :class="{ 'rotate-180': expandedDays.includes(day.date) }"
               />
             </div>
@@ -63,8 +64,8 @@
         <!-- Agenda Items -->
         <Transition name="slide-down">
           <div v-if="expandedDays.includes(day.date)" class="border-t border-white/20">
-            <div class="p-6 pt-4 space-y-3">
-              <div ref="sortableContainer" class="space-y-3" :data-date="day.date">
+            <div class="p-4 sm:p-6 pt-3 sm:pt-4 space-y-2 sm:space-y-3">
+              <div ref="sortableContainer" class="space-y-2 sm:space-y-3" :data-date="day.date">
                 <AgendaItemCard
                   v-for="item in day.items"
                   :key="item.id"
@@ -88,57 +89,57 @@
     <!-- Empty State -->
     <div
       v-else-if="!loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Calendar class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">No Agenda Items Yet</h3>
-      <p class="text-slate-600 mb-6">Start building your event schedule by adding agenda items.</p>
+      <Calendar class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Agenda Items Yet</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Start building your event schedule by adding agenda items.</p>
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
-        <Plus class="w-4 h-4 mr-2" />
+        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
         Add Your First Agenda Item
       </button>
     </div>
 
     <!-- Session Types Info -->
     <div
-      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-6"
+      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-4 sm:p-6"
     >
-      <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <Info class="w-5 h-5 text-[#1e90ff] mr-2" />
+      <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
+        <Info class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
         Session Types
       </h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="bg-white/70 rounded-xl p-3">
-          <div class="flex items-center mb-1">
-            <div class="w-3 h-3 bg-[#E6F4FF]0 rounded-full mr-2"></div>
-            <span class="text-sm font-semibold text-slate-700">Keynote</span>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
+          <div class="flex items-center mb-0.5 sm:mb-1">
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#E6F4FF]0 rounded-full mr-1.5 sm:mr-2"></div>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">Keynote</span>
           </div>
-          <p class="text-xs text-slate-600">Main presentations</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">Main presentations</p>
         </div>
-        <div class="bg-white/70 rounded-xl p-3">
-          <div class="flex items-center mb-1">
-            <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-            <span class="text-sm font-semibold text-slate-700">Workshop</span>
+        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
+          <div class="flex items-center mb-0.5 sm:mb-1">
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-purple-500 rounded-full mr-1.5 sm:mr-2"></div>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">Workshop</span>
           </div>
-          <p class="text-xs text-slate-600">Interactive sessions</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">Interactive sessions</p>
         </div>
-        <div class="bg-white/70 rounded-xl p-3">
-          <div class="flex items-center mb-1">
-            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            <span class="text-sm font-semibold text-slate-700">Break</span>
+        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
+          <div class="flex items-center mb-0.5 sm:mb-1">
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full mr-1.5 sm:mr-2"></div>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">Break</span>
           </div>
-          <p class="text-xs text-slate-600">Rest & networking</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">Rest & networking</p>
         </div>
-        <div class="bg-white/70 rounded-xl p-3">
-          <div class="flex items-center mb-1">
-            <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-            <span class="text-sm font-semibold text-slate-700">Panel</span>
+        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
+          <div class="flex items-center mb-0.5 sm:mb-1">
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-orange-500 rounded-full mr-1.5 sm:mr-2"></div>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">Panel</span>
           </div>
-          <p class="text-xs text-slate-600">Group discussions</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">Group discussions</p>
         </div>
       </div>
     </div>

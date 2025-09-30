@@ -6,24 +6,24 @@
 
         <div class="flex min-h-full items-center justify-center p-4">
           <div
-            class="relative bg-white rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all"
+            class="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-full max-w-md transform transition-all"
             @click.stop
           >
             <div class="text-center">
               <!-- Icon -->
               <div
-                class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4"
               >
-                <Trash2 class="w-8 h-8 text-red-600" />
+                <Trash2 class="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
               </div>
 
               <!-- Title -->
-              <h3 class="text-xl font-bold text-slate-900 mb-2">
+              <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">
                 {{ title }}
               </h3>
 
               <!-- Message -->
-              <p class="text-slate-600 mb-6">
+              <p class="text-sm sm:text-base text-slate-600 mb-4 sm:mb-6">
                 <span v-if="itemName">
                   Are you sure you want to delete "<strong>{{ itemName }}</strong
                   >"?
@@ -32,26 +32,26 @@
                   {{ message }}
                 </span>
                 <br />
-                <span class="text-sm">This action cannot be undone.</span>
+                <span class="text-xs sm:text-sm">This action cannot be undone.</span>
               </p>
 
               <!-- Actions -->
-              <div class="flex space-x-3">
+              <div class="flex gap-2 sm:gap-3">
                 <button
                   @click="handleCancel"
                   :disabled="loading"
-                  class="flex-1 px-6 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50"
+                  class="flex-1 px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg sm:rounded-xl font-medium transition-colors duration-200 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   @click="handleConfirm"
                   :disabled="loading"
-                  class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
+                  class="flex-1 px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg sm:rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 flex items-center justify-center space-x-1.5 sm:space-x-2"
                 >
                   <div
                     v-if="loading"
-                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                    class="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
                   ></div>
                   <span>{{ loading ? 'Deleting...' : 'Delete' }}</span>
                 </button>

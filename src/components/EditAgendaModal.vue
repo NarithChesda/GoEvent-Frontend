@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto">
+      <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto" @click="$emit('close')">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
 
         <div class="flex min-h-full items-center justify-center p-4">
@@ -10,69 +10,69 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Edit2 class="w-5 h-5" />
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Edit2 class="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <h2 class="text-2xl font-bold">Edit Agenda Item</h2>
+                  <h2 class="text-lg sm:text-2xl font-bold">Edit Agenda Item</h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="updateAgendaItem" class="p-8 space-y-6">
-              <div class="space-y-6">
+            <form @submit.prevent="updateAgendaItem" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div class="space-y-4 sm:space-y-5 md:space-y-6">
                 <!-- Basic Information -->
-                <div class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <Calendar class="w-4 h-4 mr-2" />
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <Calendar class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Basic Information
                   </h4>
 
                   <!-- Title -->
                   <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Title <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="formData.title"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="Enter agenda item title"
                     />
                   </div>
 
                   <!-- Description -->
                   <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Description
                     </label>
                     <textarea
                       v-model="formData.description"
                       rows="3"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Describe this agenda item"
                     ></textarea>
                   </div>
 
                   <!-- Agenda Type -->
                   <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Type <span class="text-red-500">*</span>
                     </label>
                     <select
                       v-model="formData.agenda_type"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                     >
                       <option value="session">Session</option>
                       <option value="keynote">Keynote</option>
@@ -86,45 +86,45 @@
                 </div>
 
                 <!-- Schedule Information -->
-                <div class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <Clock class="w-4 h-4 mr-2" />
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Schedule
                   </h4>
 
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                     <!-- Date -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2"> Date </label>
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Date </label>
                       <input
                         v-model="formData.date"
                         type="date"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       />
                     </div>
 
                     <!-- Start Time -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Start Time
                       </label>
                       <input
                         v-model="formData.start_time_text"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., 9:00 AM"
                       />
                     </div>
 
                     <!-- End Time -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         End Time
                       </label>
                       <input
                         v-model="formData.end_time_text"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., 10:00 AM"
                       />
                     </div>
@@ -132,48 +132,48 @@
 
                   <!-- Date Text -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Date Display Text
                     </label>
                     <input
                       v-model="formData.date_text"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="e.g., Day 1 - Monday"
                     />
                   </div>
                 </div>
 
                 <!-- Location & Virtual -->
-                <div class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <MapPin class="w-4 h-4 mr-2" />
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <MapPin class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Location
                   </h4>
 
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <!-- Physical Location -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Physical Location
                       </label>
                       <input
                         v-model="formData.location"
                         type="text"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., Conference Room A"
                       />
                     </div>
 
                     <!-- Virtual Link -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Virtual Link
                       </label>
                       <input
                         v-model="formData.virtual_link"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="https://zoom.us/j/..."
                       />
                     </div>
@@ -181,41 +181,41 @@
 
                   <!-- Speaker -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Speaker(s)
                     </label>
                     <input
                       v-model="formData.speaker"
                       type="text"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="e.g., Dr. Jane Smith, CEO of TechCorp"
                     />
                   </div>
                 </div>
 
                 <!-- Display Options -->
-                <div class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <Palette class="w-4 h-4 mr-2" />
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <Palette class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Display Options
                   </h4>
 
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <!-- Color -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Theme Color
                       </label>
-                      <div class="flex items-center space-x-3">
+                      <div class="flex items-center space-x-2 sm:space-x-3">
                         <input
                           v-model="formData.color"
                           type="color"
-                          class="w-12 h-12 border border-gray-200 rounded-xl cursor-pointer"
+                          class="w-10 h-10 sm:w-12 sm:h-12 border border-gray-200 rounded-xl cursor-pointer"
                         />
                         <input
                           v-model="formData.color"
                           type="text"
-                          class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+                          class="flex-1 px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                           placeholder="#3498db"
                         />
                       </div>
@@ -223,37 +223,37 @@
 
                     <!-- Icon Selection -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2"> Icon </label>
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Icon </label>
                       <button
                         type="button"
                         @click="showIconPicker = true"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between"
                       >
-                        <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-2 sm:space-x-3">
                           <div
                             v-if="getSelectedIcon()"
-                            class="w-8 h-8 flex items-center justify-center"
+                            class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center"
                             v-html="getSelectedIcon()?.svg_code"
                           ></div>
-                          <Sparkles v-else class="w-5 h-5 text-gray-400" />
+                          <Sparkles v-else class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                           <span class="text-slate-700">{{
                             getSelectedIcon()?.name || 'Select an icon'
                           }}</span>
                         </div>
-                        <ChevronDown class="w-4 h-4 text-gray-400" />
+                        <ChevronDown class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
                       </button>
                     </div>
                   </div>
 
                   <!-- Featured Checkbox -->
-                  <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-2 sm:space-x-3">
                     <input
                       v-model="formData.is_featured"
                       type="checkbox"
                       id="is_featured"
-                      class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
+                      class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
                     />
-                    <label for="is_featured" class="text-sm font-medium text-slate-700">
+                    <label for="is_featured" class="text-xs sm:text-sm font-medium text-slate-700">
                       Mark as featured item
                     </label>
                   </div>
@@ -470,23 +470,23 @@
 
               <!-- Action Buttons -->
               <div
-                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200"
+                class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
               >
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+                  class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="loading || !formData.title"
-                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <span
                     v-if="loading"
-                    class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
                   {{ loading ? 'Updating...' : 'Update Agenda Item' }}
                 </button>

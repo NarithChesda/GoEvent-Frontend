@@ -176,26 +176,16 @@
           </div>
         </template>
 
-        <!-- Sign In / Get Started -->
+        <!-- Sign In -->
         <template v-else>
-          <div class="space-y-2">
-            <RouterLink
-              :to="signinLink"
-              class="flex items-center justify-center w-full px-3 py-3 text-center rounded-xl font-semibold text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200"
-              :class="isCollapsed ? 'flex-col space-y-1' : 'space-x-2'"
-            >
-              <User class="flex-shrink-0" :class="isCollapsed ? 'w-6 h-6' : 'w-5 h-5'" />
-              <span :class="isCollapsed ? 'text-xs' : 'text-sm'">Sign In</span>
-            </RouterLink>
-            <RouterLink
-              to="/signup"
-              class="flex items-center justify-center w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-3 rounded-xl font-bold text-center transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30"
-              :class="isCollapsed ? 'flex-col space-y-1' : 'space-x-2'"
-            >
-              <UserPlus class="flex-shrink-0" :class="isCollapsed ? 'w-6 h-6' : 'w-5 h-5'" />
-              <span :class="isCollapsed ? 'text-xs' : 'text-sm'">Get Started</span>
-            </RouterLink>
-          </div>
+          <RouterLink
+            :to="signinLink"
+            class="flex items-center justify-center w-full px-3 py-3 text-center rounded-xl font-semibold text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200"
+            :class="isCollapsed ? 'flex-col space-y-1' : 'space-x-2'"
+          >
+            <User class="flex-shrink-0" :class="isCollapsed ? 'w-6 h-6' : 'w-5 h-5'" />
+            <span :class="isCollapsed ? 'text-xs' : 'text-sm'">Sign In</span>
+          </RouterLink>
         </template>
       </div>
     </aside>
@@ -211,7 +201,6 @@ import {
   Calendar,
   DollarSign,
   User,
-  UserPlus,
   Lock,
   Wallet,
   LogOut,

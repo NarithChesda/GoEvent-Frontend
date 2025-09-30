@@ -11,12 +11,12 @@
       <div class="border-b border-slate-200 pb-6 sm:pb-8">
         <div class="flex items-start justify-between gap-3 sm:gap-4">
           <div class="flex-1 w-full">
-            <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">Event Description</label>
+            <label class="block text-sm sm:text-base font-bold text-slate-900 mb-2 sm:mb-3">Event Description</label>
 
             <div v-if="event.description">
               <div
                 :class="{ 'line-clamp-6': !isDescriptionExpanded && event.description.length > 300 }"
-                class="text-sm sm:text-base text-slate-900 font-medium whitespace-pre-line leading-relaxed"
+                class="text-xs sm:text-sm text-slate-700 whitespace-pre-line leading-relaxed"
               >
                 {{ event.description }}
               </div>
@@ -33,7 +33,7 @@
               </button>
             </div>
 
-            <div v-else class="text-sm sm:text-base text-slate-600 italic">
+            <div v-else class="text-xs sm:text-sm text-slate-600 italic">
               No description available
             </div>
           </div>
@@ -44,9 +44,9 @@
       <div v-if="event.is_virtual && event.virtual_link" class="border-b border-slate-200 pb-6 sm:pb-8">
         <div class="flex flex-col gap-3 sm:gap-4">
           <div class="flex-1 w-full">
-            <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">Virtual Meeting Link</label>
+            <label class="block text-sm sm:text-base font-bold text-slate-900 mb-2 sm:mb-3">Virtual Meeting Link</label>
             <div class="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-300">
-              <p class="text-xs sm:text-sm text-slate-900 font-mono break-all">{{ event.virtual_link }}</p>
+              <p class="text-xs sm:text-sm text-slate-700 font-mono break-all">{{ event.virtual_link }}</p>
             </div>
             <p class="text-xs sm:text-sm text-slate-600 mt-1.5 sm:mt-2">
               {{ event.is_ongoing ? 'Event is live - join now!' : 'Link will be available when the event starts' }}
@@ -66,8 +66,8 @@
 
       <!-- Event Information Grid -->
       <div class="border-b border-slate-200 pb-6 sm:pb-8">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-0.5 sm:mb-1">Event Details</h3>
-        <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Key information about this event</p>
+        <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-2 sm:mb-3">Event Details</h3>
+        <p class="text-xs sm:text-sm text-slate-700 mb-4 sm:mb-6">Key information about this event</p>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           <!-- Category -->
@@ -81,8 +81,8 @@
                 :style="{ backgroundColor: event.category_details.color }"
               ></div>
             </div>
-            <p class="text-xs sm:text-sm font-semibold text-slate-900 mb-0.5 sm:mb-1">{{ event.category_details.name }}</p>
-            <p class="text-[10px] sm:text-xs text-slate-600">Category</p>
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mb-0.5 sm:mb-1">{{ event.category_details.name }}</p>
+            <p class="text-[10px] sm:text-xs text-slate-700">Category</p>
           </div>
 
           <!-- Duration -->
@@ -90,8 +90,8 @@
             <div class="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 rounded-full flex items-center justify-center mb-2 sm:mb-3 shadow-sm">
               <Clock class="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
             </div>
-            <p class="text-xs sm:text-sm font-semibold text-slate-900 mb-0.5 sm:mb-1">{{ getEventDuration() }}</p>
-            <p class="text-[10px] sm:text-xs text-slate-600">Duration</p>
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mb-0.5 sm:mb-1">{{ getEventDuration() }}</p>
+            <p class="text-[10px] sm:text-xs text-slate-700">Duration</p>
           </div>
 
           <!-- Privacy -->
@@ -100,10 +100,10 @@
               <Lock v-if="event.privacy === 'private'" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
               <Users v-else class="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
             </div>
-            <p class="text-xs sm:text-sm font-semibold text-slate-900 mb-0.5 sm:mb-1 capitalize">
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mb-0.5 sm:mb-1 capitalize">
               {{ event.privacy || 'Public' }}
             </p>
-            <p class="text-[10px] sm:text-xs text-slate-600">Visibility</p>
+            <p class="text-[10px] sm:text-xs text-slate-700">Visibility</p>
           </div>
 
           <!-- Format -->
@@ -112,45 +112,45 @@
               <Monitor v-if="event.is_virtual" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
               <MapPin v-else class="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
             </div>
-            <p class="text-xs sm:text-sm font-semibold text-slate-900 mb-0.5 sm:mb-1">
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mb-0.5 sm:mb-1">
               {{ event.is_virtual ? 'Virtual' : 'In-Person' }}
             </p>
-            <p class="text-[10px] sm:text-xs text-slate-600">Format</p>
+            <p class="text-[10px] sm:text-xs text-slate-700">Format</p>
           </div>
         </div>
       </div>
 
       <!-- Additional Information -->
       <div>
-        <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-0.5 sm:mb-1">Additional Information</h3>
-        <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Extra details you should know</p>
+        <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-2 sm:mb-3">Additional Information</h3>
+        <p class="text-xs sm:text-sm text-slate-700 mb-4 sm:mb-6">Extra details you should know</p>
 
         <div class="space-y-3 sm:space-y-4">
           <!-- Timezone -->
           <div v-if="event.timezone" class="flex flex-col sm:flex-row items-start sm:justify-between gap-1.5 sm:gap-2">
             <div class="flex items-center gap-1.5 sm:gap-2">
               <Globe class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 flex-shrink-0" />
-              <span class="text-xs sm:text-sm font-semibold text-slate-700">Event Timezone</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-900">Event Timezone</span>
             </div>
-            <span class="text-sm sm:text-base text-slate-900 font-medium sm:text-right">{{ event.timezone }}</span>
+            <span class="text-xs sm:text-sm text-slate-700 sm:text-right">{{ event.timezone }}</span>
           </div>
 
           <!-- Registration Info -->
           <div v-if="event.registration_required" class="flex flex-col sm:flex-row items-start sm:justify-between gap-1.5 sm:gap-2">
             <div class="flex items-center gap-1.5 sm:gap-2">
               <Users class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 flex-shrink-0" />
-              <span class="text-xs sm:text-sm font-semibold text-slate-700">Registration</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-900">Registration</span>
             </div>
-            <span class="text-sm sm:text-base text-slate-900 font-medium sm:text-right">Required</span>
+            <span class="text-xs sm:text-sm text-slate-700 sm:text-right">Required</span>
           </div>
 
           <!-- Max Attendees -->
           <div v-if="event.max_attendees" class="flex flex-col sm:flex-row items-start sm:justify-between gap-1.5 sm:gap-2">
             <div class="flex items-center gap-1.5 sm:gap-2">
               <Users class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 flex-shrink-0" />
-              <span class="text-xs sm:text-sm font-semibold text-slate-700">Maximum Attendees</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-900">Maximum Attendees</span>
             </div>
-            <span class="text-sm sm:text-base text-slate-900 font-medium sm:text-right">{{ event.max_attendees }} people</span>
+            <span class="text-xs sm:text-sm text-slate-700 sm:text-right">{{ event.max_attendees }} people</span>
           </div>
 
           <!-- No additional info message -->
