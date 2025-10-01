@@ -3,107 +3,111 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Media</h2>
-        <p class="text-sm text-slate-600 mt-1">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Media</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
           Manage all visual content and media for your event
         </p>
       </div>
       <button
         v-if="canEdit && activeSection === 'gallery'"
         @click="openUploadModal"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
       >
-        <Upload class="w-4 h-4 mr-2" />
-        Upload Media
+        <Upload class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span class="hidden sm:inline">Upload Media</span>
+        <span class="sm:hidden">Upload</span>
       </button>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <ImageIcon class="w-5 h-5 text-[#1e90ff]" />
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <ImageIcon class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalPhotos }}</p>
-            <p class="text-sm text-slate-600">Photos</p>
+            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ totalPhotos }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Photos</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Star class="w-5 h-5 text-purple-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
+            <Star class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ featuredCount }}</p>
-            <p class="text-sm text-slate-600">Featured</p>
+            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ featuredCount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Featured</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <Video class="w-5 h-5 text-green-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <Video class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ videosCount }}</p>
-            <p class="text-sm text-slate-600">Videos</p>
+            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ videosCount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Videos</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Layout class="w-5 h-5 text-orange-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
+            <Layout class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ hasBanner ? 1 : 0 }}</p>
-            <p class="text-sm text-slate-600">Banner</p>
+            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ hasBanner ? 1 : 0 }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Banner</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Media Tabs -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-2">
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-1.5 sm:p-2">
       <nav class="flex space-x-1">
         <button
           @click="activeSection = 'basic'"
           :class="[
-            'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
+            'flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200',
             activeSection === 'basic'
               ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
               : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
           ]"
         >
-          Basic Media
+          <span class="hidden sm:inline">Basic Media</span>
+          <span class="sm:hidden">Basic</span>
         </button>
         <button
           @click="activeSection = 'gallery'"
           :class="[
-            'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
+            'flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200',
             activeSection === 'gallery'
               ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
               : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
           ]"
         >
-          Photo Gallery
+          <span class="hidden sm:inline">Photo Gallery</span>
+          <span class="sm:hidden">Gallery</span>
         </button>
         <button
           @click="activeSection = 'embeds'"
           :class="[
-            'flex-1 py-2 px-4 rounded-xl font-medium text-sm transition-all duration-200',
+            'flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200',
             activeSection === 'embeds'
               ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
               : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
           ]"
         >
-          Videos & Maps
+          <span class="hidden sm:inline">Videos & Maps</span>
+          <span class="sm:hidden">Media</span>
         </button>
       </nav>
     </div>
@@ -112,9 +116,11 @@
     <div class="mt-6">
       <!-- Basic Media Section -->
       <div v-if="activeSection === 'basic'">
-        <div v-if="!localEventData && props.eventId" class="flex justify-center items-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
-          <span class="ml-2 text-lg text-slate-600 leading-relaxed">Loading media...</span>
+        <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
+          <div class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+            <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading media...</span>
+          </div>
         </div>
         <BasicMediaSection
           v-else
@@ -129,25 +135,25 @@
         <!-- Loading State -->
         <div
           v-if="loading"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
         >
           <div v-for="i in 8" :key="i" class="animate-pulse">
-            <div class="bg-slate-200 aspect-square rounded-2xl"></div>
-            <div class="mt-3 space-y-2">
-              <div class="h-4 bg-slate-200 rounded w-3/4"></div>
-              <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+            <div class="bg-slate-200 aspect-square rounded-xl sm:rounded-2xl"></div>
+            <div class="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2">
+              <div class="h-3 sm:h-4 bg-slate-200 rounded w-3/4"></div>
+              <div class="h-2.5 sm:h-3 bg-slate-200 rounded w-1/2"></div>
             </div>
           </div>
         </div>
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-8">
-          <div class="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md mx-auto">
-            <AlertCircle class="w-8 h-8 text-red-500 mx-auto mb-2" />
-            <p class="text-lg text-red-600 font-semibold leading-relaxed">{{ error }}</p>
+          <div class="bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 max-w-md mx-auto">
+            <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-500 mx-auto mb-1.5 sm:mb-2" />
+            <p class="text-base sm:text-lg text-red-600 font-semibold leading-relaxed">{{ error }}</p>
             <button
               @click="fetchMedia"
-              class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200"
+              class="mt-3 sm:mt-4 bg-red-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl hover:bg-red-700 transition-colors duration-200 text-sm sm:text-base"
             >
               Try Again
             </button>
@@ -157,28 +163,24 @@
         <!-- Gallery Content -->
         <div v-else class="space-y-6">
           <!-- Empty State -->
-          <div v-if="!Array.isArray(media) || media.length === 0" class="text-center py-12">
-            <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 max-w-md mx-auto">
-              <ImageIcon class="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <h4 class="text-xl font-bold text-slate-900 mb-2 leading-tight tracking-tight">
-                No Photos Yet
-              </h4>
-              <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                Upload photos to showcase your event's atmosphere and venue.
-              </p>
-              <button
-                v-if="canEdit && eventData && props.eventId"
-                @click="openUploadModal"
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 mx-auto"
-              >
-                <Upload class="w-4 h-4" />
-                <span>Upload First Photos</span>
-              </button>
-            </div>
+          <div v-if="!Array.isArray(media) || media.length === 0" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center">
+            <ImageIcon class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+            <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Photos Yet</h3>
+            <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
+              Upload photos to showcase your event's atmosphere and venue.
+            </p>
+            <button
+              v-if="canEdit && eventData && props.eventId"
+              @click="openUploadModal"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
+            >
+              <Upload class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+              Upload First Photos
+            </button>
           </div>
 
           <!-- Media Grid -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             <MediaCard
               v-for="mediaItem in media"
               :key="mediaItem.id"

@@ -3,101 +3,103 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
           Event Attendees
         </h2>
-        <p class="text-sm text-slate-600 mt-1">Manage registrations and check-ins</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage registrations and check-ins</p>
       </div>
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2 sm:space-x-3">
         <!-- Admin Check-in Button -->
         <button
           v-if="canEdit && showAdminCheckin"
           @click="showCheckinModal = true"
-          class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 flex items-center"
+          class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 flex items-center text-sm sm:text-base"
         >
-          <UserCheck class="w-4 h-4 mr-2" />
-          Check-in Attendee
+          <UserCheck class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+          <span class="hidden sm:inline">Check-in Attendee</span>
+          <span class="sm:hidden">Check-in</span>
         </button>
         <!-- Refresh Button -->
         <button
           @click="loadRegistrations"
           class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl p-2 hover:bg-white/90 transition-all duration-200 hover:scale-[1.02] shadow-lg"
         >
-          <RefreshCw class="w-4 h-4 text-slate-600" :class="{ 'animate-spin': loading }" />
+          <RefreshCw class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" :class="{ 'animate-spin': loading }" />
         </button>
       </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <Users class="w-5 h-5 text-[#1e90ff]" />
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalRegistrations }}</p>
-            <p class="text-sm text-slate-600">Total Registered</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ totalRegistrations }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Total Registered</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <UserCheck class="w-5 h-5 text-green-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <UserCheck class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ checkedInCount }}</p>
-            <p class="text-sm text-slate-600">Checked In</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ checkedInCount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Checked In</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <UserPlus class="w-5 h-5 text-purple-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
+            <UserPlus class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ totalAttendees }}</p>
-            <p class="text-sm text-slate-600">Total Attendees</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ totalAttendees }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Total Attendees</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Clock class="w-5 h-5 text-orange-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
+            <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-slate-900">{{ pendingCount }}</p>
-            <p class="text-sm text-slate-600">Pending</p>
+            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ pendingCount }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Pending</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Search and Filter -->
-    <div class="flex flex-col sm:flex-row gap-4">
+    <div class="flex gap-2 sm:gap-4">
       <div class="flex-1">
         <div class="relative">
           <Search
-            class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] pointer-events-none z-10"
           />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Search attendees..."
-            class="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200"
+            class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200 text-sm sm:text-base relative"
           />
         </div>
       </div>
-      <div class="flex gap-2">
+      <div class="flex-shrink-0">
         <select
           v-model="statusFilter"
-          class="px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200"
+          class="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200 text-sm sm:text-base text-slate-700 font-medium cursor-pointer appearance-none bg-no-repeat bg-right pr-8 sm:pr-10"
+          style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%231e90ff%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e'); background-position: right 0.5rem center; background-size: 1.25rem;"
         >
           <option value="">All Status</option>
           <option value="registered">Registered</option>
@@ -110,27 +112,27 @@
     <!-- Loading State -->
     <div
       v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-3 text-slate-600">Loading attendees...</span>
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading attendees...</span>
       </div>
     </div>
 
     <!-- Attendees List -->
-    <div v-else-if="filteredRegistrations.length > 0" class="space-y-4">
+    <div v-else-if="filteredRegistrations.length > 0" class="space-y-3 sm:space-y-4">
       <div
         v-for="registration in filteredRegistrations"
         :key="registration.id"
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
       >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-between gap-3 sm:gap-4">
+          <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
             <!-- Avatar -->
-            <div class="relative">
+            <div class="relative flex-shrink-0">
               <div
-                class="w-14 h-14 bg-gradient-to-br from-emerald-600 to-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                class="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-600 to-sky-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm"
               >
                 {{
                   getInitials(
@@ -141,35 +143,35 @@
               </div>
               <!-- Status Indicator -->
               <div
-                class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center"
+                class="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full border-2 border-white flex items-center justify-center"
                 :class="getStatusBadgeColor(registration.status)"
               >
                 <CheckCircle
                   v-if="registration.status === 'checked_in'"
-                  class="w-3 h-3 text-white"
+                  class="w-2 h-2 sm:w-3 sm:h-3 text-white"
                 />
                 <Clock
                   v-else-if="registration.status === 'registered'"
-                  class="w-3 h-3 text-white"
+                  class="w-2 h-2 sm:w-3 sm:h-3 text-white"
                 />
-                <X v-else class="w-3 h-3 text-white" />
+                <X v-else class="w-2 h-2 sm:w-3 sm:h-3 text-white" />
               </div>
             </div>
 
             <!-- User Info -->
-            <div>
-              <h4 class="font-semibold text-slate-800 text-lg mb-1 leading-snug">
+            <div class="min-w-0 flex-1">
+              <h4 class="font-semibold text-slate-800 text-sm sm:text-lg mb-0.5 leading-tight truncate">
                 {{ registration.user_details?.first_name }}
                 {{ registration.user_details?.last_name }}
               </h4>
-              <p class="text-base text-slate-600 leading-relaxed">
+              <p class="text-xs sm:text-base text-slate-600 leading-tight truncate">
                 @{{ registration.user_details?.username }}
               </p>
-              <div class="flex items-center space-x-4 mt-2">
-                <span v-if="registration.registered_at" class="text-sm text-slate-500">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-1 sm:mt-2 space-y-0.5 sm:space-y-0">
+                <span v-if="registration.registered_at" class="text-xs sm:text-sm text-slate-500">
                   Registered: {{ formatDate(registration.registered_at) }}
                 </span>
-                <span v-if="registration.checked_in_at" class="text-sm text-green-600">
+                <span v-if="registration.checked_in_at" class="text-xs sm:text-sm text-green-600">
                   Checked in: {{ formatDate(registration.checked_in_at) }}
                 </span>
               </div>
@@ -177,20 +179,16 @@
           </div>
 
           <!-- Registration Details -->
-          <div class="text-right space-y-2">
+          <div class="text-right space-y-0.5 sm:space-y-2 flex-shrink-0">
             <!-- Attendee Count -->
-            <div class="text-base font-semibold text-slate-800 leading-tight">
+            <div class="text-xs sm:text-base font-semibold text-slate-800 leading-tight whitespace-nowrap">
               {{ registration.total_attendees }}
               {{ registration.total_attendees === 1 ? 'person' : 'people' }}
-              <span v-if="registration.guest_count > 0" class="text-sm text-slate-500">
-                ({{ registration.guest_count }}
-                {{ registration.guest_count === 1 ? 'guest' : 'guests' }})
-              </span>
             </div>
 
             <!-- Confirmation Code -->
             <div
-              class="text-sm font-mono text-slate-500 tracking-wide bg-slate-100 px-2 py-1 rounded"
+              class="text-xs sm:text-sm font-mono text-slate-500 tracking-wide bg-slate-100 px-2 py-1 rounded inline-block"
             >
               {{ registration.confirmation_code }}
             </div>
@@ -198,7 +196,7 @@
             <!-- Status Badge -->
             <div class="flex justify-end">
               <span
-                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                class="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium"
                 :class="getStatusTextColor(registration.status)"
               >
                 {{ getStatusLabel(registration.status) }}
@@ -206,7 +204,7 @@
             </div>
 
             <!-- Notes -->
-            <div v-if="registration.notes" class="text-sm text-slate-600 italic max-w-xs">
+            <div v-if="registration.notes" class="text-xs sm:text-sm text-slate-600 italic max-w-xs">
               "{{ registration.notes }}"
             </div>
           </div>
@@ -217,13 +215,13 @@
     <!-- Empty State -->
     <div
       v-else-if="!loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">
+      <Users class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">
         {{ searchQuery || statusFilter ? 'No attendees found' : 'No registrations yet' }}
       </h3>
-      <p class="text-slate-600 mb-6">
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
         {{
           searchQuery || statusFilter
             ? 'Try adjusting your search or filter criteria.'
@@ -233,7 +231,7 @@
       <button
         v-if="searchQuery || statusFilter"
         @click="clearFilters"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm sm:text-base"
       >
         Clear Filters
       </button>

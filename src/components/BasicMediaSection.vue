@@ -20,7 +20,7 @@
             @change="handleBannerUpload"
             class="hidden"
           />
-          
+
           <!-- Upload button when no content -->
           <button
             v-if="canEdit && !eventData?.banner_image"
@@ -31,7 +31,7 @@
             <Upload class="w-4 h-4" />
             <span>{{ uploading.banner_image ? 'Uploading...' : 'Upload Banner' }}</span>
           </button>
-          
+
           <!-- Options button when content exists -->
           <div v-else-if="canEdit && eventData?.banner_image" class="relative">
             <button
@@ -41,7 +41,7 @@
             >
               <MoreHorizontal class="w-5 h-5" />
             </button>
-            
+
             <!-- Dropdown menu -->
             <div v-if="showDropdown.banner" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
               <button
@@ -64,7 +64,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-if="eventData?.banner_image" class="relative group">
         <img
           :src="getMediaUrl(eventData.banner_image)"
@@ -98,7 +98,7 @@
               @change="handleLogoOneUpload"
               class="hidden"
             />
-            
+
             <!-- Upload button when no content -->
             <button
               v-if="canEdit && !eventData?.logo_one"
@@ -109,7 +109,7 @@
               <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ uploading.logo_one ? 'Uploading...' : 'Upload' }}</span>
             </button>
-            
+
             <!-- Options button when content exists -->
             <div v-else-if="canEdit && eventData?.logo_one" class="relative">
               <button
@@ -119,7 +119,7 @@
               >
                 <MoreHorizontal class="w-5 h-5" />
               </button>
-              
+
               <!-- Dropdown menu -->
               <div v-if="showDropdown.logoOne" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
                 <button
@@ -142,7 +142,7 @@
             </div>
           </div>
         </div>
-        
+
         <div v-if="eventData?.logo_one" class="relative group">
           <img
             :src="getMediaUrl(eventData.logo_one)"
@@ -174,7 +174,7 @@
               @change="handleLogoTwoUpload"
               class="hidden"
             />
-            
+
             <!-- Upload button when no content -->
             <button
               v-if="canEdit && !eventData?.logo_two"
@@ -185,7 +185,7 @@
               <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ uploading.logo_two ? 'Uploading...' : 'Upload' }}</span>
             </button>
-            
+
             <!-- Options button when content exists -->
             <div v-else-if="canEdit && eventData?.logo_two" class="relative">
               <button
@@ -195,7 +195,7 @@
               >
                 <MoreHorizontal class="w-5 h-5" />
               </button>
-              
+
               <!-- Dropdown menu -->
               <div v-if="showDropdown.logoTwo" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
                 <button
@@ -218,7 +218,7 @@
             </div>
           </div>
         </div>
-        
+
         <div v-if="eventData?.logo_two" class="relative group">
           <img
             :src="getMediaUrl(eventData.logo_two)"
@@ -241,7 +241,7 @@
       <div class="flex items-center justify-between mb-4">
         <div>
           <h5 class="font-semibold text-slate-900">Event Video</h5>
-          <p class="text-sm text-slate-600">Upload a promotional or highlight video (Max 100MB)</p>
+          <p class="text-sm text-slate-600">Upload a promotional or highlight video (Max 10MB)</p>
         </div>
         <div class="relative">
           <input
@@ -251,7 +251,7 @@
             @change="handleVideoUpload"
             class="hidden"
           />
-          
+
           <!-- Upload button when no content -->
           <button
             v-if="canEdit && !eventData?.event_video"
@@ -262,7 +262,7 @@
             <Upload class="w-4 h-4" />
             <span>{{ uploading.event_video ? 'Uploading...' : 'Upload Video' }}</span>
           </button>
-          
+
           <!-- Options button when content exists -->
           <div v-else-if="canEdit && eventData?.event_video" class="relative">
             <button
@@ -272,7 +272,7 @@
             >
               <MoreHorizontal class="w-5 h-5" />
             </button>
-            
+
             <!-- Dropdown menu -->
             <div v-if="showDropdown.video" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
               <button
@@ -295,7 +295,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-if="eventData?.event_video" class="relative group">
         <video
           :src="getMediaUrl(eventData.event_video)"
@@ -320,7 +320,7 @@
       <div class="flex items-center justify-between mb-4">
         <div>
           <h5 class="font-semibold text-slate-900">Event Music</h5>
-          <p class="text-sm text-slate-600">Upload background music or audio content (Max 50MB)</p>
+          <p class="text-sm text-slate-600">Upload background music or audio content (Max 10MB)</p>
         </div>
         <div class="relative">
           <input
@@ -330,7 +330,7 @@
             @change="handleMusicUpload"
             class="hidden"
           />
-          
+
           <!-- Upload button when no content -->
           <button
             v-if="canEdit && !eventData?.music"
@@ -341,7 +341,7 @@
             <Upload class="w-4 h-4" />
             <span>{{ uploading.music ? 'Uploading...' : 'Upload Music' }}</span>
           </button>
-          
+
           <!-- Options button when content exists -->
           <div v-else-if="canEdit && eventData?.music" class="relative">
             <button
@@ -351,7 +351,7 @@
             >
               <MoreHorizontal class="w-5 h-5" />
             </button>
-            
+
             <!-- Dropdown menu -->
             <div v-if="showDropdown.music" @click.stop class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]">
               <button
@@ -374,7 +374,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-if="eventData?.music" class="relative group">
         <audio
           :src="getMediaUrl(eventData.music)"
@@ -486,34 +486,34 @@ const toggleDropdown = (section: keyof typeof showDropdown.value) => {
 // Helper methods
 const getMediaUrl = (mediaUrl: string | null): string | undefined => {
   if (!mediaUrl) return undefined
-  
+
   // If it's already a full URL, return as is
   if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
     return mediaUrl
   }
-  
+
   // If it's a relative URL, prepend the API base URL
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
   if (mediaUrl.startsWith('/')) {
     return `${API_BASE_URL}${mediaUrl}`
   }
-  
+
   // If it doesn't start with /, assume it needs /media/ prefix
   return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
 const validateFile = (file: File, type: 'image' | 'video' | 'audio'): boolean => {
   error.value = null
-  
+
   if (type === 'image') {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     const maxSize = 10 * 1024 * 1024 // 10MB
-    
+
     if (!validTypes.includes(file.type)) {
       error.value = 'Invalid file type. Please upload JPG, PNG, GIF, or WebP images.'
       return false
     }
-    
+
     if (file.size > maxSize) {
       error.value = 'File too large. Maximum size is 10MB.'
       return false
@@ -521,12 +521,12 @@ const validateFile = (file: File, type: 'image' | 'video' | 'audio'): boolean =>
   } else if (type === 'video') {
     const validTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/webm']
     const maxSize = 100 * 1024 * 1024 // 100MB
-    
+
     if (!validTypes.includes(file.type)) {
       error.value = 'Invalid file type. Please upload MP4, MOV, AVI, or WebM videos.'
       return false
     }
-    
+
     if (file.size > maxSize) {
       error.value = 'File too large. Maximum size is 100MB.'
       return false
@@ -534,33 +534,33 @@ const validateFile = (file: File, type: 'image' | 'video' | 'audio'): boolean =>
   } else if (type === 'audio') {
     const validTypes = ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/flac', 'audio/mpeg']
     const maxSize = 50 * 1024 * 1024 // 50MB
-    
+
     if (!validTypes.includes(file.type)) {
       error.value = 'Invalid file type. Please upload MP3, WAV, OGG, AAC, or FLAC audio files.'
       return false
     }
-    
+
     if (file.size > maxSize) {
       error.value = 'File too large. Maximum size is 50MB.'
       return false
     }
   }
-  
+
   return true
 }
 
 const uploadMedia = async (field: string, file: File) => {
   if (!props.eventData?.id) return
-  
+
   uploading.value[field as keyof typeof uploading.value] = true
   error.value = null
-  
+
   try {
     const formData = new FormData()
     formData.append(field, file)
-    
+
     const response = await eventsService.updateEventWithFiles(props.eventData.id, formData)
-    
+
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
@@ -576,15 +576,15 @@ const uploadMedia = async (field: string, file: File) => {
 
 const removeMedia = async (field: string) => {
   if (!props.eventData?.id) return
-  
+
   deleting.value = true
   error.value = null
-  
+
   try {
     const updateData = { [field]: null }
-    
+
     const response = await eventsService.patchEvent(props.eventData.id, updateData)
-    
+
     if (response.success && response.data) {
       emit('updated', response.data)
       showDeleteModal.value = false
@@ -667,7 +667,7 @@ const confirmRemoveLogoOne = () => {
 const confirmRemoveLogoTwo = () => {
   deleteModalData.value = {
     title: 'Delete Secondary Logo',
-    itemName: 'Secondary Logo', 
+    itemName: 'Secondary Logo',
     fieldToDelete: 'logo_two'
   }
   showDeleteModal.value = true

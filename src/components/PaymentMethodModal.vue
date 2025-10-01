@@ -10,59 +10,59 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <CreditCard class="w-5 h-5" />
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <CreditCard class="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <h2 class="text-2xl font-bold">
+                  <h2 class="text-lg sm:text-2xl font-bold">
                     {{ isEditing ? 'Edit Payment Method' : 'Add Payment Method' }}
                   </h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="savePaymentMethod" class="p-8 space-y-6">
-              <div class="space-y-6">
+            <form @submit.prevent="savePaymentMethod" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div class="space-y-4 sm:space-y-5 md:space-y-6">
                 <!-- Basic Information -->
-                <div class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <Info class="w-4 h-4 mr-2" />
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <Info class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Basic Information
                   </h4>
 
                   <!-- Name -->
                   <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Payment Method Name <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="formData.name"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="e.g., Wedding Gift Fund, ABA Bank Account"
                     />
                   </div>
 
                   <!-- Payment Type and Method -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Payment Type <span class="text-red-500">*</span>
                       </label>
                       <select
                         v-model="formData.payment_type"
                         required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       >
                         <option value="">Select payment type</option>
                         <option value="donation">Donation</option>
@@ -72,14 +72,14 @@
                     </div>
 
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Payment Method <span class="text-red-500">*</span>
                       </label>
                       <select
                         v-model="formData.payment_method"
                         required
                         @change="handlePaymentMethodChange"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       >
                         <option value="">Select payment method</option>
                         <option value="bank_transfer">Bank Transfer</option>
@@ -90,14 +90,14 @@
                   </div>
 
                   <!-- Currency and Status -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Currency
                       </label>
                       <select
                         v-model="formData.currency"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       >
                         <option value="USD">USD - US Dollar</option>
                         <option value="KHR">KHR - Cambodian Riel</option>
@@ -109,75 +109,75 @@
                       </select>
                     </div>
 
-                    <div class="flex items-center space-x-4 pt-8">
+                    <div class="flex items-center space-x-3 sm:space-x-4 pt-6 sm:pt-8">
                       <label class="flex items-center">
                         <input
                           v-model="formData.is_active"
                           type="checkbox"
-                          class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
+                          class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
                         />
-                        <span class="ml-2 text-sm font-medium text-slate-700">Active</span>
+                        <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium text-slate-700">Active</span>
                       </label>
                     </div>
                   </div>
 
                   <!-- Description -->
                   <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                       Description
                     </label>
                     <textarea
                       v-model="formData.description"
                       rows="3"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Optional description or instructions for this payment method"
                     ></textarea>
                   </div>
                 </div>
 
                 <!-- Bank Transfer Details - Always show for bank transfer -->
-                <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <Building2 class="w-4 h-4 mr-2" />
+                <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <Building2 class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Bank Transfer Details
                   </h4>
 
-                  <div class="grid grid-cols-1 gap-4">
+                  <div class="grid grid-cols-1 gap-3 sm:gap-4">
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Bank Name <span class="text-red-500">*</span>
                       </label>
                       <input
                         v-model="formData.bank_name"
                         type="text"
                         required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="e.g., ABA Bank, ACLEDA Bank"
                       />
                     </div>
 
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Account Name <span class="text-red-500">*</span>
                       </label>
                       <input
                         v-model="formData.account_name"
                         type="text"
                         required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="Account holder's name"
                       />
                     </div>
 
                     <div>
-                      <label class="block text-sm font-semibold text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                         Account Number <span class="text-red-500">*</span>
                       </label>
                       <input
                         v-model="formData.account_number"
                         type="text"
                         required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="Bank account number"
                       />
                     </div>
@@ -185,28 +185,28 @@
                 </div>
 
                 <!-- Payment Access Methods - Show all together for bank transfer -->
-                <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-4">
-                  <h4 class="font-semibold text-slate-900 flex items-center">
-                    <CreditCard class="w-4 h-4 mr-2" />
+                <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                    <CreditCard class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Payment Access Methods
                   </h4>
-                  <p class="text-sm text-slate-600 mb-4">
+                  <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">
                     Add multiple ways for users to access this bank account
                   </p>
 
                   <!-- QR Code Section -->
-                  <div class="border border-gray-200 rounded-xl p-4">
-                    <h5 class="font-medium text-slate-800 flex items-center mb-3">
-                      <QrCode class="w-4 h-4 mr-2" />
+                  <div class="border border-gray-200 rounded-xl p-3 sm:p-4">
+                    <h5 class="text-sm sm:text-base font-medium text-slate-800 flex items-center mb-2 sm:mb-3">
+                      <QrCode class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                       QR Code for Bank Transfer
                     </h5>
 
-                    <div class="space-y-4">
+                    <div class="space-y-3 sm:space-y-4">
                       <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                           QR Code Image (Optional)
                         </label>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                           <input
                             ref="qrCodeInput"
                             type="file"
@@ -217,16 +217,16 @@
                           <button
                             type="button"
                             @click="($refs.qrCodeInput as HTMLInputElement)?.click()"
-                            class="px-4 py-2 bg-[#1e90ff] text-white rounded-xl hover:bg-[#1873cc] transition-colors duration-200 flex items-center space-x-2"
+                            class="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-[#1e90ff] text-white rounded-xl hover:bg-[#1873cc] transition-colors duration-200 flex items-center space-x-1.5 sm:space-x-2"
                           >
-                            <Upload class="w-4 h-4" />
+                            <Upload class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span>{{ qrCodeFile ? 'Change QR Code' : 'Upload QR Code' }}</span>
                           </button>
-                          <span v-if="qrCodeFile" class="text-sm text-slate-600">
+                          <span v-if="qrCodeFile" class="text-xs sm:text-sm text-slate-600 truncate">
                             {{ qrCodeFile.name }}
                           </span>
                         </div>
-                        <p class="text-xs text-slate-500 mt-1">
+                        <p class="text-[10px] sm:text-xs text-slate-500 mt-1">
                           Upload a bank QR code for easy scanning (JPG, PNG, or GIF). Max size: 10MB
                         </p>
                       </div>
@@ -234,38 +234,38 @@
                       <!-- Preview -->
                       <div
                         v-if="qrCodePreview || (isEditing && existingPaymentMethod?.qr_code_image)"
-                        class="mt-4"
+                        class="mt-3 sm:mt-4"
                       >
-                        <label class="block text-sm font-medium text-slate-700 mb-2"
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2"
                           >QR Code Preview:</label
                         >
                         <img
                           :src="qrCodePreview || getMediaUrl(existingPaymentMethod?.qr_code_image)"
                           alt="QR Code Preview"
-                          class="w-48 h-48 object-contain border border-gray-200 rounded-xl bg-white"
+                          class="w-40 h-40 sm:w-48 sm:h-48 object-contain border border-gray-200 rounded-lg sm:rounded-xl bg-white"
                         />
                       </div>
                     </div>
                   </div>
 
                   <!-- Payment URL Section -->
-                  <div class="border border-gray-200 rounded-xl p-4">
-                    <h5 class="font-medium text-slate-800 flex items-center mb-3">
-                      <Link class="w-4 h-4 mr-2" />
+                  <div class="border border-gray-200 rounded-xl p-3 sm:p-4">
+                    <h5 class="text-sm sm:text-base font-medium text-slate-800 flex items-center mb-2 sm:mb-3">
+                      <Link class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                       Online Payment Link
                     </h5>
 
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                      <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                         Payment URL (Optional)
                       </label>
                       <input
                         v-model="formData.payment_url"
                         type="url"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                         placeholder="https://example.com/payment-link"
                       />
-                      <p class="text-xs text-slate-500 mt-1">
+                      <p class="text-[10px] sm:text-xs text-slate-500 mt-1">
                         Online banking or payment gateway link (must be HTTPS)
                       </p>
                     </div>
@@ -273,18 +273,18 @@
                 </div>
 
                 <!-- Simplified options for other payment methods -->
-                <div v-if="formData.payment_method === 'qr_code'" class="space-y-4">
-                  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <p class="text-amber-800 text-sm">
+                <div v-if="formData.payment_method === 'qr_code'" class="space-y-3 sm:space-y-4">
+                  <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
+                    <p class="text-amber-800 text-xs sm:text-sm">
                       <strong>Note:</strong> For bank transfer QR codes, please select "Bank
                       Transfer" as the payment method above.
                     </p>
                   </div>
                 </div>
 
-                <div v-if="formData.payment_method === 'payment_url'" class="space-y-4">
-                  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <p class="text-amber-800 text-sm">
+                <div v-if="formData.payment_method === 'payment_url'" class="space-y-3 sm:space-y-4">
+                  <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
+                    <p class="text-amber-800 text-xs sm:text-sm">
                       <strong>Note:</strong> For online banking links, please select "Bank Transfer"
                       as the payment method above.
                     </p>
@@ -293,32 +293,32 @@
               </div>
 
               <!-- Error Display -->
-              <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4">
                 <div class="flex items-center space-x-2">
-                  <AlertCircle class="w-5 h-5 text-red-500" />
-                  <p class="text-red-600 font-medium">{{ error }}</p>
+                  <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                  <p class="text-xs sm:text-sm text-red-600 font-medium">{{ error }}</p>
                 </div>
               </div>
 
               <!-- Action Buttons -->
               <div
-                class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200"
+                class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
               >
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+                  class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="loading || !isFormValid"
-                  class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 >
                   <span
                     v-if="loading"
-                    class="w-5 h-5 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
                   {{
                     loading
