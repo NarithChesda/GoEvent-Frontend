@@ -3,10 +3,10 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
           Event Invitations
         </h2>
-        <p class="text-sm text-slate-600 mt-1">Manage invitations and track your guest list</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage invitations and track your guest list</p>
       </div>
     </div>
 
@@ -14,81 +14,86 @@
     <SocialMediaPreview :event-data="event" />
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <Send class="w-5 h-5 text-[#1e90ff]" />
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
+            <Send class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
           </div>
           <div>
-            <p v-if="loadingStats" class="text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-2xl font-bold text-slate-900">{{ sentInvitations }}</p>
-            <p class="text-sm text-slate-600">Sent</p>
+            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ sentInvitations }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Sent</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle class="w-5 h-5 text-green-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
           </div>
           <div>
-            <p v-if="loadingStats" class="text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-2xl font-bold text-slate-900">{{ acceptedInvitations }}</p>
-            <p class="text-sm text-slate-600">Viewed</p>
+            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ acceptedInvitations }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Viewed</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Clock class="w-5 h-5 text-orange-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
+            <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
           </div>
           <div>
-            <p v-if="loadingStats" class="text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-2xl font-bold text-slate-900">{{ pendingInvitations }}</p>
-            <p class="text-sm text-slate-600">Not Sent</p>
+            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ pendingInvitations }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Not Sent</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Users class="w-5 h-5 text-purple-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
+            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
           </div>
           <div>
-            <p v-if="loadingStats" class="text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-2xl font-bold text-slate-900">{{ totalGuests }}</p>
-            <p class="text-sm text-slate-600">Total Guests</p>
+            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ totalGuests }}</p>
+            <p class="text-xs sm:text-sm text-slate-600">Total Guests</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loadingPayments" class="text-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto mb-2"></div>
-      <p class="text-slate-600">Checking template status...</p>
+    <div
+      v-if="loadingPayments"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
+    >
+      <div class="flex items-center justify-center">
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Checking template status...</span>
+      </div>
     </div>
 
     <!-- No Template Selected -->
     <div
       v-else-if="!props.event?.event_template"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Mail class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">No Template Selected</h3>
-      <p class="text-slate-600 mb-6 max-w-md mx-auto">
+      <Mail class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Template Selected</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
         You need to select an event template before you can send invitations.
       </p>
       <button
         @click="redirectToTemplateTab"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm sm:text-base"
       >
-        <Mail class="w-4 h-4 mr-2" />
+        <Mail class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
         Select Template
       </button>
     </div>
@@ -96,19 +101,19 @@
     <!-- Template Payment Check -->
     <div
       v-else-if="!hasTemplatePayment"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Lock class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">Template Payment Required</h3>
-      <p class="text-slate-600 mb-6 max-w-md mx-auto">
+      <Lock class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Template Payment Required</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
         Your template "{{ props.event.event_template_details?.name || 'Selected Template' }}"
         requires payment before you can send invitations.
       </p>
       <button
         @click="redirectToPaymentTab"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm sm:text-base"
       >
-        <CreditCard class="w-4 h-4 mr-2" />
+        <CreditCard class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
         Complete Payment
       </button>
     </div>
@@ -116,49 +121,52 @@
     <!-- Invitation Management Section -->
     <div v-else class="space-y-6">
       <!-- Guest List Management -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-bold text-slate-900 flex items-center">
-            <Users class="w-5 h-5 text-[#1e90ff] mr-2" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
             Guest List
           </h3>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2 w-full sm:w-auto">
             <button
               @click="viewEventShowcase"
-              class="bg-white/80 backdrop-blur-sm border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center"
+              class="bg-white/80 backdrop-blur-sm border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
             >
-              <ExternalLink class="w-4 h-4 mr-2" />
+              <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               <span class="hidden sm:inline">View Showcase</span>
+              <span class="sm:hidden">Showcase</span>
             </button>
             <button
               @click="sendInvitations"
-              class="bg-white/80 backdrop-blur-sm border-2 border-[#1e90ff] text-[#1e90ff] hover:bg-[#E6F4FF] font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center"
+              class="bg-white/80 backdrop-blur-sm border-2 border-[#1e90ff] text-[#1e90ff] hover:bg-[#E6F4FF] font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
             >
-              <Send class="w-4 h-4 mr-2" />
+              <Send class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               <span class="hidden sm:inline">Bulk Send</span>
+              <span class="sm:hidden">Send All</span>
             </button>
             <button
               @click="showAddGuestModal = true"
-              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
             >
-              <UserPlus class="w-4 h-4 mr-2" />
-              Add Guest
+              <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+              <span class="hidden sm:inline">Add Guest</span>
+              <span class="sm:hidden">Add</span>
             </button>
           </div>
         </div>
 
         <!-- Search Bar -->
-        <div class="mb-4">
+        <div class="mb-3 sm:mb-4">
           <div class="relative">
             <input
               v-model="searchTerm"
               @input="handleSearch"
               type="text"
               placeholder="Search guests by name..."
-              class="w-full px-4 py-2 pl-10 rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
+              class="w-full px-3 sm:px-4 py-2 pl-9 sm:pl-10 rounded-lg sm:rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-sm sm:text-base text-slate-900 placeholder-slate-400"
             />
             <svg
-              class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"
+              class="absolute left-2.5 sm:left-3 top-2.5 w-4 h-4 sm:w-5 sm:h-5 text-slate-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -174,20 +182,21 @@
         </div>
 
         <!-- Guest List Table -->
-        <div v-if="loading" class="text-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
-          <p class="text-slate-600 mt-2">Loading guest list...</p>
+        <div v-if="loading" class="text-center py-6 sm:py-8">
+          <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
+          <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading guest list...</p>
         </div>
 
-        <div v-else-if="guests.length === 0" class="text-center py-12">
-          <Users class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p class="text-slate-500">No guests added yet</p>
-          <p class="text-sm text-slate-400 mt-1">
+        <div v-else-if="guests.length === 0" class="text-center py-8 sm:py-12">
+          <Users class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
+          <p class="text-sm sm:text-base text-slate-500">No guests added yet</p>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
             Click "Add Guest" to start building your guest list
           </p>
         </div>
 
-        <div v-else class="overflow-hidden rounded-2xl">
+        <!-- Desktop Table View -->
+        <div v-else class="hidden md:block overflow-hidden rounded-2xl">
           <table class="min-w-full">
             <thead>
               <tr class="bg-slate-50/50">
@@ -288,6 +297,83 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Card View -->
+        <div v-if="!loading && guests.length > 0" class="md:hidden space-y-2">
+          <div
+            v-for="guest in guests"
+            :key="guest.id"
+            class="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <!-- Single Row Layout -->
+            <div class="flex items-center gap-2">
+              <!-- Avatar -->
+              <div
+                class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
+              >
+                {{ getInitials(guest.name) }}
+              </div>
+
+              <!-- Guest Info -->
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-900 truncate leading-tight">{{ guest.name }}</p>
+                <p class="text-[10px] text-slate-500 truncate">{{ formatDate(guest.created_at) }}</p>
+              </div>
+
+              <!-- Status Badge -->
+              <span
+                class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0"
+                :class="getStatusClass(guest.invitation_status)"
+              >
+                <span
+                  class="w-1 h-1 rounded-full mr-1"
+                  :class="getStatusDotClass(guest.invitation_status)"
+                ></span>
+                <span class="hidden xs:inline">{{ getStatusDisplay(guest) }}</span>
+              </span>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <button
+                  v-if="guest.invitation_status === 'not_sent'"
+                  @click="sendIndividualInvitation(guest)"
+                  class="p-1.5 text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors"
+                  title="Mark as Sent"
+                >
+                  <Send class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  @click="viewGuestShowcase(guest)"
+                  class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                  title="View personalized showcase"
+                >
+                  <ExternalLink class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  @click="copyShowcaseLink(guest)"
+                  class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                  :title="`Copy sharing link for ${guest.name}`"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  @click="removeGuest(guest)"
+                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Remove Guest"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -296,35 +382,35 @@
       <Transition name="modal">
         <div
           v-if="showAddGuestModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           @click="closeAddGuestModal"
         >
           <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-4 sm:px-8 sm:py-6 text-white">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <UserPlus class="w-5 h-5" />
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <UserPlus class="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <h2 class="text-2xl font-bold">Add Guest</h2>
+                  <h2 class="text-xl sm:text-2xl font-bold">Add Guest</h2>
                 </div>
                 <button
                   @click="closeAddGuestModal"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
 
             <!-- Content -->
-            <form @submit.prevent="addGuest" class="p-8">
-              <div class="mb-6">
-                <label for="guestName" class="block text-sm font-medium text-slate-700 mb-2">
+            <form @submit.prevent="addGuest" class="p-4 sm:p-8">
+              <div class="mb-4 sm:mb-6">
+                <label for="guestName" class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                   Guest Name <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -333,26 +419,26 @@
                   type="text"
                   required
                   placeholder="Enter guest's full name"
-                  class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-slate-900 placeholder-slate-400"
+                  class="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-sm sm:text-base text-slate-900 placeholder-slate-400"
                 />
               </div>
 
-              <div class="flex space-x-3">
+              <div class="flex space-x-2 sm:space-x-3">
                 <button
                   type="button"
                   @click="closeAddGuestModal"
-                  class="flex-1 px-4 py-3 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold"
+                  class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="!newGuestName.trim() || isAddingGuest"
-                  class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+                  class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm sm:text-base"
                 >
-                  <span v-if="isAddingGuest" class="inline-flex items-center">
+                  <span v-if="isAddingGuest" class="inline-flex items-center justify-center">
                     <div
-                      class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                      class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"
                     ></div>
                     Adding...
                   </span>
@@ -367,14 +453,14 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-4 sm:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-50">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
+          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
         >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
+          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <span class="flex-1">{{ message.text }}</span>
         </div>
       </div>
     </Transition>

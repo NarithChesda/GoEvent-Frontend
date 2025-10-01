@@ -9,21 +9,23 @@
 
     <div class="space-y-6">
       <!-- Platform Selector -->
-      <div class="flex space-x-2 bg-slate-100 rounded-xl p-1">
-        <button
-          v-for="platform in platforms"
-          :key="platform.id"
-          @click="selectedPlatform = platform.id"
-          :class="[
-            'flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2',
-            selectedPlatform === platform.id
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:bg-white/50',
-          ]"
-        >
-          <component :is="platform.icon" class="w-4 h-4" />
-          <span>{{ platform.name }}</span>
-        </button>
+      <div class="overflow-x-auto scrollbar-hide">
+        <div class="flex space-x-2 bg-slate-100 rounded-xl p-1 min-w-max sm:min-w-0">
+          <button
+            v-for="platform in platforms"
+            :key="platform.id"
+            @click="selectedPlatform = platform.id"
+            :class="[
+              'flex-shrink-0 sm:flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-1.5 sm:space-x-2',
+              selectedPlatform === platform.id
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:bg-white/50',
+            ]"
+          >
+            <component :is="platform.icon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span class="whitespace-nowrap text-xs sm:text-sm">{{ platform.name }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Showcase URL Display -->
@@ -213,22 +215,24 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row gap-3">
+      <div class="flex gap-2 sm:gap-3">
         <a
           :href="directShowcaseUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2"
+          class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-1.5 sm:space-x-2 text-sm sm:text-base"
         >
-          <ExternalLink class="w-4 h-4" />
-          <span>Open Showcase</span>
+          <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+          <span class="hidden sm:inline">Open Showcase</span>
+          <span class="sm:hidden">Open</span>
         </a>
         <button
           @click="shareOnPlatform"
-          class="flex-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+          class="flex-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-1.5 sm:space-x-2 text-sm sm:text-base"
         >
-          <Share2 class="w-4 h-4" />
-          <span>Share on {{ platforms.find((p) => p.id === selectedPlatform)?.name }}</span>
+          <Share2 class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+          <span class="hidden sm:inline">Share on {{ platforms.find((p) => p.id === selectedPlatform)?.name }}</span>
+          <span class="sm:hidden">Share</span>
         </button>
       </div>
     </div>
@@ -386,5 +390,14 @@ const shareOnPlatform = () => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>
