@@ -351,7 +351,20 @@ const loadEvents = async (page = 1) => {
       if (myEventsResponse.success && myEventsResponse.data) {
         const organized = myEventsResponse.data.organized || []
         const collaborated = myEventsResponse.data.collaborated || []
-        const allMyEvents = [...organized, ...collaborated]
+        let allMyEvents = [...organized, ...collaborated]
+
+        // Apply client-side search filtering if search is present
+        if (filters.value.search) {
+          const searchTerm = filters.value.search.toLowerCase()
+          allMyEvents = allMyEvents.filter(event =>
+            event.title?.toLowerCase().includes(searchTerm) ||
+            event.description?.toLowerCase().includes(searchTerm) ||
+            event.location?.toLowerCase().includes(searchTerm) ||
+            event.category_name?.toLowerCase().includes(searchTerm) ||
+            event.organizer_name?.toLowerCase().includes(searchTerm) ||
+            event.short_description?.toLowerCase().includes(searchTerm)
+          )
+        }
 
         // Create a mock pagination response to match expected structure
         response = {
@@ -374,7 +387,20 @@ const loadEvents = async (page = 1) => {
       const registeredResponse = await eventsService.getMyRegisteredEvents(requestParams)
       if (registeredResponse.success && registeredResponse.data) {
         // The API returns an array directly, not a paginated response
-        const registeredEvents = registeredResponse.data || []
+        let registeredEvents = registeredResponse.data || []
+
+        // Apply client-side search filtering if search is present
+        if (filters.value.search) {
+          const searchTerm = filters.value.search.toLowerCase()
+          registeredEvents = registeredEvents.filter(event =>
+            event.title?.toLowerCase().includes(searchTerm) ||
+            event.description?.toLowerCase().includes(searchTerm) ||
+            event.location?.toLowerCase().includes(searchTerm) ||
+            event.category_name?.toLowerCase().includes(searchTerm) ||
+            event.organizer_name?.toLowerCase().includes(searchTerm) ||
+            event.short_description?.toLowerCase().includes(searchTerm)
+          )
+        }
 
         // Create a mock pagination response to match expected structure
         response = {
