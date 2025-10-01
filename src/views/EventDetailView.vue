@@ -238,7 +238,7 @@
       </div>
 
       <!-- Floating Edit Button -->
-      <div v-if="event?.can_edit" class="fixed bottom-8 right-8 z-40" @click.stop>
+      <div v-if="event?.can_edit" class="fixed bottom-28 lg:bottom-8 right-6 z-[60]" @click.stop>
         <button
           @click="toggleActionMenu"
           class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
@@ -599,7 +599,7 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 // Click outside handler for dropdown
 const handleClickOutside = (clickEvent: MouseEvent) => {
   const target = clickEvent.target as Element
-  const menuContainer = document.querySelector('.fixed.bottom-8.right-8')
+  const menuContainer = document.querySelector('[class*="fixed"][class*="bottom-"][class*="right-"]')
 
   if (showActionMenu.value && menuContainer && !menuContainer.contains(target)) {
     closeActionMenu()
