@@ -120,33 +120,30 @@
             </span>
           </div>
 
-          <!-- Mobile horizontal scroll, Desktop grid -->
-          <div class="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
-            <!-- Mobile: Horizontal scrolling container -->
-            <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-              <EventCard
-                v-for="event in safeEvents"
-                :key="`mobile-${event.id}`"
-                :event="event"
-                @click="viewEvent(event)"
-                @edit="editEvent"
-                @delete="deleteEvent"
-                class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
-              />
-            </div>
+          <!-- Mobile: Horizontal scrolling container -->
+          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+            <EventCard
+              v-for="event in safeEvents"
+              :key="`mobile-${event.id}`"
+              :event="event"
+              @click="viewEvent(event)"
+              @edit="editEvent"
+              @delete="deleteEvent"
+              class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
+            />
+          </div>
 
-            <!-- Desktop: Grid layout -->
-            <template v-if="safeEvents.length > 0">
-              <EventCard
-                v-for="event in safeEvents"
-                :key="`desktop-${event.id}`"
-                :event="event"
-                @click="viewEvent(event)"
-                @edit="editEvent"
-                @delete="deleteEvent"
-                class="cursor-pointer hidden md:block"
-              />
-            </template>
+          <!-- Desktop: Grid layout -->
+          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
+            <EventCard
+              v-for="event in safeEvents"
+              :key="`desktop-${event.id}`"
+              :event="event"
+              @click="viewEvent(event)"
+              @edit="editEvent"
+              @delete="deleteEvent"
+              class="cursor-pointer"
+            />
           </div>
 
           <!-- Pagination -->
@@ -351,7 +348,16 @@ const loadEvents = async (page = 1) => {
       if (myEventsResponse.success && myEventsResponse.data) {
         const organized = myEventsResponse.data.organized || []
         const collaborated = myEventsResponse.data.collaborated || []
-        let allMyEvents = [...organized, ...collaborated]
+
+        // Deduplicate events (user might be both organizer and collaborator)
+        const eventMap = new Map<string, Event>()
+        organized.forEach(event => eventMap.set(event.id, event))
+        collaborated.forEach(event => {
+          if (!eventMap.has(event.id)) {
+            eventMap.set(event.id, event)
+          }
+        })
+        let allMyEvents = Array.from(eventMap.values())
 
         // Apply client-side search filtering if search is present
         if (filters.value.search) {
