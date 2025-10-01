@@ -1,6 +1,6 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 pb-20 lg:pb-0">
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
       <!-- Commission Settings Content -->
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <CommissionTab />

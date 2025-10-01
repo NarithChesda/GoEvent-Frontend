@@ -1,6 +1,6 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen pb-20 lg:pb-0">
+    <div class="min-h-screen">
 
     <!-- Hero Section -->
     <section
