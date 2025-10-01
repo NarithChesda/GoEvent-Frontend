@@ -3,12 +3,12 @@
     <!-- Desktop Sidebar Only -->
     <aside
       :class="[
-        'hidden lg:flex fixed top-0 left-0 h-full bg-white border-r border-slate-200 shadow-xl z-50 transition-all duration-300 ease-in-out flex-col',
+        'hidden lg:flex fixed top-0 left-0 h-full bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 border-r border-slate-200 shadow-xl z-50 transition-all duration-300 ease-in-out flex-col',
         isCollapsed ? 'w-24' : 'w-64'
       ]"
     >
       <!-- Logo Section -->
-      <div class="flex items-center justify-between h-20 px-4 border-b border-slate-200">
+      <div class="flex items-center justify-between h-20 px-4">
         <button
           @click="handleLogoClick"
           class="flex items-center space-x-3 group"
@@ -89,7 +89,7 @@
       </nav>
 
       <!-- User Section -->
-      <div class="border-t border-slate-200 p-4">
+      <div class="p-4">
         <!-- Authenticated User -->
         <template v-if="authStore.isAuthenticated">
           <div ref="userMenuRef" class="relative">
