@@ -238,6 +238,17 @@
       @close="showCreateModal = false"
       @submit="handleEventCreate"
     />
+
+    <!-- Delete Confirm Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteModal"
+      :loading="isDeleting"
+      title="Delete Event"
+      :item-name="eventToDelete?.title"
+      message="This will permanently delete this event and all associated data including guests, media, and agenda items."
+      @confirm="handleDeleteConfirm"
+      @cancel="closeDeleteModal"
+    />
     </div>
   </MainLayout>
 </template>
@@ -259,6 +270,7 @@ import MainLayout from '../components/MainLayout.vue'
 import EventCard from '../components/EventCard.vue'
 import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
+import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
 import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
@@ -281,6 +293,9 @@ const loading = ref(false)
 const filters = ref<EventFiltersType>({})
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const eventToDelete = ref<Event | null>(null)
 
 // Pagination
 const pagination = reactive({
@@ -540,24 +555,37 @@ const editEvent = (event: Event) => {
   router.push(`/events/${event.id}/edit`)
 }
 
-const deleteEvent = async (event: Event) => {
-  if (!confirm(`Are you sure you want to delete "${event.title}"?`)) {
-    return
-  }
+const deleteEvent = (event: Event) => {
+  eventToDelete.value = event
+  showDeleteModal.value = true
+}
 
+const handleDeleteConfirm = async () => {
+  if (!eventToDelete.value) return
+
+  isDeleting.value = true
   try {
-    const response = await eventsService.deleteEvent(event.id)
+    const response = await eventsService.deleteEvent(eventToDelete.value.id)
     if (response.success) {
       showMessage('success', 'Event deleted successfully')
+      closeDeleteModal()
       // Reload current page events
       loadEvents(pagination.currentPage)
     } else {
       showMessage('error', response.message || 'Failed to delete event')
+      isDeleting.value = false
     }
   } catch (error) {
     console.error('Error deleting event:', error)
     showMessage('error', 'An error occurred while deleting the event')
+    isDeleting.value = false
   }
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  eventToDelete.value = null
+  isDeleting.value = false
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
