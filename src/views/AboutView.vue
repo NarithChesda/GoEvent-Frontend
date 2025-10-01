@@ -242,30 +242,30 @@
     <!-- Mission & Vision -->
     <section
       ref="missionSection"
-      class="py-24 bg-white relative overflow-hidden scroll-animate"
+      class="py-12 sm:py-16 md:py-20 lg:py-24 bg-white relative overflow-hidden scroll-animate"
       :class="{ 'animate-fade-in-up': isVisible.mission }"
     >
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Section Header -->
-        <div class="text-center mb-12 sm:mb-16">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Target class="w-4 h-4" />
+            <Target class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Purpose
           </div>
           <h2
-            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Mission &
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
@@ -273,7 +273,7 @@
             >
           </h2>
           <p
-            class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4"
+            class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4"
           >
             The driving forces behind everything we do at GoEvent
           </p>
@@ -361,32 +361,32 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="py-16 relative overflow-hidden stats-bg">
+    <section class="py-12 sm:py-16 md:py-20 relative overflow-hidden stats-bg">
       <!-- Background elements -->
       <div class="absolute inset-0">
         <div
-          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
+          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
         ></div>
-        <div class="absolute bottom-0 right-0 w-72 h-72 bg-[#E6F4FF]0/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-56 sm:w-72 h-56 sm:h-72 bg-[#E6F4FF]0/10 rounded-full blur-3xl"></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-12 sm:mb-16">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <BarChart3 class="h-4 w-4" />
+            <BarChart3 class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Impact
           </div>
           <h2
-            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             GoEvent by the
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
               >Numbers</span
             >
           </h2>
-          <p class="text-base sm:text-lg lg:text-xl text-slate-300 px-4">
+          <p class="text-base sm:text-lg md:text-xl text-slate-300 px-4 max-w-3xl mx-auto">
             Our impact on the event management industry
           </p>
         </div>
@@ -496,23 +496,23 @@
     <!-- Team Section -->
     <section
       ref="teamSection"
-      class="py-16 relative overflow-hidden scroll-animate team-bg"
+      class="py-12 sm:py-16 md:py-20 relative overflow-hidden scroll-animate team-bg"
       :class="{ 'animate-fade-in-up': isVisible.team }"
     >
       <!-- Background decoration -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-[#5eb3f6]/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
+      <div class="absolute top-0 right-0 w-72 sm:w-96 h-72 sm:h-96 bg-[#5eb3f6]/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 w-64 sm:w-80 h-64 sm:h-80 bg-white/40 rounded-full blur-3xl"></div>
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-12 sm:mb-16 lg:mb-20">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16 lg:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Users class="w-4 h-4" />
+            <Users class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Amazing Team
           </div>
           <h2
-            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Meet the
             <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
@@ -520,7 +520,7 @@
             >
           </h2>
           <p
-            class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4"
+            class="text-base sm:text-lg md:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4"
           >
             Passionate professionals dedicated to transforming event management and creating
             exceptional experiences
@@ -672,33 +672,33 @@
     </section>
 
     <!-- Join Us CTA -->
-    <section class="py-20 lg:py-32 bg-white relative overflow-hidden">
+    <section class="py-12 sm:py-16 md:py-20 lg:py-32 bg-white relative overflow-hidden">
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <!-- Subtle gradient orbs -->
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div
-          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
+          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
         >
           <div class="text-center max-w-4xl mx-auto">
             <div
-              class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6"
+              class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-4 sm:mb-6"
             >
-              <Users class="w-4 h-4" />
+              <Users class="h-3 w-3 sm:h-4 sm:w-4" />
               Join Our Team
             </div>
 
             <h2
-              class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight"
+              class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight"
             >
               Be Part of the
               <span
@@ -709,7 +709,7 @@
             </h2>
 
             <p
-              class="text-base sm:text-lg lg:text-xl text-[#B0E0E6] mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
+              class="text-base sm:text-lg md:text-xl text-[#B0E0E6] mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
             >
               We're always looking for talented individuals who share our passion for innovation and
               creating exceptional user experiences. Be part of the team that's transforming the
