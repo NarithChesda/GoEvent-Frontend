@@ -649,4 +649,13 @@ onMounted(() => {
   margin-top: 0.2em;
   margin-bottom: 0.2em;
 }
+
+/* Compact Khmer text for agenda card header (collapsed state only) */
+.agenda-card-header .khmer-text-fix {
+  line-height: 1.4 !important;
+  padding-top: 0.1em !important;
+  padding-bottom: 0.1em !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
 </style>
