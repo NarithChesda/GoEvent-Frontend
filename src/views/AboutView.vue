@@ -413,19 +413,19 @@
     <!-- Values -->
     <section
       ref="valuesSection"
-      class="py-16 scroll-animate features-bg"
+      class="py-12 sm:py-16 md:py-20 scroll-animate features-bg"
       :class="{ 'animate-fade-in-up': isVisible.values }"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
+        <div class="text-center mb-12 sm:mb-16 md:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Star class="w-4 h-4" />
+            <Star class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Core Values
           </div>
           <h2
-            class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             What Drives Us to
             <span
@@ -434,17 +434,17 @@
               Succeed</span
             >
           </h2>
-          <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
             These core principles guide everything we do and shape our company culture, driving us
             to create exceptional experiences.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           <div
             v-for="(value, index) in values"
             :key="value.title"
-            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+            class="group relative bg-white rounded-xl border border-slate-200 p-6 sm:p-7 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
             :class="index === 1 ? 'md:scale-105 md:z-10 border-[#B0E0E6]' : ''"
           >
             <!-- Top accent bar -->
@@ -454,31 +454,31 @@
 
             <div class="relative">
               <!-- Icon with design guide styling -->
-              <div class="relative mb-6">
+              <div class="relative mb-4 sm:mb-5 md:mb-6">
                 <div
-                  class="w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                   :class="value.bgColor"
                 >
                   <component
                     :is="value.icon"
-                    class="w-8 h-8 transition-all duration-300"
+                    class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 transition-all duration-300"
                     :class="value.iconColor"
                   />
                 </div>
                 <!-- Floating accent -->
                 <div
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
+                  class="absolute -top-1.5 sm:-top-2 -right-1.5 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
                 ></div>
               </div>
 
               <!-- Content with design guide typography -->
-              <div class="space-y-4">
+              <div class="space-y-3 sm:space-y-3.5 md:space-y-4">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-lg sm:text-xl md:text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ value.title }}
                 </h3>
-                <p class="text-base text-slate-700 leading-relaxed">
+                <p class="text-sm sm:text-base md:text-base text-slate-700 leading-relaxed">
                   {{ value.description }}
                 </p>
               </div>
