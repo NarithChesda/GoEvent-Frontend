@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 
 // Shared state for sidebar
-const isCollapsed = ref(false)
+const isCollapsed = ref(true)
 const isMobileMenuOpen = ref(false)
 
 export function useSidebar() {

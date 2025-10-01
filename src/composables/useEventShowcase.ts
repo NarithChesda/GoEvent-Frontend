@@ -665,22 +665,22 @@ export function useEventShowcase() {
         showcaseData.value = data
       }
 
-      // Load custom fonts for the new language asynchronously
+      // Load custom fonts for the new language and await completion
       const langFonts = templateFonts.value.filter((f) => f.language === newLanguage)
 
-      fontManager
-        .loadCustomFonts(langFonts, {
+      try {
+        await fontManager.loadCustomFonts(langFonts, {
           display: 'swap',
           timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
           retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
         })
-        .catch((fontError) => {
-          // Log font loading issues but don't block the content update
-          console.warn(
-            'Font loading failed during language change, falling back to system fonts:',
-            fontError,
-          )
-        })
+      } catch (fontError) {
+        // Log font loading issues but don't block the content update
+        console.warn(
+          'Font loading failed during language change, falling back to system fonts:',
+          fontError,
+        )
+      }
 
       // Clear language change flags after successful content update
       setTimeout(() => {

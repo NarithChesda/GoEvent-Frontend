@@ -69,7 +69,6 @@
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
-                    v-memo="[hosts, event.logo_one, currentLanguage]"
                     :hosts="hosts"
                     :logo-url="event.logo_one ? getMediaUrl(event.logo_one) : undefined"
                     :event-initial="event.title?.charAt(0) || 'E'"
@@ -93,7 +92,6 @@
                   class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
                 >
                   <EventInfo
-                    v-memo="[descriptionText, dateText, timeText, locationText, currentLanguage]"
                     :description-title="descriptionTitle"
                     :description-text="descriptionText"
                     :date-text="dateText"
@@ -106,6 +104,7 @@
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
+                    :current-language="currentLanguage"
                     @open-map="$emit('openMap')"
                   />
 
@@ -146,7 +145,6 @@
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
                   <AgendaSection
-                    v-memo="[agendaItems, currentLanguage]"
                     :agenda-items="agendaItems"
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor"

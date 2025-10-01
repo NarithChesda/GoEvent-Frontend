@@ -5,7 +5,10 @@
       <!-- Description Title -->
       <div v-if="descriptionTitle">
         <h2
-          class="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase khmer-text-fix"
+          :class="[
+            'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase',
+            currentLanguage === 'kh' && 'khmer-text-fix',
+          ]"
           :style="{
             fontFamily: primaryFont || currentFont,
             background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -21,7 +24,10 @@
       <!-- Description Text -->
       <div v-if="descriptionText">
         <p
-          class="text-xs px-4 sm:text-sm md:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 khmer-text-fix"
+          :class="[
+            'text-xs px-4 sm:text-sm md:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90',
+            currentLanguage === 'kh' && 'khmer-text-fix',
+          ]"
           :style="{
             fontFamily: secondaryFont || currentFont,
             color: primaryColor,
@@ -54,7 +60,7 @@
           <!-- Date Text -->
           <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
             <span
-              class="khmer-text-fix text-white"
+              :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{
                 fontFamily: secondaryFont || currentFont,
               }"
@@ -66,7 +72,7 @@
           <!-- Time Text -->
           <div class="text-sm sm:text-base font-medium leading-snug" v-if="timeText">
             <span
-              class="khmer-text-fix text-white"
+              :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{
                 fontFamily: secondaryFont || currentFont,
               }"
@@ -78,7 +84,7 @@
           <!-- Location Text -->
           <div class="text-sm sm:text-base font-medium leading-snug" v-if="locationText">
             <span
-              class="khmer-text-fix text-white"
+              :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{
                 fontFamily: secondaryFont || currentFont,
               }"
@@ -109,6 +115,7 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  currentLanguage?: string
 }
 
 const props = defineProps<Props>()
