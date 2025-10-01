@@ -20,10 +20,11 @@
             type="url"
             :disabled="!canEdit"
             placeholder="https://www.youtube.com/embed/VIDEO_ID"
+            @paste="handleYouTubePaste"
             class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
           <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-            Get this from YouTube → Share → Embed, then copy the src URL
+            Paste the full iframe code or just the src URL from YouTube → Share → Embed
           </p>
         </div>
 
@@ -66,10 +67,11 @@
             type="url"
             :disabled="!canEdit"
             placeholder="https://www.google.com/maps/embed?pb=..."
+            @paste="handleMapsPaste"
             class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
           <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-            Get this from Google Maps → Share → Embed a map, then copy the src URL
+            Paste the full iframe code or just the src URL from Google Maps → Share → Embed a map
           </p>
         </div>
 
@@ -147,6 +149,11 @@ import { ref, computed, watch } from 'vue'
 import { Youtube, MapPin, X, Save, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import {
+  extractYouTubeEmbedUrl,
+  extractGoogleMapsEmbedUrl,
+  detectEmbedType,
+} from '../utils/embedExtractor'
 
 interface Props {
   eventData?: Event
@@ -308,6 +315,34 @@ const validateGoogleMapsUrl = (url: string): boolean => {
   // Updated pattern to allow any query parameters after /embed
   const mapsEmbedPattern = /^https:\/\/www\.google\.com\/maps\/embed(\?.*)?$/
   return mapsEmbedPattern.test(url)
+}
+
+// Handle paste events for YouTube iframe
+const handleYouTubePaste = (event: ClipboardEvent) => {
+  const pastedText = event.clipboardData?.getData('text')
+  if (!pastedText) return
+
+  // Try to extract YouTube URL from iframe code
+  const extractedUrl = extractYouTubeEmbedUrl(pastedText)
+
+  if (extractedUrl) {
+    event.preventDefault()
+    formData.value.youtube_embed_link = extractedUrl
+  }
+}
+
+// Handle paste events for Google Maps iframe
+const handleMapsPaste = (event: ClipboardEvent) => {
+  const pastedText = event.clipboardData?.getData('text')
+  if (!pastedText) return
+
+  // Try to extract Google Maps URL from iframe code
+  const extractedUrl = extractGoogleMapsEmbedUrl(pastedText)
+
+  if (extractedUrl) {
+    event.preventDefault()
+    formData.value.google_map_embed_link = extractedUrl
+  }
 }
 
 // Watch for URL validation
