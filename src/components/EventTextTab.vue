@@ -3,33 +3,34 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
           Event Text Content
         </h2>
-        <p class="text-sm text-slate-600 mt-1">Manage multi-language text content for your event</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage multi-language text content for your event</p>
       </div>
       <button
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
       >
-        <Plus class="w-4 h-4 mr-2" />
-        Add Text Content
+        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span class="hidden sm:inline">Add Text Content</span>
+        <span class="sm:hidden">Add Text</span>
       </button>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
-      <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <FileText class="w-5 h-5 text-[#1e90ff] mr-2" />
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+      <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
+        <FileText class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
         Content Filters
       </h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <div class="flex flex-col space-y-1.5">
-          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</label>
+          <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</label>
           <select
             v-model="filters.textType"
             @change="applyFilters"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
+            class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Types</option>
             <option value="cover_header">Cover Header</option>
@@ -46,13 +47,13 @@
         </div>
 
         <div class="flex flex-col space-y-1.5">
-          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+          <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide"
             >Language</label
           >
           <select
             v-model="filters.language"
             @change="applyFilters"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
+            class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Languages</option>
             <option value="en">English</option>
@@ -67,11 +68,11 @@
         </div>
 
         <div class="flex flex-col space-y-1.5">
-          <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
+          <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
           <select
             v-model="filters.isActive"
             @change="applyFilters"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-sm bg-white/70 backdrop-blur-sm"
+            class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm"
           >
             <option value="">All Statuses</option>
             <option value="true">Active</option>
@@ -84,23 +85,23 @@
     <!-- Loading State -->
     <div
       v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-3 text-slate-600">Loading text content...</span>
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading text content...</span>
       </div>
     </div>
 
     <!-- Error State -->
     <div
       v-else-if="error"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8 text-center"
     >
-      <div class="text-lg text-red-600 font-semibold mb-4">{{ error }}</div>
+      <div class="text-base sm:text-lg text-red-600 font-semibold mb-3 sm:mb-4">{{ error }}</div>
       <button
         @click="fetchTexts"
-        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-red-500/25"
+        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-red-500/25 text-sm sm:text-base"
       >
         Try again
       </button>
@@ -109,13 +110,13 @@
     <!-- Empty State -->
     <div
       v-else-if="filteredTexts.length === 0"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <FileText class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">
+      <FileText class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">
         {{ allTexts.length === 0 ? 'No Text Content Yet' : 'No Matching Text Content' }}
       </h3>
-      <p class="text-slate-600 mb-6">
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
         {{
           allTexts.length === 0
             ? 'Start building your event content by adding your first text content.'
@@ -125,32 +126,32 @@
       <button
         v-if="allTexts.length === 0"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
-        <Plus class="w-4 h-4 mr-2" />
+        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
         Add Your First Text Content
       </button>
     </div>
 
     <!-- Text Content List -->
-    <div v-else class="space-y-6">
+    <div v-else class="space-y-4 sm:space-y-6">
       <!-- Group by text type -->
       <div
         v-for="(group, textType) in groupedTexts"
         :key="textType"
         class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
-        <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-white/20">
-          <h3 class="text-lg font-bold text-slate-900 flex items-center">
-            <component :is="getTextTypeIcon(textType)" class="w-5 h-5 mr-2 text-[#1e90ff]" />
+        <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 sm:px-6 py-3 sm:py-4 border-b border-white/20">
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+            <component :is="getTextTypeIcon(textType)" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[#1e90ff]" />
             {{ getTextTypeLabel(textType) }}
-            <span class="ml-2 text-sm text-slate-500"
+            <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-500"
               >({{ group.length }} item{{ group.length !== 1 ? 's' : '' }})</span
             >
           </h3>
         </div>
 
-        <div class="p-6 space-y-4">
+        <div class="p-4 sm:p-6 space-y-3 sm:space-y-4">
           <EventTextCard
             v-for="text in group"
             :key="text.id"
