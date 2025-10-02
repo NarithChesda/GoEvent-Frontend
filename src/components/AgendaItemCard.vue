@@ -13,18 +13,18 @@
       canEdit && draggable ? 'hover:scale-[1.01] hover:-translate-y-0.5' : '',
     ]"
   >
-    <!-- Drag Handle -->
+    <!-- Drag Handle (Hidden on mobile) -->
     <div
       v-if="canEdit"
-      class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing p-1.5 rounded-lg bg-white/90 hover:bg-white shadow-sm"
+      class="hidden sm:block absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing p-1.5 rounded-lg bg-white/90 hover:bg-white shadow-sm"
     >
       <GripVertical class="w-3 h-3 text-slate-400" />
     </div>
 
     <!-- Modern Minimalist Horizontal Layout -->
-    <div class="flex items-center gap-4 p-4">
-      <!-- Icon Section -->
-      <div class="flex-shrink-0">
+    <div class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+      <!-- Icon Section (Hidden on mobile) -->
+      <div class="hidden sm:block flex-shrink-0">
         <div
           v-if="item.icon"
           class="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -37,11 +37,11 @@
       </div>
 
       <!-- Time Section -->
-      <div class="flex-shrink-0 text-center min-w-[60px]">
-        <div class="text-sm font-semibold text-slate-900">
+      <div class="flex-shrink-0 text-left sm:text-center w-16 sm:w-auto sm:min-w-[60px]">
+        <div class="text-xs sm:text-sm font-semibold text-slate-900">
           {{ item.start_time_text || 'TBD' }}
         </div>
-        <div v-if="item.end_time_text" class="text-xs text-slate-500">
+        <div v-if="item.end_time_text" class="text-[10px] sm:text-xs text-slate-500">
           {{ item.end_time_text }}
         </div>
       </div>
@@ -49,16 +49,16 @@
       <!-- Main Content -->
       <div class="flex-1 min-w-0">
         <!-- Title Row -->
-        <div class="flex items-center gap-2 mb-1">
-          <h3 class="text-sm font-semibold text-slate-900 truncate">
+        <div class="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+          <h3 class="text-xs sm:text-sm font-semibold text-slate-900 truncate">
             {{ item.title }}
           </h3>
           <Star
             v-if="item.is_featured"
-            class="w-4 h-4 text-yellow-500 fill-yellow-500 flex-shrink-0"
+            class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500 fill-yellow-500 flex-shrink-0"
           />
           <div
-            class="px-2 py-0.5 rounded text-xs font-medium flex-shrink-0"
+            class="hidden sm:block px-2 py-0.5 rounded text-xs font-medium flex-shrink-0"
             :style="{
               backgroundColor: (item.color || '#8B5CF6') + '10',
               color: item.color || '#8B5CF6',
@@ -69,7 +69,7 @@
         </div>
 
         <!-- Details Row -->
-        <div class="flex items-center gap-4 text-xs text-slate-600">
+        <div class="hidden sm:flex items-center gap-4 text-xs text-slate-600">
           <!-- Speaker -->
           <div v-if="item.speaker" class="flex items-center gap-1.5">
             <div
@@ -107,21 +107,21 @@
       <!-- Action Buttons -->
       <div
         v-if="canEdit"
-        class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        class="flex-shrink-0 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
       >
         <button
           @click.stop="$emit('edit', item)"
-          class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors"
+          class="p-1 sm:p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors"
           title="Edit"
         >
-          <Edit2 class="w-3.5 h-3.5" />
+          <Edit2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
         <button
           @click.stop="$emit('delete', item)"
-          class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          class="p-1 sm:p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
           title="Delete"
         >
-          <Trash2 class="w-3.5 h-3.5" />
+          <Trash2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
       </div>
     </div>

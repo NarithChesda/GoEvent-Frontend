@@ -310,10 +310,11 @@ class ApiService {
 
         // Handle 401 specifically for auth token issues
         if (response.status === 401) {
-          // Clear potentially invalid tokens
+          // Clear potentially invalid tokens, but preserve user data
+          // User data should only be cleared during explicit logout
           secureStorage.removeItem('access_token')
           secureStorage.removeItem('refresh_token')
-          secureStorage.removeItem('user')
+          // Don't clear user data here - let the auth service handle it
         }
 
         const message = this.getUserFriendlyErrorMessage(response.status, data)
@@ -1208,6 +1209,67 @@ export const mediaService = {
       })
 
       return apiService['handleResponse']<EventPhoto>(response)
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Network error while uploading media',
+      }
+    }
+  },
+
+  // Bulk upload multiple photos (up to 50 per request)
+  async bulkUploadEventMedia(
+    eventId: string,
+    files: File[],
+    options?: { captions?: string[] },
+  ): Promise<
+    ApiResponse<{
+      status: string
+      count: number
+      photos: EventPhoto[]
+    }>
+  > {
+    const formData = new FormData()
+
+    // Append all images
+    files.forEach((file) => {
+      formData.append('images', file)
+    })
+
+    // Append captions if provided
+    if (options?.captions && options.captions.length > 0) {
+      options.captions.forEach((caption) => {
+        formData.append('captions', caption)
+      })
+    }
+
+    try {
+      const response = await fetch(
+        `${apiService['baseURL']}/api/events/${eventId}/photos/bulk-upload/`,
+        {
+          method: 'POST',
+          headers: {
+            ...apiService['getAuthHeaders'](),
+          },
+          body: formData,
+        },
+      )
+
+      const result = await apiService['handleResponse']<{
+        status: string
+        count: number
+        photos: EventPhoto[]
+      }>(response)
+
+      // Convert relative image URLs to full URLs
+      if (result.success && result.data?.photos) {
+        result.data.photos = result.data.photos.map((photo) => ({
+          ...photo,
+          image: apiService.getProfilePictureUrl(photo.image) || photo.image,
+        }))
+      }
+
+      return result
     } catch (error) {
       return {
         success: false,

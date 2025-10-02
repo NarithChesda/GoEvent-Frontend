@@ -1,40 +1,41 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-4 sm:mb-6">
       <div>
-        <h5 class="font-semibold text-slate-900 flex items-center">
-          <CreditCard class="w-5 h-5 mr-2" />
+        <h5 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center">
+          <CreditCard class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
           Payment Methods
         </h5>
-        <p class="text-sm text-slate-600 mt-1">
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
           Manage payment options for gifts, donations, and sponsorships
         </p>
       </div>
       <button
         v-if="canEdit"
         @click="showAddModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-1.5 sm:space-x-2 text-sm sm:text-base"
       >
-        <Plus class="w-4 h-4" />
-        <span>Add Payment Method</span>
+        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        <span class="hidden sm:inline">Add Payment Method</span>
+        <span class="sm:hidden">Add</span>
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
+    <div v-if="loading" class="flex justify-center py-6 sm:py-8">
+      <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-3 sm:mb-4">
       <div class="flex items-center space-x-2">
-        <AlertCircle class="w-5 h-5 text-red-500" />
+        <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
         <div class="flex-1">
-          <p class="text-red-600 font-medium">{{ error }}</p>
+          <p class="text-xs sm:text-sm text-red-600 font-medium">{{ error }}</p>
           <button
             @click="loadPaymentMethods"
-            class="text-red-600 text-sm hover:text-red-700 underline mt-1"
+            class="text-red-600 text-xs sm:text-sm hover:text-red-700 underline mt-1"
           >
             Try again
           </button>
@@ -43,22 +44,22 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="paymentMethods.length === 0" class="text-center py-12">
+    <div v-else-if="paymentMethods.length === 0" class="text-center py-8 sm:py-12">
       <div
-        class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+        class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4"
       >
-        <CreditCard class="w-8 h-8 text-slate-400" />
+        <CreditCard class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
       </div>
-      <h3 class="text-lg font-medium text-slate-900 mb-2">No Payment Methods</h3>
-      <p class="text-slate-600 mb-4">
+      <h3 class="text-base sm:text-lg font-medium text-slate-900 mb-1.5 sm:mb-2">No Payment Methods</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4 px-4">
         Add payment methods to allow guests to send gifts or make donations
       </p>
       <button
         v-if="canEdit"
         @click="showAddModal = true"
-        class="inline-flex items-center space-x-2 bg-[#1e90ff] text-white px-4 py-2 rounded-xl hover:bg-[#1873cc] transition-colors duration-200"
+        class="inline-flex items-center space-x-1.5 sm:space-x-2 bg-[#1e90ff] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-xl hover:bg-[#1873cc] transition-colors duration-200 text-sm sm:text-base"
       >
-        <Plus class="w-4 h-4" />
+        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         <span>Add First Payment Method</span>
       </button>
     </div>
@@ -66,7 +67,7 @@
     <!-- Payment Methods List -->
     <div v-else>
       <!-- Sortable Payment Methods -->
-      <div class="space-y-4" @dragover.prevent @drop="handleDrop">
+      <div class="space-y-3 sm:space-y-4" @dragover.prevent @drop="handleDrop">
         <div
           v-for="(paymentMethod, index) in paymentMethods"
           :key="paymentMethod.id"
@@ -74,7 +75,7 @@
           @dragstart="handleDragStart($event, paymentMethod, index)"
           @dragend="handleDragEnd"
           @dragover="handleDragOver($event, index)"
-          class="payment-method-card bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-all duration-200"
+          class="payment-method-card bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-all duration-200"
           :class="{
             'cursor-grab': canEdit,
             'cursor-grabbing': isDragging,
@@ -85,47 +86,47 @@
           <div class="flex items-center justify-between">
             <!-- Payment Method Info -->
             <div class="flex-1">
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- Drag Handle -->
                 <div v-if="canEdit" class="flex items-center text-gray-400 hover:text-gray-600">
-                  <GripVertical class="w-4 h-4" />
+                  <GripVertical class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
 
                 <!-- Payment Method Icon -->
                 <div
-                  class="w-10 h-10 rounded-full flex items-center justify-center"
+                  class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
                   :class="getPaymentMethodIconBg(paymentMethod.payment_method)"
                 >
                   <component
                     :is="getPaymentMethodIcon(paymentMethod.payment_method)"
-                    class="w-5 h-5"
+                    class="w-4 h-4 sm:w-5 sm:h-5"
                     :class="getPaymentMethodIconColor(paymentMethod.payment_method)"
                   />
                 </div>
 
                 <!-- Payment Method Details -->
-                <div class="flex-1">
-                  <div class="flex items-center space-x-2">
-                    <h6 class="font-medium text-slate-900">{{ paymentMethod.name }}</h6>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-1.5 sm:space-x-2 flex-wrap">
+                    <h6 class="text-sm sm:text-base font-medium text-slate-900 truncate">{{ paymentMethod.name }}</h6>
                     <span
-                      class="px-2 py-1 rounded-full text-xs font-medium"
+                      class="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap"
                       :class="getPaymentTypeStyle(paymentMethod.payment_type)"
                     >
                       {{ formatPaymentType(paymentMethod.payment_type) }}
                     </span>
                     <span
                       v-if="!paymentMethod.is_active"
-                      class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium"
+                      class="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap"
                     >
                       Inactive
                     </span>
                   </div>
 
-                  <div class="text-sm text-slate-600 mt-1">
+                  <div class="text-xs sm:text-sm text-slate-600 mt-1">
                     <span class="font-medium">{{
                       formatPaymentMethod(paymentMethod.payment_method)
                     }}</span>
-                    <span v-if="paymentMethod.currency" class="ml-2"
+                    <span v-if="paymentMethod.currency" class="ml-1 sm:ml-2"
                       >• {{ paymentMethod.currency }}</span
                     >
                   </div>
@@ -133,55 +134,55 @@
                   <!-- Method-specific details -->
                   <div
                     v-if="paymentMethod.payment_method === 'bank_transfer'"
-                    class="space-y-1 mt-2"
+                    class="space-y-1 mt-1.5 sm:mt-2"
                   >
-                    <div class="text-xs text-slate-600">
+                    <div class="text-[10px] sm:text-xs text-slate-600">
                       <span class="font-medium">Bank:</span> {{ paymentMethod.bank_name }}
                     </div>
-                    <div class="text-xs text-slate-600">
+                    <div class="text-[10px] sm:text-xs text-slate-600">
                       <span class="font-medium">Account:</span> {{ paymentMethod.account_name }} -
                       {{ paymentMethod.account_number }}
                     </div>
 
                     <!-- Access Methods -->
-                    <div class="flex flex-wrap gap-2 mt-2">
+                    <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
                       <span
                         v-if="paymentMethod.qr_code_image"
-                        class="inline-flex items-center px-2 py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-xs"
+                        class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-[10px] sm:text-xs"
                       >
-                        <QrCode class="w-3 h-3 mr-1" />
+                        <QrCode class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
                         QR Code Available
                       </span>
                       <span
                         v-if="paymentMethod.payment_url"
-                        class="inline-flex items-center px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs"
+                        class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] sm:text-xs"
                       >
-                        <Link class="w-3 h-3 mr-1" />
+                        <Link class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
                         Online Payment
                       </span>
                       <span
                         v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
-                        class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs"
+                        class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 bg-gray-50 text-gray-600 rounded-lg text-[10px] sm:text-xs"
                       >
-                        <Building2 class="w-3 h-3 mr-1" />
+                        <Building2 class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
                         Manual Transfer Only
                       </span>
                     </div>
                   </div>
                   <div
                     v-else-if="paymentMethod.payment_method === 'payment_url'"
-                    class="text-xs text-slate-500 mt-1"
+                    class="text-[10px] sm:text-xs text-slate-500 mt-1 truncate"
                   >
                     {{ paymentMethod.payment_url }}
                   </div>
                   <div
                     v-else-if="paymentMethod.payment_method === 'qr_code'"
-                    class="text-xs text-slate-500 mt-1"
+                    class="text-[10px] sm:text-xs text-slate-500 mt-1"
                   >
                     QR Code Payment
                   </div>
 
-                  <p v-if="paymentMethod.description" class="text-sm text-slate-600 mt-2">
+                  <p v-if="paymentMethod.description" class="text-xs sm:text-sm text-slate-600 mt-1.5 sm:mt-2">
                     {{ paymentMethod.description }}
                   </p>
                 </div>
@@ -189,7 +190,7 @@
             </div>
 
             <!-- Actions -->
-            <div v-if="canEdit" class="flex items-center space-x-2 ml-4">
+            <div v-if="canEdit" class="flex items-center space-x-1 sm:space-x-2 ml-2 sm:ml-4">
               <!-- QR Code Preview - Show for bank transfer with QR or standalone QR code -->
               <button
                 v-if="
@@ -198,10 +199,10 @@
                   paymentMethod.qr_code_image
                 "
                 @click="showQRPreview(paymentMethod)"
-                class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
+                class="text-slate-400 hover:text-[#1e90ff] p-1.5 sm:p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
                 title="View QR Code"
               >
-                <QrCode class="w-4 h-4" />
+                <QrCode class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
 
               <!-- Payment URL - Show external link for bank transfer with URL -->
@@ -209,29 +210,29 @@
                 v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
                 :href="paymentMethod.payment_url"
                 target="_blank"
-                class="text-slate-400 hover:text-purple-600 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
+                class="text-slate-400 hover:text-purple-600 p-1.5 sm:p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
                 title="Open Payment Link"
                 @click.stop
               >
-                <ExternalLink class="w-4 h-4" />
+                <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </a>
 
               <!-- Edit Button -->
               <button
                 @click="editPaymentMethod(paymentMethod)"
-                class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
+                class="text-slate-400 hover:text-[#1e90ff] p-1.5 sm:p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
                 title="Edit"
               >
-                <Edit class="w-4 h-4" />
+                <Edit class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
 
               <!-- Delete Button -->
               <button
                 @click="confirmDeletePaymentMethod(paymentMethod)"
-                class="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                class="text-slate-400 hover:text-red-600 p-1.5 sm:p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
                 title="Delete"
               >
-                <Trash2 class="w-4 h-4" />
+                <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
@@ -258,16 +259,16 @@
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full" @click.stop>
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-slate-900">
+            <div class="relative bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full" @click.stop>
+              <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 class="text-base sm:text-lg font-semibold text-slate-900">
                   {{ previewingPaymentMethod?.name }}
                 </h3>
                 <button
                   @click="showQRModal = false"
                   class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
                 >
-                  <X class="w-5 h-5" />
+                  <X class="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
               <div class="text-center">
@@ -275,7 +276,7 @@
                   v-if="previewingPaymentMethod?.qr_code_image"
                   :src="getMediaUrl(previewingPaymentMethod.qr_code_image)"
                   :alt="previewingPaymentMethod.name + ' QR Code'"
-                  class="w-full max-w-sm mx-auto rounded-xl border border-gray-200"
+                  class="w-full max-w-sm mx-auto rounded-lg sm:rounded-xl border border-gray-200"
                 />
               </div>
             </div>

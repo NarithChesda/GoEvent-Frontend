@@ -6,7 +6,10 @@
     <!-- Welcome Header -->
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
-        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase gradient-text"
+        :class="[
+          'leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 uppercase gradient-text',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
         :style="{
           fontFamily: primaryFont || currentFont,
           '--gradient-start': primaryColor,
@@ -55,7 +58,10 @@
                 </div>
                 <div>
                   <h3
-                    class="font-semibold text-sm sm:text-base"
+                    :class="[
+                      'font-semibold text-sm sm:text-base',
+                      currentLanguage === 'kh' && 'khmer-text-fix',
+                    ]"
                     :style="{
                       color: primaryColor,
                       fontFamily: primaryFont || currentFont,
@@ -64,7 +70,7 @@
                     {{ formatAgendaDate(date) }}
                   </h3>
                   <div
-                    class="activity-count"
+                    :class="['activity-count', currentLanguage === 'kh' && 'khmer-text-fix']"
                     :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
                   >
                     <span
@@ -106,7 +112,10 @@
                 <!-- First agenda description at top center -->
                 <div v-if="getFirstAgendaDescription(date)" class="text-center mb-3 px-2">
                   <h4
-                    class="font-semibold text-sm sm:text-base"
+                    :class="[
+                      'font-semibold text-sm sm:text-base',
+                      currentLanguage === 'kh' && 'khmer-text-fix',
+                    ]"
                     :style="{
                       color: primaryColor,
                       fontFamily: primaryFont || currentFont,
@@ -630,5 +639,23 @@ onMounted(() => {
   90% {
     transform: translate3d(0, -2px, 0);
   }
+}
+
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* Compact Khmer text for agenda card header (collapsed state only) */
+.agenda-card-header .khmer-text-fix {
+  line-height: 1.4 !important;
+  padding-top: 0.1em !important;
+  padding-bottom: 0.1em !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 </style>

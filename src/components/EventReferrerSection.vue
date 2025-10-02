@@ -88,27 +88,29 @@
           <p v-if="error" class="text-xs text-red-600 mt-1">{{ error }}</p>
         </div>
 
-        <div class="flex space-x-3">
+        <div class="flex space-x-2 sm:space-x-3">
           <button
             type="button"
             @click="cancelEditing"
             :disabled="isSaving"
-            class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-xl transition-all duration-200 disabled:opacity-50"
+            class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
           >
             Cancel
           </button>
           <button
             type="submit"
             :disabled="isSaving || !referrerEmail"
-            class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:from-slate-400 disabled:to-slate-500 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
+            class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:from-slate-400 disabled:to-slate-500 disabled:cursor-not-allowed text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center text-sm sm:text-base"
           >
             <span v-if="isSaving" class="flex items-center">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Saving...
+              <div class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"></div>
+              <span class="hidden sm:inline">Saving...</span>
+              <span class="sm:hidden">Saving</span>
             </span>
             <span v-else class="flex items-center">
-              <Check class="w-4 h-4 mr-2" />
-              {{ referrerDetails ? 'Update' : 'Add' }} Referrer
+              <Check class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+              <span class="hidden sm:inline">{{ referrerDetails ? 'Update' : 'Add' }} Referrer</span>
+              <span class="sm:hidden">{{ referrerDetails ? 'Update' : 'Add' }}</span>
             </span>
           </button>
         </div>

@@ -1,84 +1,108 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
-    <Navigation />
+  <MainLayout>
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
 
     <!-- Main Content -->
     <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-6 sm:mb-8 md:mb-10">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold leading-tight tracking-tight text-slate-900 mb-2 px-4">
+            <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent">
+              Discover What's
+              Happening Around You!!!
+            </span>
+          </h1>
+        </div>
+
         <!-- View Toggle -->
-        <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4"
-        >
-          <div
-            class="flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-1 shadow-lg"
-          >
+        <div class="flex justify-center mb-6 sm:mb-8 md:mb-10">
+          <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 w-full max-w-xl sm:max-w-2xl md:max-w-3xl px-4 sm:px-6">
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'my'"
-              :class="
+              :class="[
+                'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
                 currentView === 'my'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                  : 'text-slate-600 hover:text-[#1e90ff]'
-              "
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
+                  : 'bg-white/80 hover:bg-white shadow-emerald-500/20 tab-inactive'
+              ]"
             >
-              My Events
+              <User class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0" />
+              <span>My Events</span>
             </button>
+
             <button
               @click="currentView = 'all'"
-              :class="
+              :class="[
+                authStore.isAuthenticated ? '' : 'col-start-2',
+                'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
                 currentView === 'all'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                  : 'text-slate-600 hover:text-[#1e90ff]'
-              "
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
+                  : 'bg-white/80 hover:bg-white shadow-emerald-500/20 tab-inactive'
+              ]"
             >
-              All Events
+              <Globe class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0" />
+              <span>Public Events</span>
             </button>
+
             <button
               v-if="authStore.isAuthenticated"
               @click="currentView = 'registered'"
-              :class="
+              :class="[
+                'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
                 currentView === 'registered'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                  : 'text-slate-600 hover:text-[#1e90ff]'
-              "
-              class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
+                  : 'bg-white/80 hover:bg-white shadow-emerald-500/20 tab-inactive'
+              ]"
             >
-              Registered
+              <CheckCircle class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0" />
+              <span>Registered</span>
             </button>
           </div>
-
-          <!-- Create Event Button -->
-          <button
-            v-if="authStore.isAuthenticated"
-            @click="createEvent"
-            ref="createEventButton"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 flex items-center"
-          >
-            <Plus class="w-5 h-5 mr-2" />
-            Create Event
-          </button>
         </div>
 
         <!-- Filters -->
-        <EventFilters v-model="filters" :categories="categories" class="mb-8" />
+        <EventFilters v-model="filters" :categories="categories" class="mb-6 sm:mb-8" />
 
         <!-- Loading State -->
-        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div
-            v-for="i in 6"
-            :key="i"
-            class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
-          >
-            <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
-            <div class="p-6 space-y-4">
-              <div class="h-4 bg-slate-200 rounded"></div>
-              <div class="h-6 bg-slate-200 rounded"></div>
-              <div class="h-16 bg-slate-200 rounded"></div>
-              <div class="flex justify-between">
-                <div class="h-4 bg-slate-200 rounded w-20"></div>
-                <div class="h-4 bg-slate-200 rounded w-16"></div>
+        <div v-if="loading">
+          <!-- Mobile loading skeleton -->
+          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 scrollbar-hide -mx-4 px-4">
+            <div
+              v-for="i in 2"
+              :key="`mobile-skeleton-${i}`"
+              class="flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
+            >
+              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
+              <div class="p-6 space-y-4">
+                <div class="h-4 bg-slate-200 rounded"></div>
+                <div class="h-6 bg-slate-200 rounded"></div>
+                <div class="h-16 bg-slate-200 rounded"></div>
+                <div class="flex justify-between">
+                  <div class="h-4 bg-slate-200 rounded w-20"></div>
+                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop loading skeleton -->
+          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div
+              v-for="i in 6"
+              :key="`desktop-skeleton-${i}`"
+              class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
+            >
+              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
+              <div class="p-6 space-y-4">
+                <div class="h-4 bg-slate-200 rounded"></div>
+                <div class="h-6 bg-slate-200 rounded"></div>
+                <div class="h-16 bg-slate-200 rounded"></div>
+                <div class="flex justify-between">
+                  <div class="h-4 bg-slate-200 rounded w-20"></div>
+                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -86,10 +110,34 @@
 
         <!-- Events Grid -->
         <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <!-- Section Label -->
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
+              {{ getSectionLabel() }}
+            </h2>
+            <span v-if="pagination.totalItems > 0" class="text-xs sm:text-sm text-slate-500">
+              {{ pagination.totalItems }} {{ pagination.totalItems === 1 ? 'event' : 'events' }}
+            </span>
+          </div>
+
+          <!-- Mobile: Horizontal scrolling container -->
+          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
             <EventCard
               v-for="event in safeEvents"
-              :key="event.id"
+              :key="`mobile-${event.id}`"
+              :event="event"
+              @click="viewEvent(event)"
+              @edit="editEvent"
+              @delete="deleteEvent"
+              class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
+            />
+          </div>
+
+          <!-- Desktop: Grid layout -->
+          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
+            <EventCard
+              v-for="event in safeEvents"
+              :key="`desktop-${event.id}`"
               :event="event"
               @click="viewEvent(event)"
               @edit="editEvent"
@@ -100,13 +148,13 @@
 
           <!-- Pagination -->
           <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
               <button
                 @click="loadPage(pagination.currentPage - 1)"
                 :disabled="pagination.currentPage <= 1"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
-                <ChevronLeft class="w-4 h-4" />
+                <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               </button>
 
               <template v-for="page in getVisiblePages()" :key="page">
@@ -118,52 +166,44 @@
                       ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
                       : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
                   "
-                  class="px-4 py-2 rounded-xl border border-slate-200 transition-all duration-200 min-w-[40px]"
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
                 >
                   {{ page }}
                 </button>
-                <span v-else class="px-2 text-slate-400">...</span>
+                <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
               </template>
 
               <button
                 @click="loadPage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage >= pagination.totalPages"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
-                <ChevronRight class="w-4 h-4" />
+                <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               </button>
             </div>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16">
+        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16 px-4">
           <div
-            class="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
+            class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
           >
-            <Calendar class="w-32 h-32 text-[#5eb3f6]" />
+            <Calendar class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
           </div>
-          <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-4">
+          <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
             {{ getEmptyStateTitle() }}
           </h3>
-          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto">
+          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
             {{ getEmptyStateMessage() }}
           </p>
-          <button
-            v-if="authStore.isAuthenticated && currentView !== 'registered'"
-            @click="createEvent"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 inline-flex items-center"
-          >
-            <Plus class="w-5 h-5 mr-2" />
-            Create Your First Event
-          </button>
         </div>
       </div>
     </section>
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-28 lg:bottom-8 right-6 z-50">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
@@ -178,9 +218,9 @@
     <!-- Floating Action Button -->
     <Transition name="fab-fade">
       <button
-        v-if="authStore.isAuthenticated && showFloatingButton"
+        v-if="authStore.isAuthenticated"
         @click="createEvent"
-        class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
+        class="fixed bottom-28 lg:bottom-8 right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
         aria-label="Create Event"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
@@ -198,11 +238,23 @@
       @close="showCreateModal = false"
       @submit="handleEventCreate"
     />
-  </div>
+
+    <!-- Delete Confirm Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteModal"
+      :loading="isDeleting"
+      title="Delete Event"
+      :item-name="eventToDelete?.title"
+      message="This will permanently delete this event and all associated data including guests, media, and agenda items."
+      @confirm="handleDeleteConfirm"
+      @cancel="closeDeleteModal"
+    />
+    </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Calendar,
@@ -211,11 +263,14 @@ import {
   ChevronRight,
   CheckCircle,
   AlertCircle,
+  User,
+  Globe,
 } from 'lucide-vue-next'
-import Navigation from '../components/Navigation.vue'
+import MainLayout from '../components/MainLayout.vue'
 import EventCard from '../components/EventCard.vue'
 import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
+import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
 import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
@@ -238,8 +293,9 @@ const loading = ref(false)
 const filters = ref<EventFiltersType>({})
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
-const showFloatingButton = ref(false)
-const createEventButton = ref<HTMLButtonElement | null>(null)
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const eventToDelete = ref<Event | null>(null)
 
 // Pagination
 const pagination = reactive({
@@ -276,6 +332,17 @@ const getEmptyStateMessage = () => {
   }
 }
 
+const getSectionLabel = () => {
+  switch (currentView.value) {
+    case 'my':
+      return 'My Events'
+    case 'registered':
+      return 'Events I\'m Attending'
+    default:
+      return 'Public Events'
+  }
+}
+
 // Methods
 const loadEvents = async (page = 1) => {
   loading.value = true
@@ -288,6 +355,7 @@ const loadEvents = async (page = 1) => {
       ...filters.value,
     }
 
+
     if (currentView.value === 'my') {
       // Use dedicated /api/events/my/ endpoint for user's events
       // Note: This endpoint returns { organized: [...], collaborated: [...] }
@@ -295,7 +363,29 @@ const loadEvents = async (page = 1) => {
       if (myEventsResponse.success && myEventsResponse.data) {
         const organized = myEventsResponse.data.organized || []
         const collaborated = myEventsResponse.data.collaborated || []
-        const allMyEvents = [...organized, ...collaborated]
+
+        // Deduplicate events (user might be both organizer and collaborator)
+        const eventMap = new Map<string, Event>()
+        organized.forEach(event => eventMap.set(event.id, event))
+        collaborated.forEach(event => {
+          if (!eventMap.has(event.id)) {
+            eventMap.set(event.id, event)
+          }
+        })
+        let allMyEvents = Array.from(eventMap.values())
+
+        // Apply client-side search filtering if search is present
+        if (filters.value.search) {
+          const searchTerm = filters.value.search.toLowerCase()
+          allMyEvents = allMyEvents.filter(event =>
+            event.title?.toLowerCase().includes(searchTerm) ||
+            event.description?.toLowerCase().includes(searchTerm) ||
+            event.location?.toLowerCase().includes(searchTerm) ||
+            event.category_name?.toLowerCase().includes(searchTerm) ||
+            event.organizer_name?.toLowerCase().includes(searchTerm) ||
+            event.short_description?.toLowerCase().includes(searchTerm)
+          )
+        }
 
         // Create a mock pagination response to match expected structure
         response = {
@@ -318,7 +408,20 @@ const loadEvents = async (page = 1) => {
       const registeredResponse = await eventsService.getMyRegisteredEvents(requestParams)
       if (registeredResponse.success && registeredResponse.data) {
         // The API returns an array directly, not a paginated response
-        const registeredEvents = registeredResponse.data || []
+        let registeredEvents = registeredResponse.data || []
+
+        // Apply client-side search filtering if search is present
+        if (filters.value.search) {
+          const searchTerm = filters.value.search.toLowerCase()
+          registeredEvents = registeredEvents.filter(event =>
+            event.title?.toLowerCase().includes(searchTerm) ||
+            event.description?.toLowerCase().includes(searchTerm) ||
+            event.location?.toLowerCase().includes(searchTerm) ||
+            event.category_name?.toLowerCase().includes(searchTerm) ||
+            event.organizer_name?.toLowerCase().includes(searchTerm) ||
+            event.short_description?.toLowerCase().includes(searchTerm)
+          )
+        }
 
         // Create a mock pagination response to match expected structure
         response = {
@@ -337,18 +440,22 @@ const loadEvents = async (page = 1) => {
         }
       }
     } else {
-      // For all public events - explicitly filter for public and published events
-      response = await eventsService.getEvents({
+      // For all public events - use user's filter choices, but default to public/published if not specified
+      const publicEventParams = {
         ...requestParams,
-        privacy: 'public',
-        status: 'published',
-      })
+        // Only set defaults if user hasn't specified these filters
+        privacy: requestParams.privacy || 'public',
+        status: requestParams.status || 'published',
+      }
+      response = await eventsService.getEvents(publicEventParams)
     }
 
     if (response.success && response.data) {
       events.value = response.data.results || []
       pagination.currentPage = page
       pagination.totalItems = response.data.count || 0
+
+
       // Use the presence of next/previous to determine if there are more pages
       if (response.data.next || response.data.previous) {
         // If there's pagination metadata, calculate total pages properly
@@ -380,6 +487,7 @@ const loadCategories = async () => {
     const response = await eventCategoriesService.getCategories()
     if (response.success && response.data) {
       categories.value = response.data.results || []
+
     } else {
       console.error('Failed to load categories:', response.message)
     }
@@ -387,6 +495,7 @@ const loadCategories = async () => {
     console.error('Failed to load categories:', error)
   }
 }
+
 
 const loadPage = (page: number) => {
   if (page >= 1 && page <= pagination.totalPages) {
@@ -446,24 +555,37 @@ const editEvent = (event: Event) => {
   router.push(`/events/${event.id}/edit`)
 }
 
-const deleteEvent = async (event: Event) => {
-  if (!confirm(`Are you sure you want to delete "${event.title}"?`)) {
-    return
-  }
+const deleteEvent = (event: Event) => {
+  eventToDelete.value = event
+  showDeleteModal.value = true
+}
 
+const handleDeleteConfirm = async () => {
+  if (!eventToDelete.value) return
+
+  isDeleting.value = true
   try {
-    const response = await eventsService.deleteEvent(event.id)
+    const response = await eventsService.deleteEvent(eventToDelete.value.id)
     if (response.success) {
       showMessage('success', 'Event deleted successfully')
+      closeDeleteModal()
       // Reload current page events
       loadEvents(pagination.currentPage)
     } else {
       showMessage('error', response.message || 'Failed to delete event')
+      isDeleting.value = false
     }
   } catch (error) {
     console.error('Error deleting event:', error)
     showMessage('error', 'An error occurred while deleting the event')
+    isDeleting.value = false
   }
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  eventToDelete.value = null
+  isDeleting.value = false
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
@@ -473,26 +595,6 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   }, 5000)
 }
 
-// Floating Action Button visibility logic
-const setupFloatingButton = () => {
-  if (!createEventButton.value) return
-
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      // Show floating button when main button is NOT visible
-      showFloatingButton.value = !entry.isIntersecting
-    },
-    {
-      threshold: 0.1, // Trigger when 10% of the button is visible
-      rootMargin: '0px 0px -10px 0px', // Add some margin to trigger slightly before fully out of view
-    },
-  )
-
-  observer.observe(createEventButton.value)
-
-  // Cleanup observer when component unmounts
-  return () => observer.disconnect()
-}
 
 interface EventFormData {
   title: string
@@ -599,9 +701,6 @@ watch(
   },
 )
 
-// Observer cleanup function
-let cleanupObserver: (() => void) | null = null
-
 // Lifecycle
 onMounted(async () => {
   // Load initial data
@@ -609,17 +708,6 @@ onMounted(async () => {
 
   // Load events after categories
   loadEvents()
-
-  // Setup floating button after DOM is updated
-  await nextTick()
-  cleanupObserver = setupFloatingButton() || null
-})
-
-onUnmounted(() => {
-  // Cleanup intersection observer
-  if (cleanupObserver) {
-    cleanupObserver()
-  }
 })
 </script>
 
@@ -653,5 +741,72 @@ onUnmounted(() => {
 .fab-fade-leave-to {
   opacity: 0;
   transform: scale(0.8) translateY(20px);
+}
+
+/* Tab Button Unified Gradient Styling */
+.tab-inactive {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #2ecc71, #1e90ff) border-box;
+}
+
+.tab-inactive span {
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Icon styling for inactive tabs - primary green color */
+.tab-inactive svg {
+  color: #2ecc71 !important;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* Hover state for unified gradient */
+.tab-inactive:hover {
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #27ae60, #1873cc) border-box;
+}
+
+/* Hide scrollbar for horizontal scroll on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Add subtle shadow indicators for scrollability */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    position: relative;
+  }
+
+  /* Make edit/delete buttons visible on mobile cards */
+  .mobile-card :deep(.group) .absolute.top-3.right-3 {
+    opacity: 1 !important;
+  }
+
+  /* Adjust mobile card styling */
+  .mobile-card {
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Improve touch targets on mobile */
+  .mobile-card :deep(button) {
+    min-width: 36px;
+    min-height: 36px;
+  }
 }
 </style>

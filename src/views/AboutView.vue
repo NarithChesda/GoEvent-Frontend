@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen">
-    <Navigation />
+  <MainLayout>
+    <div class="min-h-screen">
 
     <!-- Hero Section -->
     <section
@@ -44,7 +44,7 @@
         class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32"
       >
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
-          <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left">
+          <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
             <div class="space-y-4 sm:space-y-6">
               <div
                 class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-[#87CEEB]/30"
@@ -73,30 +73,30 @@
             </div>
 
             <div
-              class="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200"
+              class="flex flex-row gap-2 sm:gap-4 lg:gap-4 xl:gap-6 animate-fade-in animation-delay-1200"
             >
               <RouterLink
                 to="/events"
-                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-8 py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center"
+                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-sm sm:text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center flex-1 sm:flex-none"
               >
-                Explore Our Events
+                <span class="hidden sm:inline">Explore Our Events</span><span class="sm:hidden">Explore Events</span>
                 <ArrowRight
-                  class="inline w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                  class="inline w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
                 />
               </RouterLink>
               <RouterLink
                 to="/"
-                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-8 py-4 rounded-lg border-2 border-[#87CEEB] text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group"
+                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg border-2 border-[#87CEEB] text-sm sm:text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group flex-1 sm:flex-none"
               >
                 <Heart
-                  class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
+                  class="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
                 />
-                Learn More
+                <span class="hidden sm:inline">Learn More</span><span class="sm:hidden">Learn</span>
               </RouterLink>
             </div>
 
             <div
-              class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400"
+              class="hidden lg:flex flex-col sm:flex-row gap-4 sm:gap-6 justify-start items-start sm:items-center animate-fade-in animation-delay-1400"
             >
               <div class="flex -space-x-2">
                 <div
@@ -126,7 +126,7 @@
             </div>
           </div>
 
-          <div class="lg:col-span-5 relative animate-slide-in-right animation-delay-200">
+          <div class="hidden lg:block lg:col-span-5 relative animate-slide-in-right animation-delay-200">
             <div class="relative max-w-lg lg:max-w-full mx-auto">
               <!-- Main About Card -->
               <div
@@ -242,30 +242,30 @@
     <!-- Mission & Vision -->
     <section
       ref="missionSection"
-      class="py-24 bg-white relative overflow-hidden scroll-animate"
+      class="py-12 sm:py-16 md:py-20 lg:py-24 bg-white relative overflow-hidden scroll-animate"
       :class="{ 'animate-fade-in-up': isVisible.mission }"
     >
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Section Header -->
-        <div class="text-center mb-12 sm:mb-16">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Target class="w-4 h-4" />
+            <Target class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Purpose
           </div>
           <h2
-            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Mission &
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
@@ -273,7 +273,7 @@
             >
           </h2>
           <p
-            class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4"
+            class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4"
           >
             The driving forces behind everything we do at GoEvent
           </p>
@@ -361,32 +361,32 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="py-16 relative overflow-hidden stats-bg">
+    <section class="py-12 sm:py-16 md:py-20 relative overflow-hidden stats-bg">
       <!-- Background elements -->
       <div class="absolute inset-0">
         <div
-          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
+          class="absolute top-0 left-1/2 transform -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
         ></div>
-        <div class="absolute bottom-0 right-0 w-72 h-72 bg-[#E6F4FF]0/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-56 sm:w-72 h-56 sm:h-72 bg-[#E6F4FF]0/10 rounded-full blur-3xl"></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-12 sm:mb-16">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <BarChart3 class="h-4 w-4" />
+            <BarChart3 class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Impact
           </div>
           <h2
-            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             GoEvent by the
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
               >Numbers</span
             >
           </h2>
-          <p class="text-base sm:text-lg lg:text-xl text-slate-300 px-4">
+          <p class="text-base sm:text-lg md:text-xl text-slate-300 px-4 max-w-3xl mx-auto">
             Our impact on the event management industry
           </p>
         </div>
@@ -413,19 +413,19 @@
     <!-- Values -->
     <section
       ref="valuesSection"
-      class="py-16 scroll-animate features-bg"
+      class="py-12 sm:py-16 md:py-20 scroll-animate features-bg"
       :class="{ 'animate-fade-in-up': isVisible.values }"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
+        <div class="text-center mb-12 sm:mb-16 md:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Star class="w-4 h-4" />
+            <Star class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Core Values
           </div>
           <h2
-            class="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-4 leading-tight tracking-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             What Drives Us to
             <span
@@ -434,17 +434,17 @@
               Succeed</span
             >
           </h2>
-          <p class="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
             These core principles guide everything we do and shape our company culture, driving us
             to create exceptional experiences.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           <div
             v-for="(value, index) in values"
             :key="value.title"
-            class="group relative bg-white rounded-xl border border-slate-200 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+            class="group relative bg-white rounded-xl border border-slate-200 p-6 sm:p-7 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
             :class="index === 1 ? 'md:scale-105 md:z-10 border-[#B0E0E6]' : ''"
           >
             <!-- Top accent bar -->
@@ -454,31 +454,31 @@
 
             <div class="relative">
               <!-- Icon with design guide styling -->
-              <div class="relative mb-6">
+              <div class="relative mb-4 sm:mb-5 md:mb-6">
                 <div
-                  class="w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                   :class="value.bgColor"
                 >
                   <component
                     :is="value.icon"
-                    class="w-8 h-8 transition-all duration-300"
+                    class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 transition-all duration-300"
                     :class="value.iconColor"
                   />
                 </div>
                 <!-- Floating accent -->
                 <div
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
+                  class="absolute -top-1.5 sm:-top-2 -right-1.5 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100"
                 ></div>
               </div>
 
               <!-- Content with design guide typography -->
-              <div class="space-y-4">
+              <div class="space-y-3 sm:space-y-3.5 md:space-y-4">
                 <h3
-                  class="text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
+                  class="text-lg sm:text-xl md:text-xl font-bold text-slate-900 leading-snug group-hover:bg-gradient-to-r group-hover:from-[#2ecc71] group-hover:to-[#1e90ff] group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300"
                 >
                   {{ value.title }}
                 </h3>
-                <p class="text-base text-slate-700 leading-relaxed">
+                <p class="text-sm sm:text-base md:text-base text-slate-700 leading-relaxed">
                   {{ value.description }}
                 </p>
               </div>
@@ -496,23 +496,23 @@
     <!-- Team Section -->
     <section
       ref="teamSection"
-      class="py-16 relative overflow-hidden scroll-animate team-bg"
+      class="py-12 sm:py-16 md:py-20 relative overflow-hidden scroll-animate team-bg"
       :class="{ 'animate-fade-in-up': isVisible.team }"
     >
       <!-- Background decoration -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-[#5eb3f6]/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
+      <div class="absolute top-0 right-0 w-72 sm:w-96 h-72 sm:h-96 bg-[#5eb3f6]/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 w-64 sm:w-80 h-64 sm:h-80 bg-white/40 rounded-full blur-3xl"></div>
 
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-12 sm:mb-16 lg:mb-20">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16 lg:mb-20">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4"
+            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
           >
-            <Users class="w-4 h-4" />
+            <Users class="h-3 w-3 sm:h-4 sm:w-4" />
             Our Amazing Team
           </div>
           <h2
-            class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 lg:mb-8 leading-tight"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
           >
             Meet the
             <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
@@ -520,7 +520,7 @@
             >
           </h2>
           <p
-            class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4"
+            class="text-base sm:text-lg md:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed px-4"
           >
             Passionate professionals dedicated to transforming event management and creating
             exceptional experiences
@@ -672,33 +672,33 @@
     </section>
 
     <!-- Join Us CTA -->
-    <section class="py-20 lg:py-32 bg-white relative overflow-hidden">
+    <section class="py-12 sm:py-16 md:py-20 lg:py-32 bg-white relative overflow-hidden">
       <!-- Background decoration -->
       <div class="absolute inset-0">
         <!-- Subtle gradient orbs -->
         <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Floating Box Container -->
         <div
-          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
+          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
         >
           <div class="text-center max-w-4xl mx-auto">
             <div
-              class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6"
+              class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-4 sm:mb-6"
             >
-              <Users class="w-4 h-4" />
+              <Users class="h-3 w-3 sm:h-4 sm:w-4" />
               Join Our Team
             </div>
 
             <h2
-              class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 sm:mb-6 leading-[1.1] tracking-tight"
+              class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight"
             >
               Be Part of the
               <span
@@ -709,7 +709,7 @@
             </h2>
 
             <p
-              class="text-base sm:text-lg lg:text-xl text-[#B0E0E6] mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
+              class="text-base sm:text-lg md:text-xl text-[#B0E0E6] mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
             >
               We're always looking for talented individuals who share our passion for innovation and
               creating exceptional user experiences. Be part of the team that's transforming the
@@ -768,18 +768,19 @@
       <button
         v-show="showScrollTop"
         @click="scrollToTop"
-        class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white p-4 rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2"
+        class="fixed bottom-28 lg:bottom-8 right-6 w-14 h-14 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:ring-offset-2 flex items-center justify-center"
       >
         <ArrowUp class="w-6 h-6" />
       </button>
     </Transition>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import Navigation from '../components/Navigation.vue'
+import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
 import { useDelayedTypingAnimation } from '../composables/useDelayedTypingAnimation'

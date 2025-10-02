@@ -228,9 +228,9 @@ export const rsvpTranslations: Record<
     invite_text: 'សូមគោរពអញ្ជើញ',
 
     // Buttons
-    rsvp_yes_button: 'ខ្ញុំនឹងចូលរួម',
+    rsvp_yes_button: 'ចូលរួម',
     rsvp_no_button: 'មិនចូលរួម',
-    rsvp_sign_in_button: 'ចូលគណនី ដើម្បី RSVP',
+    rsvp_sign_in_button: 'ចូលគណនី',
 
     // Status indicators
     rsvp_attending: 'ចូលរួម',
@@ -297,13 +297,13 @@ export const rsvpTranslations: Record<
     // Comment section
     comment_header: 'សារជូនពរ',
     comment_placeholder: 'ចាំរូបការគិត, ប្រារ្ថនា, ឬ សំឌើងអារម្មណ៍របស់អ្នក...',
-    comment_signin_prompt: 'សូមចូលគណនី ដើម្បីដាក់មតិយោបល់',
-    comment_signin_button: 'ចូលគណនី ដើម្បីមតិយោបល់',
-    comment_post_button: 'ប៉ុព្វមតិយោបល់',
+    comment_signin_prompt: 'សូមចូលគណនី ដើម្បីជូនពរ',
+    comment_signin_button: 'ចូលគណនី',
+    comment_post_button: 'ជូនពរ',
     comment_posting_button: 'កំពុងប៉ុព្វ...',
     comment_no_comments: 'ក្លាយជាអ្នកដំបូងក្នុងការដាក់មតិយោបល់!',
     comment_loading: 'កំពុងនីមតិយោបល់...',
-    comment_already_commented: 'អ្នកបានបញ្ចេញមតិរួចហើយ',
+    comment_already_commented: 'អ្នកបានជូនពររួចហើយ',
     comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់ព្រឹត្តិការណ៍មួយ',
     comment_you_badge: 'You',
 
@@ -326,7 +326,7 @@ export const rsvpTranslations: Record<
     floating_menu_video: 'វីដេអូ',
     floating_menu_gallery: 'រូបថត',
     floating_menu_gift: 'អំណោយ',
-    floating_menu_comment: 'មតិយោបល់',
+    floating_menu_comment: 'ជូនពរ',
     floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
   },

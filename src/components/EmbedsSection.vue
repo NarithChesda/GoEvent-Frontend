@@ -1,29 +1,30 @@
 <template>
-  <div class="space-y-8">
+  <div class="space-y-6 sm:space-y-8">
     <div>
-      <h4 class="text-lg font-semibold text-slate-900 mb-2">Videos & Maps</h4>
-      <p class="text-sm text-slate-600 mb-6">Embed YouTube videos and Google Maps location</p>
+      <h4 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Videos & Maps</h4>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Embed YouTube videos and Google Maps location</p>
     </div>
 
     <!-- YouTube Embed -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
-      <div class="mb-4">
-        <h5 class="font-semibold text-slate-900 mb-2">YouTube Video</h5>
-        <p class="text-sm text-slate-600 mb-4">Embed a YouTube video for your event</p>
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
+      <div class="mb-3 sm:mb-4">
+        <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">YouTube Video</h5>
+        <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">Embed a YouTube video for your event</p>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3 sm:space-y-4">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">YouTube Embed URL</label>
+          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">YouTube Embed URL</label>
           <input
             v-model="formData.youtube_embed_link"
             type="url"
             :disabled="!canEdit"
             placeholder="https://www.youtube.com/embed/VIDEO_ID"
-            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+            @paste="handleYouTubePaste"
+            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
-          <p class="text-xs text-slate-500 mt-1">
-            Get this from YouTube → Share → Embed, then copy the src URL
+          <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+            Paste the full iframe code or just the src URL from YouTube → Share → Embed
           </p>
         </div>
 
@@ -31,45 +32,46 @@
         <div v-if="formData.youtube_embed_link" class="relative">
           <iframe
             :src="formData.youtube_embed_link"
-            class="w-full h-64 rounded-2xl"
+            class="w-full h-48 sm:h-56 md:h-64 rounded-xl sm:rounded-2xl"
             frameborder="0"
             allowfullscreen
           ></iframe>
           <button
             v-if="canEdit && eventData"
             @click="confirmRemoveYouTube"
-            class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors duration-200"
+            class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors duration-200"
           >
-            <X class="w-4 h-4" />
+            <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
 
-        <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
-          <Youtube class="w-12 h-12 text-slate-400 mx-auto mb-2" />
-          <p class="text-slate-600">No YouTube video embedded</p>
+        <div v-else class="border-2 border-dashed border-slate-300 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
+          <Youtube class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2" />
+          <p class="text-xs sm:text-sm text-slate-600">No YouTube video embedded</p>
         </div>
       </div>
     </div>
 
     <!-- Google Maps Embed -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
-      <div class="mb-4">
-        <h5 class="font-semibold text-slate-900 mb-2">Event Location</h5>
-        <p class="text-sm text-slate-600 mb-4">Embed Google Maps to show your event location</p>
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
+      <div class="mb-3 sm:mb-4">
+        <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">Event Location</h5>
+        <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">Embed Google Maps to show your event location</p>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3 sm:space-y-4">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">Google Maps Embed URL</label>
+          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Google Maps Embed URL</label>
           <input
             v-model="formData.google_map_embed_link"
             type="url"
             :disabled="!canEdit"
             placeholder="https://www.google.com/maps/embed?pb=..."
-            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+            @paste="handleMapsPaste"
+            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
-          <p class="text-xs text-slate-500 mt-1">
-            Get this from Google Maps → Share → Embed a map, then copy the src URL
+          <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+            Paste the full iframe code or just the src URL from Google Maps → Share → Embed a map
           </p>
         </div>
 
@@ -77,7 +79,7 @@
         <div v-if="formData.google_map_embed_link" class="relative">
           <iframe
             :src="formData.google_map_embed_link"
-            class="w-full h-64 rounded-2xl"
+            class="w-full h-48 sm:h-56 md:h-64 rounded-xl sm:rounded-2xl"
             style="border: 0"
             allowfullscreen
             loading="lazy"
@@ -85,15 +87,15 @@
           <button
             v-if="canEdit && eventData"
             @click="confirmRemoveMap"
-            class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors duration-200"
+            class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors duration-200"
           >
-            <X class="w-4 h-4" />
+            <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
 
-        <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
-          <MapPin class="w-12 h-12 text-slate-400 mx-auto mb-2" />
-          <p class="text-slate-600">No location map embedded</p>
+        <div v-else class="border-2 border-dashed border-slate-300 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
+          <MapPin class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2" />
+          <p class="text-xs sm:text-sm text-slate-600">No location map embedded</p>
         </div>
       </div>
     </div>
@@ -103,30 +105,30 @@
       <button
         @click="saveChanges"
         :disabled="saving"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl font-medium transition-all duration-300 sm:hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-1.5 sm:space-x-2 disabled:opacity-50"
       >
         <div
           v-if="saving"
-          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+          class="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
         ></div>
-        <Save v-else class="w-4 h-4" />
+        <Save v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         <span>{{ saving ? 'Saving...' : 'Save Changes' }}</span>
       </button>
     </div>
 
     <!-- Success Message -->
-    <div v-if="showSuccess" class="bg-green-50 border border-green-200 rounded-2xl p-4">
-      <div class="flex items-center space-x-3">
-        <CheckCircle class="w-5 h-5 text-green-500" />
-        <p class="text-green-700 font-medium">Embed links updated successfully!</p>
+    <div v-if="showSuccess" class="bg-green-50 border border-green-200 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+        <p class="text-xs sm:text-sm text-green-700 font-medium">Embed links updated successfully!</p>
       </div>
     </div>
 
     <!-- Error Message -->
-    <div v-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-4">
-      <div class="flex items-center space-x-3">
-        <AlertCircle class="w-5 h-5 text-red-500" />
-        <p class="text-red-700 font-medium">{{ error }}</p>
+    <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+        <p class="text-xs sm:text-sm text-red-700 font-medium">{{ error }}</p>
       </div>
     </div>
 
@@ -147,6 +149,11 @@ import { ref, computed, watch } from 'vue'
 import { Youtube, MapPin, X, Save, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import {
+  extractYouTubeEmbedUrl,
+  extractGoogleMapsEmbedUrl,
+  detectEmbedType,
+} from '../utils/embedExtractor'
 
 interface Props {
   eventData?: Event
@@ -308,6 +315,34 @@ const validateGoogleMapsUrl = (url: string): boolean => {
   // Updated pattern to allow any query parameters after /embed
   const mapsEmbedPattern = /^https:\/\/www\.google\.com\/maps\/embed(\?.*)?$/
   return mapsEmbedPattern.test(url)
+}
+
+// Handle paste events for YouTube iframe
+const handleYouTubePaste = (event: ClipboardEvent) => {
+  const pastedText = event.clipboardData?.getData('text')
+  if (!pastedText) return
+
+  // Try to extract YouTube URL from iframe code
+  const extractedUrl = extractYouTubeEmbedUrl(pastedText)
+
+  if (extractedUrl) {
+    event.preventDefault()
+    formData.value.youtube_embed_link = extractedUrl
+  }
+}
+
+// Handle paste events for Google Maps iframe
+const handleMapsPaste = (event: ClipboardEvent) => {
+  const pastedText = event.clipboardData?.getData('text')
+  if (!pastedText) return
+
+  // Try to extract Google Maps URL from iframe code
+  const extractedUrl = extractGoogleMapsEmbedUrl(pastedText)
+
+  if (extractedUrl) {
+    event.preventDefault()
+    formData.value.google_map_embed_link = extractedUrl
+  }
 }
 
 // Watch for URL validation

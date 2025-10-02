@@ -3,10 +3,10 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
           Payment Management
         </h2>
-        <p class="text-sm text-slate-600 mt-1">
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
           Manage payment packages and transactions for your event
         </p>
       </div>
@@ -15,19 +15,19 @@
     <!-- Template-Based Package Selection -->
     <div
       v-if="!hasSelectedTemplate"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <FileText class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">Select a Template First</h3>
-      <p class="text-slate-600 mb-6 max-w-md mx-auto">
+      <FileText class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Select a Template First</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
         You need to select an event template before you can view payment packages. Templates
         determine the available pricing plans for your event.
       </p>
       <button
         @click="redirectToTemplateTab"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm sm:text-base"
       >
-        <FileText class="w-4 h-4 mr-2" />
+        <FileText class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
         Select Template
       </button>
     </div>
@@ -35,56 +35,57 @@
     <!-- Template Selected - Show Template Pricing Info -->
     <div v-else-if="hasSelectedTemplate" class="space-y-6">
       <!-- Current Template Info -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-          <FileText class="w-5 h-5 text-[#1e90ff] mr-2" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+        <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
+          <FileText class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
           Selected Template Package
         </h3>
         <div
-          class="bg-gradient-to-br from-emerald-50 to-sky-50 rounded-2xl p-4 border border-[#87CEEB]/50"
+          class="bg-gradient-to-br from-emerald-50 to-sky-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#87CEEB]/50"
         >
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <h4 class="font-semibold text-slate-900">{{ templateName }}</h4>
-              <p class="text-sm text-slate-700">
+          <div class="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-slate-900 text-sm sm:text-base truncate">{{ templateName }}</h4>
+              <p class="text-xs sm:text-sm text-slate-700 truncate">
                 {{ templatePackageDetails?.name || 'Standard Package' }}
               </p>
             </div>
-            <div class="text-right">
-              <span class="text-2xl font-bold text-slate-900"
+            <div class="text-right flex-shrink-0">
+              <span class="text-xl sm:text-2xl font-bold text-slate-900"
                 >${{ templatePackageDetails?.price || '0.00' }}</span
               >
-              <p class="text-xs text-slate-600">USD</p>
+              <p class="text-[10px] sm:text-xs text-slate-600">USD</p>
             </div>
           </div>
 
           <!-- Package Features -->
           <div
             v-if="templatePackageDetails?.features && templatePackageDetails.features.length > 0"
-            class="mt-4 pt-4 border-t border-[#87CEEB]/50"
+            class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[#87CEEB]/50"
           >
-            <p class="text-sm font-medium text-slate-800 mb-2">Included Features:</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <p class="text-xs sm:text-sm font-medium text-slate-800 mb-1.5 sm:mb-2">Included Features:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
               <div
                 v-for="feature in templatePackageDetails.features"
                 :key="feature"
-                class="flex items-center text-sm text-slate-700"
+                class="flex items-center text-xs sm:text-sm text-slate-700"
               >
-                <CheckCircle class="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                {{ feature }}
+                <CheckCircle class="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1.5 sm:mr-2 flex-shrink-0" />
+                <span class="truncate">{{ feature }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Payment Action Button -->
-        <div class="mt-6 text-center">
+        <div class="mt-4 sm:mt-6 text-center">
           <button
             @click="showPaymentModal = true"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-lg"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-base sm:text-lg"
           >
-            <CreditCard class="w-6 h-6 mr-3" />
-            {{ currentPayment ? 'Make New Payment' : 'Make Payment' }}
+            <CreditCard class="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+            <span class="hidden sm:inline">{{ currentPayment ? 'Make New Payment' : 'Make Payment' }}</span>
+            <span class="sm:hidden">{{ currentPayment ? 'New Payment' : 'Make Payment' }}</span>
           </button>
         </div>
       </div>
@@ -175,37 +176,37 @@
     </div>
 
     <!-- Existing Payments -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
-      <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <History class="w-5 h-5 text-[#1e90ff] mr-2" />
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+      <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
+        <History class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
         Payment History
       </h3>
 
-      <div v-if="loadingPayments" class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
-        <p class="text-slate-600 mt-2">Loading payment history...</p>
+      <div v-if="loadingPayments" class="text-center py-6 sm:py-8">
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
+        <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading payment history...</p>
       </div>
 
-      <div v-else-if="existingPayments.length === 0 && !loadingPayments" class="text-center py-8">
-        <History class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p class="text-slate-500">No payments found for this event.</p>
+      <div v-else-if="existingPayments.length === 0 && !loadingPayments" class="text-center py-6 sm:py-8">
+        <History class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
+        <p class="text-xs sm:text-sm text-slate-500">No payments found for this event.</p>
       </div>
 
-      <div v-else-if="existingPayments.length > 0" class="space-y-4">
+      <div v-else-if="existingPayments.length > 0" class="space-y-3 sm:space-y-4">
         <div
           v-for="payment in existingPayments"
           :key="payment.id"
-          class="p-4 bg-slate-50/50 rounded-2xl hover:bg-slate-100/50 transition-colors duration-200"
+          class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl hover:bg-slate-100/50 transition-colors duration-200"
         >
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <h4 class="font-semibold text-slate-900">{{ payment.plan_name }}</h4>
-              <p class="text-sm text-slate-600">{{ formatDate(payment.created_at) }}</p>
+          <div class="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-slate-900 text-sm sm:text-base truncate">{{ payment.plan_name }}</h4>
+              <p class="text-xs sm:text-sm text-slate-600">{{ formatDate(payment.created_at) }}</p>
             </div>
-            <div class="text-right">
-              <p class="text-lg font-bold text-slate-900">${{ payment.amount }}</p>
+            <div class="text-right flex-shrink-0">
+              <p class="text-base sm:text-lg font-bold text-slate-900">${{ payment.amount }}</p>
               <span
-                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium"
                 :class="getStatusBadgeClass(payment.status)"
               >
                 {{ getStatusDisplay(payment.status) }}
@@ -213,26 +214,27 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-            <p class="text-slate-600">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs sm:text-sm">
+            <p class="text-slate-600 truncate">
               <span class="font-medium">Reference:</span> {{ payment.transaction_reference }}
             </p>
-            <p class="text-slate-600">
+            <p class="text-slate-600 truncate">
               <span class="font-medium">Method:</span> {{ payment.payment_method_name }}
             </p>
-            <p v-if="payment.template_name" class="text-slate-600 sm:col-span-2">
+            <p v-if="payment.template_name" class="text-slate-600 sm:col-span-2 truncate">
               <span class="font-medium">Template:</span> {{ payment.template_name }}
             </p>
           </div>
 
           <!-- Update Payment (if pending) -->
-          <div v-if="payment.status === 'pending'" class="mt-3 pt-3 border-t border-slate-200">
+          <div v-if="payment.status === 'pending'" class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-200">
             <button
               @click="startUpdatePayment(payment)"
-              class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium inline-flex items-center"
+              class="text-[#1e90ff] hover:text-[#1873cc] text-xs sm:text-sm font-medium inline-flex items-center"
             >
-              <Pencil class="w-3 h-3 mr-1" />
-              Update Payment Details
+              <Pencil class="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
+              <span class="hidden sm:inline">Update Payment Details</span>
+              <span class="sm:hidden">Update Payment</span>
             </button>
           </div>
         </div>
@@ -244,52 +246,52 @@
       <Transition name="modal">
         <div
           v-if="showPaymentModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           @click="closePaymentModal"
         >
           <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col"
             @click.stop
           >
             <!-- Step 1: Payment Summary & Method Selection -->
-            <div v-if="paymentStep === 1">
+            <div v-if="paymentStep === 1" class="flex flex-col h-full overflow-hidden">
               <!-- Header -->
-              <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+              <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-4 sm:px-8 sm:py-6 text-white flex-shrink-0">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                     <div
-                      class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                      class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0"
                     >
-                      <CreditCard class="w-5 h-5" />
+                      <CreditCard class="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <h2 class="text-2xl font-bold">Make Payment</h2>
-                      <p class="text-white/80 text-sm mt-1">{{ templateName }}</p>
+                    <div class="min-w-0">
+                      <h2 class="text-lg sm:text-2xl font-bold truncate">Make Payment</h2>
+                      <p class="text-white/80 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">{{ templateName }}</p>
                     </div>
                   </div>
                   <button
                     @click="closePaymentModal"
-                    class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                    class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
                   >
-                    <X class="w-4 h-4" />
+                    <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
 
               <!-- Content -->
-              <div class="p-8">
+              <div class="p-4 sm:p-8 overflow-y-auto flex-1">
                 <!-- Current Payment Status (if exists) -->
                 <div
                   v-if="currentPayment"
-                  class="mb-6 p-4 bg-slate-50/50 rounded-xl border border-slate-200/50 backdrop-blur-sm"
+                  class="mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-50/50 rounded-lg sm:rounded-xl border border-slate-200/50 backdrop-blur-sm"
                 >
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="text-sm font-medium text-slate-700">Current Payment</p>
-                      <p class="text-xs text-slate-500">{{ currentPayment.plan_name }}</p>
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs sm:text-sm font-medium text-slate-700">Current Payment</p>
+                      <p class="text-[10px] sm:text-xs text-slate-500 truncate">{{ currentPayment.plan_name }}</p>
                     </div>
                     <span
-                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                      class="inline-flex items-center px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium flex-shrink-0"
                       :class="getStatusBadgeClass(currentPayment.status)"
                     >
                       {{ getStatusDisplay(currentPayment.status) }}
@@ -299,33 +301,33 @@
 
                 <!-- Amount Display -->
                 <div
-                  class="text-center mb-6 p-6 bg-gradient-to-br from-[#E6F4FF] to-indigo-50 rounded-xl"
+                  class="text-center mb-4 sm:mb-6 p-4 sm:p-6 bg-gradient-to-br from-[#E6F4FF] to-indigo-50 rounded-lg sm:rounded-xl"
                 >
-                  <p class="text-sm text-slate-600 mb-2">Amount to Pay</p>
-                  <p class="text-3xl font-bold text-slate-900">
+                  <p class="text-xs sm:text-sm text-slate-600 mb-1 sm:mb-2">Amount to Pay</p>
+                  <p class="text-2xl sm:text-3xl font-bold text-slate-900">
                     ${{ templatePackageDetails?.price || '0.00' }}
                   </p>
-                  <p class="text-sm text-slate-500 mt-1">
+                  <p class="text-xs sm:text-sm text-slate-500 mt-1 truncate">
                     {{ templatePackageDetails?.name || 'Standard Package' }}
                   </p>
                 </div>
 
                 <!-- Payment Methods -->
-                <div class="mb-6">
-                  <p class="text-sm font-medium text-slate-700 mb-3">Choose Payment Method</p>
+                <div class="mb-4 sm:mb-6">
+                  <p class="text-xs sm:text-sm font-medium text-slate-700 mb-2 sm:mb-3">Choose Payment Method</p>
 
-                  <div v-if="loadingMethods" class="text-center py-8">
+                  <div v-if="loadingMethods" class="text-center py-6 sm:py-8">
                     <div
-                      class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1e90ff] mx-auto"
+                      class="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-[#1e90ff] mx-auto"
                     ></div>
-                    <p class="text-slate-500 mt-2 text-sm">Loading...</p>
+                    <p class="text-slate-500 mt-2 text-xs sm:text-sm">Loading...</p>
                   </div>
 
                   <div v-else-if="paymentMethods.length > 0" class="space-y-2">
                     <div
                       v-for="method in paymentMethods"
                       :key="method.id"
-                      class="p-4 rounded-xl border cursor-pointer transition-all duration-200"
+                      class="p-3 sm:p-4 rounded-lg sm:rounded-xl border cursor-pointer transition-all duration-200"
                       :class="{
                         'border-[#1e90ff] bg-[#E6F4FF]/50 backdrop-blur-sm':
                           selectedMethod?.id === method.id,
@@ -334,23 +336,23 @@
                       }"
                       @click="selectMethod(method)"
                     >
-                      <div class="flex items-center">
+                      <div class="flex items-center gap-2 sm:gap-3">
                         <input
                           type="radio"
                           :checked="selectedMethod?.id === method.id"
-                          class="h-4 w-4 text-[#1e90ff] mr-3"
+                          class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#1e90ff] flex-shrink-0"
                           readonly
                         />
-                        <div class="flex-1">
-                          <p class="font-medium text-slate-900 text-sm">{{ method.name }}</p>
-                          <p class="text-xs text-slate-500">{{ method.payment_type_display }}</p>
+                        <div class="flex-1 min-w-0">
+                          <p class="font-medium text-slate-900 text-xs sm:text-sm truncate">{{ method.name }}</p>
+                          <p class="text-[10px] sm:text-xs text-slate-500 truncate">{{ method.payment_type_display }}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div v-else class="text-center py-6">
-                    <p class="text-slate-500 text-sm">No payment methods available</p>
+                  <div v-else class="text-center py-4 sm:py-6">
+                    <p class="text-slate-500 text-xs sm:text-sm">No payment methods available</p>
                   </div>
                 </div>
 
@@ -358,7 +360,7 @@
                 <button
                   @click="nextStep"
                   :disabled="!selectedMethod"
-                  class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                  class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 text-sm sm:text-base"
                 >
                   Continue
                 </button>
@@ -366,89 +368,90 @@
             </div>
 
             <!-- Step 2: Payment Instructions -->
-            <div v-if="paymentStep === 2">
+            <div v-if="paymentStep === 2" class="flex flex-col h-full overflow-hidden">
               <!-- Header -->
-              <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6 text-white">
+              <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-4 sm:px-8 sm:py-6 text-white flex-shrink-0">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                     <button
                       @click="previousStep"
-                      class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 mr-2"
+                      class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
                     >
-                      <ChevronLeft class="w-4 h-4" />
+                      <ChevronLeft class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                     <div
-                      class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                      class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0"
                     >
-                      <FileSignature class="w-5 h-5" />
+                      <FileSignature class="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <h2 class="text-2xl font-bold">Payment Instructions</h2>
-                      <p class="text-white/80 text-sm mt-1">{{ selectedMethod?.name }}</p>
+                    <div class="min-w-0">
+                      <h2 class="text-lg sm:text-2xl font-bold truncate">Payment Instructions</h2>
+                      <p class="text-white/80 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">{{ selectedMethod?.name }}</p>
                     </div>
                   </div>
                   <button
                     @click="closePaymentModal"
-                    class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                    class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
                   >
-                    <X class="w-4 h-4" />
+                    <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
 
               <!-- Content -->
-              <div class="p-8">
+              <div class="p-4 sm:p-8 overflow-y-auto flex-1">
                 <!-- Amount Reminder -->
-                <div class="text-center mb-6 p-4 bg-[#E6F4FF] rounded-xl">
-                  <p class="text-sm text-[#1873cc] mb-1">Transfer Amount</p>
-                  <p class="text-2xl font-bold text-[#1873cc]">
+                <div class="text-center mb-4 sm:mb-6 p-3 sm:p-4 bg-[#E6F4FF] rounded-lg sm:rounded-xl">
+                  <p class="text-xs sm:text-sm text-[#1873cc] mb-1">Transfer Amount</p>
+                  <p class="text-xl sm:text-2xl font-bold text-[#1873cc]">
                     ${{ templatePackageDetails?.price }}
                   </p>
                 </div>
 
                 <!-- Payment Details -->
-                <div v-if="selectedMethod" class="mb-6">
+                <div v-if="selectedMethod" class="mb-4 sm:mb-6">
                   <div
                     v-if="selectedMethod.bank_name || selectedMethod.account_number"
-                    class="mb-4 p-4 bg-slate-50 rounded-xl"
+                    class="mb-3 sm:mb-4 p-3 sm:p-4 bg-slate-50 rounded-lg sm:rounded-xl"
                   >
-                    <p class="text-sm font-medium text-slate-700 mb-2">Payment Details</p>
-                    <div class="space-y-1 text-sm">
-                      <p v-if="selectedMethod.bank_name" class="text-slate-600">
+                    <p class="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Payment Details</p>
+                    <div class="space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
+                      <p v-if="selectedMethod.bank_name" class="text-slate-600 truncate">
                         <span class="font-medium">Bank:</span> {{ selectedMethod.bank_name }}
                       </p>
-                      <p v-if="selectedMethod.account_number" class="text-slate-600">
+                      <p v-if="selectedMethod.account_number" class="text-slate-600 truncate">
                         <span class="font-medium">Account:</span>
                         {{ selectedMethod.account_number }}
                       </p>
-                      <p v-if="selectedMethod.account_name" class="text-slate-600">
+                      <p v-if="selectedMethod.account_name" class="text-slate-600 truncate">
                         <span class="font-medium">Name:</span> {{ selectedMethod.account_name }}
                       </p>
                     </div>
                   </div>
 
                   <!-- QR Code -->
-                  <div v-if="selectedMethod.qr_code_image" class="text-center mb-4">
-                    <div class="inline-block p-4 bg-white rounded-xl shadow-sm border">
+                  <div v-if="selectedMethod.qr_code_image" class="text-center mb-3 sm:mb-4">
+                    <div class="inline-block p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl shadow-sm border">
                       <img
                         :src="selectedMethod.qr_code_image"
                         :alt="`QR Code for ${selectedMethod.name}`"
-                        class="w-32 h-32 object-contain mx-auto"
+                        class="w-24 h-24 sm:w-32 sm:h-32 object-contain mx-auto"
                         loading="lazy"
                         @error="handleImageError"
                       />
                     </div>
-                    <p class="text-xs text-slate-500 mt-2">Scan with your banking app</p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 mt-1.5 sm:mt-2">Scan with your banking app</p>
                   </div>
 
                   <!-- Payment Link -->
-                  <div v-if="selectedMethod.payment_link" class="mb-4">
+                  <div v-if="selectedMethod.payment_link" class="mb-3 sm:mb-4">
                     <button
                       @click="openPaymentLink(selectedMethod.payment_link)"
-                      class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors inline-flex items-center justify-center"
+                      class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 sm:py-3 px-4 rounded-lg transition-colors inline-flex items-center justify-center text-sm sm:text-base"
                     >
-                      <ExternalLink class="w-4 h-4 mr-2" />
-                      Open {{ selectedMethod.name }}
+                      <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                      <span class="hidden sm:inline">Open {{ selectedMethod.name }}</span>
+                      <span class="sm:hidden">Open Payment Link</span>
                     </button>
                   </div>
                 </div>
@@ -456,7 +459,7 @@
                 <!-- Next Step Button -->
                 <button
                   @click="nextStep"
-                  class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                  class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 text-sm sm:text-base"
                 >
                   I've Made the Payment
                 </button>
@@ -464,45 +467,45 @@
             </div>
 
             <!-- Step 3: Upload Proof -->
-            <div v-if="paymentStep === 3">
+            <div v-if="paymentStep === 3" class="flex flex-col h-full overflow-hidden">
               <!-- Header -->
-              <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+              <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-4 sm:px-8 sm:py-6 text-white flex-shrink-0">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                     <button
                       @click="previousStep"
-                      class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 mr-2"
+                      class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
                     >
-                      <ChevronLeft class="w-4 h-4" />
+                      <ChevronLeft class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                     <div
-                      class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                      class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0"
                     >
-                      <CheckCircle class="w-5 h-5" />
+                      <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <h2 class="text-2xl font-bold">Upload Receipt</h2>
-                      <p class="text-white/80 text-sm mt-1">Almost done!</p>
+                    <div class="min-w-0">
+                      <h2 class="text-lg sm:text-2xl font-bold truncate">Upload Receipt</h2>
+                      <p class="text-white/80 text-xs sm:text-sm mt-0.5 sm:mt-1">Almost done!</p>
                     </div>
                   </div>
                   <button
                     @click="closePaymentModal"
-                    class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                    class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
                   >
-                    <X class="w-4 h-4" />
+                    <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
 
               <!-- Content -->
-              <div class="p-8">
+              <div class="p-4 sm:p-8 overflow-y-auto flex-1">
                 <!-- Form -->
-                <form @submit.prevent="submitPaymentWithSync" class="space-y-6">
+                <form @submit.prevent="submitPaymentWithSync" class="space-y-4 sm:space-y-6">
                   <!-- Transaction Reference -->
                   <div>
                     <label
                       for="transactionRef"
-                      class="block text-sm font-medium text-slate-700 mb-2"
+                      class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2"
                     >
                       Transaction Reference <span class="text-red-500">*</span>
                     </label>
@@ -511,15 +514,15 @@
                       v-model="paymentForm.transaction_reference"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm text-sm sm:text-base"
                       placeholder="Enter transaction ID"
                     />
-                    <p class="text-xs text-slate-500 mt-1">From your payment confirmation</p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 mt-1">From your payment confirmation</p>
                   </div>
 
                   <!-- File Upload -->
                   <div>
-                    <label for="paymentProof" class="block text-sm font-medium text-slate-700 mb-2">
+                    <label for="paymentProof" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                       Payment Receipt <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
@@ -530,22 +533,22 @@
                         required
                         accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                         @change="handleFileSelect"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc]"
+                        class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-3 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc] text-xs sm:text-base"
                       />
-                      <p class="text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB)</p>
+                      <p class="text-[10px] sm:text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB)</p>
                     </div>
                   </div>
 
                   <!-- Notes (Optional) -->
                   <div>
-                    <label for="paymentNotes" class="block text-sm font-medium text-slate-700 mb-2">
+                    <label for="paymentNotes" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                       Notes <span class="text-slate-400">(Optional)</span>
                     </label>
                     <textarea
                       id="paymentNotes"
                       v-model="paymentForm.user_notes"
                       rows="2"
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none text-sm sm:text-base"
                       placeholder="Any additional notes..."
                     ></textarea>
                   </div>
@@ -554,16 +557,16 @@
                   <button
                     type="submit"
                     :disabled="submittingPayment || !isFormValid"
-                    class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center"
+                    class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 inline-flex items-center justify-center text-sm sm:text-base"
                   >
                     <span v-if="submittingPayment" class="flex items-center">
                       <div
-                        class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                        class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"
                       ></div>
                       Submitting...
                     </span>
                     <span v-else class="flex items-center">
-                      <CheckCircle class="w-4 h-4 mr-2" />
+                      <CheckCircle class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                       Submit Payment
                     </span>
                   </button>
@@ -572,12 +575,12 @@
             </div>
 
             <!-- Step Indicator -->
-            <div class="px-8 pb-6">
-              <div class="flex items-center justify-center space-x-2">
+            <div class="px-4 pb-4 sm:px-8 sm:pb-6 flex-shrink-0">
+              <div class="flex items-center justify-center space-x-1.5 sm:space-x-2">
                 <div
                   v-for="step in 3"
                   :key="step"
-                  class="w-3 h-3 rounded-full transition-all duration-200"
+                  class="w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-200"
                   :class="
                     step <= paymentStep
                       ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
@@ -596,57 +599,57 @@
       <Transition name="modal">
         <div
           v-if="showUpdateModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           @click="cancelUpdate"
         >
           <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full overflow-hidden max-h-[90vh] flex flex-col"
             @click.stop
           >
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-8 py-6 text-white">
+            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-4 sm:px-8 sm:py-6 text-white flex-shrink-0">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Pencil class="w-5 h-5" />
+                <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Pencil class="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <h2 class="text-2xl font-bold">Update Payment</h2>
+                  <h2 class="text-lg sm:text-2xl font-bold truncate">Update Payment</h2>
                 </div>
                 <button
                   @click="cancelUpdate"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
 
-            <div class="p-8">
-              <form @submit.prevent="updatePayment" class="space-y-6">
+            <div class="p-4 sm:p-8 overflow-y-auto flex-1">
+              <form @submit.prevent="updatePayment" class="space-y-4 sm:space-y-6">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                     Transaction Reference <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="updateForm.transaction_reference"
                     type="text"
                     required
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                    class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                     Payment Notes
                   </label>
                   <textarea
                     v-model="updateForm.user_notes"
                     rows="3"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                    class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none text-sm sm:text-base"
                   ></textarea>
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                     Payment Proof <span class="text-slate-500">(Optional)</span>
                   </label>
                   <input
@@ -654,22 +657,22 @@
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                     @change="handleUpdateFileSelect"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc] hover:file:bg-[#B0E0E6]"
+                    class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-3 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc] hover:file:bg-[#B0E0E6] text-xs sm:text-base"
                   />
                 </div>
 
-                <div class="flex space-x-4 pt-6">
+                <div class="flex space-x-3 sm:space-x-4 pt-4 sm:pt-6">
                   <button
                     type="button"
                     @click="cancelUpdate"
-                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 text-sm sm:text-base"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     :disabled="updatingPayment"
-                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     {{ updatingPayment ? 'Updating...' : 'Update Payment' }}
                   </button>

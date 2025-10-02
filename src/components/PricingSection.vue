@@ -3,26 +3,26 @@
     <!-- Background elements -->
     <div class="absolute inset-0">
       <div
-        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
+        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-emerald-100/20 rounded-full blur-3xl"
       ></div>
-      <div class="absolute bottom-0 right-0 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 right-0 w-72 h-72 bg-sky-100/20 rounded-full blur-3xl"></div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="text-center mb-20">
+      <div class="text-center mb-12 sm:mb-16 md:mb-20">
         <div
-          class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-sm font-medium px-4 py-2 rounded-full mb-6"
+          class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6"
         >
-          <Star class="h-4 w-4 mr-2" />
+          <Star class="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
           Simple & Transparent
         </div>
-        <h2 class="text-5xl font-bold text-slate-900 mb-6 leading-tight">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight px-4">
           Choose Your
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
             >Perfect Plan</span
           >
         </h2>
-        <p class="text-xl text-slate-600 max-w-3xl mx-auto">
+        <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto px-4">
           Start free, upgrade when you need more. No hidden fees, cancel anytime.
         </p>
       </div>
@@ -73,50 +73,63 @@
           </div>
         </div>
 
+        <!-- Swipe Indicator (Mobile Only) -->
+        <div class="md:hidden text-center mb-4 px-4">
+          <div class="inline-flex items-center gap-2 text-slate-600 text-sm animate-pulse">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            <span>Swipe to explore plans</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </div>
+        </div>
+
         <!-- Plans Grid -->
         <div
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto justify-items-center"
+          ref="plansContainer"
+          class="md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto justify-items-center overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide flex md:flex-none -mx-4 px-4 md:mx-0 md:px-0 py-6 md:py-2"
         >
           <div
             v-for="plan in Object.keys(categorizedPlans).length === 1
               ? Object.values(categorizedPlans)[0]
               : categorizedPlans[activeCategory] || []"
             :key="plan.id"
-            class="relative group w-full max-w-sm"
-            :class="plan.is_best_seller ? 'lg:transform lg:scale-105 lg:z-10' : ''"
+            class="relative group w-[70vw] md:w-full max-w-sm flex-shrink-0 md:flex-shrink snap-center mb-4 md:mb-8"
           >
             <!-- Best Seller Badge -->
             <div
               v-if="plan.is_best_seller"
-              class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20"
+              class="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-20"
             >
               <div
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-lg"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 shadow-lg"
               >
-                <Star class="w-4 h-4 fill-current" />
-                <span class="text-sm font-bold uppercase tracking-wide">Best Seller</span>
+                <Star class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 fill-current" />
+                <span class="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wide">Best Seller</span>
               </div>
             </div>
 
             <!-- Card -->
             <div
-              class="relative bg-white/90 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl h-[620px] flex flex-col group-hover:bg-white/95 transition-all duration-300"
+              class="relative backdrop-blur-sm rounded-2xl md:rounded-3xl h-[420px] sm:h-[480px] md:h-[540px] flex flex-col transition-all duration-300"
               :class="
                 plan.is_best_seller
-                  ? 'border-purple-300 shadow-2xl bg-white/95 shadow-purple-500/20'
-                  : ''
+                  ? 'bg-white/95 border-2 border-emerald-300 shadow-2xl shadow-emerald-500/20 group-hover:bg-white'
+                  : 'bg-white/90 border border-slate-200 shadow-xl group-hover:bg-white/95'
               "
             >
-              <!-- Plan header - Fixed height -->
-              <div class="text-center p-8 pb-6">
-                <h4 class="text-2xl font-bold text-slate-900 mb-4 tracking-tight">
+              <!-- Plan header - Responsive sizing -->
+              <div class="text-center p-4 sm:p-6 md:p-8 pb-3 sm:pb-4 md:pb-6">
+                <h4 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-2 sm:mb-3 md:mb-4 tracking-tight">
                   {{ plan.name }}
                 </h4>
-                <div class="mb-4">
+                <div class="mb-2 sm:mb-3 md:mb-4">
                   <div class="flex items-baseline justify-center gap-1">
-                    <span class="text-xl font-bold text-slate-600">$</span>
+                    <span class="text-base sm:text-lg md:text-xl font-bold text-slate-600">$</span>
                     <span
-                      class="text-5xl font-bold leading-none"
+                      class="text-3xl sm:text-4xl md:text-5xl font-bold leading-none"
                       :class="
                         plan.is_best_seller
                           ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
@@ -126,68 +139,48 @@
                     >
                   </div>
                 </div>
-                <p class="text-slate-600 text-base leading-relaxed">{{ plan.description }}</p>
+                <p class="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed">{{ plan.description }}</p>
               </div>
 
               <!-- Divider -->
               <div
-                class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-8 mb-6"
+                class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-4 sm:mx-6 md:mx-8 mb-3 sm:mb-4 md:mb-6"
               ></div>
 
-              <!-- Features section - Fixed height with scroll -->
-              <div class="px-8 flex-1">
+              <!-- Features section - Consistent flex-1 with scroll -->
+              <div class="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8 flex-1 flex flex-col min-h-0">
                 <h5
-                  class="text-slate-700 font-medium text-sm uppercase tracking-wider mb-4 flex items-center"
+                  class="text-slate-700 font-medium text-xs sm:text-sm uppercase tracking-wider mb-2 sm:mb-3 md:mb-4 flex items-center flex-shrink-0"
                 >
                   <div
-                    class="w-2 h-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mr-2"
+                    class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mr-1.5 sm:mr-2"
                   ></div>
                   What's Included
                 </h5>
                 <div
-                  class="h-[240px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent pr-2"
+                  class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent pr-1 sm:pr-2"
                 >
-                  <ul class="space-y-3">
+                  <ul class="space-y-2 sm:space-y-2.5 md:space-y-3">
                     <li
                       v-for="feature in plan.features"
                       :key="feature"
                       class="flex items-start text-slate-700"
                     >
                       <div
-                        class="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center mr-3 mt-0.5 shadow-lg shadow-emerald-500/25"
+                        class="flex-shrink-0 w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center mr-2 sm:mr-2.5 md:mr-3 mt-0.5 shadow-lg shadow-emerald-500/25"
                       >
-                        <Check class="w-3 h-3 text-white stroke-2" />
+                        <Check class="w-2.5 h-2.5 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 text-white stroke-2" />
                       </div>
-                      <span class="text-sm leading-relaxed font-medium">{{ feature }}</span>
+                      <span class="text-xs sm:text-sm leading-relaxed font-medium">{{ feature }}</span>
                     </li>
                   </ul>
                 </div>
               </div>
 
-              <!-- CTA Button - Fixed at bottom -->
-              <div class="p-8 pt-6">
-                <RouterLink
-                  to="/signup"
-                  class="w-full text-center block py-4 px-8 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  :class="
-                    plan.is_best_seller
-                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-emerald-500/25'
-                      : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
-                  "
-                >
-                  {{ plan.is_best_seller ? 'Choose This Plan' : 'Select Plan' }}
-                </RouterLink>
-              </div>
 
-              <!-- Enhanced hover effect -->
+              <!-- Enhanced hover effect overlay -->
               <div
-                class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-              ></div>
-
-              <!-- Best seller glow effect -->
-              <div
-                v-if="plan.is_best_seller"
-                class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-sky-500/10 rounded-3xl pointer-events-none"
+                class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
               ></div>
             </div>
           </div>
@@ -195,14 +188,16 @@
       </div>
 
       <!-- Bottom guarantee -->
-      <div class="text-center mt-16">
+      <div class="text-center mt-12 sm:mt-14 md:mt-16">
         <div
-          class="inline-flex items-center bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl px-8 py-4 shadow-lg"
+          class="inline-flex flex-col sm:flex-row items-center bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-8 py-3 sm:py-4 shadow-lg gap-2 sm:gap-0 max-w-[90vw] sm:max-w-none"
         >
-          <Shield class="h-6 w-6 text-green-500 mr-3" />
-          <span class="text-slate-700 font-medium text-lg">30-day money-back guarantee</span>
-          <div class="w-px h-6 bg-slate-200 mx-6"></div>
-          <span class="text-slate-500">No setup fees • Cancel anytime</span>
+          <div class="flex items-center">
+            <Shield class="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 mr-2 sm:mr-3 flex-shrink-0" />
+            <span class="text-slate-700 font-medium text-sm sm:text-base md:text-lg whitespace-nowrap">30-day money-back guarantee</span>
+          </div>
+          <div class="hidden sm:block w-px h-6 bg-slate-200 mx-4 md:mx-6"></div>
+          <span class="text-slate-500 text-xs sm:text-sm md:text-base whitespace-nowrap">No setup fees • Cancel anytime</span>
         </div>
       </div>
     </div>
@@ -210,10 +205,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { Star, Check, Shield } from 'lucide-vue-next'
-import { apiService, type PaginatedResponse } from '@/services/api'
 
 interface Category {
   id: number
@@ -245,6 +238,7 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const pricingPlans = ref<PricingPlan[]>([])
 const activeCategory = ref<string>('')
+const plansContainer = ref<HTMLElement | null>(null)
 
 const categorizedPlans = computed(() => {
   const categories: Record<string, PricingPlan[]> = {}
@@ -275,6 +269,35 @@ const categorizedPlans = computed(() => {
   return categories
 })
 
+// Scroll to best seller card on mobile
+const scrollToBestSeller = async () => {
+  await nextTick()
+
+  if (!plansContainer.value) return
+
+  // Only scroll on mobile (below 768px)
+  if (window.innerWidth >= 768) return
+
+  const currentPlans = Object.keys(categorizedPlans.value).length === 1
+    ? Object.values(categorizedPlans.value)[0]
+    : categorizedPlans.value[activeCategory.value] || []
+
+  const bestSellerIndex = currentPlans.findIndex((plan: PricingPlan) => plan.is_best_seller)
+
+  if (bestSellerIndex !== -1) {
+    const cards = plansContainer.value.children
+    const bestSellerCard = cards[bestSellerIndex] as HTMLElement
+
+    if (bestSellerCard) {
+      bestSellerCard.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      })
+    }
+  }
+}
+
 // Watch for changes in categorized plans and set active category
 watch(
   categorizedPlans,
@@ -283,9 +306,15 @@ watch(
     if (categories.length > 0 && !activeCategory.value) {
       activeCategory.value = categories[0]
     }
+    scrollToBestSeller()
   },
   { immediate: true },
 )
+
+// Watch for category changes to scroll to best seller
+watch(activeCategory, () => {
+  scrollToBestSeller()
+})
 
 const fetchPricingPlans = async () => {
   loading.value = true
@@ -424,6 +453,8 @@ onMounted(async () => {
   if (categories.length > 0) {
     activeCategory.value = categories[0]
   }
+  // Scroll to best seller after mount
+  scrollToBestSeller()
 })
 </script>
 

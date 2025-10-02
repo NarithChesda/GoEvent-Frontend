@@ -1,12 +1,29 @@
 import { ref } from 'vue'
 
-// Video configuration constants
+// Video configuration constants with mobile-specific optimizations
 const VIDEO_CONFIG = {
   MAX_MANAGED_VIDEOS: 10,
   MAX_CLEANUP_TIME: 5000, // 5 seconds
   CLEANUP_BATCH_SIZE: 3,
-  PAUSE_DELAY: 50,
+  PAUSE_DELAY: 100, // Increased for mobile browsers
+  MOBILE_MAX_VIDEOS: 5, // Lower limit for mobile devices
+  MOBILE_CLEANUP_TIMEOUT: 3000, // Faster cleanup on mobile
+  BLOB_CLEANUP_DELAY: 200, // Delay before blob URL revocation
+  FORCE_GC_THRESHOLD: 3, // Trigger GC after cleaning this many videos
 } as const
+
+// Mobile detection with enhanced checks
+const isMobileDevice = (): boolean => {
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         (window.screen?.width <= 768 && window.matchMedia('(pointer: coarse)').matches)
+}
+
+const isLowMemoryDevice = (): boolean => {
+  const deviceMemory = (navigator as any).deviceMemory
+  const hardwareConcurrency = navigator.hardwareConcurrency || 4
+
+  return deviceMemory ? deviceMemory <= 4 : hardwareConcurrency <= 2
+}
 
 export interface VideoError extends Error {
   videoElement?: HTMLVideoElement
@@ -27,12 +44,25 @@ export interface VideoError extends Error {
  * • **Deduplication**: Prevents duplicate videos for the same source
  */
 export function useVideoResourceManager() {
-  // Video resource management state
+  // Enhanced video resource management state with mobile optimizations
   const videoEventListeners = ref<
     Map<HTMLVideoElement, Array<{ event: string; handler: EventListener }>>
   >(new Map())
   const managedVideoElements = ref<Set<HTMLVideoElement>>(new Set())
   const videoCleanupCallbacks = ref<Set<() => void>>(new Set())
+
+  // Enhanced blob URL tracking with memory-conscious cleanup
+  const activeBlobUrls = ref<Map<string, { url: string; createdAt: number; videoElement?: WeakRef<HTMLVideoElement> }>>(new Map())
+  const pendingCleanupPromises = ref<Set<Promise<void>>>(new Set())
+
+  // Mobile-specific state
+  const isMobile = isMobileDevice()
+  const isLowMemory = isLowMemoryDevice()
+  const maxVideos = isMobile ? VIDEO_CONFIG.MOBILE_MAX_VIDEOS : VIDEO_CONFIG.MAX_MANAGED_VIDEOS
+
+  // Memory pressure detection
+  let lastGCTime = Date.now()
+  let cleanupCounter = 0
 
   /**
    * Validates video element for security and integrity
@@ -64,7 +94,7 @@ export function useVideoResourceManager() {
   }
 
   /**
-   * Register a video element for managed cleanup with validation
+   * Enhanced video registration with mobile-specific resource management
    */
   const registerVideo = (video: HTMLVideoElement, identifier?: string): void => {
     // Security validation
@@ -77,19 +107,47 @@ export function useVideoResourceManager() {
       return
     }
 
-    // Check resource limits
-    if (managedVideoElements.value.size >= VIDEO_CONFIG.MAX_MANAGED_VIDEOS) {
+    // Mobile-aware resource limits
+    if (managedVideoElements.value.size >= maxVideos) {
       enforceResourceLimits()
     }
 
     managedVideoElements.value.add(video)
 
-    // Add default error handler to prevent uncaught exceptions
-    const errorHandler = () => {
-      cleanupVideo(video)
+    // Enhanced error handling with mobile considerations
+    const errorHandler = (event: Event) => {
+      const error = (event.target as HTMLVideoElement)?.error
+      const errorCode = error?.code
+
+      // Mobile browsers often throw different error types
+      if (isMobile && (errorCode === MediaError.MEDIA_ERR_DECODE || errorCode === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
+        // For mobile decode errors, cleanup immediately to free memory
+        cleanupVideo(video)
+      } else {
+        // Standard error handling
+        cleanupVideo(video)
+      }
     }
 
+    // Mobile-specific event listeners for better resource management
     addVideoEventListener(video, 'error', errorHandler)
+
+    if (isMobile) {
+      // Mobile browsers benefit from additional cleanup triggers
+      addVideoEventListener(video, 'stalled', () => {
+        // If video is stalled for too long on mobile, consider cleanup
+        setTimeout(() => {
+          if (video.readyState === HTMLMediaElement.HAVE_NOTHING) {
+            cleanupVideo(video)
+          }
+        }, 10000) // 10 second stall timeout
+      })
+
+      addVideoEventListener(video, 'suspend', () => {
+        // Mobile browsers may suspend videos aggressively
+        // Track this for potential cleanup
+      })
+    }
   }
 
   /**
@@ -109,7 +167,7 @@ export function useVideoResourceManager() {
   }
 
   /**
-   * Clean up a specific video element with timeout and error boundaries
+   * Enhanced cleanup with mobile-specific optimizations and memory leak prevention
    */
   const cleanupVideo = (video: HTMLVideoElement | null): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -118,66 +176,112 @@ export function useVideoResourceManager() {
         return
       }
 
-      const cleanup = async () => {
-        // Remove all tracked event listeners
-        const listeners = videoEventListeners.value.get(video)
-        if (listeners) {
-          listeners.forEach(({ event, handler }) => {
-            try {
-              video.removeEventListener(event, handler)
-            } catch (error) {
-              console.warn('Error removing video event listener:', error)
-            }
-          })
-          videoEventListeners.value.delete(video)
-        }
-
-        // Cleanup video resources with error boundary and abort handling
+      // Create cleanup promise and track it
+      const cleanupPromise = (async () => {
         try {
-          // Handle any pending play promises to prevent AbortErrors
+          // 1. Remove all tracked event listeners with enhanced cleanup
+          const listeners = videoEventListeners.value.get(video)
+          if (listeners) {
+            listeners.forEach(({ event, handler }) => {
+              try {
+                video.removeEventListener(event, handler)
+              } catch (error) {
+                // Silently handle listener removal errors
+              }
+            })
+            videoEventListeners.value.delete(video)
+          }
+
+          // 2. Handle video playback state with mobile-aware pause delay
           if (!video.paused) {
             try {
               video.pause()
-              // Small delay to let any pending promises settle
-              await new Promise((resolve) => setTimeout(resolve, VIDEO_CONFIG.PAUSE_DELAY))
+              // Longer delay for mobile browsers to settle play promises
+              const pauseDelay = isMobile ? VIDEO_CONFIG.PAUSE_DELAY * 2 : VIDEO_CONFIG.PAUSE_DELAY
+              await new Promise((resolve) => setTimeout(resolve, pauseDelay))
             } catch (pauseError) {
-              console.warn('Error pausing video during cleanup:', pauseError)
+              // Mobile browsers often throw errors on pause, continue cleanup anyway
             }
           }
 
-          // Clear source with error handling
-          try {
-            video.src = ''
-            video.removeAttribute('src')
-            video.load()
-          } catch {
-            // Silently handle source clearing errors
+          // 3. Enhanced blob URL cleanup with tracking
+          const currentSrc = video.currentSrc || video.src
+          if (currentSrc && currentSrc.startsWith('blob:')) {
+            // Clean up from our blob tracking map
+            for (const [key, blobData] of activeBlobUrls.value.entries()) {
+              if (blobData.url === currentSrc) {
+                // Delay blob URL revocation for mobile stability
+                setTimeout(() => {
+                  try {
+                    URL.revokeObjectURL(blobData.url)
+                    activeBlobUrls.value.delete(key)
+                  } catch (error) {
+                    // Ignore revocation errors but still remove from tracking
+                    activeBlobUrls.value.delete(key)
+                  }
+                }, isMobile ? VIDEO_CONFIG.BLOB_CLEANUP_DELAY : 0)
+                break
+              }
+            }
           }
 
-          // Remove from managed set
+          // 4. Clear video sources with enhanced mobile handling
+          try {
+            // On mobile, clearing srcObject first can prevent memory leaks
+            if (video.srcObject) {
+              video.srcObject = null
+            }
+            video.removeAttribute('src')
+            video.load()
+
+            // Mobile-specific: Force video element reset
+            if (isMobile) {
+              video.currentTime = 0
+              // Clear any cached data
+              video.preload = 'none'
+            }
+          } catch (error) {
+            // Continue cleanup even if source clearing fails
+          }
+
+          // 5. Remove from managed set
           managedVideoElements.value.delete(video)
 
-          resolve()
+          // 6. Mobile memory management: trigger cleanup counter
+          cleanupCounter++
+          if (isMobile && cleanupCounter >= VIDEO_CONFIG.FORCE_GC_THRESHOLD) {
+            requestIdleCallback(() => {
+              triggerMemoryCleanup()
+              cleanupCounter = 0
+            })
+          }
+
         } catch (error) {
-          // Still remove from managed set even if cleanup partially failed
+          // Ensure video is removed from managed set even if cleanup fails
           managedVideoElements.value.delete(video)
-          reject(error)
+          throw error
         }
-      }
+      })()
 
-      // Apply timeout to prevent hanging cleanup
+      pendingCleanupPromises.value.add(cleanupPromise)
+
+      // Apply mobile-aware timeout
+      const timeoutMs = isMobile ? VIDEO_CONFIG.MOBILE_CLEANUP_TIMEOUT : VIDEO_CONFIG.MAX_CLEANUP_TIME
       const timeoutId = setTimeout(() => {
         managedVideoElements.value.delete(video)
+        pendingCleanupPromises.value.delete(cleanupPromise)
         reject(new Error('Cleanup timeout'))
-      }, VIDEO_CONFIG.MAX_CLEANUP_TIME)
+      }, timeoutMs)
 
-      cleanup()
+      cleanupPromise
         .then(() => {
           clearTimeout(timeoutId)
+          pendingCleanupPromises.value.delete(cleanupPromise)
           resolve()
         })
         .catch((error) => {
           clearTimeout(timeoutId)
+          pendingCleanupPromises.value.delete(cleanupPromise)
           reject(error)
         })
     })
@@ -201,29 +305,121 @@ export function useVideoResourceManager() {
   }
 
   /**
-   * Clean up all managed video resources
+   * Force memory cleanup for mobile browsers
    */
-  const cleanupAllVideos = (): void => {
-    // Cleanup all managed video elements
-    managedVideoElements.value.forEach((video) => {
-      cleanupVideo(video).catch(() => {
-        // Silently handle cleanup errors
-      })
-    })
+  const triggerMemoryCleanup = (): void => {
+    // Cleanup stale blob URLs (older than 5 minutes)
+    const now = Date.now()
+    const staleThreshold = 5 * 60 * 1000 // 5 minutes
 
-    // Execute custom cleanup callbacks
-    videoCleanupCallbacks.value.forEach((callback) => {
-      try {
-        callback()
-      } catch {
-        // Silently handle callback errors
+    for (const [key, blobData] of activeBlobUrls.value.entries()) {
+      if (now - blobData.createdAt > staleThreshold) {
+        try {
+          URL.revokeObjectURL(blobData.url)
+        } catch (error) {
+          // Ignore revocation errors
+        }
+        activeBlobUrls.value.delete(key)
       }
-    })
+    }
 
-    // Clear all tracking
-    videoEventListeners.value.clear()
-    managedVideoElements.value.clear()
-    videoCleanupCallbacks.value.clear()
+    // Mobile-specific: suggest garbage collection
+    if (isMobile && typeof window !== 'undefined') {
+      // Request idle callback to avoid blocking UI
+      requestIdleCallback(() => {
+        try {
+          // Force garbage collection if available (Chrome DevTools)
+          if ('gc' in window) {
+            (window as any).gc()
+          }
+        } catch (error) {
+          // Ignore GC errors
+        }
+      })
+    }
+
+    lastGCTime = now
+  }
+
+  /**
+   * Enhanced cleanup with mobile optimizations and concurrent handling
+   */
+  const cleanupAllVideos = async (): Promise<void> => {
+    try {
+      // Wait for any pending cleanup operations to complete
+      if (pendingCleanupPromises.value.size > 0) {
+        await Promise.allSettled(Array.from(pendingCleanupPromises.value))
+      }
+
+      // Create cleanup promises for all managed videos
+      const cleanupPromises = Array.from(managedVideoElements.value).map(video =>
+        cleanupVideo(video).catch(error => {
+          // Log mobile-specific cleanup issues
+          if (isMobile) {
+            console.warn('Mobile video cleanup failed:', error)
+          }
+        })
+      )
+
+      // Execute cleanup in batches to avoid overwhelming mobile browsers
+      if (isMobile && cleanupPromises.length > VIDEO_CONFIG.CLEANUP_BATCH_SIZE) {
+        for (let i = 0; i < cleanupPromises.length; i += VIDEO_CONFIG.CLEANUP_BATCH_SIZE) {
+          const batch = cleanupPromises.slice(i, i + VIDEO_CONFIG.CLEANUP_BATCH_SIZE)
+          await Promise.allSettled(batch)
+          // Small delay between batches for mobile stability
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      } else {
+        await Promise.allSettled(cleanupPromises)
+      }
+
+      // Execute custom cleanup callbacks
+      const callbackPromises = Array.from(videoCleanupCallbacks.value).map(callback =>
+        new Promise<void>(resolve => {
+          try {
+            callback()
+            resolve()
+          } catch (error) {
+            // Silently handle callback errors but still resolve
+            resolve()
+          }
+        })
+      )
+      await Promise.allSettled(callbackPromises)
+
+      // Clear all tracking
+      videoEventListeners.value.clear()
+      managedVideoElements.value.clear()
+      videoCleanupCallbacks.value.clear()
+
+      // Final cleanup of blob URLs and memory
+      activeBlobUrls.value.forEach((blobData, key) => {
+        try {
+          URL.revokeObjectURL(blobData.url)
+        } catch (error) {
+          // Ignore revocation errors
+        }
+        activeBlobUrls.value.delete(key)
+      })
+      activeBlobUrls.value.clear()
+
+      // Clear pending promises
+      pendingCleanupPromises.value.clear()
+
+      // Trigger final memory cleanup for mobile
+      if (isMobile) {
+        triggerMemoryCleanup()
+      }
+
+    } catch (error) {
+      console.warn('Error during complete video cleanup:', error)
+      // Ensure state is cleared even if cleanup fails
+      videoEventListeners.value.clear()
+      managedVideoElements.value.clear()
+      videoCleanupCallbacks.value.clear()
+      activeBlobUrls.value.clear()
+      pendingCleanupPromises.value.clear()
+    }
   }
 
   /**
@@ -249,44 +445,65 @@ export function useVideoResourceManager() {
    * This ensures the most "ready" video is kept while others are safely cleaned up.
    */
   const deduplicateVideos = (sourcePattern: string): HTMLVideoElement | null => {
-    const videos = Array.from(
-      document.querySelectorAll(`video[src*="${sourcePattern}"]`),
-    ) as HTMLVideoElement[]
+    // Find all videos with matching source patterns (including blob URLs)
+    const allVideos = Array.from(document.querySelectorAll('video')) as HTMLVideoElement[]
+    const videos = allVideos.filter((video) => {
+      const src = video.src || video.currentSrc || ''
+      return src.includes(sourcePattern) ||
+             (src.startsWith('blob:') && video.dataset.originalSrc === sourcePattern)
+    })
 
     if (videos.length <= 1) {
       return videos[0] || null
     }
 
-    // Keep the most ready video using intelligent scoring, cleanup others
+    // Enhanced scoring algorithm for better deduplication
     const sortedVideos = videos.sort((a, b) => {
       // Priority: in document, higher readyState, not paused, has proper styling
       const scoreA =
-        (document.contains(a) ? 8 : 0) +
-        a.readyState +
-        (a.paused ? 0 : 4) +
-        (a.style.opacity === '1' ? 2 : 0)
+        (document.contains(a) ? 16 : 0) +  // Increased weight for DOM attachment
+        (a.readyState * 2) +  // Double weight for ready state
+        (a.paused ? 0 : 8) +  // Increased weight for playing videos
+        (a.style.opacity === '1' ? 2 : 0) +
+        (a.style.display !== 'none' ? 2 : 0) +
+        (a.offsetParent !== null ? 2 : 0)  // Is visible in layout
       const scoreB =
-        (document.contains(b) ? 8 : 0) +
-        b.readyState +
-        (b.paused ? 0 : 4) +
-        (b.style.opacity === '1' ? 2 : 0)
+        (document.contains(b) ? 16 : 0) +
+        (b.readyState * 2) +
+        (b.paused ? 0 : 8) +
+        (b.style.opacity === '1' ? 2 : 0) +
+        (b.style.display !== 'none' ? 2 : 0) +
+        (b.offsetParent !== null ? 2 : 0)
       return scoreB - scoreA
     })
 
     const keepVideo = sortedVideos[0]
     const removeVideos = sortedVideos.slice(1)
 
-    // Cleanup duplicate videos with proper error handling
-    removeVideos.forEach((video) => {
-      // Pause and clear any pending play promises before cleanup
+    // Enhanced cleanup for duplicate videos
+    removeVideos.forEach(async (video) => {
+      // Pause and wait for any pending operations
       if (!video.paused) {
         try {
           video.pause()
+          // Give time for play promises to settle
+          await new Promise(resolve => setTimeout(resolve, 50))
         } catch {
           // Silently handle pause errors
         }
       }
 
+      // Clear source immediately to free resources
+      const currentSrc = video.currentSrc || video.src
+      if (currentSrc && currentSrc.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(currentSrc)
+        } catch {
+          // Ignore revoke errors
+        }
+      }
+
+      // Clean up the video element
       cleanupVideo(video).catch(() => {
         // Silently handle cleanup errors
       })
@@ -320,19 +537,59 @@ export function useVideoResourceManager() {
   }
 
   /**
-   * Create a safe video element with automatic registration
+   * Register a blob URL for cleanup tracking
+   */
+  const registerBlobUrl = (originalUrl: string, blobUrl: string, video?: HTMLVideoElement): void => {
+    activeBlobUrls.value.set(originalUrl, {
+      url: blobUrl,
+      createdAt: Date.now(),
+      videoElement: video ? new WeakRef(video) : undefined
+    })
+  }
+
+  /**
+   * Create a safe video element with automatic registration and mobile optimizations
    */
   const createManagedVideo = (src?: string, identifier?: string): HTMLVideoElement => {
     const video = document.createElement('video')
 
+    // Mobile-specific optimizations
+    if (isMobile) {
+      video.playsInline = true
+      video.preload = 'none' // Start with no preload on mobile
+      video.muted = true // Mobile requires muted for autoplay
+    }
+
     if (src) {
       video.src = src
+
+      // If it's a blob URL, register it for cleanup
+      if (src.startsWith('blob:')) {
+        registerBlobUrl(src, src, video)
+      }
     }
 
     // Register for cleanup management
     registerVideo(video, identifier)
 
     return video
+  }
+
+  /**
+   * Get memory usage statistics
+   */
+  const getMemoryStats = () => {
+    return {
+      managedVideos: managedVideoElements.value.size,
+      activeBlobUrls: activeBlobUrls.value.size,
+      pendingCleanups: pendingCleanupPromises.value.size,
+      totalListeners: Array.from(videoEventListeners.value.values()).reduce(
+        (sum, listeners) => sum + listeners.length, 0
+      ),
+      isMobileDevice: isMobile,
+      isLowMemoryDevice: isLowMemory,
+      lastGCTime: new Date(lastGCTime).toISOString()
+    }
   }
 
   return {
@@ -345,13 +602,25 @@ export function useVideoResourceManager() {
     deduplicateVideos,
     createManagedVideo,
 
+    // Enhanced blob URL management
+    registerBlobUrl,
+    triggerMemoryCleanup,
+
     // Resource management
     enforceResourceLimits,
     getStats,
     validateVideoElement,
+    getMemoryStats,
 
     // State (readonly)
     managedVideoCount: () => managedVideoElements.value.size,
+    activeBlobCount: () => activeBlobUrls.value.size,
+    pendingCleanupCount: () => pendingCleanupPromises.value.size,
+
+    // Device capabilities
+    isMobileDevice: () => isMobile,
+    isLowMemoryDevice: () => isLowMemory,
+    maxVideoLimit: () => maxVideos,
 
     // Constants
     VIDEO_CONFIG,

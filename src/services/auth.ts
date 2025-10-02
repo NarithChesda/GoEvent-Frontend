@@ -211,11 +211,11 @@ class AuthService {
   }
 
   async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
-    const response = await apiService.put<User>('/api/auth/profile/', data)
+    const response = await apiService.patch<User>('/api/auth/profile/', data)
 
-    if (response.success && response.data) {
-      this.setUser(response.data)
-    }
+    // Note: Storage persistence is now handled by auth store's setUser()
+    // to avoid duplicate storage operations
+    // The auth store will call authService.setUser() after merging the data
 
     return response
   }
@@ -243,9 +243,9 @@ class AuthService {
       // Handle token rotation: both access and refresh tokens are returned
       this.setTokens(response.data.access, response.data.refresh)
     } else {
-      // If refresh fails, clear all tokens
+      // If refresh fails, clear tokens but preserve user data
+      // The auth store's logout() will handle full cleanup if needed
       this.clearTokens()
-      this.clearUser()
     }
 
     return response
@@ -293,7 +293,7 @@ class AuthService {
     secureStorage.setItem('access_token', accessToken)
   }
 
-  private setUser(user: User): void {
+  setUser(user: User): void {
     try {
       // Sanitize user data before storing
       const sanitizedUser = this.sanitizeUserData(user)

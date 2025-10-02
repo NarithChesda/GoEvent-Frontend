@@ -1,119 +1,153 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl mb-8">
-    <!-- Filter Header -->
-    <div
-      @click="showFilters = !showFilters"
-      class="flex items-center justify-between p-6 pb-4 cursor-pointer hover:bg-white/50 transition-colors duration-200 rounded-t-3xl"
-    >
-      <div class="flex items-center space-x-3">
-        <div
-          class="w-6 h-6 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center"
-        >
-          <Search class="w-3 h-3 text-white" />
+  <div class="rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 overflow-hidden transition-all duration-300 shadow-md sm:shadow-lg shadow-emerald-300/20 focus-within:shadow-lg sm:focus-within:shadow-xl focus-within:shadow-[#1e90ff]/30 hover:shadow-lg sm:hover:shadow-xl hover:shadow-emerald-300/30 border sm:border-2 border-emerald-100 focus-within:border-[#1e90ff] hover:border-emerald-200">
+    <!-- Search Bar (Always Visible) - White Background -->
+    <div class="bg-white p-3 sm:p-5 md:p-6 pb-2 sm:pb-3 md:pb-4">
+      <div class="relative">
+        <div class="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 search-icon-gradient">
+          <Search class="w-full h-full" />
         </div>
-        <h3 class="text-lg font-semibold text-slate-900">Search & Filter Events</h3>
-        <span
-          v-if="hasActiveFilters"
-          class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-xs font-medium px-2.5 py-0.5 rounded-full"
-        >
-          {{ activeFilterCount }} active
-        </span>
-      </div>
-      <div
-        class="inline-flex items-center text-slate-600 hover:text-[#1e90ff] font-medium text-sm transition-colors duration-200"
-      >
-        <ChevronDown
-          class="w-5 h-5 transition-transform duration-200"
-          :class="{ 'rotate-180': showFilters }"
+        <input
+          v-model="localFilters.search"
+          @input="debouncedEmitFilters"
+          type="text"
+          placeholder="Search events..."
+          class="w-full pl-9 sm:pl-11 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl transition-all duration-200 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:text-slate-900 focus:placeholder-slate-400 outline-none border-none"
+          style="outline: none !important; border: none !important; box-shadow: none !important;"
         />
-        {{ showFilters ? 'Hide' : 'Show' }} Filters
       </div>
     </div>
 
-    <!-- Filters Content -->
-    <div
-      class="filter-content px-6 transition-all duration-300 ease-in-out overflow-hidden"
-      :class="showFilters ? 'max-h-[2000px] pb-6' : 'max-h-0 pb-0'"
-    >
-      <div class="space-y-6">
-        <!-- Search and Primary Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Search -->
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-slate-700 mb-2">Search Events</label>
-            <div class="relative">
-              <Search
-                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"
-              />
-              <input
-                v-model="localFilters.search"
-                @input="debouncedEmitFilters"
-                type="text"
-                placeholder="Search by title, description, or organizer..."
-                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
-              />
+    <!-- Filter Section Container - Greenish Background -->
+    <div class="bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 border-t border-emerald-200/50">
+
+      <!-- Filter Header -->
+      <div
+        @click="showFilters = !showFilters"
+        class="flex items-center justify-between px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 md:py-4 cursor-pointer hover:bg-emerald-100/70 transition-colors duration-200"
+      >
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <span
+            v-if="hasActiveFilters"
+            class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-md sm:shadow-lg shadow-[#87CEEB]/30"
+          >
+            {{ activeFilterCount }} active
+          </span>
+        </div>
+        <div
+          class="inline-flex items-center text-slate-700 hover:text-[#1e90ff] font-medium text-xs sm:text-sm transition-colors duration-200"
+        >
+          <ChevronDown
+            class="w-4 sm:w-5 h-4 sm:h-5 transition-transform duration-200 text-[#1e90ff]"
+            :class="{ 'rotate-180': showFilters }"
+          />
+          {{ showFilters ? 'Hide' : 'Show' }} Filters
+        </div>
+      </div>
+
+      <!-- Filters Content -->
+      <div
+        class="filter-content px-3 sm:px-5 md:px-6 transition-all duration-300 ease-in-out overflow-hidden"
+        :class="showFilters ? 'max-h-[2000px] pb-3 sm:pb-5 md:pb-6' : 'max-h-0 pb-0'"
+      >
+        <div class="space-y-4 sm:space-y-5 md:space-y-6">
+          <!-- Primary Filters -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <!-- Category Filter -->
+            <div>
+              <label for="category-filter" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Category</label>
+              <div class="relative">
+                <select
+                  id="category-filter"
+                  :value="localFilters.category || ''"
+@change="(e) => {
+                    const target = e.target as HTMLSelectElement
+                    const selectedValue = target?.value
+                    if (selectedValue === '') {
+                      localFilters.category = undefined
+                    } else {
+                      localFilters.category = selectedValue
+                    }
+                    emitFilters()
+                  }"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  aria-label="Filter events by category"
+                  aria-describedby="category-helper"
+                >
+                  <option value="">All Categories</option>
+                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                    {{ category.name }}
+                  </option>
+                </select>
+                <div
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <ChevronDown class="w-5 h-5 text-emerald-500 transition-colors duration-200" />
+                </div>
+              </div>
+              <div id="category-helper" class="sr-only">
+                Choose a category to filter events, or leave as 'All Categories' to see all events
+              </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+              <label for="status-filter" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Status</label>
+              <div class="relative">
+                <select
+                  id="status-filter"
+                  v-model="localFilters.status"
+                  @change="emitFilters"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  aria-label="Filter events by status"
+                  aria-describedby="status-helper"
+                >
+                  <option value="">All Status</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <div
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <ChevronDown class="w-5 h-5 text-emerald-500 transition-colors duration-200" />
+                </div>
+              </div>
+              <div id="status-helper" class="sr-only">
+                Choose a status to filter events, or leave as 'All Status' to see events in any status
+              </div>
             </div>
           </div>
 
-          <!-- Category Filter -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
-            <select
-              v-model="localFilters.category"
-              @change="emitFilters"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
+          <!-- Quick Filter Buttons -->
+          <div class="flex flex-wrap gap-2 sm:gap-3">
+            <button
+              @click="toggleFilter('is_virtual', true)"
+              :class="
+                localFilters.is_virtual === true
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
+                  : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
+              "
+              class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
             >
-              <option value="">All Categories</option>
-              <option v-for="category in categories" :key="category.id" :value="category.id">
-                {{ category.name }}
-              </option>
-            </select>
-          </div>
+              <Monitor class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+              Virtual
+            </button>
 
-          <!-- Status Filter -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
-            <select
-              v-model="localFilters.status"
-              @change="emitFilters"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
+            <button
+              @click="toggleFilter('is_virtual', false)"
+              :class="
+                localFilters.is_virtual === false
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
+                  : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
+              "
+              class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
             >
-              <option value="">All Status</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Quick Filter Buttons -->
-        <div class="flex flex-wrap gap-3">
-          <button
-            @click="toggleFilter('is_virtual', true)"
-            :class="
-              localFilters.is_virtual === true
-                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
-                : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-            "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-[#87CEEB]"
-          >
-            <Monitor class="w-4 h-4 mr-2" />
-            Virtual Only
-          </button>
-
-          <button
-            @click="toggleFilter('is_virtual', false)"
-            :class="
-              localFilters.is_virtual === false
-                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25'
-                : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-            "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-[#87CEEB]"
-          >
-            <MapPin class="w-4 h-4 mr-2" />
-            In-Person Only
-          </button>
+              <MapPin class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+              In-Person
+            </button>
 
           <button
             @click="setDateFilter('today')"
@@ -122,9 +156,9 @@
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25'
                 : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-green-200"
+            class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
           >
-            <Calendar class="w-4 h-4 mr-2" />
+            <Calendar class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
             Today
           </button>
 
@@ -135,10 +169,10 @@
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25'
                 : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-green-200"
+            class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
           >
-            <Calendar class="w-4 h-4 mr-2" />
-            This Week
+            <Calendar class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+            Week
           </button>
 
           <button
@@ -148,10 +182,10 @@
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25'
                 : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
             "
-            class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-green-200"
+            class="inline-flex items-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 border sm:border-2 border-emerald-300/60 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:scale-105"
           >
-            <Calendar class="w-4 h-4 mr-2" />
-            This Month
+            <Calendar class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+            Month
           </button>
         </div>
 
@@ -159,13 +193,13 @@
         <div>
           <button
             @click="showAdvanced = !showAdvanced"
-            class="inline-flex items-center text-[#1e90ff] hover:text-[#1873cc] font-medium text-sm transition-colors duration-200"
+            class="inline-flex items-center text-[#1e90ff] hover:text-[#1873cc] font-medium text-xs sm:text-sm transition-colors duration-200"
           >
             <ChevronDown
-              class="w-4 h-4 mr-1 transition-transform duration-200"
+              class="w-3 sm:w-4 h-3 sm:h-4 mr-0.5 sm:mr-1 transition-transform duration-200"
               :class="{ 'rotate-180': showAdvanced }"
             />
-            {{ showAdvanced ? 'Hide' : 'Show' }} Advanced Filters
+            {{ showAdvanced ? 'Hide' : 'Show' }} Advanced
           </button>
         </div>
 
@@ -175,60 +209,88 @@
           :class="showAdvanced ? 'max-h-[500px] pt-4' : 'max-h-0 pt-0'"
         >
           <div
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-gray-200"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-emerald-300/40"
             :class="showAdvanced ? 'pt-4' : 'pt-0'"
           >
             <!-- Date Range -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Start Date From</label>
+              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Start Date From</label>
               <input
                 v-model="localFilters.start_date_after"
                 @change="emitFilters"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Start Date To</label>
+              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Start Date To</label>
               <input
                 v-model="localFilters.start_date_before"
                 @change="emitFilters"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm"
               />
             </div>
 
             <!-- Privacy Filter -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Privacy</label>
-              <select
-                v-model="localFilters.privacy"
-                @change="emitFilters"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
-              >
-                <option value="">All Events</option>
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-              </select>
+              <label for="privacy-filter" class="block text-sm font-medium text-slate-700 mb-2">Privacy</label>
+              <div class="relative">
+                <select
+                  id="privacy-filter"
+                  v-model="localFilters.privacy"
+                  @change="emitFilters"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  aria-label="Filter events by privacy setting"
+                  aria-describedby="privacy-helper"
+                >
+                  <option value="">All Events</option>
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
+                </select>
+                <div
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <ChevronDown class="w-5 h-5 text-emerald-500 transition-colors duration-200" />
+                </div>
+              </div>
+              <div id="privacy-helper" class="sr-only">
+                Filter events by privacy setting: public events are visible to everyone, private events have restricted access
+              </div>
             </div>
 
             <!-- Sort By -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">Sort By</label>
-              <select
-                v-model="localFilters.ordering"
-                @change="emitFilters"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/50 backdrop-blur-sm"
-              >
-                <option value="">Default</option>
-                <option value="start_date">Start Date (Earliest)</option>
-                <option value="-start_date">Start Date (Latest)</option>
-                <option value="title">Title (A-Z)</option>
-                <option value="-title">Title (Z-A)</option>
-                <option value="-created_at">Recently Added</option>
-                <option value="-registrations_count">Most Popular</option>
-              </select>
+              <label for="sort-filter" class="block text-sm font-medium text-slate-700 mb-2">Sort By</label>
+              <div class="relative">
+                <select
+                  id="sort-filter"
+                  v-model="localFilters.ordering"
+                  @change="emitFilters"
+                  class="custom-select w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 pr-8 sm:pr-10 text-xs sm:text-sm md:text-base border sm:border-2 border-emerald-300/60 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/80 backdrop-blur-sm text-slate-700 shadow-sm appearance-none cursor-pointer hover:border-emerald-400/70 hover:shadow-md"
+                  aria-label="Sort events by specific criteria"
+                  aria-describedby="sort-helper"
+                >
+                  <option value="">Default</option>
+                  <option value="start_date">Start Date (Earliest)</option>
+                  <option value="-start_date">Start Date (Latest)</option>
+                  <option value="title">Title (A-Z)</option>
+                  <option value="-title">Title (Z-A)</option>
+                  <option value="-created_at">Recently Added</option>
+                  <option value="-registrations_count">Most Popular</option>
+                </select>
+                <div
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <ChevronDown class="w-5 h-5 text-emerald-500 transition-colors duration-200" />
+                </div>
+              </div>
+              <div id="sort-helper" class="sr-only">
+                Choose how to sort the event list: by date, title, or popularity
+              </div>
             </div>
           </div>
         </div>
@@ -237,15 +299,16 @@
         <div v-if="hasActiveFilters" class="flex justify-end">
           <button
             @click="clearFilters"
-            class="inline-flex items-center text-slate-600 hover:text-red-600 text-sm font-medium transition-colors duration-200 hover:bg-red-50 px-3 py-2 rounded-lg"
+            class="inline-flex items-center text-slate-600 hover:text-red-600 text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-200 hover:bg-red-50 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg sm:rounded-xl border sm:border-2 border-red-200/60 hover:border-red-300 shadow-sm hover:shadow-md"
           >
-            <X class="w-4 h-4 mr-1" />
-            Clear All Filters
+            <X class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 mr-0.5 sm:mr-1" />
+            Clear All
           </button>
         </div>
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -271,13 +334,15 @@ const localFilters = reactive<EventFilters>({ ...props.modelValue })
 
 const activeFilterCount = computed(() => {
   return Object.keys(localFilters).filter((key) => {
+    // Exclude search from active filter count since it's always visible
+    if (key === 'search') return false
     const value = localFilters[key as keyof EventFilters]
     return value !== undefined && value !== null && value !== ''
   }).length
 })
 
 // Debounced search
-let searchTimeout: number | null = null
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const debouncedEmitFilters = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -295,7 +360,7 @@ const toggleFilter = (key: keyof EventFilters, value: boolean | string | number)
     delete localFilters[key]
   } else {
     // Set the new value
-    ;(localFilters as any)[key] = value
+    ;(localFilters as Record<keyof EventFilters, unknown>)[key] = value
   }
   emitFilters()
 }
@@ -392,5 +457,170 @@ watch(
   transition:
     max-height 0.3s ease-in-out,
     padding 0.3s ease-in-out;
+}
+
+/* Search Icon Gradient */
+.search-icon-gradient {
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  -webkit-mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z' /%3e%3c/svg%3e") no-repeat center;
+  mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z' /%3e%3c/svg%3e") no-repeat center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.search-icon-gradient svg {
+  opacity: 0;
+}
+
+/* Custom Select Dropdown Styling */
+.custom-select {
+  /* Enhanced focus state with emerald ring and blue border */
+  @apply focus:ring-emerald-200/80;
+}
+
+/* Custom arrow icon color change on focus and hover */
+.custom-select:focus + div svg,
+.custom-select:hover + div svg {
+  @apply text-blue-500;
+}
+
+/* Dropdown options styling - targeting the actual dropdown */
+.custom-select option {
+  @apply bg-white text-slate-700 py-3 px-4;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  border-radius: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Default/placeholder option styling */
+.custom-select option[value=""] {
+  @apply text-slate-500 font-medium;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+
+/* Regular options hover and selection styling */
+.custom-select option:not([value=""]) {
+  @apply text-slate-700;
+  background: #ffffff;
+}
+
+.custom-select option:hover,
+.custom-select option:focus {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 50%, #dbeafe 100%);
+  @apply text-slate-800;
+  box-shadow: inset 0 1px 0 rgba(46, 204, 113, 0.1);
+}
+
+.custom-select option:checked,
+.custom-select option:selected {
+  background: linear-gradient(135deg, #10b981 0%, #1e90ff 100%);
+  @apply text-white font-semibold;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced visual feedback for select state changes */
+.custom-select:focus {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px rgba(16, 185, 129, 0.15),
+    0 0 0 2px rgba(30, 144, 255, 0.2);
+}
+
+/* Subtle hover animation for the entire select container */
+.custom-select:hover {
+  transform: translateY(-0.5px);
+  box-shadow:
+    0 2px 8px rgba(16, 185, 129, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Browser-specific dropdown styling */
+@supports (appearance: none) {
+  .custom-select {
+    /* Enhanced appearance for modern browsers */
+    background-image: none;
+  }
+}
+
+/* Firefox specific option styling */
+@-moz-document url-prefix() {
+  .custom-select option {
+    background-color: #ffffff;
+    color: #374151;
+  }
+
+  .custom-select option:hover {
+    background-color: #d1fae5;
+    color: #1f2937;
+  }
+
+  .custom-select option:checked {
+    background: linear-gradient(135deg, #10b981 0%, #1e90ff 100%);
+    color: white;
+  }
+}
+
+/* Webkit specific dropdown styling */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .custom-select::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-select::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+
+  .custom-select::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #10b981, #1e90ff);
+    border-radius: 4px;
+  }
+
+  .custom-select::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #059669, #1d4ed8);
+  }
+}
+
+/* Enhanced spacing and visual hierarchy */
+.custom-select {
+  line-height: 1.5;
+  letter-spacing: 0.025em;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+  .custom-select {
+    @apply text-base;
+    min-height: 3rem;
+  }
+
+  .custom-select option {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .custom-select {
+    @apply border-slate-600;
+  }
+
+  .custom-select option:selected {
+    background: #000000;
+    color: #ffffff;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .custom-select {
+    transition: none;
+  }
+
+  .custom-select option {
+    transition: none;
+  }
 }
 </style>

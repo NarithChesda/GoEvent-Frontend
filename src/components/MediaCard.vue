@@ -6,7 +6,7 @@
     @dragover.prevent
     @dragenter.prevent
     @drop="handleDrop"
-    class="media-card bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 group"
+    class="media-card bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 group"
     :class="[
       isDragging ? 'opacity-50 transform rotate-1 scale-105' : '',
       canEdit && draggable ? 'hover:scale-[1.02]' : '',
@@ -22,21 +22,21 @@
       />
 
       <!-- Featured Badge -->
-      <div v-if="media.is_featured" class="absolute top-2 left-2">
+      <div v-if="media.is_featured" class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2">
         <span
-          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg"
+          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg"
         >
-          <Star class="w-3 h-3 mr-1" />
-          Featured
+          <Star class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+          <span class="hidden sm:inline">Featured</span>
         </span>
       </div>
 
       <!-- Drag Handle (only visible if can edit and draggable) -->
       <div
         v-if="canEdit && draggable"
-        class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-1 rounded-lg bg-black/50 backdrop-blur-sm"
+        class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-0.5 sm:p-1 rounded-lg bg-black/50 backdrop-blur-sm"
       >
-        <GripVertical class="w-4 h-4 text-white" />
+        <GripVertical class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
       </div>
 
       <!-- Actions Overlay -->
@@ -44,20 +44,20 @@
         v-if="canEdit"
         class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
       >
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1.5 sm:space-x-2">
           <!-- Edit Button -->
           <button
             @click="$emit('edit', media)"
-            class="p-2 bg-white/90 hover:bg-white text-slate-700 hover:text-[#1e90ff] rounded-lg transition-colors duration-200"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white text-slate-700 hover:text-[#1e90ff] rounded-lg transition-colors duration-200"
             title="Edit media"
           >
-            <Edit2 class="w-4 h-4" />
+            <Edit2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           <!-- Featured Toggle Button -->
           <button
             @click="$emit('set-featured', media)"
-            class="p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200"
             :class="
               media.is_featured
                 ? 'text-yellow-500 hover:text-yellow-600'
@@ -65,16 +65,16 @@
             "
             :title="media.is_featured ? 'Remove from featured' : 'Mark as featured'"
           >
-            <Star class="w-4 h-4" :class="media.is_featured ? 'fill-current' : ''" />
+            <Star class="w-3.5 h-3.5 sm:w-4 sm:h-4" :class="media.is_featured ? 'fill-current' : ''" />
           </button>
 
           <!-- Delete Button -->
           <button
             @click="$emit('delete', media)"
-            class="p-2 bg-white/90 hover:bg-white text-slate-400 hover:text-red-600 rounded-lg transition-colors duration-200"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white text-slate-400 hover:text-red-600 rounded-lg transition-colors duration-200"
             title="Delete media"
           >
-            <Trash2 class="w-4 h-4" />
+            <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
@@ -82,40 +82,40 @@
       <!-- Loading State for Broken Images -->
       <div v-if="imageError" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
         <div class="text-center">
-          <ImageIcon class="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <p class="text-xs text-gray-500">Failed to load image</p>
+          <ImageIcon class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto mb-1 sm:mb-2" />
+          <p class="text-[10px] sm:text-xs text-gray-500">Failed to load image</p>
         </div>
       </div>
     </div>
 
     <!-- Content -->
-    <div class="p-4">
+    <div class="p-3 sm:p-4">
       <!-- Caption and Order -->
-      <div class="flex items-start justify-between mb-2">
+      <div class="flex items-start justify-between mb-1.5 sm:mb-2">
         <div class="flex-1 min-w-0">
-          <h4 class="font-medium text-slate-900 truncate">
+          <h4 class="text-sm sm:text-base font-medium text-slate-900 truncate">
             {{ media.caption || 'Untitled Media' }}
           </h4>
         </div>
         <span
-          class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 shrink-0"
+          class="ml-1.5 sm:ml-2 inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 text-slate-700 shrink-0"
         >
           #{{ media.order }}
         </span>
       </div>
 
       <!-- Upload Date -->
-      <div class="flex items-center text-xs text-slate-500">
-        <Calendar class="w-3 h-3 mr-1" />
+      <div class="flex items-center text-[10px] sm:text-xs text-slate-500">
+        <Calendar class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
         {{ formatDate(media.created_at) }}
       </div>
 
       <!-- Featured Status (for non-edit mode) -->
-      <div v-if="!canEdit && media.is_featured" class="mt-2">
+      <div v-if="!canEdit && media.is_featured" class="mt-1.5 sm:mt-2">
         <span
-          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
+          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
         >
-          <Star class="w-3 h-3 mr-1" />
+          <Star class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
           Featured
         </span>
       </div>

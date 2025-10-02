@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
-    <Navigation />
+  <MainLayout>
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
 
     <!-- Loading State -->
     <div v-if="loading" class="pt-24 pb-16">
@@ -21,48 +21,48 @@
     </div>
 
     <!-- Edit Form -->
-    <div v-else-if="event" class="pt-24 pb-16">
-      <div class="max-w-4xl mx-auto px-6 lg:px-8">
+    <div v-else-if="event" class="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-14 md:pb-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="mb-8">
-          <div class="flex items-center space-x-4 mb-4">
+        <div class="mb-6 sm:mb-8">
+          <div class="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
             <button
               @click="$router.back()"
-              class="p-2 text-slate-500 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-all duration-200"
+              class="p-1.5 sm:p-2 text-slate-500 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-all duration-200"
             >
-              <ArrowLeft class="w-6 h-6" />
+              <ArrowLeft class="w-5 sm:w-6 h-5 sm:h-6" />
             </button>
-            <h1 class="text-3xl font-bold text-slate-900">Edit Event</h1>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Edit Event</h1>
           </div>
-          <p class="text-slate-600">Update your event details and settings.</p>
+          <p class="text-sm sm:text-base text-slate-600">Update your event details and settings.</p>
         </div>
 
         <!-- Form -->
         <form
           @submit.prevent="handleSubmit"
-          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 space-y-8"
+          class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-7 md:space-y-8"
         >
           <!-- Basic Information -->
-          <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+          <div class="space-y-4 sm:space-y-5 md:space-y-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
               Basic Information
             </h2>
 
             <!-- Title -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2"> Event Title * </label>
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Event Title * </label>
               <input
                 v-model="form.title"
                 type="text"
                 required
                 placeholder="Enter event title"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
             </div>
 
             <!-- Short Description -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                 Short Description
               </label>
               <input
@@ -70,7 +70,7 @@
                 type="text"
                 maxlength="300"
                 placeholder="Brief description for event cards"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
               <p class="text-xs text-slate-500 mt-1">
                 {{ form.short_description?.length || 0 }}/300 characters
@@ -79,24 +79,24 @@
 
             <!-- Description -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                 Full Description *
               </label>
               <textarea
                 v-model="form.description"
                 required
-                rows="6"
+                rows="4"
                 placeholder="Detailed event description"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
               ></textarea>
             </div>
 
             <!-- Category -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2"> Category </label>
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Category </label>
               <select
                 v-model="form.category"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
                 <option value="">Select a category</option>
                 <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -107,42 +107,42 @@
           </div>
 
           <!-- Date and Time -->
-          <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+          <div class="space-y-4 sm:space-y-5 md:space-y-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
               Date & Time
             </h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Start Date & Time *
                 </label>
                 <input
                   v-model="form.start_date"
                   type="datetime-local"
                   required
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   End Date & Time *
                 </label>
                 <input
                   v-model="form.end_date"
                   type="datetime-local"
                   required
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
             </div>
 
             <!-- Timezone -->
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2"> Timezone </label>
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Timezone </label>
               <select
                 v-model="form.timezone"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               >
                 <optgroup
                   v-for="(timezones, region) in timezonesByRegion"
@@ -165,72 +165,72 @@
           </div>
 
           <!-- Location -->
-          <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+          <div class="space-y-4 sm:space-y-5 md:space-y-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
               Location
             </h2>
 
             <!-- Virtual Event Toggle -->
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 sm:space-x-3">
               <input
                 v-model="form.is_virtual"
                 type="checkbox"
                 id="is_virtual"
-                class="w-5 h-5 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
+                class="w-4 sm:w-5 h-4 sm:h-5 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
               />
-              <label for="is_virtual" class="text-sm font-medium text-slate-700">
+              <label for="is_virtual" class="text-xs sm:text-sm font-medium text-slate-700">
                 This is a virtual event
               </label>
             </div>
 
             <!-- Location or Virtual Link -->
             <div v-if="!form.is_virtual">
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                 Event Location
               </label>
               <textarea
                 v-model="form.location"
                 rows="3"
                 placeholder="Event location address"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
               ></textarea>
             </div>
 
             <div v-else>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                 Virtual Meeting Link
               </label>
               <input
                 v-model="form.virtual_link"
                 type="url"
                 placeholder="https://zoom.us/meeting/..."
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
             </div>
           </div>
 
           <!-- Event Settings -->
-          <div class="space-y-6">
-            <h2 class="text-xl font-semibold text-slate-900 border-b border-gray-200 pb-3">
+          <div class="space-y-4 sm:space-y-5 md:space-y-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
               Event Settings
             </h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
               <!-- Privacy -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Event Privacy
                 </label>
-                <div class="space-y-3">
+                <div class="space-y-2 sm:space-y-3">
                   <label class="flex items-center">
                     <input
                       v-model="form.privacy"
                       type="radio"
                       value="public"
-                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
+                      class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
-                    <span class="ml-3 text-sm text-slate-700">
-                      <span class="font-medium">Public</span> - Anyone can view and register
+                    <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-700">
+                      <span class="font-medium">Public</span> - <span class="hidden sm:inline">Anyone can view and register</span><span class="sm:hidden">Public access</span>
                     </span>
                   </label>
                   <label class="flex items-center">
@@ -238,10 +238,10 @@
                       v-model="form.privacy"
                       type="radio"
                       value="private"
-                      class="w-4 h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
+                      class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
                     />
-                    <span class="ml-3 text-sm text-slate-700">
-                      <span class="font-medium">Private</span> - Only invited users can view
+                    <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-700">
+                      <span class="font-medium">Private</span> - <span class="hidden sm:inline">Only invited users can view</span><span class="sm:hidden">Invite only</span>
                     </span>
                   </label>
                 </div>
@@ -249,12 +249,12 @@
 
               <!-- Status -->
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Event Status
                 </label>
                 <select
                   v-model="form.status"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
@@ -267,21 +267,21 @@
 
           <!-- Action Buttons -->
           <div
-            class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-8 border-t border-gray-200"
+            class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-6 md:pt-8 border-t border-gray-200"
           >
             <button
               type="button"
               @click="$router.back()"
-              class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+              class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
             >
               Cancel
             </button>
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="px-8 py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+              class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
             >
-              <Loader v-if="isSubmitting" class="w-5 h-5 mr-2 animate-spin" />
+              <Loader v-if="isSubmitting" class="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5 mr-1.5 sm:mr-2 animate-spin" />
               {{ isSubmitting ? 'Updating...' : 'Update Event' }}
             </button>
           </div>
@@ -308,7 +308,7 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-28 lg:bottom-8 right-6 z-50">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
@@ -319,14 +319,15 @@
         </div>
       </div>
     </Transition>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Loader, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
-import Navigation from '../components/Navigation.vue'
+import MainLayout from '../components/MainLayout.vue'
 import {
   eventsService,
   eventCategoriesService,

@@ -3,18 +3,19 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
           Hosts & Speakers
         </h2>
-        <p class="text-sm text-slate-600 mt-1">Manage event hosts, speakers, and moderators</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage event hosts, speakers, and moderators</p>
       </div>
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
       >
-        <UserPlus class="w-4 h-4 mr-2" />
-        Add Host
+        <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span class="hidden sm:inline">Add Host</span>
+        <span class="sm:hidden">Add</span>
       </button>
     </div>
 
@@ -23,11 +24,11 @@
     <!-- Loading State -->
     <div
       v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
     >
       <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-3 text-slate-600">Loading hosts...</span>
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading hosts...</span>
       </div>
     </div>
 
@@ -35,11 +36,11 @@
     <div v-else-if="hosts.length > 0" class="space-y-6">
       <!-- All Hosts -->
       <div class="space-y-4">
-        <h3 class="text-lg font-bold text-slate-900 flex items-center">
-          <Users class="w-5 h-5 text-purple-600 mr-2" />
+        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+          <Users class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1.5 sm:mr-2" />
           All Hosts ({{ hosts.length }})
         </h3>
-        <div ref="sortableContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div ref="sortableContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <HostCard
             v-for="host in hosts"
             :key="host.id"
@@ -60,43 +61,43 @@
     <!-- Empty State -->
     <div
       v-else-if="!loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">No Hosts Added Yet</h3>
-      <p class="text-slate-600 mb-6">Add hosts and speakers to showcase your event team.</p>
+      <Users class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Hosts Added Yet</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Add hosts and speakers to showcase your event team.</p>
       <button
         v-if="canEdit"
         @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
-        <UserPlus class="w-4 h-4 mr-2" />
+        <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
         Add Your First Host
       </button>
     </div>
 
     <!-- Host Roles Info -->
     <div
-      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-6"
+      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-4 sm:p-6"
     >
-      <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
-        <Info class="w-5 h-5 text-[#1e90ff] mr-2" />
+      <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
+        <Info class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
         Host Roles
       </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-white/70 rounded-2xl p-4">
-          <div class="flex items-center mb-2">
-            <Users class="w-5 h-5 text-purple-600 mr-2" />
-            <span class="font-semibold text-slate-900">Host</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div class="bg-white/70 rounded-lg sm:rounded-xl p-3 sm:p-4">
+          <div class="flex items-center mb-1 sm:mb-2">
+            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1.5 sm:mr-2" />
+            <span class="text-sm sm:text-base font-semibold text-slate-900">Host</span>
           </div>
-          <p class="text-sm text-slate-600">Manages and facilitates the event</p>
+          <p class="text-xs sm:text-sm text-slate-600">Manages and facilitates the event</p>
         </div>
-        <div class="bg-white/70 rounded-2xl p-4">
-          <div class="flex items-center mb-2">
-            <Users class="w-5 h-5 text-orange-600 mr-2" />
-            <span class="font-semibold text-slate-900">Featured</span>
+        <div class="bg-white/70 rounded-lg sm:rounded-xl p-3 sm:p-4">
+          <div class="flex items-center mb-1 sm:mb-2">
+            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 mr-1.5 sm:mr-2" />
+            <span class="text-sm sm:text-base font-semibold text-slate-900">Featured</span>
           </div>
-          <p class="text-sm text-slate-600">Highlighted event personalities</p>
+          <p class="text-xs sm:text-sm text-slate-600">Highlighted event personalities</p>
         </div>
       </div>
     </div>

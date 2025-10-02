@@ -207,147 +207,163 @@
           </template>
         </div>
 
-        <!-- Mobile menu button -->
-        <div class="lg:hidden">
-          <button
-            @click="mobileMenuOpen = !mobileMenuOpen"
-            class="text-slate-700 hover:text-[#1e90ff] p-3 rounded-xl transition-all duration-300 hover:bg-[#E6F4FF]"
-          >
-            <Menu v-if="!mobileMenuOpen" class="w-6 h-6" />
-            <X v-else class="w-6 h-6" />
-          </button>
+        <!-- Mobile Spacer (replaces menu button) -->
+        <div class="lg:hidden w-12"></div>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- Mobile Tab Bar (outside nav for independent positioning) -->
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+    <div class="bg-white/95 backdrop-blur-sm border-t border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10">
+      <div class="flex items-center justify-around px-2 py-2">
+        <!-- Home Tab -->
+        <RouterLink
+          to="/"
+          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
+          :class="$route.path === '/' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
+        >
+          <Home class="w-5 h-5 flex-shrink-0" />
+          <span class="text-xs font-medium truncate">Home</span>
+        </RouterLink>
+
+        <!-- About Tab -->
+        <RouterLink
+          to="/about"
+          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
+          :class="$route.path === '/about' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
+        >
+          <Info class="w-5 h-5 flex-shrink-0" />
+          <span class="text-xs font-medium truncate">About</span>
+        </RouterLink>
+
+        <!-- Events Tab -->
+        <RouterLink
+          to="/events"
+          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
+          :class="$route.path === '/events' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
+        >
+          <Calendar class="w-5 h-5 flex-shrink-0" />
+          <span class="text-xs font-medium truncate">Events</span>
+        </RouterLink>
+
+        <!-- Pricing Tab -->
+        <button
+          @click="scrollToPricing"
+          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1 text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50"
+        >
+          <DollarSign class="w-5 h-5 flex-shrink-0" />
+          <span class="text-xs font-medium truncate">Pricing</span>
+        </button>
+
+        <!-- Profile Tab -->
+        <div class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1">
+          <template v-if="!authStore.isAuthenticated">
+            <RouterLink
+              :to="signinLink"
+              class="flex flex-col items-center space-y-1 text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50 w-full rounded-xl p-1"
+            >
+              <User class="w-5 h-5 flex-shrink-0" />
+              <span class="text-xs font-medium truncate">Sign In</span>
+            </RouterLink>
+          </template>
+          <template v-else>
+            <button
+              @click="userMenuOpen = !userMenuOpen"
+              class="flex flex-col items-center space-y-1 text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50 w-full rounded-xl p-1"
+              :class="userMenuOpen ? 'text-[#1e90ff] bg-[#E6F4FF]' : ''"
+            >
+              <div class="w-5 h-5 rounded-full overflow-hidden ring-1 ring-slate-300 flex-shrink-0">
+                <img
+                  v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
+                  :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
+                  :alt="authStore.user.first_name || authStore.user.username"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div
+                  v-else
+                  class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-xs"
+                >
+                  {{ authStore.userInitials }}
+                </div>
+              </div>
+              <span class="text-xs font-medium truncate">Profile</span>
+            </button>
+          </template>
         </div>
       </div>
 
-      <!-- Mobile Navigation Menu -->
-      <div
-        v-show="mobileMenuOpen"
-        class="lg:hidden border-t border-[#B0E0E6]/50 backdrop-blur-md"
-        :class="{ 'animate-slideDown': mobileMenuOpen }"
-      >
-        <div class="px-4 pt-4 pb-6 space-y-2">
-          <RouterLink
-            to="/"
-            @click="mobileMenuOpen = false"
-            class="block text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-            active-class="text-[#1e90ff] bg-[#E6F4FF]"
-          >
-            Home
-          </RouterLink>
-          <RouterLink
-            to="/about"
-            @click="mobileMenuOpen = false"
-            class="block text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-            active-class="text-[#1e90ff] bg-[#E6F4FF]"
-          >
-            About
-          </RouterLink>
-          <RouterLink
-            to="/events"
-            @click="mobileMenuOpen = false"
-            class="block text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-            active-class="text-[#1e90ff] bg-[#E6F4FF]"
-          >
-            Events
-          </RouterLink>
-          <button
-            @click="
-              scrollToPricing();
-              mobileMenuOpen = false
-            "
-            class="block w-full text-left text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-          >
-            Pricing
-          </button>
-        </div>
-        <div class="px-4 pb-6 border-t border-[#B0E0E6]/50 pt-4">
-          <template v-if="!authStore.isAuthenticated">
-            <div class="space-y-3">
-              <RouterLink
-                :to="signinLink"
-                @click="mobileMenuOpen = false"
-                class="block text-center text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300"
-              >
-                Sign In
-              </RouterLink>
-              <RouterLink
-                to="/signup"
-                @click="mobileMenuOpen = false"
-                class="block text-center bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-4 rounded-xl text-base font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 hover:scale-105"
-              >
-                Get Started
-              </RouterLink>
-            </div>
-          </template>
-          <template v-else>
-            <div class="space-y-2">
-              <!-- User Info -->
-              <div class="flex items-center space-x-3 px-4 py-3 bg-[#E6F4FF] rounded-xl">
-                <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white">
-                  <img
-                    v-if="
-                      authStore.user?.profile_picture &&
-                      apiService.getProfilePictureUrl(authStore.user.profile_picture)
-                    "
-                    :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
-                    :alt="authStore.user.first_name || authStore.user.username"
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div
-                    v-else
-                    class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold"
-                  >
-                    {{ authStore.userInitials }}
-                  </div>
-                </div>
-                <div>
-                  <div class="font-semibold text-slate-900">
-                    {{ authStore.user?.first_name || authStore.user?.username }}
-                  </div>
-                  <div class="text-sm text-slate-500">{{ authStore.user?.email }}</div>
+      <!-- Mobile User Menu (when authenticated and menu is open) -->
+      <Transition name="slideUp">
+        <div
+          v-if="userMenuOpen && authStore.isAuthenticated"
+          class="border-t border-[#B0E0E6]/50 bg-white/95 backdrop-blur-sm"
+        >
+          <div class="px-4 py-4 space-y-3">
+            <!-- User Info -->
+            <div class="flex items-center space-x-3 px-3 py-2 bg-[#E6F4FF] rounded-xl">
+              <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
+                <img
+                  v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
+                  :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
+                  :alt="authStore.user.first_name || authStore.user.username"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div
+                  v-else
+                  class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
+                >
+                  {{ authStore.userInitials }}
                 </div>
               </div>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  {{ authStore.user?.first_name || authStore.user?.username }}
+                </div>
+                <div class="text-xs text-slate-500">{{ authStore.user?.email }}</div>
+              </div>
+            </div>
 
-              <!-- Menu Items -->
+            <!-- Menu Items -->
+            <div class="grid grid-cols-2 gap-2">
               <RouterLink
                 to="/settings"
-                @click="mobileMenuOpen = false"
-                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] rounded-xl transition-all duration-200"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] rounded-xl transition-all duration-200"
               >
-                <Settings class="w-5 h-5" />
-                <span class="font-medium">Settings</span>
+                <Settings class="w-4 h-4" />
+                <span class="text-sm font-medium">Settings</span>
               </RouterLink>
 
               <button
-                @click="
-                  handleLogout();
-                  mobileMenuOpen = false
-                "
-                class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 w-full text-left"
+                @click="handleLogout(); userMenuOpen = false"
+                class="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200"
               >
-                <LogOut class="w-5 h-5" />
-                <span class="font-medium">Logout</span>
+                <LogOut class="w-4 h-4" />
+                <span class="text-sm font-medium">Logout</span>
               </button>
             </div>
-          </template>
+          </div>
         </div>
-      </div>
+      </Transition>
     </div>
-  </nav>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
-import { Menu, X, ChevronDown, Settings, LogOut } from 'lucide-vue-next'
+import { ChevronDown, Settings, LogOut, Home, Info, Calendar, DollarSign, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useNavbarScroll } from '../composables/useNavbarScroll'
 import LogoSvg from '@/assets/logo.svg'
 
-const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)
 const router = useRouter()
 const route = useRoute()
@@ -445,5 +461,21 @@ const handleLogout = async () => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px) scale(0.95);
+}
+
+/* SlideUp animations for mobile menu */
+.slideUp-enter-active,
+.slideUp-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slideUp-enter-from {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.slideUp-leave-to {
+  opacity: 0;
+  transform: translateY(100%);
 }
 </style>

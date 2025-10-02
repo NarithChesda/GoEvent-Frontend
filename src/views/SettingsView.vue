@@ -1,636 +1,462 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
-    <Navigation />
+  <MainLayout>
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
 
     <!-- Settings Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Settings Navigation - Sidebar -->
-        <div class="w-full lg:w-64 flex-shrink-0">
-          <div class="p-4 sticky top-24">
-            <!-- Account Settings Title -->
-            <div class="mb-6">
-              <div class="flex items-center space-x-3">
-                <div
-                  class="w-3 h-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
-                ></div>
-                <h1 class="text-xl font-bold text-slate-900">Account Settings</h1>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div class="flex flex-col gap-6">
+        <!-- Profile Settings -->
+        <BaseCard class="p-0 overflow-hidden">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 text-center py-8 sm:py-12 bg-gradient-to-br from-white via-emerald-50/30 to-sky-50/30">Your Profile</h1>
+
+            <form @submit.prevent="handleProfileUpdate" class="p-6 sm:p-8 space-y-8 sm:space-y-10">
+              <!-- Success/Error Messages -->
+              <div v-if="successMessage" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
+                <div class="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span class="font-medium">{{ successMessage }}</span>
               </div>
-            </div>
+              <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
+                <div class="w-5 h-5 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <span class="font-medium">{{ errorMessage }}</span>
+              </div>
 
-            <nav class="space-y-2">
-              <button
-                v-for="tab in tabs"
-                :key="tab.id"
-                @click="activeTab = tab.id"
-                :class="[
-                  'flex items-center space-x-3 w-full px-4 py-3 text-left rounded-xl transition-all duration-200 font-medium',
-                  activeTab === tab.id
-                    ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-                    : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]',
-                ]"
-              >
-                <component :is="tab.icon" class="w-5 h-5" />
-                <span>{{ tab.name }}</span>
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        <!-- Settings Content - Main Area -->
-        <div class="flex-1 min-w-0">
-          <!-- Profile Settings -->
-          <div
-            v-if="activeTab === 'profile'"
-            class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl"
-          >
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">Profile Information</h2>
-
-            <form @submit.prevent="handleProfileUpdate" class="space-y-8">
               <!-- Profile Picture Section -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-[#1e90ff] rounded-full"></div>
-                  <span>Profile Picture</span>
-                </h3>
+              <div class="pb-8 border-b border-slate-200">
+                <div class="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6">
+                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 flex-1">
+                    <div class="flex flex-col items-center lg:items-start gap-3">
+                      <label class="block text-sm font-semibold text-slate-700">Profile Photo</label>
 
-                <div
-                  class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6"
-                >
-                  <!-- Current Profile Picture -->
-                  <div class="relative group">
-                    <div
-                      v-if="profilePicturePreview || authStore.user?.profile_picture"
-                      class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white group-hover:ring-[#87CEEB] transition-all duration-300"
-                    >
-                      <img
-                        :src="
-                          profilePicturePreview ||
-                          apiService.getProfilePictureUrl(authStore.user?.profile_picture) ||
-                          ''
-                        "
-                        alt="Profile"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div
-                      v-else
-                      class="w-24 h-24 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg ring-4 ring-white group-hover:ring-[#87CEEB] transition-all duration-300"
-                    >
-                      {{ authStore.userInitials }}
-                    </div>
+                      <!-- Current Profile Picture -->
+                      <div class="relative w-20 h-20">
+                        <!-- Partner Badge Ring -->
+                        <div
+                          v-if="authStore.user?.is_partner"
+                          class="absolute -inset-1 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse"
+                        ></div>
 
-                    <!-- Upload Overlay -->
-                    <div
-                      class="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
-                    >
-                      <Camera class="w-8 h-8 text-white" />
+                        <div
+                          v-if="profilePictureUrl"
+                          class="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200"
+                        >
+                          <img
+                            :src="profilePictureUrl"
+                            :key="profilePictureUrl"
+                            alt="Profile"
+                            class="w-full h-full object-cover"
+                            @error="handleImageError"
+                            @load="handleImageLoad"
+                          />
+                        </div>
+                        <div
+                          v-else
+                          class="relative w-20 h-20 bg-pink-600 rounded-full flex items-center justify-center text-white font-medium text-2xl"
+                        >
+                          {{ authStore.userInitials }}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Upload Controls -->
-                  <div class="flex-1">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                      <input
-                        ref="fileInput"
-                        type="file"
-                        accept="image/*"
-                        @change="handleFileSelect"
-                        class="hidden"
-                      />
+                  <div class="flex flex-col sm:flex-row items-center gap-3 lg:mt-7">
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept="image/*"
+                      @change="handleFileSelect"
+                      class="hidden"
+                    />
 
-                      <button
-                        type="button"
-                        @click="triggerFileUpload"
-                        :disabled="uploadLoading"
-                        class="inline-flex items-center space-x-2 px-4 py-2 bg-[#1e90ff] hover:bg-[#1873cc] disabled:bg-gray-400 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-emerald-500/25"
-                      >
-                        <Upload class="w-4 h-4" />
-                        <span>{{ uploadLoading ? 'Uploading...' : 'Upload New' }}</span>
-                      </button>
+                    <button
+                      v-if="authStore.user?.profile_picture || profilePicturePreview"
+                      type="button"
+                      @click="removeProfilePicture"
+                      class="w-full sm:w-auto px-5 py-2.5 text-slate-700 hover:text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-all duration-200 border border-transparent hover:border-slate-200"
+                    >
+                      Remove photo
+                    </button>
 
-                      <button
-                        v-if="authStore.user?.profile_picture || profilePicturePreview"
-                        type="button"
-                        @click="removeProfilePicture"
-                        class="inline-flex items-center space-x-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl transition-all duration-200"
-                      >
-                        <Trash2 class="w-4 h-4" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
-
-                    <p class="text-sm text-slate-500 mt-2">
-                      JPG, PNG, GIF, WebP, or AVIF. Max size 3MB. Recommended: 400x400px. Files are
-                      scanned for security.
-                    </p>
+                    <button
+                      type="button"
+                      @click="triggerFileUpload"
+                      :disabled="uploadLoading"
+                      class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      {{ uploadLoading ? 'Uploading...' : 'Change photo' }}
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Basic Information -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-purple-600 rounded-full"></div>
-                  <span>Basic Information</span>
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <!-- First Name -->
-                  <div>
-                    <label for="firstName" class="block text-sm font-semibold text-slate-700 mb-2">
-                      First Name
-                    </label>
-                    <input
-                      id="firstName"
-                      v-model="profileForm.first_name"
-                      type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
-                      placeholder="Enter your first name"
-                    />
+              <!-- Name Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Name</label>
+                    <div v-if="!editingField || editingField !== 'name'" class="text-base text-slate-900 font-medium">
+                      {{ fullName || 'Not set' }}
+                    </div>
+                    <div v-else class="flex flex-col sm:flex-row gap-3">
+                      <input
+                        v-model="profileForm.first_name"
+                        type="text"
+                        class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
+                        placeholder="First name"
+                      />
+                      <input
+                        v-model="profileForm.last_name"
+                        type="text"
+                        class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
+                        placeholder="Last name"
+                      />
+                    </div>
                   </div>
-
-                  <!-- Last Name -->
-                  <div>
-                    <label for="lastName" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Last Name
-                    </label>
-                    <input
-                      id="lastName"
-                      v-model="profileForm.last_name"
-                      type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
-                      placeholder="Enter your last name"
-                    />
+                  <div v-if="editingField === 'name'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('name')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('name')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
                   </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('name')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Email -->
-                  <div>
-                    <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Email Address
-                    </label>
+              <!-- Email Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email address</label>
+                    <div v-if="!editingField || editingField !== 'email'" class="text-base text-slate-900 font-medium break-all">
+                      {{ profileForm.email || 'Not set' }}
+                    </div>
                     <input
-                      id="email"
+                      v-else
                       v-model="profileForm.email"
                       type="email"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Enter your email"
                     />
                   </div>
+                  <div v-if="editingField === 'email'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('email')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('email')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('email')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Username -->
-                  <div>
-                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Username
-                    </label>
+              <!-- Username Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Username</label>
+                    <div v-if="!editingField || editingField !== 'username'" class="text-base text-slate-900 font-medium">
+                      {{ profileForm.username || 'Not set' }}
+                    </div>
                     <input
-                      id="username"
+                      v-else
                       v-model="profileForm.username"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Enter your username"
                     />
                   </div>
+                  <div v-if="editingField === 'username'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('username')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('username')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('username')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
+                  >
+                    Edit
+                  </button>
                 </div>
+              </div>
 
-                <!-- Partner Information Section (only for partners) -->
-                <div v-if="authStore.user?.is_partner" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                  <!-- Phone Number -->
-                  <div>
-                    <label for="phone_number" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Phone Number
-                    </label>
+              <!-- Bio Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Bio</label>
+                    <div v-if="!editingField || editingField !== 'bio'" class="text-base text-slate-900 font-medium whitespace-pre-wrap">
+                      {{ profileForm.bio || 'Not set' }}
+                    </div>
+                    <textarea
+                      v-else
+                      v-model="profileForm.bio"
+                      rows="4"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 bg-white hover:border-slate-400"
+                      placeholder="Tell us about yourself..."
+                    ></textarea>
+                  </div>
+                  <div v-if="editingField === 'bio'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('bio')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('bio')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('bio')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+
+              <!-- Phone Number Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
+                    <div v-if="!editingField || editingField !== 'phone_number'" class="text-base text-slate-900 font-medium">
+                      {{ profileForm.phone_number || 'Not set' }}
+                    </div>
                     <input
-                      id="phone_number"
+                      v-else
                       v-model="profileForm.phone_number"
                       type="tel"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="Enter your phone number"
                     />
                   </div>
+                  <div v-if="editingField === 'phone_number'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('phone_number')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('phone_number')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('phone_number')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Telegram Link -->
-                  <div>
-                    <label for="telegram_link" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Telegram Link
-                    </label>
+              <!-- Telegram URL Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Telegram URL</label>
+                    <div v-if="!editingField || editingField !== 'telegram_link'" class="text-base text-slate-900 font-medium break-all">
+                      {{ profileForm.telegram_link || 'Not set' }}
+                    </div>
                     <input
-                      id="telegram_link"
+                      v-else
                       v-model="profileForm.telegram_link"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="t.me/yourusername or @yourusername"
                     />
                   </div>
+                  <div v-if="editingField === 'telegram_link'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('telegram_link')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('telegram_link')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('telegram_link')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
 
-                  <!-- Payment Link -->
-                  <div class="md:col-span-2">
-                    <label for="payment_link" class="block text-sm font-semibold text-slate-700 mb-2">
-                      Payment URL
-                    </label>
+              <!-- Payment URL Field -->
+              <div class="border-b border-slate-200 pb-8">
+                <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
+                  <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Payment URL</label>
+                    <div v-if="!editingField || editingField !== 'payment_link'" class="text-base text-slate-900 font-medium break-all">
+                      {{ profileForm.payment_link || 'Not set' }}
+                    </div>
                     <input
-                      id="payment_link"
+                      v-else
                       v-model="profileForm.payment_link"
                       type="text"
-                      class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
                       placeholder="your-payment-platform.com/username"
                     />
                   </div>
-                </div>
-              </div>
-
-              <!-- User Status -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-yellow-600 rounded-full"></div>
-                  <span>Account Status</span>
-                </h3>
-
-
-                <div class="flex flex-wrap gap-3">
-                  <!-- Verification Status -->
-                  <div
-                    class="inline-flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium"
-                    :class="
-                      authStore.user?.is_verified
-                        ? 'bg-green-100 text-green-800 border border-green-200'
-                        : 'bg-orange-100 text-orange-800 border border-orange-200'
-                    "
+                  <div v-if="editingField === 'payment_link'" class="flex items-center gap-2 w-full sm:w-auto sm:mt-7">
+                    <button
+                      type="button"
+                      @click="cancelEdit('payment_link')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveEdit('payment_link')"
+                      class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    v-else
+                    type="button"
+                    @click="startEdit('payment_link')"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow sm:mt-7"
                   >
-                    <div
-                      :class="authStore.user?.is_verified ? 'bg-green-500' : 'bg-orange-500'"
-                      class="w-2 h-2 rounded-full"
-                    ></div>
-                    <span>{{
-                      authStore.user?.is_verified ? 'Verified Account' : 'Unverified Account'
-                    }}</span>
-                  </div>
-
-                  <!-- Partner Status -->
-                  <div
-                    v-if="authStore.user?.is_partner"
-                    class="inline-flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border border-purple-200"
-                  >
-                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span>Partner Account</span>
-                  </div>
+                    Edit
+                  </button>
                 </div>
+              </div>
 
-                <!-- Partner Information (shown only for partners) -->
-                <div v-if="authStore.user?.is_partner" class="mt-4 pt-4 border-t border-slate-200">
-                  <h4 class="text-sm font-semibold text-slate-700 mb-3">Partner Information</h4>
-                  <div class="space-y-3">
-                    <div v-if="authStore.user.phone_number" class="flex items-center justify-between">
-                      <span class="text-sm text-slate-600 font-medium">Phone Number:</span>
-                      <span class="text-sm text-slate-900">{{ authStore.user.phone_number }}</span>
+              <!-- Connected Social Accounts -->
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Connected social accounts</h3>
+                <p class="text-sm text-slate-600 mb-6">Services that you use to log in to GoEvent</p>
+
+                <div class="space-y-3">
+                  <!-- Google Account -->
+                  <div class="flex items-center justify-between p-4 sm:p-5 border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-sm font-semibold text-slate-900">Google</div>
+                        <div class="text-xs sm:text-sm text-slate-600 truncate">{{ profileForm.email }}</div>
+                      </div>
                     </div>
-                    <div v-if="authStore.user.telegram_link" class="flex items-center justify-between">
-                      <span class="text-sm text-slate-600 font-medium">Telegram:</span>
-                      <a
-                        :href="authStore.user.telegram_link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-sm text-[#1e90ff] hover:text-[#1873cc] underline"
-                      >
-                        {{ authStore.user.telegram_link }}
-                      </a>
-                    </div>
-                    <div v-if="authStore.user.payment_link" class="flex items-center justify-between">
-                      <span class="text-sm text-slate-600 font-medium">Payment URL:</span>
-                      <a
-                        :href="authStore.user.payment_link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-sm text-[#1e90ff] hover:text-[#1873cc] underline"
-                      >
-                        {{ authStore.user.payment_link }}
-                      </a>
-                    </div>
+                    <button
+                      type="button"
+                      class="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors duration-200 flex-shrink-0 ml-2"
+                    >
+                      Disconnect
+                    </button>
                   </div>
                 </div>
-
-
               </div>
 
-              <!-- Bio Section -->
-              <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
-                  <div class="w-2 h-2 bg-green-600 rounded-full"></div>
-                  <span>About You</span>
-                </h3>
-
-                <div>
-                  <label for="bio" class="block text-sm font-semibold text-slate-700 mb-2">
-                    Bio
-                  </label>
-                  <textarea
-                    id="bio"
-                    v-model="profileForm.bio"
-                    rows="4"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent resize-none"
-                    placeholder="Tell us about yourself..."
-                  ></textarea>
-                  <p class="text-sm text-slate-500 mt-2">
-                    Brief description for your profile. Maximum 500 characters.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Success/Error Messages -->
-              <div v-if="successMessage" class="p-4 bg-green-50 border border-green-200 rounded-xl">
-                <div class="flex items-center">
-                  <CheckCircle class="h-5 w-5 text-green-600 mr-2" />
-                  <span class="text-green-700 text-sm">{{ successMessage }}</span>
-                </div>
-              </div>
-
-              <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                <div class="flex items-center">
-                  <AlertCircle class="h-5 w-5 text-red-600 mr-2" />
-                  <span class="text-red-700 text-sm">{{ errorMessage }}</span>
-                </div>
-              </div>
-
-              <!-- Save Button -->
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  :disabled="authStore.isLoading"
-                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
-                >
-                  <div class="flex items-center space-x-2">
-                    <Loader2 v-if="authStore.isLoading" class="animate-spin w-5 h-5" />
-                    <Save class="w-5 h-5" />
-                    <span>{{ authStore.isLoading ? 'Saving...' : 'Save Changes' }}</span>
-                  </div>
-                </button>
-              </div>
             </form>
-          </div>
-
-          <!-- Commission Settings -->
-          <div v-if="activeTab === 'commission'">
-            <CommissionTab />
-          </div>
-
-          <!-- Security Settings -->
-          <div
-            v-if="activeTab === 'security'"
-            class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl"
-          >
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">Security Settings</h2>
-
-            <form @submit.prevent="handlePasswordChange" class="space-y-6">
-              <!-- Current Password -->
-              <div>
-                <label
-                  for="currentPassword"
-                  class="block text-sm font-semibold text-slate-700 mb-2"
-                >
-                  Current Password
-                </label>
-                <div class="relative">
-                  <input
-                    id="currentPassword"
-                    v-model="passwordForm.old_password"
-                    :type="showPasswords.current ? 'text' : 'password'"
-                    :class="[
-                      'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
-                      fieldErrors.old_password
-                        ? 'border-red-300 focus:ring-red-500'
-                        : 'border-slate-200 focus:ring-[#1e90ff]',
-                    ]"
-                    placeholder="Enter your current password"
-                  />
-                  <button
-                    type="button"
-                    @click="showPasswords.current = !showPasswords.current"
-                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    <Eye v-if="!showPasswords.current" class="w-5 h-5" />
-                    <EyeOff v-else class="w-5 h-5" />
-                  </button>
-                </div>
-                <!-- Current password validation errors -->
-                <div v-if="fieldErrors.old_password" class="mt-1">
-                  <p
-                    v-for="error in fieldErrors.old_password"
-                    :key="error"
-                    class="text-sm text-red-600"
-                  >
-                    {{ error }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- New Password -->
-              <div>
-                <label for="newPassword" class="block text-sm font-semibold text-slate-700 mb-2">
-                  New Password
-                </label>
-                <div class="relative">
-                  <input
-                    id="newPassword"
-                    v-model="passwordForm.new_password"
-                    :type="showPasswords.new ? 'text' : 'password'"
-                    :class="[
-                      'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
-                      fieldErrors.new_password
-                        ? 'border-red-300 focus:ring-red-500'
-                        : 'border-slate-200 focus:ring-[#1e90ff]',
-                    ]"
-                    placeholder="Enter your new password"
-                  />
-                  <button
-                    type="button"
-                    @click="showPasswords.new = !showPasswords.new"
-                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    <Eye v-if="!showPasswords.new" class="w-5 h-5" />
-                    <EyeOff v-else class="w-5 h-5" />
-                  </button>
-                </div>
-                <!-- New password validation errors -->
-                <div v-if="fieldErrors.new_password" class="mt-1">
-                  <p
-                    v-for="error in fieldErrors.new_password"
-                    :key="error"
-                    class="text-sm text-red-600"
-                  >
-                    {{ error }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Confirm New Password -->
-              <div>
-                <label
-                  for="confirmPassword"
-                  class="block text-sm font-semibold text-slate-700 mb-2"
-                >
-                  Confirm New Password
-                </label>
-                <div class="relative">
-                  <input
-                    id="confirmPassword"
-                    v-model="passwordForm.new_password_confirm"
-                    :type="showPasswords.confirm ? 'text' : 'password'"
-                    :class="[
-                      'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent pr-12',
-                      fieldErrors.new_password_confirm
-                        ? 'border-red-300 focus:ring-red-500'
-                        : 'border-slate-200 focus:ring-[#1e90ff]',
-                    ]"
-                    placeholder="Confirm your new password"
-                  />
-                  <button
-                    type="button"
-                    @click="showPasswords.confirm = !showPasswords.confirm"
-                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    <Eye v-if="!showPasswords.confirm" class="w-5 h-5" />
-                    <EyeOff v-else class="w-5 h-5" />
-                  </button>
-                </div>
-                <!-- Confirm password validation errors -->
-                <div v-if="fieldErrors.new_password_confirm" class="mt-1">
-                  <p
-                    v-for="error in fieldErrors.new_password_confirm"
-                    :key="error"
-                    class="text-sm text-red-600"
-                  >
-                    {{ error }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Enhanced Password Strength Indicator -->
-              <div v-if="passwordForm.new_password" class="space-y-3">
-                <div class="flex items-center space-x-2 text-sm">
-                  <div class="flex space-x-1">
-                    <div
-                      v-for="i in 5"
-                      :key="i"
-                      class="w-3 h-3 rounded-full transition-colors duration-300"
-                      :class="passwordStrength >= i ? passwordStrengthColor : 'bg-gray-200'"
-                    ></div>
-                  </div>
-                  <span
-                    class="font-medium"
-                    :class="passwordStrength >= 3 ? 'text-green-600' : 'text-orange-600'"
-                  >
-                    {{ passwordStrengthText }}
-                  </span>
-                  <span v-if="passwordStrength >= 3" class="text-green-600 text-xs"
-                    >✓ Strong enough</span
-                  >
-                  <span v-else class="text-orange-600 text-xs">⚠ Too weak</span>
-                </div>
-
-                <!-- Password Requirements Feedback -->
-                <div v-if="passwordStrengthData.feedback.length > 0" class="text-xs space-y-1">
-                  <p class="font-medium text-slate-600">Requirements:</p>
-                  <ul class="list-disc list-inside space-y-1 text-slate-500">
-                    <li v-for="tip in passwordStrengthData.feedback" :key="tip">{{ tip }}</li>
-                  </ul>
-                </div>
-
-                <!-- Minimum strength warning -->
-                <div
-                  v-if="passwordForm.new_password && !isPasswordStrongEnough"
-                  class="p-2 bg-orange-50 border border-orange-200 rounded-lg"
-                >
-                  <p class="text-sm text-orange-800">
-                    <strong>Security Notice:</strong> Password must be at least "Good" strength
-                    (3/4) for account security.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Success/Error Messages -->
-              <div
-                v-if="passwordSuccessMessage"
-                class="p-4 bg-green-50 border border-green-200 rounded-xl"
-              >
-                <div class="flex items-center">
-                  <CheckCircle class="h-5 w-5 text-green-600 mr-2" />
-                  <span class="text-green-700 text-sm">{{ passwordSuccessMessage }}</span>
-                </div>
-              </div>
-
-              <div
-                v-if="passwordErrorMessage"
-                class="p-4 bg-red-50 border border-red-200 rounded-xl"
-              >
-                <div class="flex items-center">
-                  <AlertCircle class="h-5 w-5 text-red-600 mr-2" />
-                  <span class="text-red-700 text-sm">{{ passwordErrorMessage }}</span>
-                </div>
-              </div>
-
-              <!-- Change Password Button -->
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  :disabled="
-                    authStore.isLoading ||
-                    !passwordsMatch ||
-                    !isPasswordStrongEnough ||
-                    !passwordForm.old_password
-                  "
-                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
-                >
-                  <div class="flex items-center space-x-2">
-                    <Loader2 v-if="authStore.isLoading" class="animate-spin w-5 h-5" />
-                    <Key class="w-5 h-5" />
-                    <span>{{ authStore.isLoading ? 'Changing...' : 'Change Password' }}</span>
-                  </div>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        </BaseCard>
       </div>
     </div>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import Navigation from '../components/Navigation.vue'
-import CommissionTab from '../components/settings/CommissionTab.vue'
+import MainLayout from '../components/MainLayout.vue'
+import BaseCard from '../components/BaseCard.vue'
 import { useAuthStore } from '../stores/auth'
-import { authService } from '../services/auth'
 import { uploadService } from '../services/upload'
 import { apiService } from '../services/api'
 import { inputValidator, validationRules } from '../utils/inputValidation'
-import {
-  User,
-  Lock,
-  Save,
-  Key,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  Camera,
-  Upload,
-  Trash2,
-  Wallet,
-} from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
-
-// Tab management
-const activeTab = ref('profile')
-const tabs = [
-  { id: 'profile', name: 'Profile', icon: User },
-  { id: 'security', name: 'Security', icon: Lock },
-  { id: 'commission', name: 'Commission', icon: Wallet },
-]
 
 // Profile form
 const profileForm = ref({
@@ -644,46 +470,43 @@ const profileForm = ref({
   payment_link: '',
 })
 
-// Password form
-const passwordForm = ref({
-  old_password: '',
-  new_password: '',
-  new_password_confirm: '',
-})
+// Add editing state and original values for canceling
+const editingField = ref<string | null>(null)
+const originalValues = ref<any>({})
 
 // UI state
 const successMessage = ref('')
 const errorMessage = ref('')
-const passwordSuccessMessage = ref('')
-const passwordErrorMessage = ref('')
 const uploadLoading = ref(false)
 const fileInput = ref<HTMLInputElement>()
 const profilePicturePreview = ref<string>('')
 const fieldErrors = ref<Record<string, string[]>>({})
+const profilePictureTimestamp = ref(Date.now()) // Track when profile picture changes
 
-const showPasswords = ref({
-  current: false,
-  new: false,
-  confirm: false,
+
+// Computed properties
+const fullName = computed(() => {
+  const first = profileForm.value.first_name || ''
+  const last = profileForm.value.last_name || ''
+  return `${first} ${last}`.trim()
 })
 
-// Enhanced password validation using input validator
-const passwordStrengthData = computed(() => {
-  const password = passwordForm.value.new_password
-  if (!password) return { score: 0, feedback: [] }
-  return inputValidator.calculatePasswordStrength(password)
-})
+// Profile picture URL with cache busting to force browser refresh
+const profilePictureUrl = computed(() => {
+  if (profilePicturePreview.value) {
+    return profilePicturePreview.value
+  }
 
-const passwordStrength = computed(() => passwordStrengthData.value.score)
+  if (authStore.user?.profile_picture) {
+    const baseUrl = apiService.getProfilePictureUrl(authStore.user.profile_picture)
+    if (baseUrl) {
+      // Add timestamp to bust browser cache when image changes
+      const separator = baseUrl.includes('?') ? '&' : '?'
+      return `${baseUrl}${separator}t=${profilePictureTimestamp.value}`
+    }
+  }
 
-const passwordStrengthText = computed(() => {
-  const texts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong']
-  return texts[passwordStrength.value] || 'Very Weak'
-})
-
-const passwordStrengthColor = computed(() => {
-  const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-[#E6F4FF]0', 'bg-green-500']
-  return colors[passwordStrength.value] || 'bg-gray-200'
+  return null
 })
 
 // Real-time validation for form fields
@@ -701,46 +524,131 @@ const profileValidation = computed(() => {
   })
 })
 
-const passwordValidation = computed(() => {
-  const form = passwordForm.value
-  if (!form.new_password && !form.new_password_confirm) {
-    return { isValid: true, errors: {} }
+// Enter edit mode for a field
+const startEdit = (field: string) => {
+  // Store original values for potential cancel
+  if (field === 'name') {
+    originalValues.value = {
+      first_name: profileForm.value.first_name,
+      last_name: profileForm.value.last_name,
+    }
+  } else {
+    originalValues.value = {
+      [field]: profileForm.value[field as keyof typeof profileForm.value],
+    }
   }
+  editingField.value = field
+}
 
-  const validation = inputValidator.validateForm(form, {
-    new_password: { ...validationRules.newPassword, required: false },
-    new_password_confirm: { ...validationRules.confirmPassword, required: false },
-  })
-
-  // Add custom validation for password confirmation
-  if (
-    form.new_password &&
-    form.new_password_confirm &&
-    form.new_password !== form.new_password_confirm
-  ) {
-    validation.errors.new_password_confirm = ['Passwords do not match']
-    validation.isValid = false
+// Save the field
+const saveEdit = async (field: string) => {
+  await handleFieldUpdate(field)
+  if (!errorMessage.value) {
+    editingField.value = null
+    originalValues.value = {}
   }
+}
 
-  return validation
-})
-
-const passwordsMatch = computed(() => {
-  return passwordForm.value.new_password === passwordForm.value.new_password_confirm
-})
-
-// Minimum password strength requirement (increased from 2 to 3)
-const isPasswordStrongEnough = computed(() => {
-  return passwordStrength.value >= 3
-})
-
-// Initialize form with user data
-onMounted(() => {
-  if (!authStore.isAuthenticated) {
-    router.push('/signin')
-    return
+// Cancel editing and restore original values
+const cancelEdit = (field: string) => {
+  if (field === 'name') {
+    profileForm.value.first_name = originalValues.value.first_name || ''
+    profileForm.value.last_name = originalValues.value.last_name || ''
+  } else {
+    profileForm.value[field as keyof typeof profileForm.value] = originalValues.value[field] || ''
   }
+  editingField.value = null
+  originalValues.value = {}
+}
 
+// Handle individual field update
+const handleFieldUpdate = async (field: string) => {
+  try {
+    errorMessage.value = ''
+    let updateData: any = {}
+
+    if (field === 'name') {
+      // Validate name fields
+      if (!profileForm.value.first_name?.trim()) {
+        errorMessage.value = 'First name is required'
+        return
+      }
+      updateData = {
+        first_name: profileForm.value.first_name.trim(),
+        last_name: profileForm.value.last_name?.trim() || '',
+      }
+    } else if (field === 'email') {
+      // Validate email
+      if (!profileForm.value.email?.trim()) {
+        errorMessage.value = 'Email is required'
+        return
+      }
+      updateData = { email: profileForm.value.email.trim() }
+    } else if (field === 'username') {
+      // Validate username
+      if (!profileForm.value.username?.trim()) {
+        errorMessage.value = 'Username is required'
+        return
+      }
+      updateData = { username: profileForm.value.username.trim() }
+    } else if (field === 'bio') {
+      // Bio is optional
+      const bioValue = profileForm.value.bio?.trim() || ''
+      updateData = { bio: bioValue }
+    } else if (field === 'telegram_link') {
+      // Format telegram link properly
+      let telegramValue = profileForm.value.telegram_link?.trim() || ''
+
+      if (telegramValue) {
+        // Auto-format telegram links
+        if (!telegramValue.startsWith('http')) {
+          if (telegramValue.startsWith('t.me/') || telegramValue.startsWith('telegram.me/')) {
+            telegramValue = 'https://' + telegramValue
+          } else if (telegramValue.startsWith('@')) {
+            telegramValue = 'https://t.me/' + telegramValue.substring(1)
+          } else if (!telegramValue.includes('/')) {
+            telegramValue = 'https://t.me/' + telegramValue
+          }
+        }
+      }
+
+      updateData = { telegram_link: telegramValue }
+    } else if (field === 'payment_link') {
+      // Format payment link properly
+      let paymentValue = profileForm.value.payment_link?.trim() || ''
+
+      if (paymentValue && !paymentValue.startsWith('http')) {
+        paymentValue = 'https://' + paymentValue
+      }
+
+      updateData = { payment_link: paymentValue }
+    } else if (field === 'phone_number') {
+      // Phone number is optional
+      updateData = { phone_number: profileForm.value.phone_number?.trim() || '' }
+    }
+
+    const result = await authStore.updateProfile(updateData)
+    if (result.success) {
+      // Form will be synced automatically by the watcher on authStore.user
+      // The watcher will trigger once editingField is cleared by saveEdit()
+
+      successMessage.value = 'Updated successfully!'
+      setTimeout(() => {
+        successMessage.value = ''
+      }, 3000)
+    } else {
+      console.error('Failed to update field:', result.error)
+      errorMessage.value = result.error || 'Failed to update'
+    }
+  } catch (error) {
+    console.error('Error updating field:', error)
+    errorMessage.value = 'An error occurred'
+  }
+}
+
+
+// Sync profileForm with authStore.user whenever it changes
+const syncFormWithStore = () => {
   if (authStore.user) {
     profileForm.value = {
       first_name: authStore.user.first_name || '',
@@ -753,7 +661,29 @@ onMounted(() => {
       payment_link: authStore.user.payment_link || '',
     }
   }
+}
+
+// Initialize form with user data
+onMounted(() => {
+  if (!authStore.isAuthenticated) {
+    router.push('/signin')
+    return
+  }
+
+  syncFormWithStore()
 })
+
+// Watch for changes to authStore.user and sync the form
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser && !editingField.value) {
+      // Only sync if not currently editing a field to avoid overwriting user's input
+      syncFormWithStore()
+    }
+  },
+  { deep: true }
+)
 
 // Profile update handler
 const handleProfileUpdate = async () => {
@@ -846,19 +776,8 @@ const handleProfileUpdate = async () => {
       successMessage.value = 'Profile updated successfully!'
       fieldErrors.value = {}
 
-      // Refresh the form with updated user data
-      if (authStore.user) {
-        profileForm.value = {
-          first_name: authStore.user.first_name || '',
-          last_name: authStore.user.last_name || '',
-          email: authStore.user.email || '',
-          username: authStore.user.username || '',
-          bio: authStore.user.bio || '',
-          phone_number: authStore.user.phone_number || '',
-          telegram_link: authStore.user.telegram_link || '',
-          payment_link: authStore.user.payment_link || '',
-        }
-      }
+      // Form will be synced automatically by the watcher on authStore.user
+
       setTimeout(() => {
         successMessage.value = ''
       }, 3000)
@@ -870,84 +789,6 @@ const handleProfileUpdate = async () => {
   }
 }
 
-// Password change handler with enhanced security
-const handlePasswordChange = async () => {
-  passwordSuccessMessage.value = ''
-  passwordErrorMessage.value = ''
-  fieldErrors.value = {}
-
-  // Check rate limiting for password changes
-  const clientId = navigator.userAgent + window.location.hostname
-  if (inputValidator.isRateLimited(`password_change_${clientId}`, 3, 60 * 60 * 1000)) {
-    passwordErrorMessage.value = 'Too many password change attempts. Please try again in 1 hour.'
-    return
-  }
-
-  // Comprehensive validation
-  const validation = inputValidator.validateForm(passwordForm.value, {
-    old_password: { required: true, sanitize: false },
-    new_password: { ...validationRules.newPassword, required: true },
-    new_password_confirm: { required: true, sanitize: false },
-  })
-
-  // Additional custom validations
-  if (passwordForm.value.new_password && passwordForm.value.new_password_confirm) {
-    if (passwordForm.value.new_password !== passwordForm.value.new_password_confirm) {
-      validation.errors.new_password_confirm = ['Passwords do not match']
-      validation.isValid = false
-    }
-
-    if (passwordForm.value.old_password === passwordForm.value.new_password) {
-      validation.errors.new_password = ['New password must be different from current password']
-      validation.isValid = false
-    }
-
-    if (!isPasswordStrongEnough.value) {
-      validation.errors.new_password = [
-        ...(validation.errors.new_password || []),
-        'Password must be at least "Good" strength (score 3/4)',
-        ...passwordStrengthData.value.feedback,
-      ]
-      validation.isValid = false
-    }
-  }
-
-  if (!validation.isValid) {
-    fieldErrors.value = validation.errors
-    passwordErrorMessage.value = 'Please fix the validation errors below'
-    return
-  }
-
-  try {
-    const response = await authService.changePassword({
-      old_password: validation.sanitizedData.old_password,
-      new_password: validation.sanitizedData.new_password,
-      new_password_confirm: validation.sanitizedData.new_password_confirm,
-    })
-
-    if (response.success) {
-      // Clear rate limiting on successful password change
-      inputValidator.clearRateLimit(`password_change_${clientId}`)
-
-      passwordSuccessMessage.value =
-        'Password changed successfully! Please sign in again with your new password.'
-      fieldErrors.value = {}
-      passwordForm.value = {
-        old_password: '',
-        new_password: '',
-        new_password_confirm: '',
-      }
-
-      setTimeout(() => {
-        passwordSuccessMessage.value = ''
-      }, 5000)
-    } else {
-      passwordErrorMessage.value = response.message || 'Failed to change password'
-    }
-  } catch (error) {
-    passwordErrorMessage.value = 'An unexpected error occurred'
-  }
-}
 
 // Profile picture upload handlers
 const triggerFileUpload = () => {
@@ -976,11 +817,38 @@ const handleFileSelect = async (event: Event) => {
     const response = await uploadService.uploadProfilePicture(file)
 
     if (response.success && response.data) {
-      // The API returns the user object with updated profile_picture
-      const profilePictureUrl = response.data.profile_picture || response.data.url
-      await authStore.updateProfile({ profile_picture: profilePictureUrl })
-      successMessage.value = 'Profile picture updated successfully!'
+      // The API can return the user object in different formats:
+      // Format 1: { user: {...} } - nested user object
+      // Format 2: { id, email, ... } - direct user object
+      let userData = null
+
+      if (response.data.user && response.data.user.id) {
+        // Nested user object
+        userData = response.data.user
+      } else if (response.data.id && response.data.email) {
+        // Direct user object
+        userData = response.data
+      }
+
+      if (userData) {
+        // Update the entire user in the store
+        authStore.setUser(userData as any)
+      } else {
+        // Fallback: just update profile_picture field
+        const profilePictureUrl = response.data.profile_picture || response.data.url
+        await authStore.updateProfile({ profile_picture: profilePictureUrl })
+      }
+
+      // Wait for Vue to update the DOM, then update timestamp and clear preview
+      await nextTick()
+
+      // Update timestamp to force image reload
+      profilePictureTimestamp.value = Date.now()
+
+      // Clear preview AFTER store is updated
       profilePicturePreview.value = ''
+
+      successMessage.value = 'Profile picture updated successfully!'
 
       setTimeout(() => {
         successMessage.value = ''
@@ -1005,7 +873,14 @@ const removeProfilePicture = async () => {
     errorMessage.value = ''
 
     await authStore.updateProfile({ profile_picture: '' })
+
+    // Wait for Vue to update
+    await nextTick()
+
+    // Update timestamp to force UI refresh
+    profilePictureTimestamp.value = Date.now()
     profilePicturePreview.value = ''
+
     successMessage.value = 'Profile picture removed successfully!'
 
     setTimeout(() => {
@@ -1014,6 +889,17 @@ const removeProfilePicture = async () => {
   } catch (error) {
     errorMessage.value = 'Failed to remove profile picture'
   }
+}
+
+// Image error handler
+const handleImageError = (event: Event) => {
+  console.error('Image failed to load:', (event.target as HTMLImageElement)?.src)
+  errorMessage.value = 'Failed to load profile picture. Please try refreshing the page.'
+}
+
+// Image load handler - Silent success, no logging needed
+const handleImageLoad = () => {
+  // Image loaded successfully
 }
 
 // Temporary function for testing partner features

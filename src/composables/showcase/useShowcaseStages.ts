@@ -1,4 +1,5 @@
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onUnmounted } from 'vue'
+import { useVideoResourceManager } from './useVideoResourceManager'
 
 export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
 
@@ -19,6 +20,9 @@ export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
  * Includes intelligent skipping for return visitors and proper audio management.
  */
 export function useShowcaseStages() {
+  // Initialize video resource manager for comprehensive cleanup
+  const videoManager = useVideoResourceManager()
+
   // Stage state
   const currentShowcaseStage = ref<ShowcaseStage>('cover')
   const isEnvelopeOpened = ref(false)
@@ -26,10 +30,13 @@ export function useShowcaseStages() {
   const videoLoading = ref(false)
   const coverStageReady = ref(false)
 
-  // Media references
+  // Media references with enhanced cleanup tracking
   const eventVideoRef = ref<HTMLVideoElement | null>(null)
   const audioRef = ref<HTMLAudioElement | null>(null)
   const isMusicPlaying = ref(false)
+
+  // Track audio for cleanup
+  const audioCleanupCallbacks = ref<Set<() => void>>(new Set())
 
   /**
    * Computed properties for stage checks
@@ -39,13 +46,39 @@ export function useShowcaseStages() {
   const isMainContentStage = computed(() => currentShowcaseStage.value === 'main_content')
 
   /**
-   * Initialize audio with proper cleanup registration
+   * Initialize audio with proper cleanup registration and mobile optimizations
    */
   const initializeAudio = (musicUrl?: string) => {
     if (musicUrl && !audioRef.value) {
       audioRef.value = new Audio(musicUrl)
       audioRef.value.loop = true
       audioRef.value.volume = 0.35
+
+      // Register blob URL if it exists
+      if (musicUrl.startsWith('blob:')) {
+        videoManager.registerBlobUrl(musicUrl, musicUrl)
+      }
+
+      // Add cleanup callback for audio
+      const cleanup = () => {
+        if (audioRef.value) {
+          audioRef.value.pause()
+          audioRef.value.src = ''
+          // Clean up blob URL if it was one
+          if (musicUrl.startsWith('blob:')) {
+            try {
+              URL.revokeObjectURL(musicUrl)
+            } catch (error) {
+              // Ignore revocation errors
+            }
+          }
+          audioRef.value = null
+        }
+        isMusicPlaying.value = false
+      }
+
+      audioCleanupCallbacks.value.add(cleanup)
+      videoManager.addCleanupCallback(cleanup)
     }
   }
 
@@ -198,11 +231,33 @@ export function useShowcaseStages() {
   }
 
   /**
-   * Cleanup audio resources
+   * Enhanced audio cleanup with blob URL management
    */
   const cleanupAudio = (): void => {
+    // Execute all audio cleanup callbacks
+    audioCleanupCallbacks.value.forEach(callback => {
+      try {
+        callback()
+      } catch (error) {
+        console.warn('Error during audio cleanup:', error)
+      }
+    })
+    audioCleanupCallbacks.value.clear()
+
+    // Fallback direct cleanup
     if (audioRef.value) {
       audioRef.value.pause()
+
+      // Clean up blob URL if present
+      const audioSrc = audioRef.value.src
+      if (audioSrc && audioSrc.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(audioSrc)
+        } catch (error) {
+          // Ignore revocation errors
+        }
+      }
+
       audioRef.value.src = ''
       audioRef.value = null
     }
@@ -210,12 +265,12 @@ export function useShowcaseStages() {
   }
 
   /**
-   * Cleanup video resources
+   * Enhanced video cleanup with resource manager integration
    */
-  const cleanupVideo = (): void => {
+  const cleanupVideo = async (): Promise<void> => {
     if (eventVideoRef.value) {
-      eventVideoRef.value.pause()
-      eventVideoRef.value.src = ''
+      // Use the enhanced video resource manager for cleanup
+      await videoManager.cleanupVideo(eventVideoRef.value)
       eventVideoRef.value = null
     }
     isPlayingEventVideo.value = false
@@ -223,13 +278,37 @@ export function useShowcaseStages() {
   }
 
   /**
-   * Complete cleanup of all stage resources
+   * Complete cleanup of all stage resources with mobile optimizations
    */
-  const cleanup = (): void => {
-    cleanupAudio()
-    cleanupVideo()
-    resetStages()
+  const cleanup = async (): Promise<void> => {
+    try {
+      // Clean up audio first (faster)
+      cleanupAudio()
+
+      // Clean up video with proper async handling
+      await cleanupVideo()
+
+      // Clean up all managed video resources
+      await videoManager.cleanupAllVideos()
+
+      // Reset stage state
+      resetStages()
+
+      // Force memory cleanup on mobile devices
+      if (videoManager.isMobileDevice()) {
+        videoManager.triggerMemoryCleanup()
+      }
+    } catch (error) {
+      console.warn('Error during stage cleanup:', error)
+      // Ensure state is reset even if cleanup fails
+      resetStages()
+    }
   }
+
+  // Automatic cleanup on component unmount
+  onUnmounted(async () => {
+    await cleanup()
+  })
 
   return {
     // State
@@ -266,5 +345,8 @@ export function useShowcaseStages() {
     cleanupAudio,
     cleanupVideo,
     cleanup,
+
+    // Video resource manager access
+    videoResourceManager: videoManager,
   }
 }

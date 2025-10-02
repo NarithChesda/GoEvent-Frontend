@@ -104,6 +104,7 @@
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
+                    :current-language="currentLanguage"
                     @open-map="$emit('openMap')"
                   />
 
@@ -422,7 +423,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, nextTick, inject, type Component } from 'vue'
+import { computed, onMounted, onUnmounted, ref, nextTick, inject, watch, type Component } from 'vue'
 import type {
   EventData,
   EventText,
@@ -546,6 +547,12 @@ onMounted(async () => {
   if (injectedVideoResourceManager) {
     videoResourceManager.value = injectedVideoResourceManager
   }
+
+  // Debug: Log eventPhotos to understand data flow
+  console.debug('MainContentStage: mounted with photos', {
+    eventPhotosCount: props.eventPhotos.length,
+    eventPhotos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
+  })
 })
 
 const emit = defineEmits<{
@@ -776,6 +783,14 @@ const handleReminder = () => {
 
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
 }
+// Watch for changes to eventPhotos prop
+watch(() => props.eventPhotos, (newPhotos) => {
+  console.debug('MainContentStage: eventPhotos changed', {
+    count: newPhotos.length,
+    photos: newPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
+  })
+}, { deep: true, immediate: true })
+
 // Cleanup on component unmount
 onUnmounted(() => {
   // Clear local references
