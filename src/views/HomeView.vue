@@ -29,10 +29,7 @@
       <div
         class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32"
       >
-        <!-- Mobile Logo - Only visible on mobile -->
-        <div class="lg:hidden flex justify-center mb-8 animate-fade-in">
-          <img :src="LogoSvg" alt="GoEvent Logo" class="h-20 w-auto" />
-        </div>
+
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
@@ -43,19 +40,13 @@
                 <Sparkles class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 #1 Event Management Platform
               </div>
-              <h1
-                class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight tracking-tight text-slate-900 animate-fade-in animation-delay-500"
-              >
-                <span class="typing-text">
-                  {{ displayText }}<span v-if="!isComplete" class="typing-cursor">|</span>
-                </span>
-              </h1>
+              <div class="flex justify-center lg:justify-start animate-fade-in animation-delay-500 my-6 sm:my-8 lg:my-0">
+                <img :src="LogoSvg" alt="Create Unforgettable Events" class="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 2xl:h-40 w-auto" />
+              </div>
               <p
                 class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000"
               >
-                Transform your event planning experience with our cutting-edge platform. From
-                intimate gatherings to large-scale conferences, we make event management effortless
-                and engaging.
+                Streamline your event management with our comprehensive platform. From planning to execution, we've got you covered.
               </p>
             </div>
 
@@ -715,7 +706,6 @@ import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
-import { useTypingAnimation } from '../composables/useTypingAnimation'
 import LogoSvg from '@/assets/logo.svg'
 import {
   Calendar,
@@ -746,9 +736,6 @@ const { showScrollTop, scrollToTop } = useScrollToTop()
 const router = useRouter()
 import { useAuthStore } from '../stores/auth'
 const authStore = useAuthStore()
-
-// Typing animation for hero text
-const { displayText, isComplete } = useTypingAnimation('Create Unforgettable Events', 30)
 
 // Refs for sections
 const featuresSection = ref<HTMLElement>()
