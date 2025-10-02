@@ -1,5 +1,5 @@
 // Imports - Vue Core
-import { ref, computed, nextTick, watch, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 // Imports - Services & API
@@ -623,9 +623,6 @@ export function useEventShowcase() {
       contentLoading.value = true
       error.value = null
 
-      // Update current language immediately for UI feedback
-      currentLanguage.value = newLanguage
-
       const params: { lang?: string; guest_name?: string } = {
         lang: newLanguage,
       }
@@ -645,6 +642,7 @@ export function useEventShowcase() {
       })
 
       // Update only the content-related parts of showcaseData
+      // IMPORTANT: We must update template_fonts and template_assets to get new language fonts
       if (showcaseData.value) {
         showcaseData.value = {
           ...showcaseData.value,
@@ -654,6 +652,9 @@ export function useEventShowcase() {
             hosts: data.event.hosts,
             agenda_items: data.event.agenda_items,
             available_languages: data.event.available_languages,
+            // Update template fonts for the new language
+            template_fonts: data.event.template_fonts || showcaseData.value.event.template_fonts,
+            template_assets: data.event.template_assets || showcaseData.value.event.template_assets,
           },
           meta: {
             ...showcaseData.value.meta,
@@ -665,6 +666,17 @@ export function useEventShowcase() {
         showcaseData.value = data
       }
 
+      // Invalidate template processor font cache AFTER updating font data
+      // This ensures the cache is cleared after we have the new language fonts
+      templateProcessor.invalidateFontCache()
+
+      // Update current language AFTER invalidating cache
+      // This prevents caching empty results before font data is updated
+      currentLanguage.value = newLanguage
+
+      // Wait for next tick to ensure reactive updates have propagated
+      await nextTick()
+
       // Load custom fonts for the new language and await completion
       const langFonts = templateFonts.value.filter((f) => f.language === newLanguage)
 
@@ -674,6 +686,9 @@ export function useEventShowcase() {
           timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
           retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
         })
+
+        // Force a DOM update to apply the new fonts
+        await nextTick()
       } catch (fontError) {
         // Log font loading issues but don't block the content update
         console.warn(
@@ -858,9 +873,8 @@ export function useEventShowcase() {
   // ============================
   // Watchers
   // ============================
-  watch([templateFonts, currentLanguage], () => {
-    templateProcessor.clearCaches()
-  })
+  // Note: Template processor cache clearing is handled proactively in updateLanguageContent
+  // to ensure proper font switching when language changes
 
   // ============================
   // Lifecycle Hooks
@@ -897,8 +911,8 @@ export function useEventShowcase() {
         videoManager.triggerMemoryCleanup()
       }
 
-    } catch (error) {
-      console.warn('Error during showcase cleanup:', error)
+    } catch (cleanupError) {
+      console.warn('Error during showcase cleanup:', cleanupError)
       // Ensure critical state is reset even if cleanup fails
       showcaseData.value = null
       error.value = null
