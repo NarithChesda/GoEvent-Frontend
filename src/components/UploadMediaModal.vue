@@ -181,7 +181,7 @@
               <div v-if="uploading" class="space-y-2 sm:space-y-3">
                 <div class="flex items-center justify-between">
                   <p class="text-xs sm:text-sm font-medium text-slate-700">
-                    Uploading {{ currentUpload }} of {{ selectedFiles.length }}...
+                    Uploading {{ selectedFiles.length }} {{ selectedFiles.length === 1 ? 'photo' : 'photos' }}...
                   </p>
                   <p class="text-xs sm:text-sm text-slate-500">{{ Math.round(uploadProgress) }}%</p>
                 </div>
@@ -343,45 +343,48 @@ const uploadFiles = async () => {
 
   uploading.value = true
   uploadProgress.value = 0
-  currentUpload.value = 0
+  currentUpload.value = 1
   error.value = null
 
   try {
-    const totalFiles = selectedFiles.value.length
-    let uploadedCount = 0
+    const files = selectedFiles.value.map((f) => f.file)
+    const totalFiles = files.length
 
-    for (let i = 0; i < selectedFiles.value.length; i++) {
-      const fileWithPreview = selectedFiles.value[i]
-      currentUpload.value = i + 1
+    // Prepare captions array if default caption is provided
+    const captions = defaultCaption.value
+      ? Array(totalFiles).fill(defaultCaption.value)
+      : undefined
 
-      try {
-        const response = await mediaService.uploadEventMedia(props.eventId, fileWithPreview.file, {
-          caption: defaultCaption.value || undefined,
-          is_featured: markAsFeatured.value,
-        })
-
-        if (response.success && response.data) {
-          emit('uploaded', response.data)
-          uploadedCount++
-        } else {
-          console.error(`Failed to upload ${fileWithPreview.file.name}:`, response.message)
-        }
-      } catch (err) {
-        console.error(`Error uploading ${fileWithPreview.file.name}:`, err)
+    // Simulate progress during upload
+    const progressInterval = setInterval(() => {
+      if (uploadProgress.value < 90) {
+        uploadProgress.value += 10
       }
+    }, 300)
 
-      uploadProgress.value = ((i + 1) / totalFiles) * 100
-    }
+    // Use bulk upload API
+    const response = await mediaService.bulkUploadEventMedia(props.eventId, files, {
+      captions,
+    })
 
-    if (uploadedCount === totalFiles) {
-      // All files uploaded successfully
+    // Clear progress simulation
+    clearInterval(progressInterval)
+
+    if (response.success && response.data) {
+      uploadProgress.value = 100
+
+      // Emit each uploaded photo individually to maintain compatibility
+      response.data.photos.forEach((photo) => {
+        emit('uploaded', photo)
+      })
+
+      // Close modal after successful upload
       emit('close')
-    } else if (uploadedCount > 0) {
-      error.value = `${uploadedCount} of ${totalFiles} files uploaded successfully. Some uploads failed.`
     } else {
-      error.value = 'All uploads failed. Please try again.'
+      error.value = response.message || 'Upload failed. Please try again.'
     }
-  } catch {
+  } catch (err) {
+    console.error('Upload error:', err)
     error.value = 'Upload failed. Please try again.'
   } finally {
     uploading.value = false

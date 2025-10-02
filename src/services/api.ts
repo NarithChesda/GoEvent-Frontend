@@ -1217,6 +1217,67 @@ export const mediaService = {
     }
   },
 
+  // Bulk upload multiple photos (up to 50 per request)
+  async bulkUploadEventMedia(
+    eventId: string,
+    files: File[],
+    options?: { captions?: string[] },
+  ): Promise<
+    ApiResponse<{
+      status: string
+      count: number
+      photos: EventPhoto[]
+    }>
+  > {
+    const formData = new FormData()
+
+    // Append all images
+    files.forEach((file) => {
+      formData.append('images', file)
+    })
+
+    // Append captions if provided
+    if (options?.captions && options.captions.length > 0) {
+      options.captions.forEach((caption) => {
+        formData.append('captions', caption)
+      })
+    }
+
+    try {
+      const response = await fetch(
+        `${apiService['baseURL']}/api/events/${eventId}/photos/bulk-upload/`,
+        {
+          method: 'POST',
+          headers: {
+            ...apiService['getAuthHeaders'](),
+          },
+          body: formData,
+        },
+      )
+
+      const result = await apiService['handleResponse']<{
+        status: string
+        count: number
+        photos: EventPhoto[]
+      }>(response)
+
+      // Convert relative image URLs to full URLs
+      if (result.success && result.data?.photos) {
+        result.data.photos = result.data.photos.map((photo) => ({
+          ...photo,
+          image: apiService.getProfilePictureUrl(photo.image) || photo.image,
+        }))
+      }
+
+      return result
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Network error while uploading media',
+      }
+    }
+  },
+
   // Update media/photo
   async updateEventMedia(
     eventId: string,

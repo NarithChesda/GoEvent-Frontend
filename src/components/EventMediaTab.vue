@@ -437,18 +437,40 @@ const toggleFeatured = async (mediaItem: EventPhoto) => {
   }
 }
 
+const uploadBatchStart = ref(0)
+
 const handleMediaUploaded = (newMedia: EventPhoto) => {
+  // Track the starting count before upload
+  if (uploadBatchStart.value === 0) {
+    uploadBatchStart.value = Array.isArray(media.value) ? media.value.length : 0
+  }
+
   if (Array.isArray(media.value)) {
     media.value.push(newMedia)
     media.value.sort((a, b) => a.order - b.order)
   } else {
     media.value = [newMedia]
   }
-  showUploadModal.value = false
+
   // Emit updated media to parent
   emit('media-updated', media.value)
-  showMessage('success', 'Photo uploaded successfully')
 }
+
+// Watch for modal closing to show success message
+watch(showUploadModal, (newValue, oldValue) => {
+  if (oldValue === true && newValue === false && uploadBatchStart.value > 0) {
+    // Modal just closed, calculate how many photos were uploaded
+    const currentCount = Array.isArray(media.value) ? media.value.length : 0
+    const uploadedCount = currentCount - uploadBatchStart.value
+
+    if (uploadedCount > 0) {
+      showMessage('success', `${uploadedCount} ${uploadedCount === 1 ? 'photo' : 'photos'} uploaded successfully`)
+    }
+
+    // Reset the batch counter
+    uploadBatchStart.value = 0
+  }
+})
 
 const handleMediaUpdated = (updatedMedia: EventPhoto) => {
   if (Array.isArray(media.value)) {
