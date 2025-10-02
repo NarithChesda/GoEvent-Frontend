@@ -29,6 +29,11 @@
       <div
         class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-28 lg:pt-32"
       >
+        <!-- Mobile Logo - Only visible on mobile -->
+        <div class="lg:hidden flex justify-center mb-8 animate-fade-in">
+          <img :src="LogoSvg" alt="GoEvent Logo" class="h-20 w-auto" />
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
             <div class="space-y-4 sm:space-y-6">
@@ -711,6 +716,7 @@ import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
 import { useTypingAnimation } from '../composables/useTypingAnimation'
+import LogoSvg from '@/assets/logo.svg'
 import {
   Calendar,
   Users,

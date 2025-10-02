@@ -349,13 +349,8 @@
 
                       <!-- GoEvent Logo/Branding -->
                       <div class="space-y-2">
-                        <div class="inline-flex items-center justify-center">
-                          <span
-                            class="text-6xl font-bold text-white"
-                            :style="{ fontFamily: primaryFont || currentFont }"
-                          >
-                            GoEvent
-                          </span>
+                        <div class="inline-flex items-center justify-center mb-4">
+                          <img :src="WhiteLogoSvg" alt="GoEvent" class="h-16 w-auto" />
                         </div>
                         <p
                           class="text-xs text-white opacity-90"
@@ -424,6 +419,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, nextTick, inject, watch, type Component } from 'vue'
+import WhiteLogoSvg from '@/assets/white-logo.svg'
 import type {
   EventData,
   EventText,

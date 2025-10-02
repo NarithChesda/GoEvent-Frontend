@@ -8,34 +8,40 @@
       ]"
     >
       <!-- Logo Section -->
-      <div class="flex items-center justify-between h-20 px-4">
+      <div class="flex items-center h-20 relative"
+           :class="isCollapsed ? 'justify-center px-2' : 'justify-between px-4'">
         <button
           @click="handleLogoClick"
           class="flex items-center space-x-3 group"
-          :class="isCollapsed ? 'justify-center w-full' : ''"
+          :class="isCollapsed ? 'justify-center' : 'px-3'"
         >
           <img
-            :src="LogoSvg"
+            :src="isCollapsed ? IconSvg : LogoSvg"
             alt="GoEvent Logo"
             class="h-10 w-auto transition-all duration-300 group-hover:scale-110"
             :class="isCollapsed ? 'h-8' : ''"
           />
-          <span
-            v-if="!isCollapsed"
-            class="font-bold text-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
-          >
-            GoEvent
-          </span>
+
         </button>
 
         <!-- Collapse Toggle (Desktop) -->
         <button
+          v-if="!isCollapsed"
           @click="toggleCollapse"
-          class="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100 transition-colors"
+          class="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100 transition-colors ml-auto"
         >
           <ChevronLeft
             class="w-5 h-5 text-slate-600 transition-transform duration-300"
-            :class="isCollapsed ? 'rotate-180' : ''"
+          />
+        </button>
+
+        <button
+          v-else
+          @click="toggleCollapse"
+          class="hidden lg:flex items-center justify-center w-6 h-6 rounded-lg hover:bg-slate-100 transition-colors absolute right-1 top-1/2 -translate-y-1/2"
+        >
+          <ChevronLeft
+            class="w-4 h-4 text-slate-600 transition-transform duration-300 rotate-180"
           />
         </button>
 
@@ -211,6 +217,7 @@ import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useSidebar } from '../composables/useSidebar'
 import LogoSvg from '@/assets/logo.svg'
+import IconSvg from '@/assets/icon.svg'
 
 const router = useRouter()
 const route = useRoute()
