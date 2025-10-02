@@ -30,26 +30,26 @@
 
       <!-- Showcase URL Display -->
       <div class="space-y-2">
-        <label class="block text-sm font-medium text-slate-700">Social Media Sharing URL</label>
-        <p class="text-xs text-slate-500 mb-2">
+        <label class="block text-xs sm:text-sm font-medium text-slate-700">Social Media Sharing URL</label>
+        <p class="text-[10px] sm:text-xs text-slate-500 mb-2">
           This URL is optimized for social media previews and will redirect to your showcase page
         </p>
-        <div class="flex space-x-2">
+        <div class="flex space-x-1.5 sm:space-x-2">
           <input
             :value="showcaseUrl"
             readonly
-            class="flex-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50 text-slate-600 focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200"
+            class="flex-1 px-2 py-2 sm:px-4 sm:py-3 border border-slate-300 rounded-lg sm:rounded-xl bg-slate-50 text-slate-600 focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 text-xs sm:text-base min-w-0"
           />
           <button
             @click="copyToClipboard"
             :class="[
-              'px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2',
+              'px-2 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center space-x-1 sm:space-x-2 flex-shrink-0',
               copied ? 'bg-green-500 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700',
             ]"
           >
-            <Check v-if="copied" class="w-4 h-4" />
-            <Copy v-else class="w-4 h-4" />
-            <span>{{ copied ? 'Copied!' : 'Copy' }}</span>
+            <Check v-if="copied" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <Copy v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span class="text-xs sm:text-base">{{ copied ? 'Copied!' : 'Copy' }}</span>
           </button>
         </div>
       </div>
@@ -150,8 +150,8 @@
         </div>
       </div>
 
-      <!-- Meta Tags Testing Section -->
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <!-- Meta Tags Testing Section - Hidden on mobile -->
+      <div class="hidden md:block bg-amber-50 border border-amber-200 rounded-xl p-4">
         <div class="flex items-start space-x-3">
           <component :is="TestTube" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
           <div>
@@ -197,8 +197,8 @@
         </div>
       </div>
 
-      <!-- Tips Section -->
-      <div class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4">
+      <!-- Tips Section - Hidden on mobile -->
+      <div class="hidden md:block bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4">
         <div class="flex items-start space-x-3">
           <Lightbulb class="w-5 h-5 text-[#1e90ff] mt-0.5 flex-shrink-0" />
           <div>

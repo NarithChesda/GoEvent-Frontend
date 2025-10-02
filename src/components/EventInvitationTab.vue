@@ -14,55 +14,55 @@
     <SocialMediaPreview :event-data="event" />
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <Send class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
+    <div class="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-4">
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
+        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center mb-1 md:mb-0">
+            <Send class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-[#1e90ff]" />
           </div>
-          <div>
-            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ sentInvitations }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Sent</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-          </div>
-          <div>
-            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ acceptedInvitations }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Viewed</p>
+          <div class="text-center md:text-left">
+            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ sentInvitations }}</p>
+            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600">Sent</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
+        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center mb-1 md:mb-0">
+            <CheckCircle class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-600" />
           </div>
-          <div>
-            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ pendingInvitations }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Not Sent</p>
+          <div class="text-center md:text-left">
+            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ acceptedInvitations }}</p>
+            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600">Viewed</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
+        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-orange-100 flex items-center justify-center mb-1 md:mb-0">
+            <Clock class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-orange-600" />
           </div>
-          <div>
-            <p v-if="loadingStats" class="text-lg sm:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-lg sm:text-2xl font-bold text-slate-900">{{ totalGuests }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Total Guests</p>
+          <div class="text-center md:text-left">
+            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ pendingInvitations }}</p>
+            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600 whitespace-nowrap">Not Sent</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
+        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-purple-100 flex items-center justify-center mb-1 md:mb-0">
+            <Users class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-600" />
+          </div>
+          <div class="text-center md:text-left">
+            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
+            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ totalGuests }}</p>
+            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600 whitespace-nowrap">Total Guests</p>
           </div>
         </div>
       </div>
