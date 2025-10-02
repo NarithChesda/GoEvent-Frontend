@@ -128,13 +128,13 @@ const fallbackButtonStyle = computed(() => ({
 
 @media (min-width: 1024px) {
   .loading-spinner {
-    width: clamp(50px, 10vh, 100px);
-    height: clamp(50px, 10vh, 100px);
+    width: clamp(50px, 6vh, 70px);
+    height: clamp(50px, 6vh, 70px);
     border-width: 4px;
   }
 
   .loading-text {
-    font-size: clamp(0.875rem, 2.5vh, 1.25rem);
+    font-size: clamp(0.875rem, 1.8vh, 1.1rem);
   }
 }
 
