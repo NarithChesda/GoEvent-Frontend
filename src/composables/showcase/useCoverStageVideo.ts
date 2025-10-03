@@ -515,7 +515,7 @@ export function useCoverStageVideo(
       if (bgVideo.readyState >= minReadyState) {
         playAttempts++
 
-        // Pre-show background video slightly before playing for smoother transition
+        // Show background video immediately for frame-perfect transition
         showBackgroundVideo()
 
         bgVideo
@@ -523,10 +523,9 @@ export function useCoverStageVideo(
           .then(() => {
             hasStartedPlaying = true
             devLog('Background video started playing successfully')
-            // Wait a bit before hiding event video to ensure smooth transition
-            setTimeout(() => {
-              hideEventVideos()
-            }, 100)
+            // Hide event video immediately for instant frame-perfect transition
+            // No delay needed since video frames are designed to connect seamlessly
+            hideEventVideos()
           })
           .catch((error) => {
             devWarn(`Background video play attempt ${playAttempts} failed, will retry:`, error)
