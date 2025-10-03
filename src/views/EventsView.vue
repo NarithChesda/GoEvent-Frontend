@@ -611,7 +611,7 @@ interface EventFormData {
   registration_fee?: number
   registration_required?: boolean
   registration_deadline?: string | null
-  category?: number | null
+  category?: number | string | null
   banner_image?: string | null
   is_free?: boolean
   timezone?: string
@@ -638,7 +638,7 @@ const handleEventCreate = async (formData: EventFormData) => {
       status:
         (formData.status as 'draft' | 'published' | 'cancelled' | 'completed') ||
         ('published' as const),
-      category: formData.category || null,
+      category: formData.category ? (typeof formData.category === 'string' ? parseInt(formData.category) : formData.category) : null,
       max_attendees: formData.max_attendees || null,
       registration_required: formData.registration_required || false,
       registration_deadline: formData.registration_deadline || null,

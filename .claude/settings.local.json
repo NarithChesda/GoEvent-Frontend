@@ -151,7 +151,12 @@
       "Read(C:\\/**)",
       "Bash(git merge:*)",
       "Bash(timeout 30 npm run dev)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(xargs git rm:*)",
+      "Bash(while IFS= read -r file)",
+      "Bash(do git rm --cached \"$file\")",
+      "Bash(done)",
+      "Bash(xargs -0 git rm --cached)"
     ],
     "deny": [],
     "additionalDirectories": [

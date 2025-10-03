@@ -80,14 +80,14 @@
     <div class="bg-white/95 backdrop-blur-sm border-t border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10">
       <div class="flex items-center justify-around px-2 py-2">
         <!-- Home Tab -->
-        <RouterLink
-          to="/"
+        <button
+          @click="handleHomeClick"
           class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
           :class="$route.path === '/' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
         >
           <Home class="w-5 h-5 flex-shrink-0" />
           <span class="text-xs font-medium truncate">Home</span>
-        </RouterLink>
+        </button>
 
         <!-- About Tab -->
         <RouterLink
@@ -181,6 +181,18 @@ const signinLink = computed(() => {
   }
   return `/signin?redirect=${encodeURIComponent(currentPath)}`
 })
+
+const handleHomeClick = () => {
+  if (router.currentRoute.value.path !== '/') {
+    router.push('/').then(() => {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 100)
+    })
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
 
 const scrollToPricing = () => {
   if (router.currentRoute.value.path !== '/') {

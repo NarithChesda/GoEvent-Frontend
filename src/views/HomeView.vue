@@ -41,7 +41,7 @@
                 #1 Event Management Platform
               </div>
               <div class="flex justify-center lg:justify-start animate-fade-in animation-delay-500 my-6 sm:my-8 lg:my-0">
-                <img :src="LogoSvg" alt="Create Unforgettable Events" class="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 2xl:h-40 w-auto" />
+                <img :src="LogoPng" alt="Create Unforgettable Events" class="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 2xl:h-40 w-auto" />
               </div>
               <p
                 class="text-base sm:text-lg lg:text-lg xl:text-xl text-slate-700 leading-relaxed max-w-prose animate-fade-in animation-delay-1000"
@@ -82,7 +82,7 @@
                 >
                   <Check class="w-2 h-2 sm:w-3 sm:h-3 text-white" />
                 </div>
-                <span class="font-medium">Free 14-day trial</span>
+                <span class="font-medium">Free to use platform</span>
               </div>
               <div class="flex items-center space-x-2 text-gray-600">
                 <div
@@ -92,14 +92,7 @@
                 </div>
                 <span class="font-medium">No credit card required</span>
               </div>
-              <div class="flex items-center space-x-2 text-gray-600">
-                <div
-                  class="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center"
-                >
-                  <Check class="w-2 h-2 sm:w-3 sm:h-3 text-white" />
-                </div>
-                <span class="font-medium">Cancel anytime</span>
-              </div>
+
             </div>
           </div>
 
@@ -706,7 +699,7 @@ import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
-import LogoSvg from '@/assets/logo.svg'
+import LogoPng from '@/assets/logo.png'
 import {
   Calendar,
   Users,

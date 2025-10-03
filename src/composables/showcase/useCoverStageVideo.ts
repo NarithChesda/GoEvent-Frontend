@@ -302,7 +302,7 @@ export function useCoverStageVideo(
       const eventLoadPromise = (async () => {
         try {
           emit('eventVideoLoadStarted')
-          const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
+          const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl!, 'event')
           if (eventBlobUrl && videoRefs.eventVideoPreloader()) {
             const eventVideo = videoRefs.eventVideoPreloader()!
             registerVideoForCleanup(eventVideo, 'event-video-preloader')

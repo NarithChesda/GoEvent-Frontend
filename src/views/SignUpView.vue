@@ -273,7 +273,7 @@
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
-import LogoSvg from '@/assets/logo.svg'
+import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
 

@@ -16,7 +16,7 @@
           :class="isCollapsed ? 'justify-center' : 'px-3'"
         >
           <img
-            :src="isCollapsed ? IconSvg : LogoSvg"
+            :src="isCollapsed ? IconSvg : LogoPng"
             alt="GoEvent Logo"
             class="h-10 w-auto transition-all duration-300 group-hover:scale-110"
             :class="isCollapsed ? 'h-8' : ''"
@@ -49,31 +49,59 @@
 
       <!-- Navigation Links -->
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        <RouterLink
-          v-for="item in navigationItems"
-          :key="item.path"
-          :to="item.path"
-          class="flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
-          :class="[
-            $route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF] font-semibold' : '',
-            isCollapsed ? 'flex-col space-y-1' : 'space-x-3'
-          ]"
-        >
-          <component
-            :is="item.icon"
-            class="flex-shrink-0"
+        <template v-for="item in navigationItems" :key="item.path">
+          <!-- Home button with scroll behavior -->
+          <button
+            v-if="item.path === '/'"
+            @click="handleHomeClick"
+            class="w-full flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
             :class="[
-              $route.path === item.path ? 'text-[#1e90ff]' : 'text-slate-500 group-hover:text-[#1e90ff]',
-              isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
+              $route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF] font-semibold' : '',
+              isCollapsed ? 'flex-col space-y-1' : 'space-x-3'
             ]"
-          />
-          <span
-            class="font-medium"
-            :class="isCollapsed ? 'text-xs text-center' : 'text-sm'"
           >
-            {{ item.label }}
-          </span>
-        </RouterLink>
+            <component
+              :is="item.icon"
+              class="flex-shrink-0"
+              :class="[
+                $route.path === item.path ? 'text-[#1e90ff]' : 'text-slate-500 group-hover:text-[#1e90ff]',
+                isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
+              ]"
+            />
+            <span
+              class="font-medium"
+              :class="isCollapsed ? 'text-xs text-center' : 'text-sm'"
+            >
+              {{ item.label }}
+            </span>
+          </button>
+
+          <!-- Other navigation items -->
+          <RouterLink
+            v-else
+            :to="item.path"
+            class="flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
+            :class="[
+              $route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF] font-semibold' : '',
+              isCollapsed ? 'flex-col space-y-1' : 'space-x-3'
+            ]"
+          >
+            <component
+              :is="item.icon"
+              class="flex-shrink-0"
+              :class="[
+                $route.path === item.path ? 'text-[#1e90ff]' : 'text-slate-500 group-hover:text-[#1e90ff]',
+                isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
+              ]"
+            />
+            <span
+              class="font-medium"
+              :class="isCollapsed ? 'text-xs text-center' : 'text-sm'"
+            >
+              {{ item.label }}
+            </span>
+          </RouterLink>
+        </template>
 
         <!-- Pricing Button -->
         <button
@@ -216,7 +244,7 @@ import {
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useSidebar } from '../composables/useSidebar'
-import LogoSvg from '@/assets/logo.svg'
+import LogoPng from '@/assets/logo.png'
 import IconSvg from '@/assets/icon.svg'
 
 const router = useRouter()
@@ -260,6 +288,18 @@ const signinLink = computed(() => {
 })
 
 const handleLogoClick = () => {
+  if (router.currentRoute.value.path !== '/') {
+    router.push('/').then(() => {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 100)
+    })
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const handleHomeClick = () => {
   if (router.currentRoute.value.path !== '/') {
     router.push('/').then(() => {
       setTimeout(() => {

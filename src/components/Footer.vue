@@ -6,7 +6,7 @@
         <div class="col-span-1 sm:col-span-2">
           <div class="flex items-center space-x-2 mb-3 sm:mb-4">
             <img
-              :src="LogoSvg"
+              :src="LogoPng"
               alt="GoEvent Logo"
               class="h-16 sm:h-20 md:h-24 w-auto"
             />
@@ -110,7 +110,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-vue-next'
-import LogoSvg from '@/assets/logo.svg'
+import LogoPng from '@/assets/logo.png'
 
 const currentYear = computed(() => new Date().getFullYear())
 </script>
