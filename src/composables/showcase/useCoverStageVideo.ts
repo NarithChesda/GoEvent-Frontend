@@ -506,8 +506,16 @@ export function useCoverStageVideo(
       }
 
       // Check if video has enough data to start playing
-      if (bgVideo.readyState >= 1) {
+      // HAVE_METADATA (1) - basic info loaded
+      // HAVE_CURRENT_DATA (2) - current frame loaded
+      // HAVE_FUTURE_DATA (3) - enough data to play a bit
+      // HAVE_ENOUGH_DATA (4) - enough data to play through
+      const minReadyState = isMobile ? 2 : 1 // Higher threshold for mobile
+
+      if (bgVideo.readyState >= minReadyState) {
         playAttempts++
+
+        // Pre-show background video slightly before playing for smoother transition
         showBackgroundVideo()
 
         bgVideo
@@ -515,23 +523,35 @@ export function useCoverStageVideo(
           .then(() => {
             hasStartedPlaying = true
             devLog('Background video started playing successfully')
-            hideEventVideos()
+            // Wait a bit before hiding event video to ensure smooth transition
+            setTimeout(() => {
+              hideEventVideos()
+            }, 100)
           })
           .catch((error) => {
             devWarn(`Background video play attempt ${playAttempts} failed, will retry:`, error)
+
+            // More aggressive retry strategy for problematic browsers
+            const retryDelay = isMobile ? 1500 : 1000
             setTimeout(() => {
               if (!hasStartedPlaying) {
+                // Force reload if multiple attempts failed
+                if (playAttempts > 3 && bgVideo.src) {
+                  devLog('Forcing video reload after multiple failed attempts')
+                  bgVideo.load()
+                }
                 tryPlayBackgroundVideo()
               }
-            }, 1000)
+            }, retryDelay)
           })
       } else {
-        devLog(`Background video not ready, readyState: ${bgVideo.readyState}`)
+        devLog(`Background video not ready, readyState: ${bgVideo.readyState}, waiting...`)
+        const checkDelay = isMobile ? 800 : 500
         setTimeout(() => {
           if (!hasStartedPlaying) {
             tryPlayBackgroundVideo()
           }
-        }, 500)
+        }, checkDelay)
       }
     }
 
@@ -628,10 +648,6 @@ export function useCoverStageVideo(
       return
     }
 
-    // Immediately transition to main content stage while background video loads
-    currentVideoPhase.value = 'background'
-    emit('sequentialVideoEnded')
-
     // Start loading background video if not already loaded
     if (!bgVideo.src) {
       loadBackgroundVideo()
@@ -640,6 +656,31 @@ export function useCoverStageVideo(
     // Create playback manager and event handlers
     const playbackManager = createBackgroundVideoPlaybackManager(bgVideo)
     const eventHandlers = createBackgroundVideoEventHandlers(playbackManager)
+
+    // Set up a fallback timeout to prevent stuck transitions
+    const transitionTimeout = setTimeout(() => {
+      if (!playbackManager.hasStartedPlaying()) {
+        devWarn('Background video transition timeout - forcing transition to main content')
+        // Force transition even if background video hasn't started
+        currentVideoPhase.value = 'background'
+        emit('sequentialVideoEnded')
+        // Hide event videos to prevent frozen frame
+        videoManager.setVisibility(videoRefs.eventVideoPreloader(), false)
+        videoManager.setVisibility(videoRefs.sequentialVideoContainer(), false)
+        playbackManager.clearDebugInterval()
+      }
+    }, isMobile ? 8000 : 12000) // Shorter timeout on mobile
+
+    // Only transition to main content when background video actually starts playing
+    const handlePlayingWithTransition = () => {
+      clearTimeout(transitionTimeout)
+      eventHandlers.handlePlaying()
+      playbackManager.clearDebugInterval()
+
+      // Now it's safe to transition to main content
+      currentVideoPhase.value = 'background'
+      emit('sequentialVideoEnded')
+    }
 
     // Try to play immediately if video is ready
     playbackManager.tryPlay()
@@ -658,11 +699,14 @@ export function useCoverStageVideo(
     addVideoEventListener(bgVideo, 'stalled', () => eventHandlers.handleStalled(bgVideo))
     addVideoEventListener(bgVideo, 'suspend', () => eventHandlers.handleSuspend(bgVideo))
     addVideoEventListener(bgVideo, 'waiting', () => eventHandlers.handleWaiting(bgVideo))
-    addVideoEventListener(bgVideo, 'playing', () => {
-      eventHandlers.handlePlaying()
-      playbackManager.clearDebugInterval()
+    addVideoEventListener(bgVideo, 'playing', handlePlayingWithTransition)
+    addVideoEventListener(bgVideo, 'error', (e) => {
+      clearTimeout(transitionTimeout)
+      eventHandlers.handleError(e)
+      // Force transition on error
+      currentVideoPhase.value = 'background'
+      emit('sequentialVideoEnded')
     })
-    addVideoEventListener(bgVideo, 'error', eventHandlers.handleError)
   }
 
   // Enhanced video state initialization with resource management

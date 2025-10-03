@@ -3,7 +3,7 @@
     <!-- Sequential Video Container - plays all videos in order -->
     <video
       ref="sequentialVideoContainer"
-      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing video-transition"
       style="z-index: -10"
       data-video-type="sequential"
       muted
@@ -20,7 +20,7 @@
       muted
       playsinline
       preload="none"
-      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing video-transition"
       style="z-index: 5"
       data-video-type="event"
       @loadeddata="$emit('eventVideoPreloaded')"
@@ -37,7 +37,7 @@
       loop
       playsinline
       preload="none"
-      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
+      class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing video-transition"
       style="z-index: 4"
       data-video-type="background"
       @loadeddata="$emit('backgroundVideoPreloaded')"
@@ -145,6 +145,11 @@ defineExpose({
   left: 0;
   height: 100vh;
   object-position: center;
+}
+
+/* Smooth transition for video opacity changes */
+.video-transition {
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* Mobile devices - stretch height, crop width, center video */

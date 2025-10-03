@@ -418,7 +418,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { X, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
-import LogoSvg from '@/assets/logo.svg'
+import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
 import { inputValidator, validationRules } from '../utils/inputValidation'
