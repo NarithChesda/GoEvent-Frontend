@@ -33,26 +33,6 @@ interface VideoProps extends VideoUrls {
   templateAssets?: { standard_cover_video?: string } | null
 }
 
-// Basic device detection
-const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-  navigator.userAgent,
-)
-const isLowEndDevice = (navigator as any).deviceMemory
-  ? (navigator as any).deviceMemory <= 2
-  : navigator.hardwareConcurrency <= 2
-
-// Development logging utility - disabled
-const isDevelopment = false // Completely disabled
-const devLog = (message: string, ...args: any[]) => {
-  // Logging disabled
-}
-const devWarn = (message: string, ...args: any[]) => {
-  // Logging disabled
-}
-const devError = (message: string, ...args: any[]) => {
-  // Logging disabled
-}
-
 export function useCoverStageVideo(
   videoRefs: VideoElementRefs,
   props: VideoProps,
@@ -63,10 +43,7 @@ export function useCoverStageVideo(
 
   // Video state management
   const currentVideoPhase = ref<VideoPhase>('none')
-  const eventVideoPreloaded = ref(false)
   const eventVideoReady = ref(false)
-  const backgroundVideoPreloaded = ref(false)
-  const backgroundVideoReady = ref(false)
 
   // Video state control
   const isCoverVideoPlaying = ref(
@@ -169,13 +146,11 @@ export function useCoverStageVideo(
 
       // Mobile-specific constraints
       if (videoType === 'background' && isLowMemory) {
-        devLog('Skipping background video download on low-memory device')
         return null
       }
 
       // Enforce video limits for mobile
       if (isMobile && videoResourceManager.managedVideoCount() >= maxConcurrentVideos) {
-        devWarn('Video limit reached on mobile, skipping download')
         return null
       }
 
@@ -206,12 +181,10 @@ export function useCoverStageVideo(
           // More aggressive size limits for low-memory devices
           const maxSize = videoType === 'event' ? 15 : 8 // MB
           if (videoSizeInMB > maxSize) {
-            devWarn(`Video too large for low-memory device: ${videoSizeInMB}MB > ${maxSize}MB`)
             return null
           }
         } catch (error) {
           // Continue with download if HEAD request fails
-          devWarn('Failed to check video size, proceeding with download')
         }
       }
 
@@ -240,7 +213,7 @@ export function useCoverStageVideo(
       return result
     } catch (error) {
       videoDownloadPromises.delete(videoUrl)
-      devError(`Video download failed for ${videoType}:`, error)
+      console.error(`Video download failed for ${videoType}:`, error)
       return null
     }
   }
@@ -275,14 +248,10 @@ export function useCoverStageVideo(
     bgVideo.src = fullUrl
     bgVideo.preload = preloadMode
     bgVideo.load()
-
-    devLog('Background video load initiated:', fullUrl, 'preload:', preloadMode)
   }
 
   // Event video preloading handlers
   const handleEventVideoPreloaded = () => {
-    if (eventVideoPreloaded.value) return
-    eventVideoPreloaded.value = true
     emit('eventVideoPreloaded')
   }
 
@@ -309,7 +278,7 @@ export function useCoverStageVideo(
             eventVideo.src = eventBlobUrl
           }
         } catch (error) {
-          devError('Event video loading failed:', error)
+          console.error('Event video loading failed:', error)
         }
       })()
       loadPromises.push(eventLoadPromise)
@@ -324,7 +293,7 @@ export function useCoverStageVideo(
           await new Promise(resolve => setTimeout(resolve, delay))
           await loadBackgroundVideo()
         } catch (error) {
-          devError('Background video loading failed:', error)
+          console.error('Background video loading failed:', error)
         }
       })()
       loadPromises.push(bgLoadPromise)
@@ -334,7 +303,6 @@ export function useCoverStageVideo(
     const timeout = isMobile ? 15000 : 30000 // Shorter timeout for mobile
     const timeoutPromise = new Promise<void>(resolve => {
       setTimeout(() => {
-        devWarn('Video loading timeout reached')
         resolve()
       }, timeout)
     })
@@ -345,51 +313,29 @@ export function useCoverStageVideo(
     ])
   }
 
-  // Event video loading (can be called independently)
-  const loadEventVideo = async () => {
-    if (!props.eventVideoUrl) return
-
-    // Check if already loading via parallel system
-    if (videoDownloadPromises.has(props.eventVideoUrl)) {
-      await videoDownloadPromises.get(props.eventVideoUrl)
-      return
-    }
-
-    // Emit event that event video loading has started
-    emit('eventVideoLoadStarted')
-
-    const eventBlobUrl = await forceFullVideoDownload(props.eventVideoUrl, 'event')
-    if (eventBlobUrl && videoRefs.eventVideoPreloader()) {
-      videoRefs.eventVideoPreloader()!.src = eventBlobUrl
-    }
-  }
-
   // Cover video loaded handler - start parallel loading of other videos
   const handleCoverVideoLoaded = () => {
     startParallelVideoLoading()
   }
 
-  // Event to trigger background video loading externally
-  const triggerBackgroundVideoLoad = () => {
-    loadBackgroundVideo()
-  }
-
-  // Background video handlers
+  // Background video handlers (simplified - events emitted directly in VideoContainer)
   const handleBackgroundVideoPreloaded = () => {
-    if (backgroundVideoPreloaded.value) return
-    backgroundVideoPreloaded.value = true
+    // No-op: event is emitted directly from VideoContainer
   }
 
   const handleBackgroundVideoReady = () => {
-    if (backgroundVideoReady.value) return
-    backgroundVideoReady.value = true
+    // No-op: event is emitted directly from VideoContainer
   }
 
   // Sequential video handlers
   const handleSequentialVideoEnded = () => {
     if (currentVideoPhase.value === 'event') {
-      // Event video ended, keep it visible (paused at last frame) while background loads
-      // Don't hide the event video here, let playBackgroundVideo handle the transition
+      // Event video ended - immediately show main content while keeping last frame visible
+      // This prevents the gap on Telegram/Messenger browsers
+      currentVideoPhase.value = 'background'
+      emit('sequentialVideoEnded')
+
+      // Now prepare background video in the background for smooth transition
       playBackgroundVideo()
     } else if (currentVideoPhase.value === 'background') {
       emit('sequentialVideoEnded')
@@ -434,12 +380,11 @@ export function useCoverStageVideo(
               videoToUse.muted = false
             } catch (error) {
               // Keep muted if unmuting fails
-              devWarn('Could not unmute video on mobile:', error)
             }
           }, 500)
         }
       } catch (error) {
-        devWarn('Event video play failed:', error)
+        console.warn('Event video play failed:', error)
         handleSequentialVideoEnded()
       }
     }
@@ -479,20 +424,7 @@ export function useCoverStageVideo(
           clearDebugInterval()
           return
         }
-
-        const bufferedRanges = []
-        for (let i = 0; i < bgVideo.buffered.length; i++) {
-          bufferedRanges.push(`${bgVideo.buffered.start(i)}-${bgVideo.buffered.end(i)}`)
-        }
-
-        devLog('Background video state:', {
-          readyState: bgVideo.readyState,
-          networkState: bgVideo.networkState,
-          paused: bgVideo.paused,
-          currentTime: bgVideo.currentTime,
-          buffered: bufferedRanges.join(', '),
-          src: bgVideo.src ? 'set' : 'not set',
-        })
+        // Debug monitoring active
       }, 5000) // Check every 5 seconds
     }
 
@@ -500,7 +432,6 @@ export function useCoverStageVideo(
       if (hasStartedPlaying) return
 
       if (playAttempts >= maxPlayAttempts) {
-        devWarn('Max play attempts reached for background video')
         clearDebugInterval()
         return
       }
@@ -522,13 +453,12 @@ export function useCoverStageVideo(
           .play()
           .then(() => {
             hasStartedPlaying = true
-            devLog('Background video started playing successfully')
             // Hide event video immediately for instant frame-perfect transition
             // No delay needed since video frames are designed to connect seamlessly
             hideEventVideos()
           })
           .catch((error) => {
-            devWarn(`Background video play attempt ${playAttempts} failed, will retry:`, error)
+            console.warn(`Background video play attempt ${playAttempts} failed, will retry:`, error)
 
             // More aggressive retry strategy for problematic browsers
             const retryDelay = isMobile ? 1500 : 1000
@@ -536,7 +466,6 @@ export function useCoverStageVideo(
               if (!hasStartedPlaying) {
                 // Force reload if multiple attempts failed
                 if (playAttempts > 3 && bgVideo.src) {
-                  devLog('Forcing video reload after multiple failed attempts')
                   bgVideo.load()
                 }
                 tryPlayBackgroundVideo()
@@ -544,7 +473,6 @@ export function useCoverStageVideo(
             }, retryDelay)
           })
       } else {
-        devLog(`Background video not ready, readyState: ${bgVideo.readyState}, waiting...`)
         const checkDelay = isMobile ? 800 : 500
         setTimeout(() => {
           if (!hasStartedPlaying) {
@@ -570,11 +498,10 @@ export function useCoverStageVideo(
   ) => {
     return {
       handleLoadStart: () => {
-        devLog('Background video started loading')
+        // Background video loading started
       },
 
-      handleLoadedMetadata: (bgVideo: HTMLVideoElement) => {
-        devLog(`Background video metadata loaded - duration: ${bgVideo.duration}s`)
+      handleLoadedMetadata: () => {
         playbackManager.tryPlay()
       },
 
@@ -590,10 +517,7 @@ export function useCoverStageVideo(
         playbackManager.tryPlay()
       },
 
-      handleStalled: (bgVideo: HTMLVideoElement) => {
-        devWarn(
-          `Background video stalled at readyState: ${bgVideo.readyState}, buffered: ${bgVideo.buffered.length > 0 ? bgVideo.buffered.end(0) : 0}s`,
-        )
+      handleStalled: () => {
         setTimeout(() => {
           if (!playbackManager.hasStartedPlaying()) {
             playbackManager.tryPlay()
@@ -601,16 +525,12 @@ export function useCoverStageVideo(
         }, 2000)
       },
 
-      handleWaiting: (bgVideo: HTMLVideoElement) => {
-        const bufferedTime = bgVideo.buffered.length > 0 ? bgVideo.buffered.end(0) : 0
-        devLog(
-          `Background video waiting for data - buffered: ${bufferedTime}s, currentTime: ${bgVideo.currentTime}s`,
-        )
+      handleWaiting: () => {
+        // Background video waiting for data
       },
 
       handlePlaying: () => {
         playbackManager.setStartedPlaying(true)
-        devLog('Background video is now playing')
         // Hide event videos when background video starts playing
         videoManager.setVisibility(videoRefs.eventVideoPreloader(), false)
         videoManager.setVisibility(videoRefs.sequentialVideoContainer(), false)
@@ -618,15 +538,13 @@ export function useCoverStageVideo(
 
       handleError: (e: Event) => {
         const error = (e.target as HTMLVideoElement).error
-        devError('Background video error:', error?.message || 'Unknown error', 'Code:', error?.code)
+        console.error('Background video error:', error?.message || 'Unknown error', 'Code:', error?.code)
         playbackManager.clearDebugInterval()
       },
 
       handleSuspend: (bgVideo: HTMLVideoElement) => {
-        devWarn('Background video loading suspended by browser')
         setTimeout(() => {
           if (!playbackManager.hasStartedPlaying() && bgVideo.paused) {
-            devLog('Attempting to resume background video loading')
             bgVideo.load()
             playbackManager.tryPlay()
           }
@@ -637,13 +555,13 @@ export function useCoverStageVideo(
 
   const playBackgroundVideo = () => {
     if (!props.backgroundVideoUrl) {
-      emit('sequentialVideoEnded')
+      // No background video, just keep the event video frozen
       return
     }
 
     const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) {
-      emit('sequentialVideoEnded')
+      // No background video element available
       return
     }
 
@@ -656,55 +574,28 @@ export function useCoverStageVideo(
     const playbackManager = createBackgroundVideoPlaybackManager(bgVideo)
     const eventHandlers = createBackgroundVideoEventHandlers(playbackManager)
 
-    // Set up a fallback timeout to prevent stuck transitions
-    const transitionTimeout = setTimeout(() => {
-      if (!playbackManager.hasStartedPlaying()) {
-        devWarn('Background video transition timeout - forcing transition to main content')
-        // Force transition even if background video hasn't started
-        currentVideoPhase.value = 'background'
-        emit('sequentialVideoEnded')
-        // Hide event videos to prevent frozen frame
-        videoManager.setVisibility(videoRefs.eventVideoPreloader(), false)
-        videoManager.setVisibility(videoRefs.sequentialVideoContainer(), false)
-        playbackManager.clearDebugInterval()
-      }
-    }, isMobile ? 8000 : 12000) // Shorter timeout on mobile
-
-    // Only transition to main content when background video actually starts playing
-    const handlePlayingWithTransition = () => {
-      clearTimeout(transitionTimeout)
-      eventHandlers.handlePlaying()
-      playbackManager.clearDebugInterval()
-
-      // Now it's safe to transition to main content
-      currentVideoPhase.value = 'background'
-      emit('sequentialVideoEnded')
-    }
-
     // Try to play immediately if video is ready
     playbackManager.tryPlay()
 
     // Start debug monitoring
     playbackManager.startDebugInterval()
 
-    // Set up event listeners
+    // Set up event listeners - background video loads silently behind event video
     addVideoEventListener(bgVideo, 'loadstart', eventHandlers.handleLoadStart)
-    addVideoEventListener(bgVideo, 'loadedmetadata', () =>
-      eventHandlers.handleLoadedMetadata(bgVideo),
-    )
+    addVideoEventListener(bgVideo, 'loadedmetadata', eventHandlers.handleLoadedMetadata)
     addVideoEventListener(bgVideo, 'canplay', eventHandlers.handleCanPlay)
     addVideoEventListener(bgVideo, 'canplaythrough', eventHandlers.handleCanPlayThrough)
     addVideoEventListener(bgVideo, 'progress', eventHandlers.handleProgress)
-    addVideoEventListener(bgVideo, 'stalled', () => eventHandlers.handleStalled(bgVideo))
+    addVideoEventListener(bgVideo, 'stalled', eventHandlers.handleStalled)
     addVideoEventListener(bgVideo, 'suspend', () => eventHandlers.handleSuspend(bgVideo))
-    addVideoEventListener(bgVideo, 'waiting', () => eventHandlers.handleWaiting(bgVideo))
-    addVideoEventListener(bgVideo, 'playing', handlePlayingWithTransition)
+    addVideoEventListener(bgVideo, 'waiting', eventHandlers.handleWaiting)
+    addVideoEventListener(bgVideo, 'playing', () => {
+      eventHandlers.handlePlaying()
+      playbackManager.clearDebugInterval()
+    })
     addVideoEventListener(bgVideo, 'error', (e) => {
-      clearTimeout(transitionTimeout)
       eventHandlers.handleError(e)
-      // Force transition on error
-      currentVideoPhase.value = 'background'
-      emit('sequentialVideoEnded')
+      playbackManager.clearDebugInterval()
     })
   }
 
@@ -846,7 +737,7 @@ export function useCoverStageVideo(
           }
           await coverVideo.play()
         } catch (error) {
-          devWarn('Cover video play failed:', error)
+          console.warn('Cover video play failed:', error)
         }
       } else {
         coverVideo.pause()
@@ -866,10 +757,7 @@ export function useCoverStageVideo(
   return {
     // State
     currentVideoPhase: readonly(currentVideoPhase),
-    eventVideoPreloaded: readonly(eventVideoPreloaded),
     eventVideoReady: readonly(eventVideoReady),
-    backgroundVideoPreloaded: readonly(backgroundVideoPreloaded),
-    backgroundVideoReady: readonly(backgroundVideoReady),
     isCoverVideoPlaying,
     isContentHidden,
 
@@ -890,9 +778,5 @@ export function useCoverStageVideo(
     initializeVideoState,
     cleanupAllVideoResources,
     startEventVideo,
-    triggerBackgroundVideoLoad,
-    loadBackgroundVideo,
-    loadEventVideo,
-    startParallelVideoLoading,
   }
 }
