@@ -362,7 +362,7 @@ import { ChevronDown, Settings, LogOut, Home, Info, Calendar, DollarSign, User }
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useNavbarScroll } from '../composables/useNavbarScroll'
-import LogoSvg from '@/assets/logo.svg'
+import LogoSvg from '@/assets/logo.png'
 
 const userMenuOpen = ref(false)
 const router = useRouter()
