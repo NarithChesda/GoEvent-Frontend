@@ -71,6 +71,16 @@ export interface GoogleLoginRequest {
   access_token: string
 }
 
+export interface TelegramAuthData {
+  id: string
+  first_name: string
+  last_name?: string
+  username?: string
+  photo_url?: string
+  auth_date: string
+  hash: string
+}
+
 class AuthService {
   // Authentication endpoints
   async register(data: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
@@ -198,6 +208,40 @@ class AuthService {
         return {
           success: false,
           message: 'Failed to process Google login response',
+        }
+      }
+    }
+
+    return response
+  }
+
+  async telegramLogin(data: TelegramAuthData): Promise<ApiResponse<LoginResponse>> {
+    const response = await apiService.post<LoginResponse>('/api/auth/telegram/login/', data)
+
+    if (response.success && response.data) {
+      // Enhanced validation for Telegram login
+      try {
+        if (this.isValidLoginResponse(response.data)) {
+          this.setTokens(response.data.tokens.access, response.data.tokens.refresh)
+          this.setUser(response.data.user)
+        } else {
+          const normalizedResponse = this.normalizeLoginResponse(response.data)
+          if (normalizedResponse) {
+            this.setTokens(normalizedResponse.tokens.access, normalizedResponse.tokens.refresh)
+            this.setUser(normalizedResponse.user)
+          } else {
+            console.error('Unexpected Telegram login response structure:', response.data)
+            return {
+              success: false,
+              message: 'Invalid response format from server',
+            }
+          }
+        }
+      } catch (processingError) {
+        console.error('Error processing Telegram login response:', processingError)
+        return {
+          success: false,
+          message: 'Failed to process Telegram login response',
         }
       }
     }

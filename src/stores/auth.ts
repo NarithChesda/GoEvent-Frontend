@@ -291,6 +291,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const telegramLogin = async (telegramData: any) => {
+    try {
+      setLoading(true)
+      clearError()
+
+      const response = await authService.telegramLogin(telegramData)
+
+      if (response.success && response.data) {
+        // Telegram login returns nested tokens object: { tokens: { access, refresh }, user }
+        setUser(response.data.user)
+        return { success: true }
+      } else {
+        const errorMsg = response.message || 'Telegram login failed'
+        setError(errorMsg)
+        return { success: false, error: errorMsg }
+      }
+    } catch (err) {
+      const errorMsg = 'Network error during Telegram login'
+      setError(errorMsg)
+      return { success: false, error: errorMsg }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     // State
     user,
@@ -311,5 +336,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateProfile,
     initializeAuth,
     googleLogin,
+    telegramLogin,
   }
 })
