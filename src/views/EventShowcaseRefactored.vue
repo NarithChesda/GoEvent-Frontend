@@ -346,6 +346,22 @@ const updateEventMetaTags = (eventData: any) => {
   }
 }
 
+// Preload logo to ensure it's cached before MainContentStage renders
+const preloadLogo = (logoUrl: string | null | undefined) => {
+  if (!logoUrl) return
+
+  const fullUrl = getMediaUrl(logoUrl)
+  if (!fullUrl) return
+
+  // Create preload link
+  const preloadLink = document.createElement('link')
+  preloadLink.rel = 'preload'
+  preloadLink.as = 'image'
+  preloadLink.href = fullUrl
+  preloadLink.setAttribute('fetchpriority', 'high')
+  document.head.appendChild(preloadLink)
+}
+
 // Lifecycle hooks
 onMounted(async () => {
   await authStore.initializeAuth()
@@ -355,6 +371,11 @@ onMounted(async () => {
 
   // Initialize showcase - video resource manager is provided via Vue's provide/inject pattern
   await loadShowcase()
+
+  // Preload logo once event data is loaded
+  if (event.value?.logo_one) {
+    preloadLogo(event.value.logo_one)
+  }
 
   // Mobile memory management initialized
 })

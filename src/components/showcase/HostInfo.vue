@@ -113,7 +113,14 @@
       <!-- Row 4: Logo -->
       <div class="logo-row my-6">
         <div class="logo-content">
-          <img v-if="logoUrl" :src="logoUrl" alt="Event Logo" class="host-logo-showcase" />
+          <img
+            v-if="logoUrl"
+            :src="logoUrl"
+            alt="Event Logo"
+            class="host-logo-showcase"
+            loading="eager"
+            fetchpriority="high"
+          />
           <div
             v-else
             class="logo-fallback"

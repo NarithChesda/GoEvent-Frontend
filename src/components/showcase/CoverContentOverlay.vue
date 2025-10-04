@@ -35,6 +35,7 @@
             :src="getMediaUrl(eventLogo)"
             :alt="eventTitle + ' logo'"
             class="scaled-logo mx-auto"
+            fetchpriority="high"
           />
         </div>
       </div>
