@@ -241,13 +241,21 @@ export function useCoverStageVideo(
       ? props.backgroundVideoUrl
       : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${props.backgroundVideoUrl.startsWith('/') ? props.backgroundVideoUrl : `/media/${props.backgroundVideoUrl}`}`
 
-    // Mobile-specific preload strategy
-    const preloadMode = isMobile ? (isLowMemory ? 'none' : 'metadata') : 'auto'
+    // Force aggressive preloading for in-app browsers (Telegram/Messenger)
+    // These browsers often ignore preload="none" or "metadata"
+    bgVideo.preload = 'auto'
 
     // Set the source directly for progressive download
     bgVideo.src = fullUrl
-    bgVideo.preload = preloadMode
     bgVideo.load()
+
+    // Force a second load attempt after a delay for stubborn browsers
+    setTimeout(() => {
+      if (bgVideo.readyState === 0) {
+        console.log('🔄 Background video not loading, forcing reload...')
+        bgVideo.load()
+      }
+    }, 500)
   }
 
   // Event video preloading handlers
@@ -424,7 +432,19 @@ export function useCoverStageVideo(
           clearDebugInterval()
           return
         }
-        // Debug monitoring active
+        // Log debug info for Telegram browser troubleshooting
+        console.log('📊 Background video status:', {
+          readyState: bgVideo.readyState,
+          paused: bgVideo.paused,
+          src: bgVideo.src ? 'set' : 'not set',
+          networkState: bgVideo.networkState,
+          playAttempts,
+        })
+        // Force another play attempt if video is stuck
+        if (bgVideo.readyState >= 1 && bgVideo.paused) {
+          console.log('🔄 Forcing play attempt from debug interval')
+          tryPlayBackgroundVideo()
+        }
       }, 5000) // Check every 5 seconds
     }
 
