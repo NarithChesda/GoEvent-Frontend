@@ -7,7 +7,7 @@
         <div class="welcome-content mt-6">
           <h2
             :class="[
-              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight uppercase gleam-animation',
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalize gleam-animation',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -146,7 +146,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -171,7 +171,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -187,7 +187,7 @@
         <div class="host-name-left">
           <h3
             :class="[
-              'host-name-text font-semibold leading-tight uppercase gleam-animation',
+              'host-name-text font-semibold leading-tight capitalize gleam-animation',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -211,7 +211,7 @@
           <h3
             v-if="hosts.length > 1"
             :class="[
-              'host-name-text font-semibold leading-tight uppercase gleam-animation',
+              'host-name-text font-semibold leading-tight capitalize gleam-animation',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -352,6 +352,11 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   margin-top: -0.25rem;
 }
 
+/* Khmer-specific spacing reduction for parent rows */
+.khmer-text .parent-row:nth-child(3) {
+  margin-top: -0.75rem;
+}
+
 /* Reduce spacing between title and name rows */
 .name-row {
   margin-top: -0.125rem;
@@ -424,9 +429,9 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   width: 0.5rem;
 }
 
-/* Parent name text styles with reduced sizes */
+/* Parent name text styles with increased sizes */
 .parent-name-text {
-  font-size: 0.5625rem; /* 9px - 25% reduction from 12px (mobile) */
+  font-size: 0.6875rem; /* 11px - increased from 9px (mobile) */
 }
 
 /* Host name text styles with 15% mobile reduction */
@@ -539,7 +544,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.6875rem; /* 11px - 22% reduction from 14px */
+    font-size: 0.8125rem; /* 13px - increased from 11px */
   }
 
   .parent-row:nth-child(3) {
@@ -576,7 +581,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+    font-size: 0.9375rem; /* 15px - increased from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -613,7 +618,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+    font-size: 0.9375rem; /* 15px - increased from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -650,7 +655,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+    font-size: 0.9375rem; /* 15px - increased from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -687,7 +692,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+    font-size: 0.9375rem; /* 15px - increased from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -724,7 +729,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.8rem; /* 12.8px ≈ 13px - 20% reduction from 16px */
+    font-size: 0.9375rem; /* 15px - increased from 13px */
   }
 
   .parent-row:nth-child(3) {
