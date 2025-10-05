@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        sans: ['Figtree', 'Kantumruy Pro', 'system-ui', 'sans-serif'],
       },
       colors: {
         'primary': {

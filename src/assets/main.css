@@ -1,7 +1,7 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap');
 
 /* Reset and base styles */
 * {
@@ -12,14 +12,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    'Plus Jakarta Sans',
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Prevent over-scroll bouncing */
@@ -28,4 +20,21 @@ body {
 
 #app {
   min-height: 100vh;
+}
+
+/* Multi-language font configuration */
+/* Figtree is primary font for English/Latin characters */
+/* Kantumruy Pro will automatically be used for Khmer characters (unicode fallback) */
+html,
+body,
+#app {
+  font-family:
+    'Figtree',
+    'Kantumruy Pro',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
 }
