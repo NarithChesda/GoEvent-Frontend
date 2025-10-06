@@ -1086,6 +1086,13 @@ onUnmounted(() => {
   }
 }
 
+/* Tablet and up (768px+) - Ensure consistent sizing */
+@media (min-width: 768px) and (max-width: 1023px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+}
+
 /* Laptop responsive styles for gallery header and photo heights */
 /* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes for Gallery section header */
 @media (min-width: 1024px) and (max-width: 1365px) {

@@ -374,7 +374,7 @@
                           </svg>
                         </a>
                         <a
-                          href="https://facebook.com/goevent"
+                          href="https://www.facebook.com/profile.php?id=61581851850221"
                           target="_blank"
                           rel="noopener noreferrer"
                           class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
@@ -385,7 +385,7 @@
                           </svg>
                         </a>
                         <a
-                          href="https://instagram.com/goevent"
+                          href="https://www.instagram.com/goevent.online/"
                           target="_blank"
                           rel="noopener noreferrer"
                           class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
