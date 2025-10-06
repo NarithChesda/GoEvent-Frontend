@@ -16,7 +16,7 @@
           style="height: 60%"
         >
           <h1
-            class="scaled-header gleam-animation font-bold uppercase khmer-text-fix text-center"
+            class="scaled-header gleam-animation font-bold capitalize khmer-text-fix text-center"
             :style="headerTextStyle"
           >
             {{ coverHeader || eventTitle }}
@@ -67,7 +67,7 @@
           style="height: 50%"
         >
           <h2
-            class="scaled-guest-name gleam-animation font-bold uppercase khmer-text-fix text-center"
+            class="scaled-guest-name gleam-animation font-bold capitalize khmer-text-fix text-center"
             :style="guestNameTextStyle"
           >
             {{ guestName }}

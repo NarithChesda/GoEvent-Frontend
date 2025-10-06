@@ -60,6 +60,18 @@ export function useCoverStageVideo(
   const isLowMemory = videoResourceManager.isLowMemoryDevice()
   const maxConcurrentVideos = videoResourceManager.maxVideoLimit()
 
+  // Safari/iOS detection for compatibility fixes
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
+  // Debug logging for Safari troubleshooting
+  if (isSafari || isIOS) {
+    console.log('🍎 Safari/iOS detected:', { isSafari, isIOS, userAgent: navigator.userAgent })
+  }
+
+  // Safari timeout fallback for envelope button
+  const safariTimeoutReached = ref(false)
+
   // Use the resource manager's event listener system
   const addVideoEventListener = (
     video: HTMLVideoElement,
@@ -138,6 +150,19 @@ export function useCoverStageVideo(
   // Enhanced video download with mobile optimizations and resource management
   const forceFullVideoDownload = async (videoUrl: string, videoType: 'event' | 'background') => {
     try {
+      // Get the full URL if it's relative
+      const fullUrl = videoUrl.startsWith('http')
+        ? videoUrl
+        : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${videoUrl.startsWith('/') ? videoUrl : `/media/${videoUrl}`}`
+
+      // Safari/iOS: Use direct URL with progressive loading instead of blob
+      // Safari has issues with blob URLs for video and strict memory limits
+      if (isSafari || isIOS) {
+        console.log(`🍎 Safari: Using direct URL for ${videoType} video (no blob)`)
+        preloadedVideos.add(videoUrl)
+        return fullUrl
+      }
+
       // Check if download is already in progress
       const existingPromise = videoDownloadPromises.get(videoUrl)
       if (existingPromise) {
@@ -153,11 +178,6 @@ export function useCoverStageVideo(
       if (isMobile && videoResourceManager.managedVideoCount() >= maxConcurrentVideos) {
         return null
       }
-
-      // Get the full URL if it's relative
-      const fullUrl = videoUrl.startsWith('http')
-        ? videoUrl
-        : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${videoUrl.startsWith('/') ? videoUrl : `/media/${videoUrl}`}`
 
       // Mobile-optimized fetch configuration
       const fetchOptions: RequestInit = {}
@@ -188,7 +208,7 @@ export function useCoverStageVideo(
         }
       }
 
-      // Create and store the download promise
+      // Create and store the download promise (Chrome/Firefox blob strategy)
       const downloadPromise = (async () => {
         const response = await fetch(fullUrl, fetchOptions)
 
@@ -241,21 +261,30 @@ export function useCoverStageVideo(
       ? props.backgroundVideoUrl
       : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${props.backgroundVideoUrl.startsWith('/') ? props.backgroundVideoUrl : `/media/${props.backgroundVideoUrl}`}`
 
-    // Force aggressive preloading for in-app browsers (Telegram/Messenger)
-    // These browsers often ignore preload="none" or "metadata"
-    bgVideo.preload = 'auto'
+    // Safari-friendly preload strategy
+    if (isSafari || isIOS) {
+      // Safari respects 'metadata' better than 'auto' and won't block it
+      bgVideo.preload = 'metadata'
+      console.log('🍎 Safari: Using preload="metadata" for background video')
+    } else {
+      // Force aggressive preloading for in-app browsers (Telegram/Messenger)
+      // These browsers often ignore preload="none" or "metadata"
+      bgVideo.preload = 'auto'
+    }
 
     // Set the source directly for progressive download
     bgVideo.src = fullUrl
     bgVideo.load()
 
-    // Force a second load attempt after a delay for stubborn browsers
-    setTimeout(() => {
-      if (bgVideo.readyState === 0) {
-        console.log('🔄 Background video not loading, forcing reload...')
-        bgVideo.load()
-      }
-    }, 500)
+    // Safari doesn't need forced reload, but keep it for other browsers
+    if (!isSafari && !isIOS) {
+      setTimeout(() => {
+        if (bgVideo.readyState === 0) {
+          console.log('🔄 Background video not loading, forcing reload...')
+          bgVideo.load()
+        }
+      }, 500)
+    }
   }
 
   // Event video preloading handlers
@@ -357,11 +386,18 @@ export function useCoverStageVideo(
   const playEventVideo = () => {
     if (!props.eventVideoUrl) return
 
+    console.log('🎬 Playing event video...')
+
     isCoverVideoPlaying.value = false
     currentVideoPhase.value = 'event'
 
     const videoToUse = videoRefs.eventVideoPreloader() || videoRefs.sequentialVideoContainer()
-    if (!videoToUse) return
+    if (!videoToUse) {
+      console.warn('❌ No video element available for event video')
+      return
+    }
+
+    console.log('🎬 Using video element:', videoToUse === videoRefs.eventVideoPreloader() ? 'preloader' : 'sequential')
 
     // Register video with resource manager if not already registered
     registerVideoForCleanup(videoToUse, 'event-video')
@@ -373,12 +409,17 @@ export function useCoverStageVideo(
     // Set source if using sequential container
     if (videoToUse === videoRefs.sequentialVideoContainer() && props.eventVideoUrl) {
       videoToUse.src = props.eventVideoUrl
+      console.log('🎬 Set event video source:', props.eventVideoUrl)
     }
+
+    console.log('🎬 Video ready state:', videoToUse.readyState, '| Paused:', videoToUse.paused)
 
     // Enhanced play handling for mobile
     const playVideo = async () => {
       try {
+        console.log('▶️ Attempting to play event video...')
         await videoToUse.play()
+        console.log('✅ Event video playing successfully')
 
         // Try to unmute after play starts on mobile if user interacted
         if (isMobile && videoToUse.muted) {
@@ -386,13 +427,14 @@ export function useCoverStageVideo(
           setTimeout(() => {
             try {
               videoToUse.muted = false
+              console.log('🔊 Event video unmuted')
             } catch (error) {
-              // Keep muted if unmuting fails
+              console.warn('🔇 Could not unmute video:', error)
             }
           }, 500)
         }
       } catch (error) {
-        console.warn('Event video play failed:', error)
+        console.error('❌ Event video play failed:', error)
         handleSequentialVideoEnded()
       }
     }
@@ -633,6 +675,9 @@ export function useCoverStageVideo(
       registerVideoForCleanup(sequentialVideo, 'sequential-video')
     }
 
+    // Setup Safari timeout for envelope button
+    setupSafariVideoTimeout()
+
     // Start parallel loading with mobile consideration
     if (props.eventVideoUrl || props.backgroundVideoUrl) {
       // Delay loading slightly on mobile to ensure UI is ready
@@ -685,8 +730,34 @@ export function useCoverStageVideo(
     }, 500)
   }
 
+  // Safari timeout for envelope button - don't wait forever on Safari
+  const setupSafariVideoTimeout = () => {
+    if (!isSafari && !isIOS) return
+    if (!props.eventVideoUrl) return
+
+    console.log('🍎 Safari: Setting up 5s timeout for envelope button')
+
+    setTimeout(() => {
+      if (!eventVideoReady.value) {
+        console.log('🍎 Safari timeout reached: Enabling envelope button')
+        safariTimeoutReached.value = true
+        eventVideoReady.value = true // Mark as ready to allow playback
+      }
+    }, 5000) // 5 second timeout
+  }
+
   // Computed properties
   const shouldShowButtonLoading = computed(() => {
+    // Safari/iOS: Use timeout-based ready state
+    if (isSafari || isIOS) {
+      const loading = Boolean(props.eventVideoUrl) && !eventVideoReady.value && !safariTimeoutReached.value
+      if (loading) {
+        console.log('🍎 Safari button loading state:', { eventVideoReady: eventVideoReady.value, timeoutReached: safariTimeoutReached.value })
+      }
+      return loading
+    }
+
+    // Chrome/Firefox: Original behavior
     return Boolean(props.eventVideoUrl) && !eventVideoReady.value
   })
 
