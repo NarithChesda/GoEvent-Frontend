@@ -161,6 +161,20 @@ defineExpose({
   }
 }
 
+/* Small laptops 13-inch (1024px-1365px) - Use mobile video sizing */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .desktop-video-sizing {
+    width: 100% !important;
+    height: 100vh !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+}
+
 /* Desktop and tablet landscape - consistent desktop treatment with 100% height */
 @media (min-width: 769px) {
   .desktop-video-sizing {

@@ -95,4 +95,18 @@ const videoHeaderText = computed(() => getTextContent('video_header', 'Video'))
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+/* Small laptops 13-inch (1024px-1365px) - Match RSVP header size */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  h2 {
+    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+}
 </style>

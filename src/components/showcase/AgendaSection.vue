@@ -658,4 +658,71 @@ onMounted(() => {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+
+/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Header text - match RSVP header size */
+  h2 {
+    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+  }
+
+  /* Container mobile sizing */
+  .agenda-card-container {
+    border-radius: 1.25rem !important;
+  }
+
+  /* Card header mobile padding */
+  .agenda-card-header .flex {
+    padding: 0.875rem !important; /* Mobile padding */
+  }
+
+  /* Icon container mobile size */
+  .icon-container {
+    padding: 0.375rem !important;
+  }
+
+  /* Icons mobile size */
+  .icon-container svg,
+  .expand-arrow svg {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+
+  /* Date text - match RSVP collapsed text size */
+  .agenda-card-header h3 {
+    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+  }
+
+  /* Activity count - match RSVP collapsed small text */
+  .activity-count {
+    font-size: 0.6875rem !important; /* 11px - same as RSVP text-xs */
+  }
+
+  /* First agenda description mobile size */
+  .agenda-scrollable-content h4 {
+    font-size: 0.875rem !important; /* 14px */
+  }
+
+  /* Scrollable content mobile padding */
+  .agenda-scrollable-content {
+    padding: 0.875rem 1rem !important;
+  }
+
+  /* Scroll indicator mobile size */
+  .scroll-text {
+    font-size: 0.6875rem !important; /* 11px */
+  }
+
+  .scroll-arrow {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+}
 </style>

@@ -156,7 +156,9 @@
       "Bash(while IFS= read -r file)",
       "Bash(do git rm --cached \"$file\")",
       "Bash(done)",
-      "Bash(xargs -0 git rm --cached)"
+      "Bash(xargs -0 git rm --cached)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git stash push:*)"
     ],
     "deny": [],
     "additionalDirectories": [

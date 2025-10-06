@@ -607,55 +607,121 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 }
 
-/* Small laptops (laptop-sm: 1024px) */
-@media (min-width: 1024px) {
+/* Small laptops 13-inch (laptop-sm: 1024px) - Keep mobile sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .host-info-grid {
+    gap: 0.25rem;
+  }
+
+  .name-row {
+    margin-top: -0.125rem;
+  }
+
+  /* Override Tailwind's lg:text-2xl to keep mobile size */
+  .welcome-content h2 {
+    font-size: 1.125rem !important; /* 18px - same as sm:text-lg */
+  }
+
+  .parent-name-text {
+    font-size: 0.6875rem; /* 11px - same as small mobile (640px) */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.25rem;
+  }
+
+  .host-name-text {
+    font-size: 0.85rem; /* 13.6px - same as base mobile */
+  }
+
+  .host-logo-showcase {
+    max-height: 140px !important; /* Same as small mobile (640px) */
+    max-width: 350px !important; /* Same as small mobile (640px) */
+  }
+
+  .logo-fallback {
+    width: 112px;
+    height: 112px;
+  }
+
+  .logo-initial {
+    font-size: 1.875rem;
+  }
+
+  .profile-picture {
+    width: 60%;
+  }
+
+  .profile-picture-fallback {
+    width: 60%;
+  }
+
+  .welcome-row {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) */
+@media (min-width: 1366px) {
+  .host-info-grid {
+    gap: 0.5rem;
+  }
+
+  .name-row {
+    margin-top: -0.375rem;
+  }
+
+  .parent-name-text {
+    font-size: 0.75rem; /* 12px - slightly larger than mobile */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.375rem;
+  }
+
+  .host-name-text {
+    font-size: 0.95rem; /* 15.2px - slightly larger than mobile */
+  }
+
+  .host-logo-showcase {
+    max-height: 150px;
+    max-width: 375px;
+  }
+
+  .logo-fallback {
+    width: 128px;
+    height: 128px;
+  }
+
+  .logo-initial {
+    font-size: 2.25rem;
+  }
+
+  .profile-picture {
+    width: 60%;
+  }
+
+  .profile-picture-fallback {
+    width: 60%;
+  }
+
+  .welcome-row {
+    margin-bottom: 1.75rem;
+  }
+}
+
+/* Large laptops 16+ inch (laptop-lg: 1536px) */
+@media (min-width: 1536px) {
   .host-info-grid {
     gap: 0.75rem;
   }
 
   .name-row {
-    margin-top: -0.5rem;
-  }
-
-  .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
-  }
-
-  .parent-row:nth-child(3) {
-    margin-top: -0.5rem;
-  }
-
-  .host-name-text {
-    font-size: 1.0625rem; /* 17px - smaller than welcome header's 24px */
-  }
-
-  .host-logo-showcase {
-    max-height: 140px; /* Match CoverStage 1024px+ */
-    max-width: 350px; /* Match CoverStage 1024px+ */
-  }
-
-  .logo-fallback {
-    width: 144px;
-    height: 144px;
-  }
-
-  .logo-initial {
-    font-size: 3rem;
-  }
-}
-
-/* Medium laptops (laptop-md: 1280px) */
-@media (min-width: 1280px) {
-  .host-info-grid {
-    gap: 0.875rem;
-  }
-
-  .name-row {
     margin-top: -0.625rem;
   }
 
   .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
+    font-size: 0.8125rem; /* 13px - optimized for 16+ inch laptops */
   }
 
   .parent-row:nth-child(3) {
@@ -663,12 +729,12 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .host-name-text {
-    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
+    font-size: 1.125rem; /* 18px - optimized for 16+ inch laptops */
   }
 
   .host-logo-showcase {
-    max-height: 160px; /* Match CoverStage 1280px+ */
-    max-width: 400px; /* Match CoverStage 1280px+ */
+    max-height: 170px; /* Scaled for 16+ inch laptops */
+    max-width: 425px; /* Scaled for 16+ inch laptops */
   }
 
   .logo-fallback {
@@ -679,12 +745,20 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   .logo-initial {
     font-size: 3.5rem;
   }
+
+  .profile-picture {
+    width: 60%;
+  }
+
+  .profile-picture-fallback {
+    width: 60%;
+  }
 }
 
-/* Large laptops (laptop-lg: 1536px) */
-@media (min-width: 1536px) {
+/* Desktop Full HD+ (desktop: 1920px) */
+@media (min-width: 1920px) {
   .host-info-grid {
-    gap: 1rem;
+    gap: 0.875rem;
   }
 
   .name-row {
@@ -692,7 +766,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
+    font-size: 0.875rem; /* 14px - optimized for Full HD+ desktop */
   }
 
   .parent-row:nth-child(3) {
@@ -700,58 +774,29 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .host-name-text {
-    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
+    font-size: 1.25rem; /* 20px - optimized for Full HD+ desktop */
   }
 
   .host-logo-showcase {
-    max-height: 180px; /* Match CoverStage 1536px+ */
-    max-width: 450px; /* Match CoverStage 1536px+ */
+    max-height: 180px; /* Desktop size */
+    max-width: 450px; /* Desktop size */
   }
 
   .logo-fallback {
-    width: 176px;
-    height: 176px;
+    width: 180px;
+    height: 180px;
   }
 
   .logo-initial {
     font-size: 4rem;
   }
-}
 
-/* Desktop (desktop: 1920px) */
-@media (min-width: 1920px) {
-  .host-info-grid {
-    gap: 1.125rem;
+  .profile-picture {
+    width: 62%;
   }
 
-  .name-row {
-    margin-top: -0.875rem;
-  }
-
-  .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
-  }
-
-  .parent-row:nth-child(3) {
-    margin-top: -0.875rem;
-  }
-
-  .host-name-text {
-    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
-  }
-
-  .host-logo-showcase {
-    max-height: 180px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
-    max-width: 450px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
-  }
-
-  .logo-fallback {
-    width: 208px;
-    height: 208px;
-  }
-
-  .logo-initial {
-    font-size: 4.5rem;
+  .profile-picture-fallback {
+    width: 62%;
   }
 }
 

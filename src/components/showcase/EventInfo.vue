@@ -149,4 +149,52 @@ const capitalizedDescription = computed(() => {
   margin-top: 0.2em;
   margin-bottom: 0.2em;
 }
+
+/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Override Tailwind's lg:text-2xl for description title - match RSVP */
+  h2 {
+    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+  }
+
+  /* Keep description text at mobile size */
+  p {
+    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+  }
+
+  /* Keep event details text at mobile size */
+  .text-sm {
+    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.25rem !important; /* 20px - slightly larger */
+  }
+
+  p {
+    font-size: 1rem !important; /* 16px - md:text-base */
+  }
+
+  .text-sm {
+    font-size: 1rem !important; /* 16px */
+  }
+}
+
+/* Large laptops 16+ inch (1536px+) */
+@media (min-width: 1536px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - lg:text-2xl */
+  }
+
+  p {
+    font-size: 1rem !important; /* 16px */
+  }
+
+  .text-sm {
+    font-size: 1rem !important; /* 16px */
+  }
+}
 </style>

@@ -1905,7 +1905,155 @@ onUnmounted(() => {
   }
 }
 
-/* Desktop refinements */
+/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Override h1 header text size */
+  h1 {
+    font-size: 1.25rem !important; /* 20px - same as sm:text-xl */
+  }
+
+  /* Keep container size mobile */
+  .liquid-glass-container {
+    border-radius: 1rem !important; /* Smaller border radius like mobile */
+  }
+
+  /* Keep header padding mobile-sized */
+  .rsvp-header {
+    padding: 0.75rem 1rem !important; /* Mobile padding */
+  }
+
+  /* Keep sections mobile-sized */
+  .rsvp-section {
+    padding: 1rem 0.75rem !important;
+  }
+
+  .rsvp-section-tight {
+    padding: 0.375rem 0.75rem !important;
+  }
+
+  .rsvp-section-compact {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .glass-content-section {
+    padding: 0.5rem !important;
+  }
+
+  /* Keep button text and elements at mobile size */
+  .liquid-glass-btn {
+    font-size: 0.875rem !important; /* 14px */
+    padding: 0.75rem 0.875rem !important;
+    min-height: 3rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .liquid-glass-button {
+    font-size: 0.925rem !important; /* ~15px */
+    padding: 0.875rem 1.5rem !important;
+    border-radius: 1.25rem !important;
+    min-height: 48px !important;
+  }
+
+  /* Counter buttons mobile size */
+  .counter-btn {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    font-size: 1.1rem !important;
+  }
+
+  /* Guest management container */
+  .guest-management-container {
+    border-radius: 1.25rem !important;
+    padding: 0.5rem !important;
+  }
+
+  /* Status badges */
+  .status-badge-compact {
+    padding: 0.25rem 0.625rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 0.625rem !important;
+  }
+
+  .status-indicator {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 0.625rem !important;
+  }
+
+  /* Message containers */
+  .total-summary-glass,
+  .confirmation-code-glass,
+  .status-message-glass,
+  .success-message-glass,
+  .error-message-glass {
+    border-radius: 0.75rem !important;
+    padding: 0.625rem !important;
+  }
+
+  .save-btn {
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 0.75rem !important;
+  }
+
+  /* Event details text */
+  .text-sm {
+    font-size: 0.8125rem !important; /* 13px - smaller on collapsed */
+  }
+
+  .text-lg {
+    font-size: 1rem !important; /* 16px - smaller for collapsed header */
+  }
+
+  .text-xl {
+    font-size: 1.125rem !important; /* 18px - smaller */
+  }
+
+  .text-xs {
+    font-size: 0.6875rem !important; /* 11px - smaller */
+  }
+
+  .text-base {
+    font-size: 0.8125rem !important; /* 13px - smaller */
+  }
+
+  .text-2xl {
+    font-size: 1.5rem !important; /* 24px - guest count display */
+  }
+
+  /* Icons sizing */
+  svg.w-5 {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+
+  svg.w-3 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
+  /* Hide status badge in collapsed state like mobile */
+  .hidden.md\:flex {
+    display: none !important;
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h1 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+
+  .text-lg {
+    font-size: 1.125rem !important; /* 18px */
+  }
+
+  .text-xl {
+    font-size: 1.25rem !important; /* 20px */
+  }
+}
+
+/* Desktop refinements (1024px+) */
 @media (min-width: 1024px) {
   .rsvp-section {
     padding: 1.5rem 1.5rem;

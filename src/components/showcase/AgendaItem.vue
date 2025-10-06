@@ -185,6 +185,55 @@ const timeText = computed(() => {
   }
 }
 
+/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Show mobile dot instead of full icon */
+  .hidden.sm\:block {
+    display: none !important;
+  }
+
+  .sm\:hidden {
+    display: block !important;
+  }
+
+  /* Mobile card padding and styling */
+  .agenda-card {
+    padding: 0.875rem !important;
+    border-left: 3px solid var(--primary-color);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 0.75rem 0.75rem 0;
+    backdrop-filter: blur(8px);
+    margin-bottom: 0.75rem;
+    padding-left: 1rem !important;
+  }
+
+  .agenda-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  }
+
+  /* Mobile dot size */
+  .sm\:hidden.w-3 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
+  /* Title mobile size */
+  h3 {
+    font-size: 0.75rem !important; /* 12px - mobile size */
+  }
+
+  /* Time text mobile size */
+  .text-xs {
+    font-size: 0.6875rem !important; /* 11px */
+  }
+}
+
 .agenda-icon-large svg {
   width: 100% !important;
   height: 100% !important;
