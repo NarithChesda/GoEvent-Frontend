@@ -363,7 +363,7 @@
                       <!-- Social Media Buttons -->
                       <div class="flex flex-wrap items-center justify-center gap-3">
                         <a
-                          href="https://t.me/goevent"
+                          href="https://t.me/goeventkh"
                           target="_blank"
                           rel="noopener noreferrer"
                           class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
@@ -396,7 +396,7 @@
                           </svg>
                         </a>
                         <a
-                          href="https://tiktok.com/@goevent"
+                          href="https://www.tiktok.com/@goevent.online"
                           target="_blank"
                           rel="noopener noreferrer"
                           class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
