@@ -860,7 +860,187 @@ const capitalizeText = (text: string | undefined): string => {
   transform-origin: top;
 }
 
-/* Desktop refinements */
+/* Small laptops 13-inch (1024px-1365px) - Use mobile view for collapse/expand states */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Payment card container - mobile sizing */
+  .payment-card-container {
+    border-radius: 1.5rem !important;
+  }
+
+  /* Card header - mobile padding (p-4) */
+  .payment-card-header > .flex {
+    padding: 1rem !important;
+  }
+
+  /* Expandable content - mobile padding (p-4) */
+  .payment-card-content > div {
+    padding: 1rem !important;
+  }
+
+  /* QR Code section - centered like mobile */
+  .payment-row-container > div:first-child {
+    text-align: center !important;
+  }
+
+  /* QR Code - mobile size */
+  .qr-simple-container {
+    padding: 1rem !important;
+  }
+
+  .qr-simple-container img,
+  .qr-simple-container .w-32,
+  .qr-simple-container .h-32 {
+    width: 8rem !important; /* 128px - mobile size */
+    height: 8rem !important;
+  }
+
+  /* Prevent large laptop sizing */
+  .lg\:w-36,
+  .lg\:h-36 {
+    width: 8rem !important;
+    height: 8rem !important;
+  }
+
+  /* Payment info - mobile sizing and center alignment */
+  .payment-info-simple {
+    padding: 0.75rem !important;
+  }
+
+  .payment-info-glass {
+    padding: 0.75rem !important;
+  }
+
+  /* Bank info - center alignment like mobile */
+  .payment-info-simple .space-y-2 > div {
+    text-align: center !important;
+  }
+
+  /* Override lg:text-left to maintain center alignment */
+  .lg\:text-left {
+    text-align: center !important;
+  }
+
+  /* Bank info pills - mobile size */
+  .bank-info-pill {
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    min-height: 32px !important;
+  }
+
+  .bank-info-pill svg.w-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  /* Payment button - mobile size and center alignment */
+  .payment-link-minimalist {
+    padding: 0.5rem 0.875rem !important;
+    font-size: 0.825rem !important;
+    min-height: 34px !important;
+    width: 100% !important;
+  }
+
+  /* Override lg:w-auto for button */
+  .payment-link-minimalist.lg\:w-auto {
+    width: 100% !important;
+  }
+
+  .payment-link-liquid {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.925rem !important;
+    min-height: 48px !important;
+  }
+
+  /* Payment row - mobile layout (column, centered) */
+  .payment-row-container {
+    padding: 0.5rem !important;
+    gap: 1rem !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  /* Override lg:flex-row to keep column layout */
+  .payment-row-container.lg\:flex-row {
+    flex-direction: column !important;
+  }
+
+  /* Override lg:items-center to use start for consistency */
+  .payment-row-container.lg\:items-center {
+    align-items: stretch !important;
+  }
+
+  /* Force mobile full width layout */
+  .payment-row-container > div {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Override lg:w-auto */
+  .payment-row-container > .lg\:w-auto {
+    width: 100% !important;
+  }
+
+  /* Override lg:max-w-sm */
+  .lg\:max-w-sm {
+    max-width: 100% !important;
+  }
+
+  /* Text sizing - mobile */
+  .text-lg {
+    font-size: 1rem !important;
+  }
+
+  .text-base {
+    font-size: 0.875rem !important;
+  }
+
+  .text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  .text-xs {
+    font-size: 0.75rem !important;
+  }
+
+  /* Icons - mobile size */
+  svg.w-5 {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+
+  svg.w-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  svg.w-12,
+  svg.lg\:w-16 {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+
+  /* Section header */
+  h2 {
+    font-size: 1.25rem !important; /* 20px - same as sm:text-xl */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+
+  .text-lg {
+    font-size: 1.125rem !important;
+  }
+
+  .text-base {
+    font-size: 1rem !important;
+  }
+}
+
+/* Desktop refinements (1024px+) - Base laptop styles */
 @media (min-width: 1024px) {
   .payment-method-section {
     /* No padding - matches comment section */
