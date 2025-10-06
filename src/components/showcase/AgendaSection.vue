@@ -666,56 +666,120 @@ onMounted(() => {
     font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
   }
 
+  /* Overall section spacing - match mobile compact */
+  .mb-4.sm\:mb-5.laptop-sm\:mb-5.laptop-md\:mb-6.laptop-lg\:mb-7.desktop\:mb-6 {
+    margin-bottom: 1rem !important; /* Mobile spacing */
+  }
+
+  /* Header container spacing - more compact */
+  .text-center.laptop-sm\:mb-6.laptop-md\:mb-8.laptop-lg\:mb-10.desktop\:mb-8 {
+    margin-bottom: 1rem !important; /* Mobile spacing */
+  }
+
+  /* Card container spacing - reduce space between cards */
+  .space-y-3 {
+    gap: 0.5rem !important; /* Tighter spacing between cards */
+  }
+
+  .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.5rem !important;
+  }
+
   /* Container mobile sizing */
   .agenda-card-container {
-    border-radius: 1.25rem !important;
+    border-radius: 1rem !important; /* Even smaller radius like mobile */
   }
 
-  /* Card header mobile padding */
+  /* Card header mobile padding - MORE COMPACT for collapsed state */
   .agenda-card-header .flex {
-    padding: 0.875rem !important; /* Mobile padding */
+    padding: 0.5rem 0.75rem !important; /* Vertical padding much smaller */
   }
 
-  /* Icon container mobile size */
+  /* Icon container mobile size - smaller */
   .icon-container {
-    padding: 0.375rem !important;
+    padding: 0.25rem !important; /* Smaller padding */
   }
 
-  /* Icons mobile size */
+  /* Icons mobile size - smaller */
   .icon-container svg,
   .expand-arrow svg {
-    width: 1.125rem !important;
-    height: 1.125rem !important;
+    width: 0.875rem !important; /* Smaller icons */
+    height: 0.875rem !important;
   }
 
   /* Date text - match RSVP collapsed text size */
   .agenda-card-header h3 {
     font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+    line-height: 1.2 !important; /* Tighter line height */
   }
 
   /* Activity count - match RSVP collapsed small text */
   .activity-count {
     font-size: 0.6875rem !important; /* 11px - same as RSVP text-xs */
+    margin-top: 0 !important; /* Remove top margin */
+    line-height: 1.2 !important; /* Tighter line height */
+  }
+
+  /* Space between date and activity count - tighter */
+  .agenda-card-header .flex .space-x-3 > :not([hidden]) ~ :not([hidden]) {
+    margin-left: 0.5rem !important; /* Reduce space */
+  }
+
+  /* KEEP expanded content at original desktop sizes - DON'T reduce */
+  .agenda-card-content.expanded {
+    max-height: 60vh !important; /* Keep original expanded height */
+  }
+
+  .agenda-scrollable-wrapper {
+    max-height: 50vh !important; /* Keep original expanded height */
+  }
+
+  .agenda-scrollable-content {
+    max-height: 50vh !important; /* Keep original expanded height */
+    padding: 1rem 1.5rem !important; /* Keep original expanded padding */
   }
 
   /* First agenda description mobile size */
   .agenda-scrollable-content h4 {
-    font-size: 0.875rem !important; /* 14px */
+    font-size: 0.8125rem !important; /* 13px - match other text */
   }
 
-  /* Scrollable content mobile padding */
-  .agenda-scrollable-content {
-    padding: 0.875rem 1rem !important;
+  /* Agenda items spacing */
+  .space-y-4 {
+    gap: 0.75rem !important; /* Tighter spacing between agenda items */
+  }
+
+  .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem !important;
   }
 
   /* Scroll indicator mobile size */
+  .scroll-indicator {
+    height: 2rem !important; /* Smaller indicator */
+  }
+
   .scroll-text {
     font-size: 0.6875rem !important; /* 11px */
   }
 
   .scroll-arrow {
-    width: 1rem !important;
-    height: 1rem !important;
+    width: 0.875rem !important; /* Smaller arrow */
+    height: 0.875rem !important;
+  }
+
+  /* Box shadow - more subtle like mobile */
+  .agenda-card-container {
+    box-shadow:
+      0 4px 16px -4px var(--primary-color, #000) 15,
+      0 2px 8px -2px var(--primary-color, #000) 10,
+      inset 0 1px 2px rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .agenda-card-container:hover {
+    box-shadow:
+      0 8px 24px -4px var(--primary-color, #000) 20,
+      0 4px 12px -2px var(--primary-color, #000) 15,
+      inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
   }
 }
 

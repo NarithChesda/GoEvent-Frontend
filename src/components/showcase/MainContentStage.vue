@@ -293,9 +293,6 @@
                     :current-language="currentLanguage"
                     @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
                   />
-
-                  <!-- Comment Section Divider -->
-                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Registration Button -->
@@ -318,7 +315,7 @@
                 >
                   <!-- Footer Card with Reverse Colors -->
                   <div
-                    class="footer-card-container rounded-none sm:rounded-t-2xl px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
+                    class="footer-card-container rounded-none px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
                     :style="{
                       background: `linear-gradient(135deg, ${primaryColor}90, ${primaryColor}70)`,
                       boxShadow: `

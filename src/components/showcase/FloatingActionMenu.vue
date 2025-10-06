@@ -444,6 +444,68 @@ const handleLogout = () => {
   }
 }
 
+/* Small laptops 13-inch (1024px-1365px) - Compact styling to match other components */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .floating-action-menu {
+    bottom: 1.25rem;
+    right: 1.25rem;
+  }
+
+  .fab-button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .menu-container {
+    bottom: 62px !important;
+    gap: 0.5rem !important;
+    min-width: 180px !important;
+  }
+
+  .menu-button {
+    gap: 0.5rem !important;
+    padding: 0.625rem 0.75rem !important;
+    border-radius: 0.625rem !important;
+    min-height: 40px !important;
+  }
+
+  .menu-text {
+    font-size: 0.8125rem !important; /* 13px - match other components */
+  }
+
+  /* Language modal - more compact */
+  .language-modal {
+    max-width: 350px !important;
+    border-radius: 0.875rem !important;
+  }
+
+  .modal-header {
+    padding: 1.25rem !important;
+  }
+
+  .modal-title {
+    font-size: 1.125rem !important;
+  }
+
+  .language-options {
+    padding: 0.875rem !important;
+    gap: 0.375rem !important;
+  }
+
+  .language-option {
+    padding: 0.625rem !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .language-name {
+    font-size: 0.8125rem !important;
+  }
+
+  .language-flag {
+    font-size: 1.125rem !important;
+  }
+}
+
 .blur-overlay {
   position: fixed;
   inset: 0;

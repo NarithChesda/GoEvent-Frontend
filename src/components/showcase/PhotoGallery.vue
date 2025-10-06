@@ -91,7 +91,7 @@
               class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
               :style="{
-                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
+                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : (windowWidth >= 1024 && windowWidth <= 1365) ? '160px' : '188px',
                 width: `${getPhotoWidth(photo)}px`,
               }"
               @click="handlePhotoClick(photo)"
@@ -138,7 +138,7 @@
               class="photo-card flex-shrink-0 relative overflow-hidden cursor-pointer group enhanced-photo-card"
               :data-photo-id="photo.id"
               :style="{
-                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : '188px',
+                height: windowWidth < 640 ? '188px' : windowWidth < 768 ? '150px' : (windowWidth >= 1024 && windowWidth <= 1365) ? '160px' : '188px',
                 width: `${getPhotoWidth(photo)}px`,
               }"
               @click="handlePhotoClick(photo)"
@@ -422,6 +422,8 @@ const getPhotoWidth = (photo: EventPhoto): number => {
     fixedHeight = 188 // Mobile height (88% total increase)
   } else if (windowWidth.value < 768) {
     fixedHeight = 150 // Tablet height (25% increase)
+  } else if (windowWidth.value >= 1024 && windowWidth.value <= 1365) {
+    fixedHeight = 160 // Small laptop height - reduced for better fit
   }
 
   const dimensions = imageDimensions.value[photo.id]
@@ -1081,6 +1083,47 @@ onUnmounted(() => {
   .clean-gallery-reverse,
   .momentum-scroll-container {
     height: 208px;
+  }
+}
+
+/* Laptop responsive styles for gallery header and photo heights */
+/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes for Gallery section header */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  h2 {
+    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+  }
+
+  /* Reduce featured photo height on laptops */
+  .featured-photo-container img {
+    height: 180px !important; /* Reduced from h-48 (192px) to 180px */
+  }
+
+  /* Reduce gallery container heights to be more compact */
+  .clean-gallery-container,
+  .clean-gallery-reverse,
+  .momentum-scroll-container {
+    height: 160px !important; /* Reduced from default 188px to 160px */
+  }
+
+  /* Ensure photo cards match the reduced container height */
+  .photo-card {
+    height: 160px !important; /* Match container height */
+  }
+
+  /* Add spacing between the two photo gallery rows - override inline styles */
+  .clean-gallery-container {
+    margin-bottom: 1rem !important; /* Add space after first row */
+  }
+
+  .clean-gallery-reverse {
+    margin-top: 1rem !important; /* Add space before second row */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
   }
 }
 </style>
