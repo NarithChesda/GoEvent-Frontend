@@ -860,8 +860,172 @@ const capitalizeText = (text: string | undefined): string => {
   transform-origin: top;
 }
 
-/* Desktop refinements */
-@media (min-width: 1024px) {
+/* Small laptops 13-inch (1024px-1365px) - Apply mobile-like compact styles */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Section header - smaller like mobile */
+  h2 {
+    font-size: 1rem !important; /* 16px - same as mobile text-lg */
+  }
+
+  /* Payment card container - smaller border radius and spacing */
+  .payment-card-container {
+    border-radius: 1rem !important; /* Smaller radius like mobile */
+  }
+
+  /* Card header - compact padding like mobile */
+  .payment-card-header > .flex {
+    padding: 0.75rem !important; /* Compact padding */
+  }
+
+  /* Icon container - compact */
+  .payment-card-header .p-2 {
+    padding: 0.5rem !important;
+  }
+
+  /* Icon sizes - smaller like mobile */
+  .payment-card-header svg.w-5 {
+    width: 1.25rem !important; /* 20px - keep readable */
+    height: 1.25rem !important;
+  }
+
+  .payment-card-header svg.w-4 {
+    width: 1rem !important; /* 16px - keep readable */
+    height: 1rem !important;
+  }
+
+  /* Bank name text - compact but readable */
+  .payment-card-header h3 {
+    font-size: 0.875rem !important; /* 14px */
+    line-height: 1.3 !important;
+  }
+
+  /* Currency text - smaller */
+  .payment-card-header .text-xs {
+    font-size: 0.6875rem !important; /* 11px */
+  }
+
+  /* Left side container - maintain mobile spacing */
+  .payment-card-header .space-x-3 {
+    gap: 0.75rem !important;
+  }
+
+  /* Remove default margins in favor of gap */
+  .payment-card-header .space-x-3 > * + * {
+    margin-left: 0 !important;
+  }
+
+  .payment-card-header .space-x-2 > * + * {
+    margin-left: 0 !important;
+  }
+
+  .payment-card-header .space-x-2 {
+    gap: 0.5rem !important;
+  }
+
+  /* Expanded content - mobile-style vertical layout */
+  .payment-card-content > div {
+    padding: 1rem !important; /* Mobile-like padding */
+  }
+
+  /* Payment row container - vertical layout like mobile */
+  .payment-row-container {
+    flex-direction: column !important; /* Force column layout */
+    padding: 0.5rem !important;
+    gap: 1rem !important;
+    align-items: center !important;
+  }
+
+  /* Full width for centered content */
+  .payment-row-container > div {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* QR code section - centered like mobile */
+  .qr-simple-container {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .qr-simple-container img {
+    width: 8rem !important; /* 128px - mobile size */
+    height: 8rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .qr-simple-container > div {
+    width: 8rem !important;
+    height: 8rem !important;
+    border-radius: 1rem !important;
+  }
+
+  /* QR fallback icon - mobile size */
+  .qr-simple-container svg.w-12,
+  .qr-simple-container svg.w-16 {
+    width: 3rem !important; /* 48px */
+    height: 3rem !important;
+  }
+
+  /* Payment info panel - mobile-style */
+  .payment-info-simple {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Bank info pills - mobile-style */
+  .bank-info-pill {
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important; /* 14px */
+    min-height: 32px !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Payment button - mobile-style full width */
+  .payment-link-minimalist {
+    padding: 0.625rem 1rem !important;
+    font-size: 0.875rem !important; /* 14px */
+    min-height: 36px !important;
+    border-radius: 1rem !important;
+    width: 100% !important;
+  }
+
+  /* Description text - mobile size */
+  .payment-card-content .text-xs {
+    font-size: 0.75rem !important; /* 12px */
+  }
+
+  /* Section spacing - compact */
+  .payment-method-section {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) - Desktop refinements */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+
+  h3 {
+    font-size: 1rem !important; /* 16px - normal size */
+  }
+
+  .text-lg {
+    font-size: 1.125rem !important; /* 18px */
+  }
+
+  .text-xl {
+    font-size: 1.25rem !important; /* 20px */
+  }
+
+  .text-sm {
+    font-size: 0.875rem !important; /* 14px - normal */
+  }
+
   .payment-method-section {
     /* No padding - matches comment section */
   }
