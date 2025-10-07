@@ -214,19 +214,38 @@ const fallbackButtonStyle = computed(() => ({
   }
 }
 
-/* Large Desktops (1025px+) */
+/* Large Desktops (1025px+) - 35% size reduction */
 @media (min-width: 1025px) {
   .scaled-envelope-button {
-    max-width: min(35vh, 300px);
-    min-height: clamp(50px, 9vh, 120px);
+    max-width: min(19.5vh, 156px);
+    min-height: clamp(29px, 5.2vh, 65px);
+  }
+
+  .scaled-button-fallback {
+    height: clamp(26px, 4.55vh, 65px);
+    max-height: 65px;
+    padding: 0 clamp(0.65rem, 2.275vh, 1.3rem);
+  }
+
+  .scaled-button-text {
+    font-size: clamp(0.49rem, 1.43vh, 0.715rem);
   }
 }
 
-/* Very Large Screens (1440px+) */
+/* Very Large Screens (1440px+) - 35% size reduction */
 @media (min-width: 1440px) {
   .scaled-envelope-button {
-    max-width: min(40vh, 350px);
-    min-height: clamp(55px, 10vh, 140px);
+    max-width: min(20.8vh, 169px);
+    min-height: clamp(32.5px, 5.525vh, 71.5px);
+  }
+
+  .scaled-button-fallback {
+    height: clamp(29.25px, 4.875vh, 71.5px);
+    max-height: 71.5px;
+  }
+
+  .scaled-button-text {
+    font-size: clamp(0.4875rem, 1.495vh, 0.7475rem);
   }
 }
 
