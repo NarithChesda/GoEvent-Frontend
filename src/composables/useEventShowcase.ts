@@ -128,6 +128,7 @@ export interface TemplateAssets {
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
+  cover_content_top_position?: number
 }
 
 export interface EventPhoto {

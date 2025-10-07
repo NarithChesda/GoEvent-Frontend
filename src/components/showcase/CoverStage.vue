@@ -35,6 +35,7 @@
       :currentLanguage="currentLanguage"
       :shouldShowButtonLoading="videoState.shouldShowButtonLoading.value"
       :getMediaUrl="getMediaUrl"
+      :contentTopPosition="contentTopPosition"
       @openEnvelope="handleOpenEnvelope"
     />
 
@@ -90,6 +91,7 @@ interface Props {
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
   getMediaUrl: (url: string) => string
+  contentTopPosition?: number // Vertical position in vh units (0-100)
 }
 
 const props = defineProps<Props>()

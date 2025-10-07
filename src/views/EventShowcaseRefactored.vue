@@ -32,6 +32,7 @@
         :current-showcase-stage="currentShowcaseStage"
         :should-skip-to-main-content="shouldSkipToMainContent"
         :video-state-preserved="videoStatePreserved"
+        :content-top-position="event.template_assets?.cover_content_top_position"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelopeWithVideoSync"
         @cover-stage-ready="handleCoverStageReady"

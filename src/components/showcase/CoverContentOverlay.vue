@@ -1,11 +1,15 @@
 <template>
   <div
-    class="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500"
     :class="{ 'opacity-0 pointer-events-none': isContentHidden }"
     style="z-index: 10"
   >
-    <!-- Centered Inner Container with Row Distribution -->
-    <div class="inner-container-rows flex flex-col w-full max-w-5xl mx-auto" style="height: 53vh">
+    <!-- Inner Container with Dynamic Top Position -->
+    <div
+      class="inner-container-rows flex flex-col w-full max-w-5xl mx-auto absolute"
+      style="height: 53vh"
+      :style="containerStyle"
+    >
       <!-- Event Title Row: 18.75% -->
       <div
         class="content-row-header flex items-center justify-center animate-fadeIn"
@@ -130,6 +134,7 @@ interface Props {
   currentLanguage?: string
   shouldShowButtonLoading: boolean
   getMediaUrl: (url: string) => string
+  contentTopPosition?: number // Vertical position in vh units (0-100)
 }
 
 const props = defineProps<Props>()
@@ -198,6 +203,15 @@ const coverHeader = computed(
 )
 
 const inviteText = computed(() => getTextContent('invite_text', "You're Invited"))
+
+// Computed style for container positioning
+const containerStyle = computed(() => {
+  // Default to centered (23.5vh top position for 53vh content = roughly centered on 100vh screen)
+  const topPosition = props.contentTopPosition ?? 23.5
+  return {
+    top: `${topPosition}vh`,
+  }
+})
 </script>
 
 <style scoped>
