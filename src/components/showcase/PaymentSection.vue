@@ -1002,6 +1002,10 @@ const capitalizeText = (text: string | undefined): string => {
     font-size: 0.75rem !important;
   }
 
+  .text-xl {
+    font-size: 1.125rem !important; /* 18px */
+  }
+
   /* Icons - mobile size */
   svg.w-5 {
     width: 1.125rem !important;
@@ -1017,26 +1021,6 @@ const capitalizeText = (text: string | undefined): string => {
   svg.lg\:w-16 {
     width: 3rem !important;
     height: 3rem !important;
-  }
-
-  /* Section header */
-  h2 {
-    font-size: 1.25rem !important; /* 20px - same as sm:text-xl */
-  }
-}
-
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
-  h2 {
-    font-size: 1.5rem !important; /* 24px - md:text-2xl */
-  }
-
-  .text-lg {
-    font-size: 1.125rem !important;
-  }
-
-  .text-base {
-    font-size: 1rem !important;
   }
 }
 
