@@ -73,6 +73,7 @@
             @logout="handleLogout"
             @main-content-viewed="handleMainContentViewed"
             @show-auth-modal="openAuthModal"
+            @video-state-change="handleVideoStateChange"
           />
         </template>
       </CoverStage>
@@ -263,6 +264,24 @@ const handleLogout = async () => {
   }
 
   await authStore.logout()
+}
+
+// Store music state before video plays
+const musicStateBeforeVideo = ref(false)
+
+const handleVideoStateChange = (isPlaying: boolean) => {
+  if (isPlaying) {
+    // Video started playing - store current music state and pause music
+    musicStateBeforeVideo.value = isMusicPlaying.value
+    if (isMusicPlaying.value) {
+      toggleMusic()
+    }
+  } else {
+    // Video stopped/paused - restore previous music state
+    if (musicStateBeforeVideo.value && !isMusicPlaying.value) {
+      toggleMusic()
+    }
+  }
 }
 
 // Watch for event data to handle redirects after login with proper timing

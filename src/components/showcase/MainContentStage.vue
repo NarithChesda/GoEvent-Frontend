@@ -217,6 +217,8 @@
                     :secondary-font="secondaryFont"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
+                    :is-music-playing="isMusicPlaying"
+                    @video-state-change="handleVideoStateChange"
                   />
 
                   <!-- Video Section Divider -->
@@ -596,6 +598,7 @@ const emit = defineEmits<{
   logout: []
   mainContentViewed: []
   showAuthModal: []
+  videoStateChange: [isPlaying: boolean]
 }>()
 
 // Animation setup
@@ -780,6 +783,7 @@ const handleLanguageChange = (language: string) => emit('changeLanguage', langua
 const handleMusicToggle = () => emit('musicToggle')
 const handleLogout = () => emit('logout')
 const handleCommentSubmitted = (comment: EventComment) => emit('commentSubmitted', comment)
+const handleVideoStateChange = (isPlaying: boolean) => emit('videoStateChange', isPlaying)
 
 // Section navigation handlers
 const handleRSVP = () => scrollToSection('rsvp-section')
