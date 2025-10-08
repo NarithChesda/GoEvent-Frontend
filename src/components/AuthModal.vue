@@ -39,8 +39,9 @@
 
       <!-- Social Login Buttons -->
       <div class="space-y-3">
-        <!-- Google Login Button -->
+        <!-- Google Login Button - Only show in normal browsers (not in messaging apps) -->
         <button
+          v-if="shouldShowGoogleLogin"
           type="button"
           @click="handleGoogleLogin"
           :disabled="isGoogleLoading"
@@ -70,23 +71,34 @@
           </span>
         </button>
 
-        <!-- Telegram Login Widget Container -->
-        <div
-          id="telegram-login-container"
-          ref="telegramContainer"
-          class="flex justify-center"
-        ></div>
+        <!-- Telegram Login Button -->
+        <button
+          type="button"
+          @click="handleTelegramLogin"
+          :disabled="isTelegramLoading"
+          class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl bg-white/50 hover:bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Loader2 v-if="isTelegramLoading" class="animate-spin h-5 w-5 mr-2" />
+          <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#0088cc"/>
+            <path d="M5.55 11.47c3.68-1.61 6.14-2.67 7.38-3.18 3.52-1.46 4.25-1.72 4.73-1.72.1 0 .34.02.5.15.13.1.16.24.18.34.02.1.04.32.02.49-.19 1.97-.99 6.75-1.4 8.96-.17.93-.51 1.24-.84 1.27-.71.07-1.25-.47-1.94-.92-1.08-.71-1.69-1.15-2.74-1.84-1.21-.8-.42-1.24.26-1.96.18-.19 3.26-2.99 3.32-3.24.01-.03.01-.15-.06-.21-.07-.06-.17-.04-.24-.02-.1.02-1.73 1.1-4.88 3.23-.46.32-.88.47-1.25.46-.41-.01-1.2-.23-1.79-.42-.72-.24-1.29-.36-1.24-.76.03-.21.32-.42.89-.64z" fill="white"/>
+          </svg>
+          <span class="text-sm font-medium text-gray-700">
+            {{ isTelegramLoading ? 'Signing in...' : 'Continue with Telegram' }}
+          </span>
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { X, Loader2, AlertCircle } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
+import { isNormalBrowser, getBrowserType } from '../utils/browserDetection'
 
 interface Props {
   isVisible: boolean
@@ -104,7 +116,6 @@ const authStore = useAuthStore()
 // Modal state
 const modalContent = ref<HTMLElement | null>(null)
 const modalAnimation = ref('scale-95 opacity-0')
-const telegramContainer = ref<HTMLElement | null>(null)
 
 // Loading states
 const isGoogleLoading = ref(false)
@@ -112,6 +123,9 @@ const isTelegramLoading = ref(false)
 
 // Error handling
 const errorMessage = ref('')
+
+// Browser detection - only show Google login in normal browsers
+const shouldShowGoogleLogin = computed(() => isNormalBrowser())
 
 // Modal control methods
 const closeModal = () => {
@@ -183,6 +197,14 @@ const handleTelegramAuth = async (user: any) => {
   }
 }
 
+const handleTelegramLogin = () => {
+  // Trigger click on the hidden Telegram widget button
+  const telegramButton = document.querySelector<HTMLIFrameElement>('#telegram-widget-hidden iframe')
+  if (telegramButton) {
+    telegramButton.click()
+  }
+}
+
 const loadTelegramWidget = () => {
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'goevent_authentication_bot'
 
@@ -197,10 +219,15 @@ const loadTelegramWidget = () => {
     existingScript.remove()
   }
 
-  // Clear container
-  if (telegramContainer.value) {
-    telegramContainer.value.innerHTML = ''
+  // Create hidden container for Telegram widget
+  let container = document.getElementById('telegram-widget-hidden')
+  if (!container) {
+    container = document.createElement('div')
+    container.id = 'telegram-widget-hidden'
+    container.style.display = 'none'
+    document.body.appendChild(container)
   }
+  container.innerHTML = ''
 
   // Create Telegram widget script
   const script = document.createElement('script')
@@ -214,10 +241,8 @@ const loadTelegramWidget = () => {
   // Define global callback
   ;(window as any).onTelegramAuth = handleTelegramAuth
 
-  // Append to container
-  if (telegramContainer.value) {
-    telegramContainer.value.appendChild(script)
-  }
+  // Append to hidden container
+  container.appendChild(script)
 }
 
 // Handle modal animation
@@ -245,12 +270,22 @@ onMounted(() => {
   if (props.isVisible) {
     loadTelegramWidget()
   }
+
+  // Log browser detection for debugging
+  console.log('Browser type detected:', getBrowserType())
+  console.log('Should show Google login:', shouldShowGoogleLogin.value)
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleEscapeKey)
   // Clean up global callback
   delete (window as any).onTelegramAuth
+
+  // Clean up hidden container
+  const container = document.getElementById('telegram-widget-hidden')
+  if (container) {
+    container.remove()
+  }
 })
 </script>
 
