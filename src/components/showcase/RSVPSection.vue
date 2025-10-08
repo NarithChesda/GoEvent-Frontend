@@ -3,7 +3,7 @@
     <!-- RSVP Section Header - Matching MainContentStage Welcome Header -->
     <div class="text-center py- laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h1
-        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
+        class="leading-relaxed py-2 text-base sm:text-lg md:text-xl lg:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
         :style="{
           fontFamily: primaryFont || currentFont,
           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
@@ -352,13 +352,11 @@
               @click="handleSignInClick"
               class="liquid-glass-button group"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
-                color: primaryColor,
+                background: primaryColor,
+                color: '#ffffff',
                 boxShadow: `
-                0 8px 32px -4px ${primaryColor}25,
-                0 4px 16px -2px ${primaryColor}15,
-                inset 0 2px 4px rgba(255, 255, 255, 0.1),
-                inset 0 -1px 2px ${primaryColor}10
+                0 8px 32px -4px ${primaryColor}40,
+                0 4px 16px -2px ${primaryColor}30
               `,
               }"
             >
@@ -411,33 +409,13 @@
                 'liquid-glass-btn--disabled': isSubmitting,
               }"
               :style="{
-                background:
-                  rsvpStatus === 'coming'
-                    ? `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}30)`
-                    : `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
-                backdropFilter:
-                  rsvpStatus === 'coming'
-                    ? 'blur(20px) saturate(180%)'
-                    : 'blur(16px) saturate(120%)',
+                background: rsvpStatus === 'coming' ? primaryColor : '#ffffff',
                 boxShadow:
                   rsvpStatus === 'coming'
-                    ? `
-                  0 8px 32px ${primaryColor}35,
-                  0 4px 16px ${primaryColor}25,
-                  inset 0 2px 4px rgba(255, 255, 255, 0.25),
-                  inset 0 -2px 4px ${primaryColor}20
-                `
-                    : `
-                  0 4px 16px ${primaryColor}15,
-                  0 2px 8px ${primaryColor}10,
-                  inset 0 1px 2px rgba(255, 255, 255, 0.1),
-                  inset 0 -1px 2px ${primaryColor}08
-                `,
+                    ? `0 8px 32px -4px ${primaryColor}40, 0 4px 16px -2px ${primaryColor}30`
+                    : `0 4px 16px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
                 color: rsvpStatus === 'coming' ? '#ffffff' : primaryColor,
-                border:
-                  rsvpStatus === 'coming'
-                    ? `1px solid rgba(255, 255, 255, 0.3)`
-                    : `1px solid ${primaryColor}20`,
+                border: rsvpStatus === 'coming' ? 'none' : `2px solid ${primaryColor}`,
               }"
             >
               <span
@@ -470,33 +448,13 @@
                 'liquid-glass-btn--disabled': isSubmitting,
               }"
               :style="{
-                background:
-                  rsvpStatus === 'not_coming'
-                    ? `linear-gradient(135deg, ${primaryColor}35, ${primaryColor}25)`
-                    : `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
-                backdropFilter:
-                  rsvpStatus === 'not_coming'
-                    ? 'blur(20px) saturate(180%)'
-                    : 'blur(16px) saturate(120%)',
+                background: rsvpStatus === 'not_coming' ? primaryColor : '#ffffff',
                 boxShadow:
                   rsvpStatus === 'not_coming'
-                    ? `
-                  0 8px 32px ${primaryColor}30,
-                  0 4px 16px ${primaryColor}20,
-                  inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                  inset 0 -2px 4px ${primaryColor}15
-                `
-                    : `
-                  0 4px 16px ${primaryColor}15,
-                  0 2px 8px ${primaryColor}10,
-                  inset 0 1px 2px rgba(255, 255, 255, 0.1),
-                  inset 0 -1px 2px ${primaryColor}08
-                `,
+                    ? `0 8px 32px -4px ${primaryColor}40, 0 4px 16px -2px ${primaryColor}30`
+                    : `0 4px 16px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
                 color: rsvpStatus === 'not_coming' ? '#ffffff' : primaryColor,
-                border:
-                  rsvpStatus === 'not_coming'
-                    ? `1px solid rgba(255, 255, 255, 0.25)`
-                    : `1px solid ${primaryColor}20`,
+                border: rsvpStatus === 'not_coming' ? 'none' : `2px solid ${primaryColor}`,
               }"
             >
               <span
@@ -535,9 +493,9 @@
             }"
           >
             <!-- Guest Counter -->
-            <div class="glass-content-section py-2">
+            <div class="glass-content-section py-1.5">
               <!-- Guest Counter Label (centered) -->
-              <div class="text-center mb-3">
+              <div class="text-center mb-2">
                 <span
                   class="text-sm"
                   :style="{
@@ -550,7 +508,7 @@
               </div>
 
               <!-- Guest Counter Controls (centered, matching RSVP buttons) -->
-              <div class="flex items-center justify-center gap-4 mb-2">
+              <div class="flex items-center justify-center gap-4 mb-1.5">
                 <button
                   @click="decreaseGuestCount"
                   :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
@@ -599,7 +557,7 @@
               <!-- Total Summary -->
               <div class="text-center">
                 <div
-                  class="total-summary-glass p-3"
+                  class="total-summary-glass p-2"
                   :style="{
                     backgroundColor: `${primaryColor}06`,
                     boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
@@ -618,7 +576,7 @@
                 </div>
 
                 <!-- Unsaved Changes Indicator & Manual Save -->
-                <div v-if="hasUnsavedGuestChanges" class="mt-3 space-y-2">
+                <div v-if="hasUnsavedGuestChanges" class="mt-2 space-y-1.5">
                   <div class="flex items-center justify-center gap-3">
                     <span
                       class="text-xs font-medium"
@@ -646,9 +604,9 @@
                 </div>
 
                 <!-- Confirmation Code -->
-                <div v-if="confirmationCode && !hasUnsavedGuestChanges" class="mt-3">
+                <div v-if="confirmationCode && !hasUnsavedGuestChanges" class="mt-2">
                   <div
-                    class="confirmation-code-glass p-2"
+                    class="confirmation-code-glass p-1.5"
                     :style="{
                       backgroundColor: `${primaryColor}04`,
                       boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.05)`,
@@ -1907,9 +1865,9 @@ onUnmounted(() => {
 
 /* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Override h1 header text size */
+  /* Override h1 header text size - match EventInfo h2 sizing */
   h1 {
-    font-size: 1.25rem !important; /* 20px - same as sm:text-xl */
+    font-size: 1rem !important; /* 16px - match EventInfo section */
   }
 
   /* Keep container size mobile */
@@ -2038,10 +1996,25 @@ onUnmounted(() => {
   }
 }
 
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
+/* Medium laptops 14-15 inch (1366px-1535px) - match EventInfo h2 sizing */
+@media (min-width: 1366px) and (max-width: 1535px) {
   h1 {
-    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+    font-size: 1.25rem !important; /* 20px - match EventInfo section */
+  }
+
+  .text-lg {
+    font-size: 1.125rem !important; /* 18px */
+  }
+
+  .text-xl {
+    font-size: 1.25rem !important; /* 20px */
+  }
+}
+
+/* Large laptops 16+ inch (1536px+) - match EventInfo h2 sizing */
+@media (min-width: 1536px) {
+  h1 {
+    font-size: 1.5rem !important; /* 24px - match EventInfo section lg:text-2xl */
   }
 
   .text-lg {
