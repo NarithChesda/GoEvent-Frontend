@@ -212,22 +212,8 @@
               }}</span>
             </button>
 
-            <!-- Telegram Login Button -->
-            <button
-              type="button"
-              @click="handleTelegramLogin"
-              :disabled="isTelegramLoading"
-              class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              <Loader2 v-if="isTelegramLoading" class="animate-spin h-5 w-5 mr-2" />
-              <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="12" fill="#0088cc"/>
-                <path d="M5.55 11.47c3.68-1.61 6.14-2.67 7.38-3.18 3.52-1.46 4.25-1.72 4.73-1.72.1 0 .34.02.5.15.13.1.16.24.18.34.02.1.04.32.02.49-.19 1.97-.99 6.75-1.4 8.96-.17.93-.51 1.24-.84 1.27-.71.07-1.25-.47-1.94-.92-1.08-.71-1.69-1.15-2.74-1.84-1.21-.8-.42-1.24.26-1.96.18-.19 3.26-2.99 3.32-3.24.01-.03.01-.15-.06-.21-.07-.06-.17-.04-.24-.02-.1.02-1.73 1.1-4.88 3.23-.46.32-.88.47-1.25.46-.41-.01-1.2-.23-1.79-.42-.72-.24-1.29-.36-1.24-.76.03-.21.32-.42.89-.64z" fill="white"/>
-              </svg>
-              <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900">{{
-                isTelegramLoading ? 'Signing in...' : 'Sign in with Telegram'
-              }}</span>
-            </button>
+            <!-- Telegram Login Widget -->
+            <div id="telegram-login-widget" class="flex justify-center"></div>
           </div>
         </form>
 
@@ -273,7 +259,6 @@ const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
 const isGoogleLoading = ref(false)
 const isSubmitting = ref(false)
-const isTelegramLoading = ref(false)
 
 // Browser detection - only show Google login in normal browsers
 const shouldShowGoogleLogin = computed(() => isNormalBrowser())
@@ -391,7 +376,6 @@ const handleGoogleLogin = async () => {
 }
 
 const handleTelegramAuth = async (user: any) => {
-  isTelegramLoading.value = true
   errorMessage.value = ''
 
   try {
@@ -405,42 +389,19 @@ const handleTelegramAuth = async (user: any) => {
   } catch (error: any) {
     console.error('Telegram login error:', error)
     errorMessage.value = 'Telegram sign-in failed. Please try again.'
-  } finally {
-    isTelegramLoading.value = false
-  }
-}
-
-const handleTelegramLogin = () => {
-  // Trigger click on the hidden Telegram widget button
-  const telegramButton = document.querySelector<HTMLIFrameElement>('#telegram-login-container iframe')
-  if (telegramButton) {
-    telegramButton.click()
   }
 }
 
 const loadTelegramWidget = () => {
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'goevent_authentication_bot'
 
-  if (!botUsername) {
-    console.warn('Telegram bot username not configured')
-    return
-  }
+  const container = document.getElementById('telegram-login-widget')
+  if (!container) return
 
-  // Remove existing script if any
-  const existingScript = document.querySelector('script[src*="telegram-widget"]')
-  if (existingScript) {
-    existingScript.remove()
-  }
-
-  // Create hidden container for Telegram widget
-  let container = document.getElementById('telegram-widget-hidden')
-  if (!container) {
-    container = document.createElement('div')
-    container.id = 'telegram-widget-hidden'
-    container.style.display = 'none'
-    document.body.appendChild(container)
-  }
   container.innerHTML = ''
+
+  // Define global callback
+  ;(window as any).onTelegramAuth = handleTelegramAuth
 
   // Create Telegram widget script
   const script = document.createElement('script')
@@ -451,10 +412,6 @@ const loadTelegramWidget = () => {
   script.setAttribute('data-onauth', 'onTelegramAuth(user)')
   script.setAttribute('data-request-access', 'write')
 
-  // Define global callback
-  ;(window as any).onTelegramAuth = handleTelegramAuth
-
-  // Append to hidden container
   container.appendChild(script)
 }
 
@@ -467,11 +424,5 @@ onMounted(() => {
 onUnmounted(() => {
   // Clean up global callback
   delete (window as any).onTelegramAuth
-
-  // Clean up hidden container
-  const container = document.getElementById('telegram-widget-hidden')
-  if (container) {
-    container.remove()
-  }
 })
 </script>

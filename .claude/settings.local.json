@@ -158,7 +158,8 @@
       "Bash(done)",
       "Bash(xargs -0 git rm --cached)",
       "Bash(git cherry-pick:*)",
-      "Bash(git stash push:*)"
+      "Bash(git stash push:*)",
+      "Bash(echo $VITE_TELEGRAM_BOT_USERNAME)"
     ],
     "deny": [],
     "additionalDirectories": [
