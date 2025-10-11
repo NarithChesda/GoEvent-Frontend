@@ -244,10 +244,12 @@
         <div
           v-if="showCheckinModal"
           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          :class="{ 'md:items-center items-end': showQRScanner }"
           @click="closeCheckinModal"
         >
           <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+            class="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl w-full overflow-hidden"
+            :class="showQRScanner ? 'h-full md:h-auto md:max-w-md md:mx-4 md:rounded-3xl' : 'rounded-3xl max-w-md mx-4'"
             @click.stop
           >
             <!-- Header -->
@@ -270,21 +272,68 @@
 
             <!-- Content -->
             <div class="p-8">
-              <div class="space-y-6">
+              <!-- QR Scanner View (Mobile Only) -->
+              <div v-if="showQRScanner" class="space-y-4">
+                <QRCodeScanner
+                  @scan-success="handleQRScanSuccess"
+                  @scan-error="handleQRScanError"
+                  @close="showQRScanner = false"
+                />
+              </div>
+
+              <!-- Manual Input View -->
+              <div v-else class="space-y-6">
                 <div>
                   <label class="block text-sm font-semibold text-slate-700 mb-2"
                     >Confirmation Code</label
                   >
-                  <input
-                    v-model="checkinCode"
-                    type="text"
-                    placeholder="Enter confirmation code..."
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                    :disabled="isChecking"
-                  />
+                  <div class="relative">
+                    <input
+                      v-model="checkinCode"
+                      type="text"
+                      placeholder="Enter confirmation code..."
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      :class="isMobile ? 'pr-12' : ''"
+                      :disabled="isChecking"
+                      @keyup.enter="performCheckin"
+                    />
+                    <!-- Camera Icon Button (Shows on mobile or narrow screens) -->
+                    <button
+                      v-if="isMobile"
+                      type="button"
+                      @click.prevent="showQRScanner = true"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-[#1e90ff] transition-colors duration-200 rounded-lg hover:bg-slate-100 active:bg-slate-200"
+                      :disabled="isChecking"
+                      title="Scan QR Code"
+                    >
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                        ></path>
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-2">
+                    {{ isMobile ? 'Enter code or tap camera icon to scan QR' : 'Enter the attendee\'s confirmation code' }}
+                  </p>
                 </div>
 
-                <div class="flex space-x-4 pt-4">
+                <div class="flex space-x-4">
                   <button
                     @click="closeCheckinModal"
                     class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-200"
@@ -329,7 +378,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import {
   Users,
   UserCheck,
@@ -346,6 +395,7 @@ import {
   type EventRegistration,
   type EventRegistrationDetail,
 } from '../services/api'
+import QRCodeScanner from './QRCodeScanner.vue'
 
 interface Props {
   eventId: string
@@ -364,6 +414,18 @@ const showCheckinModal = ref(false)
 const checkinCode = ref('')
 const isChecking = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const showQRScanner = ref(false)
+
+// Detect if device is mobile (reactive to window resize)
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || windowWidth.value < 768
+})
+
+// Update window width on resize
+const handleResize = () => {
+  windowWidth.value = window.innerWidth
+}
 
 // Computed
 const totalRegistrations = computed(
@@ -474,11 +536,31 @@ const performCheckin = async () => {
       // Force reload registrations from API to reflect the change
       await loadRegistrations(true)
     } else {
-      showMessage('error', response.message || 'Failed to check in attendee')
+      // Handle specific error messages
+      const errorMsg = response.message || 'Failed to check in attendee'
+
+      // Check for common error scenarios
+      if (errorMsg.toLowerCase().includes('already checked in') ||
+          errorMsg.toLowerCase().includes('already check in')) {
+        showMessage('error', 'This attendee is already checked in')
+      } else if (errorMsg.toLowerCase().includes('not found') ||
+                 errorMsg.toLowerCase().includes('invalid')) {
+        showMessage('error', 'Invalid confirmation code. Please check and try again.')
+      } else {
+        showMessage('error', errorMsg)
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error checking in attendee:', error)
-    showMessage('error', 'An error occurred during check-in')
+
+    // Handle HTTP error responses
+    if (error?.response?.status === 404) {
+      showMessage('error', 'Confirmation code not found or attendee already checked in')
+    } else if (error?.response?.status === 400) {
+      showMessage('error', error?.response?.data?.message || 'Invalid confirmation code')
+    } else {
+      showMessage('error', 'An error occurred during check-in. Please try again.')
+    }
   } finally {
     isChecking.value = false
   }
@@ -488,6 +570,21 @@ const closeCheckinModal = () => {
   showCheckinModal.value = false
   checkinCode.value = ''
   isChecking.value = false
+  showQRScanner.value = false
+}
+
+const handleQRScanSuccess = async (code: string) => {
+  // Set the scanned code and automatically perform check-in
+  checkinCode.value = code
+  showQRScanner.value = false
+
+  // Automatically trigger check-in after QR scan
+  await performCheckin()
+}
+
+const handleQRScanError = (error: string) => {
+  showMessage('error', error)
+  showQRScanner.value = false
 }
 
 const clearFilters = () => {
@@ -572,6 +669,11 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadRegistrations()
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 

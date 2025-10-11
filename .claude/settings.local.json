@@ -159,7 +159,9 @@
       "Bash(xargs -0 git rm --cached)",
       "Bash(git cherry-pick:*)",
       "Bash(git stash push:*)",
-      "Bash(echo $VITE_TELEGRAM_BOT_USERNAME)"
+      "Bash(echo $VITE_TELEGRAM_BOT_USERNAME)",
+      "Bash(git stash:*)",
+      "Bash(timeout 120 npm run build)"
     ],
     "deny": [],
     "additionalDirectories": [
