@@ -141,6 +141,26 @@ export interface EventPhoto {
   created_at: string
 }
 
+export interface UserDetails {
+  id: number
+  email: string
+  username: string
+  first_name: string
+  last_name: string
+  profile_picture?: string
+  bio?: string
+  is_verified: boolean
+  is_partner: boolean
+  phone_number?: string
+  payment_link?: string
+  telegram_link?: string
+  logo?: string
+  telegram_id?: string
+  telegram_auth_date?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface EventData {
   id: string
   title: string
@@ -169,6 +189,10 @@ export interface EventData {
     color: string
     icon: string
   }
+  organizer?: number
+  organizer_details?: UserDetails
+  referrer?: number | null
+  referrer_details?: UserDetails | null
   template_assets?: TemplateAssets
   template_colors?: TemplateColor[]
   template_fonts?: TemplateFont[]
