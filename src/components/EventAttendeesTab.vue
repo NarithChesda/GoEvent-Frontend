@@ -11,7 +11,7 @@
       <div class="flex items-center space-x-2 sm:space-x-3">
         <!-- Admin Check-in Button -->
         <button
-          v-if="canEdit && showAdminCheckin"
+          v-if="canEdit"
           @click="showCheckinModal = true"
           class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 flex items-center text-sm sm:text-base"
         >
@@ -21,8 +21,9 @@
         </button>
         <!-- Refresh Button -->
         <button
-          @click="loadRegistrations"
+          @click="loadRegistrations(true)"
           class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl p-2 hover:bg-white/90 transition-all duration-200 hover:scale-[1.02] shadow-lg"
+          :disabled="loading"
         >
           <RefreshCw class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" :class="{ 'animate-spin': loading }" />
         </button>
@@ -383,8 +384,6 @@ const pendingCount = computed(
   () => registrations.value.filter((r) => r.status === 'registered').length,
 )
 
-const showAdminCheckin = computed(() => registrations.value.some((r) => r.status === 'registered'))
-
 const filteredRegistrations = computed(() => {
   let filtered = registrations.value
 
@@ -414,9 +413,9 @@ const filteredRegistrations = computed(() => {
 })
 
 // Methods
-const loadRegistrations = async () => {
-  // If we have registrations from props, use them
-  if (props.registrations) {
+const loadRegistrations = async (forceRefresh = false) => {
+  // If we have registrations from props and not forcing refresh, use them
+  if (props.registrations && !forceRefresh) {
     registrations.value = props.registrations
     return
   }
@@ -427,8 +426,11 @@ const loadRegistrations = async () => {
     const response = await eventsService.getEventRegistrations(props.eventId)
 
     if (response.success && response.data) {
-      // Transform EventRegistration[] to EventRegistrationDetail[] format
-      const registrationData = response.data.results || []
+      // Handle both paginated response and direct array response
+      const registrationData = Array.isArray(response.data)
+        ? response.data
+        : (response.data.results || [])
+
       registrations.value = registrationData.map((reg: EventRegistration) => ({
         id: reg.id,
         user: reg.user,
@@ -469,8 +471,8 @@ const performCheckin = async () => {
     if (response.success) {
       showMessage('success', 'Attendee checked in successfully!')
       closeCheckinModal()
-      // Reload registrations to reflect the change
-      await loadRegistrations()
+      // Force reload registrations from API to reflect the change
+      await loadRegistrations(true)
     } else {
       showMessage('error', response.message || 'Failed to check in attendee')
     }

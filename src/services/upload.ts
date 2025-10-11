@@ -14,6 +14,14 @@ export interface UploadResponse {
 
 class UploadService {
   async uploadProfilePicture(file: File): Promise<ApiResponse<UploadResponse>> {
+    return this.uploadImage(file, 'profile_picture')
+  }
+
+  async uploadLogo(file: File): Promise<ApiResponse<UploadResponse>> {
+    return this.uploadImage(file, 'logo')
+  }
+
+  private async uploadImage(file: File, fieldName: string): Promise<ApiResponse<UploadResponse>> {
     try {
       // Comprehensive file validation
       const validation = await this.validateImageFile(file)
@@ -43,7 +51,7 @@ class UploadService {
       })
 
       const formData = new FormData()
-      formData.append('profile_picture', sanitizedFile)
+      formData.append(fieldName, sanitizedFile)
 
       // Get secure token
       const accessToken = secureStorage.getItem('access_token')
