@@ -259,15 +259,6 @@ const saveReferrer = async () => {
     return
   }
 
-  // Check if email is the same as organizer
-  if (
-    props.organizerEmail &&
-    referrerEmail.value.toLowerCase() === props.organizerEmail.toLowerCase()
-  ) {
-    error.value = 'Referrer cannot be the same as the event organizer'
-    return
-  }
-
   isSaving.value = true
   error.value = ''
 
