@@ -26,11 +26,14 @@ interface VideoEmits {
   playBackgroundVideo: []
 }
 
+export type DisplayMode = 'basic' | 'standard'
+
 interface VideoProps extends VideoUrls {
   currentShowcaseStage?: ShowcaseStage
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
-  templateAssets?: { standard_cover_video?: string } | null
+  templateAssets?: { standard_cover_video?: string; basic_decoration_photo?: string } | null
+  displayMode?: DisplayMode
 }
 
 export function useCoverStageVideo(
@@ -697,6 +700,19 @@ export function useCoverStageVideo(
     }, 500)
   }
 
+  // Skip directly to main content (for basic mode)
+  const skipToMainContent = () => {
+    // Hide the cover content
+    isContentHidden.value = true
+
+    // Set video phase to background to show main content
+    setTimeout(() => {
+      currentVideoPhase.value = 'background'
+      isCoverVideoPlaying.value = false
+      emit('sequentialVideoEnded')
+    }, 500)
+  }
+
   // Safari timeout for envelope button - don't wait forever on Safari
   const setupSafariVideoTimeout = () => {
     if (!isSafari && !isIOS) return
@@ -826,6 +842,7 @@ export function useCoverStageVideo(
     playEventVideo,
     playBackgroundVideo,
     handleOpenEnvelope,
+    skipToMainContent,
     initializeVideoState,
     cleanupAllVideoResources,
     startEventVideo,

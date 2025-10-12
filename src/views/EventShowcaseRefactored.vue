@@ -16,6 +16,7 @@
       <CoverStage
         ref="coverStageRef"
         :template-assets="templateAssets"
+        :template-colors="templateColors"
         :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
@@ -143,6 +144,7 @@ const {
   event,
   guestName,
   templateAssets,
+  templateColors,
   eventTexts,
   hosts,
   agendaItems,

@@ -45,9 +45,42 @@
       @playing="handleBackgroundVideoPlaying"
     />
 
-    <!-- Standard Cover Video Loop - Only show when not in event/background phase -->
+    <!-- Background Layer for Decoration Photo - displays background photo or color -->
+    <!-- Always visible when basic_decoration_photo exists (persists during transition) -->
+    <div
+      v-if="templateAssets?.basic_decoration_photo"
+      class="absolute inset-0"
+      :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
+    >
+      <img
+        v-if="templateAssets?.basic_background_photo"
+        :src="getMediaUrl(templateAssets.basic_background_photo)"
+        alt="Background"
+        class="w-full h-full object-cover"
+      />
+    </div>
+
+    <!-- Basic Decoration Photo - Priority display if available -->
+    <!-- Always visible when basic_decoration_photo exists (persists during transition) -->
+    <div
+      v-if="templateAssets?.basic_decoration_photo"
+      class="absolute inset-0"
+      style="z-index: -1"
+    >
+      <img
+        :src="getMediaUrl(templateAssets.basic_decoration_photo)"
+        alt="Decoration"
+        class="w-full h-full object-cover"
+      />
+    </div>
+
+    <!-- Standard Cover Video Loop - Only show when not in event/background phase and no decoration photo -->
     <video
-      v-if="templateAssets?.standard_cover_video && isCoverVideoPlaying"
+      v-if="
+        templateAssets?.standard_cover_video &&
+        isCoverVideoPlaying &&
+        !templateAssets?.basic_decoration_photo
+      "
       ref="coverVideoElement"
       :src="getMediaUrl(templateAssets.standard_cover_video)"
       autoplay
@@ -65,7 +98,8 @@
       v-if="
         templateAssets?.basic_background_photo &&
         isCoverVideoPlaying &&
-        !templateAssets?.standard_cover_video
+        !templateAssets?.standard_cover_video &&
+        !templateAssets?.basic_decoration_photo
       "
       class="absolute inset-0"
       style="z-index: -1"
@@ -80,15 +114,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 interface TemplateAssets {
   standard_cover_video?: string
   basic_background_photo?: string
+  basic_decoration_photo?: string
+}
+
+interface TemplateColor {
+  id?: number
+  hex_color_code?: string
+  hex_code?: string
+  name?: string
 }
 
 interface Props {
   templateAssets?: TemplateAssets | null
+  templateColors?: TemplateColor[] | null
   eventTitle: string
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
@@ -97,6 +140,16 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Compute the background color for decoration photo
+const decorationBackgroundColor = computed(() => {
+  // Find the template color with name "background"
+  const backgroundColor = props.templateColors?.find(
+    (color) => color.name?.toLowerCase() === 'background',
+  )
+  // Return the color code or fallback to white
+  return backgroundColor?.hex_color_code || backgroundColor?.hex_code || '#ffffff'
+})
 
 const emit = defineEmits<{
   sequentialVideoEnded: []
