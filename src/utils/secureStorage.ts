@@ -202,11 +202,6 @@ class SecureStorage {
    */
   setLogoutMode(isLogout: boolean): void {
     this.isLogoutInProgress = isLogout
-    if (isLogout) {
-      this.devLog('info', 'Logout mode activated - migrations and storage operations disabled')
-    } else {
-      this.devLog('info', 'Logout mode deactivated - normal operations resumed')
-    }
   }
 
   /**

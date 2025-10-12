@@ -163,7 +163,6 @@ class AuthService {
         }
       } else {
         // Even if logout API fails, we've cleared local tokens so logout is successful
-        console.warn('Logout API failed but local tokens cleared:', response.status)
         return {
           success: true,
           data: { message: 'Logged out locally' },
