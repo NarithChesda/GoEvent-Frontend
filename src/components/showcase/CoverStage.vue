@@ -154,13 +154,14 @@ const videoState = useCoverStageVideo(
 
 // Handle envelope opening - different behavior based on display mode
 const handleOpenEnvelope = () => {
+  // Always emit openEnvelope to ensure music starts playing
+  emit('openEnvelope')
+
   if (displayMode.value === 'basic') {
     // In basic mode: skip videos, go directly to main content
     videoState.skipToMainContent()
-  } else {
-    // In standard mode: follow normal flow (play videos)
-    emit('openEnvelope')
   }
+  // In standard mode: video will be started by parent component
 }
 
 // Initialize video state immediately

@@ -247,7 +247,8 @@ const openEnvelopeWithVideoSync = async () => {
   // Pass the required parameters for music to work
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
 
-  // Then trigger the video playbook to synchronize with the music
+  // Then trigger the video playback in standard mode
+  // In basic mode, this will be a no-op as the video phase will be 'background'
   if (coverStageRef.value) {
     coverStageRef.value.startEventVideo()
   }
