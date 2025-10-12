@@ -37,10 +37,7 @@
       <h3
         :class="['font-medium leading-loose py-2 capitalize', isKhmerText ? 'text-xs' : 'text-sm']"
         :style="{
-          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
+          color: primaryColor,
           fontFamily: primaryFont || currentFont,
           lineHeight: '1.8',
         }"
