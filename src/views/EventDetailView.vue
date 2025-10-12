@@ -28,11 +28,27 @@
         @download-ics="downloadICSFile"
       />
 
+      <!-- Mobile Bottom Tab Bar (below hero) -->
+      <EventDetailMobileTabBar
+        v-if="event"
+        :active-tab="activeTab"
+        :tabs="navigationTabs"
+        :can-view-attendees="canViewAttendees"
+        :can-view-media="canViewMedia"
+        :can-view-collaborators="canViewCollaborators"
+        :can-view-event-texts="canViewEventTexts"
+        :can-view-template="canViewTemplate"
+        :can-view-payment="canViewPayment"
+        :can-view-invitation="canViewInvitation"
+        @tab-change="activeTab = $event"
+      />
+
       <!-- Main Content Section -->
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div class="flex flex-col md:flex-row gap-6 lg:gap-8">
-          <!-- Navigation Tabs -->
+          <!-- Navigation Tabs (Desktop Only) -->
           <EventNavigationTabs
+            class="hidden md:block"
             :active-tab="activeTab"
             :tabs="navigationTabs"
             :can-view-attendees="canViewAttendees"
@@ -47,7 +63,7 @@
           />
 
           <!-- Main Content Area -->
-          <div class="flex-1 min-w-0">
+          <div class="flex-1 min-w-0 pb-20 md:pb-0">
             <!-- About Tab -->
             <EventAboutSection
               v-if="activeTab === 'about'"
@@ -238,7 +254,7 @@
       </div>
 
       <!-- Floating Edit Button -->
-      <div v-if="event?.can_edit" class="fixed bottom-28 lg:bottom-8 right-6 z-[60]" @click.stop>
+      <div v-if="event?.can_edit" class="fixed bottom-24 lg:bottom-8 right-6 z-[60]" @click.stop>
         <button
           @click="toggleActionMenu"
           class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
@@ -284,7 +300,7 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-28 lg:bottom-8 right-6 z-50">
+      <div v-if="message" class="fixed bottom-24 lg:bottom-8 right-6 z-50">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
@@ -302,12 +318,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Lock, Pencil, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
+import {
+  Lock,
+  Pencil,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Calendar,
+  FileText,
+  Users,
+  UserPlus,
+  ImageIcon,
+  Monitor,
+  CreditCard,
+  Mail,
+} from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import EventHeroSection from '../components/EventHeroSection.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
 import EventNavigationTabs from '../components/EventNavigationTabs.vue'
+import EventDetailMobileTabBar from '../components/EventDetailMobileTabBar.vue'
 import EventAgendaTab from '../components/EventAgendaTab.vue'
 import EventHostsTab from '../components/EventHostsTab.vue'
 import EventTextTab from '../components/EventTextTab.vue'
@@ -410,6 +441,29 @@ const canDeleteEvent = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
   // Only the organizer (event creator) can delete the event
   return event.value.organizer === authStore.user?.id
+})
+
+// Mobile context header computed properties
+const currentTabLabel = computed(() => {
+  const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
+  return tab ? tab.mobileLabel || tab.label : 'Event Details'
+})
+
+const currentTabIcon = computed(() => {
+  const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
+  if (!tab) return FileText
+
+  const iconMap = {
+    calendar: Calendar,
+    'file-text': FileText,
+    users: Users,
+    'user-plus': UserPlus,
+    image: ImageIcon,
+    monitor: Monitor,
+    'credit-card': CreditCard,
+    mail: Mail,
+  } as const
+  return iconMap[tab.icon as keyof typeof iconMap] || FileText
 })
 
 // Removed unused daysUntilEvent computed property
