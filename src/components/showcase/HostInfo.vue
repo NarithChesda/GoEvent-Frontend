@@ -236,15 +236,19 @@
         <!-- Host 1 Profile Picture (45% width) -->
         <div class="host-profile-left">
           <div class="profile-picture-container">
-            <img
+            <div
               v-if="hosts[0].profile_image"
-              :src="getMediaUrl(hosts[0].profile_image)"
-              :alt="`${hosts[0].name} profile`"
-              class="profile-picture"
+              class="profile-picture-wrapper"
               :style="{
-                borderColor: primaryColor,
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
               }"
-            />
+            >
+              <img
+                :src="getMediaUrl(hosts[0].profile_image)"
+                :alt="`${hosts[0].name} profile`"
+                class="profile-picture"
+              />
+            </div>
             <div
               v-else
               class="profile-picture-fallback"
@@ -263,15 +267,19 @@
         <!-- Host 2 Profile Picture (45% width) -->
         <div class="host-profile-right">
           <div v-if="hosts.length > 1" class="profile-picture-container">
-            <img
+            <div
               v-if="hosts[1]?.profile_image"
-              :src="getMediaUrl(hosts[1].profile_image)"
-              :alt="`${hosts[1].name} profile`"
-              class="profile-picture"
+              class="profile-picture-wrapper"
               :style="{
-                borderColor: primaryColor,
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
               }"
-            />
+            >
+              <img
+                :src="getMediaUrl(hosts[1].profile_image)"
+                :alt="`${hosts[1].name} profile`"
+                class="profile-picture"
+              />
+            </div>
             <div
               v-else
               class="profile-picture-fallback"
@@ -485,13 +493,20 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   width: 100%;
 }
 
-.profile-picture {
+.profile-picture-wrapper {
   width: 60%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid;
+  padding: 2px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: none;
 }
 
 .profile-picture-fallback {
@@ -648,7 +663,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     font-size: 1.875rem;
   }
 
-  .profile-picture {
+  .profile-picture-wrapper {
     width: 60%;
   }
 
@@ -697,7 +712,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     font-size: 2.25rem;
   }
 
-  .profile-picture {
+  .profile-picture-wrapper {
     width: 60%;
   }
 
@@ -746,7 +761,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     font-size: 3.5rem;
   }
 
-  .profile-picture {
+  .profile-picture-wrapper {
     width: 60%;
   }
 
@@ -791,7 +806,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     font-size: 4rem;
   }
 
-  .profile-picture {
+  .profile-picture-wrapper {
     width: 62%;
   }
 
