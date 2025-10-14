@@ -203,6 +203,7 @@
 
                 <!-- YouTube Video Section -->
                 <div
+                  v-if="event.youtube_embed_link"
                   id="video-section"
                   ref="videoSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
