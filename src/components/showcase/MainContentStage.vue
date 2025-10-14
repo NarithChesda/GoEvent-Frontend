@@ -39,6 +39,10 @@
       :available-languages="availableLanguages"
       :is-music-playing="isMusicPlaying"
       :is-authenticated="isAuthenticated"
+      :has-location="!!event.google_map_embed_link"
+      :has-video="!!event.youtube_embed_link"
+      :has-gallery="eventPhotos.length > 0"
+      :has-payment="paymentMethods.length > 0"
       @language-change="handleLanguageChange"
       @music-toggle="handleMusicToggle"
       @rsvp="handleRSVP"
@@ -646,11 +650,13 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Debug: Log eventPhotos to understand data flow
-  console.debug('MainContentStage: mounted with photos', {
-    eventPhotosCount: props.eventPhotos.length,
-    eventPhotos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
-  })
+  // Debug: Log eventPhotos to understand data flow (development only)
+  if (import.meta.env.DEV) {
+    console.debug('MainContentStage: mounted with photos', {
+      eventPhotosCount: props.eventPhotos.length,
+      eventPhotos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
+    })
+  }
 })
 
 const emit = defineEmits<{
@@ -786,6 +792,19 @@ const TRANSLATION_KEY_MAP: Record<
   footer_create_invitations: 'footer_create_invitations',
 } as const
 
+// Memoized text lookup map for better performance
+const textLookupMap = computed(() => {
+  const map = new Map<string, string>()
+  if (props.eventTexts?.length && props.currentLanguage) {
+    props.eventTexts.forEach(text => {
+      if (text.language === props.currentLanguage) {
+        map.set(text.text_type, text.content)
+      }
+    })
+  }
+  return map
+})
+
 /**
  * Get text content from database or frontend translations
  * @param textType - The type of text to retrieve
@@ -793,14 +812,10 @@ const TRANSLATION_KEY_MAP: Record<
  * @returns Translated text content
  */
 const getTextContent = (textType: string, fallback = ''): string => {
-  // First, try to get content from database (eventTexts)
-  if (props.eventTexts?.length && props.currentLanguage) {
-    const text = props.eventTexts.find(
-      (text) => text.text_type === textType && text.language === props.currentLanguage,
-    )
-    if (text?.content) {
-      return text.content
-    }
+  // First, try to get content from memoized lookup map
+  const content = textLookupMap.value.get(textType)
+  if (content) {
+    return content
   }
 
   // Fallback to frontend translation system
@@ -883,13 +898,16 @@ const handleReminder = () => {
 
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
 }
-// Watch for changes to eventPhotos prop
-watch(() => props.eventPhotos, (newPhotos) => {
-  console.debug('MainContentStage: eventPhotos changed', {
-    count: newPhotos.length,
-    photos: newPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
-  })
-}, { deep: true, immediate: true })
+// Watch for changes to eventPhotos prop (using computed hash to avoid deep watch)
+const photosHash = computed(() => props.eventPhotos.map(p => p.id).join(','))
+watch(photosHash, () => {
+  if (import.meta.env.DEV) {
+    console.debug('MainContentStage: eventPhotos changed', {
+      count: props.eventPhotos.length,
+      photos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
+    })
+  }
+})
 
 // Cleanup on component unmount
 onUnmounted(() => {

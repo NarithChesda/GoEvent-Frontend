@@ -8,11 +8,7 @@
       @click="toggleMenu"
       class="fab-button"
       :class="{ active: isMenuOpen }"
-      :style="{
-        background: primaryColor,
-        border: `2px solid ${primaryColor}`,
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-      }"
+      :style="fabButtonStyle"
     >
       <component
         :is="isMenuOpen ? X : Menu"
@@ -31,10 +27,10 @@
           <button
             @click="handleLanguageToggle"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Languages :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.language }}</span>
+            <span class="menu-text">{{ languageText }}</span>
           </button>
         </div>
 
@@ -44,7 +40,7 @@
             @click="handleMusicToggle"
             class="menu-button glass-section"
             :class="{ active: props.isMusicPlaying }"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <component
               :is="props.isMusicPlaying ? VolumeX : Volume2"
@@ -52,7 +48,7 @@
               :color="primaryColor"
             />
             <span class="menu-text">{{
-              props.isMusicPlaying ? menuTranslations.musicOff : menuTranslations.musicOn
+              props.isMusicPlaying ? musicOffText : musicOnText
             }}</span>
           </button>
         </div>
@@ -62,10 +58,10 @@
           <button
             @click="handleRSVP"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <UserCheck :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.rsvp }}</span>
+            <span class="menu-text">{{ rsvpText }}</span>
           </button>
         </div>
 
@@ -74,10 +70,10 @@
           <button
             @click="handleReminder"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Bell :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.reminder }}</span>
+            <span class="menu-text">{{ reminderText }}</span>
           </button>
         </div>
 
@@ -86,58 +82,58 @@
           <button
             @click="handleAgenda"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Calendar :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.agenda }}</span>
+            <span class="menu-text">{{ agendaText }}</span>
           </button>
         </div>
 
         <!-- Location -->
-        <div class="menu-item">
+        <div v-if="props.hasLocation" class="menu-item">
           <button
             @click="handleLocation"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <MapPin :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.location }}</span>
+            <span class="menu-text">{{ locationText }}</span>
           </button>
         </div>
 
         <!-- Video -->
-        <div class="menu-item">
+        <div v-if="props.hasVideo" class="menu-item">
           <button
             @click="handleVideo"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Play :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.video }}</span>
+            <span class="menu-text">{{ videoText }}</span>
           </button>
         </div>
 
         <!-- Gallery -->
-        <div class="menu-item">
+        <div v-if="props.hasGallery" class="menu-item">
           <button
             @click="handleGallery"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Image :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.gallery }}</span>
+            <span class="menu-text">{{ galleryText }}</span>
           </button>
         </div>
 
         <!-- Gift -->
-        <div class="menu-item">
+        <div v-if="props.hasPayment" class="menu-item">
           <button
             @click="handleGift"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Gift :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.gift }}</span>
+            <span class="menu-text">{{ giftText }}</span>
           </button>
         </div>
 
@@ -146,10 +142,10 @@
           <button
             @click="handleComment"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <MessageCircle :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.comment }}</span>
+            <span class="menu-text">{{ commentText }}</span>
           </button>
         </div>
 
@@ -158,13 +154,10 @@
           <button
             @click="handleLogout"
             class="menu-button glass-section logout-button"
-            :style="{
-              borderColor: primaryColor,
-              background: primaryColor,
-            }"
+            :style="logoutButtonStyle"
           >
             <LogOut :size="20" color="white" />
-            <span class="menu-text">{{ menuTranslations.logout }}</span>
+            <span class="menu-text">{{ logoutText }}</span>
           </button>
         </div>
       </div>
@@ -175,8 +168,8 @@
       <div v-if="showLanguageModal" class="modal-overlay" @click="closeLanguageModal">
         <div class="language-modal glass-section" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title" :style="{ color: primaryColor }">
-              {{ menuTranslations.selectLanguage }}
+            <h3 class="modal-title" :style="modalTitleStyle">
+              {{ selectLanguageText }}
             </h3>
             <button @click="closeLanguageModal" class="close-button">
               <X :size="20" :color="primaryColor" />
@@ -231,6 +224,10 @@ interface Props {
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   isMusicPlaying?: boolean
   isAuthenticated?: boolean
+  hasLocation?: boolean
+  hasVideo?: boolean
+  hasGallery?: boolean
+  hasPayment?: boolean
 }
 
 interface Language {
@@ -246,6 +243,10 @@ const props = withDefaults(defineProps<Props>(), {
   availableLanguages: () => [],
   isMusicPlaying: false,
   isAuthenticated: false,
+  hasLocation: true,
+  hasVideo: true,
+  hasGallery: true,
+  hasPayment: true,
 })
 
 const emit = defineEmits<{
@@ -288,29 +289,48 @@ const displayLanguages = computed(() => {
   }))
 })
 
-// Translation helpers
+// Translation helpers - memoized for better performance
+const currentLang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
+
 const getTranslation = (
   key: keyof typeof import('../../utils/translations').rsvpTranslations.en,
 ): string => {
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  return translateRSVP(key, currentLang)
+  return translateRSVP(key, currentLang.value)
 }
 
-// Computed properties for menu item translations
-const menuTranslations = computed(() => ({
-  language: getTranslation('floating_menu_language'),
-  musicOn: getTranslation('floating_menu_music_on'),
-  musicOff: getTranslation('floating_menu_music_off'),
-  rsvp: getTranslation('floating_menu_rsvp'),
-  reminder: getTranslation('floating_menu_reminder'),
-  agenda: getTranslation('floating_menu_agenda'),
-  location: getTranslation('floating_menu_location'),
-  video: getTranslation('floating_menu_video'),
-  gallery: getTranslation('floating_menu_gallery'),
-  gift: getTranslation('floating_menu_gift'),
-  comment: getTranslation('floating_menu_comment'),
-  logout: getTranslation('floating_menu_logout'),
-  selectLanguage: getTranslation('floating_menu_select_language'),
+// Individual computed properties for menu item translations (better performance than one large object)
+const languageText = computed(() => getTranslation('floating_menu_language'))
+const musicOnText = computed(() => getTranslation('floating_menu_music_on'))
+const musicOffText = computed(() => getTranslation('floating_menu_music_off'))
+const rsvpText = computed(() => getTranslation('floating_menu_rsvp'))
+const reminderText = computed(() => getTranslation('floating_menu_reminder'))
+const agendaText = computed(() => getTranslation('floating_menu_agenda'))
+const locationText = computed(() => getTranslation('floating_menu_location'))
+const videoText = computed(() => getTranslation('floating_menu_video'))
+const galleryText = computed(() => getTranslation('floating_menu_gallery'))
+const giftText = computed(() => getTranslation('floating_menu_gift'))
+const commentText = computed(() => getTranslation('floating_menu_comment'))
+const logoutText = computed(() => getTranslation('floating_menu_logout'))
+const selectLanguageText = computed(() => getTranslation('floating_menu_select_language'))
+
+// Computed styles for better performance (avoid recreating style objects on every render)
+const fabButtonStyle = computed(() => ({
+  background: props.primaryColor,
+  border: `2px solid ${props.primaryColor}`,
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+}))
+
+const menuButtonStyle = computed(() => ({
+  borderColor: props.primaryColor,
+}))
+
+const logoutButtonStyle = computed(() => ({
+  borderColor: props.primaryColor,
+  background: props.primaryColor,
+}))
+
+const modalTitleStyle = computed(() => ({
+  color: props.primaryColor,
 }))
 
 const toggleMenu = () => {
