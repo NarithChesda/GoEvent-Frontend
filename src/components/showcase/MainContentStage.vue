@@ -12,9 +12,7 @@
       <div v-if="contentLoading" class="absolute inset-0 z-40 flex items-center justify-center">
         <div
           class="backdrop-blur-sm bg-black bg-opacity-20 rounded-2xl px-6 py-4 flex items-center space-x-3"
-          :style="{
-            boxShadow: `0 8px 32px ${primaryColor}20`,
-          }"
+          :style="contentLoadingStyle"
         >
           <div
             class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-80"
@@ -524,7 +522,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, nextTick, inject, watch, type Component } from 'vue'
+import { computed, onMounted, onUnmounted, ref, nextTick, inject, type Component } from 'vue'
 import WhiteLogoSvg from '@/assets/white-logo.svg'
 import type {
   EventData,
@@ -601,32 +599,6 @@ const existingBackgroundVideo = ref<HTMLVideoElement | null>(null)
 // Must be called at top level of setup, not inside lifecycle hooks
 const injectedVideoResourceManager = inject<any>('videoResourceManager')
 
-// Security validation function for video elements
-const validateVideoElement = (element: HTMLVideoElement): boolean => {
-  if (!element || !(element instanceof HTMLVideoElement)) return false
-
-  // Check if element is attached to document
-  if (!document.contains(element)) return false
-
-  // Validate src attribute is from trusted domain
-  const src = element.src || element.getAttribute('src') || ''
-  if (!src) return true // Allow empty src for cleanup
-
-  try {
-    const url = new URL(src)
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    const allowedOrigins = [new URL(API_BASE_URL).origin, window.location.origin]
-
-    // Allow data URLs for embedded content
-    if (url.protocol === 'data:') {
-      return url.href.startsWith('data:video/')
-    }
-
-    return allowedOrigins.includes(url.origin)
-  } catch {
-    return false
-  }
-}
 const videoResourceManager = ref<{
   cleanup: () => void
   stats: () => { managedVideos: number; totalListeners: number }
@@ -650,13 +622,12 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Debug: Log eventPhotos to understand data flow (development only)
-  if (import.meta.env.DEV) {
-    console.debug('MainContentStage: mounted with photos', {
-      eventPhotosCount: props.eventPhotos.length,
-      eventPhotos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
-    })
-  }
+  // Initialize animations
+  initializeRevealAnimations()
+  initializeScrollAnimations()
+
+  // Emit that main content has been viewed
+  emit('mainContentViewed')
 })
 
 const emit = defineEmits<{
@@ -716,6 +687,7 @@ const {
 
 /**
  * Initialize reveal animations
+ * All sections must be observed to add .is-visible class, otherwise they remain hidden
  */
 const initializeRevealAnimations = () => {
   const animationConfig: Array<[any, string]> = [
@@ -741,8 +713,13 @@ const initializeRevealAnimations = () => {
 
 /**
  * Initialize scroll animations
+ * Disabled in basic mode for better performance
  */
 const initializeScrollAnimations = () => {
+  // Skip scroll animations in basic mode to reduce GPU overhead
+  const isBasicMode = !props.templateAssets?.standard_background_video
+  if (isBasicMode) return
+
   const liquidGlassCard = document.querySelector('.liquid-glass-card')
   if (liquidGlassCard) {
     createScrollAnimation(
@@ -756,16 +733,6 @@ const initializeScrollAnimations = () => {
   }
 }
 
-// Setup animations on mount
-onMounted(() => {
-  nextTick(() => {
-    initializeRevealAnimations()
-    initializeScrollAnimations()
-
-    // Emit that main content has been viewed
-    emit('mainContentViewed')
-  })
-})
 
 // Translation key mapping for consistent lookups
 const TRANSLATION_KEY_MAP: Record<
@@ -844,9 +811,11 @@ const locationHeaderText = computed(() => getTextContent('location_header', 'Loc
 const footerThankYouText = computed(() =>
   getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
 )
-const footerCreateInvitationsText = computed(() =>
-  getTextContent('footer_create_invitations', 'Create beautiful event invitations'),
-)
+
+// Computed styles to avoid recalculation on every render
+const contentLoadingStyle = computed(() => ({
+  boxShadow: `0 8px 32px ${props.primaryColor}20`,
+}))
 
 /**
  * Smooth scroll to section by ID
@@ -898,16 +867,6 @@ const handleReminder = () => {
 
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
 }
-// Watch for changes to eventPhotos prop (using computed hash to avoid deep watch)
-const photosHash = computed(() => props.eventPhotos.map(p => p.id).join(','))
-watch(photosHash, () => {
-  if (import.meta.env.DEV) {
-    console.debug('MainContentStage: eventPhotos changed', {
-      count: props.eventPhotos.length,
-      photos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
-    })
-  }
-})
 
 // Cleanup on component unmount
 onUnmounted(() => {

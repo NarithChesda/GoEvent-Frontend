@@ -200,7 +200,7 @@ const setupMobileMemoryManagement = () => {
 
   // Setting up mobile memory management
 
-  // Clean up memory every 2 minutes on mobile
+  // Clean up memory every 5 minutes on mobile to reduce performance impact
   memoryCleanupTimer.value = window.setInterval(() => {
     if (videoResourceManager) {
       const stats = videoResourceManager.getMemoryStats()
@@ -212,7 +212,7 @@ const setupMobileMemoryManagement = () => {
         videoResourceManager.triggerMemoryCleanup()
       }
     }
-  }, 120000) // 2 minutes
+  }, 300000) // 5 minutes - reduced frequency to minimize performance impact
 }
 
 // CoverStage component ref
