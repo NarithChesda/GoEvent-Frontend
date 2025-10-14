@@ -45,29 +45,30 @@
       @playing="handleBackgroundVideoPlaying"
     />
 
-    <!-- Background Layer for Decoration Photo - displays background photo or color -->
-    <!-- Always visible when basic_decoration_photo exists (persists during transition) -->
+    <!-- Background Color Layer - Always visible in basic mode -->
+    <!-- Shows template color "background" or white as fallback -->
     <div
       v-if="templateAssets?.basic_decoration_photo"
       class="absolute inset-0"
       :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
-    >
-      <img
-        v-if="templateAssets?.basic_background_photo"
-        :src="getMediaUrl(templateAssets.basic_background_photo)"
-        alt="Background"
-        class="w-full h-full object-cover"
-      />
-    </div>
+    />
 
-    <!-- Basic Decoration Photo - Priority display if available -->
-    <!-- Always visible when basic_decoration_photo exists (persists during transition) -->
+    <!-- Photo Layer - Shows decoration in cover stage, background in main content stage -->
+    <!-- In cover stage (phase='none'): show basic_decoration_photo -->
+    <!-- In main content stage (phase='background'): show basic_background_photo if exists, else basic_decoration_photo -->
     <div
       v-if="templateAssets?.basic_decoration_photo"
       class="absolute inset-0"
       style="z-index: -1"
     >
       <img
+        v-if="currentVideoPhase === 'background' && templateAssets?.basic_background_photo"
+        :src="getMediaUrl(templateAssets.basic_background_photo)"
+        alt="Background"
+        class="w-full h-full object-cover"
+      />
+      <img
+        v-else
         :src="getMediaUrl(templateAssets.basic_decoration_photo)"
         alt="Decoration"
         class="w-full h-full object-cover"
@@ -129,6 +130,8 @@ interface TemplateColor {
   name?: string
 }
 
+type VideoPhase = 'none' | 'event' | 'background'
+
 interface Props {
   templateAssets?: TemplateAssets | null
   templateColors?: TemplateColor[] | null
@@ -136,6 +139,7 @@ interface Props {
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
   isCoverVideoPlaying: boolean
+  currentVideoPhase?: VideoPhase
   getMediaUrl: (url: string) => string
 }
 

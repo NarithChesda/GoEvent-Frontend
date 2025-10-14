@@ -8,6 +8,7 @@
       :eventVideoUrl="eventVideoUrl"
       :backgroundVideoUrl="backgroundVideoUrl"
       :isCoverVideoPlaying="videoState.isCoverVideoPlaying.value"
+      :currentVideoPhase="videoState.currentVideoPhase.value"
       :getMediaUrl="getMediaUrl"
       @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
       @sequentialVideoError="videoState.handleSequentialVideoError"
