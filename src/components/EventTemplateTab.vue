@@ -89,7 +89,7 @@
             <!-- Features -->
             <div v-if="event.event_template_details?.package_plan.features" class="flex-1">
               <h4 class="text-base font-semibold text-slate-900 mb-3">Included Features:</h4>
-              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
                 <li
                   v-for="feature in event.event_template_details.package_plan.features"
                   :key="feature"
@@ -99,28 +99,17 @@
                   <span>{{ feature }}</span>
                 </li>
               </ul>
-            </div>
-          </div>
-        </div>
 
-        <!-- YouTube Preview (Full Width Below) -->
-        <div
-          v-if="event.event_template_details?.youtube_preview_url"
-          class="p-4 sm:p-6 border-t border-slate-200"
-        >
-          <h4 class="text-sm sm:text-base font-semibold text-slate-900 mb-2 sm:mb-3 flex items-center">
-            <PlayCircle class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-red-600" />
-            Video Preview
-          </h4>
-          <div class="bg-white rounded-lg sm:rounded-xl border border-slate-200 overflow-hidden">
-            <div class="aspect-video">
-              <iframe
-                :src="event.event_template_details.youtube_preview_url"
-                class="w-full h-full"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-              ></iframe>
+              <!-- Preview Button -->
+              <div v-if="event.event_template_details?.youtube_preview_url" class="pt-4 border-t border-slate-200">
+                <button
+                  @click="openYoutubePreview(event.event_template_details.youtube_preview_url)"
+                  class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
+                >
+                  <PlayCircle class="w-5 h-5 mr-2" />
+                  Preview
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -219,41 +208,29 @@
                 </li>
               </ul>
 
-              <!-- Payment Action Button -->
-              <div class="pt-4 border-t border-slate-200">
-                <button
-                  @click="navigateToPayment"
-                  class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
-                >
-                  <CreditCard class="w-5 h-5 mr-2" />
-                  Proceed to Payment
-                </button>
-                <p class="text-xs text-slate-500 text-center mt-2">
+              <!-- Payment Action Buttons -->
+              <div class="pt-4 border-t border-slate-200 space-y-3">
+                <div class="flex gap-2">
+                  <button
+                    v-if="selectedTemplateDetails.youtube_preview_url"
+                    @click="openYoutubePreview(selectedTemplateDetails.youtube_preview_url)"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
+                  >
+                    <PlayCircle class="w-5 h-5 mr-2" />
+                    Preview
+                  </button>
+                  <button
+                    @click="navigateToPayment"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
+                  >
+                    <CreditCard class="w-5 h-5 mr-2" />
+                    Make Payment
+                  </button>
+                </div>
+                <p class="text-xs text-slate-500 text-center">
                   Complete payment to activate this template
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- YouTube Preview (Full Width Below) -->
-        <div
-          v-if="selectedTemplateDetails.youtube_preview_url"
-          class="p-4 sm:p-6 border-t border-slate-200"
-        >
-          <h4 class="text-sm sm:text-base font-semibold text-slate-900 mb-2 sm:mb-3 flex items-center">
-            <PlayCircle class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-red-600" />
-            Video Preview
-          </h4>
-          <div class="bg-white rounded-lg sm:rounded-xl border border-slate-200 overflow-hidden">
-            <div class="aspect-video">
-              <iframe
-                :src="selectedTemplateDetails.youtube_preview_url"
-                class="w-full h-full"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-              ></iframe>
             </div>
           </div>
         </div>
@@ -457,6 +434,23 @@ const handleTemplateSelected = async (template: EventTemplate): Promise<void> =>
 
 const navigateToPayment = (): void => {
   emit('tab-change', 'payment')
+}
+
+const openYoutubePreview = (url: string): void => {
+  if (!url) return
+
+  // Extract video ID from embed URL or regular YouTube URL
+  let videoUrl = url
+
+  // If it's an embed URL, convert to regular watch URL
+  if (url.includes('youtube.com/embed/')) {
+    const videoId = url.split('embed/')[1]?.split('?')[0]
+    if (videoId) {
+      videoUrl = `https://www.youtube.com/watch?v=${videoId}`
+    }
+  }
+
+  window.open(videoUrl, '_blank', 'noopener,noreferrer')
 }
 
 const initializeTemplateData = async (): Promise<void> => {

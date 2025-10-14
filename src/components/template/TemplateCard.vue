@@ -25,14 +25,21 @@
       </div>
 
       <!-- Template Info Overlay - Gray Transparent Background -->
-      <div class="absolute inset-x-0 bottom-0 bg-gray-900/25 backdrop-blur-sm p-3 sm:p-4">
+      <div class="absolute inset-x-0 bottom-0 bg-gray-900/25 backdrop-blur-sm p-2 sm:p-3 lg:p-4">
         <!-- Template Title and Plan -->
-        <h4 class="font-semibold text-white text-sm sm:text-base mb-1 truncate">
+        <h4 class="font-semibold text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1 truncate">
           {{ template.name }}
         </h4>
-        <p class="text-xs sm:text-sm text-white/90 mb-2 truncate">
-          {{ template.package_plan.name }}
-        </p>
+        <div class="mb-1 sm:mb-2">
+          <span
+            :class="[
+              'text-[10px] sm:text-xs lg:text-sm font-medium px-2 py-0.5 rounded-md inline-block',
+              packageColorClass,
+            ]"
+          >
+            {{ template.package_plan.name }}
+          </span>
+        </div>
 
         <!-- Category and Price -->
         <div class="flex items-center justify-between gap-2">
@@ -40,7 +47,7 @@
             v-if="template.package_plan.category"
             :category="template.package_plan.category"
           />
-          <span class="text-sm sm:text-base font-bold text-white bg-white/20 px-2 py-1 rounded">
+          <span class="text-xs sm:text-sm lg:text-base font-bold text-white bg-white/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
             ${{ template.package_plan.price }}
           </span>
         </div>
@@ -50,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Check } from 'lucide-vue-next'
 import type { EventTemplate } from '../../services/api'
 import TemplateCategoryBadge from './TemplateCategoryBadge.vue'
@@ -68,4 +76,16 @@ const emit = defineEmits<{
 const handleSelect = (): void => {
   emit('select', props.template)
 }
+
+const packageColorClass = computed(() => {
+  const planName = props.template.package_plan.name.toLowerCase()
+
+  if (planName.includes('basic')) {
+    return 'bg-blue-500/90 text-white shadow-md'
+  } else if (planName.includes('standard')) {
+    return 'bg-purple-500/90 text-white shadow-md'
+  }
+
+  return 'text-white/90'
+})
 </script>

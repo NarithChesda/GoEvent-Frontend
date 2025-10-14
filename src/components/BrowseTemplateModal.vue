@@ -6,7 +6,7 @@
 
         <div class="flex min-h-full items-center justify-center p-2 sm:p-4">
           <div
-            class="relative w-full max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
+            class="relative w-full max-w-5xl lg:max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
             @click.stop
           >
             <!-- Header -->
@@ -21,7 +21,7 @@
             />
 
             <!-- Templates Content -->
-            <div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-white/30 backdrop-blur-sm min-h-0">
+            <div class="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 bg-white/30 backdrop-blur-sm min-h-0">
               <!-- Loading State -->
               <TemplateLoadingState v-if="loading" />
 
