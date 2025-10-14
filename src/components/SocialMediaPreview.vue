@@ -150,70 +150,6 @@
         </div>
       </div>
 
-      <!-- Meta Tags Testing Section - Hidden on mobile -->
-      <div class="hidden md:block bg-amber-50 border border-amber-200 rounded-xl p-4">
-        <div class="flex items-start space-x-3">
-          <component :is="TestTube" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <h6 class="font-medium text-amber-900 mb-2">Test Social Media Preview</h6>
-            <p class="text-sm text-amber-800 mb-3">
-              Use these tools to validate your social media preview:
-            </p>
-            <div class="space-y-2">
-              <a
-                :href="`https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(showcaseUrl)}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center space-x-2 text-sm text-amber-800 hover:text-amber-900 underline"
-              >
-                <Facebook class="w-4 h-4" />
-                <span>Facebook Sharing Debugger</span>
-                <ExternalLink class="w-3 h-3" />
-              </a>
-              <br />
-              <a
-                :href="`https://cards-dev.twitter.com/validator?url=${encodeURIComponent(showcaseUrl)}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center space-x-2 text-sm text-amber-800 hover:text-amber-900 underline"
-              >
-                <Twitter class="w-4 h-4" />
-                <span>Twitter Card Validator</span>
-                <ExternalLink class="w-3 h-3" />
-              </a>
-              <br />
-              <a
-                :href="`https://www.linkedin.com/post-inspector/inspect/${encodeURIComponent(showcaseUrl)}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center space-x-2 text-sm text-amber-800 hover:text-amber-900 underline"
-              >
-                <Linkedin class="w-4 h-4" />
-                <span>LinkedIn Post Inspector</span>
-                <ExternalLink class="w-3 h-3" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tips Section - Hidden on mobile -->
-      <div class="hidden md:block bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4">
-        <div class="flex items-start space-x-3">
-          <Lightbulb class="w-5 h-5 text-[#1e90ff] mt-0.5 flex-shrink-0" />
-          <div>
-            <h6 class="font-medium text-[#1873cc] mb-2">Tips for Better Social Sharing</h6>
-            <ul class="text-sm text-[#1873cc] space-y-1">
-              <li>• Use a high-quality banner image (1200x630px recommended)</li>
-              <li>• Keep your event title concise and engaging</li>
-              <li>• Write a compelling description under 160 characters</li>
-              <li>• Test the link with the validators above before sharing</li>
-              <li>• Note: It may take a few minutes for changes to appear on social platforms</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
       <!-- Action Buttons -->
       <div class="flex gap-2 sm:gap-3">
         <a
@@ -251,8 +187,6 @@ import {
   ImageIcon,
   ExternalLink,
   Share2,
-  Lightbulb,
-  TestTube,
 } from 'lucide-vue-next'
 import type { Event } from '../services/api'
 import { createEventDescription, getPublicSSRMetaUrl } from '../utils/metaUtils'
