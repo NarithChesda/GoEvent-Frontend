@@ -186,7 +186,12 @@
                     </div>
                     <div
                       class="aspect-video rounded-xl overflow-hidden"
-                      :style="{ border: `3px solid ${primaryColor}` }"
+                      :style="{
+                        border: '1.5px solid transparent',
+                        backgroundImage: `linear-gradient(white, white), linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+                        backgroundOrigin: 'border-box',
+                        backgroundClip: 'padding-box, border-box'
+                      }"
                     >
                       <iframe
                         :src="event.google_map_embed_link"
