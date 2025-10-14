@@ -185,14 +185,10 @@ export function useTemplateApi() {
     clearMessage()
 
     try {
-      console.log('Selecting template:', templateId, 'for event:', eventId)
-
       try {
         const response = await eventTemplateService.selectEventTemplate(eventId, templateId)
-        console.log('Selection response:', response)
 
         if (response.success && response.data) {
-          console.log('Template selected successfully via API')
           showMessage('success', 'Template selected successfully!')
           return { success: true, template: selectedTemplate }
         } else {

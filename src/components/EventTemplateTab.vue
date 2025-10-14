@@ -26,76 +26,84 @@
       v-if="event.event_template && isTemplateActivated && event.event_template_details"
       class="space-y-6"
     >
-      <!-- Template Overview Card -->
+      <!-- Template Overview Card - Horizontal Layout -->
       <div
         class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
-        <div class="relative">
-          <!-- Preview Image -->
-          <div
-            v-if="event.event_template_details?.preview_image"
-            class="relative h-48 sm:h-64 overflow-hidden"
-          >
-            <img
-              :src="event.event_template_details?.preview_image"
-              :alt="event.event_template_details?.name"
-              class="w-full h-full object-cover"
-            />
+        <div class="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
+          <!-- Left: Portrait Preview Image Card -->
+          <div class="flex-shrink-0 w-full lg:w-80">
             <div
-              class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-            ></div>
-            <div class="absolute bottom-3 left-4 right-4 sm:bottom-4 sm:left-6 sm:right-6">
-              <h3 class="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">
-                {{ event.event_template_details?.name || 'Selected Template' }}
-              </h3>
-              <div class="flex items-center space-x-2 sm:space-x-4">
+              v-if="event.event_template_details?.preview_image"
+              class="relative bg-slate-100 rounded-2xl overflow-hidden shadow-lg"
+              style="aspect-ratio: 9/16"
+            >
+              <img
+                :src="event.event_template_details?.preview_image"
+                :alt="event.event_template_details?.name"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+              ></div>
+              <div class="absolute bottom-3 left-3 right-3">
                 <span
-                  class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium bg-white/20 backdrop-blur-sm text-white"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
                 >
-                  <Package class="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <Package class="w-3.5 h-3.5 mr-1.5" />
                   {{ event.event_template_details?.package_plan.name || 'Template Plan' }}
                 </span>
               </div>
             </div>
+            <div
+              v-else
+              class="bg-slate-100 rounded-2xl flex items-center justify-center"
+              style="aspect-ratio: 9/16"
+            >
+              <Palette class="w-12 h-12 text-slate-400" />
+            </div>
           </div>
 
-          <!-- Content -->
-          <div class="p-4 sm:p-6">
-            <div class="flex items-center justify-between mb-3 sm:mb-4">
-              <div>
-                <h3 class="text-base sm:text-lg font-semibold text-slate-900">
-                  {{ event.event_template_details?.name || 'Template' }}
-                </h3>
-                <p class="text-xs sm:text-sm text-slate-600">
-                  {{ event.event_template_details?.package_plan.name || 'Plan' }}
-                </p>
+          <!-- Right: Template Details -->
+          <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <div class="mb-4">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1">
+                  <h3 class="text-xl sm:text-2xl font-bold text-slate-900">
+                    {{ event.event_template_details?.name || 'Template' }}
+                  </h3>
+                  <p class="text-sm sm:text-base text-slate-600 mt-1">
+                    {{ event.event_template_details?.package_plan.name || 'Plan' }}
+                  </p>
+                </div>
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 flex-shrink-0"
+                >
+                  <CheckCircle class="w-4 h-4 mr-1.5" />
+                  Active
+                </span>
               </div>
-              <span
-                class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800"
-              >
-                <CheckCircle class="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Active
-              </span>
             </div>
 
             <!-- Features -->
-            <div v-if="event.event_template_details?.package_plan.features" class="space-y-2">
-              <h4 class="text-sm sm:text-base font-medium text-slate-900">Included Features:</h4>
-              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div v-if="event.event_template_details?.package_plan.features" class="flex-1">
+              <h4 class="text-base font-semibold text-slate-900 mb-3">Included Features:</h4>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <li
                   v-for="feature in event.event_template_details.package_plan.features"
                   :key="feature"
-                  class="flex items-center text-xs sm:text-sm text-slate-600"
+                  class="flex items-start text-sm text-slate-600"
                 >
-                  <CheckCircle class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500 mr-1.5 sm:mr-2 flex-shrink-0" />
-                  {{ feature }}
+                  <CheckCircle class="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>{{ feature }}</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
 
-        <!-- YouTube Preview -->
+        <!-- YouTube Preview (Full Width Below) -->
         <div
           v-if="event.event_template_details?.youtube_preview_url"
           class="p-4 sm:p-6 border-t border-slate-200"
@@ -133,75 +141,102 @@
       <div
         class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
-        <div class="relative">
-          <!-- Preview Image -->
-          <div v-if="selectedTemplateDetails.preview_image" class="relative h-48 sm:h-64 overflow-hidden">
-            <img
-              :src="selectedTemplateDetails.preview_image"
-              :alt="selectedTemplateDetails.name"
-              class="w-full h-full object-cover"
-            />
+        <div class="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
+          <!-- Left: Portrait Preview Image Card -->
+          <div class="flex-shrink-0 w-full lg:w-80">
             <div
-              class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-            ></div>
-            <div class="absolute bottom-3 left-4 right-4 sm:bottom-4 sm:left-6 sm:right-6">
-              <h3 class="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">{{ selectedTemplateDetails.name }}</h3>
-              <div class="flex items-center space-x-2 sm:space-x-4">
+              v-if="selectedTemplateDetails.preview_image"
+              class="relative bg-slate-100 rounded-2xl overflow-hidden shadow-lg"
+              style="aspect-ratio: 9/16"
+            >
+              <img
+                :src="selectedTemplateDetails.preview_image"
+                :alt="selectedTemplateDetails.name"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+              ></div>
+              <div class="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
                 <span
-                  class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium bg-white/20 backdrop-blur-sm text-white"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
                 >
-                  <Package class="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <Package class="w-3.5 h-3.5 mr-1.5" />
                   {{ selectedTemplateDetails.package_plan.name }}
                 </span>
                 <span
-                  class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium bg-white/20 backdrop-blur-sm text-white"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
                 >
-                  <Eye class="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <Eye class="w-3.5 h-3.5 mr-1.5" />
                   Preview
                 </span>
               </div>
             </div>
+            <div
+              v-else
+              class="bg-slate-100 rounded-2xl flex items-center justify-center"
+              style="aspect-ratio: 9/16"
+            >
+              <Palette class="w-12 h-12 text-slate-400" />
+            </div>
           </div>
 
-          <!-- Content -->
-          <div class="p-4 sm:p-6">
-            <div class="flex items-center justify-between mb-3 sm:mb-4">
-              <div>
-                <h3 class="text-base sm:text-lg font-semibold text-slate-900">
-                  {{ selectedTemplateDetails.name }}
-                </h3>
-                <p class="text-xs sm:text-sm text-slate-600">
-                  {{ selectedTemplateDetails.package_plan.name }} • ${{
-                    selectedTemplateDetails.package_plan.price
-                  }}
-                </p>
+          <!-- Right: Template Details -->
+          <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <div class="mb-4">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1">
+                  <h3 class="text-xl sm:text-2xl font-bold text-slate-900">
+                    {{ selectedTemplateDetails.name }}
+                  </h3>
+                  <p class="text-sm sm:text-base text-slate-600 mt-1">
+                    {{ selectedTemplateDetails.package_plan.name }} • ${{
+                      selectedTemplateDetails.package_plan.price
+                    }}
+                  </p>
+                </div>
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 flex-shrink-0"
+                >
+                  <Eye class="w-4 h-4 mr-1.5" />
+                  Preview
+                </span>
               </div>
-              <span
-                class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-800"
-              >
-                <Eye class="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Preview
-              </span>
             </div>
 
             <!-- Features -->
-            <div v-if="selectedTemplateDetails.package_plan.features" class="space-y-2">
-              <h4 class="text-sm sm:text-base font-medium text-slate-900">Included Features:</h4>
-              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div v-if="selectedTemplateDetails.package_plan.features" class="flex-1">
+              <h4 class="text-base font-semibold text-slate-900 mb-3">Included Features:</h4>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
                 <li
                   v-for="feature in selectedTemplateDetails.package_plan.features"
                   :key="feature"
-                  class="flex items-center text-xs sm:text-sm text-slate-600"
+                  class="flex items-start text-sm text-slate-600"
                 >
-                  <CheckCircle class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500 mr-1.5 sm:mr-2 flex-shrink-0" />
-                  {{ feature }}
+                  <CheckCircle class="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>{{ feature }}</span>
                 </li>
               </ul>
+
+              <!-- Payment Action Button -->
+              <div class="pt-4 border-t border-slate-200">
+                <button
+                  @click="navigateToPayment"
+                  class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
+                >
+                  <CreditCard class="w-5 h-5 mr-2" />
+                  Proceed to Payment
+                </button>
+                <p class="text-xs text-slate-500 text-center mt-2">
+                  Complete payment to activate this template
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- YouTube Preview -->
+        <!-- YouTube Preview (Full Width Below) -->
         <div
           v-if="selectedTemplateDetails.youtube_preview_url"
           class="p-4 sm:p-6 border-t border-slate-200"
@@ -289,7 +324,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue'
-import { Palette, CheckCircle, AlertCircle, Package, Eye, PlayCircle } from 'lucide-vue-next'
+import { Palette, CheckCircle, AlertCircle, Package, Eye, PlayCircle, CreditCard } from 'lucide-vue-next'
 import { type Event, type EventTemplate, eventTemplateService } from '../services/api'
 import BrowseTemplateModal from './BrowseTemplateModal.vue'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
@@ -308,6 +343,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'template-updated': [template: EventTemplate]
+  'tab-change': [tab: string]
 }>()
 
 // Composables
@@ -417,6 +453,10 @@ const handleTemplateSelected = async (template: EventTemplate): Promise<void> =>
     console.error('Error handling template selection:', error)
     showMessage('error', 'Failed to process template selection. Please try again.')
   }
+}
+
+const navigateToPayment = (): void => {
+  emit('tab-change', 'payment')
 }
 
 const initializeTemplateData = async (): Promise<void> => {

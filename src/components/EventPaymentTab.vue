@@ -81,11 +81,11 @@
         <div class="mt-4 sm:mt-6 text-center">
           <button
             @click="showPaymentModal = true"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-base sm:text-lg"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
           >
-            <CreditCard class="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+            <CreditCard class="w-5 h-5 mr-2" />
             <span class="hidden sm:inline">{{ currentPayment ? 'Make New Payment' : 'Make Payment' }}</span>
-            <span class="sm:hidden">{{ currentPayment ? 'New Payment' : 'Make Payment' }}</span>
+            <span class="sm:hidden">{{ currentPayment ? 'New Payment' : 'Payment' }}</span>
           </button>
         </div>
       </div>

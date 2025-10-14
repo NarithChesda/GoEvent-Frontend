@@ -242,6 +242,7 @@
                 :event="event"
                 :can-edit="event.can_edit || false"
                 @template-updated="handleTemplateUpdated"
+                @tab-change="activeTab = $event"
               />
             </div>
           </div>
