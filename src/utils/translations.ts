@@ -111,6 +111,9 @@ export const rsvpTranslations: Record<
     floating_menu_comment: string
     floating_menu_logout: string
     floating_menu_select_language: string
+
+    // Envelope button
+    open_invitation: string
   }
 > = {
   en: {
@@ -220,6 +223,9 @@ export const rsvpTranslations: Record<
     floating_menu_comment: 'Comment',
     floating_menu_logout: 'Logout',
     floating_menu_select_language: 'Select Language',
+
+    // Envelope button
+    open_invitation: 'Open Invitation',
   },
 
   kh: {
@@ -329,6 +335,9 @@ export const rsvpTranslations: Record<
     floating_menu_comment: 'ជូនពរ',
     floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
+
+    // Envelope button
+    open_invitation: 'បើកសំបុត្រអញ្ជើញ',
   },
 
   'zh-cn': {
@@ -438,6 +447,9 @@ export const rsvpTranslations: Record<
     floating_menu_comment: '评论',
     floating_menu_logout: '退出',
     floating_menu_select_language: '选择语言',
+
+    // Envelope button
+    open_invitation: '打开邀请函',
   },
 }
 

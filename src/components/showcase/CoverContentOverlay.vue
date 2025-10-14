@@ -90,11 +90,14 @@
             :hasCustomButton="hasCustomButton"
             :templateAssets="templateAssets"
             :primaryColor="primaryColor"
+            :secondaryColor="secondaryColor"
+            :accentColor="accentColor"
             :secondaryFont="secondaryFont"
             :currentFont="currentFont"
             :primaryFont="primaryFont"
             :gradientStyle="gradientStyle"
             :getMediaUrl="getMediaUrl"
+            :currentLanguage="currentLanguage"
             @click="$emit('openEnvelope')"
           />
         </div>

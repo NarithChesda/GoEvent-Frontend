@@ -25,21 +25,21 @@
     <img
       v-if="hasCustomButton && templateAssets?.open_envelope_button"
       :src="getMediaUrl(templateAssets.open_envelope_button)"
-      alt="Open Invitation"
+      :alt="buttonText"
       class="scaled-envelope-button transition-all duration-300"
     />
 
     <!-- Fallback button design -->
     <div
       v-else
-      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105"
-      :style="fallbackButtonStyle"
+      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105 button-bg-gradient"
+      :style="fallbackButtonStyleAnimated"
     >
       <span
         class="scaled-button-text font-bold text-white text-center"
         :style="{ fontFamily: primaryFont || currentFont }"
       >
-        Open Invitation
+        {{ buttonText }}
       </span>
     </div>
   </button>
@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -57,11 +58,14 @@ interface Props {
   hasCustomButton: boolean
   templateAssets?: TemplateAssets | null
   primaryColor: string
+  secondaryColor?: string | null
+  accentColor: string
   secondaryFont?: string
   currentFont: string
   primaryFont?: string
   gradientStyle: string
   getMediaUrl: (url: string) => string
+  currentLanguage?: string
 }
 
 const props = defineProps<Props>()
@@ -74,6 +78,17 @@ const fallbackButtonStyle = computed(() => ({
   background: props.gradientStyle,
   backdropFilter: 'blur(10px)',
 }))
+
+const fallbackButtonStyleAnimated = computed(() => ({
+  background: `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`,
+  backdropFilter: 'blur(10px)',
+  backgroundSize: '200% 200%',
+}))
+
+const buttonText = computed(() => {
+  const lang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('open_invitation', lang)
+})
 </script>
 
 <style scoped>
@@ -173,17 +188,34 @@ const fallbackButtonStyle = computed(() => ({
   }
 }
 
+/* Gradient animation for button background */
+.button-bg-gradient {
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .scaled-button-fallback {
   /* Scale fallback button to match envelope button proportions */
-  height: clamp(40px, 8vh, 120px);
-  min-height: 40px;
+  height: clamp(30px, 5vh, 120px);
+  min-height: 30px;
   max-height: 120px;
-  padding: 0 clamp(1rem, 4vh, 2.5rem);
-  border-radius: clamp(20px, 4vh, 60px);
+  padding: 0 clamp(0.75rem, 2.5vh, 2.5rem);
+  border-radius: clamp(15px, 2.5vh, 60px);
 }
 
 .scaled-button-text {
-  font-size: clamp(0.75rem, 2.5vh, 1.2rem);
+  font-size: clamp(0.5rem, 1.6vh, 1.2rem);
   line-height: 1.1;
   white-space: nowrap;
   font-weight: 600;
