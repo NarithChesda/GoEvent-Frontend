@@ -24,11 +24,11 @@
       <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
         <div class="space-y-6">
           <!-- Template Image -->
-          <div v-if="template.preview_image" class="relative rounded-2xl overflow-hidden">
+          <div v-if="template.preview_image" class="relative rounded-2xl overflow-hidden aspect-[9/16] mx-auto max-w-md">
             <img
               :src="template.preview_image"
               :alt="template.name"
-              class="w-full h-64 sm:h-80 object-cover"
+              class="w-full h-full object-cover"
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
             <div class="absolute bottom-4 left-4 right-4">

@@ -11,7 +11,7 @@
         <!-- Preview Image -->
         <div
           v-if="event.event_template_details?.preview_image"
-          class="relative h-64 overflow-hidden"
+          class="relative aspect-[9/16] overflow-hidden mx-auto max-w-md"
         >
           <img
             :src="event.event_template_details?.preview_image"
