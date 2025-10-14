@@ -184,7 +184,10 @@
                         {{ locationHeaderText }}
                       </h2>
                     </div>
-                    <div class="aspect-video rounded-xl overflow-hidden">
+                    <div
+                      class="aspect-video rounded-xl overflow-hidden"
+                      :style="{ border: `3px solid ${primaryColor}` }"
+                    >
                       <iframe
                         :src="event.google_map_embed_link"
                         width="100%"

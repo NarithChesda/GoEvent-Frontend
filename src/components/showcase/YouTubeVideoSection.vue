@@ -15,7 +15,10 @@
         {{ videoHeaderText }}
       </h2>
     </div>
-    <div class="aspect-video rounded-xl overflow-hidden">
+    <div
+      class="aspect-video rounded-xl overflow-hidden"
+      :style="{ border: `3px solid ${primaryColor}` }"
+    >
       <iframe
         :id="iframeId"
         :src="embedUrl"
