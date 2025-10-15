@@ -177,10 +177,7 @@
                         class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
                         :style="{
                           fontFamily: primaryFont || currentFont,
-                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
+                          color: primaryColor,
                         }"
                       >
                         {{ locationHeaderText }}
@@ -189,10 +186,7 @@
                     <div
                       class="aspect-video rounded-xl overflow-hidden"
                       :style="{
-                        border: '1.5px solid transparent',
-                        backgroundImage: `linear-gradient(white, white), linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-                        backgroundOrigin: 'border-box',
-                        backgroundClip: 'padding-box, border-box'
+                        border: `1.5px solid ${primaryColor}`,
                       }"
                     >
                       <iframe
@@ -315,7 +309,7 @@
                     @click="$emit('register')"
                     class="w-full py-3 rounded-xl font-semibold text-white transform hover:scale-[1.02] transition-all shadow-lg"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || primaryColor})`,
+                      background: primaryColor,
                     }"
                   >
                     Register Now
@@ -331,7 +325,7 @@
                   <div
                     class="footer-card-container rounded-none px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}90, ${primaryColor}70)`,
+                      background: `${primaryColor}90`,
                       boxShadow: `
                         0 12px 36px -6px ${primaryColor}25,
                         0 6px 24px -3px ${primaryColor}20,

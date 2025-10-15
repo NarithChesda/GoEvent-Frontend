@@ -7,13 +7,12 @@
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
         :class="[
-          'leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize gradient-text',
+          'leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
           fontFamily: primaryFont || currentFont,
-          '--gradient-start': primaryColor,
-          '--gradient-end': secondaryColor || accentColor,
+          color: primaryColor,
         }"
       >
         {{ agendaHeaderText }}

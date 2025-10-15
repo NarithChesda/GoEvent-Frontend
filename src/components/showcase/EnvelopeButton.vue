@@ -32,8 +32,8 @@
     <!-- Fallback button design -->
     <div
       v-else
-      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105 button-bg-gradient"
-      :style="fallbackButtonStyleAnimated"
+      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105"
+      :style="fallbackButtonStyle"
     >
       <span
         class="scaled-button-text font-bold text-white text-center"
@@ -75,7 +75,7 @@ defineEmits<{
 }>()
 
 const fallbackButtonStyle = computed(() => ({
-  background: props.gradientStyle,
+  background: props.primaryColor,
   backdropFilter: 'blur(10px)',
 }))
 

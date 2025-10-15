@@ -6,10 +6,7 @@
         class="leading-relaxed py-2 text-base sm:text-lg md:text-xl lg:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
         :style="{
           fontFamily: primaryFont || currentFont,
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
+          color: primaryColor,
         }"
       >
         {{ rsvpHeaderText }}
@@ -59,7 +56,7 @@
                   v-if="rsvpStatus === 'coming'"
                   class="status-indicator"
                   :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}20, ${primaryColor}10)`,
+                    background: `${primaryColor}20`,
                     color: primaryColor,
                   }"
                 >
@@ -81,8 +78,7 @@
                   v-else-if="rsvpStatus === 'not_coming'"
                   class="status-indicator"
                   :style="{
-                    background:
-                      'linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(107, 114, 128, 0.1))',
+                    background: 'rgba(107, 114, 128, 0.2)',
                     color: '#6b7280',
                   }"
                 >
@@ -119,7 +115,7 @@
                   v-if="eventStatus === 'upcoming'"
                   class="status-badge-compact"
                   :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
+                    background: `${primaryColor}15`,
                     color: primaryColor,
                     boxShadow: `0 2px 8px ${primaryColor}20`,
                   }"
@@ -141,8 +137,7 @@
                   v-else-if="eventStatus === 'ongoing'"
                   class="status-badge-compact"
                   :style="{
-                    background:
-                      'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.08))',
+                    background: 'rgba(16, 185, 129, 0.15)',
                     color: '#10b981',
                     boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
                   }"
@@ -161,8 +156,7 @@
                   v-else-if="eventStatus === 'ended'"
                   class="status-badge-compact"
                   :style="{
-                    background:
-                      'linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(107, 114, 128, 0.08))',
+                    background: 'rgba(107, 114, 128, 0.15)',
                     color: '#6b7280',
                     boxShadow: '0 2px 8px rgba(107, 114, 128, 0.2)',
                   }"
@@ -271,7 +265,7 @@
                   v-if="eventStatus === 'upcoming'"
                   class="status-badge-compact"
                   :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
+                    background: `${primaryColor}15`,
                     color: primaryColor,
                     boxShadow: `0 2px 8px ${primaryColor}20`,
                   }"
@@ -293,8 +287,7 @@
                   v-else-if="eventStatus === 'ongoing'"
                   class="status-badge-compact"
                   :style="{
-                    background:
-                      'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.08))',
+                    background: 'rgba(16, 185, 129, 0.15)',
                     color: '#10b981',
                     boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
                   }"
@@ -313,8 +306,7 @@
                   v-else-if="eventStatus === 'ended'"
                   class="status-badge-compact"
                   :style="{
-                    background:
-                      'linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(107, 114, 128, 0.08))',
+                    background: 'rgba(107, 114, 128, 0.15)',
                     color: '#6b7280',
                     boxShadow: '0 2px 8px rgba(107, 114, 128, 0.2)',
                   }"
@@ -488,7 +480,7 @@
           <div
             class="guest-management-container"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}08, ${primaryColor}04)`,
+              background: `${primaryColor}08`,
               boxShadow: `0 4px 16px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
             }"
           >
@@ -514,7 +506,7 @@
                   :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
                   class="counter-btn"
                   :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
+                    background: `${primaryColor}12`,
                     color: primaryColor,
                     boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
                     opacity: additionalGuests <= 0 || isUpdatingGuestCount ? '0.4' : '1',
@@ -544,7 +536,7 @@
                   :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
                   class="counter-btn"
                   :style="{
-                    background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}06)`,
+                    background: `${primaryColor}12`,
                     color: primaryColor,
                     boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
                     opacity: additionalGuests >= 10 || isUpdatingGuestCount ? '0.4' : '1',
@@ -589,7 +581,7 @@
                       :disabled="isUpdatingGuestCount"
                       class="save-btn"
                       :style="{
-                        background: `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
+                        background: `${primaryColor}15`,
                         color: primaryColor,
                         boxShadow: `0 2px 8px ${primaryColor}20, inset 0 1px 2px rgba(255, 255, 255, 0.1)`,
                       }"

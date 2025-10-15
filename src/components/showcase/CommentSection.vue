@@ -4,10 +4,7 @@
       class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
       :style="{
         fontFamily: primaryFont || currentFont,
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
+        color: primaryColor,
       }"
     >
       {{ commentHeaderText }}
@@ -34,7 +31,7 @@
           @click="handleSignInClick"
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02]"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
+            background: primaryColor,
             color: '#ffffff',
             border: `1px solid ${primaryColor}60`,
           }"
@@ -100,7 +97,7 @@
           "
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
+            background: primaryColor,
             color: '#ffffff',
             border: `1px solid ${primaryColor}60`,
           }"
@@ -347,7 +344,7 @@
                     "
                     class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+                      background: `${primaryColor}12`,
                       color: primaryColor,
                       boxShadow: `
                         0 4px 16px -2px ${primaryColor}20,

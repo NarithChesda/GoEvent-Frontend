@@ -6,10 +6,7 @@
         class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
         :style="{
           fontFamily: primaryFont || currentFont,
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
+          color: primaryColor,
         }"
       >
         {{ videoHeaderText }}
@@ -18,10 +15,7 @@
     <div
       class="aspect-video rounded-xl overflow-hidden"
       :style="{
-        border: '1.5px solid transparent',
-        backgroundImage: `linear-gradient(white, white), linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'padding-box, border-box'
+        border: `1.5px solid ${primaryColor}`,
       }"
     >
       <iframe

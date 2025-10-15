@@ -20,7 +20,7 @@
           style="height: 60%"
         >
           <h1
-            class="scaled-header gleam-animation font-bold capitalize khmer-text-fix text-center"
+            class="scaled-header font-bold capitalize khmer-text-fix text-center"
             :style="headerTextStyle"
           >
             {{ coverHeader || eventTitle }}
@@ -71,7 +71,7 @@
           style="height: 50%"
         >
           <h2
-            class="scaled-guest-name gleam-animation font-bold capitalize khmer-text-fix text-center"
+            class="scaled-guest-name font-bold capitalize khmer-text-fix text-center"
             :style="guestNameTextStyle"
           >
             {{ guestName }}
@@ -154,20 +154,12 @@ const gradientStyle = computed(
 
 const headerTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
-  background: `linear-gradient(45deg, ${props.primaryColor} 0%, ${props.secondaryColor || props.accentColor} 50%, ${props.primaryColor} 100%)`,
-  backgroundSize: '200% 200%',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
+  color: props.primaryColor,
 }))
 
 const guestNameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
-  background: `linear-gradient(45deg, ${props.primaryColor} 0%, ${props.secondaryColor || props.accentColor} 50%, ${props.primaryColor} 100%)`,
-  backgroundSize: '200% 200%',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
+  color: props.primaryColor,
 }))
 
 const inviteTextStyle = computed(() => ({

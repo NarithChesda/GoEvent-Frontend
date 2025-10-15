@@ -11,10 +11,7 @@
           ]"
           :style="{
             fontFamily: primaryFont || currentFont,
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: primaryColor,
           }"
         >
           {{ descriptionTitle }}
@@ -45,7 +42,7 @@
       <div
         class="inline-block relative gradient-stroke-container"
         :style="{
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+          background: primaryColor,
           padding: '2px',
           borderRadius: '2rem',
         }"
@@ -54,7 +51,7 @@
           class="px-4 py-3 backdrop-blur-sm space-y-2 relative"
           style="border-radius: calc(2rem - 2px); border: 2px solid white"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+            background: primaryColor,
           }"
         >
           <!-- Date Text -->

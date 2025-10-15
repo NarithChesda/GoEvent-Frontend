@@ -7,16 +7,12 @@
         <div class="welcome-content mt-6">
           <h2
             :class="[
-              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalize gleam-animation',
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               fontFamily: primaryFont || currentFont,
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              backgroundSize: '200% 200%',
+              color: primaryColor,
             }"
           >
             {{ welcomeMessage || 'Welcome to Our Event' }}
@@ -187,15 +183,11 @@
         <div class="host-name-left">
           <h3
             :class="[
-              'host-name-text font-semibold leading-tight capitalize gleam-animation',
+              'host-name-text font-semibold leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-              backgroundSize: '200% 200%',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: primaryColor,
               fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
@@ -211,15 +203,11 @@
           <h3
             v-if="hosts.length > 1"
             :class="[
-              'host-name-text font-semibold leading-tight capitalize gleam-animation',
+              'host-name-text font-semibold leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-              backgroundSize: '200% 200%',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: primaryColor,
               fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >

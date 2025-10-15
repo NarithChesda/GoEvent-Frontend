@@ -6,10 +6,7 @@
       class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
       :style="{
         fontFamily: primaryFont || currentFont,
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
+        color: primaryColor,
       }"
     >
       {{ paymentSectionTitle }}
@@ -284,7 +281,7 @@
                         class="payment-link-minimalist group inline-flex items-center justify-center w-full lg:w-auto"
                         :style="{
                           fontFamily: primaryFont || currentFont,
-                          background: `linear-gradient(135deg, ${primaryColor}60, ${primaryColor}40)`,
+                          background: primaryColor,
                           color: '#ffffff',
                           boxShadow: `
                         0 8px 32px -4px ${primaryColor}50,
