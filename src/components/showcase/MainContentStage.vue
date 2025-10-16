@@ -85,9 +85,6 @@
                   />
                 </div>
 
-                <!-- Host Info Divider -->
-                <WeddingSectionDivider :primary-color="primaryColor" />
-
                 <!-- Event Information -->
                 <div
                   ref="eventInfoRef"
