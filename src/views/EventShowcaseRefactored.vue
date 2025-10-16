@@ -190,29 +190,56 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
-// Mobile memory management
+// Mobile memory management with messaging app detection
 const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+const isMessagingApp = videoResourceManager.isMessagingAppBrowser()
 const memoryCleanupTimer = ref<number | null>(null)
 
 // Periodic cleanup for mobile devices to prevent memory buildup
 const setupMobileMemoryManagement = () => {
   if (!isMobile) return
 
-  // Setting up mobile memory management
+  // Determine cleanup interval and thresholds based on browser environment
+  const cleanupInterval = isMessagingApp
+    ? 120000 // 2 minutes for messaging apps (Telegram, WhatsApp, etc.)
+    : 300000 // 5 minutes for regular mobile browsers
 
-  // Clean up memory every 5 minutes on mobile to reduce performance impact
+  const blobUrlThreshold = isMessagingApp ? 2 : 3 // More aggressive for messaging apps
+  const videoThreshold = isMessagingApp ? 1 : 2 // More aggressive for messaging apps
+
+  // Log setup for development
+  if (import.meta.env.DEV) {
+    console.log('📱 Memory management setup:', {
+      isMobile,
+      isMessagingApp,
+      cleanupInterval: `${cleanupInterval / 1000}s`,
+      blobUrlThreshold,
+      videoThreshold,
+    })
+  }
+
+  // Clean up memory periodically based on browser environment
   memoryCleanupTimer.value = window.setInterval(() => {
     if (videoResourceManager) {
       const stats = videoResourceManager.getMemoryStats()
-      // Periodic mobile memory check
+
+      // Log memory stats in development
+      if (import.meta.env.DEV) {
+        console.log('📊 Periodic memory check:', stats)
+      }
 
       // Force cleanup if too many resources are active
-      if (stats.activeBlobUrls > 3 || stats.managedVideos > 2) {
-        // Triggering mobile memory cleanup
+      if (stats.activeBlobUrls > blobUrlThreshold || stats.managedVideos > videoThreshold) {
+        if (import.meta.env.DEV) {
+          console.log('🧹 Triggering memory cleanup:', {
+            reason: stats.activeBlobUrls > blobUrlThreshold ? 'Too many blob URLs' : 'Too many videos',
+            stats,
+          })
+        }
         videoResourceManager.triggerMemoryCleanup()
       }
     }
-  }, 300000) // 5 minutes - reduced frequency to minimize performance impact
+  }, cleanupInterval)
 }
 
 // CoverStage component ref
@@ -408,12 +435,17 @@ onUnmounted(() => {
   if (memoryCleanupTimer.value) {
     clearInterval(memoryCleanupTimer.value)
     memoryCleanupTimer.value = null
-    console.log('📱 Mobile memory management timer cleared')
+    if (import.meta.env.DEV) {
+      console.log('📱 Memory management timer cleared')
+    }
   }
 
-  // Final memory cleanup for mobile
+  // Final memory cleanup for mobile and messaging apps
   if (isMobile && videoResourceManager) {
-    console.log('📱 Final mobile memory cleanup')
+    if (import.meta.env.DEV) {
+      const browserType = isMessagingApp ? 'messaging app' : 'mobile'
+      console.log(`📱 Final ${browserType} memory cleanup`)
+    }
     videoResourceManager.triggerMemoryCleanup()
   }
 

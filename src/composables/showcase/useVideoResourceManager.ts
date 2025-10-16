@@ -10,7 +10,33 @@ const VIDEO_CONFIG = {
   MOBILE_CLEANUP_TIMEOUT: 3000, // Faster cleanup on mobile
   BLOB_CLEANUP_DELAY: 200, // Delay before blob URL revocation
   FORCE_GC_THRESHOLD: 3, // Trigger GC after cleaning this many videos
+  // Messaging app specific optimizations
+  MESSAGING_APP_MAX_VIDEOS: 3, // Even more restrictive for messaging apps
+  MESSAGING_APP_CLEANUP_TIMEOUT: 2000, // Faster cleanup for messaging apps (2s)
+  MESSAGING_APP_CLEANUP_INTERVAL: 120000, // 2 minutes for messaging apps
+  MESSAGING_APP_BLOB_STALE_THRESHOLD: 120000, // 2 minutes stale threshold
 } as const
+
+// Messaging app browser detection
+const isMessagingAppBrowser = (): boolean => {
+  const userAgent = navigator.userAgent || ''
+
+  // Check for various messaging app browsers
+  const messagingAppPatterns = [
+    /TelegramBot|Telegram/i,
+    /WhatsApp/i,
+    /FB_IAB|FBAN|FBAV/i, // Facebook in-app browser
+    /Line/i,
+    /MicroMessenger/i, // WeChat
+    /Viber/i,
+    /KakaoTalk/i,
+    /Snapchat/i,
+    /Instagram/i,
+    /Twitter/i,
+  ]
+
+  return messagingAppPatterns.some(pattern => pattern.test(userAgent))
+}
 
 // Mobile detection with enhanced checks
 const isMobileDevice = (): boolean => {
@@ -57,8 +83,15 @@ export function useVideoResourceManager() {
 
   // Mobile-specific state
   const isMobile = isMobileDevice()
+  const isMessagingApp = isMessagingAppBrowser()
   const isLowMemory = isLowMemoryDevice()
-  const maxVideos = isMobile ? VIDEO_CONFIG.MOBILE_MAX_VIDEOS : VIDEO_CONFIG.MAX_MANAGED_VIDEOS
+
+  // Determine max videos based on environment (messaging app < mobile < desktop)
+  const maxVideos = isMessagingApp
+    ? VIDEO_CONFIG.MESSAGING_APP_MAX_VIDEOS
+    : isMobile
+      ? VIDEO_CONFIG.MOBILE_MAX_VIDEOS
+      : VIDEO_CONFIG.MAX_MANAGED_VIDEOS
 
   // Memory pressure detection
   let lastGCTime = Date.now()
@@ -265,8 +298,12 @@ export function useVideoResourceManager() {
 
       pendingCleanupPromises.value.add(cleanupPromise)
 
-      // Apply mobile-aware timeout
-      const timeoutMs = isMobile ? VIDEO_CONFIG.MOBILE_CLEANUP_TIMEOUT : VIDEO_CONFIG.MAX_CLEANUP_TIME
+      // Apply environment-aware timeout (messaging app < mobile < desktop)
+      const timeoutMs = isMessagingApp
+        ? VIDEO_CONFIG.MESSAGING_APP_CLEANUP_TIMEOUT
+        : isMobile
+          ? VIDEO_CONFIG.MOBILE_CLEANUP_TIMEOUT
+          : VIDEO_CONFIG.MAX_CLEANUP_TIME
       const timeoutId = setTimeout(() => {
         managedVideoElements.value.delete(video)
         pendingCleanupPromises.value.delete(cleanupPromise)
@@ -306,11 +343,14 @@ export function useVideoResourceManager() {
 
   /**
    * Force memory cleanup for mobile browsers
+   * Uses more aggressive thresholds for messaging app browsers
    */
   const triggerMemoryCleanup = (): void => {
-    // Cleanup stale blob URLs (older than 5 minutes)
+    // Cleanup stale blob URLs with environment-specific thresholds
     const now = Date.now()
-    const staleThreshold = 5 * 60 * 1000 // 5 minutes
+    const staleThreshold = isMessagingApp
+      ? VIDEO_CONFIG.MESSAGING_APP_BLOB_STALE_THRESHOLD // 2 minutes for messaging apps
+      : 5 * 60 * 1000 // 5 minutes for regular mobile/desktop
 
     for (const [key, blobData] of activeBlobUrls.value.entries()) {
       if (now - blobData.createdAt > staleThreshold) {
@@ -587,7 +627,9 @@ export function useVideoResourceManager() {
         (sum, listeners) => sum + listeners.length, 0
       ),
       isMobileDevice: isMobile,
+      isMessagingAppBrowser: isMessagingApp,
       isLowMemoryDevice: isLowMemory,
+      maxVideoLimit: maxVideos,
       lastGCTime: new Date(lastGCTime).toISOString()
     }
   }
@@ -619,6 +661,7 @@ export function useVideoResourceManager() {
 
     // Device capabilities
     isMobileDevice: () => isMobile,
+    isMessagingAppBrowser: () => isMessagingApp,
     isLowMemoryDevice: () => isLowMemory,
     maxVideoLimit: () => maxVideos,
 
