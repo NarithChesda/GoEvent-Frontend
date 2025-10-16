@@ -88,7 +88,7 @@
                 <!-- Event Information -->
                 <div
                   ref="eventInfoRef"
-                  class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
+                  class="mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10 mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
                 >
                   <EventInfo
                     :description-title="descriptionTitle"
