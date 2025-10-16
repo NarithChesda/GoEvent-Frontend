@@ -40,7 +40,7 @@
     <!-- Event Details Block -->
     <div class="space-y-3">
       <div
-        class="inline-block relative gradient-stroke-container"
+        class="block relative gradient-stroke-container"
         :style="{
           background: primaryColor,
           padding: '2px',
