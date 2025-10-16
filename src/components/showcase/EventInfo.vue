@@ -48,7 +48,7 @@
         }"
       >
         <div
-          class="px-4 py-3 backdrop-blur-sm space-y-2 relative"
+          class="px-4 pt-3 pb-4 backdrop-blur-sm space-y-2 relative"
           style="border-radius: calc(2rem - 2px); border: 2px solid white"
           :style="{
             background: primaryColor,
@@ -89,6 +89,27 @@
               {{ locationText }}
             </span>
           </div>
+
+          <!-- Google Map Embed -->
+          <div v-if="hasGoogleMap && googleMapEmbedLink" class="pt-2">
+            <div
+              class="aspect-video overflow-hidden"
+              :style="{
+                border: `1px solid rgba(255, 255, 255, 0.3)`,
+                borderRadius: '1rem',
+              }"
+            >
+              <iframe
+                :src="googleMapEmbedLink"
+                width="100%"
+                height="100%"
+                style="border: 0"
+                :allowfullscreen="false"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -97,7 +118,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Calendar, Clock, MapPin } from 'lucide-vue-next'
 
 interface Props {
   descriptionTitle?: string
@@ -106,6 +126,7 @@ interface Props {
   timeText?: string
   locationText?: string
   hasGoogleMap?: boolean
+  googleMapEmbedLink?: string
   primaryColor: string
   secondaryColor?: string
   accentColor: string

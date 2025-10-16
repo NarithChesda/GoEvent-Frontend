@@ -53,6 +53,18 @@
           </button>
         </div>
 
+        <!-- Location -->
+        <div v-if="props.hasLocation" class="menu-item">
+          <button
+            @click="handleLocation"
+            class="menu-button glass-section"
+            :style="menuButtonStyle"
+          >
+            <MapPin :size="20" :color="primaryColor" />
+            <span class="menu-text">{{ locationText }}</span>
+          </button>
+        </div>
+
         <!-- RSVP -->
         <div class="menu-item">
           <button
@@ -86,18 +98,6 @@
           >
             <Calendar :size="20" :color="primaryColor" />
             <span class="menu-text">{{ agendaText }}</span>
-          </button>
-        </div>
-
-        <!-- Location -->
-        <div v-if="props.hasLocation" class="menu-item">
-          <button
-            @click="handleLocation"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
-          >
-            <MapPin :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ locationText }}</span>
           </button>
         </div>
 

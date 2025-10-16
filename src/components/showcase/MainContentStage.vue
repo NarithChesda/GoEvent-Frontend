@@ -100,6 +100,7 @@
                     :time-text="timeText"
                     :location-text="locationText"
                     :has-google-map="!!event.google_map_embed_link"
+                    :google-map-embed-link="event.google_map_embed_link"
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
@@ -112,49 +113,6 @@
 
                   <!-- Event Info Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
-                </div>
-
-                <!-- Map Section -->
-                <div
-                  id="location-section"
-                  ref="locationSectionRef"
-                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
-                >
-                  <div v-if="event.google_map_embed_link" class="mb-6">
-                    <!-- Location Header -->
-                    <div
-                      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8"
-                    >
-                      <h2
-                        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
-                        :style="{
-                          fontFamily: primaryFont || currentFont,
-                          color: primaryColor,
-                        }"
-                      >
-                        {{ locationHeaderText }}
-                      </h2>
-                    </div>
-                    <div
-                      class="aspect-video rounded-xl overflow-hidden"
-                      :style="{
-                        border: `1.5px solid ${primaryColor}`,
-                      }"
-                    >
-                      <iframe
-                        :src="event.google_map_embed_link"
-                        width="100%"
-                        height="100%"
-                        style="border: 0"
-                        :allowfullscreen="false"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                      />
-                    </div>
-
-                    <!-- Location Section Divider -->
-                    <WeddingSectionDivider :primary-color="primaryColor" />
-                  </div>
                 </div>
 
                 <!-- RSVP Section -->
@@ -656,7 +614,6 @@ const sectionRefs = {
   eventInfo: ref<HTMLElement>(),
   rsvpSection: ref<HTMLElement>(),
   agendaSection: ref<HTMLElement>(),
-  locationSection: ref<HTMLElement>(),
   videoSection: ref<HTMLElement>(),
   gallerySection: ref<HTMLElement>(),
   paymentSection: ref<HTMLElement>(),
@@ -671,7 +628,6 @@ const {
   eventInfo: eventInfoRef,
   rsvpSection: rsvpSectionRef,
   agendaSection: agendaSectionRef,
-  locationSection: locationSectionRef,
   videoSection: videoSectionRef,
   gallerySection: gallerySectionRef,
   paymentSection: paymentSectionRef,
@@ -690,7 +646,6 @@ const initializeRevealAnimations = () => {
     [eventInfoRef, 'event-info'],
     [rsvpSectionRef, 'rsvp-section'],
     [agendaSectionRef, 'agenda-section'],
-    [locationSectionRef, 'location-section'],
     [videoSectionRef, 'video-section'],
     [gallerySectionRef, 'gallery-section'],
     [paymentSectionRef, 'payment-section'],
@@ -801,7 +756,6 @@ const descriptionText = computed(() => findEventText('description')?.content)
 const descriptionTitle = computed(() => findEventText('description')?.title)
 
 // Computed properties for translated text
-const locationHeaderText = computed(() => getTextContent('location_header', 'Location'))
 const footerThankYouText = computed(() =>
   getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
 )
@@ -832,7 +786,13 @@ const handleVideoStateChange = (isPlaying: boolean) => emit('videoStateChange', 
 const handleRSVP = () => scrollToSection('rsvp-section')
 const handleGift = () => scrollToSection('payment-section')
 const handleAgenda = () => scrollToSection('agenda-section')
-const handleLocation = () => scrollToSection('location-section')
+const handleLocation = () => {
+  // Scroll to event info section since map is now embedded there
+  const element = eventInfoRef.value
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
 const handleGallery = () => scrollToSection('gallery-section')
 const handleComment = () => scrollToSection('comment-section')
 const handleVideo = () => scrollToSection('video-section')
@@ -1070,21 +1030,4 @@ onUnmounted(() => {
   }
 }
 
-/* ===================
-   LAPTOP RESPONSIVE STYLES
-   =================== */
-
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes for Map section header */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  #location-section h2 {
-    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
-  }
-}
-
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
-  #location-section h2 {
-    font-size: 1.5rem !important; /* 24px - md:text-2xl */
-  }
-}
 </style>
