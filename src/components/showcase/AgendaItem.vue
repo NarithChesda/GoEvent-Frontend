@@ -35,7 +35,10 @@
     <div class="flex-1 flex flex-col justify-between min-h-[3rem]">
       <!-- Title (Top Right) -->
       <h3
-        :class="['font-medium leading-loose py-2 capitalize', isKhmerText ? 'text-xs' : 'text-sm']"
+        :class="[
+          'font-medium leading-loose py-2 capitalize',
+          isKhmerText ? 'text-sm sm:text-sm md:text-base laptop-md:text-lg laptop-lg:text-xl' : 'text-sm sm:text-base md:text-lg laptop-md:text-xl laptop-lg:text-2xl'
+        ]"
         :style="{
           color: primaryColor,
           fontFamily: primaryFont || currentFont,

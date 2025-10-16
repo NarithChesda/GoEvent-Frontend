@@ -761,7 +761,7 @@ const additionalGuests = ref(0)
 // const showConfirmationMessage = ref(false) // Unused
 
 // Collapsible state
-const isExpanded = ref(false)
+const isExpanded = ref(true)
 
 // API Registration State
 const currentRegistration = ref<EventRegistration | null>(null)

@@ -421,6 +421,17 @@ onMounted(() => {
   // Observe all agenda cards
   const cards = document.querySelectorAll('.agenda-date-section')
   cards.forEach((card) => observer.observe(card))
+
+  // Expand the first card by default
+  if (agendaTabs.value.length > 0) {
+    expandedCard.value = agendaTabs.value[0]
+    // Check scroll state after setting expanded
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        checkScrollState(agendaTabs.value[0])
+      }, 300)
+    })
+  }
 })
 </script>
 
@@ -554,7 +565,7 @@ onMounted(() => {
 .agenda-scrollable-content {
   max-height: 50vh;
   overflow-y: auto;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.5rem 4rem 1.5rem; /* Added bottom padding for scroll indicator */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -569,11 +580,19 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3rem;
+  height: 4rem;
   pointer-events: none;
-  background: linear-gradient(transparent, var(--indicator-color, #4f46e5) 30);
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 30%,
+    rgba(255, 255, 255, 0.5) 60%,
+    transparent 100%
+  );
   border-radius: 0 0 1.5rem 1.5rem;
   transition: opacity 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .scroll-indicator-content {
@@ -584,7 +603,8 @@ onMounted(() => {
   height: 100%;
   padding-bottom: 0.75rem;
   color: var(--indicator-color, #4f46e5);
-  opacity: 0.8;
+  opacity: 0.9;
+  font-weight: 600;
 }
 
 .scroll-text {
@@ -601,7 +621,7 @@ onMounted(() => {
 /* Responsive breakpoints - consolidated */
 @media (min-width: 640px) {
   .agenda-scrollable-content {
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 4rem 1.5rem; /* Keep bottom padding for scroll indicator */
   }
 }
 
@@ -735,7 +755,7 @@ onMounted(() => {
 
   .agenda-scrollable-content {
     max-height: 50vh !important; /* Keep original expanded height */
-    padding: 1rem 1.5rem !important; /* Keep original expanded padding */
+    padding: 1rem 1.5rem 4rem 1.5rem !important; /* Keep bottom padding for scroll indicator */
   }
 
   /* First agenda description mobile size */

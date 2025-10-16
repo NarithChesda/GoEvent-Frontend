@@ -358,6 +358,20 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   margin-top: -0.125rem;
 }
 
+/* Khmer-specific spacing reduction between title and name */
+.khmer-text .title-row {
+  margin-top: -0.5rem;
+}
+
+.khmer-text .name-row {
+  margin-top: -0.75rem;
+}
+
+/* Khmer-specific spacing reduction for profile pictures */
+.khmer-text .profile-picture-row {
+  margin-top: -0.5rem;
+}
+
 /* Welcome row (full width) */
 .welcome-row {
   display: flex;
@@ -674,12 +688,20 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     margin-top: -0.375rem;
   }
 
+  .khmer-text .name-row {
+    margin-top: -1rem;
+  }
+
   .parent-name-text {
     font-size: 0.75rem; /* 12px - slightly larger than mobile */
   }
 
   .parent-row:nth-child(3) {
     margin-top: -0.375rem;
+  }
+
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -1rem;
   }
 
   .host-name-text {
@@ -723,12 +745,20 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     margin-top: -0.625rem;
   }
 
+  .khmer-text .name-row {
+    margin-top: -1.25rem;
+  }
+
   .parent-name-text {
     font-size: 0.8125rem; /* 13px - optimized for 16+ inch laptops */
   }
 
   .parent-row:nth-child(3) {
     margin-top: -0.625rem;
+  }
+
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -1.25rem;
   }
 
   .host-name-text {
@@ -768,12 +798,20 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     margin-top: -0.75rem;
   }
 
+  .khmer-text .name-row {
+    margin-top: -1.5rem;
+  }
+
   .parent-name-text {
     font-size: 0.875rem; /* 14px - optimized for Full HD+ desktop */
   }
 
   .parent-row:nth-child(3) {
     margin-top: -0.75rem;
+  }
+
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -1.5rem;
   }
 
   .host-name-text {
