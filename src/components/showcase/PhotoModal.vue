@@ -1,69 +1,73 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center px-2 sm:px-4"
+    class="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
     @click="closeModal"
   >
     <div class="relative max-w-6xl max-h-full w-full">
-      <!-- Close Button -->
+      <!-- Close Button - Minimalist Design -->
       <button
         @click="closeModal"
-        class="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black bg-opacity-50 flex items-center justify-center text-white hover:bg-opacity-70 transition-all touch-manipulation"
+        class="modal-control close-button"
         aria-label="Close photo viewer"
       >
-        <X class="w-5 h-5 sm:w-6 sm:h-6" />
+        <X class="w-5 h-5" />
       </button>
 
-      <!-- Previous Button -->
+      <!-- Previous Button - Hidden on mobile, subtle on desktop -->
       <button
         v-if="canGoPrevious"
         @click.stop="goToPrevious"
-        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black bg-opacity-50 flex items-center justify-center text-white hover:bg-opacity-70 transition-all touch-manipulation"
+        class="modal-control nav-button left-button"
         aria-label="Previous photo"
       >
-        <ChevronLeft class="w-5 h-5 sm:w-6 sm:h-6" />
+        <ChevronLeft class="w-6 h-6" />
       </button>
 
-      <!-- Next Button -->
+      <!-- Next Button - Hidden on mobile, subtle on desktop -->
       <button
         v-if="canGoNext"
         @click.stop="goToNext"
-        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black bg-opacity-50 flex items-center justify-center text-white hover:bg-opacity-70 transition-all touch-manipulation"
+        class="modal-control nav-button right-button"
         aria-label="Next photo"
       >
-        <ChevronRight class="w-5 h-5 sm:w-6 sm:h-6" />
+        <ChevronRight class="w-6 h-6" />
       </button>
 
       <!-- Photo Container -->
       <div
-        class="relative max-w-full max-h-full"
+        class="relative max-w-full max-h-full px-4 sm:px-0 flex flex-col items-center"
         @click.stop
         @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
         @touchend="handleTouchEnd"
       >
         <img
           v-if="currentPhoto"
           :src="getMediaUrl(currentPhoto.image)"
           :alt="currentPhoto.caption || 'Event Photo'"
-          class="w-full max-w-full h-auto max-h-[80vh] sm:max-h-[85vh] object-contain rounded-lg select-none"
+          :style="{ transform: `translateX(${swipeOffset}px)` }"
+          class="photo-image"
           loading="lazy"
           draggable="false"
         />
 
         <!-- Caption -->
-        <div
-          v-if="currentPhoto?.caption"
-          class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-4 rounded-b-lg"
-        >
+        <div v-if="currentPhoto?.caption" class="photo-caption">
           <p class="text-center text-sm">{{ currentPhoto.caption }}</p>
         </div>
 
-        <!-- Photo Counter -->
-        <div
-          class="absolute top-2 left-2 sm:top-4 sm:left-4 bg-black bg-opacity-50 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium"
-        >
+        <!-- Photo Counter - Below Photo -->
+        <div class="modal-counter">
           {{ currentIndex + 1 }} / {{ photos.length }}
         </div>
+      </div>
+
+      <!-- Swipe Indicator for Mobile -->
+      <div class="swipe-indicator">
+        <span v-if="canGoPrevious" class="swipe-hint left">‹</span>
+        <span class="swipe-hint-text">Swipe to navigate</span>
+        <span v-if="canGoNext" class="swipe-hint right">›</span>
       </div>
     </div>
   </div>
@@ -148,14 +152,36 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
-// Touch handlers for mobile swipe support
+// Enhanced touch handlers for mobile swipe support with visual feedback
 const touchStartX = ref(0)
 const touchStartY = ref(0)
+const swipeOffset = ref(0)
 const minSwipeDistance = 50
+const isSwiping = ref(false)
 
 const handleTouchStart = (event: TouchEvent) => {
   touchStartX.value = event.touches[0].clientX
   touchStartY.value = event.touches[0].clientY
+  isSwiping.value = false
+  swipeOffset.value = 0
+}
+
+const handleTouchMove = (event: TouchEvent) => {
+  if (!event.touches.length) return
+
+  const touchCurrentX = event.touches[0].clientX
+  const touchCurrentY = event.touches[0].clientY
+
+  const deltaX = touchCurrentX - touchStartX.value
+  const deltaY = touchCurrentY - touchStartY.value
+
+  // Only track horizontal swipes
+  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+    isSwiping.value = true
+    // Apply resistance at boundaries
+    const maxOffset = 100
+    swipeOffset.value = Math.max(-maxOffset, Math.min(maxOffset, deltaX * 0.5))
+  }
 }
 
 const handleTouchEnd = (event: TouchEvent) => {
@@ -166,6 +192,9 @@ const handleTouchEnd = (event: TouchEvent) => {
 
   const deltaX = touchEndX - touchStartX.value
   const deltaY = touchEndY - touchStartY.value
+
+  // Reset swipe offset with animation
+  swipeOffset.value = 0
 
   // Only process horizontal swipes (ignore vertical scrolling)
   if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
@@ -179,6 +208,8 @@ const handleTouchEnd = (event: TouchEvent) => {
       goToNext()
     }
   }
+
+  isSwiping.value = false
 }
 
 // Add/remove event listener when modal opens/closes
@@ -201,5 +232,255 @@ watch(
 /* Ensure modal appears above everything */
 .z-50 {
   z-index: 9999;
+}
+
+/* Minimalist Modal Controls */
+.modal-control {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Close Button - Top Right, Minimal Overlay */
+.close-button {
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.close-button:active {
+  background-color: rgba(0, 0, 0, 0.5);
+  transform: scale(0.95);
+  opacity: 1;
+}
+
+/* Photo Counter - Below Photo, No Overlay */
+.modal-counter {
+  margin-top: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Navigation Buttons - Hidden on Mobile */
+.nav-button {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: opacity 0.3s ease, background-color 0.2s ease;
+}
+
+.left-button {
+  left: 1rem;
+}
+
+.right-button {
+  right: 1rem;
+}
+
+/* Show nav buttons on hover (desktop only) */
+@media (hover: hover) and (pointer: fine) {
+  .nav-button:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .close-button:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Photo Image with Swipe Animation */
+.photo-image {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.2s ease-out;
+}
+
+/* Caption */
+.photo-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 1.5rem 1rem 1rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* Swipe Indicator for Mobile Only - Auto-hide after 3s */
+.swipe-indicator {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.4rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  animation: fadeInOut 4s ease-in-out;
+  pointer-events: none;
+}
+
+/* Hide swipe indicator on desktop/tablet - they have arrow buttons */
+@media (min-width: 769px) {
+  .swipe-indicator {
+    display: none;
+  }
+}
+
+.swipe-hint {
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.swipe-hint-text {
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .close-button {
+    width: 2rem;
+    height: 2rem;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.15);
+    opacity: 0.5;
+  }
+
+  .close-button:active {
+    opacity: 1;
+  }
+
+  .modal-counter {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  /* Hide navigation buttons on mobile - swipe only */
+  .nav-button {
+    display: none;
+  }
+
+  .photo-image {
+    max-height: 75vh;
+    border-radius: 0.375rem;
+  }
+
+  .photo-caption {
+    padding: 1rem 0.75rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .swipe-indicator {
+    bottom: 1rem;
+  }
+}
+
+/* Very Small Devices */
+@media (max-width: 375px) {
+  .close-button {
+    width: 1.75rem;
+    height: 1.75rem;
+    top: 0.375rem;
+    right: 0.375rem;
+    opacity: 0.4;
+  }
+
+  .modal-counter {
+    margin-top: 0.375rem;
+    font-size: 0.65rem;
+  }
+
+  .photo-caption {
+    padding: 0.75rem 0.5rem 0.5rem;
+  }
+}
+
+/* Tablet - Show nav buttons with some opacity */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nav-button {
+    opacity: 0.5;
+  }
+
+  .nav-button:hover {
+    opacity: 1;
+  }
+}
+
+/* Desktop - Show nav buttons, full opacity on hover */
+@media (min-width: 1025px) {
+  .modal-counter {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .close-button {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .nav-button {
+    opacity: 0.6;
+  }
+
+  .nav-button:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.6);
+  }
 }
 </style>
