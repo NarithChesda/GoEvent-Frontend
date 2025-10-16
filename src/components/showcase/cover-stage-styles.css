@@ -168,7 +168,7 @@ p {
 }
 
 .content-row-invite .scaled-invite-text {
-  font-size: clamp(0.5rem, 1.8vh, 0.75rem);
+  font-size: clamp(0.75rem, 2.2vh, 1rem);
   line-height: 1.1;
   max-width: 95%;
   width: auto;
@@ -284,7 +284,7 @@ p {
   }
 
   .content-row-invite .scaled-invite-text {
-    font-size: clamp(0.5rem, 1.5vh, 0.65rem);
+    font-size: clamp(0.625rem, 1.8vh, 0.8rem);
   }
 
   .content-row-guest .scaled-guest-name {
