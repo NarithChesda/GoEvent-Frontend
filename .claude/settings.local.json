@@ -161,7 +161,11 @@
       "Bash(git stash push:*)",
       "Bash(echo $VITE_TELEGRAM_BOT_USERNAME)",
       "Bash(git stash:*)",
-      "Bash(timeout 120 npm run build)"
+      "Bash(timeout 120 npm run build)",
+      "Bash(netstat:*)",
+      "Bash(cmd //c:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "additionalDirectories": [
