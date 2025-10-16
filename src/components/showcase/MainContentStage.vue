@@ -114,6 +114,49 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <!-- Map Section -->
+                <div
+                  id="location-section"
+                  ref="locationSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
+                  <div v-if="event.google_map_embed_link" class="mb-6">
+                    <!-- Location Header -->
+                    <div
+                      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8"
+                    >
+                      <h2
+                        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
+                        :style="{
+                          fontFamily: primaryFont || currentFont,
+                          color: primaryColor,
+                        }"
+                      >
+                        {{ locationHeaderText }}
+                      </h2>
+                    </div>
+                    <div
+                      class="aspect-video rounded-xl overflow-hidden"
+                      :style="{
+                        border: `1.5px solid ${primaryColor}`,
+                      }"
+                    >
+                      <iframe
+                        :src="event.google_map_embed_link"
+                        width="100%"
+                        height="100%"
+                        style="border: 0"
+                        :allowfullscreen="false"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
+
+                    <!-- Location Section Divider -->
+                    <WeddingSectionDivider :primary-color="primaryColor" />
+                  </div>
+                </div>
+
                 <!-- RSVP Section -->
                 <div
                   id="rsvp-section"
@@ -160,49 +203,6 @@
 
                   <!-- Agenda Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
-                </div>
-
-                <!-- Map Section -->
-                <div
-                  id="location-section"
-                  ref="locationSectionRef"
-                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
-                >
-                  <div v-if="event.google_map_embed_link" class="mb-6">
-                    <!-- Location Header -->
-                    <div
-                      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8"
-                    >
-                      <h2
-                        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
-                        :style="{
-                          fontFamily: primaryFont || currentFont,
-                          color: primaryColor,
-                        }"
-                      >
-                        {{ locationHeaderText }}
-                      </h2>
-                    </div>
-                    <div
-                      class="aspect-video rounded-xl overflow-hidden"
-                      :style="{
-                        border: `1.5px solid ${primaryColor}`,
-                      }"
-                    >
-                      <iframe
-                        :src="event.google_map_embed_link"
-                        width="100%"
-                        height="100%"
-                        style="border: 0"
-                        :allowfullscreen="false"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                      />
-                    </div>
-
-                    <!-- Location Section Divider -->
-                    <WeddingSectionDivider :primary-color="primaryColor" />
-                  </div>
                 </div>
 
                 <!-- YouTube Video Section -->

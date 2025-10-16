@@ -1,38 +1,31 @@
 <template>
-  <div class="agenda-card p-4 flex items-center gap-4" :style="{ '--primary-color': primaryColor }">
-    <!-- Icon Section (Left) - Small dot on mobile, full icon on desktop -->
-    <div class="flex-shrink-0">
-      <!-- Mobile: Small colored dot indicator -->
+  <div class="agenda-card-wrapper flex items-center gap-3">
+    <!-- Icon Section (Left) - Outside the card border -->
+    <div class="flex-shrink-0 agenda-icon-wrapper">
       <div
-        class="sm:hidden w-3 h-3 rounded-full flex-shrink-0"
-        :style="{ backgroundColor: primaryColor }"
-      ></div>
-
-      <!-- Desktop: Full icon -->
-      <div class="hidden sm:block">
-        <div
-          v-if="item.icon?.svg_code"
-          class="agenda-icon-large flex items-center justify-center"
-          :style="{
-            '--icon-color': primaryColor,
-            color: primaryColor,
-          }"
-          v-html="processedSvgCode"
-        />
-        <Calendar
-          v-else
-          class="agenda-icon-large agenda-fallback-icon"
-          :stroke-width="0.75"
-          :style="{
-            '--icon-color': primaryColor,
-            color: primaryColor,
-          }"
-        />
-      </div>
+        v-if="item.icon?.svg_code"
+        class="agenda-icon-large flex items-center justify-center"
+        :style="{
+          '--icon-color': primaryColor,
+          color: primaryColor,
+        }"
+        v-html="processedSvgCode"
+      />
+      <Calendar
+        v-else
+        class="agenda-icon-large agenda-fallback-icon"
+        :stroke-width="0.75"
+        :style="{
+          '--icon-color': primaryColor,
+          color: primaryColor,
+        }"
+      />
     </div>
 
-    <!-- Content Section (Right) -->
-    <div class="flex-1 flex flex-col justify-between min-h-[3rem]">
+    <!-- Card with border and content -->
+    <div class="agenda-card flex-1 p-4" :style="{ '--primary-color': primaryColor }">
+      <!-- Content Section -->
+      <div class="flex flex-col justify-between min-h-[3rem]">
       <!-- Title (Top Right) -->
       <h3
         :class="[
@@ -50,11 +43,12 @@
 
       <!-- Time (Bottom Right) -->
       <div
-        class="text-xs mt-1"
+        class="text-xs mt-0"
         :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }"
       >
         <span v-if="timeText">{{ timeText }}</span>
         <span v-else>Time TBD</span>
+      </div>
       </div>
     </div>
   </div>
@@ -142,20 +136,40 @@ const timeText = computed(() => {
 </script>
 
 <style scoped>
-/* Horizontal Card Styling with mobile enhancements */
-.agenda-card {
+/* Wrapper for card and icon */
+.agenda-card-wrapper {
   transition: all 0.2s ease;
   position: relative;
 }
 
-/* Mobile: Add subtle card styling */
+/* Card styling */
+.agenda-card {
+  transition: all 0.2s ease;
+  position: relative;
+  border-left: 1px solid var(--primary-color);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 0.75rem 0.75rem 0;
+  backdrop-filter: blur(8px);
+  padding-left: 1rem;
+}
+
+.agenda-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+/* Mobile: Add subtle card styling with icon on the left */
 @media (max-width: 639px) {
   .agenda-card {
-    border-left: 3px solid var(--primary-color);
+    border-left: 1px solid var(--primary-color);
     background: rgba(255, 255, 255, 0.03);
     border-radius: 0 0.75rem 0.75rem 0;
     backdrop-filter: blur(8px);
-    margin-bottom: 0.75rem;
     padding-left: 1rem;
   }
 
@@ -168,42 +182,37 @@ const timeText = computed(() => {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   }
+
+  /* Icon positioned to the left of the border */
+  .agenda-icon-wrapper {
+    margin-left: 0;
+  }
 }
 
-/* Large Icon Styling - 75% bigger than original (w-10 h-10 = 2.5rem, 75% bigger = 4.375rem) */
+/* Large Icon Styling - 25% bigger */
 .agenda-icon-large {
-  width: 4.375rem;
-  height: 4.375rem;
+  width: 3.125rem;
+  height: 3.125rem;
   color: var(--icon-color) !important;
 }
 
-/* Mobile responsive icon sizing */
+/* Mobile responsive icon sizing - 25% bigger */
 @media (max-width: 640px) {
   .agenda-icon-large {
-    width: 3rem;
-    height: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Show mobile dot instead of full icon */
-  .hidden.sm\:block {
-    display: none !important;
-  }
-
-  .sm\:hidden {
-    display: block !important;
-  }
-
   /* Mobile card padding and styling */
   .agenda-card {
     padding: 0.875rem !important;
-    border-left: 3px solid var(--primary-color);
+    border-left: 1px solid var(--primary-color);
     background: rgba(255, 255, 255, 0.03);
     border-radius: 0 0.75rem 0.75rem 0;
     backdrop-filter: blur(8px);
-    margin-bottom: 0.75rem;
     padding-left: 1rem !important;
   }
 
@@ -217,10 +226,9 @@ const timeText = computed(() => {
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   }
 
-  /* Mobile dot size */
-  .sm\:hidden.w-3 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
+  /* Icon positioned to the left of the border */
+  .agenda-icon-wrapper {
+    margin-left: 0;
   }
 
   /* Title mobile size */

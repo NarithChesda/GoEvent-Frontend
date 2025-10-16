@@ -125,7 +125,7 @@
                 </div>
 
                 <!-- Agenda Items for this date -->
-                <div class="space-y-4">
+                <div class="space-y-0">
                   <div v-for="item in agendaByDate[date] || []" :key="item.id">
                     <AgendaItem
                       :item="item"
@@ -764,12 +764,12 @@ onMounted(() => {
   }
 
   /* Agenda items spacing */
-  .space-y-4 {
-    gap: 0.75rem !important; /* Tighter spacing between agenda items */
+  .space-y-0 {
+    gap: 0 !important;
   }
 
-  .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 0.75rem !important;
+  .space-y-0 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0 !important;
   }
 
   /* Scroll indicator mobile size */
