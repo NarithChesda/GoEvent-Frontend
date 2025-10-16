@@ -501,7 +501,7 @@ export function formatDateLocalized(
       const khmerDays = ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']
 
       if (format === 'long') {
-        return `${khmerDays[dateObj.getDay()]} ទី${dateObj.getDate()} ខែ${khmerMonths[dateObj.getMonth()]} ឆ្នាំ${dateObj.getFullYear()}`
+        return `${khmerDays[dateObj.getDay()]} ទី ${dateObj.getDate()} ខែ${khmerMonths[dateObj.getMonth()]} ឆ្នាំ ${dateObj.getFullYear()}`
       } else {
         return `${dateObj.getDate()} ${khmerMonths[dateObj.getMonth()]}`
       }
