@@ -19,144 +19,73 @@
       </h2>
     </div>
 
-    <!-- Agenda Collapse Cards -->
-    <div class="space-y-3">
-      <div
-        v-for="(date, dateIndex) in agendaTabs"
-        :key="date"
-        class="agenda-date-section"
-        :style="{ '--animation-delay': `${dateIndex * 100}ms` }"
-      >
-        <!-- Agenda Date Card - Unified Design -->
-        <div
-          class="agenda-card-container"
-          :style="{
-            '--primary-color': primaryColor,
-            backgroundColor: `${primaryColor}15`,
-            border: `1px solid ${primaryColor}40`,
-          }"
-        >
-          <!-- Collapsible Card Header - Always Visible -->
-          <div class="agenda-card-header" @click="toggleCard(date)">
-            <div class="flex items-center justify-between p-4">
-              <!-- Date Info -->
-              <div class="flex items-center space-x-3">
-                <div class="icon-container" :style="{ backgroundColor: `${primaryColor}08` }">
-                  <svg
-                    class="w-5 h-5"
-                    :style="{ color: primaryColor }"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3
-                    :class="[
-                      'font-semibold text-sm sm:text-base',
-                      currentLanguage === 'kh' && 'khmer-text-fix',
-                    ]"
-                    :style="{
-                      color: primaryColor,
-                      fontFamily: primaryFont || currentFont,
-                    }"
-                  >
-                    {{ formatAgendaDate(date) }}
-                  </h3>
-                  <div
-                    :class="['activity-count', currentLanguage === 'kh' && 'khmer-text-fix']"
-                    :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-                  >
-                    <span
-                      >{{ agendaByDate[date]?.length || 0 }}
-                      {{ getActivityCountText(agendaByDate[date]?.length || 0) }}</span
-                    >
-                  </div>
-                </div>
-              </div>
+    <!-- Unified Tab Container -->
+    <div class="unified-tab-container" :style="{ '--primary-color': primaryColor }">
+      <!-- Tab Bar Navigation -->
+      <div class="tab-bar-scroll-wrapper">
+        <div class="tab-bar">
+          <button
+            v-for="date in agendaTabs"
+            :key="date"
+            class="tab-button"
+            :class="{ active: activeTab === date }"
+            :style="{
+              borderColor: activeTab === date ? primaryColor : 'transparent',
+              backgroundColor: activeTab === date ? `${primaryColor}15` : 'transparent',
+              color: activeTab === date ? primaryColor : `${primaryColor}80`,
+            }"
+            @click="selectTab(date)"
+          >
+            <span
+              :class="['tab-date font-semibold', currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: primaryFont || currentFont }"
+            >
+              {{ formatAgendaDate(date) }}
+            </span>
+          </button>
+        </div>
+      </div>
 
-              <!-- Expand/Collapse Arrow -->
-              <div class="expand-arrow" :class="{ expanded: isCardExpanded(date) }">
-                <svg
-                  class="w-5 h-5"
-                  :style="{ color: primaryColor }"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
+      <!-- Tab Content -->
+      <div class="tab-content-area">
+        <div
+          v-for="date in agendaTabs"
+          :key="date"
+          v-show="activeTab === date"
+          class="tab-panel"
+        >
+          <!-- First agenda description at top center -->
+          <div v-if="getFirstAgendaDescription(date)" class="text-center mb-4 px-2">
+            <h4
+              :class="[
+                'font-semibold text-sm sm:text-base',
+                currentLanguage === 'kh' && 'khmer-text-fix',
+              ]"
+              :style="{
+                color: primaryColor,
+                fontFamily: primaryFont || currentFont,
+              }"
+            >
+              {{ getFirstAgendaDescription(date) }}
+            </h4>
           </div>
 
-          <!-- Expandable Content -->
-          <div class="agenda-card-content" :class="{ expanded: isCardExpanded(date) }">
-            <div class="agenda-scrollable-wrapper">
-              <div
-                class="agenda-scrollable-content"
-                @scroll="throttledScrollHandler($event, date)"
-                :ref="(el) => setScrollRef(el as HTMLElement | null, date)"
-              >
-                <!-- First agenda description at top center -->
-                <div v-if="getFirstAgendaDescription(date)" class="text-center mb-3 px-2">
-                  <h4
-                    :class="[
-                      'font-semibold text-sm sm:text-base',
-                      currentLanguage === 'kh' && 'khmer-text-fix',
-                    ]"
-                    :style="{
-                      color: primaryColor,
-                      fontFamily: primaryFont || currentFont,
-                    }"
-                  >
-                    {{ getFirstAgendaDescription(date) }}
-                  </h4>
-                </div>
-
-                <!-- Agenda Items for this date -->
-                <div class="space-y-0">
-                  <div v-for="item in agendaByDate[date] || []" :key="item.id">
-                    <AgendaItem
-                      :item="item"
-                      :primary-color="primaryColor"
-                      :accent-color="accentColor"
-                      :current-font="currentFont"
-                      :primary-font="primaryFont"
-                      :secondary-font="secondaryFont"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Scroll indicator -->
-              <div
-                v-show="scrollStates[date]?.canScrollDown"
-                class="scroll-indicator"
-                :style="{ '--indicator-color': primaryColor }"
-              >
-                <div class="scroll-indicator-content">
-                  <div class="scroll-text">Scroll for more</div>
-                  <svg class="scroll-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                    />
-                  </svg>
-                </div>
-              </div>
+          <!-- Agenda Items for this date -->
+          <div class="space-y-0">
+            <div
+              v-for="(item, index) in agendaByDate[date] || []"
+              :key="item.id"
+              class="agenda-item-animate"
+              :style="{ '--item-index': index }"
+            >
+              <AgendaItem
+                :item="item"
+                :primary-color="primaryColor"
+                :accent-color="accentColor"
+                :current-font="currentFont"
+                :primary-font="primaryFont"
+                :secondary-font="secondaryFont"
+              />
             </div>
           </div>
         </div>
@@ -212,35 +141,6 @@ interface EventText {
 
 const props = defineProps<Props>()
 
-// Throttled scroll handler for better performance
-const throttledScrollHandler = throttle((event: Event, date: string) => {
-  checkScrollState(date)
-}, 16) // ~60fps
-
-// Simple throttle function
-function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T {
-  let timeoutId: number | null = null
-  let lastExecTime = 0
-
-  return ((...args: Parameters<T>) => {
-    const currentTime = Date.now()
-
-    if (currentTime - lastExecTime > delay) {
-      func(...args)
-      lastExecTime = currentTime
-    } else {
-      if (timeoutId) clearTimeout(timeoutId)
-      timeoutId = setTimeout(
-        () => {
-          func(...args)
-          lastExecTime = Date.now()
-        },
-        delay - (currentTime - lastExecTime),
-      )
-    }
-  }) as T
-}
-
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
   // First, try to get content from database (eventTexts)
@@ -274,14 +174,8 @@ const getTextContent = (textType: string, fallback = ''): string => {
   return fallback
 }
 
-// State for expanded card (only one at a time)
-const expandedCard = ref<string | null>(null)
-
-// State for scroll indicators
-const scrollStates = ref<Record<string, { canScrollDown: boolean; canScrollUp: boolean }>>({})
-
-// Store refs to scroll elements
-const scrollRefs = ref<Record<string, HTMLElement>>({})
+// State for active tab
+const activeTab = ref<string | null>(null)
 
 // Group agenda items by date
 const agendaByDate = computed(() => {
@@ -324,55 +218,9 @@ const getActivityCountText = (count: number): string => {
   }
 }
 
-// Methods for accordion functionality
-const isCardExpanded = (date: string): boolean => {
-  return expandedCard.value === date
-}
-
-const toggleCard = (date: string) => {
-  // If clicking the same card that's already expanded, close it
-  if (expandedCard.value === date) {
-    expandedCard.value = null
-  } else {
-    // Otherwise, open this card (automatically closes any other open card)
-    expandedCard.value = date
-
-    // Check scroll state after expansion animation with RAF for better performance
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        checkScrollState(date)
-      }, 300) // Wait for expansion animation
-    })
-  }
-}
-
-const setScrollRef = (el: HTMLElement | null, date: string) => {
-  if (el) {
-    scrollRefs.value[date] = el
-    // Initialize scroll state when element is mounted
-    requestAnimationFrame(() => {
-      checkScrollState(date)
-    })
-  }
-}
-
-const checkScrollState = (date: string) => {
-  const scrollElement = scrollRefs.value[date]
-  if (!scrollElement) return
-
-  const { scrollTop, scrollHeight, clientHeight } = scrollElement
-  const canScrollDown = scrollTop < scrollHeight - clientHeight - 5
-  const canScrollUp = scrollTop > 5
-
-  // Only update if state actually changed
-  const currentState = scrollStates.value[date]
-  if (
-    !currentState ||
-    currentState.canScrollDown !== canScrollDown ||
-    currentState.canScrollUp !== canScrollUp
-  ) {
-    scrollStates.value[date] = { canScrollDown, canScrollUp }
-  }
+// Methods for tab functionality
+const selectTab = (date: string) => {
+  activeTab.value = date
 }
 
 const formatAgendaDate = (dateString: string): string => {
@@ -403,262 +251,120 @@ const getFirstAgendaDescription = (date: string): string => {
   return description ? description.charAt(0).toUpperCase() + description.slice(1) : ''
 }
 
-// Setup simple intersection observer for animation
+// Select the first tab by default on mount
 onMounted(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const element = entry.target as HTMLElement
-          element.classList.add('animate-in')
-          observer.unobserve(element)
-        }
-      })
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
-  )
-
-  // Observe all agenda cards
-  const cards = document.querySelectorAll('.agenda-date-section')
-  cards.forEach((card) => observer.observe(card))
-
-  // Expand the first card by default
   if (agendaTabs.value.length > 0) {
-    expandedCard.value = agendaTabs.value[0]
-    // Check scroll state after setting expanded
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        checkScrollState(agendaTabs.value[0])
-      }, 300)
-    })
+    activeTab.value = agendaTabs.value[0]
   }
 })
 </script>
 
 <style scoped>
-/* CSS Custom Properties for better performance */
-.gradient-text {
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Unified Tab Container */
+.unified-tab-container {
+  width: 100%;
 }
 
-/* Optimized animation system */
-.agenda-date-section {
-  position: relative;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: var(--animation-delay, 0ms);
-}
-
-.agenda-date-section.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.agenda-date-section:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
-/* Optimized card container */
-.agenda-card-container {
-  border-radius: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  transform: translateZ(0);
-  backdrop-filter: blur(16px);
-  box-shadow:
-    0 12px 36px -6px var(--primary-color) 25,
-    0 6px 24px -3px var(--primary-color) 20,
-    0 3px 12px -1px var(--primary-color) 15,
-    inset 0 1px 2px rgba(255, 255, 255, 0.12);
-}
-
-.agenda-card-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
-}
-
-.agenda-card-container:hover {
-  transform: translateY(-2px) translateZ(0);
-  box-shadow:
-    0 20px 40px -8px var(--primary-color) 25,
-    0 8px 32px -4px var(--primary-color) 20,
-    0 4px 16px -2px var(--primary-color) 15,
-    inset 0 1px 2px rgba(255, 255, 255, 0.15);
-}
-
-/* Card header optimization */
-.agenda-card-header {
-  cursor: pointer;
-  transition: backdrop-filter 0.3s ease;
-}
-
-.agenda-card-header:hover {
-  backdrop-filter: blur(20px);
-}
-
-.icon-container {
-  padding: 0.5rem;
-  border-radius: 0.75rem;
-}
-
-.activity-count {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  opacity: 0.7;
-}
-
-/* Optimized expand/collapse animation */
-.expand-arrow {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.6;
-}
-
-.expand-arrow.expanded {
-  transform: rotate(180deg);
-}
-
-/* Improved content expansion */
-.agenda-card-content {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition:
-    max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.4s ease-in-out;
-  will-change: max-height, opacity;
-  contain: layout style;
-}
-
-.agenda-card-content.expanded {
-  max-height: 60vh;
-  opacity: 1;
-}
-
-/* Scrollable optimization */
-.agenda-scrollable-wrapper {
-  position: relative;
-  max-height: 50vh;
-}
-
-.agenda-scrollable-content {
-  max-height: 50vh;
-  overflow-y: auto;
-  padding: 1rem 1.5rem 4rem 1.5rem; /* Added bottom padding for scroll indicator */
+.tab-bar-scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
 }
 
-.agenda-scrollable-content::-webkit-scrollbar {
+.tab-bar-scroll-wrapper::-webkit-scrollbar {
   display: none;
 }
 
-/* Optimized scroll indicator */
-.scroll-indicator {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4rem;
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.85) 30%,
-    rgba(255, 255, 255, 0.5) 60%,
-    transparent 100%
-  );
-  border-radius: 0 0 1.5rem 1.5rem;
-  transition: opacity 0.3s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.scroll-indicator-content {
+.tab-bar {
   display: flex;
-  flex-direction: column;
+  gap: 0.75rem;
+  min-width: min-content;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+/* Tab Buttons */
+.tab-button {
+  flex-shrink: 0;
+  display: flex;
   align-items: center;
-  justify-content: end;
-  height: 100%;
-  padding-bottom: 0.75rem;
-  color: var(--indicator-color, #4f46e5);
-  opacity: 0.9;
-  font-weight: 600;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  position: relative;
 }
 
-.scroll-text {
-  font-size: 0.75rem;
-  margin-bottom: 0.25rem;
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.scroll-arrow {
-  width: 1.25rem;
-  height: 1.25rem;
-  animation: bounce 2s infinite;
+.tab-button.active {
+  border-bottom-color: currentColor;
 }
 
-/* Responsive breakpoints - consolidated */
-@media (min-width: 640px) {
-  .agenda-scrollable-content {
-    padding: 1.5rem 1.5rem 4rem 1.5rem; /* Keep bottom padding for scroll indicator */
+.tab-date {
+  font-size: 0.875rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Khmer language tab date - reduce padding */
+.tab-date.khmer-text-fix {
+  line-height: 1.4 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Tab Content Area */
+.tab-content-area {
+  position: relative;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Agenda Item Scroll Animation */
+.agenda-item-animate {
+  opacity: 0;
+  animation: slideInUp 0.5s ease-out forwards;
+  animation-delay: calc(var(--item-index) * 0.1s);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .agenda-date-section,
-  .agenda-card-container,
-  .expand-arrow,
-  .agenda-card-content {
-    transition: none;
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-
-  .scroll-arrow {
-    animation: none;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Bounce animation */
-@keyframes bounce {
-  0%,
-  20%,
-  53%,
-  80%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  40%,
-  43% {
-    transform: translate3d(0, -8px, 0);
-  }
-  70% {
-    transform: translate3d(0, -4px, 0);
-  }
-  90% {
-    transform: translate3d(0, -2px, 0);
-  }
-}
 
 /* Enhanced Khmer font rendering */
 .khmer-text-fix {
@@ -669,136 +375,20 @@ onMounted(() => {
   margin-bottom: 0.2em;
 }
 
-/* Compact Khmer text for agenda card header (collapsed state only) */
-.agenda-card-header .khmer-text-fix {
-  line-height: 1.4 !important;
-  padding-top: 0.1em !important;
-  padding-bottom: 0.1em !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - match RSVP header size */
+  /* Header text */
   h2 {
-    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+    font-size: 1rem !important;
   }
 
-  /* Overall section spacing - match mobile compact */
-  .mb-4.sm\:mb-5.laptop-sm\:mb-5.laptop-md\:mb-6.laptop-lg\:mb-7.desktop\:mb-6 {
-    margin-bottom: 1rem !important; /* Mobile spacing */
+  /* Tab bar compact sizing */
+  .tab-button {
+    padding: 0.625rem 1.25rem !important;
   }
 
-  /* Header container spacing - more compact */
-  .text-center.laptop-sm\:mb-6.laptop-md\:mb-8.laptop-lg\:mb-10.desktop\:mb-8 {
-    margin-bottom: 1rem !important; /* Mobile spacing */
-  }
-
-  /* Card container spacing - reduce space between cards */
-  .space-y-3 {
-    gap: 0.5rem !important; /* Tighter spacing between cards */
-  }
-
-  .space-y-3 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 0.5rem !important;
-  }
-
-  /* Container mobile sizing */
-  .agenda-card-container {
-    border-radius: 1rem !important; /* Even smaller radius like mobile */
-  }
-
-  /* Card header mobile padding - MORE COMPACT for collapsed state */
-  .agenda-card-header .flex {
-    padding: 0.5rem 0.75rem !important; /* Vertical padding much smaller */
-  }
-
-  /* Icon container mobile size - smaller */
-  .icon-container {
-    padding: 0.25rem !important; /* Smaller padding */
-  }
-
-  /* Icons mobile size - smaller */
-  .icon-container svg,
-  .expand-arrow svg {
-    width: 0.875rem !important; /* Smaller icons */
-    height: 0.875rem !important;
-  }
-
-  /* Date text - match RSVP collapsed text size */
-  .agenda-card-header h3 {
-    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
-    line-height: 1.2 !important; /* Tighter line height */
-  }
-
-  /* Activity count - match RSVP collapsed small text */
-  .activity-count {
-    font-size: 0.6875rem !important; /* 11px - same as RSVP text-xs */
-    margin-top: 0 !important; /* Remove top margin */
-    line-height: 1.2 !important; /* Tighter line height */
-  }
-
-  /* Space between date and activity count - tighter */
-  .agenda-card-header .flex .space-x-3 > :not([hidden]) ~ :not([hidden]) {
-    margin-left: 0.5rem !important; /* Reduce space */
-  }
-
-  /* KEEP expanded content at original desktop sizes - DON'T reduce */
-  .agenda-card-content.expanded {
-    max-height: 60vh !important; /* Keep original expanded height */
-  }
-
-  .agenda-scrollable-wrapper {
-    max-height: 50vh !important; /* Keep original expanded height */
-  }
-
-  .agenda-scrollable-content {
-    max-height: 50vh !important; /* Keep original expanded height */
-    padding: 1rem 1.5rem 4rem 1.5rem !important; /* Keep bottom padding for scroll indicator */
-  }
-
-  /* First agenda description mobile size */
-  .agenda-scrollable-content h4 {
-    font-size: 0.8125rem !important; /* 13px - match other text */
-  }
-
-  /* Agenda items spacing */
-  .space-y-0 {
-    gap: 0 !important;
-  }
-
-  .space-y-0 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 0 !important;
-  }
-
-  /* Scroll indicator mobile size */
-  .scroll-indicator {
-    height: 2rem !important; /* Smaller indicator */
-  }
-
-  .scroll-text {
-    font-size: 0.6875rem !important; /* 11px */
-  }
-
-  .scroll-arrow {
-    width: 0.875rem !important; /* Smaller arrow */
-    height: 0.875rem !important;
-  }
-
-  /* Box shadow - more subtle like mobile */
-  .agenda-card-container {
-    box-shadow:
-      0 4px 16px -4px var(--primary-color, #000) 15,
-      0 2px 8px -2px var(--primary-color, #000) 10,
-      inset 0 1px 2px rgba(255, 255, 255, 0.08) !important;
-  }
-
-  .agenda-card-container:hover {
-    box-shadow:
-      0 8px 24px -4px var(--primary-color, #000) 20,
-      0 4px 12px -2px var(--primary-color, #000) 15,
-      inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+  .tab-date {
+    font-size: 0.75rem !important;
   }
 }
 

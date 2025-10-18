@@ -1,5 +1,5 @@
 <template>
-  <div class="agenda-card-wrapper flex items-center gap-3">
+  <div class="agenda-card-wrapper flex items-center">
     <!-- Icon Section (Left) - Outside the card border -->
     <div class="flex-shrink-0 agenda-icon-wrapper">
       <div
@@ -14,12 +14,18 @@
       <Calendar
         v-else
         class="agenda-icon-large agenda-fallback-icon"
-        :stroke-width="0.75"
+        :stroke-width="1"
         :style="{
           '--icon-color': primaryColor,
           color: primaryColor,
         }"
       />
+    </div>
+
+    <!-- Vertical Divider Line with Horizontal Connector -->
+    <div class="divider-container">
+      <div class="vertical-divider" :style="{ backgroundColor: primaryColor }"></div>
+      <div class="horizontal-connector" :style="{ backgroundColor: primaryColor }"></div>
     </div>
 
     <!-- Card with border and content -->
@@ -140,95 +146,69 @@ const timeText = computed(() => {
 .agenda-card-wrapper {
   transition: all 0.2s ease;
   position: relative;
+  gap: 2rem;
+}
+
+/* Divider Container */
+.divider-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* Vertical Divider Line */
+.vertical-divider {
+  width: 1px;
+  height: 100%;
+  min-height: 60px;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+/* Horizontal Connector - centered vertically */
+.horizontal-connector {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 25px;
+  height: 1px;
+  opacity: 0.4;
 }
 
 /* Card styling */
 .agenda-card {
   transition: all 0.2s ease;
   position: relative;
-  border-left: 1px solid var(--primary-color);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 0 0.75rem 0.75rem 0;
-  backdrop-filter: blur(8px);
-  padding-left: 1rem;
+  border: none;
+  background: transparent;
+  padding-left: 0;
+  margin-left: 1rem;
 }
 
-.agenda-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
-/* Mobile: Add subtle card styling with icon on the left */
-@media (max-width: 639px) {
-  .agenda-card {
-    border-left: 1px solid var(--primary-color);
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0 0.75rem 0.75rem 0;
-    backdrop-filter: blur(8px);
-    padding-left: 1rem;
-  }
-
-  .agenda-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  }
-
-  /* Icon positioned to the left of the border */
-  .agenda-icon-wrapper {
-    margin-left: 0;
-  }
-}
-
-/* Large Icon Styling - 25% bigger */
+/* Large Icon Styling */
 .agenda-icon-large {
-  width: 3.125rem;
-  height: 3.125rem;
+  width: 4rem;
+  height: 4rem;
   color: var(--icon-color) !important;
 }
 
-/* Mobile responsive icon sizing - 25% bigger */
+/* Mobile responsive icon sizing */
 @media (max-width: 640px) {
   .agenda-icon-large {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3rem;
+    height: 3rem;
   }
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Mobile card padding and styling */
+  /* Mobile card padding */
   .agenda-card {
     padding: 0.875rem !important;
-    border-left: 1px solid var(--primary-color);
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0 0.75rem 0.75rem 0;
-    backdrop-filter: blur(8px);
     padding-left: 1rem !important;
-  }
-
-  .agenda-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  }
-
-  /* Icon positioned to the left of the border */
-  .agenda-icon-wrapper {
-    margin-left: 0;
   }
 
   /* Title mobile size */
@@ -276,25 +256,25 @@ const timeText = computed(() => {
   color: var(--icon-color) !important;
   fill: none !important;
   stroke: var(--icon-color) !important;
-  stroke-width: 0.5 !important;
+  stroke-width: 1 !important;
 }
 
 .agenda-fallback-icon svg * {
   color: var(--icon-color) !important;
   fill: none !important;
   stroke: var(--icon-color) !important;
-  stroke-width: 0.5 !important;
+  stroke-width: 1 !important;
 }
 
 .agenda-fallback-icon svg path {
-  stroke-width: 0.5 !important;
+  stroke-width: 1 !important;
 }
 
 .agenda-fallback-icon svg line {
-  stroke-width: 0.5 !important;
+  stroke-width: 1 !important;
 }
 
 .agenda-fallback-icon svg rect {
-  stroke-width: 0.5 !important;
+  stroke-width: 1 !important;
 }
 </style>
