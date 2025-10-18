@@ -146,8 +146,6 @@ import { eventsService, type EventRegistration } from '../../services/api'
 import type { EventText } from '../../composables/useEventShowcase'
 import {
   translateRSVP,
-  formatDateLocalized,
-  formatTimeLocalized,
   getPersonUnit,
   type SupportedLanguage,
 } from '../../utils/translations'
@@ -184,7 +182,6 @@ const { withAuth } = useAuthModal()
 // State - Default to 'not_coming' for users without registration
 const rsvpStatus = ref<'coming' | 'not_coming' | null>('not_coming')
 const additionalGuests = ref(0)
-// const showConfirmationMessage = ref(false) // Unused
 
 // API Registration State
 const currentRegistration = ref<EventRegistration | null>(null)
@@ -199,21 +196,7 @@ let guestCountUpdateTimeout: ReturnType<typeof setTimeout> | null = null
 const hasUnsavedGuestChanges = ref(false)
 const savedGuestCount = ref(0) // Track last saved count
 
-// Countdown Timer State
-const timeLeft = ref({
-  days: 0,
-  hours: 0,
-  minutes: 0,
-  seconds: 0,
-})
-
-let countdownInterval: ReturnType<typeof setInterval> | null = null
-
 // Computed Properties
-// const showRSVPSection = computed(() => {
-//   // Show RSVP section if event hasn't ended
-//   return eventStatus.value !== 'ended'
-// }) // Unused
 
 const isUserAuthenticated = computed(() => {
   return authStore.isAuthenticated
@@ -240,34 +223,6 @@ const totalAttendees = computed(() => {
 const confirmationCode = computed(() => {
   return currentRegistration.value?.confirmation_code || null
 })
-
-const formatEventDate = computed(() => {
-  if (!props.eventStartDate) return 'Date TBD'
-
-  try {
-    const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-    return formatDateLocalized(props.eventStartDate, 'long', currentLang)
-  } catch {
-    return props.eventStartDate
-  }
-})
-
-const formatEventTime = computed(() => {
-  if (!props.eventStartDate) return 'Time TBD'
-
-  try {
-    const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-    return formatTimeLocalized(props.eventStartDate, currentLang)
-  } catch {
-    return 'Time TBD'
-  }
-})
-
-// const countdownLabel = computed(() => {
-//   if (eventStatus.value === 'ongoing') return 'Event in progress'
-//   if (eventStatus.value === 'ended') return 'Event has ended'
-//   return 'Time remaining'
-// }) // Unused
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -328,81 +283,19 @@ const getTextContent = (textType: string, fallback = ''): string => {
 // RSVP-related text content computed properties
 const rsvpHeaderText = computed(() => getTextContent('rsvp_header', 'Will you attend our wedding?'))
 
-const rsvpYesButtonText = computed(() => getTextContent('rsvp_yes_button', "Yes, I'll attend"))
-
-const rsvpNoButtonText = computed(() => getTextContent('rsvp_no_button', "Can't attend"))
-
 const rsvpAttendingText = computed(() => getTextContent('rsvp_attending', 'Attending'))
 
 const rsvpCantAttendText = computed(() => getTextContent('rsvp_cant_attend', "Can't attend"))
 
-const rsvpSignInText = computed(() =>
-  getTextContent('rsvp_sign_in', 'Please sign in to RSVP for this event'),
-)
-
 const rsvpSignInButtonText = computed(() =>
   getTextContent('rsvp_sign_in_button', 'Sign In to RSVP'),
-)
-
-const rsvpAdditionalGuestsText = computed(() =>
-  getTextContent('rsvp_additional_guests', 'Additional guests'),
 )
 
 const rsvpTotalAttendingText = computed(() =>
   getTextContent('rsvp_total_attending', 'Total attending'),
 )
 
-// Note: rsvp_person and rsvp_people are now handled by getPersonUnitForTemplate function
-
-const rsvpThankYouText = computed(() =>
-  getTextContent('rsvp_thank_you', 'Thank you for your response'),
-)
-
-// Status messages
-const rsvpStatusLiveText = computed(() => getTextContent('rsvp_status_live', 'Live'))
-
-const rsvpStatusEndedText = computed(() => getTextContent('rsvp_status_ended', 'Ended'))
-
-// Loading states
-const rsvpLoadingStatusText = computed(() =>
-  getTextContent('rsvp_loading_status', 'Loading your RSVP status...'),
-)
-
-const rsvpRegisteringText = computed(() => getTextContent('rsvp_registering', 'Registering...'))
-
-const rsvpUpdatingText = computed(() => getTextContent('rsvp_updating', 'Updating...'))
-
-// Guest management
-const rsvpUnsavedChangesText = computed(() =>
-  getTextContent('rsvp_unsaved_changes', 'Unsaved changes'),
-)
-
-const rsvpSaveNowText = computed(() => getTextContent('rsvp_save_now', 'Save now'))
-
-const rsvpSavingText = computed(() => getTextContent('rsvp_saving', 'Saving...'))
-
-const rsvpAutoSaveText = computed(() => getTextContent('rsvp_auto_save', 'Auto-saves in'))
-
-const rsvpSecondsText = computed(() => getTextContent('rsvp_seconds', 's'))
-
-// System messages
 const rsvpConfirmationText = computed(() => getTextContent('rsvp_confirmation', 'Confirmation:'))
-
-// Error handling
-const rsvpDismissText = computed(() => getTextContent('rsvp_dismiss', 'Dismiss'))
-
-// Countdown format
-const rsvpDaysText = computed(() => getTextContent('rsvp_days', 'd'))
-
-const rsvpHoursText = computed(() => getTextContent('rsvp_hours', 'h'))
-
-// Note: Success message templates are now handled directly in the functions using translateRSVP
-
-// Expose translation utilities for template use
-const getPersonUnitForTemplate = (count: number) => {
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  return getPersonUnit(count, currentLang)
-}
 
 // API Methods
 const loadCurrentRegistration = async () => {
@@ -536,36 +429,6 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
 }
 
 // Methods
-const updateCountdown = () => {
-  if (!props.eventStartDate) {
-    timeLeft.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
-    return
-  }
-
-  const now = new Date()
-  const targetDate = new Date(props.eventStartDate)
-  const timeDifference = targetDate.getTime() - now.getTime()
-
-  if (timeDifference <= 0) {
-    // Event has started or passed
-    timeLeft.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
-    if (countdownInterval) {
-      window.clearInterval(countdownInterval)
-      countdownInterval = null
-    }
-    return
-  }
-
-  const newTimeLeft = {
-    days: Math.floor(timeDifference / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-    minutes: Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)),
-    seconds: Math.floor((timeDifference % (1000 * 60)) / 1000),
-  }
-
-  timeLeft.value = newTimeLeft
-}
-
 const handleSignInClick = () => {
   // Emit event to show auth modal instead of redirecting
   emit('showAuthModal')
@@ -680,14 +543,6 @@ const decreaseGuestCount = () => {
   }
 }
 
-// Smart save triggers
-const handleGuestCounterLeave = () => {
-  // Save when user moves mouse away from guest counter
-  if (hasUnsavedGuestChanges.value && !isUpdatingGuestCount.value) {
-    saveGuestCountChanges()
-  }
-}
-
 // Save before page navigation/reload
 const handleBeforeUnload = () => {
   if (hasUnsavedGuestChanges.value && !isUpdatingGuestCount.value) {
@@ -701,18 +556,6 @@ const handleBeforeUnload = () => {
     )
   }
 }
-
-// const hexToRgb = (hex: string): string => {
-//   // Remove # if present
-//   hex = hex.replace('#', '')
-//
-//   // Parse hex to RGB
-//   const r = parseInt(hex.substr(0, 2), 16)
-//   const g = parseInt(hex.substr(2, 2), 16)
-//   const b = parseInt(hex.substr(4, 2), 16)
-//
-//   return `${r}, ${g}, ${b}`
-// } // Unused
 
 // Watchers
 watch(
@@ -738,16 +581,6 @@ watch(
 
 // Lifecycle
 onMounted(() => {
-  // Initial countdown update
-  updateCountdown()
-
-  // Set up interval for upcoming events
-  if (props.eventStartDate && eventStatus.value === 'upcoming') {
-    countdownInterval = window.setInterval(() => {
-      updateCountdown()
-    }, 1000)
-  }
-
   // Load current registration if user is authenticated
   if (authStore.isAuthenticated) {
     loadCurrentRegistration()
@@ -758,10 +591,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (countdownInterval) {
-    window.clearInterval(countdownInterval)
-  }
-
   // Clear guest count update timeout
   if (guestCountUpdateTimeout) {
     clearTimeout(guestCountUpdateTimeout)
