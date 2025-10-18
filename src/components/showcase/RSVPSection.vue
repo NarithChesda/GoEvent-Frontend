@@ -13,697 +13,120 @@
       </h1>
     </div>
 
-    <!-- Liquid Glass RSVP Container - Enhanced with Agenda Card Styling -->
+    <!-- Open Transparent RSVP Card -->
     <div
-      class="liquid-glass-container"
+      class="rsvp-card-container"
       :style="{
-        backgroundColor: `${primaryColor}15`,
-        boxShadow: `
-        0 12px 36px -6px ${primaryColor}25,
-        0 6px 24px -3px ${primaryColor}20,
-        0 3px 12px -1px ${primaryColor}15,
-        inset 0 1px 2px rgba(255, 255, 255, 0.12)
-      `,
-        border: `1px solid ${primaryColor}40`,
+        background: 'transparent',
       }"
     >
-      <!-- Collapsible Header -->
-      <div
-        class="rsvp-header cursor-pointer transition-all duration-300 hover:translateY(-1px)"
-        @click="toggleRSVP"
-        :style="{
-          padding: '1rem 1.25rem',
-        }"
-      >
-        <div class="rsvp-header-content" :class="{ 'rsvp-header-content--expanded': isExpanded }">
-          <!-- Mobile/Collapsed Layout -->
-          <div v-if="!isExpanded" class="flex items-center justify-between w-full">
-            <!-- Left: RSVP Title & Status -->
-            <div class="flex items-center space-x-3">
-              <h2
-                class="text-lg font-semibold"
-                :style="{
-                  color: primaryColor,
-                  fontFamily: primaryFont || currentFont,
-                }"
-              >
-                RSVP
-              </h2>
+      <!-- RSVP Content - Always Visible -->
+      <div class="rsvp-content-open">
+        <!-- Ultra Minimal RSVP Row -->
+        <div class="rsvp-main-row">
+          <!-- Not Authenticated: Single Sign In Button -->
+          <button
+            v-if="eventStatus !== 'ended' && !isUserAuthenticated"
+            @click="handleSignInClick"
+            class="rsvp-btn rsvp-btn--primary"
+            :style="{
+              background: primaryColor,
+              color: '#ffffff',
+              fontFamily: secondaryFont || currentFont,
+            }"
+          >
+            {{ rsvpSignInButtonText }}
+          </button>
 
-              <!-- Compact Status Indicator -->
-              <div v-if="rsvpStatus" class="flex items-center space-x-2">
-                <div
-                  v-if="rsvpStatus === 'coming'"
-                  class="status-indicator"
-                  :style="{
-                    background: `${primaryColor}20`,
-                    color: primaryColor,
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span
-                    class="text-xs font-medium"
-                    :style="{ fontFamily: secondaryFont || currentFont }"
-                    >{{ rsvpAttendingText }} ({{ totalAttendees }})</span
-                  >
-                </div>
-                <div
-                  v-else-if="rsvpStatus === 'not_coming'"
-                  class="status-indicator"
-                  :style="{
-                    background: 'rgba(107, 114, 128, 0.2)',
-                    color: '#6b7280',
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                  <span
-                    class="text-xs font-medium"
-                    :style="{ fontFamily: secondaryFont || currentFont }"
-                    >{{ rsvpCantAttendText }}</span
-                  >
-                </div>
-              </div>
+          <!-- Loading State -->
+          <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated && isLoading" class="rsvp-loader">
+            <div class="spinner" :style="{ borderTopColor: primaryColor }"></div>
+          </div>
 
-              <!-- Event Date (collapsed only) -->
-              <div
-                class="text-sm font-medium opacity-75"
+          <!-- Authenticated: Inline RSVP with Guest Counter -->
+          <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated" class="rsvp-inline">
+            <!-- RSVP Toggle Buttons -->
+            <div class="rsvp-toggle">
+              <button
+                @click="setRSVPStatus('coming')"
+                :disabled="isSubmitting"
+                class="rsvp-btn"
+                :class="{ 'active': rsvpStatus === 'coming' }"
                 :style="{
-                  color: primaryColor,
+                  background: rsvpStatus === 'coming' ? primaryColor : 'transparent',
+                  color: rsvpStatus === 'coming' ? '#ffffff' : primaryColor,
+                  borderColor: primaryColor,
                   fontFamily: secondaryFont || currentFont,
                 }"
               >
-                {{ formatEventDateCompact }}
-              </div>
-
-              <!-- Event Status Badge (desktop only, collapsed only) -->
-              <div class="hidden md:flex items-center">
-                <div
-                  v-if="eventStatus === 'upcoming'"
-                  class="status-badge-compact"
-                  :style="{
-                    background: `${primaryColor}15`,
-                    color: primaryColor,
-                    boxShadow: `0 2px 8px ${primaryColor}20`,
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span class="font-medium text-xs"
-                    >{{ timeLeft.days }}{{ rsvpDaysText }} {{ timeLeft.hours
-                    }}{{ rsvpHoursText }}</span
-                  >
-                </div>
-                <div
-                  v-else-if="eventStatus === 'ongoing'"
-                  class="status-badge-compact"
-                  :style="{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: '#10b981',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"
-                    />
-                  </svg>
-                  <span class="font-medium text-xs">{{ rsvpStatusLiveText }}</span>
-                </div>
-                <div
-                  v-else-if="eventStatus === 'ended'"
-                  class="status-badge-compact"
-                  :style="{
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    color: '#6b7280',
-                    boxShadow: '0 2px 8px rgba(107, 114, 128, 0.2)',
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span class="font-medium text-xs">{{ rsvpStatusEndedText }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: Expand/Collapse Icon -->
-            <div
-              class="expand-icon"
-              :style="{
-                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                color: primaryColor,
-              }"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Expanded/Centered Layout -->
-          <div v-else class="expanded-header-layout">
-            <div class="flex items-center justify-center">
-              <h2
-                class="text-xl font-bold"
-                :style="{
-                  color: primaryColor,
-                  fontFamily: primaryFont || currentFont,
-                }"
-              >
-                RSVP
-              </h2>
-            </div>
-
-            <!-- Collapse Icon (positioned absolutely) -->
-            <div
-              class="expand-icon expand-icon--centered"
-              :style="{
-                transform: 'rotate(180deg)',
-                color: primaryColor,
-              }"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Collapsible Content -->
-      <div
-        class="rsvp-content overflow-hidden transition-all duration-500 ease-in-out"
-        :class="isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'"
-      >
-        <!-- Event Info Header -->
-        <div class="rsvp-section-tight">
-          <div class="py-2">
-            <!-- Event Header - Two Row Layout -->
-            <div class="text-center space-y-2">
-              <!-- Row 1: Event Date -->
-              <div
-                class="text-sm"
-                :style="{
-                  color: primaryColor,
-                  fontFamily: primaryFont || currentFont,
-                }"
-              >
-                {{ formatEventDate }}
-              </div>
-
-              <!-- Row 2: Time & Status Badge Group (Centered) -->
-              <div class="flex items-center justify-center gap-2">
-                <div
-                  class="text-sm opacity-80"
-                  :style="{
-                    color: primaryColor,
-                    fontFamily: secondaryFont || currentFont,
-                  }"
-                >
-                  {{ formatEventTime }}
-                </div>
-
-                <div
-                  v-if="eventStatus === 'upcoming'"
-                  class="status-badge-compact"
-                  :style="{
-                    background: `${primaryColor}15`,
-                    color: primaryColor,
-                    boxShadow: `0 2px 8px ${primaryColor}20`,
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span class="font-medium text-xs"
-                    >{{ timeLeft.days }}{{ rsvpDaysText }} {{ timeLeft.hours
-                    }}{{ rsvpHoursText }}</span
-                  >
-                </div>
-                <div
-                  v-else-if="eventStatus === 'ongoing'"
-                  class="status-badge-compact"
-                  :style="{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: '#10b981',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"
-                    />
-                  </svg>
-                  <span class="font-medium text-xs">{{ rsvpStatusLiveText }}</span>
-                </div>
-                <div
-                  v-else-if="eventStatus === 'ended'"
-                  class="status-badge-compact"
-                  :style="{
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    color: '#6b7280',
-                    boxShadow: '0 2px 8px rgba(107, 114, 128, 0.2)',
-                  }"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span class="font-medium text-xs">{{ rsvpStatusEndedText }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main RSVP Actions -->
-        <div class="rsvp-section-tight">
-          <!-- Sign In Prompt for Unauthenticated Users -->
-          <div v-if="eventStatus !== 'ended' && !isUserAuthenticated" class="text-center py-2">
-            <p
-              class="text-sm mb-3"
-              :style="{
-                color: primaryColor,
-                opacity: 0.8,
-                fontFamily: secondaryFont || currentFont,
-              }"
-            >
-              {{ rsvpSignInText }}
-            </p>
-            <button
-              @click="handleSignInClick"
-              class="liquid-glass-button group"
-              :style="{
-                background: primaryColor,
-                color: '#ffffff',
-                boxShadow: `
-                0 8px 32px -4px ${primaryColor}40,
-                0 4px 16px -2px ${primaryColor}30
-              `,
-              }"
-            >
-              <div class="flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                  />
-                </svg>
-                <span class="font-semibold" :style="{ fontFamily: secondaryFont || currentFont }">{{
-                  rsvpSignInButtonText
-                }}</span>
-              </div>
-            </button>
-          </div>
-
-          <!-- Loading State -->
-          <div
-            v-if="eventStatus !== 'ended' && isUserAuthenticated && isLoading"
-            class="text-center py-3"
-          >
-            <div
-              class="animate-spin rounded-full h-6 w-6 mx-auto mb-2"
-              :style="{
-                borderColor: `${primaryColor}30`,
-                borderTopColor: primaryColor,
-                border: '2px solid',
-              }"
-            ></div>
-            <p class="text-xs font-medium" :style="{ color: primaryColor, opacity: 0.7 }">
-              {{ rsvpLoadingStatusText }}
-            </p>
-          </div>
-
-          <!-- RSVP Toggle Buttons (Authenticated Users) -->
-          <div
-            v-else-if="eventStatus !== 'ended' && isUserAuthenticated"
-            class="flex justify-center gap-3 py-2 px-3"
-          >
-            <!-- Yes Button -->
-            <button
-              @click="setRSVPStatus('coming')"
-              :disabled="isSubmitting"
-              class="liquid-glass-btn flex-1 min-w-0"
-              :class="{
-                'liquid-glass-btn--active': rsvpStatus === 'coming',
-                'liquid-glass-btn--disabled': isSubmitting,
-              }"
-              :style="{
-                background: rsvpStatus === 'coming' ? primaryColor : '#ffffff',
-                boxShadow:
-                  rsvpStatus === 'coming'
-                    ? `0 8px 32px -4px ${primaryColor}40, 0 4px 16px -2px ${primaryColor}30`
-                    : `0 4px 16px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
-                color: rsvpStatus === 'coming' ? '#ffffff' : primaryColor,
-                border: rsvpStatus === 'coming' ? 'none' : `2px solid ${primaryColor}`,
-              }"
-            >
-              <span
-                v-if="!isSubmitting || rsvpStatus !== 'coming'"
-                class="font-semibold text-center leading-tight"
-                :style="{ fontFamily: secondaryFont || currentFont }"
-              >
                 {{ rsvpStatus === 'coming' ? rsvpAttendingText : rsvpYesButtonText }}
-              </span>
-              <span v-else class="flex items-center justify-center font-semibold">
-                <div
-                  class="animate-spin rounded-full h-4 w-4 mr-2"
-                  :style="{
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    borderTopColor: '#ffffff',
-                    border: '2px solid',
-                  }"
-                ></div>
-                <span class="text-center leading-tight">{{ rsvpRegisteringText }}</span>
-              </span>
-            </button>
+              </button>
 
-            <!-- No Button -->
-            <button
-              @click="setRSVPStatus('not_coming')"
-              :disabled="isSubmitting"
-              class="liquid-glass-btn flex-1 min-w-0"
-              :class="{
-                'liquid-glass-btn--active': rsvpStatus === 'not_coming',
-                'liquid-glass-btn--disabled': isSubmitting,
-              }"
-              :style="{
-                background: rsvpStatus === 'not_coming' ? primaryColor : '#ffffff',
-                boxShadow:
-                  rsvpStatus === 'not_coming'
-                    ? `0 8px 32px -4px ${primaryColor}40, 0 4px 16px -2px ${primaryColor}30`
-                    : `0 4px 16px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
-                color: rsvpStatus === 'not_coming' ? '#ffffff' : primaryColor,
-                border: rsvpStatus === 'not_coming' ? 'none' : `2px solid ${primaryColor}`,
-              }"
-            >
-              <span
-                v-if="!isSubmitting || rsvpStatus !== 'not_coming'"
-                class="font-semibold text-center leading-tight"
-                :style="{ fontFamily: secondaryFont || currentFont }"
+              <button
+                @click="setRSVPStatus('not_coming')"
+                :disabled="isSubmitting"
+                class="rsvp-btn"
+                :class="{ 'active': rsvpStatus === 'not_coming' }"
+                :style="{
+                  background: rsvpStatus === 'not_coming' ? primaryColor : 'transparent',
+                  color: rsvpStatus === 'not_coming' ? '#ffffff' : primaryColor,
+                  borderColor: primaryColor,
+                  fontFamily: secondaryFont || currentFont,
+                }"
               >
                 {{ rsvpStatus === 'not_coming' ? rsvpCantAttendText : rsvpNoButtonText }}
-              </span>
-              <span v-else class="flex items-center justify-center font-semibold">
-                <div
-                  class="animate-spin rounded-full h-4 w-4 mr-2"
-                  :style="{
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    borderTopColor: '#ffffff',
-                    border: '2px solid',
-                  }"
-                ></div>
-                <span class="text-center leading-tight">{{ rsvpUpdatingText }}</span>
-              </span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Guest Management Section -->
-        <div
-          v-if="rsvpStatus === 'coming'"
-          class="rsvp-section-tight"
-          @mouseleave="handleGuestCounterLeave"
-        >
-          <div
-            class="guest-management-container"
-            :style="{
-              background: `${primaryColor}08`,
-              boxShadow: `0 4px 16px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-            }"
-          >
-            <!-- Guest Counter -->
-            <div class="glass-content-section py-1.5">
-              <!-- Guest Counter Label (centered) -->
-              <div class="text-center mb-2">
-                <span
-                  class="text-sm"
-                  :style="{
-                    color: primaryColor,
-                    fontFamily: primaryFont || currentFont,
-                  }"
-                >
-                  {{ rsvpAdditionalGuestsText }}
-                </span>
-              </div>
-
-              <!-- Guest Counter Controls (centered, matching RSVP buttons) -->
-              <div class="flex items-center justify-center gap-4 mb-1.5">
-                <button
-                  @click="decreaseGuestCount"
-                  :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
-                  class="counter-btn"
-                  :style="{
-                    background: `${primaryColor}12`,
-                    color: primaryColor,
-                    boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-                    opacity: additionalGuests <= 0 || isUpdatingGuestCount ? '0.4' : '1',
-                  }"
-                >
-                  −
-                </button>
-
-                <div
-                  class="text-2xl font-bold min-w-[3ch] text-center flex items-center justify-center"
-                  :style="{ color: primaryColor }"
-                >
-                  <span v-if="!isUpdatingGuestCount">{{ additionalGuests }}</span>
-                  <div
-                    v-else
-                    class="animate-spin rounded-full h-6 w-6"
-                    :style="{
-                      borderColor: `${primaryColor}30`,
-                      borderTopColor: primaryColor,
-                      border: '3px solid',
-                    }"
-                  ></div>
-                </div>
-
-                <button
-                  @click="increaseGuestCount"
-                  :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
-                  class="counter-btn"
-                  :style="{
-                    background: `${primaryColor}12`,
-                    color: primaryColor,
-                    boxShadow: `0 4px 16px -2px ${primaryColor}15, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-                    opacity: additionalGuests >= 10 || isUpdatingGuestCount ? '0.4' : '1',
-                  }"
-                >
-                  +
-                </button>
-              </div>
-
-              <!-- Total Summary -->
-              <div class="text-center">
-                <div
-                  class="total-summary-glass p-2"
-                  :style="{
-                    backgroundColor: `${primaryColor}06`,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-                  }"
-                >
-                  <span
-                    class="text-xs"
-                    :style="{
-                      color: primaryColor,
-                      fontFamily: secondaryFont || currentFont,
-                    }"
-                  >
-                    {{ rsvpTotalAttendingText }}: {{ totalAttendees }}
-                    {{ getPersonUnitForTemplate(totalAttendees) }}
-                  </span>
-                </div>
-
-                <!-- Unsaved Changes Indicator & Manual Save -->
-                <div v-if="hasUnsavedGuestChanges" class="mt-2 space-y-1.5">
-                  <div class="flex items-center justify-center gap-3">
-                    <span
-                      class="text-xs font-medium"
-                      :style="{ color: primaryColor, opacity: '0.7' }"
-                    >
-                      • {{ rsvpUnsavedChangesText }}
-                    </span>
-                    <button
-                      @click="saveGuestCountChanges"
-                      :disabled="isUpdatingGuestCount"
-                      class="save-btn"
-                      :style="{
-                        background: `${primaryColor}15`,
-                        color: primaryColor,
-                        boxShadow: `0 2px 8px ${primaryColor}20, inset 0 1px 2px rgba(255, 255, 255, 0.1)`,
-                      }"
-                    >
-                      {{ isUpdatingGuestCount ? rsvpSavingText : rsvpSaveNowText }}
-                    </button>
-                  </div>
-                  <span class="text-xs opacity-60" :style="{ color: primaryColor }">
-                    {{ rsvpAutoSaveText }} {{ Math.ceil(guestCountUpdateTimeout ? 2.5 : 0)
-                    }}{{ rsvpSecondsText }}
-                  </span>
-                </div>
-
-                <!-- Confirmation Code -->
-                <div v-if="confirmationCode && !hasUnsavedGuestChanges" class="mt-2">
-                  <div
-                    class="confirmation-code-glass p-1.5"
-                    :style="{
-                      backgroundColor: `${primaryColor}04`,
-                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.05)`,
-                    }"
-                  >
-                    <span class="text-xs font-mono opacity-80" :style="{ color: primaryColor }">
-                      {{ rsvpConfirmationText }} {{ confirmationCode }}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              </button>
             </div>
-          </div>
-        </div>
 
-        <!-- Status Message -->
-        <div v-if="rsvpStatus === 'not_coming' && !successMessage" class="rsvp-section-tight">
-          <div class="text-center py-2">
-            <div
-              class="status-message-glass p-4"
-              :style="{
-                backgroundColor: `${primaryColor}06`,
-                boxShadow: `0 4px 16px ${primaryColor}12, inset 0 1px 2px rgba(255, 255, 255, 0.08)`,
-              }"
-            >
-              <span
-                class="text-base font-semibold"
-                :style="{
-                  color: primaryColor,
-                  opacity: 0.9,
-                  fontFamily: primaryFont || currentFont,
-                }"
-              >
-                {{ rsvpThankYouText }}
+            <!-- Inline Guest Counter (only when attending) -->
+            <div v-if="rsvpStatus === 'coming'" class="guest-counter-inline">
+              <span class="guest-label" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+                {{ rsvpTotalAttendingText }}:
               </span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Success Message -->
-        <div v-if="successMessage" class="rsvp-section-tight">
-          <div class="text-center py-2">
-            <div
-              class="success-message-glass p-4"
-              :style="{
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                boxShadow:
-                  '0 4px 16px rgba(16, 185, 129, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)',
-              }"
-            >
-              <div class="flex items-center justify-center mb-2">
-                <svg
-                  class="w-5 h-5 mr-2 text-emerald-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <p class="text-emerald-800 font-semibold">{{ successMessage }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Error Message -->
-        <div v-if="errorMessage" class="rsvp-section-tight">
-          <div class="text-center py-2">
-            <div
-              class="error-message-glass p-4"
-              :style="{
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                boxShadow:
-                  '0 4px 16px rgba(239, 68, 68, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)',
-              }"
-            >
-              <div class="flex items-center justify-center mb-2">
-                <svg
-                  class="w-5 h-5 mr-2 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <p class="text-red-800 font-semibold">{{ errorMessage }}</p>
-              </div>
               <button
-                @click="errorMessage = ''"
-                class="text-red-600 hover:text-red-800 text-sm mt-1 underline font-medium"
+                @click="decreaseGuestCount"
+                :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
+                class="counter-btn-minimal"
+                :style="{ color: primaryColor }"
               >
-                {{ rsvpDismissText }}
+                −
+              </button>
+
+              <span class="guest-count" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+                {{ totalAttendees }}
+              </span>
+
+              <button
+                @click="increaseGuestCount"
+                :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
+                class="counter-btn-minimal"
+                :style="{ color: primaryColor }"
+              >
+                +
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Confirmation Code -->
+        <div v-if="confirmationCode && rsvpStatus === 'coming'" class="rsvp-confirmation">
+          <span class="confirmation-label" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+            {{ rsvpConfirmationText }}
+          </span>
+          <span class="confirmation-code" :style="{ color: primaryColor, fontFamily: 'monospace' }">
+            {{ confirmationCode }}
+          </span>
+        </div>
+
+        <!-- Minimal Status Messages -->
+        <div v-if="successMessage || errorMessage" class="rsvp-message">
+          <span v-if="successMessage" class="message-text success" :style="{ color: '#10b981' }">
+            ✓ {{ successMessage }}
+          </span>
+          <span v-if="errorMessage" class="message-text error" :style="{ color: '#ef4444' }">
+            ✕ {{ errorMessage }}
+          </span>
         </div>
       </div>
     </div>
@@ -712,7 +135,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { eventsService, type EventRegistration } from '../../services/api'
 import type { EventText } from '../../composables/useEventShowcase'
@@ -747,9 +169,7 @@ const emit = defineEmits<{
   showAuthModal: []
 }>()
 
-// Router and Auth
-const router = useRouter()
-const route = useRoute()
+// Auth
 const authStore = useAuthStore()
 
 // Auth modal composable
@@ -759,9 +179,6 @@ const { withAuth } = useAuthModal()
 const rsvpStatus = ref<'coming' | 'not_coming' | null>(null)
 const additionalGuests = ref(0)
 // const showConfirmationMessage = ref(false) // Unused
-
-// Collapsible state
-const isExpanded = ref(true)
 
 // API Registration State
 const currentRegistration = ref<EventRegistration | null>(null)
@@ -837,17 +254,6 @@ const formatEventTime = computed(() => {
     return formatTimeLocalized(props.eventStartDate, currentLang)
   } catch {
     return 'Time TBD'
-  }
-})
-
-const formatEventDateCompact = computed(() => {
-  if (!props.eventStartDate) return 'Date TBD'
-
-  try {
-    const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-    return formatDateLocalized(props.eventStartDate, 'compact', currentLang)
-  } catch {
-    return props.eventStartDate
   }
 })
 
@@ -990,11 +396,6 @@ const rsvpHoursText = computed(() => getTextContent('rsvp_hours', 'h'))
 const getPersonUnitForTemplate = (count: number) => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
   return getPersonUnit(count, currentLang)
-}
-
-// Collapsible methods
-const toggleRSVP = () => {
-  isExpanded.value = !isExpanded.value
 }
 
 // API Methods
@@ -1341,699 +742,253 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Liquid Glass Container - Enhanced unified surface with agenda card styling */
-.liquid-glass-container {
-  border-radius: 1.5rem;
-  overflow: hidden;
-  backdrop-filter: blur(16px);
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Container */
+.rsvp-card-container {
+  padding: 0;
 }
 
-.liquid-glass-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
+.rsvp-content-open {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-/* RSVP Header - Enhanced collapsible trigger */
-.rsvp-header {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.rsvp-header:hover {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.rsvp-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
-/* Status Indicator */
-.status-indicator {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.75rem;
-  font-size: 0.75rem;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Expand/Collapse Icon */
-.expand-icon {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.7;
-}
-
-.rsvp-header:hover .expand-icon {
-  opacity: 1;
-}
-
-/* Header Content Layouts */
-.rsvp-header-content {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.rsvp-header-content--expanded {
-  /* Additional styling for expanded state if needed */
-}
-
-/* Expanded Header Layout */
-.expanded-header-layout {
-  position: relative;
-  text-align: center;
-}
-
-/* Centered expand icon for expanded state */
-.expand-icon--centered {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%) rotate(180deg);
-  opacity: 0.8;
-}
-
-.rsvp-header:hover .expand-icon--centered {
-  opacity: 1;
-}
-
-/* Enhanced collapsible content - matching agenda section animation */
-.rsvp-content {
-  transition:
-    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease-in-out;
-  will-change: max-height, opacity;
-  transform-origin: top;
-}
-
-/* RSVP Sections - Flowing divisions */
-.rsvp-section {
-  padding: 1.5rem 1rem;
-  position: relative;
-}
-
-.rsvp-section:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
-/* Tight RSVP sections for minimal spacing */
-.rsvp-section-tight {
-  padding: 0.5rem 1rem;
-  position: relative;
-}
-
-.rsvp-section-tight:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 20%;
-  right: 20%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
-}
-
-/* Compact RSVP sections for reduced spacing */
-.rsvp-section-compact {
-  padding: 0.75rem 1rem;
-  position: relative;
-}
-
-.rsvp-section-compact:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 15%;
-  right: 15%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-}
-
-/* Status badge - compact version for top right */
-.status-badge-compact {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.75rem;
-  font-size: 0.75rem;
-  backdrop-filter: blur(12px);
-  position: relative;
-  white-space: nowrap;
-}
-
-.status-badge-compact::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  pointer-events: none;
-}
-
-/* Apple-inspired Liquid Glass Buttons */
-.liquid-glass-btn {
-  padding: 0.875rem 1rem;
-  border-radius: 1.25rem;
-  font-weight: 600;
-  text-align: center;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid;
-  min-height: 3.5rem;
+/* Main Row - Ultra Minimal */
+.rsvp-main-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  word-wrap: break-word;
-  hyphens: auto;
+  padding: 0.5rem 0;
 }
 
-/* Add subtle glass reflection */
-.liquid-glass-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    transparent 100%
-  );
-  pointer-events: none;
-  border-radius: inherit;
+/* Inline RSVP Layout */
+.rsvp-inline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-/* Active state - crisp and bright */
-.liquid-glass-btn--active {
-  transform: translateY(-1px);
+.rsvp-toggle {
+  display: flex;
+  gap: 0.5rem;
 }
 
-/* Inactive state - softened with blur */
-.liquid-glass-btn:not(.liquid-glass-btn--active) {
+/* RSVP Button - Minimal Design */
+.rsvp-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  background: transparent;
+}
+
+.rsvp-btn--primary {
+  border: none;
+}
+
+.rsvp-btn:hover:not(:disabled) {
   opacity: 0.85;
 }
 
-/* Hover interactions with subtle glow */
-.liquid-glass-btn:not(.liquid-glass-btn--disabled):hover {
-  transform: translateY(-2px) scale(1.02);
-  backdrop-filter: blur(20px) saturate(200%);
-  -webkit-backdrop-filter: blur(20px) saturate(200%);
+.rsvp-btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-/* Active interactions with enhanced glow */
-.liquid-glass-btn:not(.liquid-glass-btn--disabled):active {
-  transform: translateY(0) scale(0.98);
-  transition: transform 0.1s ease;
-}
-
-/* Disabled state with reduced opacity */
-.liquid-glass-btn--disabled {
-  opacity: 0.6;
+.rsvp-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
 }
 
-/* Enhanced hover effect for active buttons */
-.liquid-glass-btn--active:not(.liquid-glass-btn--disabled):hover {
-  backdrop-filter: blur(24px) saturate(220%);
-  -webkit-backdrop-filter: blur(24px) saturate(220%);
+.rsvp-btn.active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Compact RSVP Toggle Switch */
-.rsvp-toggle-compact {
-  display: flex;
-  border-radius: 0.75rem;
-  padding: 0.125rem;
-  backdrop-filter: blur(10px);
-  position: relative;
-  width: 4.5rem;
-}
-
-.rsvp-toggle-compact::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  pointer-events: none;
-}
-
-.rsvp-toggle-option-compact {
-  flex: 1;
+/* Inline Guest Counter */
+.guest-counter-inline {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 0.625rem;
-  border: none;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.guest-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.counter-btn-minimal {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid currentColor;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(8px);
-  position: relative;
-  min-height: 2rem;
-  width: 2rem;
-}
-
-.rsvp-toggle-option-compact:hover {
-  transform: translateY(-0.5px) scale(1.05);
-}
-
-.rsvp-toggle-option-compact:active {
-  transform: translateY(0) scale(0.98);
-  transition: transform 0.1s ease;
-}
-
-.rsvp-toggle-option-compact:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Guest management container */
-.guest-management-container {
-  border-radius: 1.5rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  position: relative;
-  padding: 0.5rem;
-}
-
-.guest-management-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
-}
-
-/* Liquid glass buttons */
-.liquid-glass-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 2rem;
-  border-radius: 1.5rem;
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(16px);
-  min-height: 52px;
-  position: relative;
-  overflow: hidden;
-  border: none;
-  cursor: pointer;
-}
-
-.liquid-glass-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  pointer-events: none;
-}
-
-.liquid-glass-button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-
-.liquid-glass-button:hover::after {
-  left: 100%;
-}
-
-.liquid-glass-button:hover {
-  transform: translateY(-2px);
-  backdrop-filter: blur(20px);
-}
-
-.liquid-glass-button:active {
-  transform: translateY(-1px);
-  transition: transform 0.1s ease;
-}
-
-/* Counter buttons */
-.counter-btn {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(12px);
-  position: relative;
+  transition: all 0.15s ease;
+  opacity: 0.7;
 }
 
-.counter-btn:hover {
-  transform: translateY(-1px) scale(1.05);
+.counter-btn-minimal:hover:not(:disabled) {
+  opacity: 1;
+  background: currentColor;
+  color: white;
 }
 
-.counter-btn:active {
-  transform: translateY(0) scale(0.98);
+.counter-btn-minimal:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
-/* Save button */
-.save-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
+.guest-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* Confirmation Code */
+.rsvp-confirmation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0;
+}
+
+.confirmation-label {
   font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.confirmation-code {
+  font-size: 0.875rem;
   font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  letter-spacing: 0.05em;
+  opacity: 0.9;
 }
 
-.save-btn:hover {
-  transform: translateY(-1px);
-}
-
-/* Glass content sections */
-.glass-content-section {
+/* Loading */
+.rsvp-loader {
+  display: flex;
+  justify-content: center;
   padding: 0.5rem;
 }
 
-/* Status message containers */
-.total-summary-glass,
-.confirmation-code-glass,
-.status-message-glass,
-.success-message-glass,
-.error-message-glass {
-  border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  position: relative;
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
 }
 
-.total-summary-glass::before,
-.confirmation-code-glass::before,
-.status-message-glass::before,
-.success-message-glass::before,
-.error-message-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Mobile-first responsive design */
+/* Minimal Messages */
+.rsvp-message {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+.message-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* Mobile Responsive */
 @media (max-width: 639px) {
-  .rsvp-section {
-    padding: 1rem 0.75rem;
+  .rsvp-main-row {
+    padding: 0.375rem 0;
   }
 
-  .rsvp-section-tight {
-    padding: 0.375rem 0.75rem;
+  .rsvp-inline {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .rsvp-section-compact {
-    padding: 0.5rem 0.75rem;
+  .rsvp-toggle {
+    display: flex;
+    gap: 0.375rem;
+    flex: 1;
   }
 
-  .liquid-glass-button {
-    padding: 0.875rem 1.5rem;
-    font-size: 0.925rem;
-    min-height: 48px;
+  .rsvp-btn {
+    flex: 1;
+    padding: 0.5rem 0.375rem;
+    font-size: 0.75rem;
+    border-radius: 0.313rem;
   }
 
-  .counter-btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    font-size: 1.1rem;
+  .guest-counter-inline {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    gap: 0.375rem;
+    flex-shrink: 0;
   }
 
-  .rsvp-toggle-compact {
-    width: 4rem;
-    padding: 0.1rem;
+  .guest-label {
+    font-size: 0.6875rem;
+    white-space: nowrap;
   }
 
-  .rsvp-toggle-option-compact {
-    padding: 0.375rem;
-    min-height: 1.75rem;
+  .counter-btn-minimal {
     width: 1.75rem;
-  }
-
-  .liquid-glass-btn {
-    padding: 0.75rem 0.875rem;
+    height: 1.75rem;
     font-size: 0.875rem;
-    border-radius: 1rem;
-    min-height: 3rem;
+  }
+
+  .guest-count {
+    font-size: 0.875rem;
+    min-width: 1.25rem;
+  }
+
+  .rsvp-confirmation {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+  }
+
+  .confirmation-label {
+    font-size: 0.6875rem;
+  }
+
+  .confirmation-code {
+    font-size: 0.8125rem;
   }
 }
 
-/* Tablet adjustments */
+/* Tablet */
 @media (min-width: 640px) and (max-width: 1023px) {
-  .rsvp-section {
-    padding: 1.25rem 1rem;
-  }
-
-  .rsvp-section-tight {
-    padding: 0.5rem 1rem;
-  }
-
-  .rsvp-section-compact {
-    padding: 0.625rem 1rem;
-  }
-
-  .liquid-glass-button {
-    padding: 1rem 1.75rem;
-    min-height: 50px;
-  }
-
-  .liquid-glass-btn {
-    padding: 0.875rem 1rem;
-    min-height: 3.25rem;
+  .rsvp-btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
   }
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+/* Small laptops */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Override h1 header text size - match EventInfo h2 sizing */
-  h1 {
-    font-size: 1rem !important; /* 16px - match EventInfo section */
-  }
-
-  /* Keep container size mobile */
-  .liquid-glass-container {
-    border-radius: 1rem !important; /* Smaller border radius like mobile */
-  }
-
-  /* Keep header padding mobile-sized */
-  .rsvp-header {
-    padding: 0.75rem 1rem !important; /* Mobile padding */
-  }
-
-  /* Keep sections mobile-sized */
-  .rsvp-section {
-    padding: 1rem 0.75rem !important;
-  }
-
-  .rsvp-section-tight {
-    padding: 0.375rem 0.75rem !important;
-  }
-
-  .rsvp-section-compact {
-    padding: 0.5rem 0.75rem !important;
-  }
-
-  .glass-content-section {
-    padding: 0.5rem !important;
-  }
-
-  /* Keep button text and elements at mobile size */
-  .liquid-glass-btn {
-    font-size: 0.875rem !important; /* 14px */
-    padding: 0.75rem 0.875rem !important;
-    min-height: 3rem !important;
-    border-radius: 1rem !important;
-  }
-
-  .liquid-glass-button {
-    font-size: 0.925rem !important; /* ~15px */
-    padding: 0.875rem 1.5rem !important;
-    border-radius: 1.25rem !important;
-    min-height: 48px !important;
-  }
-
-  /* Counter buttons mobile size */
-  .counter-btn {
-    width: 2.25rem !important;
-    height: 2.25rem !important;
-    font-size: 1.1rem !important;
-  }
-
-  /* Guest management container */
-  .guest-management-container {
-    border-radius: 1.25rem !important;
-    padding: 0.5rem !important;
-  }
-
-  /* Status badges */
-  .status-badge-compact {
-    padding: 0.25rem 0.625rem !important;
-    font-size: 0.75rem !important;
-    border-radius: 0.625rem !important;
-  }
-
-  .status-indicator {
-    padding: 0.25rem 0.5rem !important;
-    font-size: 0.75rem !important;
-    border-radius: 0.625rem !important;
-  }
-
-  /* Message containers */
-  .total-summary-glass,
-  .confirmation-code-glass,
-  .status-message-glass,
-  .success-message-glass,
-  .error-message-glass {
-    border-radius: 0.75rem !important;
-    padding: 0.625rem !important;
-  }
-
-  .save-btn {
-    padding: 0.375rem 0.75rem !important;
-    font-size: 0.75rem !important;
-    border-radius: 0.75rem !important;
-  }
-
-  /* Event details text */
-  .text-sm {
-    font-size: 0.8125rem !important; /* 13px - smaller on collapsed */
-  }
-
-  .text-lg {
-    font-size: 1rem !important; /* 16px - smaller for collapsed header */
-  }
-
-  .text-xl {
-    font-size: 1.125rem !important; /* 18px - smaller */
-  }
-
-  .text-xs {
-    font-size: 0.6875rem !important; /* 11px - smaller */
-  }
-
-  .text-base {
-    font-size: 0.8125rem !important; /* 13px - smaller */
-  }
-
-  .text-2xl {
-    font-size: 1.5rem !important; /* 24px - guest count display */
-  }
-
-  /* Icons sizing */
-  svg.w-5 {
-    width: 1.125rem !important;
-    height: 1.125rem !important;
-  }
-
-  svg.w-3 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-
-  /* Hide status badge in collapsed state like mobile */
-  .hidden.md\:flex {
-    display: none !important;
-  }
-}
-
-/* Medium laptops 14-15 inch (1366px-1535px) - match EventInfo h2 sizing */
-@media (min-width: 1366px) and (max-width: 1535px) {
-  h1 {
-    font-size: 1.25rem !important; /* 20px - match EventInfo section */
-  }
-
-  .text-lg {
-    font-size: 1.125rem !important; /* 18px */
-  }
-
-  .text-xl {
-    font-size: 1.25rem !important; /* 20px */
-  }
-}
-
-/* Large laptops 16+ inch (1536px+) - match EventInfo h2 sizing */
-@media (min-width: 1536px) {
-  h1 {
-    font-size: 1.5rem !important; /* 24px - match EventInfo section lg:text-2xl */
-  }
-
-  .text-lg {
-    font-size: 1.125rem !important; /* 18px */
-  }
-
-  .text-xl {
-    font-size: 1.25rem !important; /* 20px */
-  }
-}
-
-/* Desktop refinements (1024px+) */
-@media (min-width: 1024px) {
-  .rsvp-section {
-    padding: 1.5rem 1.5rem;
-  }
-
-  .rsvp-section-tight {
-    padding: 0.5rem 1.5rem;
-  }
-
-  .rsvp-section-compact {
-    padding: 0.75rem 1.5rem;
-  }
-
-  .glass-content-section {
-    padding: 0.75rem;
+  .rsvp-btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
   }
 }
 </style>

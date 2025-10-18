@@ -165,7 +165,7 @@ export const rsvpTranslations: Record<
     rsvp_auto_save: 'Auto-saves in',
 
     // System messages
-    rsvp_confirmation: 'Confirmation:',
+    rsvp_confirmation: 'Confirmation Code:',
     rsvp_dismiss: 'Dismiss',
 
     // Success messages
@@ -244,7 +244,7 @@ export const rsvpTranslations: Record<
 
     // Guest management
     rsvp_additional_guests: 'ភ្ញៀវបន្ថែម',
-    rsvp_total_attending: 'សរុបចូលរួម',
+    rsvp_total_attending: 'ចំនួនភ្ញៀវចូលរួម',
     rsvp_person: 'នាក់',
     rsvp_people: 'នាក់',
 
@@ -277,7 +277,7 @@ export const rsvpTranslations: Record<
     rsvp_auto_save: 'រក្សាទុកស្វ័យប្រវត្តិក្នុងរយៈពេល',
 
     // System messages
-    rsvp_confirmation: 'លេខបញ្ជាក់៖',
+    rsvp_confirmation: 'លេខសម្ងាត់៖',
     rsvp_dismiss: 'បោះបង់',
 
     // Success messages
