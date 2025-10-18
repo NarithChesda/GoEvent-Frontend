@@ -32,7 +32,7 @@
     <!-- Fallback button design -->
     <div
       v-else
-      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105"
+      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105 button-pulse"
       :style="fallbackButtonStyle"
     >
       <span
@@ -210,15 +210,37 @@ const buttonText = computed(() => {
   height: clamp(30px, 5vh, 120px);
   min-height: 30px;
   max-height: 120px;
-  padding: 0 clamp(0.75rem, 2.5vh, 2.5rem);
+  padding: 0 clamp(1.5rem, 3.5vh, 3.5rem);
   border-radius: clamp(15px, 2.5vh, 60px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .scaled-button-text {
   font-size: clamp(0.5rem, 1.6vh, 1.2rem);
-  line-height: 1.1;
+  line-height: 1.4;
   white-space: nowrap;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.button-pulse {
+  animation: buttonPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 3px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.button-pulse:hover {
+  animation: none;
 }
 
 /* Responsive envelope button scaling based on viewport height only */

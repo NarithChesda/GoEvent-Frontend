@@ -160,7 +160,7 @@ const headerTextStyle = computed(() => ({
 const guestNameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
   color: props.primaryColor,
-  textShadow: '0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8)',
+  textShadow: 'none',
 }))
 
 const inviteTextStyle = computed(() => ({
