@@ -1,133 +1,125 @@
 <template>
-  <div id="rsvp" class="mb-4 sm:mb-6 laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
-    <!-- RSVP Section Header - Matching MainContentStage Welcome Header -->
-    <div class="text-center py- laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
-      <h1
-        class="leading-relaxed py-2 text-base sm:text-lg md:text-xl lg:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
+  <div id="rsvp" class="space-y-3">
+    <!-- RSVP Header -->
+    <div class="text-sm sm:text-base font-medium leading-snug">
+      <span
+        :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
         :style="{
-          fontFamily: primaryFont || currentFont,
-          color: primaryColor,
+          fontFamily: secondaryFont || currentFont,
         }"
       >
         {{ rsvpHeaderText }}
-      </h1>
+      </span>
     </div>
 
-    <!-- Open Transparent RSVP Card -->
-    <div
-      class="rsvp-card-container"
-      :style="{
-        background: 'transparent',
-      }"
-    >
-      <!-- RSVP Content - Always Visible -->
-      <div class="rsvp-content-open">
-        <!-- Ultra Minimal RSVP Row -->
-        <div class="rsvp-main-row">
-          <!-- Not Authenticated: Single Sign In Button -->
-          <button
-            v-if="eventStatus !== 'ended' && !isUserAuthenticated"
-            @click="handleSignInClick"
-            class="rsvp-btn rsvp-btn--primary"
-            :style="{
-              background: primaryColor,
-              color: '#ffffff',
-              fontFamily: secondaryFont || currentFont,
-            }"
-          >
-            {{ rsvpSignInButtonText }}
-          </button>
+    <!-- RSVP Content -->
+    <div class="rsvp-content">
+      <!-- Not Authenticated: Single Sign In Button -->
+      <button
+        v-if="eventStatus !== 'ended' && !isUserAuthenticated"
+        @click="handleSignInClick"
+        class="rsvp-btn-signin"
+        :style="{
+          fontFamily: secondaryFont || currentFont,
+          background: 'white',
+          color: primaryColor,
+        }"
+      >
+        <svg class="signin-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+        </svg>
+        {{ rsvpSignInButtonText }}
+      </button>
 
-          <!-- Loading State -->
-          <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated && isLoading" class="rsvp-loader">
-            <div class="spinner" :style="{ borderTopColor: primaryColor }"></div>
+      <!-- Loading State -->
+      <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated && isLoading" class="rsvp-loader">
+        <div class="spinner-white"></div>
+      </div>
+
+      <!-- Authenticated: RSVP Section -->
+      <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated" class="rsvp-section-wrapper">
+        <!-- RSVP Row: Toggle Buttons + Guest Counter -->
+        <div class="rsvp-inline">
+          <!-- RSVP Toggle Buttons -->
+          <div class="rsvp-toggle">
+            <button
+              @click="setRSVPStatus('coming')"
+              :disabled="isSubmitting"
+              class="rsvp-btn-toggle"
+              :class="{ 'active': rsvpStatus === 'coming' }"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+                background: rsvpStatus === 'coming' ? 'white' : 'rgba(255, 255, 255, 0.1)',
+                color: rsvpStatus === 'coming' ? primaryColor : 'white',
+                borderColor: rsvpStatus === 'coming' ? 'white' : 'rgba(255, 255, 255, 0.3)',
+              }"
+            >
+              {{ rsvpStatus === 'coming' ? rsvpAttendingText : rsvpYesButtonText }}
+            </button>
+
+            <button
+              @click="setRSVPStatus('not_coming')"
+              :disabled="isSubmitting"
+              class="rsvp-btn-toggle"
+              :class="{ 'active': rsvpStatus === 'not_coming' }"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+                background: rsvpStatus === 'not_coming' ? 'white' : 'rgba(255, 255, 255, 0.1)',
+                color: rsvpStatus === 'not_coming' ? primaryColor : 'white',
+                borderColor: rsvpStatus === 'not_coming' ? 'white' : 'rgba(255, 255, 255, 0.3)',
+              }"
+            >
+              {{ rsvpStatus === 'not_coming' ? rsvpCantAttendText : rsvpNoButtonText }}
+            </button>
           </div>
 
-          <!-- Authenticated: Inline RSVP with Guest Counter -->
-          <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated" class="rsvp-inline">
-            <!-- RSVP Toggle Buttons -->
-            <div class="rsvp-toggle">
-              <button
-                @click="setRSVPStatus('coming')"
-                :disabled="isSubmitting"
-                class="rsvp-btn"
-                :class="{ 'active': rsvpStatus === 'coming' }"
-                :style="{
-                  background: rsvpStatus === 'coming' ? primaryColor : 'transparent',
-                  color: rsvpStatus === 'coming' ? '#ffffff' : primaryColor,
-                  borderColor: primaryColor,
-                  fontFamily: secondaryFont || currentFont,
-                }"
-              >
-                {{ rsvpStatus === 'coming' ? rsvpAttendingText : rsvpYesButtonText }}
-              </button>
+          <!-- Inline Guest Counter (only when attending) -->
+          <div v-if="rsvpStatus === 'coming'" class="guest-counter-inline">
+            <span class="guest-label" :style="{ fontFamily: secondaryFont || currentFont }">
+              {{ rsvpTotalAttendingText }}:
+            </span>
 
-              <button
-                @click="setRSVPStatus('not_coming')"
-                :disabled="isSubmitting"
-                class="rsvp-btn"
-                :class="{ 'active': rsvpStatus === 'not_coming' }"
-                :style="{
-                  background: rsvpStatus === 'not_coming' ? primaryColor : 'transparent',
-                  color: rsvpStatus === 'not_coming' ? '#ffffff' : primaryColor,
-                  borderColor: primaryColor,
-                  fontFamily: secondaryFont || currentFont,
-                }"
-              >
-                {{ rsvpStatus === 'not_coming' ? rsvpCantAttendText : rsvpNoButtonText }}
-              </button>
-            </div>
+            <button
+              @click="decreaseGuestCount"
+              :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
+              class="counter-btn-white"
+            >
+              −
+            </button>
 
-            <!-- Inline Guest Counter (only when attending) -->
-            <div v-if="rsvpStatus === 'coming'" class="guest-counter-inline">
-              <span class="guest-label" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
-                {{ rsvpTotalAttendingText }}:
-              </span>
+            <span class="guest-count" :style="{ fontFamily: secondaryFont || currentFont }">
+              {{ totalAttendees }}
+            </span>
 
-              <button
-                @click="decreaseGuestCount"
-                :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
-                class="counter-btn-minimal"
-                :style="{ color: primaryColor }"
-              >
-                −
-              </button>
-
-              <span class="guest-count" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
-                {{ totalAttendees }}
-              </span>
-
-              <button
-                @click="increaseGuestCount"
-                :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
-                class="counter-btn-minimal"
-                :style="{ color: primaryColor }"
-              >
-                +
-              </button>
-            </div>
+            <button
+              @click="increaseGuestCount"
+              :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
+              class="counter-btn-white"
+            >
+              +
+            </button>
           </div>
         </div>
 
-        <!-- Confirmation Code -->
+        <!-- Confirmation Code Row (separate row below) -->
         <div v-if="confirmationCode && rsvpStatus === 'coming'" class="rsvp-confirmation">
-          <span class="confirmation-label" :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+          <span class="confirmation-label" :style="{ fontFamily: secondaryFont || currentFont }">
             {{ rsvpConfirmationText }}
           </span>
-          <span class="confirmation-code" :style="{ color: primaryColor, fontFamily: 'monospace' }">
+          <span class="confirmation-code" :style="{ fontFamily: 'monospace' }">
             {{ confirmationCode }}
           </span>
         </div>
+      </div>
 
-        <!-- Minimal Status Messages -->
-        <div v-if="successMessage || errorMessage" class="rsvp-message">
-          <span v-if="successMessage" class="message-text success" :style="{ color: '#10b981' }">
-            ✓ {{ successMessage }}
-          </span>
-          <span v-if="errorMessage" class="message-text error" :style="{ color: '#ef4444' }">
-            ✕ {{ errorMessage }}
-          </span>
-        </div>
+      <!-- Minimal Status Messages -->
+      <div v-if="successMessage || errorMessage" class="rsvp-message">
+        <span v-if="successMessage" class="message-text success">
+          ✓ {{ successMessage }}
+        </span>
+        <span v-if="errorMessage" class="message-text error">
+          ✕ {{ errorMessage }}
+        </span>
       </div>
     </div>
   </div>
@@ -175,8 +167,8 @@ const authStore = useAuthStore()
 // Auth modal composable
 const { withAuth } = useAuthModal()
 
-// State
-const rsvpStatus = ref<'coming' | 'not_coming' | null>(null)
+// State - Default to 'not_coming' for users without registration
+const rsvpStatus = ref<'coming' | 'not_coming' | null>('not_coming')
 const additionalGuests = ref(0)
 // const showConfirmationMessage = ref(false) // Unused
 
@@ -407,26 +399,42 @@ const loadCurrentRegistration = async () => {
 
   try {
     const response = await eventsService.getMyRegistration(props.eventId)
+    console.log('RSVP Load Registration Response:', response)
 
     if (response.success && response.data) {
       currentRegistration.value = response.data
-      // Update UI state based on registration
-      rsvpStatus.value = 'coming'
-      additionalGuests.value = response.data.guest_count || 0
-      // Initialize saved state
-      savedGuestCount.value = response.data.guest_count || 0
+      console.log('Registration found:', response.data)
+
+      // Update UI state based on registration status
+      // Map backend status to UI state
+      if (response.data.status === 'not_coming' || response.data.status === 'declined') {
+        // User has a registration but marked as not attending
+        rsvpStatus.value = 'not_coming'
+        additionalGuests.value = 0
+        savedGuestCount.value = 0
+        console.log('Set status to: not_coming')
+      } else {
+        // Any other status (confirmed, coming, pending, etc.) means they're attending
+        rsvpStatus.value = 'coming'
+        additionalGuests.value = response.data.guest_count || 0
+        savedGuestCount.value = response.data.guest_count || 0
+        console.log('Set status to: coming')
+      }
       hasUnsavedGuestChanges.value = false
     } else {
-      // User is not registered
+      // User has no registration record - default to "not attending" state
+      console.log('No registration found - defaulting to not_coming')
       currentRegistration.value = null
-      rsvpStatus.value = null
+      rsvpStatus.value = 'not_coming'
       additionalGuests.value = 0
       savedGuestCount.value = 0
       hasUnsavedGuestChanges.value = false
     }
-  } catch {
+  } catch (error) {
+    // Error loading registration - treat as not attending
+    console.log('Error loading registration:', error)
     currentRegistration.value = null
-    rsvpStatus.value = null
+    rsvpStatus.value = 'not_coming'
     additionalGuests.value = 0
     savedGuestCount.value = 0
     hasUnsavedGuestChanges.value = false
@@ -443,62 +451,60 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
   successMessage.value = ''
 
   try {
-    if (status === 'coming') {
-      // Register or update registration
-      const response = await eventsService.rsvpForEvent(props.eventId, {
-        guest_count: additionalGuests.value,
-        notes: '',
-      })
+    // Always use rsvpForEvent API - it handles both creating and updating registration
+    // The backend will update the status field to either 'confirmed' or 'not_coming'
+    const response = await eventsService.rsvpForEvent(props.eventId, {
+      guest_count: status === 'coming' ? additionalGuests.value : 0,
+      notes: currentRegistration.value?.notes || '',
+      status: status === 'coming' ? 'confirmed' : 'not_coming',
+    })
 
-      if (response.success && response.data) {
-        currentRegistration.value = response.data
-        rsvpStatus.value = 'coming'
+    if (response.success && response.data) {
+      currentRegistration.value = response.data
+      rsvpStatus.value = status
+
+      if (status === 'coming') {
         const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
         const unit = getPersonUnit(response.data.total_attendees, currentLang)
         successMessage.value = translateRSVP('rsvp_registration_success', currentLang, {
           count: response.data.total_attendees,
           unit: unit,
         })
-
-        // Show success message temporarily
-        setTimeout(() => {
-          successMessage.value = ''
-        }, 5000)
+        savedGuestCount.value = additionalGuests.value
       } else {
-        errorMessage.value = response.message || 'Failed to register for event'
-      }
-    } else {
-      // Unregister from event
-      if (currentRegistration.value) {
-        const response = await eventsService.unregisterFromEvent(props.eventId)
-
-        if (response.success) {
-          currentRegistration.value = null
-          rsvpStatus.value = 'not_coming'
-          additionalGuests.value = 0
-          const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-          successMessage.value = translateRSVP('rsvp_unregister_success', currentLang)
-
-          // Show success message temporarily
-          setTimeout(() => {
-            successMessage.value = ''
-          }, 5000)
-        } else {
-          errorMessage.value = response.message || 'Failed to cancel registration'
-        }
-      } else {
-        // User wasn't registered, just update UI
-        rsvpStatus.value = 'not_coming'
+        // Status is 'not_coming' - registration still exists but status changed
+        additionalGuests.value = 0
+        savedGuestCount.value = 0
         const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
         successMessage.value = translateRSVP('rsvp_thank_you_simple', currentLang)
+      }
 
-        setTimeout(() => {
-          successMessage.value = ''
-        }, 3000)
+      // Show success message temporarily
+      setTimeout(() => {
+        successMessage.value = ''
+      }, 5000)
+    } else {
+      errorMessage.value = response.message || 'Failed to update RSVP'
+      // Revert status on error
+      if (currentRegistration.value) {
+        rsvpStatus.value = currentRegistration.value.status === 'confirmed' || currentRegistration.value.status === 'coming'
+          ? 'coming'
+          : 'not_coming'
+      } else {
+        rsvpStatus.value = 'not_coming'
       }
     }
-  } catch {
+  } catch (error) {
+    console.error('RSVP Error:', error)
     errorMessage.value = 'An unexpected error occurred. Please try again.'
+    // Revert to previous state on error
+    if (currentRegistration.value) {
+      rsvpStatus.value = currentRegistration.value.status === 'confirmed' || currentRegistration.value.status === 'coming'
+        ? 'coming'
+        : 'not_coming'
+    } else {
+      rsvpStatus.value = 'not_coming'
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -686,15 +692,21 @@ const handleBeforeUnload = () => {
 // Watchers
 watch(
   () => authStore.isAuthenticated,
-  (isAuth) => {
-    if (isAuth) {
-      // User logged in, load their registration status
+  (isAuth, oldValue) => {
+    // Only load registration when auth state changes from false to true
+    // This prevents duplicate loading since onMounted already loads it
+    if (isAuth && !oldValue) {
+      // User just logged in, load their registration status
       loadCurrentRegistration()
-    } else {
-      // User logged out, clear registration state
+    } else if (!isAuth) {
+      // User logged out, clear all registration state and default to not attending
       currentRegistration.value = null
-      rsvpStatus.value = null
+      rsvpStatus.value = 'not_coming'
       additionalGuests.value = 0
+      savedGuestCount.value = 0
+      hasUnsavedGuestChanges.value = false
+      errorMessage.value = ''
+      successMessage.value = ''
     }
   },
 )
@@ -742,23 +754,18 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Container */
-.rsvp-card-container {
-  padding: 0;
-}
-
-.rsvp-content-open {
+/* Content Container */
+.rsvp-content {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-/* Main Row - Ultra Minimal */
-.rsvp-main-row {
+/* RSVP Section Wrapper - Contains both RSVP row and confirmation row */
+.rsvp-section-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 0;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 /* Inline RSVP Layout */
@@ -766,6 +773,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: nowrap;
 }
 
 .rsvp-toggle {
@@ -773,41 +781,68 @@ onUnmounted(() => {
   gap: 0.5rem;
 }
 
-/* RSVP Button - Minimal Design */
-.rsvp-btn {
+/* Sign In Button - Active Style */
+.rsvp-btn-signin {
   padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.rsvp-btn-signin:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.rsvp-btn-signin:active {
+  transform: scale(0.98);
+}
+
+.signin-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Toggle Buttons - White Style */
+.rsvp-btn-toggle {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
-  background: transparent;
 }
 
-.rsvp-btn--primary {
-  border: none;
+.rsvp-btn-toggle:hover:not(:disabled):not(.active) {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
-.rsvp-btn:hover:not(:disabled) {
-  opacity: 0.85;
+.rsvp-btn-toggle.active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.rsvp-btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.rsvp-btn:disabled {
+.rsvp-btn-toggle:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.rsvp-btn.active {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.rsvp-btn-toggle:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-/* Inline Guest Counter */
+/* Guest Counter - White Style */
 .guest-counter-inline {
   display: flex;
   align-items: center;
@@ -818,16 +853,18 @@ onUnmounted(() => {
 .guest-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  opacity: 0.8;
+  color: white;
+  opacity: 0.9;
   white-space: nowrap;
 }
 
-.counter-btn-minimal {
+.counter-btn-white {
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: 0.25rem;
-  border: 1px solid currentColor;
-  background: transparent;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
   cursor: pointer;
   font-size: 1.125rem;
   font-weight: 600;
@@ -835,16 +872,15 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
-  opacity: 0.7;
 }
 
-.counter-btn-minimal:hover:not(:disabled) {
-  opacity: 1;
-  background: currentColor;
-  color: white;
+.counter-btn-white:hover:not(:disabled) {
+  background: white;
+  color: inherit;
+  border-color: white;
 }
 
-.counter-btn-minimal:disabled {
+.counter-btn-white:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
@@ -854,41 +890,45 @@ onUnmounted(() => {
   font-weight: 600;
   min-width: 1.5rem;
   text-align: center;
+  color: white;
 }
 
-/* Confirmation Code */
+/* Confirmation Code - White Style */
 .rsvp-confirmation {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.375rem 0;
+  padding: 0.25rem 0;
 }
 
 .confirmation-label {
   font-size: 0.75rem;
   font-weight: 500;
-  opacity: 0.7;
+  color: white;
+  opacity: 0.8;
 }
 
 .confirmation-code {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  opacity: 0.9;
+  color: white;
+  opacity: 0.95;
 }
 
-/* Loading */
+/* Loading - White Spinner */
 .rsvp-loader {
   display: flex;
   justify-content: center;
   padding: 0.5rem;
 }
 
-.spinner {
+.spinner-white {
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: white;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -897,7 +937,7 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* Minimal Messages */
+/* Status Messages */
 .rsvp-message {
   display: flex;
   justify-content: center;
@@ -909,12 +949,25 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
+.message-text.success {
+  color: #86efac;
+}
+
+.message-text.error {
+  color: #fca5a5;
+}
+
+/* Khmer text fix */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
 /* Mobile Responsive */
 @media (max-width: 639px) {
-  .rsvp-main-row {
-    padding: 0.375rem 0;
-  }
-
   .rsvp-inline {
     flex-direction: row;
     flex-wrap: nowrap;
@@ -930,11 +983,17 @@ onUnmounted(() => {
     flex: 1;
   }
 
-  .rsvp-btn {
+  .rsvp-btn-signin,
+  .rsvp-btn-toggle {
     flex: 1;
     padding: 0.5rem 0.375rem;
     font-size: 0.75rem;
-    border-radius: 0.313rem;
+    border-radius: 0.75rem;
+  }
+
+  .signin-icon {
+    width: 1rem;
+    height: 1rem;
   }
 
   .guest-counter-inline {
@@ -950,7 +1009,7 @@ onUnmounted(() => {
     white-space: nowrap;
   }
 
-  .counter-btn-minimal {
+  .counter-btn-white {
     width: 1.75rem;
     height: 1.75rem;
     font-size: 0.875rem;
@@ -978,7 +1037,8 @@ onUnmounted(() => {
 
 /* Tablet */
 @media (min-width: 640px) and (max-width: 1023px) {
-  .rsvp-btn {
+  .rsvp-btn-signin,
+  .rsvp-btn-toggle {
     padding: 0.5rem 0.875rem;
     font-size: 0.8125rem;
   }
@@ -986,7 +1046,8 @@ onUnmounted(() => {
 
 /* Small laptops */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  .rsvp-btn {
+  .rsvp-btn-signin,
+  .rsvp-btn-toggle {
     padding: 0.5rem 0.875rem;
     font-size: 0.8125rem;
   }

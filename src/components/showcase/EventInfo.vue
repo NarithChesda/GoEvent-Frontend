@@ -110,6 +110,11 @@
               />
             </div>
           </div>
+
+          <!-- RSVP Section Integrated Below Map -->
+          <div v-if="showRsvp" class="pt-4">
+            <slot name="rsvp"></slot>
+          </div>
         </div>
       </div>
     </div>
@@ -134,9 +139,12 @@ interface Props {
   primaryFont?: string
   secondaryFont?: string
   currentLanguage?: string
+  showRsvp?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showRsvp: false
+})
 
 defineEmits<{
   openMap: []

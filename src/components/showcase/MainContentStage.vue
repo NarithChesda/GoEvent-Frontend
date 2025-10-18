@@ -85,7 +85,7 @@
                   />
                 </div>
 
-                <!-- Event Information -->
+                <!-- Event Information with Integrated RSVP -->
                 <div
                   ref="eventInfoRef"
                   class="mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10 mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
@@ -105,36 +105,31 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :current-language="currentLanguage"
+                    :show-rsvp="true"
                     @open-map="$emit('openMap')"
-                  />
+                  >
+                    <template #rsvp>
+                      <div id="rsvp-section" ref="rsvpSectionRef">
+                        <RSVPSection
+                          :event-id="event.id"
+                          :event-start-date="event.start_date"
+                          :event-end-date="event.end_date"
+                          :primary-color="primaryColor"
+                          :secondary-color="secondaryColor"
+                          @show-auth-modal="$emit('showAuthModal')"
+                          :accent-color="accentColor"
+                          :is-event-past="isEventPast"
+                          :event-texts="eventTexts"
+                          :current-language="currentLanguage"
+                          :current-font="currentFont"
+                          :primary-font="primaryFont"
+                          :secondary-font="secondaryFont"
+                        />
+                      </div>
+                    </template>
+                  </EventInfo>
 
-                  <!-- Event Info Divider -->
-                  <WeddingSectionDivider :primary-color="primaryColor" />
-                </div>
-
-                <!-- RSVP Section -->
-                <div
-                  id="rsvp-section"
-                  ref="rsvpSectionRef"
-                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
-                >
-                  <RSVPSection
-                    :event-id="event.id"
-                    :event-start-date="event.start_date"
-                    :event-end-date="event.end_date"
-                    :primary-color="primaryColor"
-                    :secondary-color="secondaryColor"
-                    @show-auth-modal="$emit('showAuthModal')"
-                    :accent-color="accentColor"
-                    :is-event-past="isEventPast"
-                    :event-texts="eventTexts"
-                    :current-language="currentLanguage"
-                    :current-font="currentFont"
-                    :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
-                  />
-
-                  <!-- RSVP Section Divider -->
+                  <!-- Event Info + RSVP Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
