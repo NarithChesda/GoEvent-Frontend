@@ -38,77 +38,91 @@
 
       <!-- Authenticated: RSVP Section -->
       <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated" class="rsvp-section-wrapper">
-        <!-- RSVP Row: Toggle Buttons + Guest Counter -->
-        <div class="rsvp-inline">
-          <!-- RSVP Toggle Buttons -->
-          <div class="rsvp-toggle">
+        <!-- Main Row: Toggle Switch + Guest Counter -->
+        <div class="rsvp-main-row">
+          <!-- Toggle Switch with Label -->
+          <div class="toggle-container">
+            <span
+              class="toggle-label"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+                opacity: rsvpStatus === 'not_coming' ? 1 : 0.6
+              }"
+            >
+              {{ rsvpCantAttendText }}
+            </span>
+
             <button
-              @click="setRSVPStatus('coming')"
+              @click="setRSVPStatus(rsvpStatus === 'coming' ? 'not_coming' : 'coming')"
               :disabled="isSubmitting"
-              class="rsvp-btn-toggle"
+              class="toggle-switch"
               :class="{ 'active': rsvpStatus === 'coming' }"
               :style="{
-                fontFamily: secondaryFont || currentFont,
-                background: rsvpStatus === 'coming' ? 'white' : 'rgba(255, 255, 255, 0.1)',
-                color: rsvpStatus === 'coming' ? primaryColor : 'white',
-                borderColor: rsvpStatus === 'coming' ? 'white' : 'rgba(255, 255, 255, 0.3)',
+                background: rsvpStatus === 'coming' ? 'white' : 'rgba(255, 255, 255, 0.3)',
               }"
             >
-              {{ rsvpStatus === 'coming' ? rsvpAttendingText : rsvpYesButtonText }}
+              <span
+                class="toggle-thumb"
+                :style="{
+                  background: rsvpStatus === 'coming' ? primaryColor : 'white',
+                  transform: rsvpStatus === 'coming' ? 'translateX(1.25rem)' : 'translateX(0)'
+                }"
+              ></span>
             </button>
 
-            <button
-              @click="setRSVPStatus('not_coming')"
-              :disabled="isSubmitting"
-              class="rsvp-btn-toggle"
-              :class="{ 'active': rsvpStatus === 'not_coming' }"
+            <span
+              class="toggle-label"
               :style="{
                 fontFamily: secondaryFont || currentFont,
-                background: rsvpStatus === 'not_coming' ? 'white' : 'rgba(255, 255, 255, 0.1)',
-                color: rsvpStatus === 'not_coming' ? primaryColor : 'white',
-                borderColor: rsvpStatus === 'not_coming' ? 'white' : 'rgba(255, 255, 255, 0.3)',
+                opacity: rsvpStatus === 'coming' ? 1 : 0.6
               }"
             >
-              {{ rsvpStatus === 'not_coming' ? rsvpCantAttendText : rsvpNoButtonText }}
-            </button>
+              {{ rsvpAttendingText }}
+            </span>
           </div>
 
-          <!-- Inline Guest Counter (only when attending) -->
-          <div v-if="rsvpStatus === 'coming'" class="guest-counter-inline">
-            <span class="guest-label" :style="{ fontFamily: secondaryFont || currentFont }">
-              {{ rsvpTotalAttendingText }}:
+          <!-- Guest Counter (only when attending) -->
+          <div v-if="rsvpStatus === 'coming'" class="stepper-container">
+            <span class="stepper-label" :style="{ fontFamily: secondaryFont || currentFont }">
+              {{ rsvpTotalAttendingText }}
             </span>
 
-            <button
-              @click="decreaseGuestCount"
-              :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
-              class="counter-btn-white"
-            >
-              −
-            </button>
+            <div class="stepper-controls">
+              <button
+                @click="decreaseGuestCount"
+                :disabled="additionalGuests <= 0 || isUpdatingGuestCount"
+                class="stepper-btn"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
 
-            <span class="guest-count" :style="{ fontFamily: secondaryFont || currentFont }">
-              {{ totalAttendees }}
-            </span>
+              <span class="stepper-value" :style="{ fontFamily: secondaryFont || currentFont }">
+                {{ totalAttendees }}
+              </span>
 
-            <button
-              @click="increaseGuestCount"
-              :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
-              class="counter-btn-white"
-            >
-              +
-            </button>
+              <button
+                @click="increaseGuestCount"
+                :disabled="additionalGuests >= 10 || isUpdatingGuestCount"
+                class="stepper-btn"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M6 2V10M2 6H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Confirmation Code Row (separate row below) -->
-        <div v-if="confirmationCode && rsvpStatus === 'coming'" class="rsvp-confirmation">
-          <span class="confirmation-label" :style="{ fontFamily: secondaryFont || currentFont }">
+        <!-- Confirmation Code (separate row) -->
+        <div v-if="confirmationCode && rsvpStatus === 'coming'" class="confirmation-chip">
+          <span class="confirmation-text" :style="{ fontFamily: secondaryFont || currentFont }">
             {{ rsvpConfirmationText }}
           </span>
-          <span class="confirmation-code" :style="{ fontFamily: 'monospace' }">
+          <strong class="confirmation-code-text">
             {{ confirmationCode }}
-          </span>
+          </strong>
         </div>
       </div>
 
@@ -460,7 +474,18 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
     })
 
     if (response.success && response.data) {
+      // Preserve confirmation code if it exists and isn't in the new response
+      const existingConfirmationCode = currentRegistration.value?.confirmation_code
       currentRegistration.value = response.data
+
+      // If response doesn't have confirmation code but we had one before, preserve it
+      if (!currentRegistration.value.confirmation_code && existingConfirmationCode) {
+        currentRegistration.value = {
+          ...currentRegistration.value,
+          confirmation_code: existingConfirmationCode
+        }
+      }
+
       rsvpStatus.value = status
 
       if (status === 'coming') {
@@ -758,38 +783,79 @@ onUnmounted(() => {
 .rsvp-content {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-/* RSVP Section Wrapper - Contains both RSVP row and confirmation row */
+/* RSVP Section Wrapper */
 .rsvp-section-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  align-items: center;
 }
 
-/* Inline RSVP Layout */
-.rsvp-inline {
+/* Main Row - Toggle + Guest Counter */
+.rsvp-main-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: nowrap;
+  gap: 1.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.rsvp-toggle {
+/* Toggle Container */
+.toggle-container {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
 }
 
-/* Sign In Button - Active Style */
+.toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.toggle-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+}
+
+/* Sign In Button */
 .rsvp-btn-signin {
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid white;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -808,113 +874,97 @@ onUnmounted(() => {
 }
 
 .signin-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
-/* Toggle Buttons - White Style */
-.rsvp-btn-toggle {
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.rsvp-btn-toggle:hover:not(:disabled):not(.active) {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
-}
-
-.rsvp-btn-toggle.active {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.rsvp-btn-toggle:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.rsvp-btn-toggle:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Guest Counter - White Style */
-.guest-counter-inline {
+/* Stepper Container */
+.stepper-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.5rem;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.5rem 1rem;
+  border-radius: 1.25rem;
+  backdrop-filter: blur(8px);
 }
 
-.guest-label {
+.stepper-label {
   font-size: 0.8125rem;
   font-weight: 500;
   color: white;
-  opacity: 0.9;
   white-space: nowrap;
 }
 
-.counter-btn-white {
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stepper-btn {
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border: 1.5px solid white;
+  background: rgba(255, 255, 255, 0.2);
   color: white;
   cursor: pointer;
-  font-size: 1.125rem;
-  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.counter-btn-white:hover:not(:disabled) {
+.stepper-btn:hover:not(:disabled) {
   background: white;
-  color: inherit;
-  border-color: white;
+  color: currentColor;
+  transform: scale(1.05);
 }
 
-.counter-btn-white:disabled {
+.stepper-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.stepper-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-.guest-count {
-  font-size: 0.875rem;
+.stepper-btn svg {
+  flex-shrink: 0;
+}
+
+.stepper-value {
+  font-size: 1.125rem;
   font-weight: 600;
-  min-width: 1.5rem;
-  text-align: center;
   color: white;
+  min-width: 2rem;
+  text-align: center;
 }
 
-/* Confirmation Code - White Style */
-.rsvp-confirmation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
+/* Confirmation Chip */
+.confirmation-chip {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
 }
 
-.confirmation-label {
+.confirmation-text {
   font-size: 0.75rem;
   font-weight: 500;
   color: white;
-  opacity: 0.8;
 }
 
-.confirmation-code {
-  font-size: 0.875rem;
-  font-weight: 600;
+.confirmation-code-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
   letter-spacing: 0.05em;
+  margin-left: 0.25rem;
   color: white;
-  opacity: 0.95;
+  font-size: 0.75rem;
 }
 
 /* Loading - White Spinner */
@@ -968,27 +1018,33 @@ onUnmounted(() => {
 
 /* Mobile Responsive */
 @media (max-width: 639px) {
-  .rsvp-inline {
-    flex-direction: row;
-    flex-wrap: nowrap;
+  .rsvp-main-row {
+    gap: 0.75rem;
+    flex-direction: column;
+  }
+
+  .toggle-container {
     gap: 0.5rem;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
   }
 
-  .rsvp-toggle {
-    display: flex;
-    gap: 0.375rem;
-    flex: 1;
-  }
-
-  .rsvp-btn-signin,
-  .rsvp-btn-toggle {
-    flex: 1;
-    padding: 0.5rem 0.375rem;
+  .toggle-label {
     font-size: 0.75rem;
-    border-radius: 0.75rem;
+  }
+
+  .toggle-switch {
+    width: 2.5rem;
+    height: 1.375rem;
+  }
+
+  .toggle-thumb {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .rsvp-btn-signin {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    border-radius: 1.25rem;
   }
 
   .signin-icon {
@@ -996,59 +1052,85 @@ onUnmounted(() => {
     height: 1rem;
   }
 
-  .guest-counter-inline {
-    display: flex;
-    align-items: center;
-    padding: 0;
-    gap: 0.375rem;
-    flex-shrink: 0;
+  .stepper-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0.875rem;
   }
 
-  .guest-label {
-    font-size: 0.6875rem;
-    white-space: nowrap;
+  .stepper-label {
+    font-size: 0.75rem;
   }
 
-  .counter-btn-white {
-    width: 1.75rem;
-    height: 1.75rem;
-    font-size: 0.875rem;
+  .stepper-controls {
+    gap: 0.625rem;
   }
 
-  .guest-count {
-    font-size: 0.875rem;
-    min-width: 1.25rem;
+  .stepper-btn {
+    width: 1.625rem;
+    height: 1.625rem;
   }
 
-  .rsvp-confirmation {
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.5rem 0;
+  .stepper-value {
+    font-size: 1rem;
+    min-width: 1.75rem;
   }
 
-  .confirmation-label {
+  .confirmation-chip {
+    padding: 0.5rem 0.875rem;
+  }
+
+  .confirmation-text {
     font-size: 0.6875rem;
   }
+}
 
-  .confirmation-code {
-    font-size: 0.8125rem;
+/* Very narrow screens */
+@media (max-width: 360px) {
+  .toggle-label {
+    font-size: 0.6875rem;
+  }
+
+  .toggle-switch {
+    width: 2.25rem;
+    height: 1.25rem;
+  }
+
+  .stepper-container {
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .stepper-label {
+    font-size: 0.6875rem;
+  }
+
+  .stepper-controls {
+    gap: 0.5rem;
+  }
+
+  .stepper-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .stepper-value {
+    font-size: 0.9375rem;
+    min-width: 1.5rem;
   }
 }
 
 /* Tablet */
 @media (min-width: 640px) and (max-width: 1023px) {
-  .rsvp-btn-signin,
-  .rsvp-btn-toggle {
-    padding: 0.5rem 0.875rem;
+  .rsvp-btn-signin {
+    padding: 0.625rem 1.125rem;
     font-size: 0.8125rem;
   }
 }
 
 /* Small laptops */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  .rsvp-btn-signin,
-  .rsvp-btn-toggle {
-    padding: 0.5rem 0.875rem;
+  .rsvp-btn-signin {
+    padding: 0.625rem 1.125rem;
     font-size: 0.8125rem;
   }
 }
