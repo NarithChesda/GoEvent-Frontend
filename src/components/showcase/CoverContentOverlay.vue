@@ -98,21 +98,11 @@
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
-        class="arrow-icon arrow-1"
+        class="arrow-icon"
       >
-        <polyline points="6 15 12 9 18 15"></polyline>
-      </svg>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        :stroke="primaryColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="arrow-icon arrow-2"
-      >
-        <polyline points="6 15 12 9 18 15"></polyline>
+        <polyline points="6 19 12 13 18 19"></polyline>
+        <polyline points="6 13 12 7 18 13"></polyline>
+        <polyline points="6 7 12 1 18 7"></polyline>
       </svg>
     </div>
   </div>
@@ -174,9 +164,13 @@ const handleTouchMove = (e: TouchEvent) => {
 
 const handleTouchEnd = () => {
   const swipeDistance = touchStartY.value - touchEndY.value
+  const isSwipeUp = swipeDistance > MIN_SWIPE_DISTANCE
 
   // Check if it's a swipe up (positive distance) and exceeds minimum distance
-  if (swipeDistance > MIN_SWIPE_DISTANCE) {
+  // OR if it's a tap (very small movement) to support both tap and swipe
+  const isTap = Math.abs(swipeDistance) < 10
+
+  if (isSwipeUp || isTap) {
     emit('openEnvelope')
   }
 
@@ -301,7 +295,7 @@ const containerStyle = computed(() => {
 /* Mobile - reduce guest name size */
 @media (max-width: 640px) {
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.6rem, 2.5vh, 1.2rem) !important;
+    font-size: clamp(0.55rem, 2.2vh, 1.1rem) !important;
   }
 
   .guest-name-container {
@@ -327,8 +321,6 @@ const containerStyle = computed(() => {
   transform: translateX(-50%);
   z-index: 20;
   display: flex;
-  flex-direction: column;
-  gap: -8px;
   align-items: center;
   justify-content: center;
 }
@@ -337,30 +329,10 @@ const containerStyle = computed(() => {
   width: 40px;
   height: 40px;
   display: block;
-  overflow: visible;
+  animation: bounceArrow 2s ease-in-out infinite;
 }
 
-.arrow-1 {
-  opacity: 0.5;
-  animation: bounce1 2s ease-in-out infinite;
-}
-
-.arrow-2 {
-  opacity: 0.9;
-  animation: bounce2 2s ease-in-out infinite;
-  margin-top: -24px;
-}
-
-@keyframes bounce1 {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes bounce2 {
+@keyframes bounceArrow {
   0%, 100% {
     transform: translateY(0);
   }
@@ -375,22 +347,12 @@ const containerStyle = computed(() => {
     width: 32px;
     height: 32px;
   }
-
-  .arrow-2,
-  .arrow-3 {
-    margin-top: -22px;
-  }
 }
 
 @media (min-width: 1024px) {
   .arrow-icon {
     width: 48px;
     height: 48px;
-  }
-
-  .arrow-2,
-  .arrow-3 {
-    margin-top: -26px;
   }
 }
 
