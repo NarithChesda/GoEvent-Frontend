@@ -1,7 +1,7 @@
 <template>
   <div class="text-center space-y-6 sm:space-y-8">
     <!-- Primary Content Block -->
-    <div v-if="descriptionTitle || descriptionText" class="space-y-4">
+    <div v-if="descriptionTitle || descriptionText" class="space-y-2">
       <!-- Description Title -->
       <div v-if="descriptionTitle">
         <h2

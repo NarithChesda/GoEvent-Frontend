@@ -1,7 +1,7 @@
 <template>
   <div id="comment-section" class="mb-8">
     <h2
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
+      class="leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
       :style="{
         fontFamily: primaryFont || currentFont,
         color: primaryColor,
@@ -1515,17 +1515,17 @@ textarea::-webkit-scrollbar-thumb:hover {
 }
 
 /* Laptop responsive styles for comment section header */
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes for Comment section header */
+/* Small laptops 13-inch (1024px-1365px) - Match AgendaSection header */
 @media (min-width: 1024px) and (max-width: 1365px) {
   h2 {
-    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+    font-size: 1.5rem !important; /* 24px - text-2xl */
   }
 }
 
 /* Medium laptops 14-15 inch (1366px+) */
 @media (min-width: 1366px) {
   h2 {
-    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+    font-size: 1.875rem !important; /* 30px - text-3xl */
   }
 }
 
