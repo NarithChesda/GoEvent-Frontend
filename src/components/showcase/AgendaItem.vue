@@ -35,7 +35,7 @@
       <!-- Title (Top Right) -->
       <h3
         :class="[
-          'font-medium leading-loose py-2 capitalize',
+          'font-regular leading-loose py-2 capitalize',
           isKhmerText ? 'text-sm sm:text-sm md:text-base laptop-md:text-lg laptop-lg:text-xl' : 'text-sm sm:text-base md:text-lg laptop-md:text-xl laptop-lg:text-2xl'
         ]"
         :style="{
