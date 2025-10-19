@@ -378,7 +378,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   justify-content: center;
   width: 100%;
   padding: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   box-sizing: border-box;
 }
 
@@ -441,7 +441,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
 
 /* Parent name text styles with increased sizes */
 .parent-name-text {
-  font-size: 0.6875rem; /* 11px - increased from 9px (mobile) */
+  font-size: 0.7906rem; /* 12.65px - 15% increase from 11px (mobile) */
 }
 
 /* Host name text styles with 15% mobile reduction */
@@ -557,11 +557,11 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .welcome-row {
-    margin-bottom: 2rem;
+    margin-bottom: 0.625rem;
   }
 
   .parent-name-text {
-    font-size: 0.8125rem; /* 13px - increased from 11px */
+    font-size: 0.9344rem; /* 14.95px - 15% increase from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -598,7 +598,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
+    font-size: 1.0781rem; /* 17.25px - 15% increase from 15px */
   }
 
   .parent-row:nth-child(3) {
@@ -640,7 +640,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.6875rem; /* 11px - same as small mobile (640px) */
+    font-size: 0.7906rem; /* 12.65px - 15% increase from 11px */
   }
 
   .parent-row:nth-child(3) {
@@ -674,7 +674,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .welcome-row {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -693,7 +693,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.75rem; /* 12px - slightly larger than mobile */
+    font-size: 0.8625rem; /* 13.8px - 15% increase from 12px */
   }
 
   .parent-row:nth-child(3) {
@@ -731,7 +731,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .welcome-row {
-    margin-bottom: 1.75rem;
+    margin-bottom: 0.625rem;
   }
 }
 
@@ -750,7 +750,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.8125rem; /* 13px - optimized for 16+ inch laptops */
+    font-size: 0.9344rem; /* 14.95px - 15% increase from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -808,7 +808,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.875rem; /* 14px - optimized for Full HD+ desktop */
+    font-size: 1.0063rem; /* 16.1px - 15% increase from 14px */
   }
 
   .parent-row:nth-child(3) {
