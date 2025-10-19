@@ -1,5 +1,6 @@
 <template>
   <div class="absolute inset-0 z-10" :style="{ backgroundColor: primaryColor }">
+    <!-- VideoContainer - stays visible for background -->
     <VideoContainer
       ref="videoContainerRef"
       :templateAssets="templateAssets"
@@ -10,6 +11,7 @@
       :isCoverVideoPlaying="videoState.isCoverVideoPlaying.value"
       :currentVideoPhase="videoState.currentVideoPhase.value"
       :getMediaUrl="getMediaUrl"
+      :isContentHidden="videoState.isContentHidden.value"
       @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
       @sequentialVideoError="videoState.handleSequentialVideoError"
       @eventVideoPreloaded="videoState.handleEventVideoPreloaded"

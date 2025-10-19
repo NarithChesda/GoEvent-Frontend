@@ -56,19 +56,28 @@
     <!-- Photo Layer - Shows decoration in cover stage, background in main content stage -->
     <!-- In cover stage (phase='none'): show basic_decoration_photo -->
     <!-- In main content stage (phase='background'): show basic_background_photo if exists, else basic_decoration_photo -->
+
+    <!-- Background Photo - Always visible behind decoration -->
     <div
-      v-if="templateAssets?.basic_decoration_photo"
+      v-if="templateAssets?.basic_decoration_photo && templateAssets?.basic_background_photo"
       class="absolute inset-0"
       style="z-index: -1"
     >
       <img
-        v-if="currentVideoPhase === 'background' && templateAssets?.basic_background_photo"
         :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
         class="w-full h-full object-cover"
       />
+    </div>
+
+    <!-- Decoration Photo - Swipes up to reveal background -->
+    <div
+      v-if="templateAssets?.basic_decoration_photo"
+      class="absolute inset-0 transition-all duration-700 ease-out"
+      :class="{ 'swipe-up-hidden': isContentHidden }"
+      style="z-index: 0"
+    >
       <img
-        v-else
         :src="getMediaUrl(templateAssets.basic_decoration_photo)"
         alt="Decoration"
         class="w-full h-full object-cover"
@@ -140,6 +149,7 @@ interface Props {
   backgroundVideoUrl?: string | null
   isCoverVideoPlaying: boolean
   currentVideoPhase?: VideoPhase
+  isContentHidden?: boolean
   getMediaUrl: (url: string) => string
 }
 
@@ -195,6 +205,13 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Swipe Up Animation */
+.swipe-up-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Responsive video sizing */
 .desktop-video-sizing {
   position: absolute;

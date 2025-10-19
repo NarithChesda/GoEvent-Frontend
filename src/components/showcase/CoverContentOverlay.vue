@@ -1,8 +1,8 @@
 <template>
   <div
     @click="$emit('openEnvelope')"
-    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500 cursor-pointer"
-    :class="{ 'opacity-0 pointer-events-none': isContentHidden }"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out cursor-pointer"
+    :class="{ 'swipe-up-hidden': isContentHidden }"
     style="z-index: 10"
   >
     <!-- Inner Container with Dynamic Top Position -->
@@ -83,6 +83,34 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- Swipe Up Arrow Indicator -->
+    <div class="swipe-up-arrow animation-delay-800">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        :stroke="primaryColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="arrow-icon arrow-1"
+      >
+        <polyline points="6 15 12 9 18 15"></polyline>
+      </svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        :stroke="primaryColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="arrow-icon arrow-2"
+      >
+        <polyline points="6 15 12 9 18 15"></polyline>
+      </svg>
     </div>
   </div>
 </template>
@@ -242,5 +270,87 @@ const containerStyle = computed(() => {
     height: 2px !important;
     margin-top: 0.6rem;
   }
+}
+
+/* Swipe Up Arrow Indicator */
+.swipe-up-arrow {
+  position: absolute;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: -8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  overflow: visible;
+}
+
+.arrow-1 {
+  opacity: 0.5;
+  animation: bounce1 2s ease-in-out infinite;
+}
+
+.arrow-2 {
+  opacity: 0.9;
+  animation: bounce2 2s ease-in-out infinite;
+  margin-top: -24px;
+}
+
+@keyframes bounce1 {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes bounce2 {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Responsive arrow size */
+@media (max-width: 640px) {
+  .arrow-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .arrow-2,
+  .arrow-3 {
+    margin-top: -22px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .arrow-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .arrow-2,
+  .arrow-3 {
+    margin-top: -26px;
+  }
+}
+
+/* Swipe Up Animation */
+.swipe-up-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 </style>
