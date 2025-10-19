@@ -1,7 +1,7 @@
 <template>
   <div class="text-center space-y-6 sm:space-y-8">
     <!-- Primary Content Block -->
-    <div v-if="descriptionTitle || descriptionText" class="space-y-2">
+    <div v-if="descriptionTitle || descriptionText" class="space-y-4">
       <!-- Description Title -->
       <div v-if="descriptionTitle">
         <h2
@@ -63,18 +63,6 @@
               }"
             >
               {{ dateText }}
-            </span>
-          </div>
-
-          <!-- Time Text -->
-          <div class="text-sm sm:text-base font-medium leading-snug" v-if="timeText">
-            <span
-              :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-              }"
-            >
-              {{ timeText }}
             </span>
           </div>
 

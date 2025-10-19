@@ -124,7 +124,7 @@ export const rsvpTranslations: Record<
     // Buttons
     rsvp_yes_button: "Yes, I'll attend",
     rsvp_no_button: "Can't attend",
-    rsvp_sign_in_button: 'Sign In to RSVP',
+    rsvp_sign_in_button: 'Join',
 
     // Status indicators
     rsvp_attending: 'Attending',
@@ -230,13 +230,13 @@ export const rsvpTranslations: Record<
 
   kh: {
     // Main headers
-    rsvp_header: 'តើអ្នកនឹងបានចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងទេ?',
+    rsvp_header: 'តើលោកអ្នកនឹងចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
 
     // Buttons
     rsvp_yes_button: 'ចូលរួម',
     rsvp_no_button: 'មិនចូលរួម',
-    rsvp_sign_in_button: 'ចូលគណនី',
+    rsvp_sign_in_button: 'ចូលរួម',
 
     // Status indicators
     rsvp_attending: 'ចូលរួម',
@@ -277,7 +277,7 @@ export const rsvpTranslations: Record<
     rsvp_auto_save: 'រក្សាទុកស្វ័យប្រវត្តិក្នុងរយៈពេល',
 
     // System messages
-    rsvp_confirmation: 'លេខសម្ងាត់៖',
+    rsvp_confirmation: 'លេខកូត:',
     rsvp_dismiss: 'បោះបង់',
 
     // Success messages
@@ -314,7 +314,7 @@ export const rsvpTranslations: Record<
     comment_you_badge: 'You',
 
     // Payment section
-    payment_wedding_gift: 'ចងដៃ',
+    payment_wedding_gift: 'ចំណងដៃ',
     payment_birthday_gift: 'អំណោយ',
 
     // Footer section
@@ -331,7 +331,7 @@ export const rsvpTranslations: Record<
     floating_menu_location: 'ទីតាំង',
     floating_menu_video: 'វីដេអូ',
     floating_menu_gallery: 'រូបថត',
-    floating_menu_gift: 'ចងដៃ',
+    floating_menu_gift: 'ចំណងដៃ',
     floating_menu_comment: 'ជូនពរ',
     floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
