@@ -764,7 +764,19 @@ const handleLocation = () => {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
-const handleGallery = () => scrollToSection('gallery-section')
+const handleGallery = () => {
+  // Scroll to the first photo in the gallery instead of the section header
+  const firstPhoto = document.querySelector('.photo-item')
+  if (firstPhoto) {
+    // Trigger the visibility class immediately to show the photo
+    firstPhoto.classList.add('photo-visible')
+    // Scroll with more offset to ensure photo is fully visible
+    firstPhoto.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  } else {
+    // Fallback to section if no photos are available
+    scrollToSection('gallery-section')
+  }
+}
 const handleComment = () => scrollToSection('comment-section')
 const handleVideo = () => scrollToSection('video-section')
 

@@ -3,7 +3,7 @@
     <!-- Payment Section Header - First Payment Method Name + Type -->
     <h2
       v-if="paymentMethods.length > 0"
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
+      class="leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
       :style="{
         fontFamily: primaryFont || currentFont,
         color: primaryColor,
@@ -1047,6 +1047,13 @@ const capitalizeText = (text: string | undefined): string => {
 
   .glass-content-section {
     padding: 0.75rem;
+  }
+}
+
+/* Desktop Full HD+ (desktop: 1920px) - Match HostInfo header size */
+@media (min-width: 1920px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl, same as HostInfo */
   }
 }
 </style>

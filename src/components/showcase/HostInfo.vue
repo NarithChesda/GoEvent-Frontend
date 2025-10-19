@@ -802,6 +802,11 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     margin-top: -1.5rem;
   }
 
+  /* Reduce welcome header text size for desktop */
+  .welcome-content h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl instead of text-4xl */
+  }
+
   .parent-name-text {
     font-size: 0.875rem; /* 14px - optimized for Full HD+ desktop */
   }

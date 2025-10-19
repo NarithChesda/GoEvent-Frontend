@@ -3,7 +3,7 @@
     <!-- Video Header -->
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
-        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
+        class="leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize"
         :style="{
           fontFamily: primaryFont || currentFont,
           color: primaryColor,
@@ -255,6 +255,13 @@ declare global {
 @media (min-width: 1366px) {
   h2 {
     font-size: 1.5rem !important; /* 24px - md:text-2xl */
+  }
+}
+
+/* Desktop Full HD+ (desktop: 1920px) - Match HostInfo header size */
+@media (min-width: 1920px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl, same as HostInfo */
   }
 }
 </style>

@@ -1529,6 +1529,13 @@ textarea::-webkit-scrollbar-thumb:hover {
   }
 }
 
+/* Desktop Full HD+ (desktop: 1920px) - Match HostInfo header size */
+@media (min-width: 1920px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl, same as HostInfo */
+  }
+}
+
 /* Small laptops 13-inch (1024px-1365px) - Apply mobile-like compact styles */
 @media (min-width: 1024px) and (max-width: 1365px) {
   /* Comment form container - smaller and more compact */
