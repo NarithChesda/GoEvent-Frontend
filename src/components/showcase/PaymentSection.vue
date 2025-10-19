@@ -1,16 +1,21 @@
 <template>
   <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Payment Section Header - First Payment Method Name + Type -->
-    <h2
-      v-if="paymentMethods.length > 0"
-      class="leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
-      :style="{
-        fontFamily: primaryFont || currentFont,
-        color: primaryColor,
-      }"
-    >
-      {{ paymentSectionTitle }}
-    </h2>
+    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+      <h2
+        v-if="paymentMethods.length > 0"
+        :class="[
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
+        :style="{
+          fontFamily: primaryFont || currentFont,
+          color: primaryColor,
+        }"
+      >
+        {{ paymentSectionTitle }}
+      </h2>
+    </div>
 
     <!-- Payment Methods -->
     <div class="space-y-3">
@@ -1050,10 +1055,27 @@ const capitalizeText = (text: string | undefined): string => {
   }
 }
 
-/* Desktop Full HD+ (desktop: 1920px) - Match HostInfo header size */
-@media (min-width: 1920px) {
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Header text - match AgendaSection */
   h2 {
-    font-size: 1.875rem !important; /* 30px - text-3xl, same as HostInfo */
+    font-size: 1.5rem !important; /* 24px - text-2xl */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl */
   }
 }
 </style>

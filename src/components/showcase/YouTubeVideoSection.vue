@@ -3,7 +3,10 @@
     <!-- Video Header -->
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
-        class="leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize"
+        :class="[
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
         :style="{
           fontFamily: primaryFont || currentFont,
           color: primaryColor,
@@ -244,24 +247,27 @@ declare global {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Match RSVP header size */
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
 @media (min-width: 1024px) and (max-width: 1365px) {
+  /* Header text - match AgendaSection */
   h2 {
-    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+    font-size: 1.5rem !important; /* 24px - text-2xl */
   }
 }
 
 /* Medium laptops 14-15 inch (1366px+) */
 @media (min-width: 1366px) {
   h2 {
-    font-size: 1.5rem !important; /* 24px - md:text-2xl */
-  }
-}
-
-/* Desktop Full HD+ (desktop: 1920px) - Match HostInfo header size */
-@media (min-width: 1920px) {
-  h2 {
-    font-size: 1.875rem !important; /* 30px - text-3xl, same as HostInfo */
+    font-size: 1.875rem !important; /* 30px - text-3xl */
   }
 }
 </style>

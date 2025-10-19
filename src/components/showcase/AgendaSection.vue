@@ -30,8 +30,8 @@
             class="tab-button"
             :class="{ active: activeTab === date }"
             :style="{
-              backgroundColor: activeTab === date ? `${primaryColor}15` : `${primaryColor}08`,
-              color: activeTab === date ? primaryColor : primaryColor,
+              backgroundColor: 'transparent',
+              color: primaryColor,
               borderColor: activeTab === date ? primaryColor : 'transparent',
             }"
             @click="selectTab(date)"
@@ -294,8 +294,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.5rem;
-  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
   transition: all 0.2s ease;
   cursor: pointer;
   background: transparent;
