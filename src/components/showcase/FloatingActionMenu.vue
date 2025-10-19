@@ -53,22 +53,10 @@
           </button>
         </div>
 
-        <!-- Location -->
-        <div v-if="props.hasLocation" class="menu-item">
-          <button
-            @click="handleLocation"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
-          >
-            <MapPin :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ locationText }}</span>
-          </button>
-        </div>
-
-        <!-- RSVP -->
+        <!-- RSVP with Location -->
         <div class="menu-item">
           <button
-            @click="handleRSVP"
+            @click="handleRSVPWithLocation"
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
@@ -209,7 +197,6 @@ import {
   Bell,
   Gift,
   Calendar,
-  MapPin,
   Play,
   Image,
   MessageCircle,
@@ -305,7 +292,6 @@ const musicOffText = computed(() => getTranslation('floating_menu_music_off'))
 const rsvpText = computed(() => getTranslation('floating_menu_rsvp'))
 const reminderText = computed(() => getTranslation('floating_menu_reminder'))
 const agendaText = computed(() => getTranslation('floating_menu_agenda'))
-const locationText = computed(() => getTranslation('floating_menu_location'))
 const videoText = computed(() => getTranslation('floating_menu_video'))
 const galleryText = computed(() => getTranslation('floating_menu_gallery'))
 const giftText = computed(() => getTranslation('floating_menu_gift'))
@@ -363,8 +349,11 @@ const handleMusicToggle = () => {
   isMenuOpen.value = false
 }
 
-const handleRSVP = () => {
+const handleRSVPWithLocation = () => {
   emit('rsvp')
+  if (props.hasLocation) {
+    emit('location')
+  }
   isMenuOpen.value = false
 }
 
@@ -380,11 +369,6 @@ const handleGift = () => {
 
 const handleAgenda = () => {
   emit('agenda')
-  isMenuOpen.value = false
-}
-
-const handleLocation = () => {
-  emit('location')
   isMenuOpen.value = false
 }
 
