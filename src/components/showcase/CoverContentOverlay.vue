@@ -24,7 +24,7 @@
           style="height: 60%"
         >
           <h1
-            class="scaled-header font-bold capitalize khmer-text-fix text-center"
+            class="scaled-header font-regular capitalize khmer-text-fix text-center"
             :style="headerTextStyle"
           >
             {{ coverHeader || eventTitle }}

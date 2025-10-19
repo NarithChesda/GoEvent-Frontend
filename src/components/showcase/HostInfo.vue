@@ -4,7 +4,7 @@
     <div class="host-info-grid">
       <!-- Row 1: Welcome Header (moved from MainContentStage) -->
       <div class="welcome-row">
-        <div class="welcome-content mt-6">
+        <div class="welcome-content mt-2">
           <h2
             :class="[
               'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight capitalize',
