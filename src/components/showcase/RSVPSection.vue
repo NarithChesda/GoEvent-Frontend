@@ -712,10 +712,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 0.5rem 1rem;
-  border-radius: 1.25rem;
-  backdrop-filter: blur(8px);
 }
 
 .stepper-label {
@@ -736,7 +732,7 @@ onUnmounted(() => {
   height: 1.75rem;
   border-radius: 50%;
   border: 1.5px solid white;
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   color: white;
   cursor: pointer;
   display: flex;
@@ -747,8 +743,7 @@ onUnmounted(() => {
 }
 
 .stepper-btn:hover:not(:disabled) {
-  background: white;
-  color: currentColor;
+  background: rgba(255, 255, 255, 0.1);
   transform: scale(1.05);
 }
 
@@ -775,10 +770,9 @@ onUnmounted(() => {
 
 /* Confirmation Chip */
 .confirmation-chip {
-  background: rgba(255, 255, 255, 0.15);
   padding: 0.5rem 1rem;
   border-radius: 1rem;
-  backdrop-filter: blur(8px);
+  border: 1.5px solid white;
 }
 
 .confirmation-text {

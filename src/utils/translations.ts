@@ -337,7 +337,7 @@ export const rsvpTranslations: Record<
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
 
     // Envelope button
-    open_invitation: 'បើកសំបុត្រអញ្ជើញ',
+    open_invitation: 'បើកសំបុត្រ',
   },
 
   'zh-cn': {

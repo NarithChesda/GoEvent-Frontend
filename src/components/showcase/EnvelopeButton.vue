@@ -36,8 +36,8 @@
       :style="fallbackButtonStyle"
     >
       <span
-        class="scaled-button-text font-bold text-white text-center"
-        :style="{ fontFamily: primaryFont || currentFont }"
+        class="scaled-button-text font-medium text-white text-center"
+        :style="{ fontFamily: secondaryFont || currentFont }"
       >
         {{ buttonText }}
       </span>
@@ -212,14 +212,13 @@ const buttonText = computed(() => {
   max-height: 120px;
   padding: 0 clamp(1.5rem, 3.5vh, 3.5rem);
   border-radius: clamp(15px, 2.5vh, 60px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .scaled-button-text {
   font-size: clamp(0.5rem, 1.6vh, 1.2rem);
   line-height: 1.4;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.05em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -231,11 +230,9 @@ const buttonText = computed(() => {
 @keyframes buttonPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 3px 12px rgba(0, 0, 0, 0.3);
   }
 }
 
