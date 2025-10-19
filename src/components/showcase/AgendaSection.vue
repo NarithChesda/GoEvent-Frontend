@@ -37,7 +37,7 @@
             @click="selectTab(date)"
           >
             <span
-              :class="['tab-date font-semibold', currentLanguage === 'kh' && 'khmer-text-fix']"
+              :class="['tab-date font-regular', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{ fontFamily: primaryFont || currentFont }"
             >
               {{ formatAgendaDate(date) }}
@@ -58,7 +58,7 @@
           <div v-if="getFirstAgendaDescription(date)" class="text-center mb-4 px-2">
             <h4
               :class="[
-                'font-semibold text-sm sm:text-base',
+                'font-regular text-sm sm:text-base',
                 currentLanguage === 'kh' && 'khmer-text-fix',
               ]"
               :style="{

@@ -287,7 +287,7 @@ export const rsvpTranslations: Record<
     rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។',
 
     // Agenda section
-    agenda_header: 'កម្មវិធីសិរីមង្គលអាពាហ៍ពិពាហ៍',
+    agenda_header: 'កម្មវិធីសិរីមង្គល',
     agenda_activity: 'សកម្មភាព',
     agenda_activities: 'សកម្មភាព',
 

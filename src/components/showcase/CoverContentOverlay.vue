@@ -74,14 +74,14 @@
           class="guest-content-container flex items-center justify-center px-4 w-full"
         >
           <div class="guest-name-container">
-            <div class="guest-name-line" :style="{ backgroundColor: primaryColor }"></div>
-            <h2
-              class="scaled-guest-name font-bold capitalize khmer-text-fix text-center guest-name-single-line"
-              :style="guestNameTextStyle"
-            >
-              {{ guestName }}
-            </h2>
-            <div class="guest-name-line" :style="{ backgroundColor: primaryColor }"></div>
+            <div class="guest-name-blur-wrapper" :style="{ backgroundColor: primaryColor }">
+              <h2
+                class="scaled-guest-name font-regular capitalize khmer-text-fix text-center guest-name-single-line"
+                :style="guestNameTextStyle"
+              >
+                {{ guestName }}
+              </h2>
+            </div>
           </div>
         </div>
       </div>
@@ -201,12 +201,12 @@ const headerTextStyle = computed(() => ({
 
 const guestNameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
-  color: props.primaryColor,
+  color: '#FFFFFF',
   textShadow: 'none',
 }))
 
 const inviteTextStyle = computed(() => ({
-  color: props.primaryColor || 'rgba(255, 255, 255, 0.9)',
+  color: props.secondaryColor || props.primaryColor || 'rgba(255, 255, 255, 0.9)',
   fontFamily: props.secondaryFont || props.currentFont,
   textShadow: 'none',
 }))
@@ -256,6 +256,14 @@ const containerStyle = computed(() => {
   align-items: center;
   gap: 0;
   max-width: 90%;
+}
+
+.guest-name-blur-wrapper {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
 }
 
 .guest-name-line {

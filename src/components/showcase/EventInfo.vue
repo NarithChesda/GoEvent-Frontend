@@ -22,7 +22,7 @@
       <div v-if="descriptionText">
         <p
           :class="[
-            'text-xs px-4 sm:text-sm md:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90',
+            'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
             currentLanguage === 'kh' && 'khmer-text-fix',
           ]"
           :style="{
