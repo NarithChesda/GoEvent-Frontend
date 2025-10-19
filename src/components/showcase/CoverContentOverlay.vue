@@ -1,9 +1,10 @@
 <template>
   <div
+    @click="handleClick"
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
-    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out cursor-pointer"
     :class="{ 'swipe-up-hidden': isContentHidden }"
     style="z-index: 10"
   >
@@ -159,9 +160,11 @@ const emit = defineEmits<{
 // Touch gesture detection
 const touchStartY = ref(0)
 const touchEndY = ref(0)
+const isTouchDevice = ref(false)
 const MIN_SWIPE_DISTANCE = 50 // Minimum pixels to trigger swipe
 
 const handleTouchStart = (e: TouchEvent) => {
+  isTouchDevice.value = true
   touchStartY.value = e.touches[0].clientY
 }
 
@@ -180,6 +183,14 @@ const handleTouchEnd = () => {
   // Reset values
   touchStartY.value = 0
   touchEndY.value = 0
+}
+
+// Click handler for non-touch devices (desktop)
+const handleClick = () => {
+  // Only trigger on click if it's not a touch device
+  if (!isTouchDevice.value) {
+    emit('openEnvelope')
+  }
 }
 
 // Computed properties for styling
