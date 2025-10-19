@@ -5,7 +5,7 @@
       <h2
         v-if="paymentMethods.length > 0"
         :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize',
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
@@ -114,7 +114,7 @@
                 class="payment-row-container flex flex-col lg:flex-row items-start lg:items-center justify-center gap-4 lg:gap-6"
               >
                 <!-- QR Code Section -->
-                <div class="flex-shrink-0 text-center w-full lg:w-auto">
+                <div class="flex-shrink-0 text-center w-full lg:w-auto xl:ml-8">
                   <!-- QR Code exists -->
                   <div v-if="method.qr_code_image" class="relative">
                     <!-- Seamless QR container with depth -->
@@ -140,7 +140,7 @@
                       ></div>
                     </div>
                     <p
-                      class="text-xs mt-1 font-medium tracking-wide"
+                      class="text-xs mt-1 font-medium tracking-wide text-center"
                       :style="{ color: primaryColor, opacity: '0.8' }"
                     >
                       Scan to pay
@@ -184,7 +184,7 @@
                       </div>
                     </div>
                     <p
-                      class="text-xs mt-1 font-medium tracking-wide"
+                      class="text-xs mt-1 font-medium tracking-wide text-center"
                       :style="{ color: primaryColor, opacity: '0.6' }"
                     >
                       QR coming soon

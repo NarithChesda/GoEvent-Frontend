@@ -7,7 +7,7 @@
         <div class="welcome-content mt-6">
           <h2
             :class="[
-              'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold leading-tight capitalize',
+              'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -183,7 +183,7 @@
         <div class="host-name-left">
           <h3
             :class="[
-              'host-name-text font-semibold leading-tight capitalize',
+              'host-name-text font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -203,7 +203,7 @@
           <h3
             v-if="hosts.length > 1"
             :class="[
-              'host-name-text font-semibold leading-tight capitalize',
+              'host-name-text font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -496,7 +496,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
 }
 
 .profile-picture-wrapper {
-  width: 60%;
+  width: 75%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   padding: 2px;
@@ -512,7 +512,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
 }
 
 .profile-picture-fallback {
-  width: 60%;
+  width: 75%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   display: flex;

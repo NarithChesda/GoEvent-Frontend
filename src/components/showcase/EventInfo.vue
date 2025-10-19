@@ -6,7 +6,7 @@
       <div v-if="descriptionTitle">
         <h2
           :class="[
-            'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalize',
+            'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
             currentLanguage === 'kh' && 'khmer-text-fix',
           ]"
           :style="{
