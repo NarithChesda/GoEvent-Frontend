@@ -1,6 +1,7 @@
 <template>
   <div
-    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500"
+    @click="$emit('openEnvelope')"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500 cursor-pointer"
     :class="{ 'opacity-0 pointer-events-none': isContentHidden }"
     style="z-index: 10"
   >
@@ -28,11 +29,11 @@
         </div>
       </div>
 
-      <!-- Event Logo Row: 38% -->
+      <!-- Event Logo Row: 48% -->
       <div
         v-if="eventLogo"
         class="content-row-logo flex items-center justify-center animate-fadeIn animation-delay-200"
-        style="height: 38%"
+        style="height: 48%"
       >
         <div class="flex items-center justify-center h-full w-full px-4">
           <img
@@ -60,48 +61,28 @@
         </div>
       </div>
 
-      <!-- Guest Name Row: 12.5% -->
+      <!-- Guest Name Row: 16% -->
       <div
         v-if="guestName"
         class="content-row-guest flex items-center justify-center animate-fadeIn animation-delay-600"
-        style="height: 12.5%"
+        style="height: 16%; overflow: visible;"
       >
         <div
           class="guest-content-container flex items-center justify-center px-4 w-full"
-          style="height: 50%"
         >
-          <h2
-            class="scaled-guest-name font-bold capitalize khmer-text-fix text-center"
-            :style="guestNameTextStyle"
-          >
-            {{ guestName }}
-          </h2>
+          <div class="guest-name-container">
+            <div class="guest-name-line" :style="{ backgroundColor: primaryColor }"></div>
+            <h2
+              class="scaled-guest-name font-bold capitalize khmer-text-fix text-center guest-name-single-line"
+              :style="guestNameTextStyle"
+            >
+              {{ guestName }}
+            </h2>
+            <div class="guest-name-line" :style="{ backgroundColor: primaryColor }"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Open Envelope Button Row: 20% -->
-      <div
-        class="content-row-button flex items-center justify-center animate-fadeIn animation-delay-800"
-        style="height: 20%"
-      >
-        <div class="flex items-center justify-center h-full w-full">
-          <EnvelopeButton
-            :shouldShowLoading="shouldShowButtonLoading"
-            :hasCustomButton="hasCustomButton"
-            :templateAssets="templateAssets"
-            :primaryColor="primaryColor"
-            :secondaryColor="secondaryColor"
-            :accentColor="accentColor"
-            :secondaryFont="secondaryFont"
-            :currentFont="currentFont"
-            :primaryFont="primaryFont"
-            :gradientStyle="gradientStyle"
-            :getMediaUrl="getMediaUrl"
-            :currentLanguage="currentLanguage"
-            @click="$emit('openEnvelope')"
-          />
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -109,7 +90,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import EnvelopeButton from './EnvelopeButton.vue'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -147,11 +127,6 @@ defineEmits<{
 }>()
 
 // Computed properties for styling
-const gradientStyle = computed(
-  () =>
-    `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`,
-)
-
 const headerTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
   color: props.primaryColor,
@@ -168,12 +143,6 @@ const inviteTextStyle = computed(() => ({
   fontFamily: props.secondaryFont || props.currentFont,
   textShadow: 'none',
 }))
-
-const hasCustomButton = computed(
-  () =>
-    Boolean(props.templateAssets?.open_envelope_button) &&
-    props.templateAssets?.open_envelope_button?.trim() !== '',
-)
 
 // Text content helpers
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -213,4 +182,55 @@ const containerStyle = computed(() => {
 <style scoped>
 /* Import shared cover stage styles */
 @import './cover-stage-styles.css';
+
+.guest-name-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 90%;
+}
+
+.guest-name-line {
+  width: 100%;
+  height: 2px;
+}
+
+.guest-name-line:first-child {
+  margin-bottom: 0.75rem;
+}
+
+.guest-name-line:last-child {
+  margin-top: 0.75rem;
+}
+
+.guest-name-single-line {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .guest-name-container {
+    gap: 0;
+  }
+
+  .guest-name-line {
+    height: 1.5px;
+  }
+
+  .guest-name-line:first-child {
+    margin-bottom: 0.6rem;
+  }
+
+  .guest-name-line:last-child {
+    margin-top: 0.6rem;
+  }
+}
 </style>
