@@ -1,7 +1,9 @@
 <template>
   <div
-    @click="$emit('openEnvelope')"
-    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out cursor-pointer"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out"
     :class="{ 'swipe-up-hidden': isContentHidden }"
     style="z-index: 10"
   >
@@ -116,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
@@ -150,9 +152,35 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   openEnvelope: []
 }>()
+
+// Touch gesture detection
+const touchStartY = ref(0)
+const touchEndY = ref(0)
+const MIN_SWIPE_DISTANCE = 50 // Minimum pixels to trigger swipe
+
+const handleTouchStart = (e: TouchEvent) => {
+  touchStartY.value = e.touches[0].clientY
+}
+
+const handleTouchMove = (e: TouchEvent) => {
+  touchEndY.value = e.touches[0].clientY
+}
+
+const handleTouchEnd = () => {
+  const swipeDistance = touchStartY.value - touchEndY.value
+
+  // Check if it's a swipe up (positive distance) and exceeds minimum distance
+  if (swipeDistance > MIN_SWIPE_DISTANCE) {
+    emit('openEnvelope')
+  }
+
+  // Reset values
+  touchStartY.value = 0
+  touchEndY.value = 0
+}
 
 // Computed properties for styling
 const headerTextStyle = computed(() => ({
