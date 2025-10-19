@@ -287,7 +287,7 @@ export const rsvpTranslations: Record<
     rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។',
 
     // Agenda section
-    agenda_header: 'កាលវិភាគព្រឹត្តិការណ៍',
+    agenda_header: 'កម្មវិធីសិរីមង្គលអាពាហ៍ពិពាហ៍',
     agenda_activity: 'សកម្មភាព',
     agenda_activities: 'សកម្មភាព',
 
@@ -302,12 +302,12 @@ export const rsvpTranslations: Record<
 
     // Comment section
     comment_header: 'សារជូនពរ',
-    comment_placeholder: 'ចាំរូបការគិត, ប្រារ្ថនា, ឬ សំឌើងអារម្មណ៍របស់អ្នក...',
+    comment_placeholder: 'សរសេរសារជូនពររបស់អ្នកនៅទីនេះ',
     comment_signin_prompt: 'សូមចូលគណនី ដើម្បីជូនពរ',
     comment_signin_button: 'ចូលគណនី',
-    comment_post_button: 'ជូនពរ',
+    comment_post_button: 'បញ្ចូន',
     comment_posting_button: 'កំពុងប៉ុព្វ...',
-    comment_no_comments: 'ក្លាយជាអ្នកដំបូងក្នុងការដាក់មតិយោបល់!',
+    comment_no_comments: 'សារជូនពរដ៏មានអត្ថន័យ',
     comment_loading: 'កំពុងនីមតិយោបល់...',
     comment_already_commented: 'អ្នកបានជូនពររួចហើយ',
     comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់ព្រឹត្តិការណ៍មួយ',
@@ -327,11 +327,11 @@ export const rsvpTranslations: Record<
     floating_menu_music_off: 'បិទតន្ត្រី',
     floating_menu_rsvp: 'RSVP',
     floating_menu_reminder: 'រំលឹក',
-    floating_menu_agenda: 'កាលវិភាគ',
+    floating_menu_agenda: 'កម្មវិធី',
     floating_menu_location: 'ទីតាំង',
     floating_menu_video: 'វីដេអូ',
     floating_menu_gallery: 'រូបថត',
-    floating_menu_gift: 'អំណោយ',
+    floating_menu_gift: 'ចងដៃ',
     floating_menu_comment: 'ជូនពរ',
     floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',

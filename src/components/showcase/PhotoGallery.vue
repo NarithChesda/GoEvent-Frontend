@@ -1,6 +1,6 @@
 <template>
   <div class="mb-6 sm:mb-8">
-    <h2
+    <!-- <h2
       class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
       :style="{
         fontFamily: primaryFont || currentFont,
@@ -8,7 +8,7 @@
       }"
     >
       {{ galleryHeaderText }}
-    </h2>
+    </h2> -->
 
     <!-- No Photos Placeholder -->
     <div v-if="photos.length === 0" class="p-6 sm:p-8 rounded-xl text-center">

@@ -7,7 +7,7 @@
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
         :class="[
-          'leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize',
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold sm:mb-4 md:mb-6 capitalize',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
@@ -30,9 +30,9 @@
             class="tab-button"
             :class="{ active: activeTab === date }"
             :style="{
+              backgroundColor: activeTab === date ? `${primaryColor}15` : `${primaryColor}08`,
+              color: activeTab === date ? primaryColor : primaryColor,
               borderColor: activeTab === date ? primaryColor : 'transparent',
-              backgroundColor: activeTab === date ? `${primaryColor}15` : 'transparent',
-              color: activeTab === date ? primaryColor : `${primaryColor}80`,
             }"
             @click="selectTab(date)"
           >
@@ -295,8 +295,7 @@ onMounted(() => {
   justify-content: center;
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
-  border: none;
-  border-bottom: 2px solid transparent;
+  border: 2px solid transparent;
   transition: all 0.2s ease;
   cursor: pointer;
   background: transparent;
@@ -305,10 +304,6 @@ onMounted(() => {
 
 .tab-button:hover {
   background: rgba(255, 255, 255, 0.05);
-}
-
-.tab-button.active {
-  border-bottom-color: currentColor;
 }
 
 .tab-date {
@@ -377,9 +372,9 @@ onMounted(() => {
 
 /* Small laptops 13-inch (1024px-1365px) - Compact sizes */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text */
+  /* Header text - match HostInfo */
   h2 {
-    font-size: 1rem !important;
+    font-size: 1.5rem !important; /* 24px - text-2xl */
   }
 
   /* Tab bar compact sizing */
@@ -395,7 +390,7 @@ onMounted(() => {
 /* Medium laptops 14-15 inch (1366px+) */
 @media (min-width: 1366px) {
   h2 {
-    font-size: 1.5rem !important; /* 24px - md:text-2xl */
+    font-size: 1.875rem !important; /* 30px - text-3xl */
   }
 }
 </style>

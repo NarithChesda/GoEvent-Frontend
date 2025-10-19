@@ -7,7 +7,7 @@
         <div class="welcome-content mt-6">
           <h2
             :class="[
-              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalize',
+              'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -31,7 +31,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -53,7 +53,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -74,7 +74,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -96,7 +96,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -142,7 +142,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: primaryFont || currentFont,
+              fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -167,7 +167,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: primaryFont || currentFont,
+              fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -634,9 +634,9 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
     margin-top: -0.125rem;
   }
 
-  /* Override Tailwind's lg:text-2xl to keep mobile size */
+  /* Override Tailwind's lg:text-4xl to keep smaller size for 13-inch laptops */
   .welcome-content h2 {
-    font-size: 1.125rem !important; /* 18px - same as sm:text-lg */
+    font-size: 1.5rem !important; /* 24px - text-2xl */
   }
 
   .parent-name-text {
