@@ -49,7 +49,7 @@
       <div
         v-if="guestName"
         class="content-row-invite flex items-center justify-center animate-fadeIn animation-delay-400"
-        style="height: 8.75%"
+        style="height: 8.75%; overflow: visible;"
       >
         <div
           class="invite-content-container flex items-center justify-center px-4 w-full"
@@ -216,20 +216,30 @@ const containerStyle = computed(() => {
   margin-top: 0 !important;
 }
 
+/* Desktop - reduce guest name size */
+@media (min-width: 1024px) {
+  .content-row-guest .scaled-guest-name {
+    font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
+  }
+}
+
+/* Mobile - reduce guest name size */
 @media (max-width: 640px) {
+  .content-row-guest .scaled-guest-name {
+    font-size: clamp(0.6rem, 2.5vh, 1.2rem) !important;
+  }
+
   .guest-name-container {
     gap: 0;
   }
 
-  .guest-name-line {
-    height: 1.5px;
-  }
-
   .guest-name-line:first-child {
+    height: 2px !important;
     margin-bottom: 0.6rem;
   }
 
   .guest-name-line:last-child {
+    height: 2px !important;
     margin-top: 0.6rem;
   }
 }
