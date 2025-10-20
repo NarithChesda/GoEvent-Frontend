@@ -18,10 +18,10 @@
     <!-- Comment Form -->
     <div
       ref="commentFormRef"
-      class="comment-form-liquid mb-4 animate-form-reveal"
+      class="comment-form-liquid mb-3 animate-form-reveal"
       :style="{
         backgroundColor: `${primaryColor}20`,
-        border: `1px solid ${primaryColor}50`,
+        border: `1px solid ${primaryColor}40`,
       }"
     >
       <!-- Sign In Prompt for Unauthenticated Users -->
@@ -118,7 +118,7 @@
     <div class="relative">
       <div
         ref="commentsContainer"
-        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar px-1"
+        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar"
         @scroll="handleScroll"
       >
         <!-- Loading State -->
@@ -1225,14 +1225,16 @@ onUnmounted(() => {
 <style scoped>
 /* Liquid Glass Container - Comment Form */
 .comment-form-liquid {
-  border-radius: 2rem;
-  padding: 1.5rem;
+  border-radius: 1.5rem;
+  padding: 1rem;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  margin-bottom: 0.75rem;
   box-sizing: border-box;
 }
 
@@ -1528,119 +1530,153 @@ textarea::-webkit-scrollbar-thumb:hover {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
+/* Laptop responsive styles - Match mobile sizing and spacing for all laptops */
+
+/* Small laptops 13-inch (1024px-1365px) - Scaled to 67.5% matching mobile exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - match AgendaSection */
+  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
   h2 {
-    font-size: 1.5rem !important; /* 24px - text-2xl */
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching AgendaSection */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 }
 
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
+/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching mobile exactly */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
   h2 {
-    font-size: 1.875rem !important; /* 30px - text-3xl */
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching AgendaSection */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
   }
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Apply mobile-like compact styles */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  /* Comment form container - smaller and more compact */
+/* Desktop (1536px+) - Clean desktop styles */
+@media (min-width: 1536px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl matching AgendaSection */
+  }
+}
+
+/* All laptop sizes - Common responsive styles */
+@media (min-width: 1024px) {
+
+  /* Remove the custom laptop sizing to match mobile */
   .comment-form-liquid {
-    border-radius: 1rem !important; /* Smaller border radius like mobile */
-    padding: 1rem !important; /* Reduced padding */
-    margin: 0.25rem !important; /* Smaller margin */
+    border-radius: 1.5rem !important;
+    padding: 1rem !important;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+    margin-bottom: 0.75rem !important;
   }
 
-  /* Text sizing - smaller like RSVP collapsed state */
+  /* Text sizing - match mobile */
   .text-sm {
-    font-size: 0.8125rem !important; /* 13px - smaller on collapsed */
+    font-size: 0.875rem !important; /* 14px - standard mobile text-sm */
   }
 
   .text-xs {
-    font-size: 0.6875rem !important; /* 11px - smaller */
+    font-size: 0.75rem !important; /* 12px - standard mobile text-xs */
   }
 
-  .text-base {
-    font-size: 0.8125rem !important; /* 13px - smaller */
-  }
-
-  /* Button sizing - more compact */
+  /* Button sizing - match mobile */
   .liquid-glass-button {
-    font-size: 0.875rem !important; /* 14px */
-    padding: 0.75rem 1.25rem !important; /* Reduced padding */
-    border-radius: 1rem !important; /* Smaller radius */
-    min-height: 44px !important; /* Smaller height */
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 1rem !important;
   }
 
-  /* Textarea sizing - more compact */
+  /* Textarea sizing - match mobile */
   .liquid-glass-textarea {
-    border-radius: 0.75rem !important; /* Smaller radius */
-    padding: 0.625rem !important; /* Reduced padding */
-    font-size: 0.8125rem !important; /* 13px */
+    border-radius: 1rem !important;
+    padding: 0.5rem 0.75rem !important; /* py-2 px-3 - match template exactly */
+    font-size: 0.875rem !important; /* text-sm */
   }
 
-  /* Comment cards - more compact */
+  /* Comment cards - match mobile */
   .comment-card-liquid {
-    border-radius: 1rem !important; /* Smaller radius */
-    padding: 0.75rem !important; /* Reduced padding */
-    margin-left: 0.125rem !important; /* Smaller margins */
-    margin-right: 0.125rem !important;
+    border-radius: 1.5rem !important;
+    padding: 1rem !important;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
   }
 
-  /* Action buttons - smaller */
+  /* Action buttons - match mobile */
   .liquid-glass-action-button {
-    padding: 0.25rem !important; /* Smaller padding */
-    border-radius: 0.5rem !important; /* Smaller radius */
+    padding: 0.375rem !important; /* p-1.5 */
+    border-radius: 0.75rem !important;
   }
 
   .liquid-glass-edit-button {
-    padding: 0.375rem 0.75rem !important; /* Smaller padding */
-    font-size: 0.6875rem !important; /* 11px */
-    border-radius: 0.5rem !important; /* Smaller radius */
+    padding: 0.375rem 0.75rem !important; /* px-3 py-1.5 */
+    font-size: 0.75rem !important; /* text-xs */
+    border-radius: 0.75rem !important;
   }
 
-  /* Avatar sizing - smaller */
+  /* Avatar sizing - match mobile */
   .w-8.h-8 {
-    width: 1.75rem !important; /* 28px instead of 32px */
-    height: 1.75rem !important;
+    width: 2rem !important; /* 32px - w-8 */
+    height: 2rem !important; /* 32px - h-8 */
   }
 
-  /* State containers - more compact */
+  /* State containers - match mobile */
   .liquid-glass-state {
-    border-radius: 1rem !important; /* Smaller radius */
-    padding: 0.75rem !important; /* Reduced padding */
+    border-radius: 1.5rem !important;
+    padding: 2rem !important; /* py-8 */
   }
 
   .liquid-glass-error {
-    border-radius: 0.75rem !important; /* Smaller radius */
-    padding: 0.625rem !important; /* Reduced padding */
+    border-radius: 1rem !important;
+    padding: 0.75rem !important; /* p-3 */
   }
 
-  /* Icons sizing - smaller */
-  svg.w-5 {
-    width: 1rem !important; /* 16px instead of 20px */
-    height: 1rem !important;
+  /* Icons sizing - preserve original mobile sizes */
+  svg.w-6 {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
   }
 
   svg.w-4 {
-    width: 0.875rem !important; /* 14px instead of 16px */
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  svg.w-3\.5 {
+    width: 0.875rem !important;
     height: 0.875rem !important;
   }
 
   svg.w-3 {
-    width: 0.75rem !important; /* 12px */
+    width: 0.75rem !important;
     height: 0.75rem !important;
   }
 
-  /* Comments container - more compact height */
+  /* Comments container - match mobile */
   .h-\[26rem\] {
-    height: 20rem !important; /* Reduced from 26rem to 20rem */
+    height: 26rem !important; /* Keep same height as mobile */
   }
 
-  /* Overall comment section spacing */
+  /* Overall comment section spacing - match mobile */
   #comment-section.mb-8 {
-    margin-bottom: 1.5rem !important; /* Reduced spacing */
+    margin-bottom: 2rem !important; /* mb-8 */
+  }
+
+  /* Character counter and validation messages */
+  .text-right.mt-1 {
+    margin-top: 0.25rem !important;
+  }
+
+  /* Loading spinner sizing */
+  .w-4.h-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  .w-12.h-12 {
+    width: 3rem !important;
+    height: 3rem !important;
   }
 }
 </style>
