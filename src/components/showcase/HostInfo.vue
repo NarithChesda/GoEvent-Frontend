@@ -624,10 +624,10 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 75% */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .host-info-grid {
-    gap: 0.1875rem; /* 0.25rem * 0.75 */
+    gap: 0.16875rem; /* 0.25rem * 0.675 - matching EventInfo spacing */
   }
 
   .logo-row {
@@ -636,38 +636,39 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .name-row {
-    margin-top: -0.09375rem; /* -0.125rem * 0.75 */
+    margin-top: -0.084375rem; /* -0.125rem * 0.675 - matching EventInfo ratio */
   }
 
   /* Override Tailwind's lg:text-4xl to keep smaller size for 13-inch laptops */
   .welcome-content h2 {
-    font-size: 1.125rem !important; /* 18px - 1.5rem * 0.75 */
+    font-size: 1.0125rem !important; /* 1.5rem * 0.675 - matching EventInfo scaling */
+    line-height: 1.1 !important; /* Reduced line spacing for laptop view */
   }
 
   .parent-name-text {
-    font-size: 0.593rem; /* 0.7906rem * 0.75 */
+    font-size: 0.5337rem; /* 0.7906rem * 0.675 - matching EventInfo scaling */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.1875rem; /* -0.25rem * 0.75 */
+    margin-top: -0.16875rem; /* -0.25rem * 0.675 - matching EventInfo ratio */
   }
 
   .host-name-text {
-    font-size: 0.6375rem; /* 0.85rem * 0.75 */
+    font-size: 0.573375rem; /* 0.85rem * 0.675 - matching EventInfo scaling */
   }
 
   .host-logo-showcase {
-    max-height: 105px !important; /* 140px * 0.75 */
-    max-width: 262.5px !important; /* 350px * 0.75 */
+    max-height: 94.5px !important; /* 140px * 0.675 - matching EventInfo scaling */
+    max-width: 236.25px !important; /* 350px * 0.675 - matching EventInfo scaling */
   }
 
   .logo-fallback {
-    width: 84px; /* 112px * 0.75 */
-    height: 84px;
+    width: 75.6px; /* 112px * 0.675 - matching EventInfo scaling */
+    height: 75.6px;
   }
 
   .logo-initial {
-    font-size: 1.40625rem; /* 1.875rem * 0.75 */
+    font-size: 1.2656rem; /* 1.875rem * 0.675 - matching EventInfo scaling */
   }
 
   .profile-picture-wrapper {
@@ -679,7 +680,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .welcome-row {
-    margin-bottom: 0.375rem; /* 0.5rem * 0.75 */
+    margin-bottom: 0.3375rem; /* 0.5rem * 0.675 - matching EventInfo spacing */
   }
 }
 
