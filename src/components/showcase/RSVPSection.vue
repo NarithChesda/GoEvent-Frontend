@@ -950,66 +950,66 @@ onUnmounted(() => {
   }
 }
 
-/* Small laptops - Scale down to 67.5% (75% - 10%) */
+/* Small laptops - Match mobile base scale */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Scale font sizes and line heights to 67.5% */
+  /* Match mobile base font sizes */
   .toggle-label {
-    font-size: 0.590625rem; /* 67.5% of 0.875rem */
-    line-height: 0.84375rem; /* 67.5% of 1.25rem */
+    font-size: 0.875rem; /* 14px - match mobile base */
+    line-height: 1.25rem;
   }
 
   .stepper-label {
-    font-size: 0.5484375rem; /* 67.5% of 0.8125rem */
-    line-height: 0.84375rem; /* 67.5% of 1.25rem */
+    font-size: 0.8125rem; /* 13px - match mobile base */
+    line-height: 1.25rem;
   }
 
   .stepper-value {
-    font-size: 0.759375rem; /* 67.5% of 1.125rem */
-    min-width: 1.35rem; /* 67.5% of 2rem */
-    line-height: 0.84375rem; /* Match EventInfo line-height */
+    font-size: 1.125rem; /* 18px - match mobile base */
+    min-width: 2rem;
+    line-height: 1.25rem;
   }
 
   .confirmation-text,
   .confirmation-code-text {
-    font-size: 0.50625rem; /* 67.5% of 0.75rem */
-    line-height: 0.50625rem; /* Match font-size for tight spacing */
+    font-size: 0.75rem; /* 12px - match mobile base */
+    line-height: 1rem;
   }
 
   /* Ensure confirmation chip has even padding */
   .confirmation-chip {
     display: flex;
     align-items: center;
-    line-height: 1; /* Normalize line-height */
+    line-height: 1;
   }
 
   .message-text {
-    font-size: 0.5484375rem; /* 67.5% of 0.8125rem */
-    line-height: 0.84375rem; /* 67.5% of 1.25rem */
+    font-size: 0.8125rem; /* 13px - match mobile base */
+    line-height: 1.25rem;
   }
 
   .rsvp-btn-signin {
-    padding: 0.421875rem 0.84375rem; /* 67.5% of original */
-    font-size: 0.590625rem; /* 67.5% of 0.875rem */
-    border-radius: 1.0125rem; /* 67.5% of 1.5rem */
+    padding: 0.625rem 1.25rem; /* match mobile base */
+    font-size: 0.875rem; /* 14px - match mobile base */
+    border-radius: 1.5rem;
   }
 
   .signin-icon {
-    width: 0.759375rem; /* 67.5% of 1.125rem */
-    height: 0.759375rem;
+    width: 1.125rem; /* 18px - match mobile base */
+    height: 1.125rem;
   }
 
-  /* Scale toggle switch */
+  /* Match mobile toggle switch */
   .toggle-switch {
-    width: 1.85625rem; /* 67.5% of 2.75rem */
-    height: 1.0125rem; /* 67.5% of 1.5rem */
-    border-radius: 0.50625rem; /* 67.5% of 0.75rem */
+    width: 2.75rem; /* match mobile base */
+    height: 1.5rem;
+    border-radius: 0.75rem;
   }
 
   .toggle-thumb {
-    width: 0.675rem; /* 67.5% of 1rem */
-    height: 0.675rem;
-    top: 0.16875rem; /* 67.5% of 0.25rem */
-    left: 0.16875rem;
+    width: 1rem; /* match mobile base */
+    height: 1rem;
+    top: 0.25rem;
+    left: 0.25rem;
   }
 
   .toggle-thumb {
@@ -1017,51 +1017,51 @@ onUnmounted(() => {
   }
 
   .toggle-switch.active .toggle-thumb {
-    transform: translateX(0.84375rem) !important; /* 67.5% of 1.25rem */
+    transform: translateX(1.25rem) !important; /* match mobile base */
   }
 
-  /* Scale stepper buttons */
+  /* Match mobile stepper buttons */
   .stepper-btn {
-    width: 1.18125rem; /* 67.5% of 1.75rem */
-    height: 1.18125rem;
-    border-width: 1.0125px; /* 67.5% of 1.5px */
+    width: 1.75rem; /* match mobile base */
+    height: 1.75rem;
+    border-width: 1.5px;
   }
 
   .stepper-btn svg {
-    width: 8.1px; /* 67.5% of 12px */
-    height: 8.1px;
+    width: 12px; /* match mobile base */
+    height: 12px;
   }
 
-  /* Scale spacing - Additional 10% reduction */
+  /* Match mobile spacing */
   .rsvp-content {
-    gap: 0.45rem; /* 90% of 0.5rem */
+    gap: 1rem; /* match mobile base */
   }
 
   .rsvp-section-wrapper {
-    gap: 0.3375rem; /* 90% of 0.375rem */
+    gap: 0.75rem; /* match mobile base */
   }
 
   .rsvp-main-row {
-    gap: 0.5625rem; /* 90% of 0.625rem */
+    gap: 1.25rem; /* match mobile base */
   }
 
   .toggle-container {
-    gap: 0.3375rem; /* 90% of 0.375rem */
+    gap: 0.75rem; /* match mobile base */
   }
 
   .stepper-container {
-    gap: 0.45rem; /* 90% of 0.5rem */
+    gap: 1rem; /* match mobile base */
   }
 
   .stepper-controls {
-    gap: 0.3375rem; /* 90% of 0.375rem */
+    gap: 0.75rem; /* match mobile base */
   }
 
-  /* Scale confirmation chip */
+  /* Match mobile confirmation chip */
   .confirmation-chip {
-    padding: 0.225rem 0.45rem; /* 90% of 0.25rem 0.5rem */
-    border-radius: 0.675rem; /* 90% of 0.75rem */
-    border-width: 1.0125px; /* 90% of 1.125px */
+    padding: 0.5rem 1rem; /* match mobile base */
+    border-radius: 1rem;
+    border-width: 1.5px;
   }
 
   /* Override any default margin on confirmation chip */
@@ -1069,35 +1069,35 @@ onUnmounted(() => {
     margin-top: 0 !important;
   }
 
-  /* Scale loader */
+  /* Match mobile loader */
   .spinner-white {
-    width: 0.84375rem; /* 90% of 0.9375rem */
-    height: 0.84375rem;
-    border-width: 1.35px; /* 90% of 1.5px */
+    width: 1.25rem; /* match mobile base */
+    height: 1.25rem;
+    border-width: 2px;
   }
 
-  /* Scale text size for header */
+  /* Match mobile header text size */
   .text-sm {
-    font-size: 0.5484375rem !important; /* 67.5% of 0.8125rem */
+    font-size: 0.875rem !important; /* 14px - match mobile base */
   }
 
   .text-base {
-    font-size: 0.675rem !important; /* 67.5% of 1rem */
+    font-size: 1rem !important; /* 16px - match mobile base */
   }
 
-  /* Scale spacing for parent container */
+  /* Match mobile spacing for parent container */
   .space-y-3 > * + * {
-    margin-top: 0.3375rem !important; /* 90% of 0.375rem */
+    margin-top: 0.75rem !important; /* match mobile base */
   }
 
-  /* Scale message padding */
+  /* Match mobile message padding */
   .rsvp-message {
-    padding: 0.225rem 0 !important; /* 90% of 0.25rem 0 */
+    padding: 0.5rem 0 !important; /* match mobile base */
   }
 
-  /* Scale loader padding */
+  /* Match mobile loader padding */
   .rsvp-loader {
-    padding: 0.225rem !important; /* 90% of 0.25rem */
+    padding: 0.5rem !important; /* match mobile base */
   }
 }
 </style>

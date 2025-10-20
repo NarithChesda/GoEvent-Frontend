@@ -164,70 +164,77 @@ const capitalizedDescription = computed(() => {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Scale down to 67.5% (75% - 10%) */
+/* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Scale content to 67.5% without reducing container */
+  /* Title - match mobile base text-base (1rem = 16px) */
   h2 {
-    font-size: 0.675rem !important; /* 67.5% of 1rem = 10.8px */
-    line-height: 0.84375rem !important; /* 67.5% of 1.25rem */
+    font-size: 1rem !important; /* 16px - same as mobile base text-base */
+    line-height: 1.25rem !important; /* tight leading */
   }
 
+  /* Description text - match mobile base text-sm (0.875rem = 14px) */
   p {
-    font-size: 0.5484375rem !important; /* 67.5% of 0.8125rem = ~8.78px */
-    line-height: 0.84375rem !important; /* 67.5% of 1.25rem */
+    font-size: 0.875rem !important; /* 14px - same as mobile base text-sm */
+    line-height: 1.25rem !important; /* normal leading */
   }
 
+  /* Details text inside card - match mobile base text-sm (0.875rem = 14px) */
   .text-sm {
-    font-size: 0.5484375rem !important; /* 67.5% of 0.8125rem = ~8.78px */
-    line-height: 0.84375rem !important; /* 67.5% of 1.25rem */
+    font-size: 0.875rem !important; /* 14px - same as mobile base text-sm */
+    line-height: 1.25rem !important; /* snug leading */
   }
 
-  /* Scale spacing proportionally */
+  /* Scale spacing to match mobile base */
   .space-y-6 > * + * {
-    margin-top: 1.0125rem !important; /* 67.5% of 1.5rem */
+    margin-top: 1.5rem !important; /* space-y-6 mobile base */
   }
 
   .space-y-8 > * + * {
-    margin-top: 1.35rem !important; /* 67.5% of 2rem */
+    margin-top: 1.5rem !important; /* match space-y-6 for consistency */
   }
 
   .space-y-4 > * + * {
-    margin-top: 0.675rem !important; /* 67.5% of 1rem */
+    margin-top: 1rem !important; /* space-y-4 */
   }
 
   .space-y-3 > * + * {
-    margin-top: 0.50625rem !important; /* 67.5% of 0.75rem */
+    margin-top: 0.75rem !important; /* space-y-3 */
   }
 
   .space-y-2 > * + * {
-    margin-top: 0.3375rem !important; /* 67.5% of 0.5rem */
+    margin-top: 0.5rem !important; /* space-y-2 */
   }
 
-  /* Scale padding */
+  /* Padding - match mobile base sizes */
   .px-4 {
-    padding-left: 0.675rem !important; /* 67.5% of 1rem */
-    padding-right: 0.675rem !important;
+    padding-left: 1rem !important; /* 16px */
+    padding-right: 1rem !important;
   }
 
   .pt-3 {
-    padding-top: 0.50625rem !important; /* 67.5% of 0.75rem */
+    padding-top: 0.75rem !important; /* 12px */
   }
 
   .pb-4 {
-    padding-bottom: 0.675rem !important; /* 67.5% of 1rem */
+    padding-bottom: 1rem !important; /* 16px */
   }
 
   .pt-2 {
-    padding-top: 0.3375rem !important; /* 67.5% of 0.5rem */
+    padding-top: 0.5rem !important; /* 8px */
   }
 
   .pt-4 {
-    padding-top: 0.675rem !important; /* 67.5% of 1rem */
+    padding-top: 1rem !important; /* 16px */
   }
 
-  /* Scale iframe/map container - maintain full width, scale height */
+  /* Border radius - match mobile */
+  .gradient-stroke-container {
+    border-radius: 2rem !important;
+  }
+
+  /* Map container - maintain aspect ratio */
   .aspect-video {
-    aspect-ratio: 16 / 10.8; /* Reduce height to 67.5% (16/9 * 0.675 = 16/10.8) */
+    aspect-ratio: 16 / 9; /* Standard video aspect ratio */
   }
 }
 
