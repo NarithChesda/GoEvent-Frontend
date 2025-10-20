@@ -164,41 +164,56 @@ const capitalizedDescription = computed(() => {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+/* Small laptops 13-inch (1024px-1365px) - Scale to 75% to match HostInfo */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Override Tailwind's lg:text-2xl for description title - match RSVP */
+  /* Override Tailwind's lg:text-2xl for description title - scale to 75% */
   h2 {
-    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+    font-size: 0.75rem !important; /* 12px - 1rem * 0.75 */
   }
 
-  /* Keep description text at mobile size */
+  /* Scale description text to 75% */
   p {
-    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+    font-size: 0.609375rem !important; /* ~9.75px - 0.8125rem * 0.75 */
   }
 
-  /* Keep event details text at mobile size */
+  /* Scale event details text to 75% */
   .text-sm {
-    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+    font-size: 0.609375rem !important; /* ~9.75px - 0.8125rem * 0.75 */
   }
 }
 
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
+/* Medium laptops 14-15 inch (1366px+) - Scale to 75% to match HostInfo */
+@media (min-width: 1366px) and (max-width: 1535px) {
   h2 {
-    font-size: 1.25rem !important; /* 20px - slightly larger */
+    font-size: 0.9375rem !important; /* 15px - 1.25rem * 0.75 */
   }
 
   p {
-    font-size: 1rem !important; /* 16px - md:text-base */
+    font-size: 0.75rem !important; /* 12px - 1rem * 0.75 */
   }
 
   .text-sm {
-    font-size: 1rem !important; /* 16px */
+    font-size: 0.75rem !important; /* 12px - 1rem * 0.75 */
   }
 }
 
-/* Large laptops 16+ inch (1536px+) */
-@media (min-width: 1536px) {
+/* Large laptops 16+ inch (1536px-1919px) - Scale to 75% to match HostInfo */
+@media (min-width: 1536px) and (max-width: 1919px) {
+  h2 {
+    font-size: 1.125rem !important; /* 18px - 1.5rem * 0.75 */
+  }
+
+  p {
+    font-size: 0.75rem !important; /* 12px - 1rem * 0.75 */
+  }
+
+  .text-sm {
+    font-size: 0.75rem !important; /* 12px - 1rem * 0.75 */
+  }
+}
+
+/* Desktop Full HD+ (1920px+) - Normal desktop sizes */
+@media (min-width: 1920px) {
   h2 {
     font-size: 1.5rem !important; /* 24px - lg:text-2xl */
   }
