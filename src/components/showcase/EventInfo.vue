@@ -164,21 +164,70 @@ const capitalizedDescription = computed(() => {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+/* Small laptops 13-inch (1024px-1365px) - Scale down to 67.5% (75% - 10%) */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Override Tailwind's lg:text-2xl for description title - match RSVP */
+  /* Scale content to 67.5% without reducing container */
   h2 {
-    font-size: 1rem !important; /* 16px - same as RSVP text-lg in collapsed */
+    font-size: 0.675rem !important; /* 67.5% of 1rem = 10.8px */
+    line-height: 0.84375rem !important; /* 67.5% of 1.25rem */
   }
 
-  /* Keep description text at mobile size */
   p {
-    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+    font-size: 0.5484375rem !important; /* 67.5% of 0.8125rem = ~8.78px */
+    line-height: 0.84375rem !important; /* 67.5% of 1.25rem */
   }
 
-  /* Keep event details text at mobile size */
   .text-sm {
-    font-size: 0.8125rem !important; /* 13px - same as RSVP text-sm */
+    font-size: 0.5484375rem !important; /* 67.5% of 0.8125rem = ~8.78px */
+    line-height: 0.84375rem !important; /* 67.5% of 1.25rem */
+  }
+
+  /* Scale spacing proportionally */
+  .space-y-6 > * + * {
+    margin-top: 1.0125rem !important; /* 67.5% of 1.5rem */
+  }
+
+  .space-y-8 > * + * {
+    margin-top: 1.35rem !important; /* 67.5% of 2rem */
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 0.675rem !important; /* 67.5% of 1rem */
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 0.50625rem !important; /* 67.5% of 0.75rem */
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.3375rem !important; /* 67.5% of 0.5rem */
+  }
+
+  /* Scale padding */
+  .px-4 {
+    padding-left: 0.675rem !important; /* 67.5% of 1rem */
+    padding-right: 0.675rem !important;
+  }
+
+  .pt-3 {
+    padding-top: 0.50625rem !important; /* 67.5% of 0.75rem */
+  }
+
+  .pb-4 {
+    padding-bottom: 0.675rem !important; /* 67.5% of 1rem */
+  }
+
+  .pt-2 {
+    padding-top: 0.3375rem !important; /* 67.5% of 0.5rem */
+  }
+
+  .pt-4 {
+    padding-top: 0.675rem !important; /* 67.5% of 1rem */
+  }
+
+  /* Scale iframe/map container - maintain full width, scale height */
+  .aspect-video {
+    aspect-ratio: 16 / 10.8; /* Reduce height to 67.5% (16/9 * 0.675 = 16/10.8) */
   }
 }
 

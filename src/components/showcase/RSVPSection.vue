@@ -950,11 +950,154 @@ onUnmounted(() => {
   }
 }
 
-/* Small laptops */
+/* Small laptops - Scale down to 67.5% (75% - 10%) */
 @media (min-width: 1024px) and (max-width: 1365px) {
+  /* Scale font sizes and line heights to 67.5% */
+  .toggle-label {
+    font-size: 0.590625rem; /* 67.5% of 0.875rem */
+    line-height: 0.84375rem; /* 67.5% of 1.25rem */
+  }
+
+  .stepper-label {
+    font-size: 0.5484375rem; /* 67.5% of 0.8125rem */
+    line-height: 0.84375rem; /* 67.5% of 1.25rem */
+  }
+
+  .stepper-value {
+    font-size: 0.759375rem; /* 67.5% of 1.125rem */
+    min-width: 1.35rem; /* 67.5% of 2rem */
+    line-height: 1.18125rem; /* 67.5% of 1.75rem */
+  }
+
+  .confirmation-text,
+  .confirmation-code-text {
+    font-size: 0.50625rem; /* 67.5% of 0.75rem */
+    line-height: 0.50625rem; /* Match font-size for tight spacing */
+  }
+
+  /* Ensure confirmation chip has even padding */
+  .confirmation-chip {
+    display: flex;
+    align-items: center;
+    line-height: 1; /* Normalize line-height */
+  }
+
+  .message-text {
+    font-size: 0.5484375rem; /* 67.5% of 0.8125rem */
+    line-height: 0.84375rem; /* 67.5% of 1.25rem */
+  }
+
   .rsvp-btn-signin {
-    padding: 0.625rem 1.125rem;
-    font-size: 0.8125rem;
+    padding: 0.421875rem 0.84375rem; /* 67.5% of original */
+    font-size: 0.590625rem; /* 67.5% of 0.875rem */
+    border-radius: 1.0125rem; /* 67.5% of 1.5rem */
+  }
+
+  .signin-icon {
+    width: 0.759375rem; /* 67.5% of 1.125rem */
+    height: 0.759375rem;
+  }
+
+  /* Scale toggle switch */
+  .toggle-switch {
+    width: 1.85625rem; /* 67.5% of 2.75rem */
+    height: 1.0125rem; /* 67.5% of 1.5rem */
+    border-radius: 0.50625rem; /* 67.5% of 0.75rem */
+  }
+
+  .toggle-thumb {
+    width: 0.675rem; /* 67.5% of 1rem */
+    height: 0.675rem;
+    top: 0.16875rem; /* 67.5% of 0.25rem */
+    left: 0.16875rem;
+  }
+
+  .toggle-thumb {
+    transform: translateX(0) !important;
+  }
+
+  .toggle-switch.active .toggle-thumb {
+    transform: translateX(0.84375rem) !important; /* 67.5% of 1.25rem */
+  }
+
+  /* Scale stepper buttons */
+  .stepper-btn {
+    width: 1.18125rem; /* 67.5% of 1.75rem */
+    height: 1.18125rem;
+    border-width: 1.0125px; /* 67.5% of 1.5px */
+  }
+
+  .stepper-btn svg {
+    width: 8.1px; /* 67.5% of 12px */
+    height: 8.1px;
+  }
+
+  /* Scale spacing - Additional 10% reduction */
+  .rsvp-content {
+    gap: 0.45rem; /* 90% of 0.5rem */
+  }
+
+  .rsvp-section-wrapper {
+    gap: 0.3375rem; /* 90% of 0.375rem */
+  }
+
+  .rsvp-main-row {
+    gap: 0.5625rem; /* 90% of 0.625rem */
+  }
+
+  .toggle-container {
+    gap: 0.3375rem; /* 90% of 0.375rem */
+  }
+
+  .stepper-container {
+    gap: 0.45rem; /* 90% of 0.5rem */
+  }
+
+  .stepper-controls {
+    gap: 0.3375rem; /* 90% of 0.375rem */
+  }
+
+  /* Scale confirmation chip */
+  .confirmation-chip {
+    padding: 0.225rem 0.45rem; /* 90% of 0.25rem 0.5rem */
+    border-radius: 0.675rem; /* 90% of 0.75rem */
+    border-width: 1.0125px; /* 90% of 1.125px */
+  }
+
+  /* Override any default margin on confirmation chip */
+  .rsvp-section-wrapper .confirmation-chip {
+    margin-top: 0 !important;
+  }
+
+  /* Scale loader */
+  .spinner-white {
+    width: 0.84375rem; /* 90% of 0.9375rem */
+    height: 0.84375rem;
+    border-width: 1.35px; /* 90% of 1.5px */
+  }
+
+  /* Scale text size for header */
+  .text-sm {
+    font-size: 0.5484375rem !important; /* 67.5% of 0.8125rem */
+  }
+
+  .text-base {
+    font-size: 0.675rem !important; /* 67.5% of 1rem */
+  }
+
+  /* Scale spacing for parent container */
+  .space-y-3 > * + * {
+    margin-top: 0.3375rem !important; /* 90% of 0.375rem */
+  }
+
+  /* Scale message padding */
+  .rsvp-message {
+    padding: 0.225rem 0 !important; /* 90% of 0.25rem 0 */
+  }
+
+  /* Scale loader padding */
+  .rsvp-loader {
+    padding: 0.225rem !important; /* 90% of 0.25rem */
   }
 }
 </style>
