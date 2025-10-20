@@ -181,7 +181,12 @@ const capitalizedDescription = computed(() => {
   /* Details text inside card - match mobile base text-sm (0.875rem = 14px) */
   .text-sm {
     font-size: 0.875rem !important; /* 14px - same as mobile base text-sm */
-    line-height: 1.25rem !important; /* snug leading */
+    line-height: 1.4rem !important; /* increased for better readability */
+  }
+
+  /* Override leading-snug for date and location text */
+  .leading-snug {
+    line-height: 1.4rem !important; /* increased for better readability */
   }
 
   /* Scale spacing to match mobile base */

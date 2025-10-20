@@ -950,29 +950,29 @@ onUnmounted(() => {
   }
 }
 
-/* Small laptops - Match mobile base scale */
+/* Small laptops - Reduce all components by 20% except header text */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Match mobile base font sizes */
+  /* Toggle labels - 20% reduction from mobile base */
   .toggle-label {
-    font-size: 0.875rem; /* 14px - match mobile base */
-    line-height: 1.25rem;
+    font-size: 0.7rem; /* 11.2px - 20% smaller than 14px */
+    line-height: 1rem;
   }
 
   .stepper-label {
-    font-size: 0.8125rem; /* 13px - match mobile base */
-    line-height: 1.25rem;
+    font-size: 0.65rem; /* 10.4px - 20% smaller than 13px */
+    line-height: 1rem;
   }
 
   .stepper-value {
-    font-size: 1.125rem; /* 18px - match mobile base */
-    min-width: 2rem;
-    line-height: 1.25rem;
+    font-size: 0.9rem; /* 14.4px - 20% smaller than 18px */
+    min-width: 1.6rem; /* 20% smaller */
+    line-height: 1rem;
   }
 
   .confirmation-text,
   .confirmation-code-text {
-    font-size: 0.75rem; /* 12px - match mobile base */
-    line-height: 1rem;
+    font-size: 0.6rem; /* 9.6px - 20% smaller than 12px */
+    line-height: 0.8rem;
   }
 
   /* Ensure confirmation chip has even padding */
@@ -983,33 +983,33 @@ onUnmounted(() => {
   }
 
   .message-text {
-    font-size: 0.8125rem; /* 13px - match mobile base */
-    line-height: 1.25rem;
+    font-size: 0.65rem; /* 10.4px - 20% smaller than 13px */
+    line-height: 1rem;
   }
 
   .rsvp-btn-signin {
-    padding: 0.625rem 1.25rem; /* match mobile base */
-    font-size: 0.875rem; /* 14px - match mobile base */
-    border-radius: 1.5rem;
+    padding: 0.5rem 1rem; /* 20% smaller padding */
+    font-size: 0.7rem; /* 11.2px - 20% smaller than 14px */
+    border-radius: 1.2rem; /* 20% smaller */
   }
 
   .signin-icon {
-    width: 1.125rem; /* 18px - match mobile base */
-    height: 1.125rem;
+    width: 0.9rem; /* 14.4px - 20% smaller than 18px */
+    height: 0.9rem;
   }
 
-  /* Match mobile toggle switch */
+  /* Toggle switch - 20% reduction */
   .toggle-switch {
-    width: 2.75rem; /* match mobile base */
-    height: 1.5rem;
-    border-radius: 0.75rem;
+    width: 2.2rem; /* 20% smaller than 2.75rem */
+    height: 1.2rem; /* 20% smaller than 1.5rem */
+    border-radius: 0.6rem;
   }
 
   .toggle-thumb {
-    width: 1rem; /* match mobile base */
-    height: 1rem;
-    top: 0.25rem;
-    left: 0.25rem;
+    width: 0.8rem; /* 20% smaller than 1rem */
+    height: 0.8rem;
+    top: 0.2rem;
+    left: 0.2rem;
   }
 
   .toggle-thumb {
@@ -1017,51 +1017,51 @@ onUnmounted(() => {
   }
 
   .toggle-switch.active .toggle-thumb {
-    transform: translateX(1.25rem) !important; /* match mobile base */
+    transform: translateX(1rem) !important; /* 20% smaller than 1.25rem */
   }
 
-  /* Match mobile stepper buttons */
+  /* Stepper buttons - 20% reduction */
   .stepper-btn {
-    width: 1.75rem; /* match mobile base */
-    height: 1.75rem;
-    border-width: 1.5px;
+    width: 1.4rem; /* 20% smaller than 1.75rem */
+    height: 1.4rem;
+    border-width: 1.2px; /* 20% smaller */
   }
 
   .stepper-btn svg {
-    width: 12px; /* match mobile base */
-    height: 12px;
+    width: 9.6px; /* 20% smaller than 12px */
+    height: 9.6px;
   }
 
-  /* Match mobile spacing */
+  /* Spacing - 20% reduction */
   .rsvp-content {
-    gap: 1rem; /* match mobile base */
+    gap: 0.8rem; /* 20% smaller than 1rem */
   }
 
   .rsvp-section-wrapper {
-    gap: 0.75rem; /* match mobile base */
+    gap: 0.6rem; /* 20% smaller than 0.75rem */
   }
 
   .rsvp-main-row {
-    gap: 1.25rem; /* match mobile base */
+    gap: 1rem; /* 20% smaller than 1.25rem */
   }
 
   .toggle-container {
-    gap: 0.75rem; /* match mobile base */
+    gap: 0.6rem; /* 20% smaller than 0.75rem */
   }
 
   .stepper-container {
-    gap: 1rem; /* match mobile base */
+    gap: 0.8rem; /* 20% smaller than 1rem */
   }
 
   .stepper-controls {
-    gap: 0.75rem; /* match mobile base */
+    gap: 0.6rem; /* 20% smaller than 0.75rem */
   }
 
-  /* Match mobile confirmation chip */
+  /* Confirmation chip - 20% reduction */
   .confirmation-chip {
-    padding: 0.5rem 1rem; /* match mobile base */
-    border-radius: 1rem;
-    border-width: 1.5px;
+    padding: 0.4rem 0.8rem; /* 20% smaller than 0.5rem 1rem */
+    border-radius: 0.8rem; /* 20% smaller */
+    border-width: 1.2px; /* 20% smaller */
   }
 
   /* Override any default margin on confirmation chip */
@@ -1069,35 +1069,37 @@ onUnmounted(() => {
     margin-top: 0 !important;
   }
 
-  /* Match mobile loader */
+  /* Loader - 20% reduction */
   .spinner-white {
-    width: 1.25rem; /* match mobile base */
-    height: 1.25rem;
-    border-width: 2px;
+    width: 1rem; /* 20% smaller than 1.25rem */
+    height: 1rem;
+    border-width: 1.6px; /* 20% smaller */
   }
 
-  /* Match mobile header text size */
+  /* Header text size - KEEP ORIGINAL SIZE (no reduction) */
   .text-sm {
-    font-size: 0.875rem !important; /* 14px - match mobile base */
+    font-size: 0.875rem !important; /* 14px - UNCHANGED */
+    line-height: 1.1rem !important; /* reduced line-height for tighter spacing */
   }
 
   .text-base {
-    font-size: 1rem !important; /* 16px - match mobile base */
+    font-size: 1rem !important; /* 16px - UNCHANGED */
+    line-height: 1.1rem !important; /* reduced line-height for tighter spacing */
   }
 
-  /* Match mobile spacing for parent container */
+  /* Spacing for parent container - 20% reduction */
   .space-y-3 > * + * {
-    margin-top: 0.75rem !important; /* match mobile base */
+    margin-top: 0.6rem !important; /* 20% smaller than 0.75rem */
   }
 
-  /* Match mobile message padding */
+  /* Message padding - 20% reduction */
   .rsvp-message {
-    padding: 0.5rem 0 !important; /* match mobile base */
+    padding: 0.4rem 0 !important; /* 20% smaller than 0.5rem */
   }
 
-  /* Match mobile loader padding */
+  /* Loader padding - 20% reduction */
   .rsvp-loader {
-    padding: 0.5rem !important; /* match mobile base */
+    padding: 0.4rem !important; /* 20% smaller than 0.5rem */
   }
 }
 </style>
