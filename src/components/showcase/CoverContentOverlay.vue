@@ -6,7 +6,7 @@
     @touchend="handleTouchEnd"
     class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out cursor-pointer"
     :class="{ 'swipe-up-hidden': isContentHidden }"
-    style="z-index: 10"
+    style="z-index: 10; touch-action: none;"
   >
     <!-- Inner Container with Dynamic Top Position -->
     <div
@@ -160,9 +160,15 @@ const handleTouchStart = (e: TouchEvent) => {
 
 const handleTouchMove = (e: TouchEvent) => {
   touchEndY.value = e.touches[0].clientY
+
+  // Prevent default scrolling behavior during swipe
+  const swipeDistance = touchStartY.value - touchEndY.value
+  if (Math.abs(swipeDistance) > 10) {
+    e.preventDefault()
+  }
 }
 
-const handleTouchEnd = () => {
+const handleTouchEnd = (e: TouchEvent) => {
   const swipeDistance = touchStartY.value - touchEndY.value
   const isSwipeUp = swipeDistance > MIN_SWIPE_DISTANCE
 
@@ -171,6 +177,8 @@ const handleTouchEnd = () => {
   const isTap = Math.abs(swipeDistance) < 10
 
   if (isSwipeUp || isTap) {
+    // Prevent any default behavior to avoid interference
+    e.preventDefault()
     emit('openEnvelope')
   }
 
