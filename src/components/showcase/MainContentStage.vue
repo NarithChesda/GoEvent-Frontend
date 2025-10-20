@@ -66,7 +66,7 @@
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div
-                class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8"
+                class="p-6 sm:p-6 md:p-4 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8"
               >
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">

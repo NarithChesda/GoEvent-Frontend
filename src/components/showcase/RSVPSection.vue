@@ -966,7 +966,7 @@ onUnmounted(() => {
   .stepper-value {
     font-size: 0.759375rem; /* 67.5% of 1.125rem */
     min-width: 1.35rem; /* 67.5% of 2rem */
-    line-height: 1.18125rem; /* 67.5% of 1.75rem */
+    line-height: 0.84375rem; /* Match EventInfo line-height */
   }
 
   .confirmation-text,
