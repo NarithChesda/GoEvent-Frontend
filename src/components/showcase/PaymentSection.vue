@@ -862,38 +862,31 @@ const capitalizeText = (text: string | undefined): string => {
   transform-origin: top;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Use mobile view for collapse/expand states */
+/* Small laptops 13-inch (1024px-1365px) - Mobile view applied */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Payment card container - mobile sizing */
-  .payment-card-container {
+  /* Remove any left margin on QR code section */
+  .xl\:ml-8 {
+    margin-left: 0 !important;
+  }
+
+  /* QR Code section - centered like mobile, full width */
+  .payment-row-container > div:first-child {
+    text-align: center !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  /* QR Code - mobile sizing */
+  .qr-simple-container {
+    padding: 1rem !important;
     border-radius: 1.5rem !important;
   }
 
-  /* Card header - mobile padding (p-4) */
-  .payment-card-header > .flex {
-    padding: 1rem !important;
-  }
-
-  /* Expandable content - mobile padding (p-4) */
-  .payment-card-content > div {
-    padding: 1rem !important;
-  }
-
-  /* QR Code section - centered like mobile */
-  .payment-row-container > div:first-child {
-    text-align: center !important;
-  }
-
-  /* QR Code - mobile size */
-  .qr-simple-container {
-    padding: 1rem !important;
-  }
-
-  .qr-simple-container img,
-  .qr-simple-container .w-32,
-  .qr-simple-container .h-32 {
+  .qr-simple-container img {
     width: 8rem !important; /* 128px - mobile size */
     height: 8rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
   /* Prevent large laptop sizing */
@@ -903,13 +896,24 @@ const capitalizeText = (text: string | undefined): string => {
     height: 8rem !important;
   }
 
-  /* Payment info - mobile sizing and center alignment */
+  /* Override w-32 and h-32 classes */
+  .w-32 {
+    width: 8rem !important;
+  }
+
+  .h-32 {
+    height: 8rem !important;
+  }
+
+  /* Payment info - mobile padding and border radius */
   .payment-info-simple {
     padding: 0.75rem !important;
+    border-radius: 1.5rem !important;
   }
 
   .payment-info-glass {
     padding: 0.75rem !important;
+    border-radius: 1.5rem !important;
   }
 
   /* Bank info - center alignment like mobile */
@@ -922,11 +926,12 @@ const capitalizeText = (text: string | undefined): string => {
     text-align: center !important;
   }
 
-  /* Bank info pills - mobile size */
+  /* Bank info pills - mobile sizing */
   .bank-info-pill {
     padding: 0.375rem 0.75rem !important;
-    font-size: 0.875rem !important;
+    font-size: 0.875rem !important; /* 14px */
     min-height: 32px !important;
+    border-radius: 1rem !important;
   }
 
   .bank-info-pill svg.w-4 {
@@ -934,12 +939,13 @@ const capitalizeText = (text: string | undefined): string => {
     height: 1rem !important;
   }
 
-  /* Payment button - mobile size and center alignment */
+  /* Payment button - mobile sizing */
   .payment-link-minimalist {
     padding: 0.5rem 0.875rem !important;
     font-size: 0.825rem !important;
     min-height: 34px !important;
     width: 100% !important;
+    border-radius: 1rem !important;
   }
 
   /* Override lg:w-auto for button */
@@ -951,6 +957,7 @@ const capitalizeText = (text: string | undefined): string => {
     padding: 0.875rem 1.5rem !important;
     font-size: 0.925rem !important;
     min-height: 48px !important;
+    border-radius: 1.5rem !important;
   }
 
   /* Payment row - mobile layout (column, centered) */
@@ -966,7 +973,7 @@ const capitalizeText = (text: string | undefined): string => {
     flex-direction: column !important;
   }
 
-  /* Override lg:items-center to use start for consistency */
+  /* Override lg:items-center to use stretch for consistency */
   .payment-row-container.lg\:items-center {
     align-items: stretch !important;
   }
@@ -987,47 +994,173 @@ const capitalizeText = (text: string | undefined): string => {
     max-width: 100% !important;
   }
 
-  /* Text sizing - mobile */
+  /* Text sizing - mobile view */
   .text-lg {
     font-size: 1rem !important;
+    line-height: 1.5 !important;
   }
 
   .text-base {
     font-size: 0.875rem !important;
+    line-height: 1.5 !important;
   }
 
   .text-sm {
     font-size: 0.875rem !important;
+    line-height: 1.5 !important;
   }
 
   .text-xs {
     font-size: 0.75rem !important;
+    line-height: 1.5 !important;
   }
 
-  .text-xl {
-    font-size: 1.125rem !important; /* 18px */
+  /* Header text - mobile size */
+  h3.text-sm,
+  h3.sm\:text-base {
+    font-size: 0.875rem !important;
   }
 
-  /* Icons - mobile size */
+  /* Currency and description text - mobile size */
+  .text-xs {
+    font-size: 0.75rem !important;
+  }
+
+  /* Icons - mobile sizing */
   svg.w-5 {
-    width: 1.125rem !important;
-    height: 1.125rem !important;
+    width: 1.25rem !important; /* 20px */
+    height: 1.25rem !important;
   }
 
   svg.w-4 {
-    width: 1rem !important;
+    width: 1rem !important; /* 16px */
     height: 1rem !important;
   }
 
   svg.w-12,
   svg.lg\:w-16 {
-    width: 3rem !important;
+    width: 3rem !important; /* 48px */
     height: 3rem !important;
+  }
+
+  /* Expandable content padding - mobile view */
+  .payment-card-content > div {
+    padding: 1rem !important;
+  }
+
+  /* Override sm:p-6 to use mobile padding */
+  .p-4.sm\:p-6 {
+    padding: 1rem !important;
+  }
+
+  /* Card header padding - mobile view */
+  .payment-card-header .flex {
+    padding: 0.75rem !important;
+  }
+
+  /* Override p-4 class in header */
+  .payment-card-header .p-4 {
+    padding: 0.75rem !important;
+  }
+
+  /* Icon background in header - mobile sizing and alignment */
+  .payment-card-header .p-2 {
+    padding: 0.375rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .payment-card-header .rounded-xl {
+    border-radius: 0.625rem !important;
+  }
+
+  /* Force proper vertical alignment in header */
+  .payment-card-header .flex.items-center {
+    align-items: center !important;
+    display: flex !important;
+  }
+
+  /* Main header container - ensure proper centering */
+  .payment-card-header > div {
+    align-items: center !important;
+    display: flex !important;
+  }
+
+  /* Space utilities - mobile view */
+  .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+
+  /* Tighter spacing in header - mobile style */
+  .payment-card-header .space-x-3 > * + * {
+    margin-left: 0.5rem !important;
+  }
+
+  .payment-card-header .space-x-2 > * + * {
+    margin-left: 0.375rem !important;
+  }
+
+  /* Method name and details container - proper alignment */
+  .payment-card-header .flex.items-center.space-x-3 {
+    align-items: center !important;
+    display: flex !important;
+  }
+
+  /* Method info container (icon + text) - ensure vertical centering */
+  .payment-card-header .flex.items-center.space-x-3 > div {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Method name and details spacing - reset margins */
+  .payment-card-header h3 {
+    margin: 0 !important;
+    line-height: 1.3 !important;
+    padding: 0 !important;
+  }
+
+  .payment-card-header .mt-1 {
+    margin-top: 0.25rem !important;
+  }
+
+  /* Currency text alignment */
+  .payment-card-header .text-xs {
+    line-height: 1.3 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Arrow icon container - proper centering */
+  .payment-card-header > .flex > div:last-child {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Text content container inside method info */
+  .payment-card-header .flex.items-center.space-x-3 > div:last-child {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+  }
+
+  /* Header text - scaled to 67.5% matching AgendaSection */
+  h2 {
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 }
 
-/* Desktop refinements (1024px+) - Base laptop styles */
-@media (min-width: 1024px) {
+/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching AgendaSection */
+@media (min-width: 1366px) and (max-width: 1535px) {
   .payment-method-section {
     /* No padding - matches comment section */
   }
@@ -1053,6 +1186,48 @@ const capitalizeText = (text: string | undefined): string => {
   .glass-content-section {
     padding: 0.75rem;
   }
+
+  /* Header text - scaled to 75% matching AgendaSection */
+  h2 {
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  }
+}
+
+/* Large laptops and desktops (1536px+) - Desktop styles */
+@media (min-width: 1536px) {
+  .payment-method-section {
+    /* No padding - matches comment section */
+  }
+
+  .payment-row-container {
+    padding: 0.75rem;
+    gap: 2rem;
+  }
+
+  .payment-info-simple {
+    padding: 1.25rem;
+  }
+
+  .payment-info-glass {
+    padding: 1.25rem;
+  }
+
+  .payment-link-minimalist {
+    padding: 0.75rem 1.25rem;
+    min-height: 40px;
+  }
+
+  .glass-content-section {
+    padding: 0.75rem;
+  }
+
+  /* Header text - desktop size */
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl */
+  }
 }
 
 /* Enhanced Khmer font rendering */
@@ -1062,20 +1237,5 @@ const capitalizeText = (text: string | undefined): string => {
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
-}
-
-/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - match AgendaSection */
-  h2 {
-    font-size: 1.5rem !important; /* 24px - text-2xl */
-  }
-}
-
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
-  h2 {
-    font-size: 1.875rem !important; /* 30px - text-3xl */
-  }
 }
 </style>
