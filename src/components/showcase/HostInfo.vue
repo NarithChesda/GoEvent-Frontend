@@ -624,167 +624,182 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Keep mobile sizes */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 75% */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .host-info-grid {
-    gap: 0.25rem;
+    gap: 0.1875rem; /* 0.25rem * 0.75 */
+  }
+
+  .logo-row {
+    padding: 0.5rem 0 !important; /* Reduced vertical spacing */
+    margin: 0.75rem 0 !important; /* Reduced from my-6 (1.5rem) */
   }
 
   .name-row {
-    margin-top: -0.125rem;
+    margin-top: -0.09375rem; /* -0.125rem * 0.75 */
   }
 
   /* Override Tailwind's lg:text-4xl to keep smaller size for 13-inch laptops */
   .welcome-content h2 {
-    font-size: 1.5rem !important; /* 24px - text-2xl */
+    font-size: 1.125rem !important; /* 18px - 1.5rem * 0.75 */
   }
 
   .parent-name-text {
-    font-size: 0.7906rem; /* 12.65px - 15% increase from 11px */
+    font-size: 0.593rem; /* 0.7906rem * 0.75 */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.25rem;
+    margin-top: -0.1875rem; /* -0.25rem * 0.75 */
   }
 
   .host-name-text {
-    font-size: 0.85rem; /* 13.6px - same as base mobile */
+    font-size: 0.6375rem; /* 0.85rem * 0.75 */
   }
 
   .host-logo-showcase {
-    max-height: 140px !important; /* Same as small mobile (640px) */
-    max-width: 350px !important; /* Same as small mobile (640px) */
+    max-height: 105px !important; /* 140px * 0.75 */
+    max-width: 262.5px !important; /* 350px * 0.75 */
   }
 
   .logo-fallback {
-    width: 112px;
-    height: 112px;
+    width: 84px; /* 112px * 0.75 */
+    height: 84px;
   }
 
   .logo-initial {
-    font-size: 1.875rem;
+    font-size: 1.40625rem; /* 1.875rem * 0.75 */
   }
 
   .profile-picture-wrapper {
-    width: 60%;
+    width: 70%; /* Increased for better visibility */
   }
 
   .profile-picture-fallback {
-    width: 60%;
+    width: 70%; /* Increased for better visibility */
   }
 
   .welcome-row {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem; /* 0.5rem * 0.75 */
   }
 }
 
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) */
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% */
 @media (min-width: 1366px) {
   .host-info-grid {
-    gap: 0.5rem;
+    gap: 0.375rem; /* 0.5rem * 0.75 */
+  }
+
+  .logo-row {
+    padding: 0.5rem 0 !important; /* Reduced vertical spacing */
+    margin: 0.75rem 0 !important; /* Reduced from my-6 (1.5rem) */
   }
 
   .name-row {
-    margin-top: -0.375rem;
+    margin-top: -0.28125rem; /* -0.375rem * 0.75 */
   }
 
   .khmer-text .name-row {
-    margin-top: -1rem;
+    margin-top: -0.75rem; /* -1rem * 0.75 */
   }
 
   .parent-name-text {
-    font-size: 0.8625rem; /* 13.8px - 15% increase from 12px */
+    font-size: 0.6469rem; /* 0.8625rem * 0.75 */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.375rem;
+    margin-top: -0.28125rem; /* -0.375rem * 0.75 */
   }
 
   .khmer-text .parent-row:nth-child(3) {
-    margin-top: -1rem;
+    margin-top: -0.75rem; /* -1rem * 0.75 */
   }
 
   .host-name-text {
-    font-size: 0.95rem; /* 15.2px - slightly larger than mobile */
+    font-size: 0.7125rem; /* 0.95rem * 0.75 */
   }
 
   .host-logo-showcase {
-    max-height: 150px;
-    max-width: 375px;
+    max-height: 112.5px; /* 150px * 0.75 */
+    max-width: 281.25px; /* 375px * 0.75 */
   }
 
   .logo-fallback {
-    width: 128px;
-    height: 128px;
+    width: 96px; /* 128px * 0.75 */
+    height: 96px;
   }
 
   .logo-initial {
-    font-size: 2.25rem;
+    font-size: 1.6875rem; /* 2.25rem * 0.75 */
   }
 
   .profile-picture-wrapper {
-    width: 60%;
+    width: 70%; /* Increased for better visibility */
   }
 
   .profile-picture-fallback {
-    width: 60%;
+    width: 70%; /* Increased for better visibility */
   }
 
   .welcome-row {
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.46875rem; /* 0.625rem * 0.75 */
   }
 }
 
-/* Large laptops 16+ inch (laptop-lg: 1536px) */
+/* Large laptops 16+ inch (laptop-lg: 1536px) - Scaled to 75% */
 @media (min-width: 1536px) {
   .host-info-grid {
-    gap: 0.75rem;
+    gap: 0.5625rem; /* 0.75rem * 0.75 */
+  }
+
+  .logo-row {
+    padding: 0.5rem 0 !important; /* Reduced vertical spacing */
+    margin: 0.75rem 0 !important; /* Reduced from my-6 (1.5rem) */
   }
 
   .name-row {
-    margin-top: -0.625rem;
+    margin-top: -0.46875rem; /* -0.625rem * 0.75 */
   }
 
   .khmer-text .name-row {
-    margin-top: -1.25rem;
+    margin-top: -0.9375rem; /* -1.25rem * 0.75 */
   }
 
   .parent-name-text {
-    font-size: 0.9344rem; /* 14.95px - 15% increase from 13px */
+    font-size: 0.7008rem; /* 0.9344rem * 0.75 */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.625rem;
+    margin-top: -0.46875rem; /* -0.625rem * 0.75 */
   }
 
   .khmer-text .parent-row:nth-child(3) {
-    margin-top: -1.25rem;
+    margin-top: -0.9375rem; /* -1.25rem * 0.75 */
   }
 
   .host-name-text {
-    font-size: 1.125rem; /* 18px - optimized for 16+ inch laptops */
+    font-size: 0.84375rem; /* 1.125rem * 0.75 */
   }
 
   .host-logo-showcase {
-    max-height: 170px; /* Scaled for 16+ inch laptops */
-    max-width: 425px; /* Scaled for 16+ inch laptops */
+    max-height: 127.5px; /* 170px * 0.75 */
+    max-width: 318.75px; /* 425px * 0.75 */
   }
 
   .logo-fallback {
-    width: 160px;
-    height: 160px;
+    width: 120px; /* 160px * 0.75 */
+    height: 120px;
   }
 
   .logo-initial {
-    font-size: 3.5rem;
+    font-size: 2.625rem; /* 3.5rem * 0.75 */
   }
 
   .profile-picture-wrapper {
-    width: 60%;
+    width: 70%; /* Increased for better visibility */
   }
 
   .profile-picture-fallback {
-    width: 60%;
+    width: 70%; /* Increased for better visibility */
   }
 }
 
