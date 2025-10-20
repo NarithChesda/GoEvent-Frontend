@@ -203,108 +203,108 @@ const timeText = computed(() => {
   }
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% matching mobile exactly */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 77.625% (67.5% * 1.15) */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Wrapper gap - 67.5% of mobile 2rem = 1.35rem */
+  /* Wrapper gap - 77.625% of mobile 2rem = 1.5525rem */
   .agenda-card-wrapper {
-    gap: 1.35rem; /* 2rem * 0.675 - exact mobile ratio */
+    gap: 1.5525rem; /* 2rem * 0.77625 - increased by 15% */
   }
 
-  /* Card styling - 67.5% of mobile values */
+  /* Card styling - 77.625% of mobile values */
   .agenda-card {
-    padding: 0.675rem !important; /* 1rem * 0.675 (p-4 scaled) */
+    padding: 0.77625rem !important; /* 1rem * 0.77625 (p-4 scaled) */
     padding-left: 0 !important; /* Keep padding-left: 0 from mobile */
-    margin-left: 0.675rem !important; /* 1rem * 0.675 - exact mobile ratio */
+    margin-left: 0.77625rem !important; /* 1rem * 0.77625 - increased by 15% */
   }
 
-  /* Icon sizing - 67.5% of mobile 3rem = 2.025rem */
+  /* Icon sizing - 77.625% of mobile 3rem = 2.32875rem */
   .agenda-icon-large {
-    width: 2.025rem !important; /* 3rem * 0.675 - exact mobile ratio */
-    height: 2.025rem !important; /* 3rem * 0.675 - exact mobile ratio */
+    width: 2.32875rem !important; /* 3rem * 0.77625 - increased by 15% */
+    height: 2.32875rem !important; /* 3rem * 0.77625 - increased by 15% */
   }
 
-  /* Min height for content - scaled to 67.5% from 3rem */
+  /* Min height for content - scaled to 77.625% from 3rem */
   .min-h-\[3rem\] {
-    min-height: 2.025rem !important; /* 3rem * 0.675 */
+    min-height: 2.32875rem !important; /* 3rem * 0.77625 */
   }
 
-  /* Title - scaled to 67.5% from mobile md:text-lg (1.125rem) */
+  /* Title - scaled to 77.625% from mobile md:text-lg (1.125rem) */
   h3 {
-    font-size: 0.759375rem !important; /* 1.125rem * 0.675 - exact mobile ratio */
+    font-size: 0.87328125rem !important; /* 1.125rem * 0.77625 - increased by 15% */
     line-height: 1.8 !important; /* Match mobile line-height */
-    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
-    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-top: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
+    padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
   }
 
-  /* Time text - scaled to 67.5% from mobile text-xs (0.75rem) */
+  /* Time text - scaled to 77.625% from mobile text-xs (0.75rem) */
   .text-xs {
-    font-size: 0.50625rem !important; /* 0.75rem * 0.675 - exact mobile ratio */
+    font-size: 0.58218750rem !important; /* 0.75rem * 0.77625 - increased by 15% */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
-  /* Divider elements - 67.5% of mobile to maintain ratio */
+  /* Divider elements - 77.625% of mobile to maintain ratio */
   .vertical-divider {
-    width: 0.675px; /* 1px * 0.675 */
-    min-height: 40.5px; /* 60px * 0.675 */
+    width: 0.77625px; /* 1px * 0.77625 */
+    min-height: 46.575px; /* 60px * 0.77625 */
     opacity: 0.4; /* Match mobile opacity */
   }
 
   .horizontal-connector {
-    width: 16.875px; /* 25px * 0.675 - exact mobile ratio */
-    height: 0.675px; /* 1px * 0.675 */
+    width: 19.40625px; /* 25px * 0.77625 - increased by 15% */
+    height: 0.77625px; /* 1px * 0.77625 */
     opacity: 0.4; /* Match mobile opacity */
   }
 }
 
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% matching mobile exactly */
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 86.25% (75% * 1.15) */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Wrapper gap - 75% of mobile 2rem = 1.5rem */
+  /* Wrapper gap - 86.25% of mobile 2rem = 1.725rem */
   .agenda-card-wrapper {
-    gap: 1.5rem; /* 2rem * 0.75 - exact mobile ratio */
+    gap: 1.725rem; /* 2rem * 0.8625 - increased by 15% */
   }
 
-  /* Card styling - 75% of mobile values */
+  /* Card styling - 86.25% of mobile values */
   .agenda-card {
-    padding: 0.75rem !important; /* 1rem * 0.75 (p-4 scaled) */
+    padding: 0.8625rem !important; /* 1rem * 0.8625 (p-4 scaled) */
     padding-left: 0 !important; /* Keep padding-left: 0 from mobile */
-    margin-left: 0.75rem !important; /* 1rem * 0.75 - exact mobile ratio */
+    margin-left: 0.8625rem !important; /* 1rem * 0.8625 - increased by 15% */
   }
 
-  /* Icon sizing - 75% of mobile 3rem = 2.25rem */
+  /* Icon sizing - 86.25% of mobile 3rem = 2.5875rem */
   .agenda-icon-large {
-    width: 2.25rem !important; /* 3rem * 0.75 - exact mobile ratio */
-    height: 2.25rem !important; /* 3rem * 0.75 - exact mobile ratio */
+    width: 2.5875rem !important; /* 3rem * 0.8625 - increased by 15% */
+    height: 2.5875rem !important; /* 3rem * 0.8625 - increased by 15% */
   }
 
-  /* Min height for content - scaled to 75% from 3rem */
+  /* Min height for content - scaled to 86.25% from 3rem */
   .min-h-\[3rem\] {
-    min-height: 2.25rem !important; /* 3rem * 0.75 */
+    min-height: 2.5875rem !important; /* 3rem * 0.8625 */
   }
 
-  /* Title - scaled to 75% from mobile md:text-lg (1.125rem) */
+  /* Title - scaled to 86.25% from mobile md:text-lg (1.125rem) */
   h3 {
-    font-size: 0.84375rem !important; /* 1.125rem * 0.75 - exact mobile ratio */
+    font-size: 0.97031250rem !important; /* 1.125rem * 0.8625 - increased by 15% */
     line-height: 1.8 !important; /* Match mobile line-height */
-    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
-    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-top: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
+    padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
   }
 
-  /* Time text - scaled to 75% from mobile text-xs (0.75rem) */
+  /* Time text - scaled to 86.25% from mobile text-xs (0.75rem) */
   .text-xs {
-    font-size: 0.5625rem !important; /* 0.75rem * 0.75 - exact mobile ratio */
+    font-size: 0.64687500rem !important; /* 0.75rem * 0.8625 - increased by 15% */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
-  /* Divider elements - 75% of mobile to maintain ratio */
+  /* Divider elements - 86.25% of mobile to maintain ratio */
   .vertical-divider {
-    width: 0.75px; /* 1px * 0.75 */
-    min-height: 45px; /* 60px * 0.75 */
+    width: 0.8625px; /* 1px * 0.8625 */
+    min-height: 51.75px; /* 60px * 0.8625 */
     opacity: 0.4; /* Match mobile opacity */
   }
 
   .horizontal-connector {
-    width: 18.75px; /* 25px * 0.75 - exact mobile ratio */
-    height: 0.75px; /* 1px * 0.75 */
+    width: 21.5625px; /* 25px * 0.8625 - increased by 15% */
+    height: 0.8625px; /* 1px * 0.8625 */
     opacity: 0.4; /* Match mobile opacity */
   }
 }
