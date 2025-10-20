@@ -20,11 +20,12 @@
         </div>
       </div>
 
-      <!-- Row 2: Host Parent A Names -->
-      <div v-if="hosts.length > 0" class="parent-row">
+      <!-- Row 2: Host Parent A Names (fallback to Parent B if Parent A doesn't exist) -->
+      <div v-if="hosts.length > 0 && (hosts[0].parent_a_name || hosts[0].parent_b_name || (hosts.length > 1 && (hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)))" class="parent-row">
         <!-- Host 1 Parent A (45% width) -->
         <div class="host-parent-left">
           <p
+            v-if="hosts[0].parent_a_name || hosts[0].parent_b_name"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
@@ -36,7 +37,7 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[0].parent_a_name || 'Father Name' }}
+            {{ hosts[0].parent_a_name || hosts[0].parent_b_name }}
           </p>
         </div>
 
@@ -46,7 +47,7 @@
         <!-- Host 2 Parent A (45% width) -->
         <div class="host-parent-right">
           <p
-            v-if="hosts.length > 1"
+            v-if="hosts.length > 1 && (hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
@@ -58,16 +59,17 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.parent_a_name || 'Father Name' }}
+            {{ hosts[1]?.parent_a_name || hosts[1]?.parent_b_name }}
           </p>
         </div>
       </div>
 
-      <!-- Row 3: Host Parent B Names -->
-      <div v-if="hosts.length > 0" class="parent-row">
-        <!-- Host 1 Parent B (45% width) -->
+      <!-- Row 3: Host Parent B Names (only show if Parent B exists AND Parent A also exists to avoid redundancy) -->
+      <div v-if="hosts.length > 0 && ((hosts[0].parent_b_name && hosts[0].parent_a_name) || (hosts.length > 1 && hosts[1]?.parent_b_name && hosts[1]?.parent_a_name))" class="parent-row">
+        <!-- Host 1 Parent B (45% width) - only show if both parent_a_name AND parent_b_name exist -->
         <div class="host-parent-left">
           <p
+            v-if="hosts[0].parent_b_name && hosts[0].parent_a_name"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
@@ -79,17 +81,17 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[0].parent_b_name || 'Mother Name' }}
+            {{ hosts[0].parent_b_name }}
           </p>
         </div>
 
         <!-- Center spacer (10% width) -->
         <div class="center-spacer"></div>
 
-        <!-- Host 2 Parent B (45% width) -->
+        <!-- Host 2 Parent B (45% width) - only show if both parent_a_name AND parent_b_name exist -->
         <div class="host-parent-right">
           <p
-            v-if="hosts.length > 1"
+            v-if="hosts.length > 1 && hosts[1]?.parent_b_name && hosts[1]?.parent_a_name"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
@@ -101,7 +103,7 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.parent_b_name || 'Mother Name' }}
+            {{ hosts[1]?.parent_b_name }}
           </p>
         </div>
       </div>
@@ -631,7 +633,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .logo-row {
-    padding: 1.5rem 0; /* Match mobile */
+    padding: 1rem 0; /* Reduced from 1.5rem */
   }
 
   .name-row {
@@ -690,7 +692,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .logo-row {
-    padding: 1.5rem 0; /* Match mobile */
+    padding: 1rem 0; /* Reduced from 1.5rem */
   }
 
   .name-row {
@@ -751,7 +753,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .logo-row {
-    padding: 1.5rem 0; /* Match mobile */
+    padding: 1rem 0; /* Reduced from 1.5rem */
   }
 
   .name-row {
