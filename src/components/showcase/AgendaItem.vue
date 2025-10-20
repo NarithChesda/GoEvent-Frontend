@@ -203,78 +203,131 @@ const timeText = computed(() => {
   }
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Keep mobile sizes */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% matching mobile exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Mobile card padding */
+  /* Wrapper gap - 67.5% of mobile 2rem = 1.35rem */
+  .agenda-card-wrapper {
+    gap: 1.35rem; /* 2rem * 0.675 - exact mobile ratio */
+  }
+
+  /* Card styling - 67.5% of mobile values */
   .agenda-card {
-    padding: 0.875rem !important;
-    padding-left: 1rem !important;
+    padding: 0.675rem !important; /* 1rem * 0.675 (p-4 scaled) */
+    padding-left: 0 !important; /* Keep padding-left: 0 from mobile */
+    margin-left: 0.675rem !important; /* 1rem * 0.675 - exact mobile ratio */
   }
 
-  /* Title mobile size */
+  /* Icon sizing - 67.5% of mobile 3rem = 2.025rem */
+  .agenda-icon-large {
+    width: 2.025rem !important; /* 3rem * 0.675 - exact mobile ratio */
+    height: 2.025rem !important; /* 3rem * 0.675 - exact mobile ratio */
+  }
+
+  /* Min height for content - scaled to 67.5% from 3rem */
+  .min-h-\[3rem\] {
+    min-height: 2.025rem !important; /* 3rem * 0.675 */
+  }
+
+  /* Title - scaled to 67.5% from mobile md:text-lg (1.125rem) */
   h3 {
-    font-size: 0.75rem !important; /* 12px - mobile size */
+    font-size: 0.759375rem !important; /* 1.125rem * 0.675 - exact mobile ratio */
+    line-height: 1.8 !important; /* Match mobile line-height */
+    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 
-  /* Time text mobile size */
+  /* Time text - scaled to 67.5% from mobile text-xs (0.75rem) */
   .text-xs {
-    font-size: 0.6875rem !important; /* 11px */
+    font-size: 0.50625rem !important; /* 0.75rem * 0.675 - exact mobile ratio */
+    margin-top: 0 !important; /* Match mobile mt-0 */
+  }
+
+  /* Divider elements - 67.5% of mobile to maintain ratio */
+  .vertical-divider {
+    width: 0.675px; /* 1px * 0.675 */
+    min-height: 40.5px; /* 60px * 0.675 */
+    opacity: 0.4; /* Match mobile opacity */
+  }
+
+  .horizontal-connector {
+    width: 16.875px; /* 25px * 0.675 - exact mobile ratio */
+    height: 0.675px; /* 1px * 0.675 */
+    opacity: 0.4; /* Match mobile opacity */
+  }
+}
+
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% matching mobile exactly */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Wrapper gap - 75% of mobile 2rem = 1.5rem */
+  .agenda-card-wrapper {
+    gap: 1.5rem; /* 2rem * 0.75 - exact mobile ratio */
+  }
+
+  /* Card styling - 75% of mobile values */
+  .agenda-card {
+    padding: 0.75rem !important; /* 1rem * 0.75 (p-4 scaled) */
+    padding-left: 0 !important; /* Keep padding-left: 0 from mobile */
+    margin-left: 0.75rem !important; /* 1rem * 0.75 - exact mobile ratio */
+  }
+
+  /* Icon sizing - 75% of mobile 3rem = 2.25rem */
+  .agenda-icon-large {
+    width: 2.25rem !important; /* 3rem * 0.75 - exact mobile ratio */
+    height: 2.25rem !important; /* 3rem * 0.75 - exact mobile ratio */
+  }
+
+  /* Min height for content - scaled to 75% from 3rem */
+  .min-h-\[3rem\] {
+    min-height: 2.25rem !important; /* 3rem * 0.75 */
+  }
+
+  /* Title - scaled to 75% from mobile md:text-lg (1.125rem) */
+  h3 {
+    font-size: 0.84375rem !important; /* 1.125rem * 0.75 - exact mobile ratio */
+    line-height: 1.8 !important; /* Match mobile line-height */
+    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  }
+
+  /* Time text - scaled to 75% from mobile text-xs (0.75rem) */
+  .text-xs {
+    font-size: 0.5625rem !important; /* 0.75rem * 0.75 - exact mobile ratio */
+    margin-top: 0 !important; /* Match mobile mt-0 */
+  }
+
+  /* Divider elements - 75% of mobile to maintain ratio */
+  .vertical-divider {
+    width: 0.75px; /* 1px * 0.75 */
+    min-height: 45px; /* 60px * 0.75 */
+    opacity: 0.4; /* Match mobile opacity */
+  }
+
+  .horizontal-connector {
+    width: 18.75px; /* 25px * 0.75 - exact mobile ratio */
+    height: 0.75px; /* 1px * 0.75 */
+    opacity: 0.4; /* Match mobile opacity */
   }
 }
 
 .agenda-icon-large svg {
   width: 100% !important;
   height: 100% !important;
-  fill: var(--icon-color) !important;
-  stroke: var(--icon-color) !important;
-  color: var(--icon-color) !important;
 }
 
+.agenda-icon-large svg,
 .agenda-icon-large svg * {
   fill: var(--icon-color) !important;
   stroke: var(--icon-color) !important;
   color: var(--icon-color) !important;
 }
 
-.agenda-icon-large svg path,
-.agenda-icon-large svg circle,
-.agenda-icon-large svg rect,
-.agenda-icon-large svg polygon,
-.agenda-icon-large svg polyline,
-.agenda-icon-large svg line,
-.agenda-icon-large svg ellipse {
-  fill: var(--icon-color) !important;
-  stroke: var(--icon-color) !important;
-}
-
 /* Specific styling for fallback Calendar icon */
-.agenda-fallback-icon {
-  color: var(--icon-color) !important;
-}
-
-.agenda-fallback-icon svg {
-  color: var(--icon-color) !important;
-  fill: none !important;
-  stroke: var(--icon-color) !important;
-  stroke-width: 1 !important;
-}
-
+.agenda-fallback-icon,
+.agenda-fallback-icon svg,
 .agenda-fallback-icon svg * {
   color: var(--icon-color) !important;
   fill: none !important;
   stroke: var(--icon-color) !important;
-  stroke-width: 1 !important;
-}
-
-.agenda-fallback-icon svg path {
-  stroke-width: 1 !important;
-}
-
-.agenda-fallback-icon svg line {
-  stroke-width: 1 !important;
-}
-
-.agenda-fallback-icon svg rect {
   stroke-width: 1 !important;
 }
 </style>

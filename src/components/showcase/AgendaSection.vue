@@ -7,7 +7,7 @@
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
         :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
+          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize agenda-header',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
@@ -370,25 +370,70 @@ onMounted(() => {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% matching mobile exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - match HostInfo */
-  h2 {
-    font-size: 1.5rem !important; /* 24px - text-2xl */
+  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
+  .agenda-header {
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    margin-bottom: 1.0125rem !important; /* 1.5rem * 0.675 from md:mb-6 */
   }
 
-  /* Tab bar compact sizing */
+  /* Tab bar sizing - scaled to 67.5% from mobile */
+  .tab-bar-scroll-wrapper {
+    margin-bottom: 1.0125rem !important; /* 1.5rem * 0.675 - exact mobile ratio */
+  }
+
+  .tab-bar {
+    gap: 0.50625rem; /* 0.75rem * 0.675 - exact mobile ratio */
+  }
+
   .tab-button {
-    padding: 0.625rem 1.25rem !important;
+    padding: 0.421875rem 0.84375rem !important; /* 0.625rem * 0.675, 1.25rem * 0.675 - exact mobile ratio */
+    border-radius: 0.50625rem; /* 0.75rem * 0.675 - exact mobile ratio */
   }
 
   .tab-date {
-    font-size: 0.75rem !important;
+    font-size: 0.590625rem !important; /* 0.875rem * 0.675 - exact mobile ratio */
+    line-height: 1.2; /* Match mobile line-height */
   }
 }
 
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% matching mobile exactly */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
+  .agenda-header {
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    margin-bottom: 1.125rem !important; /* 1.5rem * 0.75 from md:mb-6 */
+  }
+
+  /* Tab bar sizing - scaled to 75% from mobile */
+  .tab-bar-scroll-wrapper {
+    margin-bottom: 1.125rem !important; /* 1.5rem * 0.75 - exact mobile ratio */
+  }
+
+  .tab-bar {
+    gap: 0.5625rem; /* 0.75rem * 0.75 - exact mobile ratio */
+  }
+
+  .tab-button {
+    padding: 0.46875rem 0.9375rem !important; /* 0.625rem * 0.75, 1.25rem * 0.75 - exact mobile ratio */
+    border-radius: 0.5625rem; /* 0.75rem * 0.75 - exact mobile ratio */
+  }
+
+  .tab-date {
+    font-size: 0.65625rem !important; /* 0.875rem * 0.75 - exact mobile ratio */
+    line-height: 1.2; /* Match mobile line-height */
+  }
+}
+
+/* Desktop (1536px+) - Simple, clean desktop styles */
+@media (min-width: 1536px) {
   h2 {
     font-size: 1.875rem !important; /* 30px - text-3xl */
   }
