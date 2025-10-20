@@ -624,183 +624,184 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Using mobile view styles */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .host-info-grid {
-    gap: 0.16875rem; /* 0.25rem * 0.675 - matching EventInfo spacing */
+    gap: 0.25rem; /* Match mobile */
   }
 
   .logo-row {
-    padding: 0.5rem 0 !important; /* Reduced vertical spacing */
-    margin: 0.75rem 0 !important; /* Reduced from my-6 (1.5rem) */
+    padding: 1.5rem 0; /* Match mobile */
   }
 
   .name-row {
-    margin-top: -0.084375rem; /* -0.125rem * 0.675 - matching EventInfo ratio */
+    margin-top: -0.125rem; /* Match mobile */
   }
 
-  /* Override Tailwind's lg:text-4xl to keep smaller size for 13-inch laptops */
+  /* Override Tailwind's lg:text-4xl to keep mobile size */
   .welcome-content h2 {
-    font-size: 1.0125rem !important; /* 1.5rem * 0.675 - matching EventInfo scaling */
-    line-height: 1.1 !important; /* Reduced line spacing for laptop view */
+    font-size: 1.5rem !important; /* Match mobile base size */
+    line-height: 1.25 !important; /* Match mobile line height */
   }
 
   .parent-name-text {
-    font-size: 0.5337rem; /* 0.7906rem * 0.675 - matching EventInfo scaling */
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.16875rem; /* -0.25rem * 0.675 - matching EventInfo ratio */
+    margin-top: -0.25rem; /* Match mobile */
   }
 
   .host-name-text {
-    font-size: 0.573375rem; /* 0.85rem * 0.675 - matching EventInfo scaling */
+    font-size: 0.85rem; /* Match mobile: 13.6px */
   }
 
   .host-logo-showcase {
-    max-height: 94.5px !important; /* 140px * 0.675 - matching EventInfo scaling */
-    max-width: 236.25px !important; /* 350px * 0.675 - matching EventInfo scaling */
+    max-height: 180px; /* Match mobile */
+    max-width: 330px; /* Match mobile */
   }
 
   .logo-fallback {
-    width: 75.6px; /* 112px * 0.675 - matching EventInfo scaling */
-    height: 75.6px;
-  }
-
-  .logo-initial {
-    font-size: 1.2656rem; /* 1.875rem * 0.675 - matching EventInfo scaling */
-  }
-
-  .profile-picture-wrapper {
-    width: 70%; /* Increased for better visibility */
-  }
-
-  .profile-picture-fallback {
-    width: 70%; /* Increased for better visibility */
-  }
-
-  .welcome-row {
-    margin-bottom: 0.3375rem; /* 0.5rem * 0.675 - matching EventInfo spacing */
-  }
-}
-
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% */
-@media (min-width: 1366px) {
-  .host-info-grid {
-    gap: 0.375rem; /* 0.5rem * 0.75 */
-  }
-
-  .logo-row {
-    padding: 0.5rem 0 !important; /* Reduced vertical spacing */
-    margin: 0.75rem 0 !important; /* Reduced from my-6 (1.5rem) */
-  }
-
-  .name-row {
-    margin-top: -0.28125rem; /* -0.375rem * 0.75 */
-  }
-
-  .khmer-text .name-row {
-    margin-top: -0.75rem; /* -1rem * 0.75 */
-  }
-
-  .parent-name-text {
-    font-size: 0.6469rem; /* 0.8625rem * 0.75 */
-  }
-
-  .parent-row:nth-child(3) {
-    margin-top: -0.28125rem; /* -0.375rem * 0.75 */
-  }
-
-  .khmer-text .parent-row:nth-child(3) {
-    margin-top: -0.75rem; /* -1rem * 0.75 */
-  }
-
-  .host-name-text {
-    font-size: 0.7125rem; /* 0.95rem * 0.75 */
-  }
-
-  .host-logo-showcase {
-    max-height: 112.5px; /* 150px * 0.75 */
-    max-width: 281.25px; /* 375px * 0.75 */
-  }
-
-  .logo-fallback {
-    width: 96px; /* 128px * 0.75 */
+    width: 96px; /* Match mobile */
     height: 96px;
   }
 
   .logo-initial {
-    font-size: 1.6875rem; /* 2.25rem * 0.75 */
+    font-size: 1.5rem; /* Match mobile */
   }
 
   .profile-picture-wrapper {
-    width: 70%; /* Increased for better visibility */
+    width: 75%; /* Match mobile */
   }
 
   .profile-picture-fallback {
-    width: 70%; /* Increased for better visibility */
+    width: 75%; /* Match mobile */
   }
 
   .welcome-row {
-    margin-bottom: 0.46875rem; /* 0.625rem * 0.75 */
+    margin-bottom: 0.5rem; /* Match mobile */
   }
 }
 
-/* Large laptops 16+ inch (laptop-lg: 1536px) - Scaled to 75% */
-@media (min-width: 1536px) {
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Using mobile view styles */
+@media (min-width: 1366px) {
   .host-info-grid {
-    gap: 0.5625rem; /* 0.75rem * 0.75 */
+    gap: 0.25rem; /* Match mobile */
   }
 
   .logo-row {
-    padding: 0.5rem 0 !important; /* Reduced vertical spacing */
-    margin: 0.75rem 0 !important; /* Reduced from my-6 (1.5rem) */
+    padding: 1.5rem 0; /* Match mobile */
   }
 
   .name-row {
-    margin-top: -0.46875rem; /* -0.625rem * 0.75 */
+    margin-top: -0.125rem; /* Match mobile */
   }
 
   .khmer-text .name-row {
-    margin-top: -0.9375rem; /* -1.25rem * 0.75 */
+    margin-top: -0.75rem; /* Match mobile Khmer */
   }
 
   .parent-name-text {
-    font-size: 0.7008rem; /* 0.9344rem * 0.75 */
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.46875rem; /* -0.625rem * 0.75 */
+    margin-top: -0.25rem; /* Match mobile */
   }
 
   .khmer-text .parent-row:nth-child(3) {
-    margin-top: -0.9375rem; /* -1.25rem * 0.75 */
+    margin-top: -0.75rem; /* Match mobile Khmer */
   }
 
   .host-name-text {
-    font-size: 0.84375rem; /* 1.125rem * 0.75 */
+    font-size: 0.85rem; /* Match mobile: 13.6px */
   }
 
   .host-logo-showcase {
-    max-height: 127.5px; /* 170px * 0.75 */
-    max-width: 318.75px; /* 425px * 0.75 */
+    max-height: 180px; /* Match mobile */
+    max-width: 330px; /* Match mobile */
   }
 
   .logo-fallback {
-    width: 120px; /* 160px * 0.75 */
-    height: 120px;
+    width: 96px; /* Match mobile */
+    height: 96px;
   }
 
   .logo-initial {
-    font-size: 2.625rem; /* 3.5rem * 0.75 */
+    font-size: 1.5rem; /* Match mobile */
   }
 
   .profile-picture-wrapper {
-    width: 70%; /* Increased for better visibility */
+    width: 75%; /* Match mobile */
   }
 
   .profile-picture-fallback {
-    width: 70%; /* Increased for better visibility */
+    width: 75%; /* Match mobile */
+  }
+
+  .welcome-row {
+    margin-bottom: 0.5rem; /* Match mobile */
+  }
+}
+
+/* Large laptops 16+ inch (laptop-lg: 1536px) - Using mobile view styles */
+@media (min-width: 1536px) {
+  .host-info-grid {
+    gap: 0.25rem; /* Match mobile */
+  }
+
+  .logo-row {
+    padding: 1.5rem 0; /* Match mobile */
+  }
+
+  .name-row {
+    margin-top: -0.125rem; /* Match mobile */
+  }
+
+  .khmer-text .name-row {
+    margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .parent-name-text {
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.25rem; /* Match mobile */
+  }
+
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .host-name-text {
+    font-size: 0.85rem; /* Match mobile: 13.6px */
+  }
+
+  .host-logo-showcase {
+    max-height: 180px; /* Match mobile */
+    max-width: 330px; /* Match mobile */
+  }
+
+  .logo-fallback {
+    width: 96px; /* Match mobile */
+    height: 96px;
+  }
+
+  .logo-initial {
+    font-size: 1.5rem; /* Match mobile */
+  }
+
+  .profile-picture-wrapper {
+    width: 75%; /* Match mobile */
+  }
+
+  .profile-picture-fallback {
+    width: 75%; /* Match mobile */
+  }
+
+  .welcome-row {
+    margin-bottom: 0.5rem; /* Match mobile */
   }
 }
 
