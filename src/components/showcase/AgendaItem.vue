@@ -238,7 +238,7 @@ const timeText = computed(() => {
 
   /* Time text - scaled to 77.625% from mobile text-xs (0.75rem) */
   .text-xs {
-    font-size: 0.58218750rem !important; /* 0.75rem * 0.77625 - increased by 15% */
+    font-size: 0.75684375rem !important; /* 0.75rem * 0.77625 * 1.3 - increased by 30% */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
@@ -291,7 +291,7 @@ const timeText = computed(() => {
 
   /* Time text - scaled to 86.25% from mobile text-xs (0.75rem) */
   .text-xs {
-    font-size: 0.64687500rem !important; /* 0.75rem * 0.8625 - increased by 15% */
+    font-size: 0.84093750rem !important; /* 0.75rem * 0.8625 * 1.3 - increased by 30% */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
