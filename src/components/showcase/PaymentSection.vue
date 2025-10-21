@@ -1,7 +1,7 @@
 <template>
   <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Payment Section Header - First Payment Method Name + Type -->
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+    <div class="text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         v-if="paymentMethods.length > 0"
         :class="[
@@ -876,10 +876,10 @@ const capitalizeText = (text: string | undefined): string => {
     margin-left: 0 !important;
   }
 
-  /* QR Code - mobile sizing */
+  /* QR Code - compact sizing for laptop */
   .qr-simple-container {
-    padding: 1rem !important;
-    border-radius: 1.5rem !important;
+    padding: 0.5rem !important;
+    border-radius: 0 !important;
   }
 
   .qr-simple-container img {
@@ -887,6 +887,7 @@ const capitalizeText = (text: string | undefined): string => {
     height: 8rem !important;
     margin-left: auto !important;
     margin-right: auto !important;
+    border-radius: 0 !important;
   }
 
   /* Prevent large laptop sizing */
@@ -905,14 +906,14 @@ const capitalizeText = (text: string | undefined): string => {
     height: 8rem !important;
   }
 
-  /* Payment info - mobile padding and border radius */
+  /* Payment info - compact padding for laptop */
   .payment-info-simple {
-    padding: 0.75rem !important;
+    padding: 0.5rem !important;
     border-radius: 1.5rem !important;
   }
 
   .payment-info-glass {
-    padding: 0.75rem !important;
+    padding: 0.5rem !important;
     border-radius: 1.5rem !important;
   }
 
@@ -926,12 +927,12 @@ const capitalizeText = (text: string | undefined): string => {
     text-align: center !important;
   }
 
-  /* Bank info pills - mobile sizing */
+  /* Bank info pills - compact sizing for laptop */
   .bank-info-pill {
-    padding: 0.375rem 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
     font-size: 0.875rem !important; /* 14px */
-    min-height: 32px !important;
-    border-radius: 1rem !important;
+    min-height: 28px !important;
+    border-radius: 0.75rem !important;
   }
 
   .bank-info-pill svg.w-4 {
@@ -960,10 +961,10 @@ const capitalizeText = (text: string | undefined): string => {
     border-radius: 1.5rem !important;
   }
 
-  /* Payment row - mobile layout (column, centered) */
+  /* Payment row - compact layout for laptop */
   .payment-row-container {
-    padding: 0.5rem !important;
-    gap: 1rem !important;
+    padding: 0.25rem !important;
+    gap: 0.75rem !important;
     flex-direction: column !important;
     align-items: center !important;
   }
@@ -1015,10 +1016,20 @@ const capitalizeText = (text: string | undefined): string => {
     line-height: 1.5 !important;
   }
 
-  /* Header text - mobile size */
+  /* Header text - mobile size reduced by 15% for collapse state */
   h3.text-sm,
   h3.sm\:text-base {
     font-size: 0.875rem !important;
+  }
+
+  /* Collapse state text - reduced by 15% */
+  .payment-card-header h3.text-sm,
+  .payment-card-header h3.sm\:text-base {
+    font-size: 0.74375rem !important; /* 0.875rem * 0.85 */
+  }
+
+  .payment-card-header .text-xs {
+    font-size: 0.6375rem !important; /* 0.75rem * 0.85 */
   }
 
   /* Currency and description text - mobile size */
@@ -1043,36 +1054,42 @@ const capitalizeText = (text: string | undefined): string => {
     height: 3rem !important;
   }
 
-  /* Expandable content padding - mobile view */
+  /* Expandable content padding - compact for laptop */
   .payment-card-content > div {
-    padding: 1rem !important;
-  }
-
-  /* Override sm:p-6 to use mobile padding */
-  .p-4.sm\:p-6 {
-    padding: 1rem !important;
-  }
-
-  /* Card header padding - mobile view */
-  .payment-card-header .flex {
     padding: 0.75rem !important;
+  }
+
+  /* Override sm:p-6 to use compact padding */
+  .p-4.sm\:p-6 {
+    padding: 0.75rem !important;
+  }
+
+  /* Card header padding - reduced for compact collapse state */
+  .payment-card-header .flex {
+    padding: 0.5rem !important;
   }
 
   /* Override p-4 class in header */
   .payment-card-header .p-4 {
-    padding: 0.75rem !important;
+    padding: 0.5rem !important;
   }
 
-  /* Icon background in header - mobile sizing and alignment */
+  /* Icon background in header - compact sizing and alignment */
   .payment-card-header .p-2 {
-    padding: 0.375rem !important;
+    padding: 0.25rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
   .payment-card-header .rounded-xl {
-    border-radius: 0.625rem !important;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Reduce icon sizes in header for compact collapse state */
+  .payment-card-header svg.w-5 {
+    width: 1rem !important; /* Reduced from 1.25rem */
+    height: 1rem !important;
   }
 
   /* Force proper vertical alignment in header */
@@ -1096,13 +1113,13 @@ const capitalizeText = (text: string | undefined): string => {
     margin-top: 0.5rem !important;
   }
 
-  /* Tighter spacing in header - mobile style */
+  /* Tighter spacing in header - compact for laptop */
   .payment-card-header .space-x-3 > * + * {
-    margin-left: 0.5rem !important;
+    margin-left: 0.375rem !important;
   }
 
   .payment-card-header .space-x-2 > * + * {
-    margin-left: 0.375rem !important;
+    margin-left: 0.25rem !important;
   }
 
   /* Method name and details container - proper alignment */
