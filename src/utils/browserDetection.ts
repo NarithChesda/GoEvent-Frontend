@@ -9,8 +9,14 @@
 export function isTelegramBrowser(): boolean {
   const userAgent = navigator.userAgent || ''
 
-  // Check for Telegram-specific user agent strings
-  return /TelegramBot|Telegram/i.test(userAgent)
+  // Check for Telegram-specific user agent strings and platform
+  // Telegram on different platforms has different signatures
+  return /TelegramBot|Telegram/i.test(userAgent) ||
+         /TDesktop|TG/i.test(userAgent) ||
+         // Check if opened via Telegram's webview
+         window.location.href.includes('tgWebAppPlatform') ||
+         // Check Telegram Web App API
+         !!(window as any).Telegram?.WebApp
 }
 
 /**
@@ -20,9 +26,13 @@ export function isTelegramBrowser(): boolean {
 export function isMessagingAppBrowser(): boolean {
   const userAgent = navigator.userAgent || ''
 
+  // First check if it's Telegram using the enhanced detection
+  if (isTelegramBrowser()) {
+    return true
+  }
+
   // Check for various messaging app browsers
   const messagingAppPatterns = [
-    /TelegramBot|Telegram/i,
     /WhatsApp/i,
     /FB_IAB|FBAN|FBAV/i, // Facebook in-app browser
     /Line/i,
@@ -32,6 +42,8 @@ export function isMessagingAppBrowser(): boolean {
     /Snapchat/i,
     /Instagram/i,
     /Twitter/i,
+    /LIFF/i, // LINE Front-end Framework
+    /Messenger/i,
   ]
 
   return messagingAppPatterns.some(pattern => pattern.test(userAgent))
