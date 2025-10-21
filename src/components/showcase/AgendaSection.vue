@@ -4,7 +4,7 @@
     class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
   >
     <!-- Welcome Header -->
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+    <div class="text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         :class="[
           'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize agenda-header',
@@ -376,9 +376,9 @@ onMounted(() => {
   .agenda-header {
     font-size: 1.45546875rem !important; /* 1.875rem * 0.77625 - increased by 15% */
     line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
-    margin-bottom: 1.164375rem !important; /* 1.5rem * 0.77625 from md:mb-6 */
+    margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 from md:mb-6 - reduced by 50% */
   }
 
   /* Tab bar sizing - scaled to 77.625% from mobile */
@@ -407,9 +407,9 @@ onMounted(() => {
   .agenda-header {
     font-size: 1.61718750rem !important; /* 1.875rem * 0.8625 - increased by 15% */
     line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
-    margin-bottom: 1.29375rem !important; /* 1.5rem * 0.8625 from md:mb-6 */
+    margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 from md:mb-6 - reduced by 50% */
   }
 
   /* Tab bar sizing - scaled to 86.25% from mobile */
