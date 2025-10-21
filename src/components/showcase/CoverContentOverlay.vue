@@ -1,11 +1,19 @@
 <template>
   <div
-    class="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8 text-center transition-opacity duration-500"
-    :class="{ 'opacity-0 pointer-events-none': isContentHidden }"
-    style="z-index: 10"
+    @click="handleClick"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out cursor-pointer"
+    :class="{ 'swipe-up-hidden': isContentHidden }"
+    style="z-index: 10; touch-action: none;"
   >
-    <!-- Centered Inner Container with Row Distribution -->
-    <div class="inner-container-rows flex flex-col w-full max-w-5xl mx-auto" style="height: 53vh">
+    <!-- Inner Container with Dynamic Top Position -->
+    <div
+      class="inner-container-rows flex flex-col w-full max-w-5xl mx-auto absolute"
+      style="height: 53vh"
+      :style="containerStyle"
+    >
       <!-- Event Title Row: 18.75% -->
       <div
         class="content-row-header flex items-center justify-center animate-fadeIn"
@@ -16,7 +24,7 @@
           style="height: 60%"
         >
           <h1
-            class="scaled-header gleam-animation font-bold capitalize khmer-text-fix text-center"
+            class="scaled-header font-regular capitalize khmer-text-fix text-center"
             :style="headerTextStyle"
           >
             {{ coverHeader || eventTitle }}
@@ -24,11 +32,11 @@
         </div>
       </div>
 
-      <!-- Event Logo Row: 38% -->
+      <!-- Event Logo Row: 48% -->
       <div
         v-if="eventLogo"
         class="content-row-logo flex items-center justify-center animate-fadeIn animation-delay-200"
-        style="height: 38%"
+        style="height: 48%"
       >
         <div class="flex items-center justify-center h-full w-full px-4">
           <img
@@ -44,7 +52,7 @@
       <div
         v-if="guestName"
         class="content-row-invite flex items-center justify-center animate-fadeIn animation-delay-400"
-        style="height: 8.75%"
+        style="height: 8.75%; overflow: visible;"
       >
         <div
           class="invite-content-container flex items-center justify-center px-4 w-full"
@@ -56,53 +64,53 @@
         </div>
       </div>
 
-      <!-- Guest Name Row: 12.5% -->
+      <!-- Guest Name Row: 16% -->
       <div
         v-if="guestName"
         class="content-row-guest flex items-center justify-center animate-fadeIn animation-delay-600"
-        style="height: 12.5%"
+        style="height: 16%; overflow: visible;"
       >
         <div
           class="guest-content-container flex items-center justify-center px-4 w-full"
-          style="height: 50%"
         >
-          <h2
-            class="scaled-guest-name gleam-animation font-bold capitalize khmer-text-fix text-center"
-            :style="guestNameTextStyle"
-          >
-            {{ guestName }}
-          </h2>
+          <div class="guest-name-container">
+            <div class="guest-name-blur-wrapper" :style="{ backgroundColor: primaryColor }">
+              <h2
+                class="scaled-guest-name font-regular capitalize khmer-text-fix text-center guest-name-single-line"
+                :style="guestNameTextStyle"
+              >
+                {{ guestName }}
+              </h2>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Open Envelope Button Row: 20% -->
-      <div
-        class="content-row-button flex items-center justify-center animate-fadeIn animation-delay-800"
-        style="height: 20%"
+    </div>
+
+    <!-- Swipe Up Arrow Indicator -->
+    <div class="swipe-up-arrow animation-delay-800">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        :stroke="primaryColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="arrow-icon"
       >
-        <div class="flex items-center justify-center h-full w-full">
-          <EnvelopeButton
-            :shouldShowLoading="shouldShowButtonLoading"
-            :hasCustomButton="hasCustomButton"
-            :templateAssets="templateAssets"
-            :primaryColor="primaryColor"
-            :secondaryFont="secondaryFont"
-            :currentFont="currentFont"
-            :primaryFont="primaryFont"
-            :gradientStyle="gradientStyle"
-            :getMediaUrl="getMediaUrl"
-            @click="$emit('openEnvelope')"
-          />
-        </div>
-      </div>
+        <polyline points="6 19 12 13 18 19"></polyline>
+        <polyline points="6 13 12 7 18 13"></polyline>
+        <polyline points="6 7 12 1 18 7"></polyline>
+      </svg>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import EnvelopeButton from './EnvelopeButton.vue'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -130,49 +138,80 @@ interface Props {
   currentLanguage?: string
   shouldShowButtonLoading: boolean
   getMediaUrl: (url: string) => string
+  contentTopPosition?: number // Vertical position in vh units (0-100)
 }
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   openEnvelope: []
 }>()
 
-// Computed properties for styling
-const gradientStyle = computed(
-  () =>
-    `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`,
-)
+// Touch gesture detection
+const touchStartY = ref(0)
+const touchEndY = ref(0)
+const isTouchDevice = ref(false)
+const MIN_SWIPE_DISTANCE = 50 // Minimum pixels to trigger swipe
 
+const handleTouchStart = (e: TouchEvent) => {
+  isTouchDevice.value = true
+  touchStartY.value = e.touches[0].clientY
+}
+
+const handleTouchMove = (e: TouchEvent) => {
+  touchEndY.value = e.touches[0].clientY
+
+  // Prevent default scrolling behavior during swipe
+  const swipeDistance = touchStartY.value - touchEndY.value
+  if (Math.abs(swipeDistance) > 10) {
+    e.preventDefault()
+  }
+}
+
+const handleTouchEnd = (e: TouchEvent) => {
+  const swipeDistance = touchStartY.value - touchEndY.value
+  const isSwipeUp = swipeDistance > MIN_SWIPE_DISTANCE
+
+  // Check if it's a swipe up (positive distance) and exceeds minimum distance
+  // OR if it's a tap (very small movement) to support both tap and swipe
+  const isTap = Math.abs(swipeDistance) < 10
+
+  if (isSwipeUp || isTap) {
+    // Prevent any default behavior to avoid interference
+    e.preventDefault()
+    emit('openEnvelope')
+  }
+
+  // Reset values
+  touchStartY.value = 0
+  touchEndY.value = 0
+}
+
+// Click handler for non-touch devices (desktop)
+const handleClick = () => {
+  // Only trigger on click if it's not a touch device
+  if (!isTouchDevice.value) {
+    emit('openEnvelope')
+  }
+}
+
+// Computed properties for styling
 const headerTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
-  background: `linear-gradient(45deg, ${props.primaryColor} 0%, ${props.secondaryColor || props.accentColor} 50%, ${props.primaryColor} 100%)`,
-  backgroundSize: '200% 200%',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
+  color: props.primaryColor,
 }))
 
 const guestNameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
-  background: `linear-gradient(45deg, ${props.primaryColor} 0%, ${props.secondaryColor || props.accentColor} 50%, ${props.primaryColor} 100%)`,
-  backgroundSize: '200% 200%',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
-}))
-
-const inviteTextStyle = computed(() => ({
-  color: props.primaryColor || 'rgba(255, 255, 255, 0.9)',
-  fontFamily: props.secondaryFont || props.currentFont,
+  color: '#FFFFFF',
   textShadow: 'none',
 }))
 
-const hasCustomButton = computed(
-  () =>
-    Boolean(props.templateAssets?.open_envelope_button) &&
-    props.templateAssets?.open_envelope_button?.trim() !== '',
-)
+const inviteTextStyle = computed(() => ({
+  color: props.secondaryColor || props.primaryColor || 'rgba(255, 255, 255, 0.9)',
+  fontFamily: props.secondaryFont || props.currentFont,
+  textShadow: 'none',
+}))
 
 // Text content helpers
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -198,9 +237,137 @@ const coverHeader = computed(
 )
 
 const inviteText = computed(() => getTextContent('invite_text', "You're Invited"))
+
+// Computed style for container positioning
+const containerStyle = computed(() => {
+  // Default to centered (23.5vh top position for 53vh content = roughly centered on 100vh screen)
+  const topPosition = props.contentTopPosition ?? 23.5
+  return {
+    top: `${topPosition}vh`,
+  }
+})
 </script>
 
 <style scoped>
 /* Import shared cover stage styles */
 @import './cover-stage-styles.css';
+
+.guest-name-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 90%;
+}
+
+.guest-name-blur-wrapper {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+}
+
+.guest-name-line {
+  width: 100%;
+  height: 2px;
+}
+
+.guest-name-line:first-child {
+  margin-bottom: 0.75rem;
+}
+
+.guest-name-line:last-child {
+  margin-top: 0.75rem;
+}
+
+.guest-name-single-line {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Desktop - reduce guest name size */
+@media (min-width: 1024px) {
+  .content-row-guest .scaled-guest-name {
+    font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
+  }
+}
+
+/* Mobile - reduce guest name size */
+@media (max-width: 640px) {
+  .content-row-guest .scaled-guest-name {
+    font-size: clamp(0.55rem, 2.2vh, 1.1rem) !important;
+  }
+
+  .guest-name-container {
+    gap: 0;
+  }
+
+  .guest-name-line:first-child {
+    height: 2px !important;
+    margin-bottom: 0.6rem;
+  }
+
+  .guest-name-line:last-child {
+    height: 2px !important;
+    margin-top: 0.6rem;
+  }
+}
+
+/* Swipe Up Arrow Indicator */
+.swipe-up-arrow {
+  position: absolute;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  animation: bounceArrow 2s ease-in-out infinite;
+}
+
+@keyframes bounceArrow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Responsive arrow size */
+@media (max-width: 640px) {
+  .arrow-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .arrow-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Swipe Up Animation */
+.swipe-up-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
 </style>

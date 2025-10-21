@@ -4,19 +4,15 @@
     <div class="host-info-grid">
       <!-- Row 1: Welcome Header (moved from MainContentStage) -->
       <div class="welcome-row">
-        <div class="welcome-content mt-6">
+        <div class="welcome-content mt-2">
           <h2
             :class="[
-              'text-base sm:text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalize gleam-animation',
+              'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               fontFamily: primaryFont || currentFont,
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              backgroundSize: '200% 200%',
+              color: primaryColor,
             }"
           >
             {{ welcomeMessage || 'Welcome to Our Event' }}
@@ -24,23 +20,24 @@
         </div>
       </div>
 
-      <!-- Row 2: Host Parent A Names -->
-      <div v-if="hosts.length > 0" class="parent-row">
+      <!-- Row 2: Host Parent A Names (fallback to Parent B if Parent A doesn't exist) -->
+      <div v-if="hosts.length > 0 && (hosts[0].parent_a_name || hosts[0].parent_b_name || (hosts.length > 1 && (hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)))" class="parent-row">
         <!-- Host 1 Parent A (45% width) -->
         <div class="host-parent-left">
           <p
+            v-if="hosts[0].parent_a_name || hosts[0].parent_b_name"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
           >
-            {{ hosts[0].parent_a_name || 'Father Name' }}
+            {{ hosts[0].parent_a_name || hosts[0].parent_b_name }}
           </p>
         </div>
 
@@ -50,62 +47,63 @@
         <!-- Host 2 Parent A (45% width) -->
         <div class="host-parent-right">
           <p
-            v-if="hosts.length > 1"
+            v-if="hosts.length > 1 && (hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.parent_a_name || 'Father Name' }}
+            {{ hosts[1]?.parent_a_name || hosts[1]?.parent_b_name }}
           </p>
         </div>
       </div>
 
-      <!-- Row 3: Host Parent B Names -->
-      <div v-if="hosts.length > 0" class="parent-row">
-        <!-- Host 1 Parent B (45% width) -->
+      <!-- Row 3: Host Parent B Names (only show if Parent B exists AND Parent A also exists to avoid redundancy) -->
+      <div v-if="hosts.length > 0 && ((hosts[0].parent_b_name && hosts[0].parent_a_name) || (hosts.length > 1 && hosts[1]?.parent_b_name && hosts[1]?.parent_a_name))" class="parent-row">
+        <!-- Host 1 Parent B (45% width) - only show if both parent_a_name AND parent_b_name exist -->
         <div class="host-parent-left">
           <p
+            v-if="hosts[0].parent_b_name && hosts[0].parent_a_name"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
           >
-            {{ hosts[0].parent_b_name || 'Mother Name' }}
+            {{ hosts[0].parent_b_name }}
           </p>
         </div>
 
         <!-- Center spacer (10% width) -->
         <div class="center-spacer"></div>
 
-        <!-- Host 2 Parent B (45% width) -->
+        <!-- Host 2 Parent B (45% width) - only show if both parent_a_name AND parent_b_name exist -->
         <div class="host-parent-right">
           <p
-            v-if="hosts.length > 1"
+            v-if="hosts.length > 1 && hosts[1]?.parent_b_name && hosts[1]?.parent_a_name"
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: secondaryFont || currentFont,
+              fontFamily: primaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.parent_b_name || 'Mother Name' }}
+            {{ hosts[1]?.parent_b_name }}
           </p>
         </div>
       </div>
@@ -146,7 +144,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: primaryFont || currentFont,
+              fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -171,7 +169,7 @@
             ]"
             :style="{
               color: primaryColor,
-              fontFamily: primaryFont || currentFont,
+              fontFamily: secondaryFont || currentFont,
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
@@ -187,15 +185,11 @@
         <div class="host-name-left">
           <h3
             :class="[
-              'host-name-text font-semibold leading-tight capitalize gleam-animation',
+              'host-name-text font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-              backgroundSize: '200% 200%',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: primaryColor,
               fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
@@ -211,15 +205,11 @@
           <h3
             v-if="hosts.length > 1"
             :class="[
-              'host-name-text font-semibold leading-tight capitalize gleam-animation',
+              'host-name-text font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-              backgroundSize: '200% 200%',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: primaryColor,
               fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
@@ -236,15 +226,19 @@
         <!-- Host 1 Profile Picture (45% width) -->
         <div class="host-profile-left">
           <div class="profile-picture-container">
-            <img
+            <div
               v-if="hosts[0].profile_image"
-              :src="getMediaUrl(hosts[0].profile_image)"
-              :alt="`${hosts[0].name} profile`"
-              class="profile-picture"
+              class="profile-picture-wrapper"
               :style="{
-                borderColor: primaryColor,
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
               }"
-            />
+            >
+              <img
+                :src="getMediaUrl(hosts[0].profile_image)"
+                :alt="`${hosts[0].name} profile`"
+                class="profile-picture"
+              />
+            </div>
             <div
               v-else
               class="profile-picture-fallback"
@@ -263,15 +257,19 @@
         <!-- Host 2 Profile Picture (45% width) -->
         <div class="host-profile-right">
           <div v-if="hosts.length > 1" class="profile-picture-container">
-            <img
+            <div
               v-if="hosts[1]?.profile_image"
-              :src="getMediaUrl(hosts[1].profile_image)"
-              :alt="`${hosts[1].name} profile`"
-              class="profile-picture"
+              class="profile-picture-wrapper"
               :style="{
-                borderColor: primaryColor,
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
               }"
-            />
+            >
+              <img
+                :src="getMediaUrl(hosts[1].profile_image)"
+                :alt="`${hosts[1].name} profile`"
+                class="profile-picture"
+              />
+            </div>
             <div
               v-else
               class="profile-picture-fallback"
@@ -362,13 +360,27 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   margin-top: -0.125rem;
 }
 
+/* Khmer-specific spacing reduction between title and name */
+.khmer-text .title-row {
+  margin-top: -0.5rem;
+}
+
+.khmer-text .name-row {
+  margin-top: -0.75rem;
+}
+
+/* Khmer-specific spacing reduction for profile pictures */
+.khmer-text .profile-picture-row {
+  margin-top: -0.5rem;
+}
+
 /* Welcome row (full width) */
 .welcome-row {
   display: flex;
   justify-content: center;
   width: 100%;
   padding: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   box-sizing: border-box;
 }
 
@@ -431,7 +443,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
 
 /* Parent name text styles with increased sizes */
 .parent-name-text {
-  font-size: 0.6875rem; /* 11px - increased from 9px (mobile) */
+  font-size: 0.7906rem; /* 12.65px - 15% increase from 11px (mobile) */
 }
 
 /* Host name text styles with 15% mobile reduction */
@@ -485,17 +497,24 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   width: 100%;
 }
 
-.profile-picture {
-  width: 60%;
+.profile-picture-wrapper {
+  width: 75%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid;
+  padding: 2px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: none;
+}
+
 .profile-picture-fallback {
-  width: 60%;
+  width: 75%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   display: flex;
@@ -540,11 +559,11 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .welcome-row {
-    margin-bottom: 2rem;
+    margin-bottom: 0.625rem;
   }
 
   .parent-name-text {
-    font-size: 0.8125rem; /* 13px - increased from 11px */
+    font-size: 0.9344rem; /* 14.95px - 15% increase from 13px */
   }
 
   .parent-row:nth-child(3) {
@@ -581,7 +600,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 
   .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
+    font-size: 1.0781rem; /* 17.25px - 15% increase from 15px */
   }
 
   .parent-row:nth-child(3) {
@@ -607,151 +626,242 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 }
 
-/* Small laptops (laptop-sm: 1024px) */
-@media (min-width: 1024px) {
+/* Small laptops 13-inch (laptop-sm: 1024px) - Using mobile view styles */
+@media (min-width: 1024px) and (max-width: 1365px) {
   .host-info-grid {
-    gap: 0.75rem;
+    gap: 0.25rem; /* Match mobile */
+  }
+
+  .logo-row {
+    padding: 1rem 0; /* Reduced from 1.5rem */
   }
 
   .name-row {
-    margin-top: -0.5rem;
+    margin-top: -0.125rem; /* Match mobile */
+  }
+
+  /* Override Tailwind's lg:text-4xl to keep mobile size */
+  .welcome-content h2 {
+    font-size: 1.5rem !important; /* Match mobile base size */
+    line-height: 1.25 !important; /* Match mobile line height */
   }
 
   .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
   }
 
   .parent-row:nth-child(3) {
-    margin-top: -0.5rem;
+    margin-top: -0.25rem; /* Match mobile */
   }
 
   .host-name-text {
-    font-size: 1.0625rem; /* 17px - smaller than welcome header's 24px */
+    font-size: 0.85rem; /* Match mobile: 13.6px */
   }
 
   .host-logo-showcase {
-    max-height: 140px; /* Match CoverStage 1024px+ */
-    max-width: 350px; /* Match CoverStage 1024px+ */
+    max-height: 180px; /* Match mobile */
+    max-width: 330px; /* Match mobile */
   }
 
   .logo-fallback {
-    width: 144px;
-    height: 144px;
+    width: 96px; /* Match mobile */
+    height: 96px;
   }
 
   .logo-initial {
-    font-size: 3rem;
+    font-size: 1.5rem; /* Match mobile */
+  }
+
+  .profile-picture-wrapper {
+    width: 75%; /* Match mobile */
+  }
+
+  .profile-picture-fallback {
+    width: 75%; /* Match mobile */
+  }
+
+  .welcome-row {
+    margin-bottom: 0.5rem; /* Match mobile */
   }
 }
 
-/* Medium laptops (laptop-md: 1280px) */
-@media (min-width: 1280px) {
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Using mobile view styles */
+@media (min-width: 1366px) {
+  .host-info-grid {
+    gap: 0.25rem; /* Match mobile */
+  }
+
+  .logo-row {
+    padding: 1rem 0; /* Reduced from 1.5rem */
+  }
+
+  .name-row {
+    margin-top: -0.125rem; /* Match mobile */
+  }
+
+  .khmer-text .name-row {
+    margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .parent-name-text {
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.25rem; /* Match mobile */
+  }
+
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .host-name-text {
+    font-size: 0.85rem; /* Match mobile: 13.6px */
+  }
+
+  .host-logo-showcase {
+    max-height: 180px; /* Match mobile */
+    max-width: 330px; /* Match mobile */
+  }
+
+  .logo-fallback {
+    width: 96px; /* Match mobile */
+    height: 96px;
+  }
+
+  .logo-initial {
+    font-size: 1.5rem; /* Match mobile */
+  }
+
+  .profile-picture-wrapper {
+    width: 75%; /* Match mobile */
+  }
+
+  .profile-picture-fallback {
+    width: 75%; /* Match mobile */
+  }
+
+  .welcome-row {
+    margin-bottom: 0.5rem; /* Match mobile */
+  }
+}
+
+/* Large laptops 16+ inch (laptop-lg: 1536px) - Using mobile view styles */
+@media (min-width: 1536px) {
+  .host-info-grid {
+    gap: 0.25rem; /* Match mobile */
+  }
+
+  .logo-row {
+    padding: 1rem 0; /* Reduced from 1.5rem */
+  }
+
+  .name-row {
+    margin-top: -0.125rem; /* Match mobile */
+  }
+
+  .khmer-text .name-row {
+    margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .parent-name-text {
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
+  }
+
+  .parent-row:nth-child(3) {
+    margin-top: -0.25rem; /* Match mobile */
+  }
+
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .host-name-text {
+    font-size: 0.85rem; /* Match mobile: 13.6px */
+  }
+
+  .host-logo-showcase {
+    max-height: 180px; /* Match mobile */
+    max-width: 330px; /* Match mobile */
+  }
+
+  .logo-fallback {
+    width: 96px; /* Match mobile */
+    height: 96px;
+  }
+
+  .logo-initial {
+    font-size: 1.5rem; /* Match mobile */
+  }
+
+  .profile-picture-wrapper {
+    width: 75%; /* Match mobile */
+  }
+
+  .profile-picture-fallback {
+    width: 75%; /* Match mobile */
+  }
+
+  .welcome-row {
+    margin-bottom: 0.5rem; /* Match mobile */
+  }
+}
+
+/* Desktop Full HD+ (desktop: 1920px) */
+@media (min-width: 1920px) {
   .host-info-grid {
     gap: 0.875rem;
   }
 
   .name-row {
-    margin-top: -0.625rem;
-  }
-
-  .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
-  }
-
-  .parent-row:nth-child(3) {
-    margin-top: -0.625rem;
-  }
-
-  .host-name-text {
-    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
-  }
-
-  .host-logo-showcase {
-    max-height: 160px; /* Match CoverStage 1280px+ */
-    max-width: 400px; /* Match CoverStage 1280px+ */
-  }
-
-  .logo-fallback {
-    width: 160px;
-    height: 160px;
-  }
-
-  .logo-initial {
-    font-size: 3.5rem;
-  }
-}
-
-/* Large laptops (laptop-lg: 1536px) */
-@media (min-width: 1536px) {
-  .host-info-grid {
-    gap: 1rem;
-  }
-
-  .name-row {
     margin-top: -0.75rem;
   }
 
+  .khmer-text .name-row {
+    margin-top: -1.5rem;
+  }
+
+  /* Reduce welcome header text size for desktop */
+  .welcome-content h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl instead of text-4xl */
+  }
+
   .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
+    font-size: 1.0063rem; /* 16.1px - 15% increase from 14px */
   }
 
   .parent-row:nth-child(3) {
     margin-top: -0.75rem;
   }
 
+  .khmer-text .parent-row:nth-child(3) {
+    margin-top: -1.5rem;
+  }
+
   .host-name-text {
-    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
+    font-size: 1.25rem; /* 20px - optimized for Full HD+ desktop */
   }
 
   .host-logo-showcase {
-    max-height: 180px; /* Match CoverStage 1536px+ */
-    max-width: 450px; /* Match CoverStage 1536px+ */
+    max-height: 180px; /* Desktop size */
+    max-width: 450px; /* Desktop size */
   }
 
   .logo-fallback {
-    width: 176px;
-    height: 176px;
+    width: 180px;
+    height: 180px;
   }
 
   .logo-initial {
     font-size: 4rem;
   }
-}
 
-/* Desktop (desktop: 1920px) */
-@media (min-width: 1920px) {
-  .host-info-grid {
-    gap: 1.125rem;
+  .profile-picture-wrapper {
+    width: 62%;
   }
 
-  .name-row {
-    margin-top: -0.875rem;
-  }
-
-  .parent-name-text {
-    font-size: 0.9375rem; /* 15px - increased from 13px */
-  }
-
-  .parent-row:nth-child(3) {
-    margin-top: -0.875rem;
-  }
-
-  .host-name-text {
-    font-size: 1.125rem; /* 18px - smaller than welcome header's 24px */
-  }
-
-  .host-logo-showcase {
-    max-height: 180px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
-    max-width: 450px; /* CoverStage doesn't have 1920px+ override, keep 1536px+ */
-  }
-
-  .logo-fallback {
-    width: 208px;
-    height: 208px;
-  }
-
-  .logo-initial {
-    font-size: 4.5rem;
+  .profile-picture-fallback {
+    width: 62%;
   }
 }
 

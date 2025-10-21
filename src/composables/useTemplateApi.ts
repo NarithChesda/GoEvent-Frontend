@@ -152,19 +152,14 @@ export function useTemplateApi() {
     clearMessage()
 
     try {
-      console.log('Loading templates...')
       const response = await eventTemplateService.browseTemplates()
-      console.log('Templates response:', response)
 
       if (response.success && response.data) {
         templates.value = response.data.templates || []
-        console.log('Loaded templates:', templates.value.length)
       } else {
-        console.warn('API failed, using mock data:', response)
         templates.value = getMockTemplates()
       }
     } catch (error) {
-      console.warn('API error, using mock data:', error)
       templates.value = getMockTemplates()
     } finally {
       loading.value = false
@@ -190,14 +185,10 @@ export function useTemplateApi() {
     clearMessage()
 
     try {
-      console.log('Selecting template:', templateId, 'for event:', eventId)
-
       try {
         const response = await eventTemplateService.selectEventTemplate(eventId, templateId)
-        console.log('Selection response:', response)
 
         if (response.success && response.data) {
-          console.log('Template selected successfully via API')
           showMessage('success', 'Template selected successfully!')
           return { success: true, template: selectedTemplate }
         } else {

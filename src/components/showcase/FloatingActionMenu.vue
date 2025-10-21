@@ -8,11 +8,7 @@
       @click="toggleMenu"
       class="fab-button"
       :class="{ active: isMenuOpen }"
-      :style="{
-        background: primaryColor,
-        border: `2px solid ${primaryColor}`,
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-      }"
+      :style="fabButtonStyle"
     >
       <component
         :is="isMenuOpen ? X : Menu"
@@ -31,10 +27,10 @@
           <button
             @click="handleLanguageToggle"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Languages :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.language }}</span>
+            <span class="menu-text">{{ translations.language }}</span>
           </button>
         </div>
 
@@ -44,7 +40,7 @@
             @click="handleMusicToggle"
             class="menu-button glass-section"
             :class="{ active: props.isMusicPlaying }"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <component
               :is="props.isMusicPlaying ? VolumeX : Volume2"
@@ -52,20 +48,20 @@
               :color="primaryColor"
             />
             <span class="menu-text">{{
-              props.isMusicPlaying ? menuTranslations.musicOff : menuTranslations.musicOn
+              props.isMusicPlaying ? translations.musicOff : translations.musicOn
             }}</span>
           </button>
         </div>
 
-        <!-- RSVP -->
+        <!-- RSVP with Location -->
         <div class="menu-item">
           <button
-            @click="handleRSVP"
+            @click="handleRSVPWithLocation"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <UserCheck :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.rsvp }}</span>
+            <span class="menu-text">{{ translations.rsvp }}</span>
           </button>
         </div>
 
@@ -74,10 +70,10 @@
           <button
             @click="handleReminder"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Bell :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.reminder }}</span>
+            <span class="menu-text">{{ translations.reminder }}</span>
           </button>
         </div>
 
@@ -86,58 +82,46 @@
           <button
             @click="handleAgenda"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Calendar :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.agenda }}</span>
-          </button>
-        </div>
-
-        <!-- Location -->
-        <div class="menu-item">
-          <button
-            @click="handleLocation"
-            class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
-          >
-            <MapPin :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.location }}</span>
+            <span class="menu-text">{{ translations.agenda }}</span>
           </button>
         </div>
 
         <!-- Video -->
-        <div class="menu-item">
+        <div v-if="props.hasVideo" class="menu-item">
           <button
             @click="handleVideo"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Play :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.video }}</span>
+            <span class="menu-text">{{ translations.video }}</span>
           </button>
         </div>
 
         <!-- Gallery -->
-        <div class="menu-item">
+        <div v-if="props.hasGallery" class="menu-item">
           <button
             @click="handleGallery"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Image :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.gallery }}</span>
+            <span class="menu-text">{{ translations.gallery }}</span>
           </button>
         </div>
 
         <!-- Gift -->
-        <div class="menu-item">
+        <div v-if="props.hasPayment" class="menu-item">
           <button
             @click="handleGift"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <Gift :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.gift }}</span>
+            <span class="menu-text">{{ translations.gift }}</span>
           </button>
         </div>
 
@@ -146,10 +130,10 @@
           <button
             @click="handleComment"
             class="menu-button glass-section"
-            :style="{ borderColor: primaryColor }"
+            :style="menuButtonStyle"
           >
             <MessageCircle :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ menuTranslations.comment }}</span>
+            <span class="menu-text">{{ translations.comment }}</span>
           </button>
         </div>
 
@@ -158,13 +142,10 @@
           <button
             @click="handleLogout"
             class="menu-button glass-section logout-button"
-            :style="{
-              borderColor: primaryColor,
-              background: primaryColor,
-            }"
+            :style="logoutButtonStyle"
           >
             <LogOut :size="20" color="white" />
-            <span class="menu-text">{{ menuTranslations.logout }}</span>
+            <span class="menu-text">{{ translations.logout }}</span>
           </button>
         </div>
       </div>
@@ -175,8 +156,8 @@
       <div v-if="showLanguageModal" class="modal-overlay" @click="closeLanguageModal">
         <div class="language-modal glass-section" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title" :style="{ color: primaryColor }">
-              {{ menuTranslations.selectLanguage }}
+            <h3 class="modal-title" :style="modalTitleStyle">
+              {{ translations.selectLanguage }}
             </h3>
             <button @click="closeLanguageModal" class="close-button">
               <X :size="20" :color="primaryColor" />
@@ -216,7 +197,6 @@ import {
   Bell,
   Gift,
   Calendar,
-  MapPin,
   Play,
   Image,
   MessageCircle,
@@ -231,6 +211,10 @@ interface Props {
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   isMusicPlaying?: boolean
   isAuthenticated?: boolean
+  hasLocation?: boolean
+  hasVideo?: boolean
+  hasGallery?: boolean
+  hasPayment?: boolean
 }
 
 interface Language {
@@ -246,6 +230,10 @@ const props = withDefaults(defineProps<Props>(), {
   availableLanguages: () => [],
   isMusicPlaying: false,
   isAuthenticated: false,
+  hasLocation: true,
+  hasVideo: true,
+  hasGallery: true,
+  hasPayment: true,
 })
 
 const emit = defineEmits<{
@@ -288,29 +276,43 @@ const displayLanguages = computed(() => {
   }))
 })
 
-// Translation helpers
-const getTranslation = (
-  key: keyof typeof import('../../utils/translations').rsvpTranslations.en,
-): string => {
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  return translateRSVP(key, currentLang)
-}
+// Translation helpers - optimized with single computed property
+const currentLang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
 
-// Computed properties for menu item translations
-const menuTranslations = computed(() => ({
-  language: getTranslation('floating_menu_language'),
-  musicOn: getTranslation('floating_menu_music_on'),
-  musicOff: getTranslation('floating_menu_music_off'),
-  rsvp: getTranslation('floating_menu_rsvp'),
-  reminder: getTranslation('floating_menu_reminder'),
-  agenda: getTranslation('floating_menu_agenda'),
-  location: getTranslation('floating_menu_location'),
-  video: getTranslation('floating_menu_video'),
-  gallery: getTranslation('floating_menu_gallery'),
-  gift: getTranslation('floating_menu_gift'),
-  comment: getTranslation('floating_menu_comment'),
-  logout: getTranslation('floating_menu_logout'),
-  selectLanguage: getTranslation('floating_menu_select_language'),
+// Single computed object for all translations (better performance - computed once)
+const translations = computed(() => ({
+  language: translateRSVP('floating_menu_language', currentLang.value),
+  musicOn: translateRSVP('floating_menu_music_on', currentLang.value),
+  musicOff: translateRSVP('floating_menu_music_off', currentLang.value),
+  rsvp: translateRSVP('floating_menu_rsvp', currentLang.value),
+  reminder: translateRSVP('floating_menu_reminder', currentLang.value),
+  agenda: translateRSVP('floating_menu_agenda', currentLang.value),
+  video: translateRSVP('floating_menu_video', currentLang.value),
+  gallery: translateRSVP('floating_menu_gallery', currentLang.value),
+  gift: translateRSVP('floating_menu_gift', currentLang.value),
+  comment: translateRSVP('floating_menu_comment', currentLang.value),
+  logout: translateRSVP('floating_menu_logout', currentLang.value),
+  selectLanguage: translateRSVP('floating_menu_select_language', currentLang.value),
+}))
+
+// Computed styles for better performance (avoid recreating style objects on every render)
+const fabButtonStyle = computed(() => ({
+  background: props.primaryColor,
+  border: `2px solid ${props.primaryColor}`,
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+}))
+
+const menuButtonStyle = computed(() => ({
+  borderColor: props.primaryColor,
+}))
+
+const logoutButtonStyle = computed(() => ({
+  borderColor: props.primaryColor,
+  background: props.primaryColor,
+}))
+
+const modalTitleStyle = computed(() => ({
+  color: props.primaryColor,
 }))
 
 const toggleMenu = () => {
@@ -343,8 +345,11 @@ const handleMusicToggle = () => {
   isMenuOpen.value = false
 }
 
-const handleRSVP = () => {
+const handleRSVPWithLocation = () => {
   emit('rsvp')
+  if (props.hasLocation) {
+    emit('location')
+  }
   isMenuOpen.value = false
 }
 
@@ -360,11 +365,6 @@ const handleGift = () => {
 
 const handleAgenda = () => {
   emit('agenda')
-  isMenuOpen.value = false
-}
-
-const handleLocation = () => {
-  emit('location')
   isMenuOpen.value = false
 }
 
@@ -444,14 +444,99 @@ const handleLogout = () => {
   }
 }
 
+/* Small laptops 13-inch (1024px-1365px) - Apply mobile sizing 20% smaller */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .floating-action-menu {
+    bottom: max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem))) !important;
+    right: 0.8rem !important;
+  }
+
+  .fab-button {
+    width: 35px !important;
+    height: 35px !important;
+  }
+
+  .fab-button svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+  .menu-container {
+    bottom: calc(35px + 0.6rem + max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem)))) !important;
+    gap: 0.4rem !important;
+    min-width: 144px !important;
+    max-height: calc(100vh - 112px - max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem)))) !important;
+  }
+
+  .menu-button {
+    gap: 0.4rem !important;
+    padding: 0.6rem 0.8rem !important;
+    border-radius: 0.6rem !important;
+    min-height: 35px !important;
+  }
+
+  .menu-button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .menu-text {
+    font-size: 0.7rem !important;
+  }
+
+  /* Language modal - 20% smaller */
+  .language-modal {
+    width: 90% !important;
+    max-width: 320px !important;
+    border-radius: 0.8rem !important;
+  }
+
+  .modal-header {
+    padding: 1.2rem !important;
+  }
+
+  .modal-title {
+    font-size: 1rem !important;
+  }
+
+  .language-options {
+    padding: 0.8rem !important;
+    gap: 0.4rem !important;
+  }
+
+  .language-option {
+    padding: 0.6rem !important;
+    border-radius: 0.4rem !important;
+  }
+
+  .language-name {
+    font-size: 0.7rem !important;
+  }
+
+  .language-flag {
+    font-size: 1rem !important;
+  }
+
+  .close-button {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .close-button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
 .blur-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: -1;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
+  will-change: opacity;
 }
 
 .fab-button {
@@ -462,7 +547,9 @@ const handleLogout = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  touch-action: manipulation;
 }
 
 /* Responsive FAB button sizing - mobile-first approach */
@@ -590,43 +677,44 @@ const handleLogout = () => {
 }
 
 .menu-item {
-  transform: translateY(20px);
+  transform: translateY(10px);
   opacity: 0;
-  animation: slideUp 0.2s ease-out forwards;
+  animation: slideUp 0.15s ease-out forwards;
+  will-change: transform, opacity;
 }
 
 .menu-item:nth-child(1) {
-  animation-delay: 0.02s;
+  animation-delay: 0s;
 }
 .menu-item:nth-child(2) {
-  animation-delay: 0.04s;
+  animation-delay: 0.01s;
 }
 .menu-item:nth-child(3) {
-  animation-delay: 0.06s;
+  animation-delay: 0.02s;
 }
 .menu-item:nth-child(4) {
-  animation-delay: 0.08s;
+  animation-delay: 0.03s;
 }
 .menu-item:nth-child(5) {
-  animation-delay: 0.1s;
+  animation-delay: 0.04s;
 }
 .menu-item:nth-child(6) {
-  animation-delay: 0.12s;
+  animation-delay: 0.05s;
 }
 .menu-item:nth-child(7) {
-  animation-delay: 0.14s;
+  animation-delay: 0.06s;
 }
 .menu-item:nth-child(8) {
-  animation-delay: 0.16s;
+  animation-delay: 0.07s;
 }
 .menu-item:nth-child(9) {
-  animation-delay: 0.18s;
+  animation-delay: 0.08s;
 }
 .menu-item:nth-child(10) {
-  animation-delay: 0.2s;
+  animation-delay: 0.09s;
 }
 .menu-item:nth-child(11) {
-  animation-delay: 0.22s;
+  animation-delay: 0.1s;
 }
 
 .menu-button {
@@ -638,11 +726,13 @@ const handleLogout = () => {
   border: 1px solid;
   border-radius: 0.75rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   min-height: 44px;
+  will-change: transform;
+  touch-action: manipulation;
 }
 
 /* Responsive menu button sizing - mobile-first approach */

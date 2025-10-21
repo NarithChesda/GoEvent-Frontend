@@ -700,27 +700,25 @@
             <h2
               class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight"
             >
-              Be Part of the
+              Shape the Future with
               <span
                 class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-sky-200"
               >
-                Future</span
+                AI</span
               >
             </h2>
 
             <p
               class="text-base sm:text-lg md:text-xl text-[#B0E0E6] mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
             >
-              We're always looking for talented individuals who share our passion for innovation and
-              creating exceptional user experiences. Be part of the team that's transforming the
-              event management industry.
+              We’re a team of innovators building the next generation of AI-driven solutions that transform how businesses work, think, and grow. If you’re passionate about technology and the future, you belong here.
             </p>
 
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-3 sm:gap-6 mb-8 sm:mb-10 max-w-lg mx-auto">
               <div class="text-center">
                 <div class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">
-                  20+
+                  10+
                 </div>
                 <div class="text-xs sm:text-sm text-white">Team Members</div>
               </div>
@@ -741,7 +739,9 @@
             <!-- Buttons -->
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <a
-                href="#careers"
+                href="https://t.me/goevent_careers"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/10 flex items-center justify-center"
               >
                 View Open Positions

@@ -45,9 +45,52 @@
       @playing="handleBackgroundVideoPlaying"
     />
 
-    <!-- Standard Cover Video Loop - Only show when not in event/background phase -->
+    <!-- Background Color Layer - Always visible in basic mode -->
+    <!-- Shows template color "background" or white as fallback -->
+    <div
+      v-if="templateAssets?.basic_decoration_photo"
+      class="absolute inset-0"
+      :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
+    />
+
+    <!-- Photo Layer - Shows decoration in cover stage, background in main content stage -->
+    <!-- In cover stage (phase='none'): show basic_decoration_photo -->
+    <!-- In main content stage (phase='background'): show basic_background_photo if exists, else basic_decoration_photo -->
+
+    <!-- Background Photo - Always visible behind decoration -->
+    <div
+      v-if="templateAssets?.basic_decoration_photo && templateAssets?.basic_background_photo"
+      class="absolute inset-0"
+      style="z-index: -1"
+    >
+      <img
+        :src="getMediaUrl(templateAssets.basic_background_photo)"
+        alt="Background"
+        class="w-full h-full object-cover"
+      />
+    </div>
+
+    <!-- Decoration Photo - Swipes up to reveal background -->
+    <div
+      v-if="templateAssets?.basic_decoration_photo"
+      class="absolute inset-0 transition-all duration-700 ease-out"
+      :class="{ 'swipe-up-hidden': isContentHidden }"
+      style="z-index: 0"
+    >
+      <img
+        :src="getMediaUrl(templateAssets.basic_decoration_photo)"
+        alt="Decoration"
+        class="w-full h-full object-cover"
+      />
+    </div>
+
+    <!-- Standard Cover Video Loop - Only show when not in event/background phase and no decoration photo -->
     <video
-      v-if="templateAssets?.standard_cover_video && isCoverVideoPlaying"
+      v-if="
+        templateAssets?.standard_cover_video &&
+        isCoverVideoPlaying &&
+        !templateAssets?.basic_decoration_photo
+      "
       ref="coverVideoElement"
       :src="getMediaUrl(templateAssets.standard_cover_video)"
       autoplay
@@ -65,7 +108,8 @@
       v-if="
         templateAssets?.basic_background_photo &&
         isCoverVideoPlaying &&
-        !templateAssets?.standard_cover_video
+        !templateAssets?.standard_cover_video &&
+        !templateAssets?.basic_decoration_photo
       "
       class="absolute inset-0"
       style="z-index: -1"
@@ -80,23 +124,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 interface TemplateAssets {
   standard_cover_video?: string
   basic_background_photo?: string
+  basic_decoration_photo?: string
 }
+
+interface TemplateColor {
+  id?: number
+  hex_color_code?: string
+  hex_code?: string
+  name?: string
+}
+
+type VideoPhase = 'none' | 'event' | 'background'
 
 interface Props {
   templateAssets?: TemplateAssets | null
+  templateColors?: TemplateColor[] | null
   eventTitle: string
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
   isCoverVideoPlaying: boolean
+  currentVideoPhase?: VideoPhase
+  isContentHidden?: boolean
   getMediaUrl: (url: string) => string
 }
 
 const props = defineProps<Props>()
+
+// Compute the background color for decoration photo
+const decorationBackgroundColor = computed(() => {
+  // Find the template color with name "background"
+  const backgroundColor = props.templateColors?.find(
+    (color) => color.name?.toLowerCase() === 'background',
+  )
+  // Return the color code or fallback to white
+  return backgroundColor?.hex_color_code || backgroundColor?.hex_code || '#ffffff'
+})
 
 const emit = defineEmits<{
   sequentialVideoEnded: []
@@ -138,6 +205,13 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Swipe Up Animation */
+.swipe-up-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Responsive video sizing */
 .desktop-video-sizing {
   position: absolute;
@@ -149,6 +223,20 @@ defineExpose({
 
 /* Mobile devices - stretch height, crop width, center video */
 @media (max-width: 768px) {
+  .desktop-video-sizing {
+    width: 100% !important;
+    height: 100vh !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Small laptops 13-inch (1024px-1365px) - Use mobile video sizing */
+@media (min-width: 1024px) and (max-width: 1365px) {
   .desktop-video-sizing {
     width: 100% !important;
     height: 100vh !important;

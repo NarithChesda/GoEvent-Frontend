@@ -97,6 +97,69 @@
                 </div>
               </div>
 
+              <!-- Partner Logo Section -->
+              <div v-if="authStore.user?.is_partner" class="pb-8 border-b border-slate-200">
+                <div class="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6">
+                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 flex-1">
+                    <div class="flex flex-col items-center lg:items-start gap-3">
+                      <label class="block text-sm font-semibold text-slate-700">Partner Logo</label>
+
+                      <!-- Current Logo -->
+                      <div class="relative w-20 h-20">
+                        <div
+                          v-if="logoUrl"
+                          class="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-200 border-2 border-slate-300"
+                        >
+                          <img
+                            :src="logoUrl"
+                            :key="logoUrl"
+                            alt="Logo"
+                            class="w-full h-full object-contain p-1"
+                            @error="handleLogoImageError"
+                            @load="handleLogoImageLoad"
+                          />
+                        </div>
+                        <div
+                          v-else
+                          class="relative w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium text-xs border-2 border-slate-300"
+                        >
+                          No Logo
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Upload Controls -->
+                  <div class="flex flex-col sm:flex-row items-center gap-3 lg:mt-7">
+                    <input
+                      ref="logoFileInput"
+                      type="file"
+                      accept="image/*"
+                      @change="handleLogoFileSelect"
+                      class="hidden"
+                    />
+
+                    <button
+                      v-if="authStore.user?.logo || logoPreview"
+                      type="button"
+                      @click="removeLogo"
+                      class="w-full sm:w-auto px-5 py-2.5 text-slate-700 hover:text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-all duration-200 border border-transparent hover:border-slate-200"
+                    >
+                      Remove logo
+                    </button>
+
+                    <button
+                      type="button"
+                      @click="triggerLogoUpload"
+                      :disabled="logoUploadLoading"
+                      class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed text-slate-700 font-semibold rounded-xl border border-slate-300 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      {{ logoUploadLoading ? 'Uploading...' : 'Change logo' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Name Field -->
               <div class="border-b border-slate-200 pb-8">
                 <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
@@ -363,7 +426,7 @@
               </div>
 
               <!-- Payment URL Field -->
-              <div class="border-b border-slate-200 pb-8">
+              <div v-if="authStore.user?.is_partner">
                 <div class="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
                   <div class="flex-1 w-full">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Payment URL</label>
@@ -402,38 +465,6 @@
                   >
                     Edit
                   </button>
-                </div>
-              </div>
-
-              <!-- Connected Social Accounts -->
-              <div>
-                <h3 class="text-lg font-bold text-slate-900 mb-1">Connected social accounts</h3>
-                <p class="text-sm text-slate-600 mb-6">Services that you use to log in to GoEvent</p>
-
-                <div class="space-y-3">
-                  <!-- Google Account -->
-                  <div class="flex items-center justify-between p-4 sm:p-5 border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200">
-                    <div class="flex items-center gap-3 min-w-0 flex-1">
-                      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-sm font-semibold text-slate-900">Google</div>
-                        <div class="text-xs sm:text-sm text-slate-600 truncate">{{ profileForm.email }}</div>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      class="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors duration-200 flex-shrink-0 ml-2"
-                    >
-                      Disconnect
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -483,6 +514,11 @@ const profilePicturePreview = ref<string>('')
 const fieldErrors = ref<Record<string, string[]>>({})
 const profilePictureTimestamp = ref(Date.now()) // Track when profile picture changes
 
+// Logo upload state
+const logoUploadLoading = ref(false)
+const logoFileInput = ref<HTMLInputElement>()
+const logoPreview = ref<string>('')
+const logoTimestamp = ref(Date.now()) // Track when logo changes
 
 // Computed properties
 const fullName = computed(() => {
@@ -503,6 +539,24 @@ const profilePictureUrl = computed(() => {
       // Add timestamp to bust browser cache when image changes
       const separator = baseUrl.includes('?') ? '&' : '?'
       return `${baseUrl}${separator}t=${profilePictureTimestamp.value}`
+    }
+  }
+
+  return null
+})
+
+// Logo URL with cache busting to force browser refresh
+const logoUrl = computed(() => {
+  if (logoPreview.value) {
+    return logoPreview.value
+  }
+
+  if (authStore.user?.logo) {
+    const baseUrl = apiService.getProfilePictureUrl(authStore.user.logo)
+    if (baseUrl) {
+      // Add timestamp to bust browser cache when image changes
+      const separator = baseUrl.includes('?') ? '&' : '?'
+      return `${baseUrl}${separator}t=${logoTimestamp.value}`
     }
   }
 
@@ -900,6 +954,103 @@ const handleImageError = (event: Event) => {
 // Image load handler - Silent success, no logging needed
 const handleImageLoad = () => {
   // Image loaded successfully
+}
+
+// Logo upload handlers
+const triggerLogoUpload = () => {
+  logoFileInput.value?.click()
+}
+
+const handleLogoFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) return
+
+  try {
+    logoUploadLoading.value = true
+    errorMessage.value = ''
+
+    // Create preview first for better UX
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      logoPreview.value = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+
+    // Upload file with enhanced security validation
+    const response = await uploadService.uploadLogo(file)
+
+    if (response.success && response.data) {
+      // The API can return the user object in different formats
+      let userData = null
+
+      if (response.data.user && response.data.user.id) {
+        userData = response.data.user
+      } else if (response.data.id && response.data.email) {
+        userData = response.data
+      }
+
+      if (userData) {
+        authStore.setUser(userData as any)
+      } else {
+        const logoUrl = response.data.logo || response.data.url
+        await authStore.updateProfile({ logo: logoUrl })
+      }
+
+      await nextTick()
+      logoTimestamp.value = Date.now()
+      logoPreview.value = ''
+
+      successMessage.value = 'Logo updated successfully!'
+
+      setTimeout(() => {
+        successMessage.value = ''
+      }, 3000)
+    } else {
+      errorMessage.value = response.message || 'Failed to upload logo'
+      logoPreview.value = ''
+    }
+  } catch (error) {
+    console.error('Logo upload error:', error)
+    errorMessage.value = 'Failed to upload logo'
+    logoPreview.value = ''
+  } finally {
+    logoUploadLoading.value = false
+    if (target) target.value = ''
+  }
+}
+
+const removeLogo = async () => {
+  try {
+    errorMessage.value = ''
+
+    await authStore.updateProfile({ logo: '' })
+
+    await nextTick()
+
+    logoTimestamp.value = Date.now()
+    logoPreview.value = ''
+
+    successMessage.value = 'Logo removed successfully!'
+
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 3000)
+  } catch (error) {
+    errorMessage.value = 'Failed to remove logo'
+  }
+}
+
+// Logo image error handler
+const handleLogoImageError = (event: Event) => {
+  console.error('Logo failed to load:', (event.target as HTMLImageElement)?.src)
+  errorMessage.value = 'Failed to load logo. Please try refreshing the page.'
+}
+
+// Logo image load handler
+const handleLogoImageLoad = () => {
+  // Logo loaded successfully
 }
 
 // Temporary function for testing partner features

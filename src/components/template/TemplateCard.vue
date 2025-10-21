@@ -8,8 +8,8 @@
         : 'border-white/40 hover:border-[#5eb3f6]',
     ]"
   >
-    <!-- Template Preview -->
-    <div class="relative h-32 sm:h-40 overflow-hidden">
+    <!-- Template Preview - Portrait Ratio (9:16 for 1080x1920) -->
+    <div class="relative w-full aspect-[9/16] overflow-hidden">
       <img
         :src="template.preview_image || '/api/placeholder/400/300'"
         :alt="template.name"
@@ -17,62 +17,50 @@
         loading="lazy"
       />
 
-      <!-- Price Badge -->
-      <div class="absolute top-2 right-2">
-        <span class="bg-white/90 text-slate-900 text-sm font-bold px-2 py-1 rounded">
-          ${{ template.package_plan.price }}
-        </span>
-      </div>
-
       <!-- Selection Indicator -->
-      <div v-if="isSelected" class="absolute top-2 left-2">
-        <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center">
+      <div v-if="isSelected" class="absolute top-2 left-2 z-10">
+        <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center shadow-lg">
           <Check class="w-4 h-4 text-white" />
         </div>
       </div>
 
-      <!-- Overlay -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-      <!-- Template Title Overlay -->
-      <div class="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 right-1 sm:right-2">
-        <h4 class="font-semibold text-white text-xs sm:text-sm truncate">
+      <!-- Template Info Overlay - Gray Transparent Background -->
+      <div class="absolute inset-x-0 bottom-0 bg-gray-900/25 backdrop-blur-sm p-2 sm:p-3 lg:p-4">
+        <!-- Template Title and Plan -->
+        <h4 class="font-semibold text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1 truncate">
           {{ template.name }}
         </h4>
-        <p class="text-xs text-white/80 truncate hidden sm:block">
-          {{ template.package_plan.name }}
-        </p>
-      </div>
-    </div>
+        <div class="mb-1 sm:mb-2">
+          <span
+            :class="[
+              'text-[10px] sm:text-xs lg:text-sm font-medium px-2 py-0.5 rounded-md inline-block',
+              packageColorClass,
+            ]"
+          >
+            {{ template.package_plan.name }}
+          </span>
+        </div>
 
-    <!-- Template Details -->
-    <div class="p-2 sm:p-3">
-      <div class="flex items-center justify-between mb-2">
-        <TemplateCategoryBadge
-          v-if="template.package_plan.category"
-          :category="template.package_plan.category"
-        />
-        <span class="text-sm sm:text-lg font-bold text-slate-900 ml-2">
-          ${{ template.package_plan.price }}
-        </span>
+        <!-- Category and Price -->
+        <div class="flex items-center justify-between gap-2">
+          <TemplateCategoryBadge
+            v-if="template.package_plan.category"
+            :category="template.package_plan.category"
+          />
+          <span class="text-xs sm:text-sm lg:text-base font-bold text-white bg-white/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+            ${{ template.package_plan.price }}
+          </span>
+        </div>
       </div>
-
-      <!-- Features Preview -->
-      <TemplateFeatures
-        v-if="template.package_plan.features?.length"
-        :features="template.package_plan.features"
-        :max-visible="2"
-        class="hidden sm:block"
-      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Check } from 'lucide-vue-next'
 import type { EventTemplate } from '../../services/api'
 import TemplateCategoryBadge from './TemplateCategoryBadge.vue'
-import TemplateFeatures from './TemplateFeatures.vue'
 
 interface Props {
   template: EventTemplate
@@ -88,4 +76,16 @@ const emit = defineEmits<{
 const handleSelect = (): void => {
   emit('select', props.template)
 }
+
+const packageColorClass = computed(() => {
+  const planName = props.template.package_plan.name.toLowerCase()
+
+  if (planName.includes('basic')) {
+    return 'bg-blue-500/90 text-white shadow-md'
+  } else if (planName.includes('standard')) {
+    return 'bg-purple-500/90 text-white shadow-md'
+  }
+
+  return 'text-white/90'
+})
 </script>

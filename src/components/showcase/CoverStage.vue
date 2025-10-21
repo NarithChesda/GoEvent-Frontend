@@ -1,13 +1,17 @@
 <template>
   <div class="absolute inset-0 z-10" :style="{ backgroundColor: primaryColor }">
+    <!-- VideoContainer - stays visible for background -->
     <VideoContainer
       ref="videoContainerRef"
       :templateAssets="templateAssets"
+      :templateColors="templateColors"
       :eventTitle="eventTitle"
       :eventVideoUrl="eventVideoUrl"
       :backgroundVideoUrl="backgroundVideoUrl"
       :isCoverVideoPlaying="videoState.isCoverVideoPlaying.value"
+      :currentVideoPhase="videoState.currentVideoPhase.value"
       :getMediaUrl="getMediaUrl"
+      :isContentHidden="videoState.isContentHidden.value"
       @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
       @sequentialVideoError="videoState.handleSequentialVideoError"
       @eventVideoPreloaded="videoState.handleEventVideoPreloaded"
@@ -35,6 +39,7 @@
       :currentLanguage="currentLanguage"
       :shouldShowButtonLoading="videoState.shouldShowButtonLoading.value"
       :getMediaUrl="getMediaUrl"
+      :contentTopPosition="contentTopPosition"
       @openEnvelope="handleOpenEnvelope"
     />
 
@@ -50,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import {
   useCoverStageVideo,
   type ShowcaseStage,
@@ -58,9 +63,12 @@ import {
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 
+export type DisplayMode = 'basic' | 'standard'
+
 interface TemplateAssets {
   standard_cover_video?: string
   basic_background_photo?: string
+  basic_decoration_photo?: string
   open_envelope_button?: string
 }
 
@@ -70,8 +78,16 @@ interface EventText {
   content: string
 }
 
+interface TemplateColor {
+  id?: number
+  hex_color_code?: string
+  hex_code?: string
+  name?: string
+}
+
 interface Props {
   templateAssets?: TemplateAssets | null
+  templateColors?: TemplateColor[] | null
   guestName: string
   eventTitle: string
   eventLogo?: string | null
@@ -90,6 +106,7 @@ interface Props {
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
   getMediaUrl: (url: string) => string
+  contentTopPosition?: number // Vertical position in vh units (0-100)
 }
 
 const props = defineProps<Props>()
@@ -110,6 +127,11 @@ const emit = defineEmits<{
 // Template refs for video elements
 const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
 
+// Compute display mode based on whether basic_decoration_photo exists
+const displayMode = computed<DisplayMode>(() => {
+  return props.templateAssets?.basic_decoration_photo ? 'basic' : 'standard'
+})
+
 // Use the video management composable
 const videoState = useCoverStageVideo(
   {
@@ -125,6 +147,7 @@ const videoState = useCoverStageVideo(
     shouldSkipToMainContent: props.shouldSkipToMainContent,
     videoStatePreserved: props.videoStatePreserved,
     templateAssets: props.templateAssets,
+    displayMode: displayMode.value,
   },
   (event, ...args) => {
     // Forward events from composable to parent
@@ -132,9 +155,16 @@ const videoState = useCoverStageVideo(
   },
 )
 
-// Handle envelope opening - emit to parent first, parent will handle music and then trigger video
+// Handle envelope opening - different behavior based on display mode
 const handleOpenEnvelope = () => {
+  // Always emit openEnvelope to ensure music starts playing
   emit('openEnvelope')
+
+  if (displayMode.value === 'basic') {
+    // In basic mode: skip videos, go directly to main content
+    videoState.skipToMainContent()
+  }
+  // In standard mode: video will be started by parent component
 }
 
 // Initialize video state immediately

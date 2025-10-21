@@ -111,6 +111,9 @@ export const rsvpTranslations: Record<
     floating_menu_comment: string
     floating_menu_logout: string
     floating_menu_select_language: string
+
+    // Envelope button
+    open_invitation: string
   }
 > = {
   en: {
@@ -121,7 +124,7 @@ export const rsvpTranslations: Record<
     // Buttons
     rsvp_yes_button: "Yes, I'll attend",
     rsvp_no_button: "Can't attend",
-    rsvp_sign_in_button: 'Sign In to RSVP',
+    rsvp_sign_in_button: 'Join',
 
     // Status indicators
     rsvp_attending: 'Attending',
@@ -162,7 +165,7 @@ export const rsvpTranslations: Record<
     rsvp_auto_save: 'Auto-saves in',
 
     // System messages
-    rsvp_confirmation: 'Confirmation:',
+    rsvp_confirmation: 'Confirmation Code:',
     rsvp_dismiss: 'Dismiss',
 
     // Success messages
@@ -220,17 +223,20 @@ export const rsvpTranslations: Record<
     floating_menu_comment: 'Comment',
     floating_menu_logout: 'Logout',
     floating_menu_select_language: 'Select Language',
+
+    // Envelope button
+    open_invitation: 'Open Invitation',
   },
 
   kh: {
     // Main headers
-    rsvp_header: 'តើអ្នកនឹងបានចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងទេ?',
+    rsvp_header: 'តើលោកអ្នកនឹងចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
 
     // Buttons
     rsvp_yes_button: 'ចូលរួម',
     rsvp_no_button: 'មិនចូលរួម',
-    rsvp_sign_in_button: 'ចូលគណនី',
+    rsvp_sign_in_button: 'ចូលរួម',
 
     // Status indicators
     rsvp_attending: 'ចូលរួម',
@@ -238,7 +244,7 @@ export const rsvpTranslations: Record<
 
     // Guest management
     rsvp_additional_guests: 'ភ្ញៀវបន្ថែម',
-    rsvp_total_attending: 'សរុបចូលរួម',
+    rsvp_total_attending: 'ចំនួនភ្ញៀវចូលរួម',
     rsvp_person: 'នាក់',
     rsvp_people: 'នាក់',
 
@@ -271,7 +277,7 @@ export const rsvpTranslations: Record<
     rsvp_auto_save: 'រក្សាទុកស្វ័យប្រវត្តិក្នុងរយៈពេល',
 
     // System messages
-    rsvp_confirmation: 'លេខបញ្ជាក់៖',
+    rsvp_confirmation: 'លេខកូត:',
     rsvp_dismiss: 'បោះបង់',
 
     // Success messages
@@ -281,7 +287,7 @@ export const rsvpTranslations: Record<
     rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។',
 
     // Agenda section
-    agenda_header: 'កាលវិភាគព្រឹត្តិការណ៍',
+    agenda_header: 'កម្មវិធីសិរីមង្គល',
     agenda_activity: 'សកម្មភាព',
     agenda_activities: 'សកម្មភាព',
 
@@ -296,19 +302,19 @@ export const rsvpTranslations: Record<
 
     // Comment section
     comment_header: 'សារជូនពរ',
-    comment_placeholder: 'ចាំរូបការគិត, ប្រារ្ថនា, ឬ សំឌើងអារម្មណ៍របស់អ្នក...',
+    comment_placeholder: 'សរសេរសារជូនពររបស់អ្នកនៅទីនេះ',
     comment_signin_prompt: 'សូមចូលគណនី ដើម្បីជូនពរ',
     comment_signin_button: 'ចូលគណនី',
-    comment_post_button: 'ជូនពរ',
+    comment_post_button: 'បញ្ចូន',
     comment_posting_button: 'កំពុងប៉ុព្វ...',
-    comment_no_comments: 'ក្លាយជាអ្នកដំបូងក្នុងការដាក់មតិយោបល់!',
+    comment_no_comments: 'សារជូនពរដ៏មានអត្ថន័យ',
     comment_loading: 'កំពុងនីមតិយោបល់...',
     comment_already_commented: 'អ្នកបានជូនពររួចហើយ',
     comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់ព្រឹត្តិការណ៍មួយ',
     comment_you_badge: 'You',
 
     // Payment section
-    payment_wedding_gift: 'ចងដៃ',
+    payment_wedding_gift: 'ចំណងដៃ',
     payment_birthday_gift: 'អំណោយ',
 
     // Footer section
@@ -321,14 +327,17 @@ export const rsvpTranslations: Record<
     floating_menu_music_off: 'បិទតន្ត្រី',
     floating_menu_rsvp: 'RSVP',
     floating_menu_reminder: 'រំលឹក',
-    floating_menu_agenda: 'កាលវិភាគ',
+    floating_menu_agenda: 'កម្មវិធី',
     floating_menu_location: 'ទីតាំង',
     floating_menu_video: 'វីដេអូ',
     floating_menu_gallery: 'រូបថត',
-    floating_menu_gift: 'អំណោយ',
+    floating_menu_gift: 'ចំណងដៃ',
     floating_menu_comment: 'ជូនពរ',
     floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
+
+    // Envelope button
+    open_invitation: 'បើកសំបុត្រ',
   },
 
   'zh-cn': {
@@ -438,6 +447,9 @@ export const rsvpTranslations: Record<
     floating_menu_comment: '评论',
     floating_menu_logout: '退出',
     floating_menu_select_language: '选择语言',
+
+    // Envelope button
+    open_invitation: '打开邀请函',
   },
 }
 
@@ -489,7 +501,7 @@ export function formatDateLocalized(
       const khmerDays = ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']
 
       if (format === 'long') {
-        return `${khmerDays[dateObj.getDay()]} ទី${dateObj.getDate()} ខែ${khmerMonths[dateObj.getMonth()]} ឆ្នាំ${dateObj.getFullYear()}`
+        return `${khmerDays[dateObj.getDay()]} ទី ${dateObj.getDate()} ខែ${khmerMonths[dateObj.getMonth()]} ឆ្នាំ ${dateObj.getFullYear()}`
       } else {
         return `${dateObj.getDate()} ${khmerMonths[dateObj.getMonth()]}`
       }

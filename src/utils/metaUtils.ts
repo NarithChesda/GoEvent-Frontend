@@ -160,15 +160,15 @@ export const getBestEventImage = (event: Record<string, unknown>): string | unde
 
 // Helper function to create a good description
 export const createEventDescription = (event: Record<string, unknown>): string => {
+  const shortDescription = event.short_description as string | undefined
+  if (shortDescription && shortDescription.trim()) {
+    return shortDescription
+  }
+
   const description = event.description as string | undefined
   if (description && description.trim()) {
     // Truncate long descriptions for meta tags (160 chars max for SEO)
     return description.length > 160 ? description.substring(0, 157) + '...' : description
-  }
-
-  const shortDescription = event.short_description as string | undefined
-  if (shortDescription && shortDescription.trim()) {
-    return shortDescription
   }
 
   // Fallback description

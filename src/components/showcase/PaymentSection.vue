@@ -1,19 +1,21 @@
 <template>
   <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Payment Section Header - First Payment Method Name + Type -->
-    <h2
-      v-if="paymentMethods.length > 0"
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
-      :style="{
-        fontFamily: primaryFont || currentFont,
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-      }"
-    >
-      {{ paymentSectionTitle }}
-    </h2>
+    <div class="text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+      <h2
+        v-if="paymentMethods.length > 0"
+        :class="[
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
+        :style="{
+          fontFamily: primaryFont || currentFont,
+          color: primaryColor,
+        }"
+      >
+        {{ paymentSectionTitle }}
+      </h2>
+    </div>
 
     <!-- Payment Methods -->
     <div class="space-y-3">
@@ -112,7 +114,7 @@
                 class="payment-row-container flex flex-col lg:flex-row items-start lg:items-center justify-center gap-4 lg:gap-6"
               >
                 <!-- QR Code Section -->
-                <div class="flex-shrink-0 text-center w-full lg:w-auto">
+                <div class="flex-shrink-0 text-center w-full lg:w-auto xl:ml-8">
                   <!-- QR Code exists -->
                   <div v-if="method.qr_code_image" class="relative">
                     <!-- Seamless QR container with depth -->
@@ -138,7 +140,7 @@
                       ></div>
                     </div>
                     <p
-                      class="text-xs mt-1 font-medium tracking-wide"
+                      class="text-xs mt-1 font-medium tracking-wide text-center"
                       :style="{ color: primaryColor, opacity: '0.8' }"
                     >
                       Scan to pay
@@ -182,7 +184,7 @@
                       </div>
                     </div>
                     <p
-                      class="text-xs mt-1 font-medium tracking-wide"
+                      class="text-xs mt-1 font-medium tracking-wide text-center"
                       :style="{ color: primaryColor, opacity: '0.6' }"
                     >
                       QR coming soon
@@ -284,7 +286,7 @@
                         class="payment-link-minimalist group inline-flex items-center justify-center w-full lg:w-auto"
                         :style="{
                           fontFamily: primaryFont || currentFont,
-                          background: `linear-gradient(135deg, ${primaryColor}60, ${primaryColor}40)`,
+                          background: primaryColor,
                           color: '#ffffff',
                           boxShadow: `
                         0 8px 32px -4px ${primaryColor}50,
@@ -860,8 +862,322 @@ const capitalizeText = (text: string | undefined): string => {
   transform-origin: top;
 }
 
-/* Desktop refinements */
-@media (min-width: 1024px) {
+/* Small laptops 13-inch (1024px-1365px) - Mobile view applied */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Remove any left margin on QR code section */
+  .xl\:ml-8 {
+    margin-left: 0 !important;
+  }
+
+  /* QR Code section - centered like mobile, full width */
+  .payment-row-container > div:first-child {
+    text-align: center !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  /* QR Code - compact sizing for laptop */
+  .qr-simple-container {
+    padding: 0.5rem !important;
+    border-radius: 0 !important;
+  }
+
+  .qr-simple-container img {
+    width: 8rem !important; /* 128px - mobile size */
+    height: 8rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    border-radius: 0 !important;
+  }
+
+  /* Prevent large laptop sizing */
+  .lg\:w-36,
+  .lg\:h-36 {
+    width: 8rem !important;
+    height: 8rem !important;
+  }
+
+  /* Override w-32 and h-32 classes */
+  .w-32 {
+    width: 8rem !important;
+  }
+
+  .h-32 {
+    height: 8rem !important;
+  }
+
+  /* Payment info - compact padding for laptop */
+  .payment-info-simple {
+    padding: 0.5rem !important;
+    border-radius: 1.5rem !important;
+  }
+
+  .payment-info-glass {
+    padding: 0.5rem !important;
+    border-radius: 1.5rem !important;
+  }
+
+  /* Bank info - center alignment like mobile */
+  .payment-info-simple .space-y-2 > div {
+    text-align: center !important;
+  }
+
+  /* Override lg:text-left to maintain center alignment */
+  .lg\:text-left {
+    text-align: center !important;
+  }
+
+  /* Bank info pills - compact sizing for laptop */
+  .bank-info-pill {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important; /* 14px */
+    min-height: 28px !important;
+    border-radius: 0.75rem !important;
+  }
+
+  .bank-info-pill svg.w-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  /* Payment button - mobile sizing */
+  .payment-link-minimalist {
+    padding: 0.5rem 0.875rem !important;
+    font-size: 0.825rem !important;
+    min-height: 34px !important;
+    width: 100% !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Override lg:w-auto for button */
+  .payment-link-minimalist.lg\:w-auto {
+    width: 100% !important;
+  }
+
+  .payment-link-liquid {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.925rem !important;
+    min-height: 48px !important;
+    border-radius: 1.5rem !important;
+  }
+
+  /* Payment row - compact layout for laptop */
+  .payment-row-container {
+    padding: 0.25rem !important;
+    gap: 0.75rem !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  /* Override lg:flex-row to keep column layout */
+  .payment-row-container.lg\:flex-row {
+    flex-direction: column !important;
+  }
+
+  /* Override lg:items-center to use stretch for consistency */
+  .payment-row-container.lg\:items-center {
+    align-items: stretch !important;
+  }
+
+  /* Force mobile full width layout */
+  .payment-row-container > div {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Override lg:w-auto */
+  .payment-row-container > .lg\:w-auto {
+    width: 100% !important;
+  }
+
+  /* Override lg:max-w-sm */
+  .lg\:max-w-sm {
+    max-width: 100% !important;
+  }
+
+  /* Text sizing - mobile view */
+  .text-lg {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .text-base {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .text-sm {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .text-xs {
+    font-size: 0.75rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Header text - mobile size reduced by 15% for collapse state */
+  h3.text-sm,
+  h3.sm\:text-base {
+    font-size: 0.875rem !important;
+  }
+
+  /* Collapse state text - reduced by 15% */
+  .payment-card-header h3.text-sm,
+  .payment-card-header h3.sm\:text-base {
+    font-size: 0.74375rem !important; /* 0.875rem * 0.85 */
+  }
+
+  .payment-card-header .text-xs {
+    font-size: 0.6375rem !important; /* 0.75rem * 0.85 */
+  }
+
+  /* Currency and description text - mobile size */
+  .text-xs {
+    font-size: 0.75rem !important;
+  }
+
+  /* Icons - mobile sizing */
+  svg.w-5 {
+    width: 1.25rem !important; /* 20px */
+    height: 1.25rem !important;
+  }
+
+  svg.w-4 {
+    width: 1rem !important; /* 16px */
+    height: 1rem !important;
+  }
+
+  svg.w-12,
+  svg.lg\:w-16 {
+    width: 3rem !important; /* 48px */
+    height: 3rem !important;
+  }
+
+  /* Expandable content padding - compact for laptop */
+  .payment-card-content > div {
+    padding: 0.75rem !important;
+  }
+
+  /* Override sm:p-6 to use compact padding */
+  .p-4.sm\:p-6 {
+    padding: 0.75rem !important;
+  }
+
+  /* Card header padding - reduced for compact collapse state */
+  .payment-card-header .flex {
+    padding: 0.5rem !important;
+  }
+
+  /* Override p-4 class in header */
+  .payment-card-header .p-4 {
+    padding: 0.5rem !important;
+  }
+
+  /* Icon background in header - compact sizing and alignment */
+  .payment-card-header .p-2 {
+    padding: 0.25rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .payment-card-header .rounded-xl {
+    border-radius: 0.5rem !important;
+  }
+
+  /* Reduce icon sizes in header for compact collapse state */
+  .payment-card-header svg.w-5 {
+    width: 1rem !important; /* Reduced from 1.25rem */
+    height: 1rem !important;
+  }
+
+  /* Force proper vertical alignment in header */
+  .payment-card-header .flex.items-center {
+    align-items: center !important;
+    display: flex !important;
+  }
+
+  /* Main header container - ensure proper centering */
+  .payment-card-header > div {
+    align-items: center !important;
+    display: flex !important;
+  }
+
+  /* Space utilities - mobile view */
+  .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+
+  /* Tighter spacing in header - compact for laptop */
+  .payment-card-header .space-x-3 > * + * {
+    margin-left: 0.375rem !important;
+  }
+
+  .payment-card-header .space-x-2 > * + * {
+    margin-left: 0.25rem !important;
+  }
+
+  /* Method name and details container - proper alignment */
+  .payment-card-header .flex.items-center.space-x-3 {
+    align-items: center !important;
+    display: flex !important;
+  }
+
+  /* Method info container (icon + text) - ensure vertical centering */
+  .payment-card-header .flex.items-center.space-x-3 > div {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Method name and details spacing - reset margins */
+  .payment-card-header h3 {
+    margin: 0 !important;
+    line-height: 1.3 !important;
+    padding: 0 !important;
+  }
+
+  .payment-card-header .mt-1 {
+    margin-top: 0.25rem !important;
+  }
+
+  /* Currency text alignment */
+  .payment-card-header .text-xs {
+    line-height: 1.3 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Arrow icon container - proper centering */
+  .payment-card-header > .flex > div:last-child {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Text content container inside method info */
+  .payment-card-header .flex.items-center.space-x-3 > div:last-child {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+  }
+
+  /* Header text - scaled to 67.5% matching AgendaSection */
+  h2 {
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching AgendaSection */
+@media (min-width: 1366px) and (max-width: 1535px) {
   .payment-method-section {
     /* No padding - matches comment section */
   }
@@ -887,5 +1203,56 @@ const capitalizeText = (text: string | undefined): string => {
   .glass-content-section {
     padding: 0.75rem;
   }
+
+  /* Header text - scaled to 75% matching AgendaSection */
+  h2 {
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  }
+}
+
+/* Large laptops and desktops (1536px+) - Desktop styles */
+@media (min-width: 1536px) {
+  .payment-method-section {
+    /* No padding - matches comment section */
+  }
+
+  .payment-row-container {
+    padding: 0.75rem;
+    gap: 2rem;
+  }
+
+  .payment-info-simple {
+    padding: 1.25rem;
+  }
+
+  .payment-info-glass {
+    padding: 1.25rem;
+  }
+
+  .payment-link-minimalist {
+    padding: 0.75rem 1.25rem;
+    min-height: 40px;
+  }
+
+  .glass-content-section {
+    padding: 0.75rem;
+  }
+
+  /* Header text - desktop size */
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl */
+  }
+}
+
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
 }
 </style>

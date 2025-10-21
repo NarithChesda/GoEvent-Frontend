@@ -1,25 +1,27 @@
 <template>
   <div id="comment-section" class="mb-8">
-    <h2
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
-      :style="{
-        fontFamily: primaryFont || currentFont,
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-      }"
-    >
-      {{ commentHeaderText }}
-    </h2>
+    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+      <h2
+        :class="[
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
+        :style="{
+          fontFamily: primaryFont || currentFont,
+          color: primaryColor,
+        }"
+      >
+        {{ commentHeaderText }}
+      </h2>
+    </div>
 
     <!-- Comment Form -->
     <div
       ref="commentFormRef"
-      class="comment-form-liquid mb-4 animate-form-reveal"
+      class="comment-form-liquid mb-3 animate-form-reveal"
       :style="{
         backgroundColor: `${primaryColor}20`,
-        border: `1px solid ${primaryColor}50`,
+        border: `1px solid ${primaryColor}40`,
       }"
     >
       <!-- Sign In Prompt for Unauthenticated Users -->
@@ -34,7 +36,7 @@
           @click="handleSignInClick"
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02]"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
+            background: primaryColor,
             color: '#ffffff',
             border: `1px solid ${primaryColor}60`,
           }"
@@ -100,7 +102,7 @@
           "
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           :style="{
-            background: `linear-gradient(135deg, ${primaryColor}CC, ${primaryColor}AA)`,
+            background: primaryColor,
             color: '#ffffff',
             border: `1px solid ${primaryColor}60`,
           }"
@@ -116,7 +118,7 @@
     <div class="relative">
       <div
         ref="commentsContainer"
-        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar px-1"
+        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar"
         @scroll="handleScroll"
       >
         <!-- Loading State -->
@@ -225,7 +227,7 @@
                     </p>
                     <span
                       v-if="isUserCommentOwner(comment)"
-                      class="text-xs px-2 py-0.5 rounded-full text-white font-medium"
+                      class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium"
                       :style="{
                         backgroundColor: primaryColor + '80',
                         fontFamily: secondaryFont || currentFont,
@@ -347,7 +349,7 @@
                     "
                     class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}12, ${primaryColor}08)`,
+                      background: `${primaryColor}12`,
                       color: primaryColor,
                       boxShadow: `
                         0 4px 16px -2px ${primaryColor}20,
@@ -1223,14 +1225,16 @@ onUnmounted(() => {
 <style scoped>
 /* Liquid Glass Container - Comment Form */
 .comment-form-liquid {
-  border-radius: 2rem;
-  padding: 1.5rem;
+  border-radius: 1.5rem;
+  padding: 1rem;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  margin-bottom: 0.75rem;
   box-sizing: border-box;
 }
 
@@ -1515,5 +1519,164 @@ textarea::-webkit-scrollbar-thumb:hover {
 .liquid-glass-button,
 .liquid-glass-textarea {
   backface-visibility: hidden;
+}
+
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* Laptop responsive styles - Match mobile sizing and spacing for all laptops */
+
+/* Small laptops 13-inch (1024px-1365px) - Scaled to 67.5% matching mobile exactly */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
+  h2 {
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching AgendaSection */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching mobile exactly */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
+  h2 {
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching AgendaSection */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  }
+}
+
+/* Desktop (1536px+) - Clean desktop styles */
+@media (min-width: 1536px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl matching AgendaSection */
+  }
+}
+
+/* All laptop sizes - Common responsive styles */
+@media (min-width: 1024px) {
+
+  /* Remove the custom laptop sizing to match mobile */
+  .comment-form-liquid {
+    border-radius: 1.5rem !important;
+    padding: 1rem !important;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  /* Text sizing - match mobile */
+  .text-sm {
+    font-size: 0.875rem !important; /* 14px - standard mobile text-sm */
+  }
+
+  .text-xs {
+    font-size: 0.75rem !important; /* 12px - standard mobile text-xs */
+  }
+
+  /* Button sizing - match mobile */
+  .liquid-glass-button {
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Textarea sizing - match mobile */
+  .liquid-glass-textarea {
+    border-radius: 1rem !important;
+    padding: 0.5rem 0.75rem !important; /* py-2 px-3 - match template exactly */
+    font-size: 0.875rem !important; /* text-sm */
+  }
+
+  /* Comment cards - match mobile */
+  .comment-card-liquid {
+    border-radius: 1.5rem !important;
+    padding: 1rem !important;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+  }
+
+  /* Action buttons - match mobile */
+  .liquid-glass-action-button {
+    padding: 0.375rem !important; /* p-1.5 */
+    border-radius: 0.75rem !important;
+  }
+
+  .liquid-glass-edit-button {
+    padding: 0.375rem 0.75rem !important; /* px-3 py-1.5 */
+    font-size: 0.75rem !important; /* text-xs */
+    border-radius: 0.75rem !important;
+  }
+
+  /* Avatar sizing - match mobile */
+  .w-8.h-8 {
+    width: 2rem !important; /* 32px - w-8 */
+    height: 2rem !important; /* 32px - h-8 */
+  }
+
+  /* State containers - match mobile */
+  .liquid-glass-state {
+    border-radius: 1.5rem !important;
+    padding: 2rem !important; /* py-8 */
+  }
+
+  .liquid-glass-error {
+    border-radius: 1rem !important;
+    padding: 0.75rem !important; /* p-3 */
+  }
+
+  /* Icons sizing - preserve original mobile sizes */
+  svg.w-6 {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+
+  svg.w-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  svg.w-3\.5 {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+  }
+
+  svg.w-3 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
+  /* Comments container - match mobile */
+  .h-\[26rem\] {
+    height: 26rem !important; /* Keep same height as mobile */
+  }
+
+  /* Overall comment section spacing - match mobile */
+  #comment-section.mb-8 {
+    margin-bottom: 2rem !important; /* mb-8 */
+  }
+
+  /* Character counter and validation messages */
+  .text-right.mt-1 {
+    margin-top: 0.25rem !important;
+  }
+
+  /* Loading spinner sizing */
+  .w-4.h-4 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  .w-12.h-12 {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
 }
 </style>

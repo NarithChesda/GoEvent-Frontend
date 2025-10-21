@@ -908,7 +908,7 @@ export const eventsService = {
   // RSVP for an event (create or update registration)
   async rsvpForEvent(
     eventId: string,
-    data: { guest_count?: number; notes?: string },
+    data: { guest_count?: number; notes?: string; status?: string },
   ): Promise<ApiResponse<EventRegistration>> {
     return apiService.post<EventRegistration>(`/api/events/${eventId}/rsvp/`, data)
   },

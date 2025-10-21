@@ -178,36 +178,43 @@
             </div>
           </div>
 
-          <!-- Social Login Button -->
-          <button
-            type="button"
-            @click="handleGoogleLogin"
-            :disabled="isGoogleLoading"
-            class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <Loader2 v-if="isGoogleLoading" class="animate-spin h-5 w-5 mr-2" />
-            <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900">{{
-              isGoogleLoading ? 'Signing in...' : 'Sign in with Google'
-            }}</span>
-          </button>
+          <!-- Social Login Buttons -->
+          <div class="space-y-3">
+            <!-- Google Login Button - Only show in normal browsers (not in messaging apps) -->
+            <button
+              v-if="shouldShowGoogleLogin"
+              type="button"
+              @click="handleGoogleLogin"
+              :disabled="isGoogleLoading"
+              class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              <Loader2 v-if="isGoogleLoading" class="animate-spin h-5 w-5 mr-2" />
+              <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900">{{
+                isGoogleLoading ? 'Signing in...' : 'Sign in with Google'
+              }}</span>
+            </button>
+
+            <!-- Telegram Login Widget -->
+            <div id="telegram-login-widget" class="flex justify-center"></div>
+          </div>
         </form>
 
         <!-- Footer Link -->
@@ -228,13 +235,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
 import { inputValidator, validationRules } from '../utils/inputValidation'
+import { isNormalBrowser, getBrowserType } from '../utils/browserDetection'
 
 const router = useRouter()
 const route = useRoute()
@@ -251,6 +259,9 @@ const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
 const isGoogleLoading = ref(false)
 const isSubmitting = ref(false)
+
+// Browser detection - only show Google login in normal browsers
+const shouldShowGoogleLogin = computed(() => isNormalBrowser())
 
 // Real-time validation
 const emailValidation = computed(() => {
@@ -363,4 +374,55 @@ const handleGoogleLogin = async () => {
     isGoogleLoading.value = false
   }
 }
+
+const handleTelegramAuth = async (user: any) => {
+  errorMessage.value = ''
+
+  try {
+    const result = await authStore.telegramLogin(user)
+
+    if (result.success) {
+      handleRedirectAfterLogin()
+    } else {
+      errorMessage.value = result.error || 'Telegram login failed'
+    }
+  } catch (error: any) {
+    console.error('Telegram login error:', error)
+    errorMessage.value = 'Telegram sign-in failed. Please try again.'
+  }
+}
+
+const loadTelegramWidget = () => {
+  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'goevent_authentication_bot'
+
+  const container = document.getElementById('telegram-login-widget')
+  if (!container) return
+
+  container.innerHTML = ''
+
+  // Define global callback
+  ;(window as any).onTelegramAuth = handleTelegramAuth
+
+  // Create Telegram widget script
+  const script = document.createElement('script')
+  script.src = 'https://telegram.org/js/telegram-widget.js?22'
+  script.async = true
+  script.setAttribute('data-telegram-login', botUsername)
+  script.setAttribute('data-size', 'large')
+  script.setAttribute('data-onauth', 'onTelegramAuth(user)')
+  script.setAttribute('data-request-access', 'write')
+
+  container.appendChild(script)
+}
+
+onMounted(() => {
+  nextTick(() => {
+    loadTelegramWidget()
+  })
+})
+
+onUnmounted(() => {
+  // Clean up global callback
+  delete (window as any).onTelegramAuth
+})
 </script>

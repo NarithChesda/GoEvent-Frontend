@@ -25,21 +25,21 @@
     <img
       v-if="hasCustomButton && templateAssets?.open_envelope_button"
       :src="getMediaUrl(templateAssets.open_envelope_button)"
-      alt="Open Invitation"
+      :alt="buttonText"
       class="scaled-envelope-button transition-all duration-300"
     />
 
     <!-- Fallback button design -->
     <div
       v-else
-      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105"
+      class="scaled-button-fallback rounded-full transition-all flex items-center justify-center hover:scale-105 button-pulse"
       :style="fallbackButtonStyle"
     >
       <span
-        class="scaled-button-text font-bold text-white text-center"
-        :style="{ fontFamily: primaryFont || currentFont }"
+        class="scaled-button-text font-medium text-white text-center"
+        :style="{ fontFamily: secondaryFont || currentFont }"
       >
-        Open Invitation
+        {{ buttonText }}
       </span>
     </div>
   </button>
@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -57,11 +58,14 @@ interface Props {
   hasCustomButton: boolean
   templateAssets?: TemplateAssets | null
   primaryColor: string
+  secondaryColor?: string | null
+  accentColor: string
   secondaryFont?: string
   currentFont: string
   primaryFont?: string
   gradientStyle: string
   getMediaUrl: (url: string) => string
+  currentLanguage?: string
 }
 
 const props = defineProps<Props>()
@@ -71,9 +75,20 @@ defineEmits<{
 }>()
 
 const fallbackButtonStyle = computed(() => ({
-  background: props.gradientStyle,
+  background: props.primaryColor,
   backdropFilter: 'blur(10px)',
 }))
+
+const fallbackButtonStyleAnimated = computed(() => ({
+  background: `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`,
+  backdropFilter: 'blur(10px)',
+  backgroundSize: '200% 200%',
+}))
+
+const buttonText = computed(() => {
+  const lang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('open_invitation', lang)
+})
 </script>
 
 <style scoped>
@@ -173,20 +188,56 @@ const fallbackButtonStyle = computed(() => ({
   }
 }
 
+/* Gradient animation for button background */
+.button-bg-gradient {
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .scaled-button-fallback {
   /* Scale fallback button to match envelope button proportions */
-  height: clamp(40px, 8vh, 120px);
-  min-height: 40px;
+  height: clamp(30px, 5vh, 120px);
+  min-height: 30px;
   max-height: 120px;
-  padding: 0 clamp(1rem, 4vh, 2.5rem);
-  border-radius: clamp(20px, 4vh, 60px);
+  padding: 0 clamp(1.5rem, 3.5vh, 3.5rem);
+  border-radius: clamp(15px, 2.5vh, 60px);
 }
 
 .scaled-button-text {
-  font-size: clamp(0.75rem, 2.5vh, 1.2rem);
-  line-height: 1.1;
+  font-size: clamp(0.5rem, 1.6vh, 1.2rem);
+  line-height: 1.4;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.button-pulse {
+  animation: buttonPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.button-pulse:hover {
+  animation: none;
 }
 
 /* Responsive envelope button scaling based on viewport height only */
@@ -214,19 +265,38 @@ const fallbackButtonStyle = computed(() => ({
   }
 }
 
-/* Large Desktops (1025px+) */
+/* Large Desktops (1025px+) - 35% size reduction */
 @media (min-width: 1025px) {
   .scaled-envelope-button {
-    max-width: min(35vh, 300px);
-    min-height: clamp(50px, 9vh, 120px);
+    max-width: min(19.5vh, 156px);
+    min-height: clamp(29px, 5.2vh, 65px);
+  }
+
+  .scaled-button-fallback {
+    height: clamp(26px, 4.55vh, 65px);
+    max-height: 65px;
+    padding: 0 clamp(0.65rem, 2.275vh, 1.3rem);
+  }
+
+  .scaled-button-text {
+    font-size: clamp(0.49rem, 1.43vh, 0.715rem);
   }
 }
 
-/* Very Large Screens (1440px+) */
+/* Very Large Screens (1440px+) - 35% size reduction */
 @media (min-width: 1440px) {
   .scaled-envelope-button {
-    max-width: min(40vh, 350px);
-    min-height: clamp(55px, 10vh, 140px);
+    max-width: min(20.8vh, 169px);
+    min-height: clamp(32.5px, 5.525vh, 71.5px);
+  }
+
+  .scaled-button-fallback {
+    height: clamp(29.25px, 4.875vh, 71.5px);
+    max-height: 71.5px;
+  }
+
+  .scaled-button-text {
+    font-size: clamp(0.4875rem, 1.495vh, 0.7475rem);
   }
 }
 

@@ -81,11 +81,11 @@
         <div class="mt-4 sm:mt-6 text-center">
           <button
             @click="showPaymentModal = true"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-base sm:text-lg"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
           >
-            <CreditCard class="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+            <CreditCard class="w-5 h-5 mr-2" />
             <span class="hidden sm:inline">{{ currentPayment ? 'Make New Payment' : 'Make Payment' }}</span>
-            <span class="sm:hidden">{{ currentPayment ? 'New Payment' : 'Make Payment' }}</span>
+            <span class="sm:hidden">{{ currentPayment ? 'New Payment' : 'Payment' }}</span>
           </button>
         </div>
       </div>
@@ -233,8 +233,8 @@
               class="text-[#1e90ff] hover:text-[#1873cc] text-xs sm:text-sm font-medium inline-flex items-center"
             >
               <Pencil class="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
-              <span class="hidden sm:inline">Update Payment Details</span>
-              <span class="sm:hidden">Update Payment</span>
+              <span class="hidden sm:inline">{{ payment.payment_proof ? 'Update Payment Details' : 'Update Payment / Upload Receipt' }}</span>
+              <span class="sm:hidden">{{ payment.payment_proof ? 'Update' : 'Update / Upload' }}</span>
             </button>
           </div>
         </div>
@@ -523,19 +523,18 @@
                   <!-- File Upload -->
                   <div>
                     <label for="paymentProof" class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                      Payment Receipt <span class="text-red-500">*</span>
+                      Payment Receipt <span class="text-slate-400">(Optional)</span>
                     </label>
                     <div class="relative">
                       <input
                         id="paymentProof"
                         ref="fileInput"
                         type="file"
-                        required
                         accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                         @change="handleFileSelect"
                         class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-3 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-[#E6F4FF] file:text-[#1873cc] text-xs sm:text-base"
                       />
-                      <p class="text-[10px] sm:text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB)</p>
+                      <p class="text-[10px] sm:text-xs text-slate-500 mt-1">JPG, PNG, PDF (Max 10MB) - You can upload this later if needed</p>
                     </div>
                   </div>
 
@@ -901,7 +900,6 @@ const isFormValid = computed(() => {
   return Boolean(
     selectedMethod.value &&
       paymentForm.value.transaction_reference.trim() &&
-      paymentForm.value.payment_proof &&
       templatePackageDetails.value,
   )
 })
@@ -1126,7 +1124,7 @@ const submitPayment = async (): Promise<void> => {
   // Validate form data
   const templatePackage = templatePackageDetails.value
   if (!isFormValid.value || !templatePackage) {
-    error.value = 'Please fill in all required fields including payment proof.'
+    error.value = 'Please fill in all required fields.'
     showMessage('error', 'Please fill in all required fields')
     return
   }
@@ -1139,7 +1137,7 @@ const submitPayment = async (): Promise<void> => {
     return
   }
 
-  // Validate file
+  // Validate file if provided
   if (paymentForm.value.payment_proof) {
     const fileError = validateFile(paymentForm.value.payment_proof)
     if (fileError) {
@@ -1163,7 +1161,11 @@ const submitPayment = async (): Promise<void> => {
     formData.append('original_price', templatePackage.price)
     formData.append('transaction_reference', sanitizeInput(paymentForm.value.transaction_reference))
     formData.append('user_notes', sanitizeInput(paymentForm.value.user_notes))
-    formData.append('payment_proof', paymentForm.value.payment_proof!)
+
+    // Only append payment proof if file is provided
+    if (paymentForm.value.payment_proof) {
+      formData.append('payment_proof', paymentForm.value.payment_proof)
+    }
 
     // Include event_template if available
     if (props.event?.event_template) {
@@ -1191,10 +1193,11 @@ const submitPayment = async (): Promise<void> => {
     // Refresh payments with composable
     await refreshPayments()
 
-    showSuccess(
-      'Payment Submitted',
-      'Your payment has been submitted successfully and is pending review.',
-    )
+    const successMessage = paymentForm.value.payment_proof
+      ? 'Your payment has been submitted successfully and is pending review.'
+      : 'Your payment has been submitted successfully. Please upload your payment receipt later for verification.'
+
+    showSuccess('Payment Submitted', successMessage)
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : 'Error submitting payment. Please try again.'

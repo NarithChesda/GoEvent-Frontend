@@ -156,7 +156,16 @@
       "Bash(while IFS= read -r file)",
       "Bash(do git rm --cached \"$file\")",
       "Bash(done)",
-      "Bash(xargs -0 git rm --cached)"
+      "Bash(xargs -0 git rm --cached)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git stash push:*)",
+      "Bash(echo $VITE_TELEGRAM_BOT_USERNAME)",
+      "Bash(git stash:*)",
+      "Bash(timeout 120 npm run build)",
+      "Bash(netstat:*)",
+      "Bash(cmd //c:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "additionalDirectories": [

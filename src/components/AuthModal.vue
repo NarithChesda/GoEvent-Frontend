@@ -25,366 +25,23 @@
           alt="GoEvent Logo"
           class="h-24 w-auto mx-auto mb-4"
         />
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
-        <p class="text-gray-600">Sign in to leave a comment</p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome</h2>
+        <p class="text-gray-600">Sign in to continue</p>
       </div>
-
-      <!-- Auth Tabs -->
-      <div class="flex mb-6 bg-gray-100/50 rounded-xl p-1">
-        <button
-          @click="activeTab = 'signin'"
-          :class="[
-            'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200',
-            activeTab === 'signin'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900',
-          ]"
-        >
-          Sign In
-        </button>
-        <button
-          @click="activeTab = 'signup'"
-          :class="[
-            'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200',
-            activeTab === 'signup'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900',
-          ]"
-        >
-          Sign Up
-        </button>
-      </div>
-
-      <!-- Sign In Form -->
-      <form v-if="activeTab === 'signin'" @submit.prevent="handleSignIn" class="space-y-4">
-        <!-- Email Field -->
-        <div>
-          <label for="signin-email" class="block text-sm font-medium text-gray-700 mb-2">
-            Email address
-          </label>
-          <input
-            id="signin-email"
-            type="email"
-            required
-            v-model="signInForm.email"
-            :class="[
-              'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              (!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email
-                ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-[#1e90ff]',
-            ]"
-            placeholder="Enter your email"
-          />
-          <div
-            v-if="(!emailValidation.isValid && signInForm.email.length > 0) || fieldErrors.email"
-            class="mt-1"
-          >
-            <p
-              v-for="error in fieldErrors.email || emailValidation.errors"
-              :key="error"
-              class="text-sm text-red-600"
-            >
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Password Field -->
-        <div>
-          <label for="signin-password" class="block text-sm font-medium text-gray-700 mb-2">
-            Password
-          </label>
-          <div class="relative">
-            <input
-              id="signin-password"
-              :type="showPassword ? 'text' : 'password'"
-              required
-              v-model="signInForm.password"
-              :class="[
-                'w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-                (!passwordValidation.isValid && signInForm.password.length > 0) ||
-                fieldErrors.password
-                  ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-[#1e90ff]',
-              ]"
-              placeholder="Enter your password"
-            />
-            <button
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
-            >
-              <Eye v-if="!showPassword" class="h-5 w-5" />
-              <EyeOff v-else class="h-5 w-5" />
-            </button>
-          </div>
-          <div
-            v-if="
-              (!passwordValidation.isValid && signInForm.password.length > 0) ||
-              fieldErrors.password
-            "
-            class="mt-1"
-          >
-            <p
-              v-for="error in fieldErrors.password || passwordValidation.errors"
-              :key="error"
-              class="text-sm text-red-600"
-            >
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Sign In Button -->
-        <button
-          type="submit"
-          :disabled="isSigningIn || !isSignInFormValid"
-          class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-        >
-          <div class="flex items-center justify-center">
-            <Loader2 v-if="isSigningIn" class="animate-spin -ml-1 mr-3 h-5 w-5" />
-            {{ isSigningIn ? 'Signing in...' : 'Sign In' }}
-          </div>
-        </button>
-      </form>
-
-      <!-- Sign Up Form -->
-      <form v-else @submit.prevent="handleSignUp" class="space-y-4">
-        <!-- First Name Field -->
-        <div>
-          <label for="signup-firstname" class="block text-sm font-medium text-gray-700 mb-2">
-            First Name
-          </label>
-          <input
-            id="signup-firstname"
-            type="text"
-            required
-            v-model="signUpForm.firstName"
-            :class="[
-              'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              fieldErrors.first_name
-                ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-[#1e90ff]',
-            ]"
-            placeholder="Enter your first name"
-          />
-          <div v-if="fieldErrors.first_name" class="mt-1">
-            <p v-for="error in fieldErrors.first_name" :key="error" class="text-sm text-red-600">
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Last Name Field -->
-        <div>
-          <label for="signup-lastname" class="block text-sm font-medium text-gray-700 mb-2">
-            Last Name
-          </label>
-          <input
-            id="signup-lastname"
-            type="text"
-            v-model="signUpForm.lastName"
-            :class="[
-              'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              fieldErrors.last_name
-                ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-[#1e90ff]',
-            ]"
-            placeholder="Enter your last name"
-          />
-          <div v-if="fieldErrors.last_name" class="mt-1">
-            <p v-for="error in fieldErrors.last_name" :key="error" class="text-sm text-red-600">
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Email Field -->
-        <div>
-          <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-2">
-            Email address
-          </label>
-          <input
-            id="signup-email"
-            type="email"
-            required
-            v-model="signUpForm.email"
-            :class="[
-              'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              (!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email
-                ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-[#1e90ff]',
-            ]"
-            placeholder="Enter your email"
-          />
-          <div
-            v-if="
-              (!signUpEmailValidation.isValid && signUpForm.email.length > 0) || fieldErrors.email
-            "
-            class="mt-1"
-          >
-            <p
-              v-for="error in fieldErrors.email || signUpEmailValidation.errors"
-              :key="error"
-              class="text-sm text-red-600"
-            >
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Username Field -->
-        <div>
-          <label for="signup-username" class="block text-sm font-medium text-gray-700 mb-2">
-            Username
-          </label>
-          <input
-            id="signup-username"
-            type="text"
-            required
-            v-model="signUpForm.username"
-            :class="[
-              'w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-              fieldErrors.username
-                ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 focus:ring-[#1e90ff]',
-            ]"
-            placeholder="Choose a username"
-          />
-          <div v-if="fieldErrors.username" class="mt-1">
-            <p v-for="error in fieldErrors.username" :key="error" class="text-sm text-red-600">
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Password Field -->
-        <div>
-          <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-2">
-            Password
-          </label>
-          <div class="relative">
-            <input
-              id="signup-password"
-              :type="showSignUpPassword ? 'text' : 'password'"
-              required
-              v-model="signUpForm.password"
-              :class="[
-                'w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-                (!signUpPasswordValidation.isValid && signUpForm.password.length > 0) ||
-                fieldErrors.password
-                  ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-[#1e90ff]',
-              ]"
-              placeholder="Create a password"
-            />
-            <button
-              type="button"
-              @click="showSignUpPassword = !showSignUpPassword"
-              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
-            >
-              <Eye v-if="!showSignUpPassword" class="h-5 w-5" />
-              <EyeOff v-else class="h-5 w-5" />
-            </button>
-          </div>
-          <div
-            v-if="
-              (!signUpPasswordValidation.isValid && signUpForm.password.length > 0) ||
-              fieldErrors.password
-            "
-            class="mt-1"
-          >
-            <p
-              v-for="error in fieldErrors.password || signUpPasswordValidation.errors"
-              :key="error"
-              class="text-sm text-red-600"
-            >
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Confirm Password Field -->
-        <div>
-          <label for="signup-confirm-password" class="block text-sm font-medium text-gray-700 mb-2">
-            Confirm Password
-          </label>
-          <div class="relative">
-            <input
-              id="signup-confirm-password"
-              :type="showConfirmPassword ? 'text' : 'password'"
-              required
-              v-model="signUpForm.confirmPassword"
-              :class="[
-                'w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white/50',
-                (!passwordsMatch && signUpForm.confirmPassword.length > 0) ||
-                fieldErrors.password_confirm
-                  ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-[#1e90ff]',
-              ]"
-              placeholder="Confirm your password"
-            />
-            <button
-              type="button"
-              @click="showConfirmPassword = !showConfirmPassword"
-              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
-            >
-              <Eye v-if="!showConfirmPassword" class="h-5 w-5" />
-              <EyeOff v-else class="h-5 w-5" />
-            </button>
-          </div>
-          <div
-            v-if="
-              (!passwordsMatch && signUpForm.confirmPassword.length > 0) ||
-              fieldErrors.password_confirm
-            "
-            class="mt-1"
-          >
-            <p
-              v-for="error in fieldErrors.password_confirm || ['Passwords do not match']"
-              :key="error"
-              class="text-sm text-red-600"
-            >
-              {{ error }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Sign Up Button -->
-        <button
-          type="submit"
-          :disabled="isSigningUp || !isSignUpFormValid"
-          class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-        >
-          <div class="flex items-center justify-center">
-            <Loader2 v-if="isSigningUp" class="animate-spin -ml-1 mr-3 h-5 w-5" />
-            {{ isSigningUp ? 'Creating account...' : 'Create Account' }}
-          </div>
-        </button>
-      </form>
 
       <!-- Error Message -->
-      <div v-if="errorMessage" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+      <div v-if="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
         <div class="flex items-center">
           <AlertCircle class="h-5 w-5 text-red-600 mr-2" />
           <span class="text-red-700 text-sm">{{ errorMessage }}</span>
         </div>
       </div>
 
-      <!-- Divider -->
-      <div class="relative my-6">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-200" />
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
-        </div>
-      </div>
-
       <!-- Social Login Buttons -->
       <div class="space-y-3">
-        <!-- Google Login Button -->
+        <!-- Google Login Button - Only show in normal browsers (not in messaging apps) -->
         <button
+          v-if="shouldShowGoogleLogin"
           type="button"
           @click="handleGoogleLogin"
           :disabled="isGoogleLoading"
@@ -414,24 +71,20 @@
           </span>
         </button>
 
-        <!-- Telegram Login Widget Container -->
-        <div
-          id="telegram-login-container"
-          ref="telegramContainer"
-          class="flex justify-center"
-        ></div>
+        <!-- Telegram Login Widget -->
+        <div id="telegram-login-widget" class="flex justify-center"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { X, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-vue-next'
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import { X, Loader2, AlertCircle } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
-import { inputValidator, validationRules } from '../utils/inputValidation'
+import { isNormalBrowser, getBrowserType } from '../utils/browserDetection'
 
 interface Props {
   isVisible: boolean
@@ -449,87 +102,15 @@ const authStore = useAuthStore()
 // Modal state
 const modalContent = ref<HTMLElement | null>(null)
 const modalAnimation = ref('scale-95 opacity-0')
-const telegramContainer = ref<HTMLElement | null>(null)
-
-// Form state
-const activeTab = ref<'signin' | 'signup'>('signin')
-const showPassword = ref(false)
-const showSignUpPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-// Sign In Form
-const signInForm = ref({
-  email: '',
-  password: '',
-})
-
-// Sign Up Form
-const signUpForm = ref({
-  firstName: '',
-  lastName: '',
-  email: '',
-  username: '',
-  password: '',
-  confirmPassword: '',
-})
 
 // Loading states
-const isSigningIn = ref(false)
-const isSigningUp = ref(false)
 const isGoogleLoading = ref(false)
-const isTelegramLoading = ref(false)
 
 // Error handling
 const errorMessage = ref('')
-const fieldErrors = ref<Record<string, string[]>>({})
 
-// Validation for Sign In
-const emailValidation = computed(() => {
-  if (!signInForm.value.email) return { isValid: true, errors: [] }
-  return inputValidator.validateEmail(signInForm.value.email)
-})
-
-const passwordValidation = computed(() => {
-  if (!signInForm.value.password) return { isValid: true, errors: [] }
-  return inputValidator.validatePassword(signInForm.value.password)
-})
-
-const isSignInFormValid = computed(() => {
-  return (
-    emailValidation.value.isValid &&
-    passwordValidation.value.isValid &&
-    signInForm.value.email.length > 0 &&
-    signInForm.value.password.length > 0
-  )
-})
-
-// Validation for Sign Up
-const signUpEmailValidation = computed(() => {
-  if (!signUpForm.value.email) return { isValid: true, errors: [] }
-  return inputValidator.validateEmail(signUpForm.value.email)
-})
-
-const signUpPasswordValidation = computed(() => {
-  if (!signUpForm.value.password) return { isValid: true, errors: [] }
-  return inputValidator.validatePassword(signUpForm.value.password)
-})
-
-const passwordsMatch = computed(() => {
-  return signUpForm.value.password === signUpForm.value.confirmPassword
-})
-
-const isSignUpFormValid = computed(() => {
-  return (
-    signUpEmailValidation.value.isValid &&
-    signUpPasswordValidation.value.isValid &&
-    passwordsMatch.value &&
-    signUpForm.value.firstName.length > 0 &&
-    signUpForm.value.email.length > 0 &&
-    signUpForm.value.username.length > 0 &&
-    signUpForm.value.password.length > 0 &&
-    signUpForm.value.confirmPassword.length > 0
-  )
-})
+// Browser detection - only show Google login in normal browsers
+const shouldShowGoogleLogin = computed(() => isNormalBrowser())
 
 // Modal control methods
 const closeModal = () => {
@@ -547,123 +128,10 @@ const handleBackdropClick = (event: MouseEvent) => {
 }
 
 const resetForms = () => {
-  signInForm.value = { email: '', password: '' }
-  signUpForm.value = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-  }
   errorMessage.value = ''
-  fieldErrors.value = {}
-  showPassword.value = false
-  showSignUpPassword.value = false
-  showConfirmPassword.value = false
-  activeTab.value = 'signin'
 }
 
 // Authentication methods
-const handleSignIn = async () => {
-  if (isSigningIn.value) return
-
-  // Clear previous errors
-  errorMessage.value = ''
-  fieldErrors.value = {}
-
-  // Comprehensive validation
-  const validation = inputValidator.validateForm(signInForm.value, {
-    email: validationRules.email,
-    password: validationRules.password,
-  })
-
-  if (!validation.isValid) {
-    fieldErrors.value = validation.errors
-    errorMessage.value = 'Please fix the errors below'
-    return
-  }
-
-  isSigningIn.value = true
-
-  try {
-    const result = await authStore.login({
-      email: validation.sanitizedData.email,
-      password: validation.sanitizedData.password,
-    })
-
-    if (result.success) {
-      emit('authenticated')
-      closeModal()
-    } else {
-      errorMessage.value = result.error || 'Login failed'
-    }
-  } catch (error) {
-    console.error('Sign in error:', error)
-    errorMessage.value = 'An unexpected error occurred'
-  } finally {
-    isSigningIn.value = false
-  }
-}
-
-const handleSignUp = async () => {
-  if (isSigningUp.value) return
-
-  // Clear previous errors
-  errorMessage.value = ''
-  fieldErrors.value = {}
-
-  // Comprehensive validation
-  const validation = inputValidator.validateForm(signUpForm.value, {
-    firstName: { required: true, minLength: 1 },
-    lastName: { required: false },
-    email: validationRules.email,
-    username: { required: true, minLength: 3, pattern: /^[a-zA-Z0-9_-]+$/ },
-    password: validationRules.password,
-    confirmPassword: { required: true },
-  })
-
-  if (!validation.isValid) {
-    fieldErrors.value = validation.errors
-    errorMessage.value = 'Please fix the errors below'
-    return
-  }
-
-  if (!passwordsMatch.value) {
-    fieldErrors.value = { password_confirm: ['Passwords do not match'] }
-    errorMessage.value = 'Please fix the errors below'
-    return
-  }
-
-  isSigningUp.value = true
-
-  try {
-    const result = await authStore.register({
-      email: validation.sanitizedData.email,
-      username: validation.sanitizedData.username,
-      password: validation.sanitizedData.password,
-      password_confirm: validation.sanitizedData.confirmPassword,
-      first_name: validation.sanitizedData.firstName,
-      last_name: validation.sanitizedData.lastName || '',
-    })
-
-    if (result.success) {
-      emit('authenticated')
-      closeModal()
-    } else {
-      if (result.errors) {
-        fieldErrors.value = result.errors
-      }
-      errorMessage.value = result.error || 'Registration failed'
-    }
-  } catch (error) {
-    console.error('Sign up error:', error)
-    errorMessage.value = 'An unexpected error occurred'
-  } finally {
-    isSigningUp.value = false
-  }
-}
-
 const handleGoogleLogin = async () => {
   isGoogleLoading.value = true
   errorMessage.value = ''
@@ -694,7 +162,6 @@ const handleGoogleLogin = async () => {
 }
 
 const handleTelegramAuth = async (user: any) => {
-  isTelegramLoading.value = true
   errorMessage.value = ''
 
   try {
@@ -709,29 +176,19 @@ const handleTelegramAuth = async (user: any) => {
   } catch (error: any) {
     console.error('Telegram login error:', error)
     errorMessage.value = 'Telegram sign-in failed. Please try again.'
-  } finally {
-    isTelegramLoading.value = false
   }
 }
 
 const loadTelegramWidget = () => {
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'goevent_authentication_bot'
 
-  if (!botUsername) {
-    console.warn('Telegram bot username not configured')
-    return
-  }
+  const container = document.getElementById('telegram-login-widget')
+  if (!container) return
 
-  // Remove existing script if any
-  const existingScript = document.querySelector('script[src*="telegram-widget"]')
-  if (existingScript) {
-    existingScript.remove()
-  }
+  container.innerHTML = ''
 
-  // Clear container
-  if (telegramContainer.value) {
-    telegramContainer.value.innerHTML = ''
-  }
+  // Define global callback
+  ;(window as any).onTelegramAuth = handleTelegramAuth
 
   // Create Telegram widget script
   const script = document.createElement('script')
@@ -742,13 +199,7 @@ const loadTelegramWidget = () => {
   script.setAttribute('data-onauth', 'onTelegramAuth(user)')
   script.setAttribute('data-request-access', 'write')
 
-  // Define global callback
-  ;(window as any).onTelegramAuth = handleTelegramAuth
-
-  // Append to container
-  if (telegramContainer.value) {
-    telegramContainer.value.appendChild(script)
-  }
+  container.appendChild(script)
 }
 
 // Handle modal animation

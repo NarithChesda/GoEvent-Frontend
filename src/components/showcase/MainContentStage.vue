@@ -12,9 +12,7 @@
       <div v-if="contentLoading" class="absolute inset-0 z-40 flex items-center justify-center">
         <div
           class="backdrop-blur-sm bg-black bg-opacity-20 rounded-2xl px-6 py-4 flex items-center space-x-3"
-          :style="{
-            boxShadow: `0 8px 32px ${primaryColor}20`,
-          }"
+          :style="contentLoadingStyle"
         >
           <div
             class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-80"
@@ -39,6 +37,10 @@
       :available-languages="availableLanguages"
       :is-music-playing="isMusicPlaying"
       :is-authenticated="isAuthenticated"
+      :has-location="!!event.google_map_embed_link"
+      :has-video="!!event.youtube_embed_link"
+      :has-gallery="eventPhotos.length > 0"
+      :has-payment="paymentMethods.length > 0"
       @language-change="handleLanguageChange"
       @music-toggle="handleMusicToggle"
       @rsvp="handleRSVP"
@@ -64,7 +66,7 @@
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div
-                class="p-6 sm:p-6 md:p-6 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8"
+                class="p-6 sm:p-6 md:p-4 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8"
               >
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
@@ -83,13 +85,10 @@
                   />
                 </div>
 
-                <!-- Host Info Divider -->
-                <WeddingSectionDivider :primary-color="primaryColor" />
-
-                <!-- Event Information -->
+                <!-- Event Information with Integrated RSVP -->
                 <div
                   ref="eventInfoRef"
-                  class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
+                  class="mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10 mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
                 >
                   <EventInfo
                     :description-title="descriptionTitle"
@@ -98,6 +97,7 @@
                     :time-text="timeText"
                     :location-text="locationText"
                     :has-google-map="!!event.google_map_embed_link"
+                    :google-map-embed-link="event.google_map_embed_link"
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
@@ -105,36 +105,31 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :current-language="currentLanguage"
+                    :show-rsvp="true"
                     @open-map="$emit('openMap')"
-                  />
+                  >
+                    <template #rsvp>
+                      <div id="rsvp-section" ref="rsvpSectionRef">
+                        <RSVPSection
+                          :event-id="event.id"
+                          :event-start-date="event.start_date"
+                          :event-end-date="event.end_date"
+                          :primary-color="primaryColor"
+                          :secondary-color="secondaryColor"
+                          @show-auth-modal="$emit('showAuthModal')"
+                          :accent-color="accentColor"
+                          :is-event-past="isEventPast"
+                          :event-texts="eventTexts"
+                          :current-language="currentLanguage"
+                          :current-font="currentFont"
+                          :primary-font="primaryFont"
+                          :secondary-font="secondaryFont"
+                        />
+                      </div>
+                    </template>
+                  </EventInfo>
 
-                  <!-- Event Info Divider -->
-                  <WeddingSectionDivider :primary-color="primaryColor" />
-                </div>
-
-                <!-- RSVP Section -->
-                <div
-                  id="rsvp-section"
-                  ref="rsvpSectionRef"
-                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
-                >
-                  <RSVPSection
-                    :event-id="event.id"
-                    :event-start-date="event.start_date"
-                    :event-end-date="event.end_date"
-                    :primary-color="primaryColor"
-                    :secondary-color="secondaryColor"
-                    @show-auth-modal="$emit('showAuthModal')"
-                    :accent-color="accentColor"
-                    :is-event-past="isEventPast"
-                    :event-texts="eventTexts"
-                    :current-language="currentLanguage"
-                    :current-font="currentFont"
-                    :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
-                  />
-
-                  <!-- RSVP Section Divider -->
+                  <!-- Event Info + RSVP Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
@@ -160,49 +155,9 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Map Section -->
-                <div
-                  id="location-section"
-                  ref="locationSectionRef"
-                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
-                >
-                  <div v-if="event.google_map_embed_link" class="mb-6">
-                    <!-- Location Header -->
-                    <div
-                      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8"
-                    >
-                      <h2
-                        class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize"
-                        :style="{
-                          fontFamily: primaryFont || currentFont,
-                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                        }"
-                      >
-                        {{ locationHeaderText }}
-                      </h2>
-                    </div>
-                    <div class="aspect-video rounded-xl overflow-hidden">
-                      <iframe
-                        :src="event.google_map_embed_link"
-                        width="100%"
-                        height="100%"
-                        style="border: 0"
-                        :allowfullscreen="false"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                      />
-                    </div>
-
-                    <!-- Location Section Divider -->
-                    <WeddingSectionDivider :primary-color="primaryColor" />
-                  </div>
-                </div>
-
                 <!-- YouTube Video Section -->
                 <div
+                  v-if="event.youtube_embed_link"
                   id="video-section"
                   ref="videoSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -217,6 +172,8 @@
                     :secondary-font="secondaryFont"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
+                    :is-music-playing="isMusicPlaying"
+                    @video-state-change="handleVideoStateChange"
                   />
 
                   <!-- Video Section Divider -->
@@ -225,6 +182,7 @@
 
                 <!-- Photo Gallery Section -->
                 <div
+                  v-if="eventPhotos.length > 0"
                   id="gallery-section"
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -293,9 +251,6 @@
                     :current-language="currentLanguage"
                     @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
                   />
-
-                  <!-- Comment Section Divider -->
-                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Registration Button -->
@@ -304,7 +259,7 @@
                     @click="$emit('register')"
                     class="w-full py-3 rounded-xl font-semibold text-white transform hover:scale-[1.02] transition-all shadow-lg"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || primaryColor})`,
+                      background: primaryColor,
                     }"
                   >
                     Register Now
@@ -318,9 +273,9 @@
                 >
                   <!-- Footer Card with Reverse Colors -->
                   <div
-                    class="footer-card-container rounded-none sm:rounded-t-2xl px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
+                    class="footer-card-container rounded-none px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
                     :style="{
-                      background: `linear-gradient(135deg, ${primaryColor}90, ${primaryColor}70)`,
+                      background: `${primaryColor}90`,
                       boxShadow: `
                         0 12px 36px -6px ${primaryColor}25,
                         0 6px 24px -3px ${primaryColor}20,
@@ -340,21 +295,71 @@
 
                     <div class="space-y-4">
                       <!-- Thank You Message -->
-                      <p
-                        class="text-small text-white"
-                        :style="{ fontFamily: primaryFont || currentFont }"
-                      >
-                        {{ footerThankYouText }}
-                      </p>
 
-                      <!-- GoEvent Logo/Branding -->
-                      <div class="space-y-2">
+
+                      <!-- Logo Section with Collaboration Display -->
+                      <div class="space-y-3">
+                        <!-- Show collaboration if referrer exists and is partner -->
+                        <div v-if="event.referrer_details?.is_partner && event.referrer_details?.logo">
+                          <!-- Logos Container with increased vertical spacing -->
+                          <div class="flex items-center justify-center gap-3 sm:gap-6 py-2">
+                            <!-- Referrer Logo -->
+                            <div class="transition-transform hover:scale-105 flex-shrink-0 max-w-[40%]">
+                              <img
+                                :src="getMediaUrl(event.referrer_details.logo)"
+                                :alt="event.referrer_details.first_name || 'Partner'"
+                                class="w-full h-auto object-contain brightness-110"
+                                :style="{
+                                  height: 'min(5.6vh, 64px)',
+                                  maxHeight: '64px',
+                                  maxWidth: '100%',
+                                  filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
+                                }"
+                              />
+                            </div>
+
+                            <!-- Divider with "×" symbol -->
+                            <div class="flex items-center justify-center opacity-60 flex-shrink-0">
+                              <span class="text-white text-xl sm:text-2xl font-light" :style="{ fontFamily: primaryFont || currentFont }">×</span>
+                            </div>
+
+                            <!-- GoEvent Logo -->
+                            <a
+                              href="/"
+                              class="transition-transform hover:scale-105 flex-shrink-0 max-w-[40%]"
+                            >
+                              <img
+                                :src="WhiteLogoSvg"
+                                alt="GoEvent"
+                                class="w-full h-auto brightness-110"
+                                :style="{
+                                  height: 'min(5.6vh, 64px)',
+                                  maxHeight: '64px',
+                                  maxWidth: '100%',
+                                  filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
+                                }"
+                              />
+                            </a>
+                          </div>
+                        </div>
+
+                        <!-- Show only GoEvent logo if no referrer or referrer is not partner -->
                         <a
+                          v-else
                           href="/"
                           class="inline-flex items-center justify-center transition-transform hover:scale-105"
                         >
-                          <img :src="WhiteLogoSvg" alt="GoEvent" class="h-12 w-auto" />
+                          <img
+                            :src="WhiteLogoSvg"
+                            alt="GoEvent"
+                            class="w-auto"
+                            :style="{
+                              height: 'min(5.6vh, 64px)',
+                              maxHeight: '64px'
+                            }"
+                          />
                         </a>
+
                         <p
                           class="text-xs text-white opacity-90"
                           :style="{ fontFamily: secondaryFont || currentFont }"
@@ -364,48 +369,48 @@
                       </div>
 
                       <!-- Social Media Buttons -->
-                      <div class="flex flex-wrap items-center justify-center gap-3">
+                      <div class="flex flex-wrap items-center justify-center gap-2.5">
                         <a
-                          href="https://t.me/goevent"
+                          href="https://t.me/goeventkh"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+                          class="w-[34px] h-[34px] rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
                           aria-label="Telegram"
                         >
-                          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <svg class="w-[17px] h-[17px] text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                           </svg>
                         </a>
                         <a
-                          href="https://facebook.com/goevent"
+                          href="https://www.facebook.com/profile.php?id=61581851850221"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+                          class="w-[34px] h-[34px] rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
                           aria-label="Facebook"
                         >
-                          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <svg class="w-[17px] h-[17px] text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                           </svg>
                         </a>
                         <a
-                          href="https://instagram.com/goevent"
+                          href="https://www.instagram.com/goevent.online/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+                          class="w-[34px] h-[34px] rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
                           aria-label="Instagram"
                         >
-                          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <svg class="w-[17px] h-[17px] text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                           </svg>
                         </a>
                         <a
-                          href="https://tiktok.com/@goevent"
+                          href="https://www.tiktok.com/@goevent.online"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+                          class="w-[34px] h-[34px] rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
                           aria-label="TikTok"
                         >
-                          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <svg class="w-[17px] h-[17px] text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
                           </svg>
                         </a>
@@ -414,33 +419,17 @@
                       <!-- Contact Info -->
                       <div class="space-y-2">
                         <div
-                          class="inline-flex items-center justify-center text-sm text-white px-2"
+                          class="inline-flex items-center justify-center text-md text-white px-2"
                           :style="{
                             fontFamily: secondaryFont || currentFont,
                           }"
                         >
                           www.goevent.online
                         </div>
-                        <div class="flex flex-col items-center justify-center text-sm text-white space-y-1">
-                          <a
-                            href="tel:+855967775887"
-                            class="hover:underline transition-all"
-                            :style="{
-                              fontFamily: secondaryFont || currentFont,
-                            }"
-                          >
-                            Smart: +855 96 777 5887
-                          </a>
-                          <a
-                            href="tel:+855767775887"
-                            class="hover:underline transition-all"
-                            :style="{
-                              fontFamily: secondaryFont || currentFont,
-                            }"
-                          >
-                            Celcard: +855 76 777 5887
-                          </a>
-                        </div>
+
+
+
+
                       </div>
 
                     </div>
@@ -456,7 +445,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, nextTick, inject, watch, type Component } from 'vue'
+import { computed, onMounted, onUnmounted, ref, nextTick, inject, type Component } from 'vue'
 import WhiteLogoSvg from '@/assets/white-logo.svg'
 import type {
   EventData,
@@ -533,32 +522,6 @@ const existingBackgroundVideo = ref<HTMLVideoElement | null>(null)
 // Must be called at top level of setup, not inside lifecycle hooks
 const injectedVideoResourceManager = inject<any>('videoResourceManager')
 
-// Security validation function for video elements
-const validateVideoElement = (element: HTMLVideoElement): boolean => {
-  if (!element || !(element instanceof HTMLVideoElement)) return false
-
-  // Check if element is attached to document
-  if (!document.contains(element)) return false
-
-  // Validate src attribute is from trusted domain
-  const src = element.src || element.getAttribute('src') || ''
-  if (!src) return true // Allow empty src for cleanup
-
-  try {
-    const url = new URL(src)
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    const allowedOrigins = [new URL(API_BASE_URL).origin, window.location.origin]
-
-    // Allow data URLs for embedded content
-    if (url.protocol === 'data:') {
-      return url.href.startsWith('data:video/')
-    }
-
-    return allowedOrigins.includes(url.origin)
-  } catch {
-    return false
-  }
-}
 const videoResourceManager = ref<{
   cleanup: () => void
   stats: () => { managedVideos: number; totalListeners: number }
@@ -582,11 +545,12 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Debug: Log eventPhotos to understand data flow
-  console.debug('MainContentStage: mounted with photos', {
-    eventPhotosCount: props.eventPhotos.length,
-    eventPhotos: props.eventPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
-  })
+  // Initialize animations
+  initializeRevealAnimations()
+  initializeScrollAnimations()
+
+  // Emit that main content has been viewed
+  emit('mainContentViewed')
 })
 
 const emit = defineEmits<{
@@ -599,6 +563,7 @@ const emit = defineEmits<{
   logout: []
   mainContentViewed: []
   showAuthModal: []
+  videoStateChange: [isPlaying: boolean]
 }>()
 
 // Animation setup
@@ -620,7 +585,6 @@ const sectionRefs = {
   eventInfo: ref<HTMLElement>(),
   rsvpSection: ref<HTMLElement>(),
   agendaSection: ref<HTMLElement>(),
-  locationSection: ref<HTMLElement>(),
   videoSection: ref<HTMLElement>(),
   gallerySection: ref<HTMLElement>(),
   paymentSection: ref<HTMLElement>(),
@@ -635,7 +599,6 @@ const {
   eventInfo: eventInfoRef,
   rsvpSection: rsvpSectionRef,
   agendaSection: agendaSectionRef,
-  locationSection: locationSectionRef,
   videoSection: videoSectionRef,
   gallerySection: gallerySectionRef,
   paymentSection: paymentSectionRef,
@@ -645,6 +608,7 @@ const {
 
 /**
  * Initialize reveal animations
+ * All sections must be observed to add .is-visible class, otherwise they remain hidden
  */
 const initializeRevealAnimations = () => {
   const animationConfig: Array<[any, string]> = [
@@ -653,7 +617,6 @@ const initializeRevealAnimations = () => {
     [eventInfoRef, 'event-info'],
     [rsvpSectionRef, 'rsvp-section'],
     [agendaSectionRef, 'agenda-section'],
-    [locationSectionRef, 'location-section'],
     [videoSectionRef, 'video-section'],
     [gallerySectionRef, 'gallery-section'],
     [paymentSectionRef, 'payment-section'],
@@ -670,8 +633,13 @@ const initializeRevealAnimations = () => {
 
 /**
  * Initialize scroll animations
+ * Disabled in basic mode for better performance
  */
 const initializeScrollAnimations = () => {
+  // Skip scroll animations in basic mode to reduce GPU overhead
+  const isBasicMode = !props.templateAssets?.standard_background_video
+  if (isBasicMode) return
+
   const liquidGlassCard = document.querySelector('.liquid-glass-card')
   if (liquidGlassCard) {
     createScrollAnimation(
@@ -685,16 +653,6 @@ const initializeScrollAnimations = () => {
   }
 }
 
-// Setup animations on mount
-onMounted(() => {
-  nextTick(() => {
-    initializeRevealAnimations()
-    initializeScrollAnimations()
-
-    // Emit that main content has been viewed
-    emit('mainContentViewed')
-  })
-})
 
 // Translation key mapping for consistent lookups
 const TRANSLATION_KEY_MAP: Record<
@@ -721,6 +679,19 @@ const TRANSLATION_KEY_MAP: Record<
   footer_create_invitations: 'footer_create_invitations',
 } as const
 
+// Memoized text lookup map for better performance
+const textLookupMap = computed(() => {
+  const map = new Map<string, string>()
+  if (props.eventTexts?.length && props.currentLanguage) {
+    props.eventTexts.forEach(text => {
+      if (text.language === props.currentLanguage) {
+        map.set(text.text_type, text.content)
+      }
+    })
+  }
+  return map
+})
+
 /**
  * Get text content from database or frontend translations
  * @param textType - The type of text to retrieve
@@ -728,14 +699,10 @@ const TRANSLATION_KEY_MAP: Record<
  * @returns Translated text content
  */
 const getTextContent = (textType: string, fallback = ''): string => {
-  // First, try to get content from database (eventTexts)
-  if (props.eventTexts?.length && props.currentLanguage) {
-    const text = props.eventTexts.find(
-      (text) => text.text_type === textType && text.language === props.currentLanguage,
-    )
-    if (text?.content) {
-      return text.content
-    }
+  // First, try to get content from memoized lookup map
+  const content = textLookupMap.value.get(textType)
+  if (content) {
+    return content
   }
 
   // Fallback to frontend translation system
@@ -760,13 +727,14 @@ const descriptionText = computed(() => findEventText('description')?.content)
 const descriptionTitle = computed(() => findEventText('description')?.title)
 
 // Computed properties for translated text
-const locationHeaderText = computed(() => getTextContent('location_header', 'Location'))
 const footerThankYouText = computed(() =>
   getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
 )
-const footerCreateInvitationsText = computed(() =>
-  getTextContent('footer_create_invitations', 'Create beautiful event invitations'),
-)
+
+// Computed styles to avoid recalculation on every render
+const contentLoadingStyle = computed(() => ({
+  boxShadow: `0 8px 32px ${props.primaryColor}20`,
+}))
 
 /**
  * Smooth scroll to section by ID
@@ -783,13 +751,32 @@ const handleLanguageChange = (language: string) => emit('changeLanguage', langua
 const handleMusicToggle = () => emit('musicToggle')
 const handleLogout = () => emit('logout')
 const handleCommentSubmitted = (comment: EventComment) => emit('commentSubmitted', comment)
+const handleVideoStateChange = (isPlaying: boolean) => emit('videoStateChange', isPlaying)
 
 // Section navigation handlers
 const handleRSVP = () => scrollToSection('rsvp-section')
 const handleGift = () => scrollToSection('payment-section')
 const handleAgenda = () => scrollToSection('agenda-section')
-const handleLocation = () => scrollToSection('location-section')
-const handleGallery = () => scrollToSection('gallery-section')
+const handleLocation = () => {
+  // Scroll to event info section since map is now embedded there
+  const element = eventInfoRef.value
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
+const handleGallery = () => {
+  // Scroll to the first photo in the gallery instead of the section header
+  const firstPhoto = document.querySelector('.photo-item')
+  if (firstPhoto) {
+    // Trigger the visibility class immediately to show the photo
+    firstPhoto.classList.add('photo-visible')
+    // Scroll with more offset to ensure photo is fully visible
+    firstPhoto.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  } else {
+    // Fallback to section if no photos are available
+    scrollToSection('gallery-section')
+  }
+}
 const handleComment = () => scrollToSection('comment-section')
 const handleVideo = () => scrollToSection('video-section')
 
@@ -817,13 +804,6 @@ const handleReminder = () => {
 
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
 }
-// Watch for changes to eventPhotos prop
-watch(() => props.eventPhotos, (newPhotos) => {
-  console.debug('MainContentStage: eventPhotos changed', {
-    count: newPhotos.length,
-    photos: newPhotos.map(p => ({ id: p.id, image: p.image, is_featured: p.is_featured }))
-  })
-}, { deep: true, immediate: true })
 
 // Cleanup on component unmount
 onUnmounted(() => {
@@ -1032,4 +1012,5 @@ onUnmounted(() => {
     transition: opacity 0.2s ease;
   }
 }
+
 </style>

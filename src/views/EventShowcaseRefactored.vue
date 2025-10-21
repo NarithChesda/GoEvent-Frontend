@@ -16,6 +16,7 @@
       <CoverStage
         ref="coverStageRef"
         :template-assets="templateAssets"
+        :template-colors="templateColors"
         :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
@@ -32,6 +33,7 @@
         :current-showcase-stage="currentShowcaseStage"
         :should-skip-to-main-content="shouldSkipToMainContent"
         :video-state-preserved="videoStatePreserved"
+        :content-top-position="event.template_assets?.cover_content_top_position"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelopeWithVideoSync"
         @cover-stage-ready="handleCoverStageReady"
@@ -72,6 +74,7 @@
             @logout="handleLogout"
             @main-content-viewed="handleMainContentViewed"
             @show-auth-modal="openAuthModal"
+            @video-state-change="handleVideoStateChange"
           />
         </template>
       </CoverStage>
@@ -141,6 +144,7 @@ const {
   event,
   guestName,
   templateAssets,
+  templateColors,
   eventTexts,
   hosts,
   agendaItems,
@@ -186,29 +190,56 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
-// Mobile memory management
+// Mobile memory management with messaging app detection
 const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+const isMessagingApp = videoResourceManager.isMessagingAppBrowser()
 const memoryCleanupTimer = ref<number | null>(null)
 
 // Periodic cleanup for mobile devices to prevent memory buildup
 const setupMobileMemoryManagement = () => {
   if (!isMobile) return
 
-  // Setting up mobile memory management
+  // Determine cleanup interval and thresholds based on browser environment
+  const cleanupInterval = isMessagingApp
+    ? 120000 // 2 minutes for messaging apps (Telegram, WhatsApp, etc.)
+    : 300000 // 5 minutes for regular mobile browsers
 
-  // Clean up memory every 2 minutes on mobile
+  const blobUrlThreshold = isMessagingApp ? 2 : 3 // More aggressive for messaging apps
+  const videoThreshold = isMessagingApp ? 1 : 2 // More aggressive for messaging apps
+
+  // Log setup for development
+  if (import.meta.env.DEV) {
+    console.log('📱 Memory management setup:', {
+      isMobile,
+      isMessagingApp,
+      cleanupInterval: `${cleanupInterval / 1000}s`,
+      blobUrlThreshold,
+      videoThreshold,
+    })
+  }
+
+  // Clean up memory periodically based on browser environment
   memoryCleanupTimer.value = window.setInterval(() => {
     if (videoResourceManager) {
       const stats = videoResourceManager.getMemoryStats()
-      // Periodic mobile memory check
+
+      // Log memory stats in development
+      if (import.meta.env.DEV) {
+        console.log('📊 Periodic memory check:', stats)
+      }
 
       // Force cleanup if too many resources are active
-      if (stats.activeBlobUrls > 3 || stats.managedVideos > 2) {
-        // Triggering mobile memory cleanup
+      if (stats.activeBlobUrls > blobUrlThreshold || stats.managedVideos > videoThreshold) {
+        if (import.meta.env.DEV) {
+          console.log('🧹 Triggering memory cleanup:', {
+            reason: stats.activeBlobUrls > blobUrlThreshold ? 'Too many blob URLs' : 'Too many videos',
+            stats,
+          })
+        }
         videoResourceManager.triggerMemoryCleanup()
       }
     }
-  }, 120000) // 2 minutes
+  }, cleanupInterval)
 }
 
 // CoverStage component ref
@@ -243,7 +274,8 @@ const openEnvelopeWithVideoSync = async () => {
   // Pass the required parameters for music to work
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
 
-  // Then trigger the video playbook to synchronize with the music
+  // Then trigger the video playback in standard mode
+  // In basic mode, this will be a no-op as the video phase will be 'background'
   if (coverStageRef.value) {
     coverStageRef.value.startEventVideo()
   }
@@ -262,6 +294,24 @@ const handleLogout = async () => {
   }
 
   await authStore.logout()
+}
+
+// Store music state before video plays
+const musicStateBeforeVideo = ref(false)
+
+const handleVideoStateChange = (isPlaying: boolean) => {
+  if (isPlaying) {
+    // Video started playing - store current music state and pause music
+    musicStateBeforeVideo.value = isMusicPlaying.value
+    if (isMusicPlaying.value) {
+      toggleMusic()
+    }
+  } else {
+    // Video stopped/paused - restore previous music state
+    if (musicStateBeforeVideo.value && !isMusicPlaying.value) {
+      toggleMusic()
+    }
+  }
 }
 
 // Watch for event data to handle redirects after login with proper timing
@@ -385,12 +435,17 @@ onUnmounted(() => {
   if (memoryCleanupTimer.value) {
     clearInterval(memoryCleanupTimer.value)
     memoryCleanupTimer.value = null
-    console.log('📱 Mobile memory management timer cleared')
+    if (import.meta.env.DEV) {
+      console.log('📱 Memory management timer cleared')
+    }
   }
 
-  // Final memory cleanup for mobile
+  // Final memory cleanup for mobile and messaging apps
   if (isMobile && videoResourceManager) {
-    console.log('📱 Final mobile memory cleanup')
+    if (import.meta.env.DEV) {
+      const browserType = isMessagingApp ? 'messaging app' : 'mobile'
+      console.log(`📱 Final ${browserType} memory cleanup`)
+    }
     videoResourceManager.triggerMemoryCleanup()
   }
 
