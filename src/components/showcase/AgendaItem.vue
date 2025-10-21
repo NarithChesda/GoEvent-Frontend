@@ -49,7 +49,7 @@
 
       <!-- Time (Bottom Right) -->
       <div
-        class="text-xs mt-0"
+        class="text-sm mt-0"
         :style="{ color: primaryColor, opacity: '0.7', fontFamily: secondaryFont || currentFont }"
       >
         <span v-if="timeText">{{ timeText }}</span>
