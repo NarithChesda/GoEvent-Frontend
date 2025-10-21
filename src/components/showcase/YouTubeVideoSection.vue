@@ -1,7 +1,7 @@
 <template>
   <div v-if="youtubeEmbedLink" class="mb-8">
     <!-- Video Header -->
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         :class="[
           'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize video-header',
@@ -262,7 +262,7 @@ declare global {
   .video-header {
     font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
     line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
     margin-bottom: 1.0125rem !important; /* 1.5rem * 0.675 from md:mb-6 */
   }
@@ -274,7 +274,7 @@ declare global {
   .video-header {
     font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
     line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
     margin-bottom: 1.125rem !important; /* 1.5rem * 0.75 from md:mb-6 */
   }

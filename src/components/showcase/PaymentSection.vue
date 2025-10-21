@@ -1,7 +1,7 @@
 <template>
   <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Payment Section Header - First Payment Method Name + Type -->
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         v-if="paymentMethods.length > 0"
         :class="[
@@ -1154,7 +1154,7 @@ const capitalizeText = (text: string | undefined): string => {
   h2 {
     font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
     line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 }
@@ -1191,7 +1191,7 @@ const capitalizeText = (text: string | undefined): string => {
   h2 {
     font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
     line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
   }
 }
