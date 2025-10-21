@@ -199,7 +199,7 @@ const capitalizedDescription = computed(() => {
   }
 
   .space-y-4 > * + * {
-    margin-top: 1rem !important; /* space-y-4 */
+    margin-top: 0.25rem !important; /* Reduced from 1rem */
   }
 
   .space-y-3 > * + * {

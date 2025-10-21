@@ -4,7 +4,7 @@
     <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
       <h2
         :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
+          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize video-header',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
@@ -256,16 +256,32 @@ declare global {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Compact sizes */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% matching mobile exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - match AgendaSection */
-  h2 {
-    font-size: 1.5rem !important; /* 24px - text-2xl */
+  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
+  .video-header {
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    margin-bottom: 1.0125rem !important; /* 1.5rem * 0.675 from md:mb-6 */
   }
 }
 
-/* Medium laptops 14-15 inch (1366px+) */
-@media (min-width: 1366px) {
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% matching mobile exactly */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
+  .video-header {
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    margin-bottom: 1.125rem !important; /* 1.5rem * 0.75 from md:mb-6 */
+  }
+}
+
+/* Desktop (1536px+) - Simple, clean desktop styles */
+@media (min-width: 1536px) {
   h2 {
     font-size: 1.875rem !important; /* 30px - text-3xl */
   }
