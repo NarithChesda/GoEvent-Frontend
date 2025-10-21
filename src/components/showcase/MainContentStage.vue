@@ -66,7 +66,7 @@
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
               <div
-                class="p-6 sm:p-6 md:p-4 laptop-sm:p-8 laptop-md:p-10 laptop-lg:p-12 desktop:p-8"
+                class="p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5"
               >
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
@@ -269,7 +269,7 @@
                 <!-- Footer Section -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 -mx-6 sm:-mx-6 md:-mx-6 laptop-sm:-mx-8 laptop-md:-mx-10 laptop-lg:-mx-12 desktop:-mx-8 -mb-6 sm:-mb-6 md:-mb-6 laptop-sm:-mb-8 laptop-md:-mb-10 laptop-lg:-mb-12 desktop:-mb-8 animate-reveal"
+                  class="mt-8 -mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5 -mb-6 sm:-mb-6 md:-mb-4 laptop-sm:-mb-5 laptop-md:-mb-5 laptop-lg:-mb-6 desktop:-mb-5 animate-reveal"
                 >
                   <!-- Footer Card with Reverse Colors -->
                   <div
@@ -507,11 +507,11 @@ const props = defineProps<Props>()
 // Computed properties for dynamic styling and components
 const containerClasses = computed(() => [
   'min-h-full',
-  'py-10 sm:py-6 sm:px-4',
-  'md:py-8 md:px-6',
-  'laptop-sm:py-6 laptop-sm:px-8',
-  'laptop-md:py-8 laptop-md:px-10',
-  'laptop-lg:py-10 laptop-lg:px-12',
+  'py-10 sm:py-6',
+  'md:py-8',
+  'laptop-sm:py-6 laptop-sm:px-6',
+  'laptop-md:py-8 laptop-md:px-8',
+  'laptop-lg:py-10 laptop-lg:px-10',
   'desktop:py-12 desktop:px-12',
   'flex items-center justify-center',
 ])
@@ -873,6 +873,25 @@ onUnmounted(() => {
   max-height: 85vh;
   will-change: transform;
   transition: transform 0.3s ease-out;
+}
+
+/* Responsive width adjustments for laptop views with padding */
+@media (min-width: 1024px) {
+  .liquid-glass-card {
+    max-width: calc(100vw - 3rem);
+  }
+}
+
+@media (min-width: 1366px) {
+  .liquid-glass-card {
+    max-width: calc(100vw - 4rem);
+  }
+}
+
+@media (min-width: 1536px) {
+  .liquid-glass-card {
+    max-width: calc(100vw - 5rem);
+  }
 }
 
 .liquid-glass-card:hover {

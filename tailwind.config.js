@@ -40,6 +40,10 @@ export default {
         },
       },
       screens: {
+        'laptop-sm': '1024px',
+        'laptop-md': '1366px',
+        'laptop-lg': '1536px',
+        'desktop': '1536px',
         '2xl': '1536px',
         '3xl': '1920px',
         '4xl': '2560px',
