@@ -30,7 +30,7 @@
             :style="menuButtonStyle"
           >
             <Languages :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ languageText }}</span>
+            <span class="menu-text">{{ translations.language }}</span>
           </button>
         </div>
 
@@ -48,7 +48,7 @@
               :color="primaryColor"
             />
             <span class="menu-text">{{
-              props.isMusicPlaying ? musicOffText : musicOnText
+              props.isMusicPlaying ? translations.musicOff : translations.musicOn
             }}</span>
           </button>
         </div>
@@ -61,7 +61,7 @@
             :style="menuButtonStyle"
           >
             <UserCheck :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ rsvpText }}</span>
+            <span class="menu-text">{{ translations.rsvp }}</span>
           </button>
         </div>
 
@@ -73,7 +73,7 @@
             :style="menuButtonStyle"
           >
             <Bell :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ reminderText }}</span>
+            <span class="menu-text">{{ translations.reminder }}</span>
           </button>
         </div>
 
@@ -85,7 +85,7 @@
             :style="menuButtonStyle"
           >
             <Calendar :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ agendaText }}</span>
+            <span class="menu-text">{{ translations.agenda }}</span>
           </button>
         </div>
 
@@ -97,7 +97,7 @@
             :style="menuButtonStyle"
           >
             <Play :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ videoText }}</span>
+            <span class="menu-text">{{ translations.video }}</span>
           </button>
         </div>
 
@@ -109,7 +109,7 @@
             :style="menuButtonStyle"
           >
             <Image :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ galleryText }}</span>
+            <span class="menu-text">{{ translations.gallery }}</span>
           </button>
         </div>
 
@@ -121,7 +121,7 @@
             :style="menuButtonStyle"
           >
             <Gift :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ giftText }}</span>
+            <span class="menu-text">{{ translations.gift }}</span>
           </button>
         </div>
 
@@ -133,7 +133,7 @@
             :style="menuButtonStyle"
           >
             <MessageCircle :size="20" :color="primaryColor" />
-            <span class="menu-text">{{ commentText }}</span>
+            <span class="menu-text">{{ translations.comment }}</span>
           </button>
         </div>
 
@@ -145,7 +145,7 @@
             :style="logoutButtonStyle"
           >
             <LogOut :size="20" color="white" />
-            <span class="menu-text">{{ logoutText }}</span>
+            <span class="menu-text">{{ translations.logout }}</span>
           </button>
         </div>
       </div>
@@ -157,7 +157,7 @@
         <div class="language-modal glass-section" @click.stop>
           <div class="modal-header">
             <h3 class="modal-title" :style="modalTitleStyle">
-              {{ selectLanguageText }}
+              {{ translations.selectLanguage }}
             </h3>
             <button @click="closeLanguageModal" class="close-button">
               <X :size="20" :color="primaryColor" />
@@ -276,28 +276,24 @@ const displayLanguages = computed(() => {
   }))
 })
 
-// Translation helpers - memoized for better performance
+// Translation helpers - optimized with single computed property
 const currentLang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
 
-const getTranslation = (
-  key: keyof typeof import('../../utils/translations').rsvpTranslations.en,
-): string => {
-  return translateRSVP(key, currentLang.value)
-}
-
-// Individual computed properties for menu item translations (better performance than one large object)
-const languageText = computed(() => getTranslation('floating_menu_language'))
-const musicOnText = computed(() => getTranslation('floating_menu_music_on'))
-const musicOffText = computed(() => getTranslation('floating_menu_music_off'))
-const rsvpText = computed(() => getTranslation('floating_menu_rsvp'))
-const reminderText = computed(() => getTranslation('floating_menu_reminder'))
-const agendaText = computed(() => getTranslation('floating_menu_agenda'))
-const videoText = computed(() => getTranslation('floating_menu_video'))
-const galleryText = computed(() => getTranslation('floating_menu_gallery'))
-const giftText = computed(() => getTranslation('floating_menu_gift'))
-const commentText = computed(() => getTranslation('floating_menu_comment'))
-const logoutText = computed(() => getTranslation('floating_menu_logout'))
-const selectLanguageText = computed(() => getTranslation('floating_menu_select_language'))
+// Single computed object for all translations (better performance - computed once)
+const translations = computed(() => ({
+  language: translateRSVP('floating_menu_language', currentLang.value),
+  musicOn: translateRSVP('floating_menu_music_on', currentLang.value),
+  musicOff: translateRSVP('floating_menu_music_off', currentLang.value),
+  rsvp: translateRSVP('floating_menu_rsvp', currentLang.value),
+  reminder: translateRSVP('floating_menu_reminder', currentLang.value),
+  agenda: translateRSVP('floating_menu_agenda', currentLang.value),
+  video: translateRSVP('floating_menu_video', currentLang.value),
+  gallery: translateRSVP('floating_menu_gallery', currentLang.value),
+  gift: translateRSVP('floating_menu_gift', currentLang.value),
+  comment: translateRSVP('floating_menu_comment', currentLang.value),
+  logout: translateRSVP('floating_menu_logout', currentLang.value),
+  selectLanguage: translateRSVP('floating_menu_select_language', currentLang.value),
+}))
 
 // Computed styles for better performance (avoid recreating style objects on every render)
 const fabButtonStyle = computed(() => ({
@@ -448,65 +444,87 @@ const handleLogout = () => {
   }
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Compact styling to match other components */
+/* Small laptops 13-inch (1024px-1365px) - Apply mobile sizing 20% smaller */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .floating-action-menu {
-    bottom: 1.25rem;
-    right: 1.25rem;
+    bottom: max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem))) !important;
+    right: 0.8rem !important;
   }
 
   .fab-button {
-    width: 48px !important;
-    height: 48px !important;
+    width: 35px !important;
+    height: 35px !important;
+  }
+
+  .fab-button svg {
+    width: 19px !important;
+    height: 19px !important;
   }
 
   .menu-container {
-    bottom: 62px !important;
-    gap: 0.5rem !important;
-    min-width: 180px !important;
+    bottom: calc(35px + 0.6rem + max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem)))) !important;
+    gap: 0.4rem !important;
+    min-width: 144px !important;
+    max-height: calc(100vh - 112px - max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem)))) !important;
   }
 
   .menu-button {
-    gap: 0.5rem !important;
-    padding: 0.625rem 0.75rem !important;
-    border-radius: 0.625rem !important;
-    min-height: 40px !important;
+    gap: 0.4rem !important;
+    padding: 0.6rem 0.8rem !important;
+    border-radius: 0.6rem !important;
+    min-height: 35px !important;
+  }
+
+  .menu-button svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .menu-text {
-    font-size: 0.8125rem !important; /* 13px - match other components */
+    font-size: 0.7rem !important;
   }
 
-  /* Language modal - more compact */
+  /* Language modal - 20% smaller */
   .language-modal {
-    max-width: 350px !important;
-    border-radius: 0.875rem !important;
+    width: 90% !important;
+    max-width: 320px !important;
+    border-radius: 0.8rem !important;
   }
 
   .modal-header {
-    padding: 1.25rem !important;
+    padding: 1.2rem !important;
   }
 
   .modal-title {
-    font-size: 1.125rem !important;
+    font-size: 1rem !important;
   }
 
   .language-options {
-    padding: 0.875rem !important;
-    gap: 0.375rem !important;
+    padding: 0.8rem !important;
+    gap: 0.4rem !important;
   }
 
   .language-option {
-    padding: 0.625rem !important;
-    border-radius: 0.5rem !important;
+    padding: 0.6rem !important;
+    border-radius: 0.4rem !important;
   }
 
   .language-name {
-    font-size: 0.8125rem !important;
+    font-size: 0.7rem !important;
   }
 
   .language-flag {
-    font-size: 1.125rem !important;
+    font-size: 1rem !important;
+  }
+
+  .close-button {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .close-button svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 }
 
@@ -514,10 +532,11 @@ const handleLogout = () => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: -1;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
+  will-change: opacity;
 }
 
 .fab-button {
@@ -528,7 +547,9 @@ const handleLogout = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  touch-action: manipulation;
 }
 
 /* Responsive FAB button sizing - mobile-first approach */
@@ -656,43 +677,44 @@ const handleLogout = () => {
 }
 
 .menu-item {
-  transform: translateY(20px);
+  transform: translateY(10px);
   opacity: 0;
-  animation: slideUp 0.2s ease-out forwards;
+  animation: slideUp 0.15s ease-out forwards;
+  will-change: transform, opacity;
 }
 
 .menu-item:nth-child(1) {
-  animation-delay: 0.02s;
+  animation-delay: 0s;
 }
 .menu-item:nth-child(2) {
-  animation-delay: 0.04s;
+  animation-delay: 0.01s;
 }
 .menu-item:nth-child(3) {
-  animation-delay: 0.06s;
+  animation-delay: 0.02s;
 }
 .menu-item:nth-child(4) {
-  animation-delay: 0.08s;
+  animation-delay: 0.03s;
 }
 .menu-item:nth-child(5) {
-  animation-delay: 0.1s;
+  animation-delay: 0.04s;
 }
 .menu-item:nth-child(6) {
-  animation-delay: 0.12s;
+  animation-delay: 0.05s;
 }
 .menu-item:nth-child(7) {
-  animation-delay: 0.14s;
+  animation-delay: 0.06s;
 }
 .menu-item:nth-child(8) {
-  animation-delay: 0.16s;
+  animation-delay: 0.07s;
 }
 .menu-item:nth-child(9) {
-  animation-delay: 0.18s;
+  animation-delay: 0.08s;
 }
 .menu-item:nth-child(10) {
-  animation-delay: 0.2s;
+  animation-delay: 0.09s;
 }
 .menu-item:nth-child(11) {
-  animation-delay: 0.22s;
+  animation-delay: 0.1s;
 }
 
 .menu-button {
@@ -704,11 +726,13 @@ const handleLogout = () => {
   border: 1px solid;
   border-radius: 0.75rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   min-height: 44px;
+  will-change: transform;
+  touch-action: manipulation;
 }
 
 /* Responsive menu button sizing - mobile-first approach */
