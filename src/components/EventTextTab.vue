@@ -135,25 +135,25 @@
 
     <!-- Text Content List -->
     <div v-else class="space-y-4 sm:space-y-6">
-      <!-- Group by text type -->
+      <!-- Group by text type in priority order -->
       <div
-        v-for="(group, textType) in groupedTexts"
-        :key="textType"
+        v-for="entry in orderedGroupedTexts"
+        :key="entry.textType"
         class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
         <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 sm:px-6 py-3 sm:py-4 border-b border-white/20">
           <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-            <component :is="getTextTypeIcon(textType)" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[#1e90ff]" />
-            {{ getTextTypeLabel(textType) }}
+            <component :is="getTextTypeIcon(entry.textType)" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[#1e90ff]" />
+            {{ getTextTypeLabel(entry.textType) }}
             <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-500"
-              >({{ group.length }} item{{ group.length !== 1 ? 's' : '' }})</span
+              >({{ entry.group.length }} item{{ entry.group.length !== 1 ? 's' : '' }})</span
             >
           </h3>
         </div>
 
         <div class="p-4 sm:p-6 space-y-3 sm:space-y-4">
           <EventTextCard
-            v-for="text in group"
+            v-for="text in entry.group"
             :key="text.id"
             :text="text"
             @edit="editText"
@@ -268,6 +268,28 @@ const groupedTexts = computed(() => {
   })
 
   return groups
+})
+
+// Ordered groups by priority: cover_header, welcome_message, description,
+// date_text, time_text, location_text, then the rest in their original order
+const orderedGroupedTexts = computed(() => {
+  const groups = groupedTexts.value
+  const priority = [
+    'cover_header',
+    'welcome_message',
+    'description',
+    'date_text',
+    'time_text',
+    'location_text',
+  ]
+
+  const keys = Object.keys(groups)
+  const prioritized = priority.filter((k) => keys.includes(k))
+  const rest = keys.filter((k) => !priority.includes(k))
+
+  const orderedKeys = [...prioritized, ...rest]
+
+  return orderedKeys.map((textType) => ({ textType, group: groups[textType] }))
 })
 
 // Methods
