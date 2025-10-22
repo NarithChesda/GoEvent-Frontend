@@ -72,6 +72,32 @@ p {
   padding-bottom: 0.1em;
 }
 
+/* iOS Safari-specific font rendering fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Only applies to iOS Safari */
+  h1,
+  h2,
+  p,
+  span,
+  div {
+    /* Force font rendering with explicit properties */
+    -webkit-font-smoothing: subpixel-antialiased;
+    font-synthesis: none;
+    font-kerning: normal;
+    /* Ensure proper font loading on iOS */
+    font-display: swap;
+    /* Force hardware acceleration for text rendering */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+
+  /* Ensure custom fonts are properly applied on iOS */
+  [style*="fontFamily"] {
+    /* Force style recalculation */
+    will-change: font-family;
+  }
+}
+
 /* Single line text forcing */
 .single-line-text {
   white-space: nowrap !important;

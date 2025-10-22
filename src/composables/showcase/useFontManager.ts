@@ -333,6 +333,37 @@ export function useFontManager() {
   }
 
   /**
+   * Detects if the current browser is iOS Safari
+   */
+  const isIOSSafari = (): boolean => {
+    const ua = navigator.userAgent
+    const isIOS = /iPad|iPhone|iPod/.test(ua)
+    const isWebKit = /WebKit/.test(ua)
+    const isNotChrome = !/CriOS|Chrome/.test(ua)
+    return isIOS && isWebKit && isNotChrome
+  }
+
+  /**
+   * Gets the proper font format string based on file extension
+   */
+  const getFontFormat = (url: string): string => {
+    const extension = url.toLowerCase().split('.').pop()?.split('?')[0]
+
+    switch (extension) {
+      case 'woff2':
+        return 'woff2'
+      case 'woff':
+        return 'woff'
+      case 'ttf':
+        return 'truetype'
+      case 'otf':
+        return 'opentype'
+      default:
+        return 'woff2' // Default to woff2 for best compatibility
+    }
+  }
+
+  /**
    * Executes font loading with retry logic
    */
   const executeLoadWithRetry = async (
@@ -347,6 +378,7 @@ export function useFontManager() {
   ): Promise<FontLoadResult> => {
     let lastError = ''
     const cacheKey = `${fontName}-${fullUrl}`
+    const isiOS = isIOSSafari()
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -358,13 +390,28 @@ export function useFontManager() {
           })
         }
 
-        // Create and load font face
-        const fontFace = new FontFace(fontName, `url(${fullUrl})`, {
+        // iOS Safari requires explicit format() in the URL for proper rendering
+        const fontFormat = getFontFormat(fullUrl)
+        const fontSource = isiOS
+          ? `url(${fullUrl}) format('${fontFormat}')`
+          : `url(${fullUrl})`
+
+        // Create and load font face with iOS-specific optimizations
+        const fontFaceDescriptors: FontFaceDescriptors = {
           display: display as FontDisplay,
           ...(font.font_type?.includes('variable') && {
             variationSettings: 'normal',
           }),
-        })
+        }
+
+        // iOS-specific: Add additional descriptors for better compatibility
+        if (isiOS) {
+          // Explicitly set weight and style for iOS
+          fontFaceDescriptors.weight = 'normal'
+          fontFaceDescriptors.style = 'normal'
+        }
+
+        const fontFace = new FontFace(fontName, fontSource, fontFaceDescriptors)
 
         // Load with timeout
         const loadedFont = await Promise.race([
@@ -380,14 +427,77 @@ export function useFontManager() {
         // Add to document
         document.fonts.add(loadedFont)
 
-        // Wait for font to be ready
+        // iOS-specific: Force font rendering by creating a temporary element
+        if (isiOS) {
+          const testElement = document.createElement('div')
+          testElement.style.fontFamily = `"${fontName}"`
+          testElement.style.position = 'absolute'
+          testElement.style.left = '-9999px'
+          testElement.style.visibility = 'hidden'
+          testElement.textContent = 'Test'
+          document.body.appendChild(testElement)
+
+          // Force browser to compute styles and render the font
+          const computedStyle = window.getComputedStyle(testElement)
+          const actualFont = computedStyle.fontFamily
+
+          // Clean up test element
+          setTimeout(() => {
+            document.body.removeChild(testElement)
+          }, 100)
+        }
+
+        // Wait for font to be ready with iOS-specific extended timeout
+        const readyTimeout = isiOS
+          ? FONT_CONFIG.FONT_READY_WAIT_TIME * 2 // Double timeout for iOS
+          : FONT_CONFIG.FONT_READY_WAIT_TIME
+
         await Promise.race([
           document.fonts.ready,
-          new Promise((resolve) => setTimeout(resolve, FONT_CONFIG.FONT_READY_WAIT_TIME)),
+          new Promise((resolve) => setTimeout(resolve, readyTimeout)),
         ])
 
-        // Small delay to ensure browser has applied the font
-        await new Promise((resolve) => setTimeout(resolve, FONT_CONFIG.FONT_APPLY_DELAY))
+        // iOS-specific: Longer delay to ensure browser has properly applied the font
+        const applyDelay = isiOS
+          ? FONT_CONFIG.FONT_APPLY_DELAY * 3 // Triple delay for iOS
+          : FONT_CONFIG.FONT_APPLY_DELAY
+
+        await new Promise((resolve) => setTimeout(resolve, applyDelay))
+
+        // iOS-specific: Also inject CSS @font-face as a fallback
+        // This ensures maximum compatibility with iOS Safari
+        if (isiOS) {
+          try {
+            // Check if style tag already exists
+            let styleTag = document.getElementById('ios-font-fallback') as HTMLStyleElement
+            if (!styleTag) {
+              styleTag = document.createElement('style')
+              styleTag.id = 'ios-font-fallback'
+              document.head.appendChild(styleTag)
+            }
+
+            // Add @font-face rule
+            const fontFormat = getFontFormat(fullUrl)
+            const fontFaceRule = `
+              @font-face {
+                font-family: "${fontName}";
+                src: url(${fullUrl}) format('${fontFormat}');
+                font-display: swap;
+                font-weight: normal;
+                font-style: normal;
+              }
+            `
+
+            if (styleTag.sheet) {
+              styleTag.sheet.insertRule(fontFaceRule, styleTag.sheet.cssRules.length)
+            } else {
+              styleTag.textContent += fontFaceRule
+            }
+          } catch (cssError) {
+            // Log but don't fail if CSS injection fails
+            console.warn('Failed to inject CSS @font-face for iOS:', cssError)
+          }
+        }
 
         // Cache successful load
         const cacheEntry: FontCacheEntry = {
