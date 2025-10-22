@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
@@ -135,16 +135,7 @@
               <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               <span class="hidden sm:inline">View Showcase</span>
               <span class="sm:hidden">Showcase</span>
-            </button>
-            <button
-              @click="sendInvitations"
-              class="bg-white/80 backdrop-blur-sm border-2 border-[#1e90ff] text-[#1e90ff] hover:bg-[#E6F4FF] font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
-            >
-              <Send class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              <span class="hidden sm:inline">Bulk Send</span>
-              <span class="sm:hidden">Send All</span>
-            </button>
-            <button
+            </button><button
               @click="showAddGuestModal = true"
               class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
             >
@@ -211,11 +202,6 @@
                   Status
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
-                >
-                  Invited On
-                </th>
-                <th
                   class="px-6 py-3 text-right text-xs font-medium text-slate-700 uppercase tracking-wider"
                 >
                   Actions
@@ -226,7 +212,7 @@
               <tr
                 v-for="guest in guests"
                 :key="guest.id"
-                class="hover:bg-slate-50/50 transition-colors"
+                class="hover:bg-slate-50/50 transition-colors cursor-pointer" @click="viewGuestShowcase(guest)"
               >
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -250,42 +236,12 @@
                     {{ getStatusDisplay(guest) }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                  {{ formatDate(guest.created_at) }}
-                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex items-center justify-end space-x-2">
+                    <button @click.stop="copyShowcaseLink(guest, 'en')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy EN link for ${guest.name}`">EN</button>
+                    <button @click.stop="copyShowcaseLink(guest, 'kh')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy KH link for ${guest.name}`">KH</button>
                     <button
-                      v-if="guest.invitation_status === 'not_sent'"
-                      @click="sendIndividualInvitation(guest)"
-                      class="text-[#1e90ff] hover:text-[#1873cc]"
-                      title="Mark as Sent"
-                    >
-                      <Send class="w-4 h-4" />
-                    </button>
-                    <button
-                      @click="viewGuestShowcase(guest)"
-                      class="text-green-600 hover:text-green-700"
-                      :title="'View personalized showcase'"
-                    >
-                      <ExternalLink class="w-4 h-4" />
-                    </button>
-                    <button
-                      @click="copyShowcaseLink(guest)"
-                      class="text-purple-600 hover:text-purple-700 relative group"
-                      :title="`Copy sharing link for ${guest.name}`"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      @click="removeGuest(guest)"
+                      @click.stop="removeGuest(guest)"
                       class="text-red-600 hover:text-red-700"
                       title="Remove Guest"
                     >
@@ -303,8 +259,7 @@
           <div
             v-for="guest in guests"
             :key="guest.id"
-            class="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-shadow"
-          >
+            class="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer" @click="viewGuestShowcase(guest)">
             <!-- Single Row Layout -->
             <div class="flex items-center gap-2">
               <!-- Avatar -->
@@ -317,7 +272,6 @@
               <!-- Guest Info -->
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-semibold text-slate-900 truncate leading-tight">{{ guest.name }}</p>
-                <p class="text-[10px] text-slate-500 truncate">{{ formatDate(guest.created_at) }}</p>
               </div>
 
               <!-- Status Badge -->
@@ -334,37 +288,10 @@
 
               <!-- Action Buttons -->
               <div class="flex items-center gap-1 flex-shrink-0">
+                <button @click.stop="copyShowcaseLink(guest, 'en')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy EN link for ${guest.name}`">EN</button>
+                    <button @click.stop="copyShowcaseLink(guest, 'kh')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy KH link for ${guest.name}`">KH</button>
                 <button
-                  v-if="guest.invitation_status === 'not_sent'"
-                  @click="sendIndividualInvitation(guest)"
-                  class="p-1.5 text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors"
-                  title="Mark as Sent"
-                >
-                  <Send class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  @click="viewGuestShowcase(guest)"
-                  class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  title="View personalized showcase"
-                >
-                  <ExternalLink class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  @click="copyShowcaseLink(guest)"
-                  class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                  :title="`Copy sharing link for ${guest.name}`"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                </button>
-                <button
-                  @click="removeGuest(guest)"
+                  @click.stop="removeGuest(guest)"
                   class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Remove Guest"
                 >
@@ -557,31 +484,6 @@ const viewEventShowcase = () => {
   window.open(showcaseUrl, '_blank')
 }
 
-const sendInvitations = () => {
-  showMessage('success', 'Bulk invitation sending will be available soon')
-}
-
-const sendIndividualInvitation = async (guest: EventGuest) => {
-  try {
-    const response = await guestService.markInvitationSent(props.eventId, guest.id)
-    if (response.success && response.data) {
-      // Update the guest in the list
-      const index = guests.value.findIndex((g) => g.id === guest.id)
-      if (index !== -1) {
-        guests.value[index] = response.data
-      }
-      showMessage('success', `Invitation marked as sent to ${guest.name}`)
-      // Refresh stats
-      loadGuestStats()
-    } else {
-      showMessage('error', response.message || 'Failed to mark invitation as sent')
-    }
-  } catch (error) {
-    console.error('Error marking invitation as sent:', error)
-    showMessage('error', 'Failed to mark invitation as sent')
-  }
-}
-
 const addGuest = async () => {
   if (!newGuestName.value.trim()) return
 
@@ -682,29 +584,29 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const getGuestShowcaseUrl = (guest: EventGuest) => {
+const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {
   // Use SSR meta URL for personalized guest invitations
-  return getGuestSSRMetaUrl(props.eventId, guest.name, 'kh')
+  return getGuestSSRMetaUrl(props.eventId, guest.name, language)
 }
 
-const getDirectGuestShowcaseUrl = (guest: EventGuest) => {
+const getDirectGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {
   // Direct URL for opening in browser (non-SSR)
-  const showcaseUrl = `/events/${props.eventId}/showcase?guest_name=${encodeURIComponent(guest.name)}&lang=kh`
+  const showcaseUrl = `/events/${props.eventId}/showcase?guest_name=${encodeURIComponent(guest.name)}&lang=${language}`
   return `${window.location.origin}${showcaseUrl}`
 }
 
 const viewGuestShowcase = (guest: EventGuest) => {
   // Use direct URL for viewing (non-SSR) so it opens immediately
-  const fullUrl = getDirectGuestShowcaseUrl(guest)
+  const fullUrl = getDirectGuestShowcaseUrl(guest, 'kh')
   window.open(fullUrl, '_blank')
 }
 
-const copyShowcaseLink = (guest: EventGuest) => {
-  const fullUrl = getGuestShowcaseUrl(guest)
+const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
+  const fullUrl = getGuestShowcaseUrl(guest, language)
   navigator.clipboard
     .writeText(fullUrl)
     .then(() => {
-      showMessage('success', `Showcase link copied for ${guest.name}`)
+      showMessage('success', `Showcase link (${language.toUpperCase()}) copied for ${guest.name}`)
     })
     .catch(() => {
       showMessage('error', 'Failed to copy link')
@@ -804,3 +706,19 @@ watch(hasTemplatePayment, (isActivated) => {
   transform: translateY(-20px);
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
