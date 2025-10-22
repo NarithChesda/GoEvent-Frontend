@@ -61,9 +61,9 @@
                 </div>
                 <div>
                   <h3
-                    class="font-semibold text-sm sm:text-base"
+                    class="font-regular text-sm sm:text-base"
                     :style="{
-                      fontFamily: primaryFont || currentFont,
+                      fontFamily: secondaryFont || currentFont,
                       color: primaryColor,
                     }"
                   >
@@ -111,15 +111,15 @@
 
               <!-- Single Row Payment Layout -->
               <div
-                class="payment-row-container flex flex-col lg:flex-row items-start lg:items-center justify-center gap-4 lg:gap-6"
+                class="payment-row-container flex flex-col items-center justify-center gap-1"
               >
                 <!-- QR Code Section -->
-                <div class="flex-shrink-0 text-center w-full lg:w-auto xl:ml-8">
+                <div class="flex-shrink-0 text-center w-full">
                   <!-- QR Code exists -->
                   <div v-if="method.qr_code_image" class="relative">
                     <!-- Seamless QR container with depth -->
                     <div
-                      class="qr-simple-container relative p-4 transition-all duration-300 hover:scale-[1.02] group"
+                      class="qr-simple-container relative transition-all duration-300 hover:scale-[1.02] group"
                       :style="{
                         backgroundColor: `${primaryColor}04`,
                       }"
@@ -127,7 +127,7 @@
                       <img
                         :src="getMediaUrl(method.qr_code_image)"
                         :alt="`QR Code for ${method.name}`"
-                        class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl shadow-md transition-all duration-300"
+                        class="w-32 h-32 mx-auto rounded-2xl shadow-md transition-all duration-300"
                         @error="onImageError"
                       />
                       <!-- Subtle scan line animation overlay -->
@@ -158,12 +158,12 @@
                       }"
                     >
                       <div
-                        class="w-32 h-32 lg:w-36 lg:h-36 mx-auto rounded-2xl flex items-center justify-center"
+                        class="w-32 h-32 mx-auto rounded-2xl flex items-center justify-center"
                         :style="{ backgroundColor: `${primaryColor}05` }"
                       >
                         <div class="text-center">
                           <svg
-                            class="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-2"
+                            class="w-12 h-12 mx-auto mb-2"
                             :style="{ color: primaryColor, opacity: '0.4' }"
                             fill="none"
                             stroke="currentColor"
@@ -195,7 +195,7 @@
                 <!-- Payment Info Panel - Grouped Bank Info + Payment Button -->
                 <div
                   v-if="hasVisibleBankInfo(method) || method.payment_url"
-                  class="flex-shrink-0 w-full lg:w-auto lg:max-w-sm"
+                  class="flex-shrink-0 w-full"
                 >
                   <div
                     class="payment-info-simple p-4 backdrop-blur-md transition-all duration-200"
@@ -205,7 +205,7 @@
                   >
                     <!-- Bank Info -->
                     <div v-if="hasVisibleBankInfo(method)" class="space-y-2 mb-4">
-                      <div v-if="method.account_name" class="text-center lg:text-left">
+                      <div v-if="method.account_name" class="text-center">
                         <div
                           class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-medium text-sm min-h-[32px]"
                           :style="{
@@ -233,7 +233,7 @@
                         </div>
                       </div>
 
-                      <div v-if="method.account_number" class="text-center lg:text-left">
+                      <div v-if="method.account_number" class="text-center">
                         <div
                           class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-mono text-sm min-h-[32px] group cursor-pointer transition-all hover:shadow-lg"
                           :style="{
@@ -278,14 +278,14 @@
                     </div>
 
                     <!-- Payment Button -->
-                    <div v-if="method.payment_url" class="text-center lg:text-left">
+                    <div v-if="method.payment_url" class="text-center">
                       <a
                         :href="method.payment_url"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="payment-link-minimalist group inline-flex items-center justify-center w-full lg:w-auto"
+                        class="payment-link-minimalist group inline-flex items-center justify-center w-full"
                         :style="{
-                          fontFamily: primaryFont || currentFont,
+                          fontFamily: secondaryFont || currentFont,
                           background: primaryColor,
                           color: '#ffffff',
                           boxShadow: `
@@ -296,7 +296,7 @@
                       `,
                         }"
                       >
-                        <span class="font-semibold">{{ capitalizeText(method.payment_type) }}</span>
+                        <span class="font-regular">{{ getPaymentTypeLabel(method) }}</span>
                       </a>
                     </div>
                   </div>
@@ -435,35 +435,34 @@ const getTextContent = (textType: string, fallback = ''): string => {
 const expandedCards = ref<Set<string>>(new Set())
 
 // Computed
-const paymentSectionTitle = computed(() => {
-  // Helper function to determine category for translation
-  const getCategoryForTranslation = () => {
-    // First, try category_details.name (most reliable)
-    if (props.eventCategoryDetails?.name) {
-      return props.eventCategoryDetails.name.toLowerCase()
-    }
-
-    // Second, try category_name string field
-    if (props.eventCategoryName) {
-      return props.eventCategoryName.toLowerCase()
-    }
-
-    // Third, try eventCategory as string
-    if (props.eventCategory && typeof props.eventCategory === 'string') {
-      return props.eventCategory.toLowerCase()
-    }
-
-    // Finally, try numeric category ID mapping (common category IDs)
-    if (props.eventCategory && typeof props.eventCategory === 'number') {
-      const numericCategory = props.eventCategory
-      // Common category ID mappings based on typical database structure
-      if (numericCategory === 1 || numericCategory === 7) return 'wedding'
-      if (numericCategory === 2) return 'birthday'
-    }
-
-    return null
+const getCategoryForTranslation = (): string | null => {
+  // First, try category_details.name (most reliable)
+  if (props.eventCategoryDetails?.name) {
+    return props.eventCategoryDetails.name.toLowerCase()
   }
 
+  // Second, try category_name string field
+  if (props.eventCategoryName) {
+    return props.eventCategoryName.toLowerCase()
+  }
+
+  // Third, try eventCategory as string
+  if (props.eventCategory && typeof props.eventCategory === 'string') {
+    return props.eventCategory.toLowerCase()
+  }
+
+  // Finally, try numeric category ID mapping (common category IDs)
+  if (props.eventCategory && typeof props.eventCategory === 'number') {
+    const numericCategory = props.eventCategory
+    // Common category ID mappings based on typical database structure
+    if (numericCategory === 1 || numericCategory === 7) return 'wedding'
+    if (numericCategory === 2) return 'birthday'
+  }
+
+  return null
+}
+
+const paymentSectionTitle = computed(() => {
   const categoryName = getCategoryForTranslation()
 
   // Handle specific category translations
@@ -518,6 +517,38 @@ const toggleCard = (method: EventPaymentMethod) => {
 
 const hasVisibleBankInfo = (method: EventPaymentMethod): boolean => {
   return !!(method.bank_name || method.account_name || method.account_number)
+}
+
+const getPaymentTypeLabel = (method: EventPaymentMethod): string => {
+  const paymentType = (method.payment_type || '').toLowerCase().trim()
+  if (paymentType !== 'gift') {
+    return capitalizeText(method.payment_type)
+  }
+
+  const categoryName = getCategoryForTranslation()
+
+  if (categoryName === 'wedding') {
+    return getTextContent('payment_wedding_gift', 'Wedding Gift')
+  }
+
+  if (categoryName === 'birthday') {
+    return getTextContent('payment_birthday_gift', 'Birthday Gift')
+  }
+
+  if (categoryName) {
+    const specificKey = `payment_${categoryName}_gift`
+    const specificTranslation = getTextContent(specificKey, '')
+    if (specificTranslation) {
+      return specificTranslation
+    }
+
+    const capitalizedCategory = categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
+    return `${capitalizedCategory} Gift`
+  }
+
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  const fallbackGift = translateRSVP('floating_menu_gift', currentLang) || 'Gift'
+  return currentLang === 'en' ? fallbackGift.toUpperCase() : fallbackGift
 }
 
 const copyToClipboard = async (text: string) => {
@@ -964,7 +995,7 @@ const capitalizeText = (text: string | undefined): string => {
   /* Payment row - compact layout for laptop */
   .payment-row-container {
     padding: 0.25rem !important;
-    gap: 0.75rem !important;
+    gap: 0.25rem !important;
     flex-direction: column !important;
     align-items: center !important;
   }
@@ -1184,7 +1215,7 @@ const capitalizeText = (text: string | undefined): string => {
 
   .payment-row-container {
     padding: 0.75rem;
-    gap: 2rem;
+    gap: 0.25rem;
   }
 
   .payment-info-simple {
@@ -1221,8 +1252,9 @@ const capitalizeText = (text: string | undefined): string => {
 
   .payment-row-container {
     padding: 0.75rem;
-    gap: 2rem;
+    gap: 0.25rem;
   }
+
 
   .payment-info-simple {
     padding: 1.25rem;
