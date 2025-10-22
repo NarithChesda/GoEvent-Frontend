@@ -27,86 +27,87 @@
         >
           <RefreshCw class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" :class="{ 'animate-spin': loading }" />
         </button>
-      </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
-          </div>
-          <div>
-            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ totalRegistrations }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Total Registered</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <UserCheck class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ checkedInCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Checked In</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <UserPlus class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ totalAttendees }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Total Attendees</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ pendingCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Pending</p>
-          </div>
+        <!-- Live Toggle -->
+        <button
+          @click="liveUpdates = !liveUpdates"
+          class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl px-2.5 py-2 hover:bg-white/90 transition-all duration-200 shadow-lg flex items-center gap-1.5 text-slate-700 text-sm"
+          :aria-pressed="liveUpdates.toString()"
+          title="Toggle live updates"
+        >
+          <span
+            class="inline-block w-2.5 h-2.5 rounded-full"
+            :class="liveUpdates ? 'bg-green-500 animate-pulse' : 'bg-slate-300'"
+          ></span>
+          <span class="hidden sm:inline">Live</span>
+        </button>
+        <div v-if="liveUpdates && lastUpdatedText" class="hidden sm:block text-xs text-slate-500">
+          Updated {{ lastUpdatedText }}
         </div>
       </div>
     </div>
+
+    <!-- Removed stats cards for a cleaner, action-focused UI -->
 
     <!-- Search and Filter -->
-    <div class="flex gap-2 sm:gap-4">
-      <div class="flex-1">
-        <div class="relative">
-          <Search
-            class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] pointer-events-none z-10"
-          />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search attendees..."
-            class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200 text-sm sm:text-base relative"
-          />
+    <div class="flex flex-col gap-2 sm:gap-3">
+      <div class="flex gap-2 sm:gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <Search
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] pointer-events-none z-10"
+            />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search attendees..."
+              class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff]/30 transition-all duration-200 text-sm sm:text-base relative text-slate-800 placeholder-slate-400 shadow-sm"
+            />
+            <button
+              v-if="searchQuery"
+              @click="searchQuery = ''"
+              class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-600 hover:text-[#1e90ff] rounded-lg hover:bg-white/60 active:bg-white/70"
+              aria-label="Clear search"
+            >
+              <X class="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
-      <div class="flex-shrink-0">
-        <select
-          v-model="statusFilter"
-          class="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-all duration-200 text-sm sm:text-base text-slate-700 font-medium cursor-pointer appearance-none bg-no-repeat bg-right pr-8 sm:pr-10"
-          style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%231e90ff%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e'); background-position: right 0.5rem center; background-size: 1.25rem;"
+
+      <!-- Status Filter Chips -->
+      <div class="flex flex-wrap gap-2">
+        <button
+          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
+          :class="{ 'bg-[#B0E0E6] text-[#1873cc] border-[#B0E0E6]': statusFilter === '' }"
+          @click="statusFilter = ''"
+          aria-label="Filter: All"
         >
-          <option value="">All Status</option>
-          <option value="registered">Registered</option>
-          <option value="checked_in">Checked In</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+          All ({{ allCount }})
+        </button>
+        <button
+          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
+          :class="{ 'bg-[#B0E0E6] text-[#1873cc] border-[#B0E0E6]': statusFilter === 'registered' }"
+          @click="statusFilter = 'registered'"
+          aria-label="Filter: Not Checked In"
+        >
+          Not Checked In ({{ pendingCount }})
+        </button>
+        <button
+          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
+          :class="{ 'bg-emerald-100 text-emerald-700 border-emerald-200': statusFilter === 'checked_in' }"
+          @click="statusFilter = 'checked_in'"
+          aria-label="Filter: Checked In"
+        >
+          Checked In ({{ checkedInCount }})
+        </button>
+        <button
+          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
+          :class="{ 'bg-red-100 text-red-800 border-red-200': statusFilter === 'cancelled' }"
+          @click="statusFilter = 'cancelled'"
+          aria-label="Filter: Cancelled"
+        >
+          Cancelled ({{ cancelledCount }})
+        </button>
       </div>
     </div>
 
@@ -193,6 +194,14 @@
             >
               {{ registration.confirmation_code }}
             </div>
+            <button
+              class="inline-flex items-center p-1.5 ml-1 rounded-lg bg-white/70 border border-white/40 text-slate-600 hover:text-slate-800 hover:bg-white/90 transition-colors"
+              @click="copyToClipboard(registration.confirmation_code)"
+              aria-label="Copy confirmation code"
+              title="Copy code"
+            >
+              <Copy class="w-3.5 h-3.5" />
+            </button>
 
             <!-- Status Badge -->
             <div class="flex justify-end">
@@ -202,6 +211,21 @@
               >
                 {{ getStatusLabel(registration.status) }}
               </span>
+            </div>
+
+            <!-- Inline Actions -->
+            <div class="flex justify-end gap-2">
+              <button
+                v-if="registration.status === 'registered' && canEdit"
+                @click="performRowCheckin(registration)"
+                class="inline-flex items-center px-2.5 py-1 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="rowChecking[registration.id] === true"
+                aria-label="Check in attendee"
+              >
+                <div v-if="rowChecking[registration.id]" class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                <UserCheck v-else class="w-3.5 h-3.5 mr-1" />
+                Check In
+              </button>
             </div>
 
             <!-- Notes -->
@@ -374,6 +398,17 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Mobile Scan FAB -->
+    <button
+      v-if="isMobile && canEdit"
+      @click="showCheckinModal = true; showQRScanner = true"
+      class="fixed bottom-24 right-6 z-40 shadow-xl rounded-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white p-4 transition-transform hover:scale-105"
+      aria-label="Open scanner"
+      title="Scan QR"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+    </button>
   </div>
 </template>
 
@@ -382,7 +417,6 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import {
   Users,
   UserCheck,
-  UserPlus,
   Clock,
   Search,
   RefreshCw,
@@ -390,6 +424,7 @@ import {
   AlertCircle,
   X,
 } from 'lucide-vue-next'
+import { Copy } from 'lucide-vue-next'
 import {
   eventsService,
   type EventRegistration,
@@ -409,12 +444,23 @@ const props = defineProps<Props>()
 const registrations = ref<EventRegistrationDetail[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
+const debouncedQuery = ref('')
+let searchTimer: number | undefined
 const statusFilter = ref('')
 const showCheckinModal = ref(false)
 const checkinCode = ref('')
 const isChecking = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showQRScanner = ref(false)
+const rowChecking = ref<Record<string, boolean>>({})
+const liveUpdates = ref(false)
+let liveInterval: number | undefined
+const lastUpdated = ref<Date | null>(null)
+const lastUpdatedText = computed(() =>
+  lastUpdated.value
+    ? lastUpdated.value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '',
+)
 
 // Detect if device is mobile (reactive to window resize)
 const windowWidth = ref(window.innerWidth)
@@ -446,17 +492,24 @@ const pendingCount = computed(
   () => registrations.value.filter((r) => r.status === 'registered').length,
 )
 
+const cancelledCount = computed(
+  () => registrations.value.filter((r) => r.status === 'cancelled').length,
+)
+
+const allCount = computed(() => registrations.value.length)
+
 const filteredRegistrations = computed(() => {
   let filtered = registrations.value
 
   // Filter by search query
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
+  if (debouncedQuery.value.trim()) {
+    const query = debouncedQuery.value.toLowerCase()
     filtered = filtered.filter(
       (r) =>
         r.user_details?.first_name?.toLowerCase().includes(query) ||
         r.user_details?.last_name?.toLowerCase().includes(query) ||
         r.user_details?.username?.toLowerCase().includes(query) ||
+        r.user_details?.email?.toLowerCase().includes(query) ||
         r.confirmation_code?.toLowerCase().includes(query),
     )
   }
@@ -511,6 +564,7 @@ const loadRegistrations = async (forceRefresh = false) => {
         checked_in_at: reg.checked_in_at,
         notes: reg.notes,
       }))
+      lastUpdated.value = new Date()
     } else {
       showMessage('error', response.message || 'Failed to load registrations')
     }
@@ -566,6 +620,36 @@ const performCheckin = async () => {
   }
 }
 
+const performRowCheckin = async (registration: EventRegistrationDetail) => {
+  if (!registration?.confirmation_code) return
+  rowChecking.value[registration.id] = true
+  try {
+    const response = await eventsService.adminCheckin(
+      props.eventId,
+      registration.confirmation_code.trim(),
+    )
+    if (response.success) {
+      showMessage('success', 'Attendee checked in successfully!')
+      // Optimistically update the row to reduce flicker
+      const idx = registrations.value.findIndex((r) => r.id === registration.id)
+      if (idx !== -1) {
+        registrations.value[idx] = {
+          ...registrations.value[idx],
+          status: 'checked_in',
+          checked_in_at: new Date().toISOString(),
+        }
+      }
+    } else {
+      showMessage('error', response.message || 'Failed to check in attendee')
+    }
+  } catch (error: any) {
+    console.error('Error checking in attendee:', error)
+    showMessage('error', 'An error occurred during check-in. Please try again.')
+  } finally {
+    rowChecking.value[registration.id] = false
+  }
+}
+
 const closeCheckinModal = () => {
   showCheckinModal.value = false
   checkinCode.value = ''
@@ -603,7 +687,7 @@ const getStatusBadgeColor = (status: string): string => {
     case 'checked_in':
       return 'bg-green-500'
     case 'registered':
-      return 'bg-[#E6F4FF]0'
+      return 'bg-[#1e90ff]'
     case 'cancelled':
       return 'bg-red-500'
     default:
@@ -655,6 +739,24 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   }, 5000)
 }
 
+const copyToClipboard = async (text: string) => {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      const el = document.createElement('textarea')
+      el.value = String(text)
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
+    showMessage('success', 'Confirmation code copied')
+  } catch (e) {
+    showMessage('error', 'Failed to copy code')
+  }
+}
+
 // Watchers
 watch(
   () => props.registrations,
@@ -670,11 +772,42 @@ watch(
 onMounted(() => {
   loadRegistrations()
   window.addEventListener('resize', handleResize)
+  // Initialize debounced search
+  debouncedQuery.value = searchQuery.value
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  if (liveInterval) window.clearInterval(liveInterval)
 })
+
+// Debounce search input
+watch(
+  () => searchQuery.value,
+  (val) => {
+    if (searchTimer) window.clearTimeout(searchTimer)
+    searchTimer = window.setTimeout(() => {
+      debouncedQuery.value = val
+    }, 250)
+  },
+)
+
+// Live updates watcher
+watch(
+  () => liveUpdates.value,
+  (newVal) => {
+    if (newVal) {
+      // immediate refresh on enable
+      loadRegistrations(true)
+      liveInterval = window.setInterval(() => {
+        loadRegistrations(true)
+      }, 10000)
+    } else if (liveInterval) {
+      window.clearInterval(liveInterval)
+      liveInterval = undefined
+    }
+  },
+)
 </script>
 
 <style scoped>
