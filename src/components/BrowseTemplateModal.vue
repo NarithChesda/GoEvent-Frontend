@@ -9,13 +9,31 @@
             class="relative w-full max-w-5xl lg:max-w-6xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
             @click.stop
           >
-            <!-- Header -->
-            <TemplateModalHeader @close="handleModalClose" />
+            <!-- Header (neutral style to match Add Agenda Item) -->
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <LayoutTemplate class="w-4.5 h-4.5" />
+                  </div>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Browse Templates</h2>
+                </div>
+                <button
+                  @click="handleModalClose"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  aria-label="Close"
+                  type="button"
+                >
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
             <!-- Filters -->
             <TemplateFilters
               v-model:search-query="searchQuery"
               v-model:selected-category="selectedCategoryId"
+              v-model:selected-plan="selectedPlan"
               :categories="categories"
               @clear-filters="clearFilters"
             />
@@ -25,20 +43,22 @@
               <!-- Loading State -->
               <TemplateLoadingState v-if="loading" />
 
-              <!-- Templates Grid -->
-              <TemplateGrid
-                v-else-if="filteredTemplates.length > 0"
-                :templates="filteredTemplates"
-                :selected-template-id="selectedTemplateId"
-                @select-template="handleTemplateSelection"
-              />
+              <!-- Templates Grid Only -->
+              <div v-else>
+                <TemplateGrid
+                  v-if="filteredTemplates.length > 0"
+                  :templates="filteredTemplates"
+                  :selected-template-id="selectedTemplateId"
+                  @select-template="handleTemplateSelection"
+                  @preview-template="openPreview"
+                />
 
-              <!-- Empty State -->
-              <TemplateEmptyState
-                v-else
-                :has-filters="Boolean(searchQuery || selectedCategoryId)"
-                @clear-filters="clearFilters"
-              />
+                <TemplateEmptyState
+                  v-else
+                  :has-filters="Boolean(searchQuery || selectedCategoryId)"
+                  @clear-filters="clearFilters"
+                />
+              </div>
 
               <!-- Messages -->
               <TemplateMessage v-if="message" :message="message" />
@@ -56,24 +76,34 @@
         </div>
       </div>
     </Transition>
+    <!-- Preview Modal -->
+    <TemplatePreviewModal
+      v-if="showPreview && previewingTemplate"
+      :template="previewingTemplate"
+      :show-modal="showPreview"
+      @close="closePreview"
+      @select-template="(t) => { handleTemplateSelection(t); closePreview() }"
+    />
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { watch, onMounted } from 'vue'
+import { watch, onMounted, ref } from 'vue'
 import type { EventTemplate } from '../services/api'
 import { useTemplateApi } from '../composables/useTemplateApi'
 import { useTemplateFiltering } from '../composables/useTemplateFiltering'
 import { useTemplateSelection } from '../composables/useTemplateSelection'
 
 // Import child components
-import TemplateModalHeader from './template/TemplateModalHeader.vue'
+// Header uses neutral style inline (no gradient header component)
 import TemplateFilters from './template/TemplateFilters.vue'
 import TemplateLoadingState from './template/TemplateLoadingState.vue'
 import TemplateGrid from './template/TemplateGrid.vue'
 import TemplateEmptyState from './template/TemplateEmptyState.vue'
 import TemplateMessage from './template/TemplateMessage.vue'
 import TemplateModalFooter from './template/TemplateModalFooter.vue'
+import { X, LayoutTemplate } from 'lucide-vue-next'
+import TemplatePreviewModal from './template/TemplatePreview.vue'
 
 interface Props {
   isOpen: boolean
@@ -102,6 +132,7 @@ const {
 const {
   searchQuery,
   selectedCategoryId,
+  selectedPlan,
   categories,
   filteredTemplates,
   clearFilters,
@@ -119,6 +150,19 @@ const handleModalClose = (): void => {
 
 const handleTemplateSelection = (template: EventTemplate): void => {
   selectTemplate(template)
+}
+
+// Preview modal state
+const previewingTemplate = ref<EventTemplate | null>(null)
+const showPreview = ref(false)
+
+const openPreview = (template: EventTemplate): void => {
+  previewingTemplate.value = template
+  showPreview.value = true
+}
+
+const closePreview = (): void => {
+  showPreview.value = false
 }
 
 const handleConfirmSelection = async (): Promise<void> => {

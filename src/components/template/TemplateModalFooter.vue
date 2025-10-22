@@ -8,7 +8,7 @@
     <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
       <button
         @click="$emit('cancel')"
-        class="px-4 sm:px-6 py-2 sm:py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-200 font-medium text-sm sm:text-base order-2 sm:order-1"
+        class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium order-2 sm:order-1"
         type="button"
       >
         Cancel
@@ -17,9 +17,9 @@
         @click="$emit('confirm')"
         :disabled="!hasSelection || isSelecting"
         :class="[
-          'px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2',
+          'flex-1 sm:flex-none px-6 py-2.5 text-sm rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 order-1 sm:order-2',
           hasSelection && !isSelecting
-            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-lg hover:scale-[1.02]'
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30'
             : 'bg-slate-200 text-slate-400 cursor-not-allowed',
         ]"
         type="button"

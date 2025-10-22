@@ -23,8 +23,8 @@
       <!-- Modal Content -->
       <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
         <div class="space-y-6">
-          <!-- Template Image -->
-          <div v-if="template.preview_image" class="relative rounded-2xl overflow-hidden aspect-[9/16] mx-auto max-w-md">
+          <!-- Template Image (Portrait 9:16) -->
+          <div v-if="template.preview_image" class="relative rounded-2xl overflow-hidden aspect-[9/16] mx-auto max-w-md w-full">
             <img
               :src="template.preview_image"
               :alt="template.name"

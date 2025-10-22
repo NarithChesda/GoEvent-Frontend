@@ -19,6 +19,7 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
   // Filter state
   const searchQuery = ref('')
   const selectedCategoryId = ref<number | null>(null)
+  const selectedPlan = ref<null | 'basic' | 'standard'>(null)
 
   // Extract categories from templates
   const categories = computed(() => {
@@ -49,6 +50,17 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
       )
     }
 
+    // Filter by plan (basic/standard)
+    if (selectedPlan.value) {
+      const plan = selectedPlan.value
+      filtered = filtered.filter((template) => {
+        const name = (template.package_plan?.name || '').toLowerCase()
+        if (plan === 'basic') return name.includes('basic')
+        if (plan === 'standard') return name.includes('standard')
+        return true
+      })
+    }
+
     // Filter by search query
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase()
@@ -71,6 +83,7 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
   const clearFilters = () => {
     searchQuery.value = ''
     selectedCategoryId.value = null
+    selectedPlan.value = null
   }
 
   // Reset filters
@@ -83,10 +96,15 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
     selectedCategoryId.value = categoryId
   }
 
+  const setPlanFilter = (plan: null | 'basic' | 'standard') => {
+    selectedPlan.value = plan
+  }
+
   return {
     // State
     searchQuery,
     selectedCategoryId,
+    selectedPlan,
 
     // Computed
     categories,
@@ -96,5 +114,6 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
     clearFilters,
     resetFilters,
     setCategoryFilter,
+    setPlanFilter,
   }
 }
