@@ -50,7 +50,7 @@
       <Lock class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
       <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Template Payment Required</h3>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
-        Your template "{{ props.event.event_template_details?.name || 'Selected Template' }}"
+        Your template {{ props.event.event_template_details?.name || 'Selected Template' }}
         requires payment before you can send invitations.
       </p>
       <button
@@ -174,7 +174,7 @@
                     <button @click.stop="copyShowcaseLink(guest, 'en')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy EN link for ${guest.name}`">EN</button>
                     <button @click.stop="copyShowcaseLink(guest, 'kh')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy KH link for ${guest.name}`">KH</button>
                     <button
-                      @click.stop="removeGuest(guest)"
+                      @click.stop="openDeleteGuestModal(guest)"
                       class="text-red-600 hover:text-red-700"
                       title="Remove Guest"
                     >
@@ -224,7 +224,7 @@
                 <button @click.stop="copyShowcaseLink(guest, 'en')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy EN link for ${guest.name}`">EN</button>
                     <button @click.stop="copyShowcaseLink(guest, 'kh')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy KH link for ${guest.name}`">KH</button>
                 <button
-                  @click.stop="removeGuest(guest)"
+                  @click.stop="openDeleteGuestModal(guest)"
                   class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Remove Guest"
                 >
@@ -237,6 +237,16 @@
       </div>
     </div>
 
+    
+    <!-- Delete Guest Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteModal"
+      title="Delete Guest"
+      :item-name="(deleteTargetGuest && deleteTargetGuest.name) || ''"
+      :loading="deletingGuest"
+      @confirm="confirmDeleteGuest"
+      @cancel="cancelDeleteGuest"
+    />
     <!-- Add Guest Modal -->
     <Teleport to="body">
       <Transition name="modal">
@@ -344,6 +354,7 @@ import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplate
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import SocialMediaPreview from './SocialMediaPreview.vue'
+import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 // Props
 const props = defineProps<{
@@ -365,6 +376,10 @@ const isAddingGuest = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const searchTerm = ref('')
 const loadingStats = ref(false)
+// Delete modal state
+const showDeleteModal = ref(false)
+const deletingGuest = ref(false)
+const deleteTargetGuest = ref<EventGuest | null>(null)
 
 // Guest data from API
 const guests = ref<EventGuest[]>([])
@@ -442,23 +457,40 @@ const addGuest = async () => {
   }
 }
 
-const removeGuest = async (guest: EventGuest) => {
-  if (confirm(`Remove ${guest.name} from the guest list?`)) {
-    try {
-      const response = await guestService.deleteGuest(props.eventId, guest.id)
-      if (response.success) {
-        guests.value = guests.value.filter((g) => g.id !== guest.id)
-        showMessage('success', `${guest.name} removed from guest list`)
-        // Refresh stats
-        loadGuestStats()
-      } else {
-        showMessage('error', response.message || 'Failed to remove guest')
-      }
-    } catch (error) {
-      console.error('Error removing guest:', error)
-      showMessage('error', 'Failed to remove guest')
+
+
+
+const openDeleteGuestModal = (guest: EventGuest) => {
+  deleteTargetGuest.value = guest
+  showDeleteModal.value = true
+}
+
+const confirmDeleteGuest = async () => {
+  if (!deleteTargetGuest.value) return
+  try {
+    deletingGuest.value = true
+    const response = await guestService.deleteGuest(props.eventId, deleteTargetGuest.value.id)
+    if (response.success) {
+      guests.value = guests.value.filter((g) => g.id !== deleteTargetGuest.value!.id)
+      showMessage('success', deleteTargetGuest.value.name + ' removed from guest list')
+      loadGuestStats()
+    } else {
+      showMessage('error', response.message || 'Failed to remove guest')
     }
+  } catch (error) {
+    console.error('Error removing guest:', error)
+    showMessage('error', 'Failed to remove guest')
+  } finally {
+    deletingGuest.value = false
+    showDeleteModal.value = false
+    deleteTargetGuest.value = null
   }
+}
+
+const cancelDeleteGuest = () => {
+  if (deletingGuest.value) return
+  showDeleteModal.value = false
+  deleteTargetGuest.value = null
 }
 
 const closeAddGuestModal = () => {
@@ -636,6 +668,19 @@ watch(hasTemplatePayment, (isActivated) => {
   transform: translateY(-20px);
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
