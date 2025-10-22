@@ -36,7 +36,7 @@
       <h3
         :class="[
           'font-regular leading-loose py-2 capitalize',
-          isKhmerText ? 'text-sm sm:text-sm md:text-base laptop-md:text-lg laptop-lg:text-xl' : 'text-sm sm:text-base md:text-lg laptop-md:text-xl laptop-lg:text-2xl'
+          isKhmerText ? 'text-sm sm:text-sm md:text-base laptop-md:text-lg laptop-lg:text-lg' : 'text-sm sm:text-base md:text-lg laptop-md:text-xl laptop-lg:text-lg'
         ]"
         :style="{
           color: primaryColor,
