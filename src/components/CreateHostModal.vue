@@ -9,44 +9,45 @@
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white">
+            <!-- Header (neutral to match Edit modal) -->
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <UserPlus class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <UserPlus class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-2xl font-bold">Add Host</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Add Host</h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  aria-label="Close"
                 >
-                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <X class="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="createHost" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div class="space-y-4 sm:space-y-5 md:space-y-6">
+            <form @submit.prevent="createHost" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div class="space-y-5">
                 <!-- Basic Information -->
                 <div class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
+                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
                     <User class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Basic Information
                   </h4>
 
                   <!-- Name -->
                   <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
                       Name <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="formData.name"
                       type="text"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                       placeholder="Enter host name"
                     />
                   </div>
@@ -54,25 +55,25 @@
                   <!-- Parent Names -->
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
                         Parent A Name
                       </label>
                       <input
                         v-model="formData.parent_a_name"
                         type="text"
-                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                         placeholder="First parent's name"
                       />
                     </div>
 
                     <div>
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
                         Parent B Name
                       </label>
                       <input
                         v-model="formData.parent_b_name"
                         type="text"
-                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                         placeholder="Second parent's name"
                       />
                     </div>
@@ -80,45 +81,48 @@
 
                   <!-- Title -->
                   <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
                       Title/Position
                     </label>
                     <input
                       v-model="formData.title"
                       type="text"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                       placeholder="e.g., Chief Technology Officer"
                     />
                   </div>
 
                   <!-- Profile Picture -->
                   <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
                       Profile Picture
                     </label>
                     <div class="flex items-start space-x-3 sm:space-x-4">
                       <!-- Preview -->
                       <div class="flex-shrink-0">
                         <div
-                          v-if="profilePicturePreview"
-                          class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-200"
+                          v-if="
+                            profilePicturePreview ||
+                            (formData.profile_image && formData.profile_image !== '')
+                          "
+                          class="w-20 h-20 rounded-lg overflow-hidden border border-slate-200"
                         >
                           <img
-                            :src="profilePicturePreview"
+                            :src="profilePicturePreview || formData.profile_image || ''"
                             alt="Profile preview"
                             class="w-full h-full object-cover"
                           />
                         </div>
                         <div
                           v-else
-                          class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center"
+                          class="w-20 h-20 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-lg border border-dashed border-slate-300 flex items-center justify-center"
                         >
-                          <User class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                          <User class="w-7 h-7 text-slate-400" />
                         </div>
                       </div>
 
                       <!-- Upload Controls -->
-                      <div class="flex-1 space-y-1.5 sm:space-y-2">
+                      <div class="flex-1 space-y-2">
                         <input
                           ref="profilePictureInput"
                           type="file"
@@ -131,9 +135,9 @@
                             type="button"
                             @click="triggerProfilePictureUpload"
                             :disabled="profilePictureUploading"
-                            class="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-[#1e90ff] hover:bg-[#1873cc] disabled:bg-gray-400 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1"
+                            class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
                           >
-                            <Upload class="w-3 h-3 sm:w-4 sm:h-4" />
+                            <Upload class="w-4 h-4" />
                             <span>{{ profilePictureUploading ? 'Uploading...' : 'Upload' }}</span>
                           </button>
                           <button
@@ -143,88 +147,128 @@
                             "
                             type="button"
                             @click="removeProfilePicture"
-                            class="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-red-100 hover:bg-red-200 text-red-700 text-xs sm:text-sm font-medium rounded-lg transition-colors duration-200"
+                            class="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
                           >
                             Remove
                           </button>
                         </div>
-                        <p class="text-[10px] sm:text-xs text-slate-500">JPG, PNG, or WebP. Max 3MB.</p>
+                        <p class="text-xs text-slate-500">JPG, PNG, or WebP. Max 3MB.</p>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Bio -->
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                      Biography
-                    </label>
-                    <textarea
-                      v-model="formData.bio"
-                      rows="3"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                      placeholder="Brief biography or description"
-                    ></textarea>
+                  <!-- Biography (collapsible) -->
+                  <div class="rounded-xl border border-slate-200 bg-white/70">
+                    <button
+                      type="button"
+                      class="w-full flex items-center justify-between px-4 py-3"
+                      @click="bioOpen = !bioOpen"
+                      :aria-expanded="bioOpen ? 'true' : 'false'"
+                      aria-controls="bio-section"
+                    >
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-slate-700">Biography</span>
+                        <span class="hidden sm:inline text-xs text-slate-500">{{ bioSummary }}</span>
+                      </div>
+                      <svg
+                        class="h-4 w-4 text-slate-500 transition-transform"
+                        :class="bioOpen ? 'rotate-180' : ''"
+                        viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <Transition name="collapse">
+                      <div v-show="bioOpen" id="bio-section" class="px-4 pb-4">
+                        <textarea
+                          v-model="formData.bio"
+                          rows="4"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                          placeholder="Brief biography or description"
+                        ></textarea>
+                      </div>
+                    </Transition>
                   </div>
                 </div>
 
-                <!-- Contact Information -->
-                <div class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 flex items-center">
-                    <Mail class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    Contact & Social Media
-                  </h4>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                    <!-- Email -->
-                    <div>
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Email </label>
-                      <input
-                        v-model="formData.email"
-                        type="email"
-                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                        placeholder="email@example.com"
-                      />
+                <!-- Contact Information (collapsible) -->
+                <div class="rounded-xl border border-slate-200 bg-white/70">
+                  <button
+                    type="button"
+                    class="w-full flex items-center justify-between px-4 py-3"
+                    @click="contactOpen = !contactOpen"
+                    :aria-expanded="contactOpen ? 'true' : 'false'"
+                    aria-controls="contact-section"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium text-slate-700">Contact & Social Media</span>
+                      <span class="hidden sm:inline text-xs text-slate-500">{{ contactSummary }}</span>
                     </div>
+                    <svg
+                      class="h-4 w-4 text-slate-500 transition-transform"
+                      :class="contactOpen ? 'rotate-180' : ''"
+                      viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  <Transition name="collapse">
+                    <div v-show="contactOpen" id="contact-section" class="px-4 pb-4">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                        <!-- Email -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2"> Email </label>
+                          <input
+                            v-model="formData.email"
+                            type="email"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            placeholder="email@example.com"
+                          />
+                        </div>
 
-                    <!-- LinkedIn -->
-                    <div>
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                        LinkedIn URL
-                      </label>
-                      <input
-                        v-model="formData.linkedin_url"
-                        type="url"
-                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                        placeholder="https://linkedin.com/in/username"
-                      />
-                    </div>
+                        <!-- LinkedIn -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2">
+                            LinkedIn URL
+                          </label>
+                          <input
+                            v-model="formData.linkedin_url"
+                            type="url"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            placeholder="https://linkedin.com/in/username"
+                          />
+                        </div>
 
-                    <!-- Twitter -->
-                    <div>
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                        Twitter URL
-                      </label>
-                      <input
-                        v-model="formData.twitter_url"
-                        type="url"
-                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                        placeholder="https://twitter.com/username"
-                      />
-                    </div>
+                        <!-- Twitter -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Twitter URL
+                          </label>
+                          <input
+                            v-model="formData.twitter_url"
+                            type="url"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            placeholder="https://twitter.com/username"
+                          />
+                        </div>
 
-                    <!-- Website -->
-                    <div>
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                        Website URL
-                      </label>
-                      <input
-                        v-model="formData.website_url"
-                        type="url"
-                        class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                        placeholder="https://example.com"
-                      />
+                        <!-- Website -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Website URL
+                          </label>
+                          <input
+                            v-model="formData.website_url"
+                            type="url"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            placeholder="https://example.com"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </Transition>
                 </div>
 
                 <!-- Translations Section -->
@@ -371,24 +415,22 @@
               </div>
 
               <!-- Action Buttons -->
-              <div
-                class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
-              >
+              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="loading || !formData.name"
-                  class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <span
                     v-if="loading"
-                    class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
                   {{ loading ? 'Creating...' : 'Create Host' }}
                 </button>
@@ -426,6 +468,8 @@ const emit = defineEmits<Emits>()
 // State
 const loading = ref(false)
 const showAddTranslation = ref(false)
+const bioOpen = ref(false)
+const contactOpen = ref(false)
 const profilePictureInput = ref<HTMLInputElement>()
 const profilePicturePreview = ref<string | null>(null)
 const profilePictureUploading = ref(false)
@@ -476,6 +520,18 @@ const availableLanguagesForAdd = computed(() => {
   return availableLanguages.filter(
     (lang) => !formData.translations?.some((t) => t.language === lang.code),
   )
+})
+
+const bioSummary = computed(() => {
+  const text = (formData.bio || '').trim()
+  if (!text) return 'No bio'
+  return text.length > 60 ? text.slice(0, 60) + '…' : text
+})
+
+const contactSummary = computed(() => {
+  const items = [formData.email, formData.linkedin_url, formData.twitter_url, formData.website_url]
+  const count = items.filter((v) => v && String(v).trim() !== '').length
+  return count > 0 ? `${count} ${count === 1 ? 'link' : 'links'}` : 'No links'
 })
 
 // Methods
@@ -610,6 +666,22 @@ const createHost = async () => {
 </script>
 
 <style scoped>
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.2s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  max-height: 1000px;
+  opacity: 1;
+}
 .modal-enter-active,
 .modal-leave-active {
   transition: all 0.3s ease;
