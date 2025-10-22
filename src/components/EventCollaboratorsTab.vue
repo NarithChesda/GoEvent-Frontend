@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
@@ -173,7 +173,7 @@
                 <span v-else>{{ collaborator.email }}</span>
               </p>
               <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 truncate">
-                Invited by {{ collaborator.invited_by_name }} •
+                Invited by {{ collaborator.invited_by_name }} â€¢
                 {{ formatDate(collaborator.invited_at) }}
               </p>
             </div>
@@ -329,17 +329,17 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white">
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <UserPlus class="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <UserPlus class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-2xl font-bold">Invite Collaborator</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Invite Collaborator</h2>
                 </div>
                 <button
                   @click="closeInviteModal"
-                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
                 >
                   <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
@@ -351,23 +351,23 @@
               <form @submit.prevent="inviteCollaborator">
                 <div class="space-y-4 sm:space-y-6">
                   <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2"
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"
                       >Email Address</label
                     >
                     <input
                       v-model="inviteForm.email"
                       type="email"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       placeholder="collaborator@example.com"
                     />
                   </div>
 
                   <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Role</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">Role</label>
                     <select
                       v-model="inviteForm.role"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
                     >
                       <option value="viewer">Viewer - Read-only access</option>
                       <option value="editor">Editor - Can edit event details</option>
@@ -376,13 +376,13 @@
                   </div>
 
                   <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2"
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"
                       >Message (Optional)</label
                     >
                     <textarea
                       v-model="inviteForm.message"
                       rows="3"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
                       placeholder="Add a personal message to your invitation..."
                     ></textarea>
                   </div>
@@ -392,14 +392,14 @@
                   <button
                     type="button"
                     @click="closeInviteModal"
-                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 text-sm sm:text-base"
+                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-200 text-xs sm:text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     :disabled="isInviting"
-                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                   >
                     {{ isInviting ? 'Inviting...' : 'Send Invitation' }}
                   </button>
@@ -760,3 +760,4 @@ onMounted(() => {
   transform: scale(0.95) translateY(-20px);
 }
 </style>
+
