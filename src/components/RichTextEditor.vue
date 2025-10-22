@@ -64,7 +64,7 @@ const handleContentUpdate = (newContent: string) => {
 
 <style scoped>
 .rich-text-editor-wrapper {
-  @apply w-full;
+  @apply w-full relative;
 }
 
 .rich-text-editor-wrapper :deep(.ql-container) {
@@ -75,6 +75,8 @@ const handleContentUpdate = (newContent: string) => {
 
 .rich-text-editor-wrapper :deep(.ql-toolbar) {
   @apply border border-gray-200 rounded-t-lg bg-white/70 backdrop-blur-sm;
+  position: relative;
+  z-index: 10;
 }
 
 .rich-text-editor-wrapper :deep(.ql-editor) {
@@ -94,6 +96,30 @@ const handleContentUpdate = (newContent: string) => {
 
 .rich-text-editor-wrapper :deep(.ql-toolbar.ql-snow) {
   @apply transition-all duration-200;
+}
+
+/* Fix dropdown overlays - ensure they appear above other content */
+.rich-text-editor-wrapper :deep(.ql-picker) {
+  position: relative;
+  z-index: 20;
+}
+
+.rich-text-editor-wrapper :deep(.ql-picker.ql-expanded) {
+  z-index: 30;
+}
+
+.rich-text-editor-wrapper :deep(.ql-picker-options) {
+  position: absolute;
+  z-index: 40;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.rich-text-editor-wrapper :deep(.ql-color-picker .ql-picker-options),
+.rich-text-editor-wrapper :deep(.ql-background .ql-picker-options) {
+  padding: 0.5rem;
 }
 
 /* Responsive adjustments */

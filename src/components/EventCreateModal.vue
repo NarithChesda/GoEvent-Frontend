@@ -102,70 +102,6 @@
                 </div>
               </div>
 
-              <!-- Timezone -->
-              <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Timezone </label>
-                <select
-                  v-model="form.timezone"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                >
-                  <optgroup
-                    v-for="(timezones, region) in timezonesByRegion"
-                    :key="region"
-                    :label="region"
-                  >
-                    <option
-                      v-for="timezone in timezones"
-                      :key="timezone.value"
-                      :value="timezone.value"
-                    >
-                      {{ timezone.label }}
-                    </option>
-                  </optgroup>
-                </select>
-                <p class="text-xs text-slate-500 mt-1">
-                  Current selection: {{ getSelectedTimezoneLabel() }}
-                </p>
-              </div>
-
-              <!-- Location -->
-              <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Location </label>
-                <input
-                  v-model="form.location"
-                  type="text"
-                  placeholder="Event location (optional)"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                />
-              </div>
-
-              <!-- Privacy Setting -->
-              <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                  Event Privacy
-                </label>
-                <div class="flex space-x-3 sm:space-x-4">
-                  <label class="flex items-center">
-                    <input
-                      v-model="form.privacy"
-                      type="radio"
-                      value="public"
-                      class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
-                    />
-                    <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-700">Public</span>
-                  </label>
-                  <label class="flex items-center">
-                    <input
-                      v-model="form.privacy"
-                      type="radio"
-                      value="private"
-                      class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1e90ff] border-gray-300 focus:ring-[#1e90ff]"
-                    />
-                    <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-700">Private</span>
-                  </label>
-                </div>
-              </div>
-
               <!-- Action Buttons -->
               <div
                 class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
@@ -245,7 +181,7 @@ const form = reactive<EventFormData>({
   start_date: '',
   end_date: '',
   location: '',
-  privacy: 'public',
+  privacy: 'private',
   timezone: getUserTimezone(),
   category: '',
 })
@@ -278,7 +214,7 @@ const resetForm = () => {
     start_date: '',
     end_date: '',
     location: '',
-    privacy: 'public',
+    privacy: 'private',
     timezone: getUserTimezone(),
     category: '',
   })
