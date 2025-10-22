@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto">
@@ -9,23 +9,21 @@
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white">
+            <!-- Header (neutral to match CreateAgendaModal) -->
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <FileEdit class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <FileEdit class="w-4.5 h-4.5" />
                   </div>
-                  <div>
-                    <h2 class="text-lg sm:text-2xl font-bold">Edit Text Content</h2>
-                    <p class="text-xs sm:text-sm text-[#B0E0E6] mt-0.5 sm:mt-1">Update your event text content</p>
-                  </div>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Edit Text Content</h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  aria-label="Close"
                 >
-                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <X class="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -43,7 +41,7 @@
                     <select
                       v-model="formData.text_type"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
                     >
                       <option value="">Select type</option>
                       <option value="cover_header">Cover Header</option>
@@ -67,7 +65,7 @@
                     <select
                       v-model="formData.language"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
                     >
                       <option value="">Select language</option>
                       <option value="en">English</option>
@@ -91,7 +89,7 @@
                     v-model="formData.title"
                     type="text"
                     class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                    placeholder="Enter title for this text content"
+                    placeholder="Enter an optional title"
                   />
                 </div>
 
@@ -112,65 +110,7 @@
                   </div>
                 </div>
 
-                <!-- Order and Status -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                  <!-- Order -->
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                      Display Order
-                    </label>
-                    <input
-                      v-model.number="formData.order"
-                      type="number"
-                      min="0"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                      placeholder="0"
-                    />
-                    <div class="mt-1 text-xs text-slate-500">Lower numbers appear first</div>
-                  </div>
-
-                  <!-- Active Status -->
-                  <div class="flex items-center pt-6 sm:pt-8">
-                    <input
-                      v-model="formData.is_active"
-                      type="checkbox"
-                      id="is_active_edit"
-                      class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
-                    />
-                    <label for="is_active_edit" class="ml-2 text-xs sm:text-sm font-medium text-slate-700">
-                      Active (visible to users)
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Type Description -->
-                <div
-                  v-if="formData.text_type"
-                  class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
-                >
-                  <div class="flex items-start">
-                    <Info class="w-5 h-5 text-[#1e90ff] mt-0.5 mr-3 flex-shrink-0" />
-                    <div>
-                      <h4 class="text-sm font-medium text-[#1873cc] mb-1">
-                        {{ getTypeTitle(formData.text_type) }}
-                      </h4>
-                      <p class="text-sm text-[#1873cc]">
-                        {{ getTypeDescription(formData.text_type) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Metadata -->
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                  <div class="flex items-center justify-between text-sm text-slate-600">
-                    <div class="flex items-center space-x-4">
-                      <span>ID: {{ text.id }}</span>
-                      <span v-if="text.created_at">Created: {{ formatDate(text.created_at) }}</span>
-                    </div>
-                    <span v-if="text.updated_at">Updated: {{ formatDate(text.updated_at) }}</span>
-                  </div>
-                </div>
+                <!-- Minimalist: removed order/active controls, info, and metadata -->
               </div>
 
               <!-- Action Buttons -->
@@ -208,7 +148,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { X, Info, FileEdit, Loader } from 'lucide-vue-next'
+import { X, FileEdit } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 
 interface Props {
@@ -227,14 +167,12 @@ const emit = defineEmits<Emits>()
 // State
 const loading = ref(false)
 
-// Form data - initialize with text data
+// Form data - initialize with text data (minimal)
 const formData = reactive({
   text_type: props.text.text_type,
   language: props.text.language,
-  title: props.text.title,
-  content: props.text.content,
-  order: props.text.order,
-  is_active: props.text.is_active,
+  title: props.text.title || '',
+  content: props.text.content || '',
 })
 
 // Methods
@@ -242,7 +180,14 @@ const updateText = async () => {
   loading.value = true
 
   try {
-    const requestData = { ...formData }
+    // Build minimalist payload; keep status active
+    const requestData = {
+      text_type: formData.text_type,
+      language: formData.language,
+      title: formData.title,
+      content: formData.content,
+      is_active: true,
+    }
 
     // Clean up empty title
     if (!requestData.title?.trim()) {
@@ -263,51 +208,6 @@ const updateText = async () => {
     alert('Network error while updating text content')
   } finally {
     loading.value = false
-  }
-}
-
-const getTypeTitle = (textType: string): string => {
-  const titles: Record<string, string> = {
-    welcome_message: 'Welcome Message',
-    instructions: 'Instructions',
-    description: 'Description',
-    short_description: 'Short Description',
-    date_text: 'Date Text',
-    time_text: 'Time Text',
-    location_text: 'Location Text',
-    thank_you_message: 'Thank You Message',
-    custom: 'Custom Content',
-  }
-  return titles[textType] || textType
-}
-
-const getTypeDescription = (textType: string): string => {
-  const descriptions: Record<string, string> = {
-    welcome_message: 'Greeting message displayed to attendees when they view the event.',
-    instructions: 'Important guidelines, rules, or step-by-step directions for attendees.',
-    description: 'Detailed information about the event, its purpose, and what to expect.',
-    short_description: 'Brief summary of the event for previews and cards.',
-    date_text: 'Human-readable date information (e.g., "3 days", "August 15-17").',
-    time_text: 'Human-readable time information (e.g., "9 AM - 5 PM PST").',
-    location_text: 'Venue or location details beyond the basic address.',
-    thank_you_message: 'Message shown after registration or event completion.',
-    custom: 'Any other type of content specific to your event needs.',
-  }
-  return descriptions[textType] || 'Custom text content for your event.'
-}
-
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return dateString
   }
 }
 </script>
