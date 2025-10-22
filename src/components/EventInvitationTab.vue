@@ -12,62 +12,6 @@
 
     <!-- Social Media Preview -->
     <SocialMediaPreview :event-data="event" />
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
-        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
-          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center mb-1 md:mb-0">
-            <Send class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-[#1e90ff]" />
-          </div>
-          <div class="text-center md:text-left">
-            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ sentInvitations }}</p>
-            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600">Sent</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
-        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
-          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center mb-1 md:mb-0">
-            <CheckCircle class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-600" />
-          </div>
-          <div class="text-center md:text-left">
-            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ acceptedInvitations }}</p>
-            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600">Viewed</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
-        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
-          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-orange-100 flex items-center justify-center mb-1 md:mb-0">
-            <Clock class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-orange-600" />
-          </div>
-          <div class="text-center md:text-left">
-            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ pendingInvitations }}</p>
-            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600 whitespace-nowrap">Not Sent</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-2xl shadow-lg p-2 sm:p-3 md:p-4">
-        <div class="flex flex-col md:flex-row items-center md:space-x-2 lg:space-x-3">
-          <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-purple-100 flex items-center justify-center mb-1 md:mb-0">
-            <Users class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-600" />
-          </div>
-          <div class="text-center md:text-left">
-            <p v-if="loadingStats" class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">...</p>
-            <p v-else class="text-sm sm:text-lg md:text-2xl font-bold text-slate-900">{{ totalGuests }}</p>
-            <p class="text-[10px] sm:text-xs md:text-sm text-slate-600 whitespace-nowrap">Total Guests</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Loading State -->
     <div
       v-if="loadingPayments"
@@ -122,56 +66,45 @@
     <div v-else class="space-y-6">
       <!-- Guest List Management -->
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-          <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-            Guest List
-          </h3>
-          <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-            <button
-              @click="viewEventShowcase"
-              class="bg-white/80 backdrop-blur-sm border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
-            >
-              <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              <span class="hidden sm:inline">View Showcase</span>
-              <span class="sm:hidden">Showcase</span>
-            </button><button
-              @click="showAddGuestModal = true"
-              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-xs sm:text-sm flex-1 sm:flex-none justify-center"
-            >
-              <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              <span class="hidden sm:inline">Add Guest</span>
-              <span class="sm:hidden">Add</span>
-            </button>
+        <div class="flex flex-col gap-3 sm:gap-2 mb-3 sm:mb-4">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full">
+            <div class="flex items-center gap-3 min-w-0">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+                <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
+                Guest List
+              </h3>
+              <div class="relative w-60 sm:w-64 md:w-72">
+                <input
+                  v-model="searchTerm"
+                  @input="handleSearch"
+                  type="text"
+                  placeholder="Search guests..."
+                  class="w-full pr-3 pl-8 py-2 rounded-lg border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 text-sm text-slate-900 placeholder-slate-400"
+                />
+                <svg class="absolute left-2 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+              <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2 py-1 text-xs">
+                <CheckCircle class="w-3 h-3 mr-1 text-green-600" />
+                <span>{{ loadingStats ? '...' : acceptedInvitations }}</span>
+                <span class="ml-1 hidden md:inline">Viewed</span>
+              </span>
+              <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2 py-1 text-xs">
+                <Users class="w-3 h-3 mr-1 text-slate-600" />
+                <span>{{ loadingStats ? '...' : totalGuests }}</span>
+                <span class="ml-1 hidden md:inline">Total</span>
+              </span>
+              <button @click="showAddGuestModal = true" class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-xs sm:text-sm">
+                <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
+                <span class="hidden sm:inline">Add Guest</span>
+                <span class="sm:hidden">Add</span>
+              </button>
+            </div>
           </div>
         </div>
-
-        <!-- Search Bar -->
-        <div class="mb-3 sm:mb-4">
-          <div class="relative">
-            <input
-              v-model="searchTerm"
-              @input="handleSearch"
-              type="text"
-              placeholder="Search guests by name..."
-              class="w-full px-3 sm:px-4 py-2 pl-9 sm:pl-10 rounded-lg sm:rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-sm sm:text-base text-slate-900 placeholder-slate-400"
-            />
-            <svg
-              class="absolute left-2.5 sm:left-3 top-2.5 w-4 h-4 sm:w-5 sm:h-5 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-        </div>
-
         <!-- Guest List Table -->
         <div v-if="loading" class="text-center py-6 sm:py-8">
           <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
@@ -397,9 +330,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import {
-  Send,
   CheckCircle,
-  Clock,
   Users,
   Lock,
   CreditCard,
@@ -408,7 +339,6 @@ import {
   X,
   AlertCircle,
   Trash2,
-  ExternalLink,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
@@ -706,6 +636,17 @@ watch(hasTemplatePayment, (isActivated) => {
   transform: translateY(-20px);
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
