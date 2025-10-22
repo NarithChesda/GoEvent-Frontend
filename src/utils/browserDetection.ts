@@ -50,11 +50,28 @@ export function isMessagingAppBrowser(): boolean {
 }
 
 /**
+ * Detects if the user is on a mobile device
+ */
+export function isMobileDevice(): boolean {
+  const userAgent = navigator.userAgent || ''
+
+  // Check for mobile device indicators
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(userAgent)
+}
+
+/**
  * Detects if the user is accessing the page from a normal web browser
  * (Chrome, Safari, Firefox, Edge, etc.)
  */
 export function isNormalBrowser(): boolean {
   return !isMessagingAppBrowser()
+}
+
+/**
+ * Detects if the user is on a desktop/computer (not mobile)
+ */
+export function isDesktopDevice(): boolean {
+  return !isMobileDevice()
 }
 
 /**

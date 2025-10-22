@@ -84,7 +84,7 @@ import { X, Loader2, AlertCircle } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
-import { isNormalBrowser, getBrowserType } from '../utils/browserDetection'
+import { isDesktopDevice, getBrowserType } from '../utils/browserDetection'
 
 interface Props {
   isVisible: boolean
@@ -109,8 +109,8 @@ const isGoogleLoading = ref(false)
 // Error handling
 const errorMessage = ref('')
 
-// Browser detection - only show Google login in normal browsers
-const shouldShowGoogleLogin = computed(() => isNormalBrowser())
+// Browser detection - only show Google login on desktop devices (computers)
+const shouldShowGoogleLogin = computed(() => isDesktopDevice())
 
 // Modal control methods
 const closeModal = () => {
