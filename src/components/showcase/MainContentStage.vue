@@ -911,7 +911,7 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.61);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  contain: layout style paint;
+  contain: layout style;
 }
 
 .glass-background::before {
@@ -923,7 +923,7 @@ onUnmounted(() => {
   height: 200%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.11) 0%, transparent 70%);
   animation: liquid-rotate 30s linear infinite;
-  contain: layout style paint;
+  contain: layout style;
 }
 
 /* ===================
