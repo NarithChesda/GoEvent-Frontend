@@ -13,113 +13,138 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 text-white">
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-8 sm:w-9 md:w-10 h-8 sm:h-9 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Plus class="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5" />
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <Plus class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-xl md:text-2xl font-bold">Create New Event</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Create New Event</h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-7 sm:w-7.5 md:w-8 h-7 sm:h-7.5 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  aria-label="Close"
                 >
-                  <X class="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4" />
+                  <X class="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="handleSubmit" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <!-- Title -->
-              <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                  Event Title *
-                </label>
-                <input
-                  v-model="form.title"
-                  type="text"
-                  required
-                  placeholder="Enter event title"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                />
-              </div>
+            <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div class="space-y-5">
+                <!-- Basic Information -->
+                <div class="space-y-3">
+                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
+                    <Calendar class="w-4 h-4 mr-2 text-sky-500" />
+                    Basic Information
+                  </h4>
 
-              <!-- Category -->
-              <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                  Event Category
-                </label>
-                <select
-                  v-model="form.category"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                >
-                  <option value="">Select a category</option>
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-              </div>
+                  <div class="space-y-3">
+                    <!-- Title -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Event Title <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        v-model="form.title"
+                        type="text"
+                        required
+                        placeholder="Enter event title"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors"
+                      />
+                    </div>
 
-              <!-- Description -->
-              <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                  Full Description *
-                </label>
-                <div
-                  contenteditable="true"
-                  ref="descriptionEditor"
-                  @input="handleDescriptionInput"
-                  @blur="handleDescriptionBlur"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm min-h-[120px] max-h-[300px] overflow-y-auto"
-                  :data-placeholder="form.description ? '' : 'Detailed event description'"
-                ></div>
-              </div>
-
-              <!-- Date and Time -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                    Start Date & Time *
-                  </label>
-                  <input
-                    v-model="form.start_date"
-                    type="datetime-local"
-                    required
-                    class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                  />
+                    <!-- Category -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Event Category
+                      </label>
+                      <select
+                        v-model="form.category"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors appearance-none pr-10 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:18px_18px] bg-[right_0.75rem_center] bg-no-repeat cursor-pointer"
+                      >
+                        <option value="">Select a category</option>
+                        <option v-for="category in categories" :key="category.id" :value="category.id">
+                          {{ category.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                    End Date & Time *
-                  </label>
-                  <input
-                    v-model="form.end_date"
-                    type="datetime-local"
-                    required
-                    class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                  />
+
+                <!-- Description -->
+                <div class="space-y-3">
+                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
+                    <FileText class="w-4 h-4 mr-2 text-sky-500" />
+                    Description
+                  </h4>
+
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      Full Description <span class="text-red-500">*</span>
+                    </label>
+                    <div
+                      contenteditable="true"
+                      ref="descriptionEditor"
+                      @input="handleDescriptionInput"
+                      @blur="handleDescriptionBlur"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors min-h-[140px] max-h-[320px] overflow-y-auto"
+                      :data-placeholder="form.description ? '' : 'Detailed event description'"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Schedule -->
+                <div class="space-y-3">
+                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
+                    <Clock class="w-4 h-4 mr-2 text-sky-500" />
+                    Schedule
+                  </h4>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Start Date &amp; Time <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        v-model="form.start_date"
+                        type="datetime-local"
+                        required
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        End Date &amp; Time <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        v-model="form.end_date"
+                        type="datetime-local"
+                        required
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <!-- Action Buttons -->
-              <div
-                class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
-              >
+              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="isSubmitting"
-                  class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <Loader v-if="isSubmitting" class="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5 mr-1.5 sm:mr-2 animate-spin" />
+                  <Loader v-if="isSubmitting" class="w-4 h-4 mr-2 animate-spin" />
                   {{ isSubmitting ? 'Creating...' : 'Create Event' }}
                 </button>
               </div>
@@ -133,7 +158,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
-import { Plus, X, Loader } from 'lucide-vue-next'
+import { Plus, X, Loader, Calendar, FileText, Clock } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
