@@ -162,6 +162,11 @@ const capitalizedDescription = computed(() => {
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
+  /* Safari-specific: Prevent breaking Khmer characters */
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */

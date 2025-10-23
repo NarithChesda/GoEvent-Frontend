@@ -1325,5 +1325,10 @@ const capitalizeText = (text: string | undefined): string => {
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
+  /* Safari-specific: Prevent breaking Khmer characters */
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
 }
 </style>

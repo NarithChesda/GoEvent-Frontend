@@ -902,6 +902,11 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
+  /* Safari-specific: Prevent breaking Khmer characters */
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
 }
 
 /* Additional Khmer text adjustments - removed as we're using Tailwind classes */
