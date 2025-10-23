@@ -127,12 +127,12 @@
                       <img
                         :src="getMediaUrl(method.qr_code_image)"
                         :alt="`QR Code for ${method.name}`"
-                        class="w-32 h-32 mx-auto rounded-2xl shadow-md transition-all duration-300"
+                        class="w-28 h-28 sm:w-32 sm:h-32 mx-auto shadow-md transition-all duration-300"
                         @error="onImageError"
                       />
                       <!-- Subtle scan line animation overlay -->
                       <div
-                        class="absolute inset-4 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        class="absolute inset-4 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         :style="{
                           background: `linear-gradient(90deg, transparent 0%, ${primaryColor}20 50%, transparent 100%)`,
                           animation: 'scan-line 2s ease-in-out infinite',
@@ -140,7 +140,7 @@
                       ></div>
                     </div>
                     <p
-                      class="text-xs mt-1 font-medium tracking-wide text-center"
+                      class="text-xs mt-0.5 sm:mt-1 font-medium tracking-wide text-center"
                       :style="{ color: primaryColor, opacity: '0.8' }"
                     >
                       Scan to pay
@@ -151,14 +151,14 @@
                   <div v-else class="relative">
                     <!-- Seamless fallback container -->
                     <div
-                      class="qr-simple-container relative p-4"
+                      class="qr-simple-container relative p-2 sm:p-4"
                       :style="{
                         backgroundColor: `${primaryColor}04`,
                         border: `1px dashed ${primaryColor}20`,
                       }"
                     >
                       <div
-                        class="w-32 h-32 mx-auto rounded-2xl flex items-center justify-center"
+                        class="w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-2xl flex items-center justify-center"
                         :style="{ backgroundColor: `${primaryColor}05` }"
                       >
                         <div class="text-center">
@@ -184,7 +184,7 @@
                       </div>
                     </div>
                     <p
-                      class="text-xs mt-1 font-medium tracking-wide text-center"
+                      class="text-xs mt-0.5 sm:mt-1 font-medium tracking-wide text-center"
                       :style="{ color: primaryColor, opacity: '0.6' }"
                     >
                       QR coming soon
@@ -204,10 +204,10 @@
                     }"
                   >
                     <!-- Bank Info -->
-                    <div v-if="hasVisibleBankInfo(method)" class="space-y-2 mb-4">
-                      <div v-if="method.account_name" class="text-center">
+                    <div v-if="hasVisibleBankInfo(method)" class="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+                      <div v-if="method.account_name" class="text-center px-2">
                         <div
-                          class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-medium text-sm min-h-[32px]"
+                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-medium text-sm min-h-[36px] max-w-full"
                           :style="{
                             backgroundColor: `${primaryColor}08`,
                             color: primaryColor,
@@ -229,13 +229,13 @@
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                             />
                           </svg>
-                          <span class="truncate">{{ capitalizeText(method.account_name) }}</span>
+                          <span class="text-center break-words leading-relaxed">{{ capitalizeText(method.account_name) }}</span>
                         </div>
                       </div>
 
-                      <div v-if="method.account_number" class="text-center">
+                      <div v-if="method.account_number" class="text-center px-2">
                         <div
-                          class="bank-info-pill inline-flex items-center px-3 py-1.5 backdrop-blur-sm font-mono text-sm min-h-[32px] group cursor-pointer transition-all hover:shadow-lg"
+                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-mono text-sm min-h-[36px] group cursor-pointer transition-all hover:shadow-lg max-w-full"
                           :style="{
                             backgroundColor: `${primaryColor}10`,
                             color: primaryColor,
@@ -259,7 +259,7 @@
                               d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                             />
                           </svg>
-                          <span class="truncate">•••• {{ method.account_number.slice(-4) }}</span>
+                          <span class="text-center break-words leading-relaxed">•••• {{ method.account_number.slice(-4) }}</span>
                           <svg
                             class="w-4 h-4 ml-2 flex-shrink-0 transition-transform group-hover:scale-110"
                             fill="none"
@@ -509,8 +509,12 @@ const isCardExpanded = (method: EventPaymentMethod): boolean => {
 const toggleCard = (method: EventPaymentMethod) => {
   const id = method.id.toString()
   if (expandedCards.value.has(id)) {
+    // If clicking on already expanded card, just collapse it
     expandedCards.value.delete(id)
   } else {
+    // Clear all expanded cards first (only one can be expanded at a time)
+    expandedCards.value.clear()
+    // Then expand the clicked card
     expandedCards.value.add(id)
   }
 }
@@ -660,6 +664,20 @@ const capitalizeText = (text: string | undefined): string => {
   backdrop-filter: blur(12px);
   transition: all 0.2s ease;
   position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bank-info-pill span {
+  display: inline-block;
+  max-width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .bank-info-pill:hover {
@@ -795,16 +813,16 @@ const capitalizeText = (text: string | undefined): string => {
   }
 
   .payment-row-container {
-    padding: 0.5rem;
-    gap: 1rem;
+    padding: 0.25rem;
+    gap: 0.5rem;
   }
 
   .qr-simple-container {
-    padding: 1rem;
+    padding: 0.5rem !important;
   }
 
   .payment-info-simple {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   .payment-info-glass {
@@ -813,6 +831,19 @@ const capitalizeText = (text: string | undefined): string => {
 
   .bank-info-glass {
     padding: 0.75rem;
+  }
+
+  .bank-info-pill {
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.375rem 0.625rem;
+    min-height: 32px;
+    font-size: 0.8125rem;
+  }
+
+  .bank-info-pill span {
+    line-height: 1.4;
   }
 
   .payment-link-minimalist {
@@ -949,7 +980,8 @@ const capitalizeText = (text: string | undefined): string => {
   }
 
   /* Bank info - center alignment like mobile */
-  .payment-info-simple .space-y-2 > div {
+  .payment-info-simple .space-y-2 > div,
+  .payment-info-simple .space-y-3 > div {
     text-align: center !important;
   }
 
@@ -958,12 +990,19 @@ const capitalizeText = (text: string | undefined): string => {
     text-align: center !important;
   }
 
-  /* Bank info pills - compact sizing for laptop */
+  /* Bank info pills - compact sizing for laptop with wrapping support */
   .bank-info-pill {
-    padding: 0.25rem 0.5rem !important;
+    padding: 0.375rem 0.625rem !important;
     font-size: 0.875rem !important; /* 14px */
-    min-height: 28px !important;
+    min-height: 32px !important;
     border-radius: 0.75rem !important;
+    max-width: 85% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .bank-info-pill span {
+    line-height: 1.35 !important;
   }
 
   .bank-info-pill svg.w-4 {
