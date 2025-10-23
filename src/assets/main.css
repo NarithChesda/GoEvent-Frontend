@@ -38,3 +38,55 @@ body,
     Roboto,
     sans-serif;
 }
+
+/* Khmer text rendering fix for all browsers, especially Safari */
+/* Note: This class is used both for Khmer text AND for general text layout in showcase */
+.khmer-text-fix {
+  /* Text rendering optimizations for Safari */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  /* Prevent character breaking in Khmer text - only use !important for critical rules */
+  word-break: keep-all !important;
+  overflow-wrap: normal;
+  word-wrap: normal;
+
+  /* Disable hyphenation to prevent incorrect character breaks */
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  hyphens: none;
+
+  /* Ensure proper line height for Khmer characters with diacritics */
+  /* Using !important here as this is critical for Khmer rendering */
+  line-height: 1.8 !important;
+
+  /* Add vertical padding to prevent character clipping */
+  /* NOT using !important - allows component-specific overrides */
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+
+  /* Safari-specific: Ensure proper font feature rendering */
+  -webkit-font-feature-settings: "liga" 1, "calt" 1;
+  font-feature-settings: "liga" 1, "calt" 1;
+
+  /* DO NOT override font-family here - let inline styles from template fonts work */
+  /* The font-family should be set via inline styles in the components */
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .khmer-text-fix {
+    /* Additional Safari-only rendering hints */
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-kerning: normal;
+    font-kerning: normal;
+
+    /* Force Safari to use high-quality rendering */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}

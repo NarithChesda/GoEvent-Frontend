@@ -155,19 +155,7 @@ const capitalizedDescription = computed(() => {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Enhanced Khmer font rendering */
-.khmer-text-fix {
-  line-height: 1.8 !important;
-  padding-top: 0.3em !important;
-  padding-bottom: 0.3em !important;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
-  /* Safari-specific: Prevent breaking Khmer characters */
-  word-break: keep-all !important;
-  overflow-wrap: anywhere !important;
-  hyphens: none !important;
-  -webkit-hyphens: none !important;
-}
+/* Khmer text fix now defined globally in src/assets/main.css */
 
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
 @media (min-width: 1024px) and (max-width: 1365px) {

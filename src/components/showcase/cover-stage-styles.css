@@ -109,28 +109,7 @@ p {
   max-width: 100% !important;
 }
 
-/* Enhanced Khmer font rendering */
-.khmer-text-fix {
-  line-height: 1.6 !important;
-  padding-top: 0.5em !important;
-  padding-bottom: 0.5em !important;
-  margin-top: 0.3em;
-  margin-bottom: 0.3em;
-  overflow: visible !important;
-  text-overflow: visible !important;
-  /* Ensure proper space for Khmer ascenders and descenders */
-  min-height: 2em;
-  /* Additional space for complex Khmer characters */
-  box-sizing: content-box !important;
-  /* Prevent container clipping */
-  contain: none !important;
-  /* Safari-specific: Prevent breaking Khmer characters */
-  word-break: keep-all !important;
-  overflow-wrap: break-word !important;
-  /* Disable hyphens for Khmer text */
-  hyphens: none !important;
-  -webkit-hyphens: none !important;
-}
+/* Khmer text fix now defined globally in src/assets/main.css */
 
 /* Override for single line Khmer text */
 .khmer-text-fix.single-line-text {
