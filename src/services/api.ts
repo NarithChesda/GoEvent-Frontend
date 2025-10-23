@@ -1602,6 +1602,17 @@ export const guestService = {
   async markInvitationViewed(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
     return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-viewed/`, {})
   },
+
+  // Bulk import guests
+  async bulkImportGuests(
+    eventId: string,
+    guests: CreateGuestRequest[],
+  ): Promise<ApiResponse<{ created: EventGuest[]; failed: { name: string; error: string }[] }>> {
+    return apiService.post<{ created: EventGuest[]; failed: { name: string; error: string }[] }>(
+      `/api/events/${eventId}/guests/bulk-import/`,
+      { guests },
+    )
+  },
 }
 
 // Event Comment Types and Interfaces

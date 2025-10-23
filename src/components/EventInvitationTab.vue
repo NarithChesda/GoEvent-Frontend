@@ -278,44 +278,197 @@
             </div>
 
             <!-- Content -->
-            <form @submit.prevent="addGuest" class="p-4 sm:p-8">
-              <div class="mb-4 sm:mb-6">
-                <label for="guestName" class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
-                  Guest Name <span class="text-red-500">*</span>
-                </label>
-                <input
-                  id="guestName"
-                  v-model="newGuestName"
-                  type="text"
-                  required
-                  placeholder="Enter guest's full name"
-                  class="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-sm sm:text-base text-slate-900 placeholder-slate-400"
-                />
-              </div>
-
-              <div class="flex space-x-2 sm:space-x-3">
+            <div class="p-4 sm:p-8">
+              <!-- Mode Toggle -->
+              <div class="flex gap-2 mb-4 sm:mb-6">
                 <button
                   type="button"
-                  @click="closeAddGuestModal"
-                  class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
+                  @click="switchMode('single')"
+                  :class="[
+                    'flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200',
+                    importMode === 'single'
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                  ]"
                 >
-                  Cancel
+                  <UserPlus class="w-4 h-4 inline-block mr-1.5" />
+                  Single Guest
                 </button>
                 <button
-                  type="submit"
-                  :disabled="!newGuestName.trim() || isAddingGuest"
-                  class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm sm:text-base"
+                  type="button"
+                  @click="switchMode('bulk')"
+                  :class="[
+                    'flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200',
+                    importMode === 'bulk'
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                  ]"
                 >
-                  <span v-if="isAddingGuest" class="inline-flex items-center justify-center">
-                    <div
-                      class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"
-                    ></div>
-                    Adding...
-                  </span>
-                  <span v-else>Add Guest</span>
+                  <Upload class="w-4 h-4 inline-block mr-1.5" />
+                  Bulk Import
                 </button>
               </div>
-            </form>
+
+              <!-- Single Guest Mode -->
+              <form v-if="importMode === 'single'" @submit.prevent="addGuest">
+                <div class="mb-4 sm:mb-6">
+                  <label for="guestName" class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
+                    Guest Name <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="guestName"
+                    v-model="newGuestName"
+                    type="text"
+                    required
+                    placeholder="Enter guest's full name"
+                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-sm sm:text-base text-slate-900 placeholder-slate-400"
+                  />
+                </div>
+
+                <div class="flex space-x-2 sm:space-x-3">
+                  <button
+                    type="button"
+                    @click="closeAddGuestModal"
+                    class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    :disabled="!newGuestName.trim() || isAddingGuest"
+                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm sm:text-base"
+                  >
+                    <span v-if="isAddingGuest" class="inline-flex items-center justify-center">
+                      <div
+                        class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:h-4 border-b-2 border-white mr-1.5 sm:mr-2"
+                      ></div>
+                      Adding...
+                    </span>
+                    <span v-else>Add Guest</span>
+                  </button>
+                </div>
+              </form>
+
+              <!-- Bulk Import Mode -->
+              <div v-else>
+                <!-- Download Template Button -->
+                <button
+                  type="button"
+                  @click="downloadTemplate"
+                  class="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm"
+                >
+                  <Download class="w-4 h-4" />
+                  Download Template (CSV)
+                </button>
+
+                <!-- File Upload Area (Before Preview) -->
+                <div v-if="!showImportPreview">
+                  <div
+                    @drop.prevent="handleFileDrop"
+                    @dragover.prevent="handleDragOver"
+                    @dragleave.prevent="handleDragLeave"
+                    :class="[
+                      'border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition-all duration-200 cursor-pointer',
+                      isDragging
+                        ? 'border-[#1e90ff] bg-blue-50'
+                        : 'border-slate-300 hover:border-slate-400 bg-slate-50',
+                    ]"
+                    @click="fileInput?.click()"
+                  >
+                    <Upload
+                      :class="['w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3', isDragging ? 'text-[#1e90ff]' : 'text-slate-400']"
+                    />
+                    <p class="text-sm sm:text-base font-medium text-slate-700 mb-1">
+                      {{ selectedFile ? selectedFile.name : 'Drop your file here or click to browse' }}
+                    </p>
+                    <p class="text-xs sm:text-sm text-slate-500">
+                      Supported formats: CSV, Excel (.xlsx, .xls), TXT
+                    </p>
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept=".csv,.xlsx,.xls,.txt,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain"
+                      @change="handleFileSelect"
+                      class="hidden"
+                    />
+                  </div>
+
+                  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs sm:text-sm text-slate-600">
+                    <FileText class="w-4 h-4 inline-block mr-1.5 text-blue-600" />
+                    <strong>Format:</strong> One guest name per line. First column for CSV, or entire line for TXT files.
+                  </div>
+
+                  <div class="flex space-x-2 sm:space-x-3 mt-4">
+                    <button
+                      type="button"
+                      @click="closeAddGuestModal"
+                      class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Import Preview -->
+                <div v-else>
+                  <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <h4 class="text-sm font-semibold text-slate-700">Preview Import</h4>
+                      <span class="text-xs text-slate-500">
+                        {{ importPreview.filter((g) => g.status === 'valid').length }} new guests
+                      </span>
+                    </div>
+                    <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg">
+                      <div
+                        v-for="(guest, idx) in importPreview"
+                        :key="idx"
+                        :class="[
+                          'px-3 py-2 text-sm flex items-center justify-between',
+                          guest.status === 'duplicate' ? 'bg-red-50 text-red-700' : 'bg-white text-slate-700',
+                          idx !== importPreview.length - 1 && 'border-b border-slate-100',
+                        ]"
+                      >
+                        <span class="truncate">{{ guest.name }}</span>
+                        <span
+                          v-if="guest.status === 'duplicate'"
+                          class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-2 flex-shrink-0"
+                        >
+                          Duplicate
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex space-x-2 sm:space-x-3">
+                    <button
+                      type="button"
+                      @click="resetImportState"
+                      class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      @click="confirmBulkImport"
+                      :disabled="
+                        importPreview.filter((g) => g.status === 'valid').length === 0 || isImporting
+                      "
+                      class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm sm:text-base"
+                    >
+                      <span v-if="isImporting" class="inline-flex items-center justify-center">
+                        <div
+                          class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"
+                        ></div>
+                        Importing...
+                      </span>
+                      <span v-else>
+                        Import {{ importPreview.filter((g) => g.status === 'valid').length }} Guests
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Transition>
@@ -349,6 +502,9 @@ import {
   X,
   AlertCircle,
   Trash2,
+  Upload,
+  FileText,
+  Download,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
@@ -380,6 +536,15 @@ const loadingStats = ref(false)
 const showDeleteModal = ref(false)
 const deletingGuest = ref(false)
 const deleteTargetGuest = ref<EventGuest | null>(null)
+
+// Bulk import state
+const importMode = ref<'single' | 'bulk'>('single')
+const selectedFile = ref<File | null>(null)
+const isDragging = ref(false)
+const isImporting = ref(false)
+const importPreview = ref<{ name: string; status: 'valid' | 'duplicate' }[]>([])
+const showImportPreview = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // Guest data from API
 const guests = ref<EventGuest[]>([])
@@ -496,6 +661,229 @@ const cancelDeleteGuest = () => {
 const closeAddGuestModal = () => {
   showAddGuestModal.value = false
   newGuestName.value = ''
+  resetImportState()
+}
+
+const resetImportState = () => {
+  importMode.value = 'single'
+  selectedFile.value = null
+  isDragging.value = false
+  importPreview.value = []
+  showImportPreview.value = false
+}
+
+const switchMode = (mode: 'single' | 'bulk') => {
+  importMode.value = mode
+  if (mode === 'single') {
+    resetImportState()
+  }
+}
+
+// File handling methods
+const handleFileSelect = (event: globalThis.Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    processFile(file)
+  }
+}
+
+const handleFileDrop = (event: DragEvent) => {
+  isDragging.value = false
+  const file = event.dataTransfer?.files[0]
+  if (file) {
+    processFile(file)
+  }
+}
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault()
+  isDragging.value = true
+}
+
+const handleDragLeave = () => {
+  isDragging.value = false
+}
+
+const processFile = async (file: File) => {
+  const validTypes = [
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+  ]
+
+  if (!validTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls|txt)$/i)) {
+    showMessage('error', 'Please upload a CSV, Excel, or TXT file')
+    return
+  }
+
+  selectedFile.value = file
+  await parseFile(file)
+}
+
+const parseFile = async (file: File) => {
+  try {
+    const text = await file.text()
+    const lines = text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+
+    // Parse CSV/TXT - assume first column is name, or entire line if single column
+    const parsedGuests: { name: string; status: 'valid' | 'duplicate' }[] = []
+    const existingNames = new Set(guests.value.map((g) => g.name.toLowerCase()))
+
+    for (const line of lines) {
+      // Skip header row if it looks like a header
+      if (
+        line.toLowerCase().includes('name') &&
+        line.toLowerCase().includes('guest') &&
+        lines.indexOf(line) === 0
+      ) {
+        continue
+      }
+
+      // Parse CSV (handle quoted strings)
+      let name = ''
+      if (line.includes(',')) {
+        // Simple CSV parsing - take first column
+        const match = line.match(/^"([^"]*)"|^([^,]*)/)
+        name = (match?.[1] || match?.[2] || '').trim()
+      } else {
+        // Single column or TXT file
+        name = line.trim()
+      }
+
+      if (name.length > 0) {
+        const isDuplicate = existingNames.has(name.toLowerCase())
+        parsedGuests.push({
+          name,
+          status: isDuplicate ? 'duplicate' : 'valid',
+        })
+      }
+    }
+
+    if (parsedGuests.length === 0) {
+      showMessage('error', 'No valid guest names found in file')
+      selectedFile.value = null
+      return
+    }
+
+    importPreview.value = parsedGuests
+    showImportPreview.value = true
+  } catch (error) {
+    console.error('Error parsing file:', error)
+    showMessage('error', 'Failed to parse file. Please check the format.')
+    selectedFile.value = null
+  }
+}
+
+const confirmBulkImport = async () => {
+  if (importPreview.value.length === 0) return
+
+  // Filter out duplicates
+  const validGuests = importPreview.value
+    .filter((g) => g.status === 'valid')
+    .map((g) => ({ name: g.name }))
+
+  if (validGuests.length === 0) {
+    showMessage('error', 'No new guests to import (all are duplicates)')
+    return
+  }
+
+  isImporting.value = true
+
+  try {
+    // Try bulk import endpoint first
+    try {
+      const response = await guestService.bulkImportGuests(props.eventId, validGuests)
+
+      if (response.success && response.data) {
+        const { created, failed } = response.data
+
+        // Add created guests to the list
+        if (created.length > 0) {
+          guests.value.unshift(...created)
+          loadGuestStats()
+        }
+
+        // Show results
+        if (failed.length > 0) {
+          showMessage(
+            'error',
+            `Imported ${created.length} guests. ${failed.length} failed: ${failed.map((f) => f.name).join(', ')}`,
+          )
+        } else {
+          showMessage('success', `Successfully imported ${created.length} guests`)
+        }
+
+        closeAddGuestModal()
+        return
+      }
+    } catch (_bulkError) {
+      console.warn('Bulk import endpoint not available, falling back to individual imports')
+    }
+
+    // Fallback: Import one by one using existing endpoint
+    const created: EventGuest[] = []
+    const failed: { name: string; error: string }[] = []
+
+    for (const guest of validGuests) {
+      try {
+        const response = await guestService.createGuest(props.eventId, guest)
+        if (response.success && response.data) {
+          created.push(response.data)
+        } else {
+          failed.push({
+            name: guest.name,
+            error: response.message || 'Unknown error',
+          })
+        }
+      } catch (error) {
+        failed.push({
+          name: guest.name,
+          error: 'Failed to create guest',
+        })
+      }
+    }
+
+    // Add created guests to the list
+    if (created.length > 0) {
+      guests.value.unshift(...created)
+      loadGuestStats()
+    }
+
+    // Show results
+    if (failed.length > 0) {
+      showMessage(
+        'error',
+        `Imported ${created.length} guests. ${failed.length} failed: ${failed.map((f) => f.name).join(', ')}`,
+      )
+    } else {
+      showMessage('success', `Successfully imported ${created.length} guests`)
+    }
+
+    closeAddGuestModal()
+  } catch (error) {
+    console.error('Error importing guests:', error)
+    showMessage('error', 'Failed to import guests')
+  } finally {
+    isImporting.value = false
+  }
+}
+
+const downloadTemplate = () => {
+  const csvContent = 'Guest Name\nJohn Doe\nJane Smith\nMichael Johnson'
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', 'guest_import_template.csv')
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 const getInitials = (name: string) => {
