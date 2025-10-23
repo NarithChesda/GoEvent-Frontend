@@ -4,9 +4,30 @@ import { resetMetaTags } from '../utils/metaUtils'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth',
+      }
+    }
+
+    return {
+      left: 0,
+      top: 0,
+    }
+  },
   routes: [
     {
       path: '/',
+      redirect: '/events',
+    },
+    {
+      path: '/home',
       name: 'home',
       component: HomeView,
       meta: { title: 'Home - GoEvent' },

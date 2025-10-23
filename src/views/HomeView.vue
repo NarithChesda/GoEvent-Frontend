@@ -8,7 +8,7 @@
       class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 overflow-hidden -mt-20"
     >
       <!-- Optimized Background Elements -->
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 pointer-events-none">
         <!-- Primary gradient overlay -->
         <div
           class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-500/5"
@@ -295,13 +295,14 @@
 
     <!-- Testimonials Section -->
     <section
+      v-if="showTestimonials"
       id="testimonials"
       ref="testimonialsSection"
       class="py-12 sm:py-16 md:py-20 relative overflow-hidden scroll-animate"
       :class="{ 'animate-fade-in-up': isVisible.testimonials }"
     >
       <!-- Background gradient -->
-      <div class="absolute inset-0 testimonials-bg"></div>
+      <div class="absolute inset-0 pointer-events-none testimonials-bg"></div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div class="text-center mb-12 sm:mb-16 md:mb-20">
@@ -517,7 +518,7 @@
     <!-- CTA Section -->
     <section class="py-12 sm:py-16 md:py-20 bg-white relative overflow-hidden">
       <!-- Background decoration -->
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 pointer-events-none">
         <!-- Subtle gradient orbs -->
         <div
           class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
@@ -736,6 +737,8 @@ const testimonialsSection = ref<HTMLElement>()
 const pricingSection = ref<HTMLElement>()
 const faqSection = ref<HTMLElement>()
 
+const showTestimonials = false
+
 // FAQ functionality
 const openFaq = ref<number | null>(null)
 
@@ -752,9 +755,9 @@ const scrollToDemo = () => {
 
 const handleStartCreatingEvents = () => {
   if (authStore.isAuthenticated) {
-    router.push('/events')
+    router.push({ path: '/events', query: { createEvent: '1' } })
   } else {
-    router.push('/signin?redirect=/events')
+    router.push({ path: '/signin', query: { redirect: '/events?createEvent=1' } })
   }
 }
 

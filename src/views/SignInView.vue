@@ -291,7 +291,7 @@ const handleRedirectAfterLogin = () => {
     // Use replace to avoid login page in history
     router.replace(redirectPath)
   } else {
-    router.push('/')
+    router.push('/events')
   }
 }
 

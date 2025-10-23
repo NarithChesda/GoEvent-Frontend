@@ -8,7 +8,7 @@
       class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 overflow-hidden -mt-20"
     >
       <!-- Enhanced Background Elements -->
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 pointer-events-none">
         <!-- Primary gradient overlay -->
         <div
           class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-500/5"
@@ -246,7 +246,7 @@
       :class="{ 'animate-fade-in-up': isVisible.mission }"
     >
       <!-- Background decoration -->
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 pointer-events-none">
         <div
           class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
@@ -363,7 +363,7 @@
     <!-- Stats Section -->
     <section class="py-12 sm:py-16 md:py-20 relative overflow-hidden stats-bg">
       <!-- Background elements -->
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 pointer-events-none">
         <div
           class="absolute top-0 left-1/2 transform -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-[#E6F4FF]0/10 rounded-full blur-3xl"
         ></div>
@@ -553,11 +553,11 @@
         </div>
 
         <!-- Team Members Grid -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+        <div v-else :class="teamGridClasses">
           <div
             v-for="(member, index) in teamMembers"
             :key="member.id"
-            class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"
+            class="group relative w-full bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"
             :class="index === 1 ? 'md:scale-105 md:z-10' : ''"
           >
             <!-- Avatar -->
@@ -674,7 +674,7 @@
     <!-- Join Us CTA -->
     <section class="py-12 sm:py-16 md:py-20 lg:py-32 bg-white relative overflow-hidden">
       <!-- Background decoration -->
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 pointer-events-none">
         <!-- Subtle gradient orbs -->
         <div
           class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
@@ -778,7 +778,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
@@ -858,6 +858,21 @@ const values = [
 const teamMembers = ref<TeamMember[]>([])
 const teamLoading = ref(false)
 const teamError = ref<string | null>(null)
+
+const teamGridClasses = computed(() => {
+  const classes = ['grid', 'grid-cols-1', 'gap-6', 'sm:gap-8', 'lg:gap-10']
+  const count = teamMembers.value.length
+
+  if (count <= 1) {
+    classes.push('md:grid-cols-1', 'xl:grid-cols-1', 'max-w-xl', 'mx-auto', 'justify-items-center')
+  } else if (count === 2) {
+    classes.push('md:grid-cols-2', 'xl:grid-cols-2', 'max-w-5xl', 'mx-auto', 'justify-items-center')
+  } else {
+    classes.push('md:grid-cols-2', 'xl:grid-cols-3')
+  }
+
+  return classes
+})
 
 // Avatar gradient options for fallback when no profile picture
 const avatarGradients = [

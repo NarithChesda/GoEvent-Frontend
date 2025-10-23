@@ -52,7 +52,7 @@
         <template v-for="item in navigationItems" :key="item.path">
           <!-- Home button with scroll behavior -->
           <button
-            v-if="item.path === '/'"
+            v-if="item.path === '/home'"
             @click="handleHomeClick"
             class="w-full flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
             :class="[
@@ -227,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   Home,
@@ -273,7 +273,7 @@ onUnmounted(() => {
 
 // Navigation items configuration
 const navigationItems = [
-  { path: '/', label: 'Home', icon: Home },
+  { path: '/home', label: 'Home', icon: Home },
   { path: '/about', label: 'About', icon: Info },
   { path: '/events', label: 'Events', icon: Calendar }
 ]
@@ -287,52 +287,53 @@ const signinLink = computed(() => {
   return `/signin?redirect=${encodeURIComponent(currentPath)}`
 })
 
-const handleLogoClick = () => {
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/').then(() => {
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }, 100)
-    })
+const scrollToHero = () => {
+  const heroSection = document.getElementById('hero')
+  if (heroSection) {
+    heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } else {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+}
+
+const navigateHome = async () => {
+  if (router.currentRoute.value.path !== '/home') {
+    await router.push('/home')
+    await nextTick()
+  }
+  scrollToHero()
+}
+
+const handleLogoClick = () => {
+  navigateHome()
 }
 
 const handleHomeClick = () => {
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/').then(() => {
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }, 100)
-    })
-  } else {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  navigateHome()
 }
 
-const scrollToPricing = () => {
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/').then(() => {
-      setTimeout(() => {
-        const pricingSection = document.getElementById('pricing')
-        if (pricingSection) {
-          pricingSection.scrollIntoView({ behavior: 'smooth' })
-        }
-      }, 100)
-    })
-  } else {
+const scrollToPricing = async () => {
+  const scroll = () => {
     const pricingSection = document.getElementById('pricing')
     if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth' })
+      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+  }
+
+  if (router.currentRoute.value.path !== '/home') {
+    await router.push('/home')
+    await nextTick()
+    // Wait for the home view to fully render
+    setTimeout(scroll, 100)
+  } else {
+    scroll()
   }
 }
 
 const handleLogout = async () => {
   await authStore.logout()
   userMenuOpen.value = false
-  router.push('/')
+  router.push('/events')
 }
 </script>
 

@@ -255,7 +255,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import {
   Calendar,
   Plus,
@@ -283,6 +283,7 @@ import {
 type ViewType = 'all' | 'my' | 'registered'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 // Reactive state
@@ -595,6 +596,38 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   }, 5000)
 }
 
+const shouldOpenCreateModalFromQuery = () => {
+  const param = route.query.createEvent
+  const values = Array.isArray(param) ? param : [param]
+
+  return values.some((value) => {
+    if (value == null) {
+      return false
+    }
+    const normalized = value.toLowerCase()
+    return normalized === '' || normalized === '1' || normalized === 'true' || normalized === 'yes'
+  })
+}
+
+const clearCreateEventQuery = () => {
+  const newQuery = { ...route.query } as Record<string, any>
+  delete newQuery.createEvent
+  router.replace({ path: route.path, query: newQuery })
+}
+
+const maybeOpenCreateModalFromRoute = () => {
+  if (!authStore.isAuthenticated) {
+    return
+  }
+
+  if (!shouldOpenCreateModalFromQuery()) {
+    return
+  }
+
+  showCreateModal.value = true
+  clearCreateEventQuery()
+}
+
 
 interface EventFormData {
   title: string
@@ -682,6 +715,14 @@ const handleEventCreate = async (formData: EventFormData) => {
 
 // Watchers
 watch(
+  () => route.query.createEvent,
+  () => {
+    maybeOpenCreateModalFromRoute()
+  },
+  { immediate: true },
+)
+
+watch(
   [() => currentView.value, filters],
   () => {
     pagination.currentPage = 1
@@ -694,6 +735,11 @@ watch(
 watch(
   () => authStore.isAuthenticated,
   (isAuthenticated) => {
+    if (isAuthenticated) {
+      maybeOpenCreateModalFromRoute()
+      return
+    }
+
     // If user logs out and is on "my" or "registered" tab, switch to "all"
     if (!isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
       currentView.value = 'all'

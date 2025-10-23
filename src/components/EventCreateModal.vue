@@ -67,13 +67,14 @@
                 <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Full Description *
                 </label>
-                <textarea
-                  v-model="form.description"
-                  required
-                  rows="3"
-                  placeholder="Detailed event description"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                ></textarea>
+                <div
+                  contenteditable="true"
+                  ref="descriptionEditor"
+                  @input="handleDescriptionInput"
+                  @blur="handleDescriptionBlur"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm min-h-[120px] max-h-[300px] overflow-y-auto"
+                  :data-placeholder="form.description ? '' : 'Detailed event description'"
+                ></div>
               </div>
 
               <!-- Date and Time -->
@@ -135,6 +136,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import { Plus, X, Loader } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
+import eventDescriptionTemplates from '../assets/event-description-templates.json'
 
 // Types
 interface EventFormData {
@@ -171,6 +173,7 @@ const emit = defineEmits<Emits>()
 
 // Refs
 const modalRef = ref<HTMLElement>()
+const descriptionEditor = ref<HTMLElement>()
 const isSubmitting = ref(false)
 const categories = ref<EventCategory[]>([])
 
@@ -198,6 +201,25 @@ const loadCategories = async () => {
     }
   } catch (error) {
     console.error('Failed to load categories:', error)
+  }
+}
+
+// Handle description input from contenteditable div
+const handleDescriptionInput = (event: Event) => {
+  const target = event.target as HTMLElement
+  form.description = target.innerHTML
+}
+
+// Handle description blur to ensure content is saved
+const handleDescriptionBlur = (event: Event) => {
+  const target = event.target as HTMLElement
+  form.description = target.innerHTML
+}
+
+// Update the description editor content when form.description changes
+const updateDescriptionEditor = () => {
+  if (descriptionEditor.value) {
+    descriptionEditor.value.innerHTML = form.description
   }
 }
 
@@ -294,6 +316,39 @@ watch(
   },
 )
 
+// Watch for category changes to auto-fill description
+watch(
+  () => form.category,
+  (newCategory, oldCategory) => {
+    // Only proceed if category actually changed
+    if (newCategory === oldCategory) return
+
+    // Clear description when switching categories
+    if (oldCategory !== undefined && oldCategory !== '') {
+      form.description = ''
+      updateDescriptionEditor()
+    }
+
+    // Auto-fill description if category has a template
+    if (newCategory && newCategory !== '') {
+      const selectedCategory = categories.value.find(
+        cat => cat.id === (typeof newCategory === 'string' ? parseInt(newCategory) : newCategory)
+      )
+
+      if (selectedCategory) {
+        const categoryName = selectedCategory.name.toLowerCase()
+        const templates = eventDescriptionTemplates.templates as Record<string, { description: string }>
+
+        // Check if there's a template for this category
+        if (templates[categoryName]) {
+          form.description = templates[categoryName].description
+          updateDescriptionEditor()
+        }
+      }
+    }
+  }
+)
+
 // Set default start date to now + 1 hour
 const setDefaultDates = () => {
   const now = new Date()
@@ -345,5 +400,53 @@ onMounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Rich text editor styling */
+[contenteditable="true"] {
+  outline: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+[contenteditable="true"]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Rich text content styling */
+[contenteditable="true"] :deep(h3) {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+
+[contenteditable="true"] :deep(p) {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+[contenteditable="true"] :deep(ul) {
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  list-style-type: disc;
+}
+
+[contenteditable="true"] :deep(li) {
+  margin-bottom: 0.25rem;
+  line-height: 1.5;
+}
+
+[contenteditable="true"] :deep(strong) {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+[contenteditable="true"] :deep(em) {
+  font-style: italic;
+  color: #64748b;
 }
 </style>

@@ -359,7 +359,7 @@ const handleSignUp = async () => {
         }, 2000)
       } else {
         // Auto-logged in, redirect to home
-        router.push('/')
+        router.push('/events')
       }
     } else {
       errorMessage.value = result.error || 'Registration failed'
@@ -376,7 +376,7 @@ const handleRedirectAfterLogin = () => {
   if (redirectPath) {
     router.replace(redirectPath)
   } else {
-    router.push('/')
+    router.push('/events')
   }
 }
 

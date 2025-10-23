@@ -22,7 +22,8 @@
         <!-- Desktop Navigation -->
         <div class="hidden lg:flex items-center space-x-2">
           <RouterLink
-            to="/"
+            to="/home"
+            @click.prevent="navigateHome"
             class="px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group"
             :class="
               isScrolled
@@ -220,9 +221,10 @@
       <div class="flex items-center justify-around px-2 py-2">
         <!-- Home Tab -->
         <RouterLink
-          to="/"
+          to="/home"
+          @click.prevent="navigateHome"
           class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
-          :class="$route.path === '/' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
+          :class="$route.path === '/home' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
         >
           <Home class="w-5 h-5 flex-shrink-0" />
           <span class="text-xs font-medium truncate">Home</span>
@@ -356,7 +358,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { ChevronDown, Settings, LogOut, Home, Info, Calendar, DollarSign, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
@@ -382,46 +384,48 @@ const signinLink = computed(() => {
 // Scroll detection for seamless navbar
 const { isScrolled } = useNavbarScroll()
 
-const handleLogoClick = () => {
-  // If we're not on home page, navigate to home first
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/').then(() => {
-      // Wait for navigation to complete, then scroll to hero
-      setTimeout(() => {
-        // Scroll to the very top to show hero section properly
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }, 100)
-    })
+const scrollToHero = () => {
+  const heroSection = document.getElementById('hero')
+  if (heroSection) {
+    heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } else {
-    // Already on home page, scroll to the very top
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
 
-const scrollToPricing = () => {
-  // If we're not on home page, navigate to home first
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/').then(() => {
-      // Wait for navigation to complete, then scroll
-      setTimeout(() => {
-        const pricingSection = document.getElementById('pricing')
-        if (pricingSection) {
-          pricingSection.scrollIntoView({ behavior: 'smooth' })
-        }
-      }, 100)
-    })
-  } else {
-    // Already on home page, just scroll
+const navigateHome = async () => {
+  if (router.currentRoute.value.path !== '/home') {
+    await router.push('/home')
+    await nextTick()
+  }
+  scrollToHero()
+}
+
+const handleLogoClick = () => {
+  navigateHome()
+}
+
+const scrollToPricing = async () => {
+  const scroll = () => {
     const pricingSection = document.getElementById('pricing')
     if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth' })
+      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+  }
+
+  if (router.currentRoute.value.path !== '/home') {
+    await router.push('/home')
+    await nextTick()
+    // Wait for the home view to fully render
+    setTimeout(scroll, 100)
+  } else {
+    scroll()
   }
 }
 
 const handleLogout = async () => {
   await authStore.logout()
-  router.push('/')
+  router.push('/events')
 }
 </script>
 

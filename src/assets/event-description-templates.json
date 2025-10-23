@@ -1,0 +1,34 @@
+{
+  "templates": {
+    "wedding": {
+      "description": "<p><strong>Join us as we celebrate our special day!</strong></p>\n\n<p>We are thrilled to invite you to witness and celebrate the beginning of our journey together as husband and wife.</p>\n\n<h3>Ceremony Details:</h3>\n<ul>\n  <li>The wedding ceremony will begin promptly at the scheduled time</li>\n  <li>Please arrive 15-30 minutes early to find your seats</li>\n  <li>Dress code: Formal/Semi-formal attire</li>\n</ul>\n\n<h3>Reception:</h3>\n<ul>\n  <li>Dinner and dancing to follow immediately after the ceremony</li>\n  <li>Light refreshments and cocktails will be served</li>\n  <li>Photo booth and entertainment provided</li>\n</ul>\n\n<p><em>Your presence would mean the world to us as we begin this beautiful journey together. We can't wait to share this joyous occasion with you!</em></p>\n\n<p><strong>RSVP:</strong> Please confirm your attendance by registering below.</p>"
+    },
+    "birthday": {
+      "description": "<p><strong>You're Invited to a Birthday Celebration!</strong></p>\n\n<p>Come join us for a fantastic birthday party filled with fun, laughter, and great memories!</p>\n\n<h3>What to Expect:</h3>\n<ul>\n  <li>Delicious food and birthday cake</li>\n  <li>Fun games and activities</li>\n  <li>Music and entertainment</li>\n  <li>Great company and memorable moments</li>\n</ul>\n\n<p><em>Your presence is the best gift! Looking forward to celebrating together!</em></p>"
+    },
+    "conference": {
+      "description": "<p><strong>Professional Conference & Networking Event</strong></p>\n\n<p>Join industry leaders, innovators, and professionals for an enriching conference experience.</p>\n\n<h3>Event Highlights:</h3>\n<ul>\n  <li>Keynote speakers and panel discussions</li>\n  <li>Networking opportunities with industry professionals</li>\n  <li>Workshop sessions and breakout discussions</li>\n  <li>Exhibition area with latest industry innovations</li>\n</ul>\n\n<h3>What to Bring:</h3>\n<ul>\n  <li>Business cards for networking</li>\n  <li>Notepad or laptop for taking notes</li>\n  <li>Questions for the Q&A sessions</li>\n</ul>\n\n<p><strong>Registration required.</strong> Limited seats available!</p>"
+    },
+    "corporate": {
+      "description": "<p><strong>Corporate Event</strong></p>\n\n<p>We are pleased to invite you to our upcoming corporate event.</p>\n\n<h3>Event Overview:</h3>\n<ul>\n  <li>Professional networking opportunities</li>\n  <li>Presentations and announcements</li>\n  <li>Catered refreshments</li>\n  <li>Team building activities</li>\n</ul>\n\n<p>Your attendance is highly valued. Please RSVP at your earliest convenience.</p>"
+    },
+    "workshop": {
+      "description": "<p><strong>Interactive Workshop Session</strong></p>\n\n<p>Join us for a hands-on workshop designed to enhance your skills and knowledge.</p>\n\n<h3>Workshop Details:</h3>\n<ul>\n  <li>Hands-on practical exercises</li>\n  <li>Expert instructors and facilitators</li>\n  <li>Take-home resources and materials</li>\n  <li>Certificate of participation</li>\n</ul>\n\n<h3>What to Bring:</h3>\n<ul>\n  <li>Laptop or tablet (if applicable)</li>\n  <li>Notepad and writing materials</li>\n  <li>Enthusiasm to learn!</li>\n</ul>\n\n<p><strong>Limited spots available.</strong> Register now to secure your place!</p>"
+    },
+    "seminar": {
+      "description": "<p><strong>Educational Seminar</strong></p>\n\n<p>An informative session covering important topics and industry insights.</p>\n\n<h3>Seminar Topics:</h3>\n<ul>\n  <li>Expert presentations and lectures</li>\n  <li>Q&A session with speakers</li>\n  <li>Networking with fellow attendees</li>\n  <li>Resource materials provided</li>\n</ul>\n\n<p>Expand your knowledge and connect with like-minded professionals.</p>"
+    },
+    "fundraiser": {
+      "description": "<p><strong>Charity Fundraising Event</strong></p>\n\n<p>Join us in making a difference! Your support will help us achieve our charitable goals.</p>\n\n<h3>Event Features:</h3>\n<ul>\n  <li>Silent auction and raffle prizes</li>\n  <li>Entertainment and performances</li>\n  <li>Food and refreshments</li>\n  <li>Meet our beneficiaries and learn about our cause</li>\n</ul>\n\n<p><em>Every contribution makes a difference. Together, we can create positive change!</em></p>\n\n<p><strong>All proceeds go directly to our charitable cause.</strong></p>"
+    },
+    "concert": {
+      "description": "<p><strong>Live Concert Experience</strong></p>\n\n<p>Get ready for an unforgettable night of live music and entertainment!</p>\n\n<h3>Event Highlights:</h3>\n<ul>\n  <li>Live performances by talented artists</li>\n  <li>Amazing sound and lighting setup</li>\n  <li>Food and beverage vendors</li>\n  <li>Merchandise available</li>\n</ul>\n\n<h3>Important Information:</h3>\n<ul>\n  <li>Doors open 1 hour before showtime</li>\n  <li>Standing/seated sections available</li>\n  <li>Age restrictions may apply</li>\n</ul>\n\n<p><strong>Get your tickets now!</strong> Limited availability!</p>"
+    },
+    "sports": {
+      "description": "<p><strong>Sports Event</strong></p>\n\n<p>Join us for an exciting sports event filled with action, competition, and team spirit!</p>\n\n<h3>Event Details:</h3>\n<ul>\n  <li>Competitive matches and tournaments</li>\n  <li>Spectator-friendly viewing areas</li>\n  <li>Refreshments and snacks available</li>\n  <li>Awards ceremony for winners</li>\n</ul>\n\n<h3>For Participants:</h3>\n<ul>\n  <li>Bring appropriate sports attire and equipment</li>\n  <li>Arrive early for warm-up and registration</li>\n  <li>Follow all safety guidelines</li>\n</ul>\n\n<p>Whether you're competing or cheering from the sidelines, we guarantee an exciting experience!</p>"
+    },
+    "social": {
+      "description": "<p><strong>Social Gathering</strong></p>\n\n<p>Come join us for a wonderful social event where we can connect, relax, and enjoy great company!</p>\n\n<h3>What to Expect:</h3>\n<ul>\n  <li>Casual and friendly atmosphere</li>\n  <li>Refreshments and snacks</li>\n  <li>Fun conversations and networking</li>\n  <li>Activities and entertainment</li>\n</ul>\n\n<p><em>All are welcome! Bring your friends and let's make it a memorable gathering!</em></p>"
+    }
+  }
+}
