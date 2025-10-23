@@ -250,221 +250,221 @@
     <!-- Add Guest Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div
-          v-if="showAddGuestModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          @click="closeAddGuestModal"
-        >
-          <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
-            @click.stop
-          >
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-4 sm:px-8 sm:py-6 text-white">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <UserPlus class="w-4 h-4 sm:w-5 sm:h-5" />
+        <div v-if="showAddGuestModal" class="fixed inset-0 z-50 overflow-y-auto">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="closeAddGuestModal"></div>
+
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div
+              class="relative w-full max-w-md bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+              @click.stop
+            >
+              <!-- Header (neutral style) -->
+              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                      <UserPlus class="w-5 h-5" />
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Add Guest</h2>
                   </div>
-                  <h2 class="text-xl sm:text-2xl font-bold">Add Guest</h2>
-                </div>
-                <button
-                  @click="closeAddGuestModal"
-                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
-                >
-                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Content -->
-            <div class="p-4 sm:p-8">
-              <!-- Mode Toggle -->
-              <div class="flex gap-2 mb-4 sm:mb-6">
-                <button
-                  type="button"
-                  @click="switchMode('single')"
-                  :class="[
-                    'flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200',
-                    importMode === 'single'
-                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
-                  ]"
-                >
-                  <UserPlus class="w-4 h-4 inline-block mr-1.5" />
-                  Single Guest
-                </button>
-                <button
-                  type="button"
-                  @click="switchMode('bulk')"
-                  :class="[
-                    'flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200',
-                    importMode === 'bulk'
-                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
-                  ]"
-                >
-                  <Upload class="w-4 h-4 inline-block mr-1.5" />
-                  Bulk Import
-                </button>
-              </div>
-
-              <!-- Single Guest Mode -->
-              <form v-if="importMode === 'single'" @submit.prevent="addGuest">
-                <div class="mb-4 sm:mb-6">
-                  <label for="guestName" class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
-                    Guest Name <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="guestName"
-                    v-model="newGuestName"
-                    type="text"
-                    required
-                    placeholder="Enter guest's full name"
-                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 transition-all duration-200 text-sm sm:text-base text-slate-900 placeholder-slate-400"
-                  />
-                </div>
-
-                <div class="flex space-x-2 sm:space-x-3">
                   <button
-                    type="button"
                     @click="closeAddGuestModal"
-                    class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
+                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                    aria-label="Close"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    :disabled="!newGuestName.trim() || isAddingGuest"
-                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm sm:text-base"
-                  >
-                    <span v-if="isAddingGuest" class="inline-flex items-center justify-center">
-                      <div
-                        class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:h-4 border-b-2 border-white mr-1.5 sm:mr-2"
-                      ></div>
-                      Adding...
-                    </span>
-                    <span v-else>Add Guest</span>
+                    <X class="w-4 h-4" />
                   </button>
                 </div>
-              </form>
+              </div>
 
-              <!-- Bulk Import Mode -->
-              <div v-else>
-                <!-- Download Template Button -->
-                <button
-                  type="button"
-                  @click="downloadTemplate"
-                  class="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm"
-                >
-                  <Download class="w-4 h-4" />
-                  Download Template (CSV)
-                </button>
+              <!-- Form -->
+              <div class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- Mode Toggle -->
+                <div class="space-y-3 sm:space-y-4">
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      @click="switchMode('single')"
+                      :class="[
+                        'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
+                        importMode === 'single'
+                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                      ]"
+                    >
+                      <UserPlus class="w-4 h-4 inline-block mr-1.5" />
+                      Single Guest
+                    </button>
+                    <button
+                      type="button"
+                      @click="switchMode('bulk')"
+                      :class="[
+                        'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
+                        importMode === 'bulk'
+                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                      ]"
+                    >
+                      <Upload class="w-4 h-4 inline-block mr-1.5" />
+                      Bulk Import
+                    </button>
+                  </div>
+                </div>
 
-                <!-- File Upload Area (Before Preview) -->
-                <div v-if="!showImportPreview">
-                  <div
-                    @drop.prevent="handleFileDrop"
-                    @dragover.prevent="handleDragOver"
-                    @dragleave.prevent="handleDragLeave"
-                    :class="[
-                      'border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition-all duration-200 cursor-pointer',
-                      isDragging
-                        ? 'border-[#1e90ff] bg-blue-50'
-                        : 'border-slate-300 hover:border-slate-400 bg-slate-50',
-                    ]"
-                    @click="fileInput?.click()"
-                  >
-                    <Upload
-                      :class="['w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3', isDragging ? 'text-[#1e90ff]' : 'text-slate-400']"
-                    />
-                    <p class="text-sm sm:text-base font-medium text-slate-700 mb-1">
-                      {{ selectedFile ? selectedFile.name : 'Drop your file here or click to browse' }}
-                    </p>
-                    <p class="text-xs sm:text-sm text-slate-500">
-                      Supported formats: CSV, Excel (.xlsx, .xls), TXT
-                    </p>
+                <!-- Single Guest Mode -->
+                <div v-if="importMode === 'single'" class="space-y-5">
+                  <div>
                     <input
-                      ref="fileInput"
-                      type="file"
-                      accept=".csv,.xlsx,.xls,.txt,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain"
-                      @change="handleFileSelect"
-                      class="hidden"
+                      id="guestName"
+                      v-model="newGuestName"
+                      type="text"
+                      required
+                      placeholder="Enter guest's full name"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     />
                   </div>
 
-                  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs sm:text-sm text-slate-600">
-                    <FileText class="w-4 h-4 inline-block mr-1.5 text-blue-600" />
-                    <strong>Format:</strong> One guest name per line. First column for CSV, or entire line for TXT files.
-                  </div>
-
-                  <div class="flex space-x-2 sm:space-x-3 mt-4">
+                  <!-- Action Buttons -->
+                  <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
                     <button
                       type="button"
                       @click="closeAddGuestModal"
-                      class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
+                      class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                     >
                       Cancel
+                    </button>
+                    <button
+                      type="button"
+                      @click="addGuest"
+                      :disabled="!newGuestName.trim() || isAddingGuest"
+                      class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      <span
+                        v-if="isAddingGuest"
+                        class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                      ></span>
+                      {{ isAddingGuest ? 'Adding...' : 'Add Guest' }}
                     </button>
                   </div>
                 </div>
 
-                <!-- Import Preview -->
-                <div v-else>
-                  <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                      <h4 class="text-sm font-semibold text-slate-700">Preview Import</h4>
-                      <span class="text-xs text-slate-500">
-                        {{ importPreview.filter((g) => g.status === 'valid').length }} new guests
-                      </span>
-                    </div>
-                    <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg">
+                <!-- Bulk Import Mode -->
+                <div v-else class="space-y-5">
+                  <!-- Download Template Button -->
+                  <button
+                    type="button"
+                    @click="downloadTemplate"
+                    class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                  >
+                    <Download class="w-4 h-4" />
+                    Download Template (CSV)
+                  </button>
+
+                  <!-- File Upload Area (Before Preview) -->
+                  <div v-if="!showImportPreview" class="space-y-4">
+                    <div>
                       <div
-                        v-for="(guest, idx) in importPreview"
-                        :key="idx"
+                        @drop.prevent="handleFileDrop"
+                        @dragover.prevent="handleDragOver"
+                        @dragleave.prevent="handleDragLeave"
                         :class="[
-                          'px-3 py-2 text-sm flex items-center justify-between',
-                          guest.status === 'duplicate' ? 'bg-red-50 text-red-700' : 'bg-white text-slate-700',
-                          idx !== importPreview.length - 1 && 'border-b border-slate-100',
+                          'border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition-all duration-200 cursor-pointer',
+                          isDragging
+                            ? 'border-sky-400 bg-sky-50'
+                            : 'border-slate-300 hover:border-slate-400 bg-slate-50',
                         ]"
+                        @click="fileInput?.click()"
                       >
-                        <span class="truncate">{{ guest.name }}</span>
-                        <span
-                          v-if="guest.status === 'duplicate'"
-                          class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-2 flex-shrink-0"
-                        >
-                          Duplicate
-                        </span>
+                        <Upload
+                          :class="['w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3', isDragging ? 'text-sky-500' : 'text-slate-400']"
+                        />
+                        <p class="text-sm font-medium text-slate-700 mb-1">
+                          {{ selectedFile ? selectedFile.name : 'Drop your file here or click to browse' }}
+                        </p>
+                        <p class="text-xs text-slate-500">
+                          Supported formats: CSV, Excel (.xlsx, .xls), TXT
+                        </p>
+                        <input
+                          ref="fileInput"
+                          type="file"
+                          accept=".csv,.xlsx,.xls,.txt,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain"
+                          @change="handleFileSelect"
+                          class="hidden"
+                        />
                       </div>
+                    </div>
+
+                    <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-slate-600">
+                      <FileText class="w-4 h-4 inline-block mr-1.5 text-sky-600" />
+                      <strong>Format:</strong> One guest name per line. First column for CSV, or entire line for TXT files.
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                      <button
+                        type="button"
+                        @click="closeAddGuestModal"
+                        class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
 
-                  <div class="flex space-x-2 sm:space-x-3">
-                    <button
-                      type="button"
-                      @click="resetImportState"
-                      class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 transition-colors duration-200 font-semibold text-sm sm:text-base"
-                    >
-                      Back
-                    </button>
-                    <button
-                      type="button"
-                      @click="confirmBulkImport"
-                      :disabled="
-                        importPreview.filter((g) => g.status === 'valid').length === 0 || isImporting
-                      "
-                      class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm sm:text-base"
-                    >
-                      <span v-if="isImporting" class="inline-flex items-center justify-center">
+                  <!-- Import Preview -->
+                  <div v-else class="space-y-4">
+                    <div class="space-y-3 sm:space-y-4">
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-semibold text-slate-900">Preview Import</h4>
+                        <span class="text-xs text-slate-500">
+                          {{ importPreview.filter((g) => g.status === 'valid').length }} new guests
+                        </span>
+                      </div>
+                      <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg bg-white/90">
                         <div
-                          class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"
-                        ></div>
-                        Importing...
-                      </span>
-                      <span v-else>
-                        Import {{ importPreview.filter((g) => g.status === 'valid').length }} Guests
-                      </span>
-                    </button>
+                          v-for="(guest, idx) in importPreview"
+                          :key="idx"
+                          :class="[
+                            'px-3.5 py-2.5 text-sm flex items-center justify-between',
+                            guest.status === 'duplicate' ? 'bg-red-50 text-red-700' : 'bg-white text-slate-700',
+                            idx !== importPreview.length - 1 && 'border-b border-slate-100',
+                          ]"
+                        >
+                          <span class="truncate">{{ guest.name }}</span>
+                          <span
+                            v-if="guest.status === 'duplicate'"
+                            class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-2 flex-shrink-0"
+                          >
+                            Duplicate
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                      <button
+                        type="button"
+                        @click="resetImportState"
+                        class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        @click="confirmBulkImport"
+                        :disabled="
+                          importPreview.filter((g) => g.status === 'valid').length === 0 || isImporting
+                        "
+                        class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      >
+                        <span
+                          v-if="isImporting"
+                          class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                        ></span>
+                        {{ isImporting ? 'Importing...' : `Import ${importPreview.filter((g) => g.status === 'valid').length} Guests` }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1039,6 +1039,24 @@ watch(hasTemplatePayment, (isActivated) => {
 .modal-leave-to {
   opacity: 0;
   transform: scale(0.9);
+}
+
+/* Custom scrollbar for modal content */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .slide-up-enter-active,
