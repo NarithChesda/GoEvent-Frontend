@@ -121,14 +121,13 @@
           />
           <div
             v-else
-            class="logo-fallback"
-            :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
-            }"
+            class="fallback-logo-wrapper"
+            :style="fallbackLogoStyle"
           >
-            <span class="logo-initial" :style="{ fontFamily: primaryFont || currentFont }">
-              {{ eventInitial }}
-            </span>
+            <div
+              class="host-logo-showcase fallback-logo-svg"
+              v-html="fallbackLogoSvgContent"
+            />
           </div>
         </div>
       </div>
@@ -287,9 +286,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { User } from 'lucide-vue-next'
 import type { Host } from '../../composables/useEventShowcase'
 import { apiService } from '../../services/api'
+import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
 
 interface Props {
   hosts: Host[]
@@ -305,12 +306,26 @@ interface Props {
   currentLanguage?: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 // Utility method to get full URL for media
 const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
   return apiService.getProfilePictureUrl(mediaUrl) || undefined
 }
+
+// Computed property to process SVG content and add fill="currentColor"
+const fallbackLogoSvgContent = computed(() => {
+  // Add fill="currentColor" to all <path> elements
+  return fallbackLogoSvg.replace(/<path /g, '<path fill="currentColor" ')
+})
+
+// Computed style for fallback logo with primary color
+const fallbackLogoStyle = computed(() => {
+  return {
+    color: props.primaryColor,
+    filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
+  }
+})
 </script>
 
 <style scoped>
@@ -483,6 +498,73 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   color: white;
   font-weight: 700;
   font-size: 1.5rem;
+}
+
+/* Fallback SVG Logo Styles */
+.fallback-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: auto;
+}
+
+.fallback-logo-svg {
+  transition: transform 0.3s ease;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 330px; /* Match mobile size */
+  max-height: 180px; /* Match mobile size */
+}
+
+.fallback-logo-svg:hover {
+  transform: scale(1.05);
+}
+
+.fallback-logo-svg :deep(svg) {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 330px;
+  max-height: 180px;
+}
+
+/* Responsive sizing for fallback SVG - match .host-logo-showcase */
+@media (min-width: 640px) {
+  .fallback-logo-svg {
+    max-width: 350px;
+    max-height: 140px;
+  }
+
+  .fallback-logo-svg :deep(svg) {
+    max-width: 350px;
+    max-height: 140px;
+  }
+}
+
+@media (min-width: 768px) {
+  .fallback-logo-svg {
+    max-width: 375px;
+    max-height: 150px;
+  }
+
+  .fallback-logo-svg :deep(svg) {
+    max-width: 375px;
+    max-height: 150px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .fallback-logo-svg {
+    max-width: 450px;
+    max-height: 180px;
+  }
+
+  .fallback-logo-svg :deep(svg) {
+    max-width: 450px;
+    max-height: 180px;
+  }
 }
 
 /* Profile Picture Styles */

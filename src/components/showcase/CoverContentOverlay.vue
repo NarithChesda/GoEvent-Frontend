@@ -34,17 +34,27 @@
 
       <!-- Event Logo Row: 48% -->
       <div
-        v-if="eventLogo"
         class="content-row-logo flex items-center justify-center animate-fadeIn animation-delay-200"
         style="height: 48%"
       >
         <div class="flex items-center justify-center h-full w-full px-4">
           <img
+            v-if="eventLogo"
             :src="getMediaUrl(eventLogo)"
             :alt="eventTitle + ' logo'"
             class="scaled-logo mx-auto"
             fetchpriority="high"
           />
+          <div
+            v-else
+            class="fallback-logo-container"
+            :style="fallbackLogoStyle"
+          >
+            <div
+              class="scaled-logo mx-auto fallback-logo"
+              v-html="fallbackLogoSvgContent"
+            />
+          </div>
         </div>
       </div>
 
@@ -111,6 +121,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -246,6 +257,20 @@ const containerStyle = computed(() => {
     top: `${topPosition}vh`,
   }
 })
+
+// Computed property to process SVG content and add fill="currentColor"
+const fallbackLogoSvgContent = computed(() => {
+  // Add fill="currentColor" to all <path> elements
+  return fallbackLogoSvg.replace(/<path /g, '<path fill="currentColor" ')
+})
+
+// Computed style for fallback logo with primary color
+const fallbackLogoStyle = computed(() => {
+  return {
+    color: props.primaryColor,
+    filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
+  }
+})
 </script>
 
 <style scoped>
@@ -369,5 +394,39 @@ const containerStyle = computed(() => {
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
+}
+
+/* Fallback Logo Styles */
+.fallback-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.fallback-logo {
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 90%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.fallback-logo:hover {
+  transform: scale(1.05);
+}
+
+.fallback-logo :deep(svg) {
+  display: block;
+  width: auto !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 </style>

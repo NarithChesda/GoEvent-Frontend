@@ -165,10 +165,10 @@ p {
   hyphens: none !important;
 }
 
-/* Logo Row (38% of container) - Scale to fit within row */
+/* Logo Row (48% of container) - Scale to fit within row */
 .content-row-logo .scaled-logo {
-  max-height: 85%;
-  max-width: 85%;
+  max-height: 100%;
+  max-width: 90%;
   width: auto;
   height: auto;
   object-fit: contain;
