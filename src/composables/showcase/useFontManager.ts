@@ -380,6 +380,54 @@ export function useFontManager() {
 
     // Append to existing stylesheet
     styleTag.textContent += fontFaceRule
+
+    // Safari/WebKit fix: Force font to load by creating invisible element
+    // Safari only downloads fonts when they're actually used on the page
+    forceFontLoadInSafari(fontName)
+  }
+
+  /**
+   * Forces Safari to actually download and render the font
+   * Safari/WebKit only fetches fonts when they're actively used in the DOM
+   */
+  const forceFontLoadInSafari = (fontName: string): void => {
+    // Create or get the font loader container
+    let fontLoader = document.getElementById('font-loader-safari') as HTMLDivElement
+    if (!fontLoader) {
+      fontLoader = document.createElement('div')
+      fontLoader.id = 'font-loader-safari'
+      fontLoader.style.cssText = `
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        visibility: hidden;
+        pointer-events: none;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      `
+      document.body.appendChild(fontLoader)
+    }
+
+    // Create a span with the font applied
+    const fontSpan = document.createElement('span')
+    fontSpan.style.fontFamily = `"${fontName}"`
+    fontSpan.textContent = 'Font Loader'
+    fontSpan.setAttribute('aria-hidden', 'true')
+
+    // Add to DOM to trigger font download
+    fontLoader.appendChild(fontSpan)
+
+    // Force browser to compute styles (triggers font download)
+    window.getComputedStyle(fontSpan).fontFamily
+
+    // Clean up after a delay (font should be loaded by then)
+    setTimeout(() => {
+      if (fontSpan.parentNode) {
+        fontSpan.parentNode.removeChild(fontSpan)
+      }
+    }, 2000)
   }
 
   /**
@@ -512,6 +560,12 @@ export function useFontManager() {
     const styleTag = document.getElementById('custom-fonts-css')
     if (styleTag) {
       styleTag.remove()
+    }
+
+    // Remove Safari font loader
+    const fontLoader = document.getElementById('font-loader-safari')
+    if (fontLoader) {
+      fontLoader.remove()
     }
   }
 
