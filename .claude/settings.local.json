@@ -165,7 +165,9 @@
       "Bash(netstat:*)",
       "Bash(cmd //c:*)",
       "Bash(awk:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "WebFetch(domain:webkit.org)",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [],
     "additionalDirectories": [
