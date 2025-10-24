@@ -6,12 +6,14 @@
     @dragover.prevent
     @dragenter.prevent
     @drop="handleDrop"
-    class="group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
+    class="agenda-card group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
     :class="[
       item.is_featured ? 'ring-1 ring-[#87CEEB] bg-[#E6F4FF]/30' : '',
-      isDragging ? 'opacity-60 transform rotate-1 scale-105 shadow-xl' : '',
+      isDragging ? 'opacity-60 transform rotate-1 scale-105 shadow-xl dragging' : '',
       canEdit && draggable ? 'hover:scale-[1.01] hover:-translate-y-0.5' : '',
     ]"
+    :style="cardStyles"
+    role="group"
   >
     <!-- Drag Handle (Hidden on mobile) -->
     <div
@@ -22,13 +24,13 @@
     </div>
 
     <!-- Modern Minimalist Horizontal Layout -->
-    <div class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+    <div class="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 pl-4 sm:pl-5">
       <!-- Icon Section (Hidden on mobile) -->
       <div class="hidden sm:block flex-shrink-0">
         <div
           v-if="item.icon"
           class="w-10 h-10 rounded-lg flex items-center justify-center"
-          :style="{ backgroundColor: (item.color || '#8B5CF6') + '15' }"
+          :style="{ backgroundColor: iconBackgroundColor }"
           v-html="item.icon.svg_code"
         ></div>
         <div v-else class="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100">
@@ -37,20 +39,27 @@
       </div>
 
       <!-- Time Section -->
-      <div class="flex-shrink-0 text-left sm:text-center w-16 sm:w-auto sm:min-w-[60px]">
-        <div class="text-xs sm:text-sm font-semibold text-slate-900">
+      <div class="flex-shrink-0 text-left sm:text-center w-[68px] sm:w-auto sm:min-w-[68px]">
+        <div class="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">
           {{ item.start_time_text || 'TBD' }}
         </div>
         <div v-if="item.end_time_text" class="text-[10px] sm:text-xs text-slate-500">
           {{ item.end_time_text }}
         </div>
+        <div
+          v-if="item.agenda_type"
+          class="sm:hidden mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+          :style="{ backgroundColor: badgeBackgroundColor, color: accentColor }"
+        >
+          {{ getAgendaTypeLabel(item.agenda_type) }}
+        </div>
       </div>
 
       <!-- Main Content -->
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 space-y-1">
         <!-- Title Row -->
         <div class="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-          <h3 class="text-xs sm:text-sm font-semibold text-slate-900 truncate">
+          <h3 class="text-sm sm:text-base font-semibold text-slate-900 leading-snug line-clamp-2">
             {{ item.title }}
           </h3>
           <Star
@@ -60,31 +69,39 @@
           <div
             class="hidden sm:block px-2 py-0.5 rounded text-xs font-medium flex-shrink-0"
             :style="{
-              backgroundColor: (item.color || '#8B5CF6') + '10',
-              color: item.color || '#8B5CF6',
+              backgroundColor: badgeBackgroundColor,
+              color: accentColor,
             }"
           >
             {{ getAgendaTypeLabel(item.agenda_type) }}
           </div>
         </div>
 
+        <!-- Description -->
+        <p
+          v-if="item.description"
+          class="text-xs sm:text-sm text-slate-600 leading-snug line-clamp-2"
+        >
+          {{ item.description }}
+        </p>
+
         <!-- Details Row -->
-        <div class="hidden sm:flex items-center gap-4 text-xs text-slate-600">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] sm:text-xs text-slate-600">
           <!-- Speaker -->
           <div v-if="item.speaker" class="flex items-center gap-1.5">
             <div
               class="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-medium"
-              :style="{ backgroundColor: item.color || '#8B5CF6' }"
+              :style="{ backgroundColor: accentColor }"
             >
               {{ getInitials(item.speaker) }}
             </div>
-            <span class="font-medium truncate max-w-[120px]">{{ item.speaker }}</span>
+            <span class="font-medium truncate max-w-[140px]" :title="item.speaker">{{ item.speaker }}</span>
           </div>
 
           <!-- Location -->
-          <div v-if="item.location" class="flex items-center gap-1">
+          <div v-if="item.location" class="flex items-center gap-1.5">
             <MapPin class="w-3 h-3 text-slate-400" />
-            <span class="truncate max-w-[100px]">{{ item.location }}</span>
+            <span class="truncate max-w-[140px]" :title="item.location">{{ item.location }}</span>
           </div>
 
           <!-- Virtual -->
@@ -94,12 +111,9 @@
           </div>
 
           <!-- Languages -->
-          <div
-            v-if="item.translations && item.translations.length > 0"
-            class="flex items-center gap-1"
-          >
+          <div v-if="item.translations && item.translations.length > 0" class="flex items-center gap-1.5">
             <Languages class="w-3 h-3 text-slate-400" />
-            <span>{{ item.translations.length }}</span>
+            <span>{{ item.translations.length }} {{ item.translations.length === 1 ? 'translation' : 'translations' }}</span>
           </div>
         </div>
       </div>
@@ -129,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   Clock,
   MapPin,
@@ -163,6 +177,34 @@ const emit = defineEmits<Emits>()
 
 // Drag state
 const isDragging = ref(false)
+
+const normalizeHex = (color: string): string | null => {
+  if (!color || !color.startsWith('#')) return null
+  if (color.length === 4) {
+    return `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
+  }
+  if (color.length === 7 || color.length === 9) {
+    return color.slice(0, 7)
+  }
+  return null
+}
+
+const withAlpha = (color: string, alphaHex = '24'): string => {
+  const normalized = normalizeHex(color)
+  if (normalized) {
+    return `${normalized}${alphaHex}`
+  }
+  return color || '#1e90ff'
+}
+
+const accentColor = computed(() => props.item.color?.trim() || '#1e90ff')
+const iconBackgroundColor = computed(() => withAlpha(accentColor.value, '1F'))
+const badgeBackgroundColor = computed(() => withAlpha(accentColor.value, '1A'))
+const cardStyles = computed(() => ({
+  '--agenda-accent': accentColor.value,
+  '--agenda-accent-soft': badgeBackgroundColor.value,
+  boxShadow: props.item.is_featured ? `0 18px 32px -18px ${withAlpha(accentColor.value, '4D')}` : undefined,
+}))
 
 // Helper functions
 const getAgendaTypeLabel = (type: string): string => {
@@ -230,6 +272,29 @@ const handleDragEnd = () => {
 
 .cursor-grabbing {
   cursor: grabbing;
+}
+
+.agenda-card::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 4px;
+  border-radius: 9999px;
+  background: var(--agenda-accent, #1e90ff);
+  opacity: 0.85;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.agenda-card:hover::before,
+.agenda-card:focus-within::before {
+  transform: scaleY(1.05);
+  opacity: 1;
+}
+
+.agenda-card:is(.dragging)::before {
+  opacity: 0.9;
 }
 
 .line-clamp-2 {

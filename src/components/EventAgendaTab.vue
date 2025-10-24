@@ -112,36 +112,35 @@
         <Info class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
         Session Types
       </h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#E6F4FF]0 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Keynote</span>
+      <ul class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 list-none p-0 m-0">
+        <li
+          v-for="legend in legendItems"
+          :key="legend.type"
+          class="legend-entry border rounded-lg sm:rounded-xl p-2 sm:p-3"
+          :style="legendCardStyle(legend.color)"
+          role="listitem"
+        >
+          <div class="flex items-center justify-between gap-2 mb-0.5 sm:mb-1">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span
+                class="inline-flex h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full ring-2 ring-white/80"
+                :style="{ backgroundColor: legend.color || '#1e90ff' }"
+                aria-hidden="true"
+              ></span>
+              <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ legend.label }}</span>
+            </div>
+            <span
+              v-if="legend.count"
+              class="text-[9px] sm:text-[10px] text-slate-500 font-medium whitespace-nowrap"
+            >
+              {{ legend.count }} {{ legend.count === 1 ? 'item' : 'items' }}
+            </span>
           </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Main presentations</p>
-        </div>
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-purple-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Workshop</span>
-          </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Interactive sessions</p>
-        </div>
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Break</span>
-          </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Rest & networking</p>
-        </div>
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-orange-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Panel</span>
-          </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Group discussions</p>
-        </div>
-      </div>
+          <p class="text-[10px] sm:text-xs text-slate-600 leading-snug">
+            {{ legend.description }}
+          </p>
+        </li>
+      </ul>
     </div>
 
     <!-- Create/Edit Modal -->
@@ -216,6 +215,67 @@ const expandedDays = ref<string[]>([])
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const draggedItem = ref<EventAgendaItem | null>(null)
 
+interface LegendItem {
+  type: string
+  label: string
+  description: string
+  color: string
+  count: number
+}
+
+const DEFAULT_LEGEND: LegendItem[] = [
+  {
+    type: 'keynote',
+    label: 'Keynote',
+    description: 'Main presentations and headline talks',
+    color: '#1e90ff',
+    count: 0,
+  },
+  {
+    type: 'workshop',
+    label: 'Workshop',
+    description: 'Hands-on or interactive learning sessions',
+    color: '#8B5CF6',
+    count: 0,
+  },
+  {
+    type: 'break',
+    label: 'Break',
+    description: 'Rest, networking, or informal moments',
+    color: '#22c55e',
+    count: 0,
+  },
+  {
+    type: 'panel',
+    label: 'Panel',
+    description: 'Facilitated group discussions or Q&A',
+    color: '#f97316',
+    count: 0,
+  },
+]
+
+const normalizeHex = (color: string): string | null => {
+  if (!color || !color.startsWith('#')) return null
+  if (color.length === 4) {
+    return `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
+  }
+  if (color.length === 7 || color.length === 9) {
+    return color.slice(0, 7)
+  }
+  return null
+}
+
+const withAlpha = (color: string, alphaHex = '24'): string => {
+  const normalized = normalizeHex(color)
+  if (normalized) {
+    return `${normalized}${alphaHex}`
+  }
+  if (color && !color.startsWith('#')) {
+    return color
+  }
+  return `#1e90ff${alphaHex}`
+}
+
 // Computed
 const groupedAgendaDays = computed(() => {
   const grouped: { date: string; items: EventAgendaItem[] }[] = []
@@ -250,6 +310,61 @@ const groupedAgendaDays = computed(() => {
 
   return grouped
 })
+
+const legendItems = computed<LegendItem[]>(() => {
+  const byType = new Map<string, LegendItem>()
+
+  agendaItems.value.forEach((item) => {
+    if (!item) return
+    const typeKey = (item.agenda_type || 'other').toLowerCase()
+    const base =
+      DEFAULT_LEGEND.find((entry) => entry.type === typeKey) ||
+      {
+        type: typeKey,
+        label: item.agenda_type || 'Other',
+        description: 'Additional sessions',
+        color: '#64748b',
+        count: 0,
+      }
+    const color = item.color?.trim() || base.color
+
+    if (!byType.has(typeKey)) {
+      byType.set(typeKey, { ...base, color, count: 1 })
+    } else {
+      const current = byType.get(typeKey)!
+      current.count += 1
+      if (!current.color && color) {
+        current.color = color
+      }
+    }
+  })
+
+  if (byType.size === 0) {
+    return DEFAULT_LEGEND.map((entry) => ({ ...entry }))
+  }
+
+  const ordered: LegendItem[] = []
+
+  DEFAULT_LEGEND.forEach((entry) => {
+    if (byType.has(entry.type)) {
+      const value = byType.get(entry.type)!
+      ordered.push({ ...entry, color: value.color, count: value.count })
+      byType.delete(entry.type)
+    }
+  })
+
+  byType.forEach((value) => ordered.push({ ...value }))
+
+  return ordered
+})
+
+const legendCardStyle = (color: string) => {
+  const fallback = color?.trim() || '#1e90ff'
+  return {
+    borderColor: withAlpha(fallback, '33'),
+    background: `linear-gradient(135deg, ${withAlpha(fallback, '12')} 0%, ${withAlpha(fallback, '05')} 100%)`,
+  }
+}
 
 // Methods
 const loadAgenda = async () => {
@@ -289,24 +404,6 @@ const formatDayHeader = (date: string): string => {
     month: 'long',
     day: 'numeric',
   })
-}
-
-const getSessionTypeColor = (type: string): string => {
-  switch (type?.toLowerCase()) {
-    case 'keynote':
-      return 'bg-[#B0E0E6] text-[#1873cc]'
-    case 'workshop':
-      return 'bg-purple-100 text-purple-700'
-    case 'break':
-    case 'networking':
-      return 'bg-green-100 text-green-700'
-    case 'panel':
-      return 'bg-orange-100 text-orange-700'
-    case 'session':
-      return 'bg-indigo-100 text-indigo-700'
-    default:
-      return 'bg-slate-100 text-slate-700'
-  }
 }
 
 const editAgendaItem = (item: EventAgendaItem) => {
@@ -498,6 +595,17 @@ onMounted(() => {
 .agenda-item.dragging {
   transform: rotate(2deg) scale(1.02);
   z-index: 10;
+}
+
+.legend-entry {
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.legend-entry:hover,
+.legend-entry:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px -18px rgba(30, 144, 255, 0.28);
 }
 
 /* Collapse transition */
