@@ -685,8 +685,10 @@ const handleEventCreate = async (formData: EventFormData) => {
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
 
-      // Reload current events list
-      await loadEvents(pagination.currentPage)
+      // Switch to "My Events" tab to show the newly created event
+      currentView.value = 'my'
+
+      // The watcher on currentView will automatically reload events
     } else {
       console.error('Create event failed:', response)
       let errorMessage = response.message || 'Failed to create event'
