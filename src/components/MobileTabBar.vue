@@ -65,7 +65,7 @@
 
             <div class="border-t border-slate-200 pt-2">
               <button
-                @click="handleLogout(); userMenuOpen = false"
+                @click="authStore.logout(); userMenuOpen = false"
                 class="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 w-full"
               >
                 <LogOut class="w-4 h-4" />
@@ -79,39 +79,32 @@
 
     <div class="bg-white/95 backdrop-blur-sm border-t border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10">
       <div class="flex items-center justify-around px-2 py-2">
-        <!-- Home Tab -->
+        <template v-for="item in navigationItems" :key="item.path">
+          <!-- Special handling for home to ensure scroll to hero -->
+          <button
+            v-if="item.path === '/home'"
+            @click="handleHomeClick"
+            class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
+            :class="$route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
+          >
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span class="text-xs font-medium truncate">{{ item.label }}</span>
+          </button>
+          <!-- Other navigation items -->
+          <RouterLink
+            v-else
+            :to="item.path"
+            class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
+            :class="$route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
+          >
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span class="text-xs font-medium truncate">{{ item.label }}</span>
+          </RouterLink>
+        </template>
+
+        <!-- Pricing Button -->
         <button
-          @click="handleHomeClick"
-          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
-          :class="$route.path === '/home' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
-        >
-          <Home class="w-5 h-5 flex-shrink-0" />
-          <span class="text-xs font-medium truncate">Home</span>
-        </button>
-
-        <!-- About Tab -->
-        <RouterLink
-          to="/about"
-          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
-          :class="$route.path === '/about' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
-        >
-          <Info class="w-5 h-5 flex-shrink-0" />
-          <span class="text-xs font-medium truncate">About</span>
-        </RouterLink>
-
-        <!-- Events Tab -->
-        <RouterLink
-          to="/events"
-          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1"
-          :class="$route.path === '/events' ? 'text-[#1e90ff] bg-[#E6F4FF]' : 'text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50'"
-        >
-          <Calendar class="w-5 h-5 flex-shrink-0" />
-          <span class="text-xs font-medium truncate">Events</span>
-        </RouterLink>
-
-        <!-- Pricing Tab -->
-        <button
-          @click="scrollToPricing"
+          @click="handlePricingClick"
           class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1 text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50"
         >
           <DollarSign class="w-5 h-5 flex-shrink-0" />
@@ -122,7 +115,7 @@
         <div class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1">
           <template v-if="!authStore.isAuthenticated">
             <RouterLink
-              :to="signinLink"
+              to="/signin"
               class="flex flex-col items-center space-y-1 text-slate-600 hover:text-[#1e90ff] hover:bg-[#E6F4FF]/50 w-full rounded-xl p-1"
             >
               <User class="w-5 h-5 flex-shrink-0" />
@@ -161,69 +154,63 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
-import { RouterLink, useRouter, useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Lock, Wallet, LogOut, Home, Info, Calendar, DollarSign, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 
 const userMenuOpen = ref(false)
-const router = useRouter()
-const route = useRoute()
 const authStore = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 
-// Computed property for signin link with redirect
-const signinLink = computed(() => {
-  const currentPath = route.fullPath
-  // Don't redirect if already on signin or signup pages
-  if (currentPath === '/signin' || currentPath === '/signup') {
-    return '/signin'
-  }
-  return `/signin?redirect=${encodeURIComponent(currentPath)}`
-})
+// Navigation items configuration (same as Sidebar)
+const navigationItems = [
+  { path: '/home', label: 'Home', icon: Home },
+  { path: '/about', label: 'About', icon: Info },
+  { path: '/events', label: 'Events', icon: Calendar }
+]
 
-const scrollToHero = () => {
-  const heroSection = document.getElementById('hero')
-  if (heroSection) {
-    heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  } else {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-}
-
-const navigateHome = async () => {
-  if (router.currentRoute.value.path !== '/home') {
-    await router.push('/home')
-    await nextTick()
-  }
-  scrollToHero()
-}
-
-const handleHomeClick = () => {
-  navigateHome()
-}
-
-const scrollToPricing = async () => {
-  const scroll = () => {
-    const pricingSection = document.getElementById('pricing')
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+// Handle home click to scroll to hero section
+const handleHomeClick = async () => {
+  // If already on home page, scroll to hero
+  if (route.path === '/home') {
+    const heroElement = document.getElementById('hero')
+    if (heroElement) {
+      heroElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }
-
-  if (router.currentRoute.value.path !== '/home') {
-    await router.push('/home')
-    await nextTick()
-    // Wait for the home view to fully render
-    setTimeout(scroll, 100)
   } else {
-    scroll()
+    // Navigate to home page first
+    await router.push('/home')
+    // Wait a bit for the page to render, then scroll to hero
+    setTimeout(() => {
+      const heroElement = document.getElementById('hero')
+      if (heroElement) {
+        heroElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }, 100)
   }
 }
 
-const handleLogout = async () => {
-  await authStore.logout()
-  router.push('/events')
+// Handle pricing click to scroll to pricing section on home page
+const handlePricingClick = async () => {
+  // Navigate to home if not already there
+  if (route.path !== '/home') {
+    await router.push('/home')
+  }
+
+  // Wait a bit for the page to render, then scroll to pricing
+  setTimeout(() => {
+    const pricingElement = document.getElementById('pricing')
+    if (pricingElement) {
+      pricingElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, 100)
 }
 </script>
 
