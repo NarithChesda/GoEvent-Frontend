@@ -4,7 +4,7 @@
     <Transition name="dropdown">
       <div
         v-if="isOpen"
-        class="absolute right-0 w-56 bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl shadow-[#B0E0E6]/50 py-2 z-50"
+        class="absolute right-0 w-56 bg-white border border-slate-300 rounded-xl shadow-xl overflow-hidden z-50"
         style="bottom: calc(100% + 4.5rem)"
       >
         <!-- Menu Items -->
@@ -12,19 +12,19 @@
           <!-- Edit Event Button -->
           <button
             @click="handleEdit"
-            class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200 w-full text-left"
+            class="flex items-center space-x-3 px-4 py-3 mx-1 rounded-lg text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200 w-[calc(100%-0.5rem)] text-left"
           >
             <Pencil class="w-5 h-5" />
             <span class="font-medium">Edit Event</span>
           </button>
 
           <!-- Delete Event Button - Only for organizers -->
-          <div v-if="canDelete" class="border-t border-[#B0E0E6]/50 my-1"></div>
+          <div v-if="canDelete" class="border-t border-slate-200 my-1"></div>
           <button
             v-if="canDelete"
             @click="handleDelete"
             :disabled="isDeleting"
-            class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center space-x-3 px-4 py-3 mx-1 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-[calc(100%-0.5rem)] text-left disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Trash2 v-if="!isDeleting" class="w-5 h-5" />
             <Loader2 v-else class="w-5 h-5 animate-spin" />

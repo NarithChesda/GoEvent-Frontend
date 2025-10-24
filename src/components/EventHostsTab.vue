@@ -86,39 +86,12 @@
 
     <!-- Content -->
     <div v-else-if="sortedHosts.length > 0" class="space-y-6">
-      <!-- Featured (public grid view only) -->
-      <div v-if="!canEdit && viewMode === 'grid' && featuredHost" class="relative">
-        <div class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-4 sm:p-6">
-          <div class="flex items-center mb-3 sm:mb-4">
-            <span class="inline-flex items-center gap-2 text-sm font-semibold text-sky-700">
-              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><path d="M9 5l12-2"/><path d="M9 3L3 5v13l6-2"/><path d="M9 12l12-2"/></svg>
-              Featured Host
-            </span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div class="sm:col-span-1">
-              <HostCard
-                :host="featuredHost"
-                :can-edit="canEdit"
-                :draggable="false"
-                @edit="editHost"
-                @delete="confirmDeleteHost"
-              />
-            </div>
-            <div class="sm:col-span-2 flex items-center">
-              <p class="text-sm sm:text-base text-slate-700 leading-relaxed">
-                {{ featuredHost.bio || 'Learn more about our lead host.' }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Hosts Grid/List -->
       <div class="space-y-4">
         <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
           <Users class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1.5 sm:mr-2" />
-          {{ canEdit ? 'All Hosts' : 'Hosts' }} ({{ restOrAllCount }})
+          {{ canEdit ? 'All Hosts' : 'Hosts' }} ({{ visibleHostsCount }})
         </h3>
 
         <!-- Admin tip when reordering disabled by sort/list -->
@@ -133,7 +106,7 @@
           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
         >
           <HostCard
-            v-for="host in gridHosts"
+            v-for="host in sortedHosts"
             :key="host.id"
             :host="host"
             :can-edit="canEdit"
@@ -293,14 +266,8 @@ const sortedHosts = computed(() => {
   }
   return arr.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 })
-const featuredHost = computed(() => (sortedHosts.value.length > 0 ? sortedHosts.value[0] : null))
-const restHosts = computed(() => (sortedHosts.value.length > 1 ? sortedHosts.value.slice(1) : []))
-const gridHosts = computed(() => {
-  if (!props.canEdit && viewMode.value === 'grid') return restHosts.value
-  return sortedHosts.value
-})
 const filteredCount = computed(() => sortedHosts.value.length)
-const restOrAllCount = computed(() => (props.canEdit || viewMode.value === 'list' ? sortedHosts.value.length : gridHosts.value.length))
+const visibleHostsCount = computed(() => sortedHosts.value.length)
 
 // Removed speakersCount since we removed the speakers section
 
