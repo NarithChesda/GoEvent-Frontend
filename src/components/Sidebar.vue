@@ -227,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   Home,
@@ -246,6 +246,7 @@ import { apiService } from '../services/api'
 import { useSidebar } from '../composables/useSidebar'
 import LogoPng from '@/assets/logo.png'
 import IconSvg from '@/assets/icon.svg'
+import { useLandingNavigation } from '../composables/useLandingNavigation'
 
 const router = useRouter()
 const route = useRoute()
@@ -254,6 +255,7 @@ const { isCollapsed, toggleCollapse } = useSidebar()
 
 const userMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement>()
+const { navigateHome, scrollToPricing } = useLandingNavigation()
 
 // Close menu when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
@@ -287,47 +289,12 @@ const signinLink = computed(() => {
   return `/signin?redirect=${encodeURIComponent(currentPath)}`
 })
 
-const scrollToHero = () => {
-  const heroSection = document.getElementById('hero')
-  if (heroSection) {
-    heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  } else {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-}
-
-const navigateHome = async () => {
-  if (router.currentRoute.value.path !== '/home') {
-    await router.push('/home')
-    await nextTick()
-  }
-  scrollToHero()
-}
-
 const handleLogoClick = () => {
   navigateHome()
 }
 
 const handleHomeClick = () => {
   navigateHome()
-}
-
-const scrollToPricing = async () => {
-  const scroll = () => {
-    const pricingSection = document.getElementById('pricing')
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
-  if (router.currentRoute.value.path !== '/home') {
-    await router.push('/home')
-    await nextTick()
-    // Wait for the home view to fully render
-    setTimeout(scroll, 100)
-  } else {
-    scroll()
-  }
 }
 
 const handleLogout = async () => {

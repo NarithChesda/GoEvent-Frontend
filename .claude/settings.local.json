@@ -167,7 +167,9 @@
       "Bash(awk:*)",
       "Bash(xargs:*)",
       "WebFetch(domain:webkit.org)",
-      "WebFetch(domain:stackoverflow.com)"
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(findstr:*)",
+      "Bash(start http://localhost:5173/test-bulk-import.html)"
     ],
     "deny": [],
     "additionalDirectories": [

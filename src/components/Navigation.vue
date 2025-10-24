@@ -358,18 +358,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { ChevronDown, Settings, LogOut, Home, Info, Calendar, DollarSign, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { useNavbarScroll } from '../composables/useNavbarScroll'
 import LogoSvg from '@/assets/logo.png'
+import { useLandingNavigation } from '../composables/useLandingNavigation'
 
 const userMenuOpen = ref(false)
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { navigateHome, scrollToPricing } = useLandingNavigation()
 
 // Computed property for signin link with redirect
 const signinLink = computed(() => {
@@ -384,43 +386,8 @@ const signinLink = computed(() => {
 // Scroll detection for seamless navbar
 const { isScrolled } = useNavbarScroll()
 
-const scrollToHero = () => {
-  const heroSection = document.getElementById('hero')
-  if (heroSection) {
-    heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  } else {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-}
-
-const navigateHome = async () => {
-  if (router.currentRoute.value.path !== '/home') {
-    await router.push('/home')
-    await nextTick()
-  }
-  scrollToHero()
-}
-
 const handleLogoClick = () => {
   navigateHome()
-}
-
-const scrollToPricing = async () => {
-  const scroll = () => {
-    const pricingSection = document.getElementById('pricing')
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
-  if (router.currentRoute.value.path !== '/home') {
-    await router.push('/home')
-    await nextTick()
-    // Wait for the home view to fully render
-    setTimeout(scroll, 100)
-  } else {
-    scroll()
-  }
 }
 
 const handleLogout = async () => {
