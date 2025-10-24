@@ -9,7 +9,9 @@ const router = createRouter({
       return savedPosition
     }
 
-    if (to.hash) {
+    // Only handle hash navigation when coming from a different route
+    // This prevents auto-scroll on page refresh while keeping intentional navigation
+    if (to.hash && from.name) {
       return {
         el: to.hash,
         behavior: 'smooth',

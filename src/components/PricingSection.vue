@@ -206,6 +206,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { Star, Check, Shield } from 'lucide-vue-next'
 
 interface Category {
@@ -234,6 +235,7 @@ interface PricingPlan {
   updated_at: string
 }
 
+const route = useRoute()
 const loading = ref(false)
 const error = ref<string | null>(null)
 const pricingPlans = ref<PricingPlan[]>([])
@@ -269,14 +271,18 @@ const categorizedPlans = computed(() => {
   return categories
 })
 
-// Scroll to best seller card on mobile
-const scrollToBestSeller = async () => {
+// Scroll to best seller card on mobile (only when navigating to pricing intentionally)
+const scrollToBestSeller = async (force = false) => {
   await nextTick()
 
   if (!plansContainer.value) return
 
   // Only scroll on mobile (below 768px)
   if (window.innerWidth >= 768) return
+
+  // Only auto-scroll if explicitly forced (when user navigates to #pricing)
+  // Don't auto-scroll on initial mount or page refresh
+  if (!force) return
 
   const currentPlans = Object.keys(categorizedPlans.value).length === 1
     ? Object.values(categorizedPlans.value)[0]
@@ -306,14 +312,17 @@ watch(
     if (categories.length > 0 && !activeCategory.value) {
       activeCategory.value = categories[0]
     }
-    scrollToBestSeller()
+    // Don't auto-scroll on initial data load
   },
   { immediate: true },
 )
 
-// Watch for category changes to scroll to best seller
+// Watch for category changes - only scroll if user is already on pricing section
 watch(activeCategory, () => {
-  scrollToBestSeller()
+  // Only scroll to best seller if user is currently viewing pricing section (has hash)
+  if (route.hash === '#pricing') {
+    scrollToBestSeller(true)
+  }
 })
 
 const fetchPricingPlans = async () => {
@@ -453,8 +462,10 @@ onMounted(async () => {
   if (categories.length > 0) {
     activeCategory.value = categories[0]
   }
-  // Scroll to best seller after mount
-  scrollToBestSeller()
+  // Only scroll to best seller if user intentionally navigated to pricing (has #pricing hash)
+  if (route.hash === '#pricing') {
+    scrollToBestSeller(true)
+  }
 })
 </script>
 
