@@ -11,11 +11,10 @@
       :style="fabButtonStyle"
     >
       <component
-        :is="isMenuOpen ? X : Menu"
-        :size="24"
+        :is="isMenuOpen ? ChevronRight : ChevronLeft"
+        :size="22"
         color="white"
-        class="transition-transform duration-150"
-        :class="{ 'rotate-90': isMenuOpen }"
+        class="arrow-icon"
       />
     </button>
 
@@ -188,7 +187,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
-  Menu,
+  ChevronLeft,
+  ChevronRight,
   X,
   Languages,
   Volume2,
@@ -298,7 +298,10 @@ const translations = computed(() => ({
 // Computed styles for better performance (avoid recreating style objects on every render)
 const fabButtonStyle = computed(() => ({
   background: props.primaryColor,
-  border: `2px solid ${props.primaryColor}`,
+  borderLeft: `2px solid ${props.primaryColor}`,
+  borderTop: `2px solid ${props.primaryColor}`,
+  borderBottom: `2px solid ${props.primaryColor}`,
+  borderRight: 'none',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
 }))
 
@@ -392,80 +395,74 @@ const handleLogout = () => {
 <style scoped>
 .floating-action-menu {
   position: absolute;
-  bottom: max(1rem, calc(1rem + env(safe-area-inset-bottom, 2rem)));
-  right: 1rem;
+  top: 50%;
+  margin-top: -20px; /* Half of FAB button height (40px) */
+  right: 0;
   z-index: 9999;
 }
 
 /* Responsive positioning for different screen sizes */
 @media (min-width: 640px) {
   .floating-action-menu {
-    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem)));
-    right: 1.5rem;
+    margin-top: -24px; /* Half of 48px */
   }
 }
 
 @media (min-width: 768px) {
   .floating-action-menu {
-    bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom, 2rem)));
-    right: 2rem;
+    margin-top: -28px; /* Half of 56px */
   }
 }
 
 /* 13" Laptops - Optimized positioning */
 @media (min-width: 1280px) and (max-width: 1439px) {
   .floating-action-menu {
-    bottom: 1.5rem;
-    right: 1.5rem;
+    margin-top: -30px; /* Half of 60px */
   }
 }
 
 /* 15" Laptops - Balanced positioning */
 @media (min-width: 1440px) and (max-width: 1679px) {
   .floating-action-menu {
-    bottom: 2rem;
-    right: 2rem;
+    margin-top: -32px; /* Half of 64px */
   }
 }
 
 /* 17" Laptops - Enhanced positioning */
 @media (min-width: 1680px) and (max-width: 1919px) {
   .floating-action-menu {
-    bottom: 2.5rem;
-    right: 2.5rem;
+    margin-top: -36px; /* Half of 72px */
   }
 }
 
 /* Desktop - Original positioning */
 @media (min-width: 1920px) {
   .floating-action-menu {
-    bottom: 2rem;
-    right: 2rem;
+    margin-top: -26px; /* Half of 52px */
   }
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Apply mobile sizing 20% smaller */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .floating-action-menu {
-    bottom: max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem))) !important;
-    right: 0.8rem !important;
+    margin-top: -18px !important; /* Half of 36px */
   }
 
   .fab-button {
-    width: 35px !important;
-    height: 35px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 
   .fab-button svg {
-    width: 19px !important;
-    height: 19px !important;
+    width: 20px !important;
+    height: 20px !important;
   }
 
   .menu-container {
-    bottom: calc(35px + 0.6rem + max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem)))) !important;
+    right: calc(36px + 0.5rem) !important;
     gap: 0.4rem !important;
     min-width: 144px !important;
-    max-height: calc(100vh - 112px - max(0.8rem, calc(0.8rem + env(safe-area-inset-bottom, 2rem)))) !important;
+    max-height: 70vh !important;
   }
 
   .menu-button {
@@ -535,29 +532,68 @@ const handleLogout = () => {
   /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  z-index: -1;
+  z-index: 9998;
   animation: fadeIn 0.2s ease-out;
   will-change: opacity;
 }
 
 .fab-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50% 0 0 50%; /* Crescent/semi-circle shape */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: box-shadow 0.2s ease;
   will-change: transform;
   touch-action: manipulation;
+  position: relative;
+  z-index: 10000;
+  padding-left: 6px; /* Extra padding for arrow spacing */
+  margin-right: 0; /* Ensure no margin on right */
+  border-right: none; /* Remove right border */
+}
+
+/* Arrow icon animation */
+.arrow-icon {
+  animation: arrowPulse 2s ease-in-out infinite;
+}
+
+.fab-button:hover .arrow-icon {
+  animation: arrowSlide 0.8s ease-in-out infinite;
+}
+
+.fab-button.active .arrow-icon {
+  animation: none;
+}
+
+@keyframes arrowPulse {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-2px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes arrowSlide {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
 }
 
 /* Responsive FAB button sizing - mobile-first approach */
 @media (min-width: 640px) {
   .fab-button {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
+    padding-left: 8px;
   }
 }
 
@@ -565,6 +601,7 @@ const handleLogout = () => {
   .fab-button {
     width: 56px;
     height: 56px;
+    padding-left: 10px;
   }
 }
 
@@ -573,14 +610,16 @@ const handleLogout = () => {
   .fab-button {
     width: 60px;
     height: 60px;
+    padding-left: 10px;
   }
 }
 
 /* 15" Laptops - Balanced FAB */
 @media (min-width: 1440px) and (max-width: 1679px) {
   .fab-button {
-    width: 68px;
-    height: 68px;
+    width: 64px;
+    height: 64px;
+    padding-left: 12px;
   }
 }
 
@@ -589,98 +628,101 @@ const handleLogout = () => {
   .fab-button {
     width: 72px;
     height: 72px;
+    padding-left: 14px;
   }
 }
 
 /* Desktop - Original size */
 @media (min-width: 1920px) {
   .fab-button {
-    width: 64px;
-    height: 64px;
+    width: 52px;
+    height: 52px;
+    padding-left: 9px;
   }
 }
 
 .fab-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-}
-
-.fab-button.active {
-  transform: rotate(45deg) scale(1.1);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
 }
 
 .menu-container {
   position: absolute;
-  bottom: calc(44px + 0.75rem + max(1rem, calc(1rem + env(safe-area-inset-bottom, 2rem))));
-  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  right: calc(40px + 0.5rem);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   min-width: 180px;
-  max-height: calc(100vh - 140px - max(1rem, calc(1rem + env(safe-area-inset-bottom, 2rem))));
+  max-height: 70vh;
   overflow-y: auto;
   overflow-x: hidden;
+  z-index: 10001;
 }
 
 /* Responsive menu container positioning */
 @media (min-width: 640px) {
   .menu-container {
-    bottom: calc(52px + 0.75rem + max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem))));
+    right: calc(48px + 0.5rem);
     gap: 0.625rem;
     min-width: 190px;
-    max-height: calc(100vh - 150px - max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem))));
+    max-height: 75vh;
   }
 }
 
 @media (min-width: 768px) {
   .menu-container {
-    bottom: calc(56px + 0.75rem + max(2rem, calc(2rem + env(safe-area-inset-bottom, 2rem))));
+    right: calc(56px + 0.5rem);
     gap: 0.75rem;
     min-width: 200px;
-    max-height: calc(100vh - 160px - max(2rem, calc(2rem + env(safe-area-inset-bottom, 2rem))));
+    max-height: 80vh;
   }
 }
 
 /* 13" Laptops - Compact menu */
 @media (min-width: 1280px) and (max-width: 1439px) {
   .menu-container {
-    bottom: 68px;
+    right: calc(60px + 0.5rem);
     gap: 0.625rem;
     min-width: 200px;
+    max-height: 80vh;
   }
 }
 
 /* 15" Laptops - Balanced menu */
 @media (min-width: 1440px) and (max-width: 1679px) {
   .menu-container {
-    bottom: 76px;
+    right: calc(64px + 0.5rem);
     gap: 0.75rem;
     min-width: 220px;
+    max-height: 85vh;
   }
 }
 
 /* 17" Laptops - Enhanced menu */
 @media (min-width: 1680px) and (max-width: 1919px) {
   .menu-container {
-    bottom: 80px;
+    right: calc(72px + 0.5rem);
     gap: 0.875rem;
     min-width: 240px;
+    max-height: 85vh;
   }
 }
 
 /* Desktop - Original positioning */
 @media (min-width: 1920px) {
   .menu-container {
-    bottom: 72px;
+    right: calc(52px + 0.5rem);
     gap: 0.75rem;
     min-width: 200px;
+    max-height: 85vh;
   }
 }
 
 .menu-item {
-  transform: translateY(10px);
+  transform: translateX(10px);
   opacity: 0;
-  animation: slideUp 0.15s ease-out forwards;
+  animation: slideFromRight 0.15s ease-out forwards;
   will-change: transform, opacity;
 }
 
@@ -792,7 +834,7 @@ const handleLogout = () => {
 
 .menu-button:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateX(-4px);
+  transform: translateX(4px);
 }
 
 .menu-button.active {
@@ -854,7 +896,7 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 10002;
   /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
@@ -870,6 +912,8 @@ const handleLogout = () => {
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   overflow: hidden;
+  z-index: 10003;
+  position: relative;
 }
 
 .modal-header {
@@ -946,9 +990,9 @@ const handleLogout = () => {
 }
 
 /* Animations */
-@keyframes slideUp {
+@keyframes slideFromRight {
   to {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
@@ -969,12 +1013,12 @@ const handleLogout = () => {
 
 .menu-enter-from {
   opacity: 0;
-  transform: translateY(20px) scale(0.95);
+  transform: translateY(-50%) translateX(20px) scale(0.95);
 }
 
 .menu-leave-to {
   opacity: 0;
-  transform: translateY(20px) scale(0.95);
+  transform: translateY(-50%) translateX(20px) scale(0.95);
 }
 
 .modal-enter-active,
@@ -994,13 +1038,9 @@ const handleLogout = () => {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .floating-action-menu {
-    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 2rem)));
-    right: 1.5rem;
-  }
-
   .menu-container {
     min-width: 180px;
+    max-height: 65vh;
   }
 
   .language-modal {
