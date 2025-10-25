@@ -170,7 +170,17 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
 
       // Clean up will-change after animation
       setTimeout(() => {
-        element.style.willChange = 'auto'
+        // iOS Safari fix: Don't remove will-change for elements inside glass backgrounds
+        // as it causes compositing layer recalculation that breaks backdrop-filter
+        const isInsideGlassBackground = element.closest('.glass-background') !== null
+        const isIOSSafari = /iPhone|iPad|iPod/.test(navigator.userAgent) &&
+                            /Safari/.test(navigator.userAgent) &&
+                            !/CriOS|FxiOS/.test(navigator.userAgent)
+
+        if (!isInsideGlassBackground || !isIOSSafari) {
+          element.style.willChange = 'auto'
+        }
+        // On iOS Safari, keep will-change to maintain compositing layer stability
       }, duration)
     }, animationDelay)
   }

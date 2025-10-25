@@ -904,6 +904,10 @@ onUnmounted(() => {
   inset: 0;
   isolation: isolate;
   pointer-events: none;
+  /* Force stable compositing layer on iOS Safari */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: backdrop-filter;
 }
 
 /* Backdrop layer - isolated from transforms */
@@ -920,6 +924,9 @@ onUnmounted(() => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: inherit;
+  /* Ensure this layer is promoted and stable */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Border layer - separate from backdrop for iOS Safari compatibility */
