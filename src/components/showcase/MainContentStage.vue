@@ -898,71 +898,51 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
-/* Glass background with optimized containment and Safari compatibility */
+/* Glass background with iOS Safari fix */
 .glass-background {
   position: absolute;
   inset: 0;
-  /* Fallback background for browsers without backdrop-filter support */
-  background: rgba(255, 255, 255, 0.65);
-  /* Enhanced gradient overlay for liquid glass effect */
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(255, 255, 255, 0.39) 50%,
-    rgba(255, 255, 255, 0.5) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.61);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  contain: layout style;
-  /* Force stable GPU compositing layer for Safari */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  isolation: isolate;
+  pointer-events: none;
 }
 
+/* Backdrop layer - isolated from transforms */
 .glass-background::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.11) 0%, transparent 70%);
-  contain: layout style;
-  /*
-   * Safari Bug Fix: Animated pseudo-elements cause backdrop-filter degradation
-   *
-   * Issue: In Safari (iOS/macOS), the infinite rotation animation on this ::before
-   * pseudo-element causes the parent's backdrop-filter to progressively degrade
-   * over 20-30 seconds, turning the transparent liquid glass into an opaque white blur.
-   *
-   * Root Cause: Safari's compositor creates layer conflicts between animated
-   * pseudo-elements and backdrop-filter on the same element, eventually prioritizing
-   * animation performance over backdrop-filter rendering.
-   *
-   * Timeline:
-   * - 0-5s: Perfect liquid glass transparency
-   * - 5-15s: Slight opacity increase
-   * - 15-30s: Noticeable white blur
-   * - 30s+: Completely opaque white background
-   *
-   * Solution: Disable animation on Safari-only, enable on other browsers
-   */
-  animation: none; /* Default: disabled for Safari */
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: inherit;
 }
 
-/* Enable animation only on non-Safari browsers */
-@supports not (-webkit-hyphens:none) {
-  .glass-background::before {
-    animation: liquid-rotate 30s linear infinite;
-  }
+/* Border layer - separate from backdrop for iOS Safari compatibility */
+.glass-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.61),
+    0 8px 32px -8px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
 }
 
-/* Explicitly ensure animation stays disabled on Safari (defensive approach) */
-@supports (-webkit-hyphens:none) {
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(20px)) {
   .glass-background::before {
-    animation: none !important;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0.85) 100%
+    );
   }
 }
 
