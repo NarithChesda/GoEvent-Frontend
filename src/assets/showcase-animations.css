@@ -247,16 +247,17 @@
 
 /* Glass morphism enhancements */
 .enhanced-glass {
-  backdrop-filter: blur(20px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.1);
   transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
 }
 
 .enhanced-glass:hover {
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   background: rgba(255, 255, 255, 0.15);
 }
 

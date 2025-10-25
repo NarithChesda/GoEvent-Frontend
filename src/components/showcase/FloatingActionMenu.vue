@@ -532,8 +532,9 @@ const handleLogout = () => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   z-index: -1;
   animation: fadeIn 0.2s ease-out;
   will-change: opacity;
@@ -728,8 +729,9 @@ const handleLogout = () => {
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   min-height: 44px;
   will-change: transform;
   touch-action: manipulation;
@@ -853,8 +855,9 @@ const handleLogout = () => {
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  backdrop-filter: blur(4px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 .language-modal {
@@ -864,8 +867,8 @@ const handleLogout = () => {
   border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   overflow: hidden;
 }
 
@@ -1053,8 +1056,9 @@ const handleLogout = () => {
 .glass-section {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 /* Logout button specific styles */
@@ -1076,14 +1080,15 @@ const handleLogout = () => {
 .glass-inner {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .glass-button-primary {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 </style>

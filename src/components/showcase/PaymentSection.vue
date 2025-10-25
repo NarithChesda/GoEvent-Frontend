@@ -579,6 +579,8 @@ const capitalizeText = (text: string | undefined): string => {
 .liquid-glass-container {
   border-radius: 2rem;
   overflow: hidden;
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   position: relative;
 }
@@ -625,6 +627,8 @@ const capitalizeText = (text: string | undefined): string => {
 /* Legacy payment info glass panel */
 .payment-info-glass {
   border-radius: 1.5rem;
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   position: relative;
 }
@@ -643,6 +647,8 @@ const capitalizeText = (text: string | undefined): string => {
 /* Legacy bank info glass panel */
 .bank-info-glass {
   border-radius: 1.5rem;
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   position: relative;
 }
@@ -661,6 +667,8 @@ const capitalizeText = (text: string | undefined): string => {
 /* Bank info pills - Subtle embedded elements */
 .bank-info-pill {
   border-radius: 1rem;
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   transition: all 0.2s ease;
   position: relative;
@@ -695,6 +703,8 @@ const capitalizeText = (text: string | undefined): string => {
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   min-height: 36px;
   position: relative;
@@ -714,6 +724,8 @@ const capitalizeText = (text: string | undefined): string => {
 
 .payment-link-minimalist:hover {
   transform: translateY(-1px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -733,6 +745,8 @@ const capitalizeText = (text: string | undefined): string => {
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   min-height: 52px;
   position: relative;
@@ -768,6 +782,8 @@ const capitalizeText = (text: string | undefined): string => {
 
 .payment-link-liquid:hover {
   transform: translateY(-2px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -779,6 +795,8 @@ const capitalizeText = (text: string | undefined): string => {
 /* Payment fallback - Consistent styling */
 .payment-fallback {
   border-radius: 1rem;
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -912,8 +930,8 @@ const capitalizeText = (text: string | undefined): string => {
 }
 
 .payment-card-header:hover {
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 .payment-card-content {

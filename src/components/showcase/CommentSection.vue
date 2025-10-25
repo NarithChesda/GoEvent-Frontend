@@ -1227,8 +1227,8 @@ onUnmounted(() => {
 .comment-form-liquid {
   border-radius: 1.5rem;
   padding: 1rem;
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1239,8 +1239,8 @@ onUnmounted(() => {
 }
 
 .comment-form-liquid:hover {
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   transform: translateY(-1px);
 }
 
@@ -1263,8 +1263,8 @@ onUnmounted(() => {
   padding: 0.75rem 1.5rem;
   border-radius: 1rem;
   font-weight: 600;
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
   border: none;
@@ -1301,15 +1301,15 @@ onUnmounted(() => {
 
 .liquid-glass-button:hover {
   transform: translateY(-1px);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 /* Liquid Glass Textarea */
 .liquid-glass-textarea {
   border-radius: 1rem;
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: none;
   position: relative;
   transition: all 0.2s ease;
@@ -1322,16 +1322,16 @@ onUnmounted(() => {
 }
 
 .liquid-glass-textarea:focus {
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   transform: translateY(-1px);
 }
 
 /* Comment Card Liquid Glass */
 .comment-card-liquid {
   border-radius: 1.5rem;
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1341,8 +1341,8 @@ onUnmounted(() => {
 }
 
 .comment-card-liquid:hover {
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   transform: translateY(-1px) !important;
 }
 
@@ -1360,38 +1360,38 @@ onUnmounted(() => {
 /* Liquid Glass Action Buttons */
 .liquid-glass-action-button {
   border-radius: 0.75rem;
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: none;
   cursor: pointer;
   position: relative;
 }
 
 .liquid-glass-action-button:hover {
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 /* Liquid Glass Edit Buttons */
 .liquid-glass-edit-button {
   border-radius: 0.75rem;
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: none;
   cursor: pointer;
   position: relative;
 }
 
 .liquid-glass-edit-button:hover {
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 /* Liquid Glass State Containers */
 .liquid-glass-state {
   border-radius: 1.5rem;
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
 }
@@ -1410,8 +1410,8 @@ onUnmounted(() => {
 /* Liquid Glass Error Container */
 .liquid-glass-error {
   border-radius: 1rem;
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
 }
@@ -1494,8 +1494,8 @@ textarea::-webkit-scrollbar-thumb:hover {
 /* Enhanced form interactions */
 .liquid-glass-textarea:focus {
   transform: scale(1.01);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 .liquid-glass-button:active {

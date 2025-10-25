@@ -255,6 +255,8 @@ watch(
   height: 2.5rem;
   border-radius: 9999px;
   background-color: rgba(0, 0, 0, 0.2);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   opacity: 0.6;
@@ -285,6 +287,8 @@ watch(
   height: 3rem;
   border-radius: 9999px;
   background-color: rgba(0, 0, 0, 0.3);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   opacity: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -331,6 +335,8 @@ watch(
   left: 0;
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: white;
   padding: 1.5rem 1rem 1rem;
@@ -347,6 +353,8 @@ watch(
   align-items: center;
   gap: 0.5rem;
   background-color: rgba(0, 0, 0, 0.25);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   color: rgba(255, 255, 255, 0.9);
   padding: 0.4rem 0.875rem;

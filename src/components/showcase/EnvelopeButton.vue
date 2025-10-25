@@ -108,6 +108,8 @@ const buttonText = computed(() => {
   border-top: 3px solid #3b82f6; /* Will be overridden by dynamic color */
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
 

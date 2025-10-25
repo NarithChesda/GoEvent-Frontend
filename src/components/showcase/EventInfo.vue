@@ -151,8 +151,9 @@ const capitalizedDescription = computed(() => {
 .glass-section {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 /* Khmer text fix now defined globally in src/assets/main.css */

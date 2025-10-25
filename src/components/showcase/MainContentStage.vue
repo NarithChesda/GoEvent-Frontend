@@ -898,10 +898,13 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
-/* Glass background with optimized containment */
+/* Glass background with optimized containment and Safari compatibility */
 .glass-background {
   position: absolute;
   inset: 0;
+  /* Fallback background for browsers without backdrop-filter support */
+  background: rgba(255, 255, 255, 0.65);
+  /* Enhanced gradient overlay for liquid glass effect */
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.5) 0%,
@@ -909,8 +912,9 @@ onUnmounted(() => {
     rgba(255, 255, 255, 0.5) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.61);
-  backdrop-filter: blur(20px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   contain: layout style;
 }
 

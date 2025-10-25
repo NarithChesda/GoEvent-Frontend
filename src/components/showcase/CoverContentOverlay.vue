@@ -286,8 +286,9 @@ const fallbackLogoStyle = computed(() => {
 }
 
 .guest-name-blur-wrapper {
-  backdrop-filter: blur(10px);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   width: 100%;
