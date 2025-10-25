@@ -916,6 +916,9 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   contain: layout style;
+  /* Force stable GPU compositing layer for Safari */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .glass-background::before {
@@ -926,8 +929,41 @@ onUnmounted(() => {
   width: 200%;
   height: 200%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.11) 0%, transparent 70%);
-  animation: liquid-rotate 30s linear infinite;
   contain: layout style;
+  /*
+   * Safari Bug Fix: Animated pseudo-elements cause backdrop-filter degradation
+   *
+   * Issue: In Safari (iOS/macOS), the infinite rotation animation on this ::before
+   * pseudo-element causes the parent's backdrop-filter to progressively degrade
+   * over 20-30 seconds, turning the transparent liquid glass into an opaque white blur.
+   *
+   * Root Cause: Safari's compositor creates layer conflicts between animated
+   * pseudo-elements and backdrop-filter on the same element, eventually prioritizing
+   * animation performance over backdrop-filter rendering.
+   *
+   * Timeline:
+   * - 0-5s: Perfect liquid glass transparency
+   * - 5-15s: Slight opacity increase
+   * - 15-30s: Noticeable white blur
+   * - 30s+: Completely opaque white background
+   *
+   * Solution: Disable animation on Safari-only, enable on other browsers
+   */
+  animation: none; /* Default: disabled for Safari */
+}
+
+/* Enable animation only on non-Safari browsers */
+@supports not (-webkit-hyphens:none) {
+  .glass-background::before {
+    animation: liquid-rotate 30s linear infinite;
+  }
+}
+
+/* Explicitly ensure animation stays disabled on Safari (defensive approach) */
+@supports (-webkit-hyphens:none) {
+  .glass-background::before {
+    animation: none !important;
+  }
 }
 
 /* ===================
