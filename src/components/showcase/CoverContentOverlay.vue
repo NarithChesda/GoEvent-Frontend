@@ -4,8 +4,12 @@
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
-    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out cursor-pointer"
-    :class="{ 'swipe-up-hidden': isContentHidden }"
+    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out"
+    :class="{
+      'swipe-up-hidden': isContentHidden,
+      'cursor-pointer': !isInteractionDisabled,
+      'cursor-not-allowed opacity-75': isInteractionDisabled
+    }"
     style="z-index: 10; touch-action: none;"
   >
     <!-- Inner Container with Dynamic Top Position -->
@@ -148,6 +152,7 @@ interface Props {
   eventTexts?: EventText[]
   currentLanguage?: string
   shouldShowButtonLoading: boolean
+  isInteractionDisabled?: boolean // Disables tap/swipe when true
   getMediaUrl: (url: string) => string
   contentTopPosition?: number // Vertical position in vh units (0-100)
 }
@@ -190,7 +195,11 @@ const handleTouchEnd = (e: TouchEvent) => {
   if (isSwipeUp || isTap) {
     // Prevent any default behavior to avoid interference
     e.preventDefault()
-    emit('openEnvelope')
+
+    // Only emit if interaction is not disabled
+    if (!props.isInteractionDisabled) {
+      emit('openEnvelope')
+    }
   }
 
   // Reset values
@@ -200,8 +209,8 @@ const handleTouchEnd = (e: TouchEvent) => {
 
 // Click handler for non-touch devices (desktop)
 const handleClick = () => {
-  // Only trigger on click if it's not a touch device
-  if (!isTouchDevice.value) {
+  // Only trigger on click if it's not a touch device and interaction is not disabled
+  if (!isTouchDevice.value && !props.isInteractionDisabled) {
     emit('openEnvelope')
   }
 }

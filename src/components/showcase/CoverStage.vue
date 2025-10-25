@@ -38,6 +38,7 @@
       :eventTexts="eventTexts"
       :currentLanguage="currentLanguage"
       :shouldShowButtonLoading="videoState.shouldShowButtonLoading.value"
+      :isInteractionDisabled="isEnvelopeInteractionDisabled"
       :getMediaUrl="getMediaUrl"
       :contentTopPosition="contentTopPosition"
       @openEnvelope="handleOpenEnvelope"
@@ -130,6 +131,21 @@ const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
 // Compute display mode based on whether basic_decoration_photo exists
 const displayMode = computed<DisplayMode>(() => {
   return props.templateAssets?.basic_decoration_photo ? 'basic' : 'standard'
+})
+
+// Disable envelope interaction in standard mode until event video is ready
+const isEnvelopeInteractionDisabled = computed(() => {
+  // In basic mode, never disable interaction (no video to wait for)
+  if (displayMode.value === 'basic') {
+    return false
+  }
+
+  // In standard mode, disable if there's an event video that's not ready yet
+  if (props.eventVideoUrl && !videoState.eventVideoReady.value) {
+    return true
+  }
+
+  return false
 })
 
 // Use the video management composable
