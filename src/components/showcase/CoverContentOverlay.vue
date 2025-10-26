@@ -221,11 +221,29 @@ const headerTextStyle = computed(() => ({
   color: props.primaryColor,
 }))
 
-const guestNameTextStyle = computed(() => ({
-  fontFamily: props.primaryFont || props.currentFont,
-  color: '#FFFFFF',
-  textShadow: 'none',
-}))
+const guestNameTextStyle = computed(() => {
+  // Detect if guest name contains English/Latin characters
+  const isEnglishText = props.guestName
+    ? /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim())
+    : false
+
+  // Use Great Vibes font for English text guest names
+  const fontFamily = isEnglishText
+    ? '"Great Vibes", cursive'
+    : props.primaryFont || props.currentFont
+
+  // Enhanced styling for Great Vibes to make it more visible
+  const textShadow = isEnglishText
+    ? '0 2px 8px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2)'
+    : 'none'
+
+  return {
+    fontFamily,
+    color: '#FFFFFF',
+    textShadow,
+    fontWeight: isEnglishText ? '400' : 'normal',
+  }
+})
 
 const inviteTextStyle = computed(() => ({
   color: props.secondaryColor || props.primaryColor || 'rgba(255, 255, 255, 0.9)',
@@ -328,10 +346,20 @@ const fallbackLogoStyle = computed(() => {
   margin-top: 0 !important;
 }
 
+/* Great Vibes font enhancement for better visibility */
+.scaled-guest-name[style*="Great Vibes"] {
+  font-size: 1.3em !important;
+  letter-spacing: 0.02em;
+}
+
 /* Desktop - reduce guest name size */
 @media (min-width: 1024px) {
   .content-row-guest .scaled-guest-name {
     font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
+  }
+
+  .content-row-guest .scaled-guest-name[style*="Great Vibes"] {
+    font-size: clamp(0.85rem, 2.6vh, 1.6rem) !important;
   }
 }
 
@@ -339,6 +367,10 @@ const fallbackLogoStyle = computed(() => {
 @media (max-width: 640px) {
   .content-row-guest .scaled-guest-name {
     font-size: clamp(0.55rem, 2.2vh, 1.1rem) !important;
+  }
+
+  .content-row-guest .scaled-guest-name[style*="Great Vibes"] {
+    font-size: clamp(0.75rem, 2.8vh, 1.4rem) !important;
   }
 
   .guest-name-container {

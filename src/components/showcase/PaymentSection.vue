@@ -207,7 +207,7 @@
                     <div v-if="hasVisibleBankInfo(method)" class="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                       <div v-if="method.account_name" class="text-center px-2">
                         <div
-                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-medium text-sm min-h-[36px] max-w-full"
+                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-medium text-xs min-h-[36px] max-w-full"
                           :style="{
                             backgroundColor: `${primaryColor}08`,
                             color: primaryColor,
@@ -235,7 +235,7 @@
 
                       <div v-if="method.account_number" class="text-center px-2">
                         <div
-                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-mono text-sm min-h-[36px] group cursor-pointer transition-all hover:shadow-lg max-w-full"
+                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-mono text-xs min-h-[36px] group cursor-pointer transition-all hover:shadow-lg max-w-full"
                           :style="{
                             backgroundColor: `${primaryColor}10`,
                             color: primaryColor,
@@ -675,7 +675,7 @@ const capitalizeText = (text: string | undefined): string => {
   word-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
-  max-width: 90%;
+  max-width: 98%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -852,12 +852,12 @@ const capitalizeText = (text: string | undefined): string => {
   }
 
   .bank-info-pill {
-    max-width: 90%;
+    max-width: 98%;
     margin-left: auto;
     margin-right: auto;
     padding: 0.375rem 0.625rem;
     min-height: 32px;
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
   }
 
   .bank-info-pill span {
@@ -1011,10 +1011,10 @@ const capitalizeText = (text: string | undefined): string => {
   /* Bank info pills - compact sizing for laptop with wrapping support */
   .bank-info-pill {
     padding: 0.375rem 0.625rem !important;
-    font-size: 0.875rem !important; /* 14px */
+    font-size: 0.75rem !important; /* 12px */
     min-height: 32px !important;
     border-radius: 0.75rem !important;
-    max-width: 85% !important;
+    max-width: 98% !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
