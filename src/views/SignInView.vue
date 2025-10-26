@@ -213,42 +213,11 @@
             </button>
 
             <!-- Telegram Login Widget -->
-            <div class="telegram-button-container">
-              <!-- Custom styled button (always visible) -->
-              <button
-                type="button"
-                @click="handleTelegramLoginClick"
-                :disabled="!isRegisteredDomain"
-                class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg class="h-5 w-5 mr-2" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="telegram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#2AABEE" />
-                      <stop offset="100%" style="stop-color:#229ED9" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="120" cy="120" r="120" fill="url(#telegram-gradient)" />
-                  <path
-                    fill="#fff"
-                    d="M81.229 128.772l14.237 39.406s1.78 3.687 3.686 3.687 30.255-29.492 30.255-29.492l31.525-60.89L81.737 118.6z"
-                  />
-                  <path
-                    fill="#D2E5F1"
-                    d="M100.106 138.878l-2.733 29.046s-1.144 8.9 7.754 0 17.415-15.763 17.415-15.763"
-                  />
-                  <path
-                    fill="#B5CFE4"
-                    d="M81.486 130.178l-17.8-5.467s-2.06-.8-1.4-2.7c.1-.4.3-.6.9-1 4.4-3.2 81.8-31.1 81.8-31.1s1.7-.7 2.8-.4 1.8.4 2.1 1.2c.1.3.2.7.2 1.1v.6c-.1 1.4-.5 5.3-.9 9.5-1.4 14.5-3.1 32.3-4.2 41.8-.1.8-.4 1.5-.8 2.1-.4.6-1 1-1.7 1.2-.7.2-1.4.1-2.1-.1-1.8-.5-9.2-3.8-16.9-7.3-3.8-1.7-8.1-3.7-10.3-4.8-.3-.2-.6-.4-.9-.6-.5-.4-.9-.9-1.1-1.5-.1-.5 0-1.1.3-1.6.7-1.1 8.5-8.1 17.3-16.5.6-.6 1-1.3.9-2.1s-.6-1.5-1.3-1.9c-.7-.4-1.5-.5-2.3-.2-2.1.8-15.2 9.7-27.9 18.4-1.7 1.2-3.5 2.1-5.4 2.7-2 .6-4.1.8-6.1.5z"
-                  />
-                </svg>
-                <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                  Sign in with Telegram
-                </span>
-              </button>
-
-              <!-- Hidden Telegram widget (only loaded on registered domains) -->
-              <div v-if="isRegisteredDomain" id="telegram-login-widget" class="telegram-widget-hidden"></div>
+            <div v-if="isRegisteredDomain" id="telegram-login-widget" class="flex justify-center"></div>
+            <div v-else class="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p class="text-sm text-yellow-700 text-center">
+                Telegram login is only available on registered domains
+              </p>
             </div>
           </div>
         </form>
@@ -420,24 +389,6 @@ const handleGoogleLogin = async () => {
   }
 }
 
-const handleTelegramLoginClick = () => {
-  if (!isRegisteredDomain.value) {
-    errorMessage.value =
-      'Telegram login is only available on the registered domain. Please use email/password login for local development.'
-    return
-  }
-
-  // Find and click the Telegram widget iframe button
-  const widgetContainer = document.getElementById('telegram-login-widget')
-  if (widgetContainer) {
-    const iframe = widgetContainer.querySelector('iframe')
-    if (iframe) {
-      // Trigger click on the iframe (Telegram will handle the popup)
-      iframe.click()
-    }
-  }
-}
-
 const handleTelegramAuth = async (user: any) => {
   errorMessage.value = ''
 
@@ -493,19 +444,3 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-/* Telegram button container */
-.telegram-button-container {
-  position: relative;
-  width: 100%;
-}
-
-/* Hide the Telegram widget completely (positioned off-screen for accessibility) */
-.telegram-widget-hidden {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-</style>
