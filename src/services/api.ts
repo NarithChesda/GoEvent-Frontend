@@ -1545,6 +1545,8 @@ export interface GuestListFilters {
   invitation_status?: 'not_sent' | 'sent' | 'viewed'
   ordering?: string
   page?: number
+  page_size?: number
+  limit?: number  // Some backends use 'limit' instead of 'page_size'
 }
 
 export interface GuestStats {

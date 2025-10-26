@@ -234,10 +234,108 @@
             </div>
           </div>
         </div>
+
+        <!-- Pagination Controls -->
+        <div v-if="!loading && guests.length > 0" class="mt-6 space-y-4">
+          <!-- Desktop Pagination -->
+          <div class="hidden md:flex items-center justify-between">
+            <!-- Left: Showing info -->
+            <p class="text-sm text-slate-600">
+              Showing <span class="font-semibold text-slate-900">{{ showingFrom }}</span> to
+              <span class="font-semibold text-slate-900">{{ showingTo }}</span> of
+              <span class="font-semibold text-slate-900">{{ totalCount }}</span> guests
+            </p>
+
+            <!-- Right: Page navigation -->
+            <div class="flex items-center gap-1">
+              <!-- Previous Button -->
+              <button
+                @click="previousPage"
+                :disabled="!hasPreviousPage"
+                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700"
+                :class="{ 'opacity-50 cursor-not-allowed': !hasPreviousPage }"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <!-- Page Numbers -->
+              <button
+                v-for="page in visiblePages"
+                :key="page"
+                @click="typeof page === 'number' && goToPage(page)"
+                :disabled="page === '...'"
+                class="min-w-[2.5rem] px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+                :class="
+                  page === currentPage
+                    ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                    : page === '...'
+                      ? 'cursor-default text-slate-400'
+                      : 'hover:bg-slate-100 text-slate-700'
+                "
+              >
+                {{ page }}
+              </button>
+
+              <!-- Next Button -->
+              <button
+                @click="nextPage"
+                :disabled="!hasNextPage"
+                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700"
+                :class="{ 'opacity-50 cursor-not-allowed': !hasNextPage }"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Pagination -->
+          <div class="md:hidden space-y-3">
+            <!-- Showing info -->
+            <p class="text-xs text-slate-600 text-center">
+              Showing {{ showingFrom }}-{{ showingTo }} of {{ totalCount }} guests
+            </p>
+
+            <!-- Navigation -->
+            <div class="flex items-center justify-between gap-2">
+              <!-- Previous Button -->
+              <button
+                @click="previousPage"
+                :disabled="!hasPreviousPage"
+                class="flex-1 px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 text-slate-700 flex items-center justify-center gap-1"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Previous
+              </button>
+
+              <!-- Page indicator -->
+              <div class="px-3 py-2 text-xs font-medium text-slate-700 whitespace-nowrap">
+                Page {{ currentPage }} of {{ totalPages }}
+              </div>
+
+              <!-- Next Button -->
+              <button
+                @click="nextPage"
+                :disabled="!hasNextPage"
+                class="flex-1 px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 text-slate-700 flex items-center justify-center gap-1"
+              >
+                Next
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    
+
     <!-- Delete Guest Modal -->
     <DeleteConfirmModal
       :show="showDeleteModal"
@@ -550,6 +648,11 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const guests = ref<EventGuest[]>([])
 const guestStats = ref<GuestStats | null>(null)
 
+// Pagination state
+const currentPage = ref(1)
+const PAGE_SIZE = 20  // Fixed page size
+const totalCount = ref(0)
+
 // Use payment template integration composable
 const { isTemplateActivated, loadPayments, loadingPayments } = usePaymentTemplateIntegration(
   props.event,
@@ -578,6 +681,75 @@ const pendingInvitations = computed(() => {
 
 const totalGuests = computed(() => {
   return guestStats.value?.total_guests || 0
+})
+
+// Pagination computed properties
+const totalPages = computed(() => {
+  return Math.ceil(totalCount.value / PAGE_SIZE)
+})
+
+const showingFrom = computed(() => {
+  if (totalCount.value === 0) return 0
+  return (currentPage.value - 1) * PAGE_SIZE + 1
+})
+
+const showingTo = computed(() => {
+  const to = currentPage.value * PAGE_SIZE
+  return Math.min(to, totalCount.value)
+})
+
+const hasNextPage = computed(() => {
+  return currentPage.value < totalPages.value
+})
+
+const hasPreviousPage = computed(() => {
+  return currentPage.value > 1
+})
+
+const visiblePages = computed(() => {
+  const pages: (number | string)[] = []
+  const maxVisible = 5
+
+  if (totalPages.value <= maxVisible) {
+    // Show all pages if total is small
+    for (let i = 1; i <= totalPages.value; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Always show first page
+    pages.push(1)
+
+    // Calculate range around current page
+    let start = Math.max(2, currentPage.value - 1)
+    let end = Math.min(totalPages.value - 1, currentPage.value + 1)
+
+    // Adjust range if at the beginning or end
+    if (currentPage.value <= 3) {
+      end = 4
+    } else if (currentPage.value >= totalPages.value - 2) {
+      start = totalPages.value - 3
+    }
+
+    // Add ellipsis if needed
+    if (start > 2) {
+      pages.push('...')
+    }
+
+    // Add middle pages
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+
+    // Add ellipsis if needed
+    if (end < totalPages.value - 1) {
+      pages.push('...')
+    }
+
+    // Always show last page
+    pages.push(totalPages.value)
+  }
+
+  return pages
 })
 
 // Methods
@@ -976,10 +1148,12 @@ const loadGuests = async () => {
     const response = await guestService.getGuests(props.eventId, {
       search: searchTerm.value,
       ordering: 'name',
+      page: currentPage.value,
     })
 
     if (response.success && response.data) {
       guests.value = response.data.results
+      totalCount.value = response.data.count
     } else {
       showMessage('error', response.message || 'Failed to load guests')
     }
@@ -1005,11 +1179,32 @@ const loadGuestStats = async () => {
   }
 }
 
+// Pagination methods
+const goToPage = (page: number) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  loadGuests()
+}
+
+const nextPage = () => {
+  if (hasNextPage.value) {
+    goToPage(currentPage.value + 1)
+  }
+}
+
+const previousPage = () => {
+  if (hasPreviousPage.value) {
+    goToPage(currentPage.value - 1)
+  }
+}
+
+
 // Watch for search term changes
 let searchTimeout: ReturnType<typeof setTimeout>
 const handleSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    currentPage.value = 1 // Reset to first page on search
     loadGuests()
   }, 300)
 }
