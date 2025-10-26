@@ -331,7 +331,7 @@ const shouldShowGoogleLogin = computed(() => isNormalBrowser())
 const isRegisteredDomain = computed(() => {
   const hostname = window.location.hostname
   // Add your registered domains here
-  const registeredDomains = ['goevent.com', 'www.goevent.com', 'yourdomain.com']
+  const registeredDomains = ['goevent.com', 'www.goevent.com', 'goevent.online', 'www.goevent.online']
   return registeredDomains.includes(hostname)
 })
 
