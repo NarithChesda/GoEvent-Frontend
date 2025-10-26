@@ -204,7 +204,7 @@
                     }"
                   >
                     <!-- Bank Info -->
-                    <div v-if="hasVisibleBankInfo(method)" class="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+                    <div v-if="hasVisibleBankInfo(method)" class="space-y-2 sm:space-y-3 lg:space-y-1.5 xl:space-y-1.5 mb-3 sm:mb-4">
                       <div v-if="method.account_name" class="text-center px-2">
                         <div
                           class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-medium text-xs min-h-[36px] max-w-full"
