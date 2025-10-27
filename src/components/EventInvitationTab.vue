@@ -157,65 +157,96 @@
             <!-- Group Guests (Expanded) -->
             <div v-if="expandedGroups.has(group.id)" class="border-t border-slate-200">
               <!-- Guest loading state -->
-              <div v-if="loading" class="p-4 text-center">
+              <div v-if="isGroupLoading(group.id)" class="p-4 text-center">
                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1e90ff] mx-auto"></div>
+                <p class="text-xs text-slate-600 mt-2">Loading guests...</p>
               </div>
 
               <!-- Guest list -->
-              <div v-else-if="guests.filter(g => g.group === group.id).length > 0" class="divide-y divide-slate-100">
-                <div
-                  v-for="guest in guests.filter(g => g.group === group.id)"
-                  :key="guest.id"
-                  class="p-3 hover:bg-slate-50/50 transition-colors cursor-pointer"
-                  @click="viewGuestShowcase(guest)"
-                >
-                  <div class="flex items-center gap-2">
-                    <!-- Avatar -->
-                    <div
-                      class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
-                    >
-                      {{ getInitials(guest.name) }}
-                    </div>
+              <div v-else-if="getGroupGuests(group.id).length > 0" class="space-y-2">
+                <div class="divide-y divide-slate-100">
+                  <div
+                    v-for="guest in getGroupGuests(group.id)"
+                    :key="guest.id"
+                    class="p-3 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    @click="viewGuestShowcase(guest)"
+                  >
+                    <div class="flex items-center gap-2">
+                      <!-- Avatar -->
+                      <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
+                      >
+                        {{ getInitials(guest.name) }}
+                      </div>
 
-                    <!-- Guest Info -->
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-slate-900 truncate">{{ guest.name }}</p>
-                    </div>
+                      <!-- Guest Info -->
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-900 truncate">{{ guest.name }}</p>
+                      </div>
 
-                    <!-- Status Badge -->
-                    <span
-                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
-                      :class="getStatusClass(guest.invitation_status)"
-                    >
+                      <!-- Status Badge -->
                       <span
-                        class="w-1.5 h-1.5 rounded-full mr-1.5"
-                        :class="getStatusDotClass(guest.invitation_status)"
-                      ></span>
-                      <span class="hidden sm:inline">{{ getStatusDisplay(guest) }}</span>
-                    </span>
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
+                        :class="getStatusClass(guest.invitation_status)"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full mr-1.5"
+                          :class="getStatusDotClass(guest.invitation_status)"
+                        ></span>
+                        <span class="hidden sm:inline">{{ getStatusDisplay(guest) }}</span>
+                      </span>
 
-                    <!-- Action Buttons -->
-                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <!-- Action Buttons -->
+                      <div class="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          @click.stop="copyShowcaseLink(guest, 'en')"
+                          class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                          title="Copy EN link"
+                        >
+                          EN
+                        </button>
+                        <button
+                          @click.stop="copyShowcaseLink(guest, 'kh')"
+                          class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                          title="Copy KH link"
+                        >
+                          KH
+                        </button>
+                        <button
+                          @click.stop="openDeleteGuestModal(guest)"
+                          class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Remove Guest"
+                        >
+                          <Trash2 class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div v-if="getGroupTotalPages(group.id) > 1" class="p-3 bg-slate-50/50 border-t border-slate-200">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="text-slate-600">
+                      Showing {{ ((getGroupPagination(group.id).currentPage - 1) * PAGE_SIZE) + 1 }} - {{ Math.min(getGroupPagination(group.id).currentPage * PAGE_SIZE, getGroupPagination(group.id).totalCount) }} of {{ getGroupPagination(group.id).totalCount }}
+                    </div>
+                    <div class="flex items-center gap-1">
                       <button
-                        @click.stop="copyShowcaseLink(guest, 'en')"
-                        class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-                        title="Copy EN link"
+                        @click.stop="previousGroupPage(group.id)"
+                        :disabled="getGroupPagination(group.id).currentPage === 1"
+                        class="px-2 py-1 rounded border border-slate-300 text-slate-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
-                        EN
+                        Previous
                       </button>
+                      <span class="px-2 text-slate-700">
+                        Page {{ getGroupPagination(group.id).currentPage }} of {{ getGroupTotalPages(group.id) }}
+                      </span>
                       <button
-                        @click.stop="copyShowcaseLink(guest, 'kh')"
-                        class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-                        title="Copy KH link"
+                        @click.stop="nextGroupPage(group.id)"
+                        :disabled="getGroupPagination(group.id).currentPage === getGroupTotalPages(group.id)"
+                        class="px-2 py-1 rounded border border-slate-300 text-slate-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
-                        KH
-                      </button>
-                      <button
-                        @click.stop="openDeleteGuestModal(guest)"
-                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Remove Guest"
-                      >
-                        <Trash2 class="w-3.5 h-3.5" />
+                        Next
                       </button>
                     </div>
                   </div>
@@ -693,10 +724,15 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const guests = ref<EventGuest[]>([])
 const guestStats = ref<GuestStats | null>(null)
 
-// Pagination state
-const currentPage = ref(1)
+// Pagination state - per group
+interface GroupPagination {
+  currentPage: number
+  totalCount: number
+  guests: EventGuest[]
+  loading: boolean
+}
+const groupPagination = ref<Map<number, GroupPagination>>(new Map())
 const PAGE_SIZE = 20  // Fixed page size
-const totalCount = ref(0)
 
 // Use payment template integration composable
 const { isTemplateActivated, loadPayments, loadingPayments } = usePaymentTemplateIntegration(
@@ -728,74 +764,31 @@ const totalGuests = computed(() => {
   return guestStats.value?.total_guests || 0
 })
 
-// Pagination computed properties
-const totalPages = computed(() => {
-  return Math.ceil(totalCount.value / PAGE_SIZE)
-})
-
-const showingFrom = computed(() => {
-  if (totalCount.value === 0) return 0
-  return (currentPage.value - 1) * PAGE_SIZE + 1
-})
-
-const showingTo = computed(() => {
-  const to = currentPage.value * PAGE_SIZE
-  return Math.min(to, totalCount.value)
-})
-
-const hasNextPage = computed(() => {
-  return currentPage.value < totalPages.value
-})
-
-const hasPreviousPage = computed(() => {
-  return currentPage.value > 1
-})
-
-const visiblePages = computed(() => {
-  const pages: (number | string)[] = []
-  const maxVisible = 5
-
-  if (totalPages.value <= maxVisible) {
-    // Show all pages if total is small
-    for (let i = 1; i <= totalPages.value; i++) {
-      pages.push(i)
-    }
-  } else {
-    // Always show first page
-    pages.push(1)
-
-    // Calculate range around current page
-    let start = Math.max(2, currentPage.value - 1)
-    let end = Math.min(totalPages.value - 1, currentPage.value + 1)
-
-    // Adjust range if at the beginning or end
-    if (currentPage.value <= 3) {
-      end = 4
-    } else if (currentPage.value >= totalPages.value - 2) {
-      start = totalPages.value - 3
-    }
-
-    // Add ellipsis if needed
-    if (start > 2) {
-      pages.push('...')
-    }
-
-    // Add middle pages
-    for (let i = start; i <= end; i++) {
-      pages.push(i)
-    }
-
-    // Add ellipsis if needed
-    if (end < totalPages.value - 1) {
-      pages.push('...')
-    }
-
-    // Always show last page
-    pages.push(totalPages.value)
+// Helper functions for per-group pagination
+const getGroupPagination = (groupId: number): GroupPagination => {
+  if (!groupPagination.value.has(groupId)) {
+    groupPagination.value.set(groupId, {
+      currentPage: 1,
+      totalCount: 0,
+      guests: [],
+      loading: false,
+    })
   }
+  return groupPagination.value.get(groupId)!
+}
 
-  return pages
-})
+const getGroupTotalPages = (groupId: number): number => {
+  const pagination = getGroupPagination(groupId)
+  return Math.ceil(pagination.totalCount / PAGE_SIZE)
+}
+
+const getGroupGuests = (groupId: number): EventGuest[] => {
+  return getGroupPagination(groupId).guests
+}
+
+const isGroupLoading = (groupId: number): boolean => {
+  return getGroupPagination(groupId).loading
+}
 
 // Methods
 const redirectToPaymentTab = () => {
@@ -913,6 +906,10 @@ const toggleGroupExpansion = (groupId: number) => {
     expandedGroups.value.delete(groupId)
   } else {
     expandedGroups.value.add(groupId)
+    // Load guests for this group when expanded
+    if (!groupPagination.value.has(groupId) || getGroupGuests(groupId).length === 0) {
+      loadGuestsForGroup(groupId, 1)
+    }
   }
 }
 
@@ -934,8 +931,7 @@ const addGuest = async () => {
     })
 
     if (response.success && response.data) {
-      // Add guest to the guests array
-      guests.value.unshift(response.data)
+      const groupId = selectedGroupForNewGuest.value
       showMessage('success', `${response.data.name} added to guest list`)
       newGuestName.value = ''
       selectedGroupForNewGuest.value = null
@@ -943,6 +939,11 @@ const addGuest = async () => {
       // Refresh stats and groups to get updated guest counts
       loadGuestStats()
       loadGroups()
+      // Refresh the group's guest list if it's currently loaded
+      if (groupPagination.value.has(groupId)) {
+        const currentPage = getGroupPagination(groupId).currentPage
+        loadGuestsForGroup(groupId, currentPage)
+      }
     } else {
       showMessage('error', response.message || 'Failed to add guest')
     }
@@ -964,13 +965,19 @@ const openDeleteGuestModal = (guest: EventGuest) => {
 
 const confirmDeleteGuest = async () => {
   if (!deleteTargetGuest.value) return
+  const groupId = deleteTargetGuest.value.group
   try {
     deletingGuest.value = true
     const response = await guestService.deleteGuest(props.eventId, deleteTargetGuest.value.id)
     if (response.success) {
-      guests.value = guests.value.filter((g) => g.id !== deleteTargetGuest.value!.id)
       showMessage('success', deleteTargetGuest.value.name + ' removed from guest list')
       loadGuestStats()
+      loadGroups()
+      // Refresh the group's guest list if it's currently loaded
+      if (groupPagination.value.has(groupId)) {
+        const currentPage = getGroupPagination(groupId).currentPage
+        loadGuestsForGroup(groupId, currentPage)
+      }
     } else {
       showMessage('error', response.message || 'Failed to remove guest')
     }
@@ -1068,21 +1075,27 @@ const confirmBulkImport = async () => {
   }
 
   isImporting.value = true
+  const groupId = selectedGroupForImport.value
 
   try {
     const response = await guestGroupService.bulkImportToGroup(
       props.eventId,
-      selectedGroupForImport.value,
+      groupId,
       selectedFile.value,
     )
 
     if (response.success && response.data) {
       const { created, skipped, created_guests, skipped_guests } = response.data
 
-      // Refresh guests and stats
-      await loadGuests()
+      // Refresh stats and groups
       await loadGuestStats()
       await loadGroups()
+
+      // Refresh the group's guest list if it's currently loaded
+      if (groupPagination.value.has(groupId)) {
+        const currentPage = getGroupPagination(groupId).currentPage
+        await loadGuestsForGroup(groupId, currentPage)
+      }
 
       // Show results
       if (skipped > 0) {
@@ -1203,18 +1216,47 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   }, 5000)
 }
 
+const loadGuestsForGroup = async (groupId: number, page: number = 1) => {
+  const pagination = getGroupPagination(groupId)
+  pagination.loading = true
+
+  try {
+    const response = await guestService.getGuests(props.eventId, {
+      group: groupId,
+      ordering: 'name',
+      page: page,
+      page_size: PAGE_SIZE,
+    })
+
+    if (response.success && response.data) {
+      pagination.guests = response.data.results
+      pagination.totalCount = response.data.count
+      pagination.currentPage = page
+    } else {
+      showMessage('error', response.message || 'Failed to load guests')
+    }
+  } catch (error) {
+    console.error('Error loading guests:', error)
+    showMessage('error', 'Failed to load guest list')
+  } finally {
+    pagination.loading = false
+  }
+}
+
 const loadGuests = async () => {
+  // This function is kept for backward compatibility but is now deprecated
+  // Instead, guests are loaded per group when the group is expanded
   loading.value = true
   try {
     const response = await guestService.getGuests(props.eventId, {
       search: searchTerm.value,
       ordering: 'name',
-      page: currentPage.value,
+      page: 1,
+      page_size: PAGE_SIZE,
     })
 
     if (response.success && response.data) {
       guests.value = response.data.results
-      totalCount.value = response.data.count
     } else {
       showMessage('error', response.message || 'Failed to load guests')
     }
@@ -1240,35 +1282,28 @@ const loadGuestStats = async () => {
   }
 }
 
-// Pagination methods
-const goToPage = (page: number) => {
-  if (page < 1 || page > totalPages.value) return
-  currentPage.value = page
-  loadGuests()
+// Pagination methods for groups
+const goToGroupPage = (groupId: number, page: number) => {
+  const totalPages = getGroupTotalPages(groupId)
+  if (page < 1 || page > totalPages) return
+  loadGuestsForGroup(groupId, page)
 }
 
-const nextPage = () => {
-  if (hasNextPage.value) {
-    goToPage(currentPage.value + 1)
+const nextGroupPage = (groupId: number) => {
+  const pagination = getGroupPagination(groupId)
+  const totalPages = getGroupTotalPages(groupId)
+  if (pagination.currentPage < totalPages) {
+    goToGroupPage(groupId, pagination.currentPage + 1)
   }
 }
 
-const previousPage = () => {
-  if (hasPreviousPage.value) {
-    goToPage(currentPage.value - 1)
+const previousGroupPage = (groupId: number) => {
+  const pagination = getGroupPagination(groupId)
+  if (pagination.currentPage > 1) {
+    goToGroupPage(groupId, pagination.currentPage - 1)
   }
 }
 
-
-// Watch for search term changes
-let searchTimeout: ReturnType<typeof setTimeout>
-const handleSearch = () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    currentPage.value = 1 // Reset to first page on search
-    loadGuests()
-  }, 300)
-}
 
 // Lifecycle
 onMounted(() => {
@@ -1280,8 +1315,8 @@ onMounted(() => {
 watch(hasTemplatePayment, (isActivated) => {
   if (isActivated) {
     loadGroups()
-    loadGuests()
     loadGuestStats()
+    // Don't load all guests - they'll be loaded per group when expanded
   }
 })
 </script>
