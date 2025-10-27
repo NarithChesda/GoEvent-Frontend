@@ -131,6 +131,7 @@
             :current-page="getGroupPagination(group.id).currentPage"
             :total-count="getGroupPagination(group.id).totalCount"
             :page-size="PAGE_SIZE"
+            :search-term="getGroupPagination(group.id).searchTerm"
             @toggle="handleGroupToggle(group.id)"
             @delete="openDeleteGroupModal"
             @view-guest="viewGuestShowcase"
@@ -138,6 +139,7 @@
             @delete-guest="openDeleteGuestModal"
             @next-page="nextGroupPage(group.id)"
             @previous-page="previousGroupPage(group.id)"
+            @search="(searchTerm) => handleGroupSearch(group.id, searchTerm)"
           />
         </div>
       </div>
@@ -268,6 +270,7 @@ const {
   deleteGuest,
   nextGroupPage,
   previousGroupPage,
+  setGroupSearchTerm,
 } = useGuests(props.eventId)
 
 const {
@@ -322,6 +325,10 @@ const handleGroupToggle = async (groupId: number) => {
   if (wasExpanded && getGroupGuests(groupId).length === 0) {
     await loadGuestsForGroup(groupId, 1)
   }
+}
+
+const handleGroupSearch = (groupId: number, searchTerm: string) => {
+  setGroupSearchTerm(groupId, searchTerm)
 }
 
 const handleCreateGroup = async (data: { name: string; description?: string; color: string }) => {

@@ -14,6 +14,7 @@ interface GroupPagination {
   totalCount: number
   guests: EventGuest[]
   loading: boolean
+  searchTerm: string
 }
 
 export function useGuests(eventId: string) {
@@ -29,6 +30,7 @@ export function useGuests(eventId: string) {
         totalCount: 0,
         guests: [],
         loading: false,
+        searchTerm: '',
       })
     }
     return groupPagination.value.get(groupId)!
@@ -61,6 +63,7 @@ export function useGuests(eventId: string) {
         ordering: 'name',
         page: page,
         page_size: PAGE_SIZE,
+        search: pagination.searchTerm || undefined,
       })
 
       if (response.success && response.data) {
@@ -170,6 +173,19 @@ export function useGuests(eventId: string) {
     }
   }
 
+  const setGroupSearchTerm = (groupId: number, searchTerm: string) => {
+    const pagination = getGroupPagination(groupId)
+    pagination.searchTerm = searchTerm
+    // Reset to page 1 when searching
+    loadGuestsForGroup(groupId, 1, true)
+  }
+
+  const clearGroupSearch = (groupId: number) => {
+    const pagination = getGroupPagination(groupId)
+    pagination.searchTerm = ''
+    loadGuestsForGroup(groupId, 1, true)
+  }
+
   return {
     guests,
     guestStats,
@@ -187,5 +203,7 @@ export function useGuests(eventId: string) {
     goToGroupPage,
     nextGroupPage,
     previousGroupPage,
+    setGroupSearchTerm,
+    clearGroupSearch,
   }
 }

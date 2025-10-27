@@ -39,7 +39,8 @@ export function useGuestGroups(eventId: string) {
       if (response.success && response.data) {
         groups.value.push(response.data)
         groups.value.sort((a, b) => a.order - b.order)
-        // Auto-expand the new group
+        // Auto-expand the new group (collapse all others first)
+        expandedGroups.value.clear()
         expandedGroups.value.add(response.data.id)
       }
 
@@ -74,9 +75,12 @@ export function useGuestGroups(eventId: string) {
 
   const toggleGroupExpansion = (groupId: number) => {
     if (expandedGroups.value.has(groupId)) {
+      // If clicking on the already expanded group, collapse it
       expandedGroups.value.delete(groupId)
       return false
     } else {
+      // Clear all expanded groups first, then expand only this one
+      expandedGroups.value.clear()
       expandedGroups.value.add(groupId)
       return true
     }
