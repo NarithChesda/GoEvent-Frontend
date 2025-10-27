@@ -16,7 +16,11 @@ export function useGuestGroups(eventId: string) {
     try {
       const response = await guestGroupService.getGroups(eventId)
       if (response.success && response.data) {
-        groups.value = response.data.sort((a, b) => a.order - b.order)
+        // Handle paginated response - extract results array
+        const groupsArray = Array.isArray(response.data)
+          ? response.data
+          : response.data.results || []
+        groups.value = groupsArray.sort((a, b) => a.order - b.order)
         return response
       } else {
         return response

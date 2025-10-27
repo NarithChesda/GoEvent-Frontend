@@ -1663,8 +1663,8 @@ export const guestService = {
 // Guest Group Management API Service
 export const guestGroupService = {
   // List all groups for an event
-  async getGroups(eventId: string): Promise<ApiResponse<GuestGroup[]>> {
-    return apiService.get<GuestGroup[]>(`/api/events/${eventId}/guest-groups/`)
+  async getGroups(eventId: string): Promise<ApiResponse<PaginatedResponse<GuestGroup>>> {
+    return apiService.get<PaginatedResponse<GuestGroup>>(`/api/events/${eventId}/guest-groups/`)
   },
 
   // Create a new group
@@ -1741,11 +1741,9 @@ export const guestGroupService = {
   > {
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('group', groupId.toString())
 
-    return apiService.postFormData(
-      `/api/events/${eventId}/guest-groups/${groupId}/bulk-import/`,
-      formData,
-    )
+    return apiService.postFormData(`/api/events/${eventId}/guests/bulk-import/`, formData)
   },
 }
 
