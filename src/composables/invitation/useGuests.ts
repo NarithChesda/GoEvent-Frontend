@@ -151,6 +151,30 @@ export function useGuests(eventId: string) {
     }
   }
 
+  const markGuestAsSent = async (guestId: number, groupId: number) => {
+    try {
+      const response = await guestService.markInvitationSent(eventId, guestId)
+
+      if (response.success) {
+        // Refresh the group's guest list to show updated status
+        if (groupPagination.value.has(groupId)) {
+          const currentPage = getGroupPagination(groupId).currentPage
+          await loadGuestsForGroup(groupId, currentPage, true)
+        }
+        // Also refresh stats to update the count
+        await loadGuestStats()
+      }
+
+      return response
+    } catch (error) {
+      console.error('Error marking guest as sent:', error)
+      return {
+        success: false,
+        message: 'Failed to mark guest as sent',
+      } as ApiResponse<EventGuest>
+    }
+  }
+
   const goToGroupPage = (groupId: number, page: number) => {
     const totalPages = getGroupTotalPages(groupId)
     if (page < 1 || page > totalPages) return
@@ -200,6 +224,7 @@ export function useGuests(eventId: string) {
     loadGuestStats,
     createGuest,
     deleteGuest,
+    markGuestAsSent,
     goToGroupPage,
     nextGroupPage,
     previousGroupPage,

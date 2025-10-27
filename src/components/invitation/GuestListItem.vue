@@ -12,24 +12,37 @@
       </div>
 
       <!-- Guest Info -->
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 flex items-center gap-2">
         <p class="text-sm font-medium text-slate-900 truncate">{{ guest.name }}</p>
+        <!-- Sent Status Checkmark -->
+        <CheckCircle
+          v-if="guest.invitation_status === 'sent' || guest.invitation_status === 'viewed'"
+          class="w-4 h-4 text-blue-500 flex-shrink-0"
+          title="Invitation sent"
+        />
       </div>
 
-      <!-- Status Badge -->
+      <!-- View Status Badge (only shown when viewed) -->
       <span
-        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
-        :class="getStatusClass(guest.invitation_status)"
+        v-if="guest.invitation_status === 'viewed'"
+        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 bg-green-100 text-green-800"
       >
-        <span
-          class="w-1.5 h-1.5 rounded-full mr-1.5"
-          :class="getStatusDotClass(guest.invitation_status)"
-        ></span>
-        <span class="hidden sm:inline">{{ getStatusDisplay(guest) }}</span>
+        <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-green-500"></span>
+        <span class="hidden sm:inline">Viewed</span>
       </span>
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-1 flex-shrink-0">
+        <!-- Mark as Sent Button -->
+        <button
+          v-if="guest.invitation_status === 'not_sent'"
+          @click.stop="$emit('mark-sent', guest)"
+          class="px-2 py-1 text-xs rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1"
+          title="Mark as sent"
+        >
+          <Send class="w-3 h-3" />
+          <span class="hidden sm:inline">Sent</span>
+        </button>
         <button
           @click.stop="$emit('copy-link', guest, 'en')"
           class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
@@ -57,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { Trash2 } from 'lucide-vue-next'
+import { Trash2, CheckCircle, Send } from 'lucide-vue-next'
 import type { EventGuest } from '../../services/api'
 
 // Props
@@ -69,6 +82,7 @@ defineProps<{
 defineEmits<{
   view: [guest: EventGuest]
   'copy-link': [guest: EventGuest, language: 'en' | 'kh']
+  'mark-sent': [guest: EventGuest]
   delete: [guest: EventGuest]
 }>()
 
@@ -80,35 +94,5 @@ const getInitials = (name: string) => {
     .join('')
     .toUpperCase()
     .slice(0, 2)
-}
-
-const getStatusClass = (status: string) => {
-  switch (status) {
-    case 'viewed':
-      return 'bg-green-100 text-green-800'
-    case 'sent':
-      return 'bg-orange-100 text-orange-800'
-    case 'not_sent':
-      return 'bg-slate-100 text-slate-800'
-    default:
-      return 'bg-slate-100 text-slate-800'
-  }
-}
-
-const getStatusDotClass = (status: string) => {
-  switch (status) {
-    case 'viewed':
-      return 'bg-green-500'
-    case 'sent':
-      return 'bg-orange-500'
-    case 'not_sent':
-      return 'bg-slate-400'
-    default:
-      return 'bg-slate-400'
-  }
-}
-
-const getStatusDisplay = (guest: EventGuest) => {
-  return guest.invitation_status_display || guest.invitation_status
 }
 </script>

@@ -136,6 +136,7 @@
             @delete="openDeleteGroupModal"
             @view-guest="viewGuestShowcase"
             @copy-link="copyShowcaseLink"
+            @mark-sent="handleMarkAsSent"
             @delete-guest="openDeleteGuestModal"
             @next-page="nextGroupPage(group.id)"
             @previous-page="previousGroupPage(group.id)"
@@ -268,6 +269,7 @@ const {
   loadGuestStats,
   createGuest,
   deleteGuest,
+  markGuestAsSent,
   nextGroupPage,
   previousGroupPage,
   setGroupSearchTerm,
@@ -467,6 +469,16 @@ const cancelDeleteGuest = () => {
   if (deletingGuest.value) return
   showDeleteModal.value = false
   deleteTargetGuest.value = null
+}
+
+const handleMarkAsSent = async (guest: EventGuest) => {
+  const response = await markGuestAsSent(guest.id, guest.group)
+
+  if (response.success) {
+    showMessage('success', `${guest.name} marked as sent`)
+  } else {
+    showMessage('error', response.message || 'Failed to mark guest as sent')
+  }
 }
 
 const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {

@@ -121,6 +121,7 @@
             :guest="guest"
             @view="$emit('view-guest', $event)"
             @copy-link="(guest, lang) => $emit('copy-link', guest, lang)"
+            @mark-sent="$emit('mark-sent', $event)"
             @delete="$emit('delete-guest', $event)"
           />
         </div>
@@ -158,6 +159,7 @@ const emit = defineEmits<{
   delete: [group: GuestGroup]
   'view-guest': [guest: EventGuest]
   'copy-link': [guest: EventGuest, language: 'en' | 'kh']
+  'mark-sent': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
   'next-page': []
   'previous-page': []
