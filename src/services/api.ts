@@ -33,6 +33,8 @@ export interface PaginatedResponse<T = any> {
 
 class ApiService {
   private baseURL: string
+  private isRefreshingToken: boolean = false
+  private refreshTokenPromise: Promise<boolean> | null = null
 
   constructor() {
     this.baseURL = API_BASE_URL
@@ -122,10 +124,53 @@ class ApiService {
   }
 
   /**
+   * Attempt to refresh the access token
+   * Uses a promise to ensure only one refresh happens at a time
+   */
+  private async attemptTokenRefresh(): Promise<boolean> {
+    // If already refreshing, wait for that promise
+    if (this.isRefreshingToken && this.refreshTokenPromise) {
+      console.debug('Token refresh already in progress, waiting...')
+      return this.refreshTokenPromise
+    }
+
+    // Start a new refresh
+    this.isRefreshingToken = true
+    this.refreshTokenPromise = (async () => {
+      try {
+        console.info('Attempting to refresh access token')
+        // Import authService dynamically to avoid circular dependency
+        const { authService } = await import('./auth')
+        const refreshResponse = await authService.refreshToken()
+
+        if (refreshResponse.success) {
+          console.info('Token refresh successful')
+          return true
+        }
+
+        console.warn('Token refresh failed:', refreshResponse.message)
+        // Clear all auth data if refresh fails
+        authService.clearTokens()
+        authService.clearUser()
+        return false
+      } catch (error) {
+        console.error('Token refresh error:', error)
+        return false
+      } finally {
+        this.isRefreshingToken = false
+        this.refreshTokenPromise = null
+      }
+    })()
+
+    return this.refreshTokenPromise
+  }
+
+  /**
    * Check network connectivity and queue requests if offline
    */
   private async handleNetworkRequest<T>(
     requestFn: () => Promise<Response>,
+    isRetry: boolean = false,
   ): Promise<ApiResponse<T>> {
     // Update network state
     networkState.isOnline = navigator.onLine
@@ -145,7 +190,7 @@ class ApiService {
         ),
       ])
 
-      return this.handleResponse<T>(response)
+      return this.handleResponse<T>(response, requestFn, isRetry)
     } catch (error: any) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         // Network error
@@ -231,7 +276,11 @@ class ApiService {
     }
   }
 
-  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  private async handleResponse<T>(
+    response: Response,
+    requestFn?: () => Promise<Response>,
+    isRetry: boolean = false,
+  ): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type')
     const isJson = contentType?.includes('application/json')
 
@@ -309,12 +358,38 @@ class ApiService {
         }
 
         // Handle 401 specifically for auth token issues
-        if (response.status === 401) {
-          // Clear potentially invalid tokens, but preserve user data
-          // User data should only be cleared during explicit logout
+        if (response.status === 401 && !isRetry && requestFn) {
+          console.info('Received 401 error, attempting token refresh and retry')
+
+          // Attempt to refresh the token
+          const refreshSuccess = await this.attemptTokenRefresh()
+
+          if (refreshSuccess) {
+            console.info('Token refresh successful, retrying original request')
+            // Retry the original request with new token
+            try {
+              const retryResponse = await requestFn()
+              return this.handleResponse<T>(retryResponse, undefined, true)
+            } catch (retryError) {
+              console.error('Retry request failed:', retryError)
+              return {
+                success: false,
+                message: 'Request failed after token refresh',
+              }
+            }
+          } else {
+            console.warn('Token refresh failed, user needs to re-authenticate')
+            // Refresh failed, clear all auth data
+            secureStorage.removeItem('access_token')
+            secureStorage.removeItem('refresh_token')
+            secureStorage.removeItem('user')
+          }
+        } else if (response.status === 401 && isRetry) {
+          // If we already retried and still got 401, clear everything
+          console.warn('Retry also failed with 401, clearing all auth data')
           secureStorage.removeItem('access_token')
           secureStorage.removeItem('refresh_token')
-          // Don't clear user data here - let the auth service handle it
+          secureStorage.removeItem('user')
         }
 
         const message = this.getUserFriendlyErrorMessage(response.status, data)

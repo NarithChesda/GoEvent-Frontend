@@ -218,51 +218,42 @@ export const useAuthStore = defineStore('auth', () => {
       if (storedUser && hasValidAuth) {
         setUser(storedUser)
 
-        // Only try to verify token if we're in a production environment
-        // or if the API is available (to prevent dev mode white screen)
+        // Verify token validity - ensureValidToken now uses caching internally
+        // so this won't make excessive server calls
         try {
           const isValid = await authService.ensureValidToken()
+
           if (isValid) {
-            // Try to fetch fresh profile data
-            try {
-              await fetchProfile()
-            } catch (profileError) {
-              console.warn(
-                'Failed to fetch fresh profile, continuing with cached data:',
-                profileError,
-              )
-              // Continue with cached user data
-            }
+            console.info('Auth initialization successful, token is valid')
+            // Optionally try to fetch fresh profile data in the background
+            // Don't await this to speed up app initialization
+            fetchProfile().catch((profileError) => {
+              console.debug('Background profile fetch failed:', profileError)
+              // Silently continue with cached user data
+            })
           } else {
-            // Token is invalid, clear auth state
-            console.info('Token validation failed, clearing auth state')
+            // Token is definitively invalid (not just a network error)
+            console.warn('Token validation failed definitively, clearing auth state')
             await logout()
           }
         } catch (networkError) {
-          console.warn('Network unavailable during auth init, continuing offline:', networkError)
-          // Continue with cached user data in dev mode or when network is unavailable
-          if (isDevelopment) {
-            console.info('Development mode: continuing with cached auth data despite network error')
-          }
+          // Network error during validation - don't logout
+          // The user can continue with cached data
+          console.info('Network error during auth init, continuing with cached data:', networkError)
+
+          // In production, we're more lenient with network errors
+          // Users can still use the app with cached data if they just lost connection temporarily
+          console.info('Continuing with cached auth data despite network error')
         }
       } else {
-        if (isDevelopment) {
-          console.info('No valid auth data found during initialization')
-        }
+        console.debug('No valid auth data found during initialization')
       }
     } catch (err) {
       console.error('Critical error during auth initialization:', err)
 
-      // In development, don't clear everything on unexpected errors
-      if (!isDevelopment) {
-        try {
-          await logout()
-        } catch (logoutError) {
-          console.error('Failed to logout after init error:', logoutError)
-        }
-      } else {
-        console.warn('Development mode: not clearing auth state due to initialization error')
-      }
+      // Don't logout on unexpected errors - this could be a transient issue
+      // Let the user continue with cached data if available
+      console.warn('Not clearing auth state due to initialization error - allowing cached data')
     }
   }
 
