@@ -136,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Trash2, Search, X } from 'lucide-vue-next'
 import type { GuestGroup, EventGuest } from '../../services/api'
 import GuestListItem from './GuestListItem.vue'
@@ -195,13 +195,6 @@ const handleSearchInput = () => {
 const clearSearch = () => {
   searchInput.value = ''
   emit('search', '')
-}
-</script>
-
-<script lang="ts">
-import { computed } from 'vue'
-export default {
-  name: 'GuestGroupCard',
 }
 </script>
 
