@@ -48,12 +48,42 @@
         class="photo-item"
         @click="handlePhotoClick(photo)"
       >
+        <!-- Loading Placeholder -->
+        <div
+          v-if="imageLoadingStates[photo.id]"
+          class="photo-placeholder"
+          :style="{ backgroundColor: primaryColor + '15' }"
+        >
+          <div class="loading-spinner" :style="{ borderTopColor: primaryColor }"></div>
+        </div>
+
+        <!-- Error Placeholder -->
+        <div
+          v-else-if="imageErrorStates[photo.id]"
+          class="photo-error"
+          :style="{ backgroundColor: primaryColor + '10', color: primaryColor }"
+        >
+          <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <p class="text-xs mt-2 opacity-60">Failed to load</p>
+        </div>
+
+        <!-- Actual Image -->
         <img
+          v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
           :src="getMediaUrl(photo.image)"
           :alt="photo.caption || 'Event Photo'"
           loading="lazy"
           :decoding="index < 3 ? 'sync' : 'async'"
           :fetchpriority="index < 2 ? 'high' : 'auto'"
+          @load="handleImageLoad(photo.id)"
+          @error="handleImageError(photo.id)"
         />
       </div>
     </div>
@@ -61,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, reactive } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
@@ -89,6 +119,30 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   openPhoto: [EventPhoto]
 }>()
+
+// Image loading states
+const imageLoadingStates = reactive<Record<string, boolean>>({})
+const imageErrorStates = reactive<Record<string, boolean>>({})
+
+// Initialize loading states for all photos
+const initializeImageStates = () => {
+  props.photos.forEach((photo) => {
+    imageLoadingStates[photo.id] = true
+    imageErrorStates[photo.id] = false
+  })
+}
+
+// Handle successful image load
+const handleImageLoad = (photoId: string) => {
+  imageLoadingStates[photoId] = false
+  imageErrorStates[photoId] = false
+}
+
+// Handle image load error
+const handleImageError = (photoId: string) => {
+  imageLoadingStates[photoId] = false
+  imageErrorStates[photoId] = true
+}
 
 const getTextContent = (textType: string, fallback = ''): string => {
   if (props.eventTexts && props.currentLanguage) {
@@ -133,6 +187,9 @@ const setPhotoRef = (el: any, index: number) => {
 }
 
 onMounted(() => {
+  // Initialize image loading states
+  initializeImageStates()
+
   // Use Intersection Observer for scroll animations - optimized for mobile
   observer.value = new IntersectionObserver(
     (entries) => {
@@ -201,6 +258,35 @@ onUnmounted(() => {
   will-change: auto;
 }
 
+.photo-placeholder,
+.photo-error {
+  width: 100%;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* Mobile optimizations for messaging app browsers */
 @media (max-width: 768px) {
   .photo-grid {
@@ -222,6 +308,18 @@ onUnmounted(() => {
     -webkit-transform: translateZ(0);
     -webkit-backface-visibility: hidden;
   }
+
+  .photo-placeholder,
+  .photo-error {
+    min-height: 200px;
+    padding: 1.5rem;
+  }
+
+  .loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border-width: 2.5px;
+  }
 }
 
 /* Reduce motion for accessibility and battery saving */
@@ -234,6 +332,12 @@ onUnmounted(() => {
   .photo-item.photo-visible {
     transform: none;
   }
+
+  .loading-spinner {
+    animation: none;
+    border-top-color: transparent;
+    opacity: 0.5;
+  }
 }
 
 /* Very small devices - optimize further */
@@ -244,6 +348,17 @@ onUnmounted(() => {
 
   .photo-item {
     border-radius: 0.375rem;
+  }
+
+  .photo-placeholder,
+  .photo-error {
+    min-height: 180px;
+    padding: 1rem;
+  }
+
+  .loading-spinner {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 }
 </style>
