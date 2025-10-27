@@ -32,6 +32,9 @@
                   {{ message }}
                 </span>
                 <br />
+                <span v-if="warningMessage" class="text-xs sm:text-sm text-red-600 font-semibold block mt-2">
+                  ⚠️ {{ warningMessage }}
+                </span>
                 <span class="text-xs sm:text-sm">This action cannot be undone.</span>
               </p>
 
@@ -72,6 +75,7 @@ interface Props {
   title?: string
   message?: string
   itemName?: string
+  warningMessage?: string
   loading?: boolean
 }
 
