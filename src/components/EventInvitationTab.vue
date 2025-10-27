@@ -134,7 +134,6 @@
             :search-term="getGroupPagination(group.id).searchTerm"
             @toggle="handleGroupToggle(group.id)"
             @delete="openDeleteGroupModal"
-            @view-guest="viewGuestShowcase"
             @copy-link="copyShowcaseLink"
             @mark-sent="handleMarkAsSent"
             @delete-guest="openDeleteGuestModal"
@@ -488,11 +487,6 @@ const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') =>
 const getDirectGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {
   const showcaseUrl = `/events/${props.eventId}/showcase?guest_name=${encodeURIComponent(guest.name)}&lang=${language}`
   return `${window.location.origin}${showcaseUrl}`
-}
-
-const viewGuestShowcase = (guest: EventGuest) => {
-  const fullUrl = getDirectGuestShowcaseUrl(guest, 'kh')
-  window.open(fullUrl, '_blank')
 }
 
 const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {

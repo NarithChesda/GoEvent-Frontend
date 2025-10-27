@@ -1,7 +1,6 @@
 <template>
   <div
-    class="p-3 hover:bg-slate-50/50 transition-colors cursor-pointer"
-    @click="$emit('view', guest)"
+    class="p-3"
   >
     <div class="flex items-center gap-2">
       <!-- Avatar -->
@@ -80,7 +79,6 @@ defineProps<{
 
 // Emits
 defineEmits<{
-  view: [guest: EventGuest]
   'copy-link': [guest: EventGuest, language: 'en' | 'kh']
   'mark-sent': [guest: EventGuest]
   delete: [guest: EventGuest]

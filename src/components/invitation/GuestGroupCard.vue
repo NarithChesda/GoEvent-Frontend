@@ -73,7 +73,7 @@
           </div>
 
           <!-- Pagination Buttons -->
-          <div v-if="totalPages > 1" class="flex items-center gap-1 justify-end">
+          <div v-if="totalPages > 1" class="flex items-center gap-1 justify-center sm:justify-end">
             <button
               @click.stop="$emit('previous-page')"
               :disabled="currentPage === 1 || loading"
@@ -119,7 +119,6 @@
             v-for="guest in guests"
             :key="guest.id"
             :guest="guest"
-            @view="$emit('view-guest', $event)"
             @copy-link="(guest, lang) => $emit('copy-link', guest, lang)"
             @mark-sent="$emit('mark-sent', $event)"
             @delete="$emit('delete-guest', $event)"
@@ -157,7 +156,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   toggle: []
   delete: [group: GuestGroup]
-  'view-guest': [guest: EventGuest]
   'copy-link': [guest: EventGuest, language: 'en' | 'kh']
   'mark-sent': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
