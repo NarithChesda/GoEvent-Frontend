@@ -47,9 +47,13 @@ export function useGuests(eventId: string) {
     return getGroupPagination(groupId).loading
   }
 
-  const loadGuestsForGroup = async (groupId: number, page: number = 1) => {
+  const loadGuestsForGroup = async (groupId: number, page: number = 1, silent: boolean = false) => {
     const pagination = getGroupPagination(groupId)
-    pagination.loading = true
+
+    // Only show loading state if not silent (silent is used for pagination)
+    if (!silent) {
+      pagination.loading = true
+    }
 
     try {
       const response = await guestService.getGuests(eventId, {
@@ -60,6 +64,7 @@ export function useGuests(eventId: string) {
       })
 
       if (response.success && response.data) {
+        // Update data atomically to prevent flicker
         pagination.guests = response.data.results
         pagination.totalCount = response.data.count
         pagination.currentPage = page
@@ -146,7 +151,8 @@ export function useGuests(eventId: string) {
   const goToGroupPage = (groupId: number, page: number) => {
     const totalPages = getGroupTotalPages(groupId)
     if (page < 1 || page > totalPages) return
-    loadGuestsForGroup(groupId, page)
+    // Use silent mode to prevent loading flicker during pagination
+    loadGuestsForGroup(groupId, page, true)
   }
 
   const nextGroupPage = (groupId: number) => {

@@ -41,15 +41,26 @@
 
     <!-- Group Guests (Expanded) -->
     <div v-if="isExpanded" class="border-t border-slate-200">
-      <!-- Guest loading state -->
-      <div v-if="loading" class="p-4 text-center">
+      <!-- Initial loading state (only when no guests yet) -->
+      <div v-if="loading && guests.length === 0" class="p-4 text-center">
         <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1e90ff] mx-auto"></div>
         <p class="text-xs text-slate-600 mt-2">Loading guests...</p>
       </div>
 
-      <!-- Guest list -->
-      <div v-else-if="guests.length > 0" class="space-y-2">
-        <div class="divide-y divide-slate-100">
+      <!-- Guest list (with loading overlay for pagination) -->
+      <div v-else-if="guests.length > 0" class="space-y-2 relative">
+        <!-- Subtle loading overlay for pagination -->
+        <Transition name="fade">
+          <div v-if="loading" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-md border border-slate-200">
+              <div class="w-3 h-3 border-2 border-[#1e90ff] border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-xs text-slate-600">Loading...</span>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Guest list -->
+        <div class="divide-y divide-slate-100 transition-opacity duration-150" :class="{ 'opacity-40': loading }">
           <GuestListItem
             v-for="guest in guests"
             :key="guest.id"
@@ -69,7 +80,7 @@
             <div class="flex items-center gap-1">
               <button
                 @click.stop="$emit('previous-page')"
-                :disabled="currentPage === 1"
+                :disabled="currentPage === 1 || loading"
                 class="px-2 py-1 rounded border border-slate-300 text-slate-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Previous
@@ -79,7 +90,7 @@
               </span>
               <button
                 @click.stop="$emit('next-page')"
-                :disabled="currentPage === totalPages"
+                :disabled="currentPage === totalPages || loading"
                 class="px-2 py-1 rounded border border-slate-300 text-slate-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next
@@ -90,7 +101,7 @@
       </div>
 
       <!-- No guests in group -->
-      <div v-else class="p-4 text-center">
+      <div v-else-if="!loading" class="p-4 text-center">
         <p class="text-sm text-slate-500">No guests in this group yet</p>
       </div>
     </div>
@@ -138,3 +149,16 @@ export default {
   name: 'GuestGroupCard',
 }
 </script>
+
+<style scoped>
+/* Fade transition for loading overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
