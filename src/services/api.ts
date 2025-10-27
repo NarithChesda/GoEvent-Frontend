@@ -1516,12 +1516,53 @@ export const eventTemplateService = {
 }
 
 // Event Guest Management Types and Interfaces
+// Guest Group Types
+export interface GuestGroup {
+  id: number
+  name: string
+  description?: string
+  color?: string
+  order: number
+  guest_count: number
+  invitation_stats?: {
+    total: number
+    not_sent: number
+    sent: number
+    viewed: number
+  }
+  event: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface CreateGuestGroupRequest {
+  name: string
+  description?: string
+  color?: string
+  order?: number
+}
+
+export interface GuestGroupStats {
+  total: number
+  not_sent: number
+  sent: number
+  viewed: number
+}
+
 export interface EventGuest {
   id: number
   name: string
   invitation_status: 'not_sent' | 'sent' | 'viewed'
   invitation_status_display: string
   showcase_link: string
+  group: number
+  group_details?: {
+    id: number
+    name: string
+    color?: string
+    order: number
+    guest_count: number
+  }
   added_by?: number
   added_by_details?: {
     id: number
@@ -1538,11 +1579,13 @@ export interface EventGuest {
 
 export interface CreateGuestRequest {
   name: string
+  group: number
 }
 
 export interface GuestListFilters {
   search?: string
   invitation_status?: 'not_sent' | 'sent' | 'viewed'
+  group?: number
   ordering?: string
   page?: number
   page_size?: number
@@ -1605,7 +1648,7 @@ export const guestService = {
     return apiService.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-viewed/`, {})
   },
 
-  // Bulk import guests
+  // Bulk import guests (DEPRECATED - use guestGroupService.bulkImportToGroup instead)
   async bulkImportGuests(
     eventId: string,
     guests: CreateGuestRequest[],
@@ -1613,6 +1656,95 @@ export const guestService = {
     return apiService.post<{ created: EventGuest[]; failed: { name: string; error: string }[] }>(
       `/api/events/${eventId}/guests/bulk-import/`,
       { guests },
+    )
+  },
+}
+
+// Guest Group Management API Service
+export const guestGroupService = {
+  // List all groups for an event
+  async getGroups(eventId: string): Promise<ApiResponse<GuestGroup[]>> {
+    return apiService.get<GuestGroup[]>(`/api/events/${eventId}/guest-groups/`)
+  },
+
+  // Create a new group
+  async createGroup(
+    eventId: string,
+    data: CreateGuestGroupRequest,
+  ): Promise<ApiResponse<GuestGroup>> {
+    return apiService.post<GuestGroup>(`/api/events/${eventId}/guest-groups/`, data)
+  },
+
+  // Get group details
+  async getGroup(eventId: string, groupId: number): Promise<ApiResponse<GuestGroup>> {
+    return apiService.get<GuestGroup>(`/api/events/${eventId}/guest-groups/${groupId}/`)
+  },
+
+  // Update group
+  async updateGroup(
+    eventId: string,
+    groupId: number,
+    data: Partial<CreateGuestGroupRequest>,
+  ): Promise<ApiResponse<GuestGroup>> {
+    return apiService.patch<GuestGroup>(`/api/events/${eventId}/guest-groups/${groupId}/`, data)
+  },
+
+  // Delete group (WARNING: Deletes all guests in the group due to CASCADE)
+  async deleteGroup(eventId: string, groupId: number): Promise<ApiResponse<void>> {
+    return apiService.delete(`/api/events/${eventId}/guest-groups/${groupId}/`)
+  },
+
+  // Get group statistics
+  async getGroupStats(eventId: string, groupId: number): Promise<ApiResponse<GuestGroupStats>> {
+    return apiService.get<GuestGroupStats>(`/api/events/${eventId}/guest-groups/${groupId}/stats/`)
+  },
+
+  // Invite all guests in group
+  async inviteAllInGroup(eventId: string, groupId: number): Promise<ApiResponse<{ sent: number }>> {
+    return apiService.post<{ sent: number }>(
+      `/api/events/${eventId}/guest-groups/${groupId}/invite-all/`,
+      {},
+    )
+  },
+
+  // List guests in group
+  async getGroupGuests(
+    eventId: string,
+    groupId: number,
+  ): Promise<ApiResponse<PaginatedResponse<EventGuest>>> {
+    return apiService.get<PaginatedResponse<EventGuest>>(
+      `/api/events/${eventId}/guest-groups/${groupId}/guests/`,
+    )
+  },
+
+  // Bulk import guests to group
+  async bulkImportToGroup(
+    eventId: string,
+    groupId: number,
+    file: File,
+  ): Promise<
+    ApiResponse<{
+      success: boolean
+      message: string
+      created: number
+      skipped: number
+      errors_count: number
+      created_guests: Array<{
+        id: number
+        name: string
+        group: string
+        showcase_link: string
+      }>
+      skipped_guests: Array<{ name: string; reason: string }>
+      errors: Array<{ name: string; error: string }>
+    }>
+  > {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return apiService.postFormData(
+      `/api/events/${eventId}/guest-groups/${groupId}/bulk-import/`,
+      formData,
     )
   },
 }

@@ -64,28 +64,14 @@
 
     <!-- Invitation Management Section -->
     <div v-else class="space-y-6">
-      <!-- Guest List Management -->
+      <!-- Guest Groups Header and Stats -->
       <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
         <div class="flex flex-col gap-3 sm:gap-2 mb-3 sm:mb-4">
           <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full">
-            <div class="flex items-center gap-3 min-w-0">
-              <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-                <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-                Guest List
-              </h3>
-              <div class="relative w-60 sm:w-64 md:w-72">
-                <input
-                  v-model="searchTerm"
-                  @input="handleSearch"
-                  type="text"
-                  placeholder="Search guests..."
-                  class="w-full pr-3 pl-8 py-2 rounded-lg border border-slate-200 focus:border-[#1e90ff] focus:ring-2 focus:ring-[#1e90ff]/20 text-sm text-slate-900 placeholder-slate-400"
-                />
-                <svg class="absolute left-2 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+              <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
+              Guest Groups
+            </h3>
             <div class="ml-auto flex items-center gap-2">
               <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2 py-1 text-xs">
                 <CheckCircle class="w-3 h-3 mr-1 text-green-600" />
@@ -97,6 +83,11 @@
                 <span>{{ loadingStats ? '...' : totalGuests }}</span>
                 <span class="ml-1 hidden md:inline">Total</span>
               </span>
+              <button @click="showCreateGroupModal = true" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg inline-flex items-center text-xs sm:text-sm">
+                <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
+                <span class="hidden sm:inline">Create Group</span>
+                <span class="sm:hidden">Group</span>
+              </button>
               <button @click="showAddGuestModal = true" class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-xs sm:text-sm">
                 <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
                 <span class="hidden sm:inline">Add Guest</span>
@@ -105,230 +96,136 @@
             </div>
           </div>
         </div>
-        <!-- Guest List Table -->
-        <div v-if="loading" class="text-center py-6 sm:py-8">
+        <!-- Guest Groups Display -->
+        <div v-if="loadingGroups" class="text-center py-6 sm:py-8">
           <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
-          <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading guest list...</p>
+          <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading guest groups...</p>
         </div>
 
-        <div v-else-if="guests.length === 0" class="text-center py-8 sm:py-12">
+        <div v-else-if="groups.length === 0" class="text-center py-8 sm:py-12">
           <Users class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
-          <p class="text-sm sm:text-base text-slate-500">No guests added yet</p>
+          <p class="text-sm sm:text-base text-slate-500">No guest groups yet</p>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            Click "Add Guest" to start building your guest list
+            Create a group before adding guests
           </p>
         </div>
 
-        <!-- Desktop Table View -->
-        <div v-else class="hidden md:block overflow-hidden rounded-2xl">
-          <table class="min-w-full">
-            <thead>
-              <tr class="bg-slate-50/50">
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
+        <!-- Group List (Accordion) -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="group in groups"
+            :key="group.id"
+            class="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all"
+          >
+            <!-- Group Header -->
+            <div
+              @click="toggleGroupExpansion(group.id)"
+              class="flex items-center justify-between p-3 sm:p-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
+            >
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                  class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                  :style="{ backgroundColor: group.color || '#3498db' }"
                 >
-                  Guest Name
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
+                  {{ group.guest_count }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-sm sm:text-base font-semibold text-slate-900 truncate">{{ group.name }}</h4>
+                  <p v-if="group.description" class="text-xs text-slate-500 truncate">{{ group.description }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button
+                  @click.stop="openDeleteGroupModal(group)"
+                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete Group"
                 >
-                  Status
-                </th>
-                <th
-                  class="px-6 py-3 text-right text-xs font-medium text-slate-700 uppercase tracking-wider"
+                  <Trash2 class="w-4 h-4" />
+                </button>
+                <svg
+                  class="w-5 h-5 text-slate-400 transition-transform"
+                  :class="{ 'rotate-180': expandedGroups.has(group.id) }"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white/50 divide-y divide-slate-100">
-              <tr
-                v-for="guest in guests"
-                :key="guest.id"
-                class="hover:bg-slate-50/50 transition-colors cursor-pointer" @click="viewGuestShowcase(guest)"
-              >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Group Guests (Expanded) -->
+            <div v-if="expandedGroups.has(group.id)" class="border-t border-slate-200">
+              <!-- Guest loading state -->
+              <div v-if="loading" class="p-4 text-center">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1e90ff] mx-auto"></div>
+              </div>
+
+              <!-- Guest list -->
+              <div v-else-if="guests.filter(g => g.group === group.id).length > 0" class="divide-y divide-slate-100">
+                <div
+                  v-for="guest in guests.filter(g => g.group === group.id)"
+                  :key="guest.id"
+                  class="p-3 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  @click="viewGuestShowcase(guest)"
+                >
+                  <div class="flex items-center gap-2">
+                    <!-- Avatar -->
                     <div
-                      class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-sm"
+                      class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
                     >
                       {{ getInitials(guest.name) }}
                     </div>
-                    <span class="ml-3 text-sm font-medium text-slate-900">{{ guest.name }}</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                    :class="getStatusClass(guest.invitation_status)"
-                  >
+
+                    <!-- Guest Info -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-slate-900 truncate">{{ guest.name }}</p>
+                    </div>
+
+                    <!-- Status Badge -->
                     <span
-                      class="w-1.5 h-1.5 rounded-full mr-1.5"
-                      :class="getStatusDotClass(guest.invitation_status)"
-                    ></span>
-                    {{ getStatusDisplay(guest) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div class="flex items-center justify-end space-x-2">
-                    <button @click.stop="copyShowcaseLink(guest, 'en')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy EN link for ${guest.name}`">EN</button>
-                    <button @click.stop="copyShowcaseLink(guest, 'kh')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy KH link for ${guest.name}`">KH</button>
-                    <button
-                      @click.stop="openDeleteGuestModal(guest)"
-                      class="text-red-600 hover:text-red-700"
-                      title="Remove Guest"
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
+                      :class="getStatusClass(guest.invitation_status)"
                     >
-                      <Trash2 class="w-4 h-4" />
-                    </button>
+                      <span
+                        class="w-1.5 h-1.5 rounded-full mr-1.5"
+                        :class="getStatusDotClass(guest.invitation_status)"
+                      ></span>
+                      <span class="hidden sm:inline">{{ getStatusDisplay(guest) }}</span>
+                    </span>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        @click.stop="copyShowcaseLink(guest, 'en')"
+                        class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                        title="Copy EN link"
+                      >
+                        EN
+                      </button>
+                      <button
+                        @click.stop="copyShowcaseLink(guest, 'kh')"
+                        class="px-2 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                        title="Copy KH link"
+                      >
+                        KH
+                      </button>
+                      <button
+                        @click.stop="openDeleteGuestModal(guest)"
+                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove Guest"
+                      >
+                        <Trash2 class="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Mobile Card View -->
-        <div v-if="!loading && guests.length > 0" class="md:hidden space-y-2">
-          <div
-            v-for="guest in guests"
-            :key="guest.id"
-            class="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer" @click="viewGuestShowcase(guest)">
-            <!-- Single Row Layout -->
-            <div class="flex items-center gap-2">
-              <!-- Avatar -->
-              <div
-                class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
-              >
-                {{ getInitials(guest.name) }}
+                </div>
               </div>
 
-              <!-- Guest Info -->
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-semibold text-slate-900 truncate leading-tight">{{ guest.name }}</p>
+              <!-- No guests in group -->
+              <div v-else class="p-4 text-center">
+                <p class="text-sm text-slate-500">No guests in this group yet</p>
               </div>
-
-              <!-- Status Badge -->
-              <span
-                class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0"
-                :class="getStatusClass(guest.invitation_status)"
-              >
-                <span
-                  class="w-1 h-1 rounded-full mr-1"
-                  :class="getStatusDotClass(guest.invitation_status)"
-                ></span>
-                <span class="hidden xs:inline">{{ getStatusDisplay(guest) }}</span>
-              </span>
-
-              <!-- Action Buttons -->
-              <div class="flex items-center gap-1 flex-shrink-0">
-                <button @click.stop="copyShowcaseLink(guest, 'en')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy EN link for ${guest.name}`">EN</button>
-                    <button @click.stop="copyShowcaseLink(guest, 'kh')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50" :title="`Copy KH link for ${guest.name}`">KH</button>
-                <button
-                  @click.stop="openDeleteGuestModal(guest)"
-                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Remove Guest"
-                >
-                  <Trash2 class="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pagination Controls -->
-        <div v-if="!loading && guests.length > 0" class="mt-6 space-y-4">
-          <!-- Desktop Pagination -->
-          <div class="hidden md:flex items-center justify-between">
-            <!-- Left: Showing info -->
-            <p class="text-sm text-slate-600">
-              Showing <span class="font-semibold text-slate-900">{{ showingFrom }}</span> to
-              <span class="font-semibold text-slate-900">{{ showingTo }}</span> of
-              <span class="font-semibold text-slate-900">{{ totalCount }}</span> guests
-            </p>
-
-            <!-- Right: Page navigation -->
-            <div class="flex items-center gap-1">
-              <!-- Previous Button -->
-              <button
-                @click="previousPage"
-                :disabled="!hasPreviousPage"
-                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700"
-                :class="{ 'opacity-50 cursor-not-allowed': !hasPreviousPage }"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              <!-- Page Numbers -->
-              <button
-                v-for="page in visiblePages"
-                :key="page"
-                @click="typeof page === 'number' && goToPage(page)"
-                :disabled="page === '...'"
-                class="min-w-[2.5rem] px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-                :class="
-                  page === currentPage
-                    ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                    : page === '...'
-                      ? 'cursor-default text-slate-400'
-                      : 'hover:bg-slate-100 text-slate-700'
-                "
-              >
-                {{ page }}
-              </button>
-
-              <!-- Next Button -->
-              <button
-                @click="nextPage"
-                :disabled="!hasNextPage"
-                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700"
-                :class="{ 'opacity-50 cursor-not-allowed': !hasNextPage }"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Mobile Pagination -->
-          <div class="md:hidden space-y-3">
-            <!-- Showing info -->
-            <p class="text-xs text-slate-600 text-center">
-              Showing {{ showingFrom }}-{{ showingTo }} of {{ totalCount }} guests
-            </p>
-
-            <!-- Navigation -->
-            <div class="flex items-center justify-between gap-2">
-              <!-- Previous Button -->
-              <button
-                @click="previousPage"
-                :disabled="!hasPreviousPage"
-                class="flex-1 px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 text-slate-700 flex items-center justify-center gap-1"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                Previous
-              </button>
-
-              <!-- Page indicator -->
-              <div class="px-3 py-2 text-xs font-medium text-slate-700 whitespace-nowrap">
-                Page {{ currentPage }} of {{ totalPages }}
-              </div>
-
-              <!-- Next Button -->
-              <button
-                @click="nextPage"
-                :disabled="!hasNextPage"
-                class="flex-1 px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 text-slate-700 flex items-center justify-center gap-1"
-              >
-                Next
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
             </div>
           </div>
         </div>
@@ -345,6 +242,129 @@
       @confirm="confirmDeleteGuest"
       @cancel="cancelDeleteGuest"
     />
+
+    <!-- Delete Group Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteGroupModal"
+      title="Delete Group"
+      :item-name="(deleteTargetGroup && deleteTargetGroup.name) || ''"
+      :loading="deletingGroup"
+      :warning-message="`This will delete all ${deleteTargetGroup?.guest_count || 0} guests in this group!`"
+      @confirm="confirmDeleteGroup"
+      @cancel="cancelDeleteGroup"
+    />
+
+    <!-- Create Group Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showCreateGroupModal" class="fixed inset-0 z-50 overflow-y-auto">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="closeCreateGroupModal"></div>
+
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div
+              class="relative w-full max-w-md bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+              @click.stop
+            >
+              <!-- Header -->
+              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                      <Users class="w-5 h-5" />
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Create Guest Group</h2>
+                  </div>
+                  <button
+                    @click="closeCreateGroupModal"
+                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                    aria-label="Close"
+                  >
+                    <X class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Form -->
+              <div class="p-6 space-y-5">
+                <!-- Group Name -->
+                <div>
+                  <label for="groupName" class="block text-sm font-medium text-slate-700 mb-2">
+                    Group Name <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="groupName"
+                    v-model="newGroupName"
+                    type="text"
+                    required
+                    placeholder="e.g., VIP Guests, Family, Friends"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                  />
+                </div>
+
+                <!-- Group Description (Optional) -->
+                <div>
+                  <label for="groupDescription" class="block text-sm font-medium text-slate-700 mb-2">
+                    Description (Optional)
+                  </label>
+                  <input
+                    id="groupDescription"
+                    v-model="newGroupDescription"
+                    type="text"
+                    placeholder="e.g., Close family members"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                  />
+                </div>
+
+                <!-- Group Color -->
+                <div>
+                  <label for="groupColor" class="block text-sm font-medium text-slate-700 mb-2">
+                    Group Color
+                  </label>
+                  <div class="flex items-center gap-3">
+                    <input
+                      id="groupColor"
+                      v-model="newGroupColor"
+                      type="color"
+                      class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+                    />
+                    <input
+                      v-model="newGroupColor"
+                      type="text"
+                      placeholder="#3498db"
+                      class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                    />
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                  <button
+                    type="button"
+                    @click="closeCreateGroupModal"
+                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    @click="createGroup"
+                    :disabled="!newGroupName.trim() || isCreatingGroup"
+                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span
+                      v-if="isCreatingGroup"
+                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    ></span>
+                    {{ isCreatingGroup ? 'Creating...' : 'Create Group' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Add Guest Modal -->
     <Teleport to="body">
       <Transition name="modal">
@@ -411,7 +431,32 @@
 
                 <!-- Single Guest Mode -->
                 <div v-if="importMode === 'single'" class="space-y-5">
+                  <!-- Group Selection -->
                   <div>
+                    <label for="guestGroup" class="block text-sm font-medium text-slate-700 mb-2">
+                      Select Group <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="guestGroup"
+                      v-model="selectedGroupForNewGuest"
+                      required
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    >
+                      <option :value="null" disabled>Choose a group...</option>
+                      <option v-for="group in groups" :key="group.id" :value="group.id">
+                        {{ group.name }} ({{ group.guest_count }} guests)
+                      </option>
+                    </select>
+                    <p v-if="groups.length === 0" class="mt-2 text-xs text-red-600">
+                      Please create a group first before adding guests.
+                    </p>
+                  </div>
+
+                  <!-- Guest Name -->
+                  <div>
+                    <label for="guestName" class="block text-sm font-medium text-slate-700 mb-2">
+                      Guest Name <span class="text-red-500">*</span>
+                    </label>
                     <input
                       id="guestName"
                       v-model="newGuestName"
@@ -434,7 +479,7 @@
                     <button
                       type="button"
                       @click="addGuest"
-                      :disabled="!newGuestName.trim() || isAddingGuest"
+                      :disabled="!newGuestName.trim() || !selectedGroupForNewGuest || isAddingGuest"
                       class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <span
@@ -448,6 +493,27 @@
 
                 <!-- Bulk Import Mode -->
                 <div v-else class="space-y-5">
+                  <!-- Group Selection -->
+                  <div>
+                    <label for="importGroup" class="block text-sm font-medium text-slate-700 mb-2">
+                      Select Group <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="importGroup"
+                      v-model="selectedGroupForImport"
+                      required
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    >
+                      <option :value="null" disabled>Choose a group...</option>
+                      <option v-for="group in groups" :key="group.id" :value="group.id">
+                        {{ group.name }} ({{ group.guest_count }} guests)
+                      </option>
+                    </select>
+                    <p v-if="groups.length === 0" class="mt-2 text-xs text-red-600">
+                      Please create a group first before importing guests.
+                    </p>
+                  </div>
+
                   <!-- Download Template Button -->
                   <button
                     type="button"
@@ -458,8 +524,8 @@
                     Download Template (CSV)
                   </button>
 
-                  <!-- File Upload Area (Before Preview) -->
-                  <div v-if="!showImportPreview" class="space-y-4">
+                  <!-- File Upload Area -->
+                  <div class="space-y-4">
                     <div>
                       <div
                         @drop.prevent="handleFileDrop"
@@ -494,7 +560,7 @@
 
                     <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-slate-600">
                       <FileText class="w-4 h-4 inline-block mr-1.5 text-sky-600" />
-                      <strong>Format:</strong> One guest name per line. First column for CSV, or entire line for TXT files.
+                      <strong>Format:</strong> CSV must have "name" as the header in the first row. Excel/TXT: one guest name per line.
                     </div>
 
                     <!-- Action Buttons -->
@@ -506,61 +572,17 @@
                       >
                         Cancel
                       </button>
-                    </div>
-                  </div>
-
-                  <!-- Import Preview -->
-                  <div v-else class="space-y-4">
-                    <div class="space-y-3 sm:space-y-4">
-                      <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-semibold text-slate-900">Preview Import</h4>
-                        <span class="text-xs text-slate-500">
-                          {{ importPreview.filter((g) => g.status === 'valid').length }} new guests
-                        </span>
-                      </div>
-                      <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg bg-white/90">
-                        <div
-                          v-for="(guest, idx) in importPreview"
-                          :key="idx"
-                          :class="[
-                            'px-3.5 py-2.5 text-sm flex items-center justify-between',
-                            guest.status === 'duplicate' ? 'bg-red-50 text-red-700' : 'bg-white text-slate-700',
-                            idx !== importPreview.length - 1 && 'border-b border-slate-100',
-                          ]"
-                        >
-                          <span class="truncate">{{ guest.name }}</span>
-                          <span
-                            v-if="guest.status === 'duplicate'"
-                            class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full ml-2 flex-shrink-0"
-                          >
-                            Duplicate
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                      <button
-                        type="button"
-                        @click="resetImportState"
-                        class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                      >
-                        Back
-                      </button>
                       <button
                         type="button"
                         @click="confirmBulkImport"
-                        :disabled="
-                          importPreview.filter((g) => g.status === 'valid').length === 0 || isImporting
-                        "
+                        :disabled="!selectedFile || !selectedGroupForImport || isImporting"
                         class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         <span
                           v-if="isImporting"
                           class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                         ></span>
-                        {{ isImporting ? 'Importing...' : `Import ${importPreview.filter((g) => g.status === 'valid').length} Guests` }}
+                        {{ isImporting ? 'Importing...' : 'Import Guests' }}
                       </button>
                     </div>
                   </div>
@@ -605,7 +627,15 @@ import {
   Download,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
-import { guestService, type EventGuest, type GuestStats, type Event } from '../services/api'
+import {
+  guestService,
+  guestGroupService,
+  type EventGuest,
+  type GuestStats,
+  type Event,
+  type GuestGroup,
+  type CreateGuestGroupRequest,
+} from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import SocialMediaPreview from './SocialMediaPreview.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
@@ -634,6 +664,21 @@ const loadingStats = ref(false)
 const showDeleteModal = ref(false)
 const deletingGuest = ref(false)
 const deleteTargetGuest = ref<EventGuest | null>(null)
+
+// Guest Group state
+const groups = ref<GuestGroup[]>([])
+const loadingGroups = ref(false)
+const selectedGroupForImport = ref<number | null>(null)
+const selectedGroupForNewGuest = ref<number | null>(null)
+const showCreateGroupModal = ref(false)
+const newGroupName = ref('')
+const newGroupDescription = ref('')
+const newGroupColor = ref('#3498db')
+const isCreatingGroup = ref(false)
+const expandedGroups = ref<Set<number>>(new Set())
+const showDeleteGroupModal = ref(false)
+const deleteTargetGroup = ref<GuestGroup | null>(null)
+const deletingGroup = ref(false)
 
 // Bulk import state
 const importMode = ref<'single' | 'bulk'>('single')
@@ -766,23 +811,138 @@ const viewEventShowcase = () => {
   window.open(showcaseUrl, '_blank')
 }
 
+// Guest Group Management Methods
+const loadGroups = async () => {
+  loadingGroups.value = true
+  try {
+    const response = await guestGroupService.getGroups(props.eventId)
+    if (response.success && response.data) {
+      groups.value = response.data.sort((a, b) => a.order - b.order)
+    } else {
+      showMessage('error', response.message || 'Failed to load guest groups')
+    }
+  } catch (error) {
+    console.error('Error loading groups:', error)
+    showMessage('error', 'Failed to load guest groups')
+  } finally {
+    loadingGroups.value = false
+  }
+}
+
+const createGroup = async () => {
+  if (!newGroupName.value.trim()) return
+
+  isCreatingGroup.value = true
+
+  try {
+    const data: CreateGuestGroupRequest = {
+      name: newGroupName.value.trim(),
+      description: newGroupDescription.value.trim() || undefined,
+      color: newGroupColor.value,
+      order: groups.value.length + 1,
+    }
+
+    const response = await guestGroupService.createGroup(props.eventId, data)
+
+    if (response.success && response.data) {
+      groups.value.push(response.data)
+      groups.value.sort((a, b) => a.order - b.order)
+      showMessage('success', `Group "${response.data.name}" created`)
+      closeCreateGroupModal()
+      // Auto-expand the new group
+      expandedGroups.value.add(response.data.id)
+    } else {
+      showMessage('error', response.message || 'Failed to create group')
+    }
+  } catch (error) {
+    console.error('Error creating group:', error)
+    showMessage('error', 'Failed to create group')
+  } finally {
+    isCreatingGroup.value = false
+  }
+}
+
+const openDeleteGroupModal = (group: GuestGroup) => {
+  deleteTargetGroup.value = group
+  showDeleteGroupModal.value = true
+}
+
+const confirmDeleteGroup = async () => {
+  if (!deleteTargetGroup.value) return
+
+  deletingGroup.value = true
+
+  try {
+    const response = await guestGroupService.deleteGroup(props.eventId, deleteTargetGroup.value.id)
+
+    if (response.success) {
+      groups.value = groups.value.filter((g) => g.id !== deleteTargetGroup.value!.id)
+      showMessage(
+        'success',
+        `Group "${deleteTargetGroup.value.name}" and all its guests have been deleted`,
+      )
+      loadGuestStats()
+    } else {
+      showMessage('error', response.message || 'Failed to delete group')
+    }
+  } catch (error) {
+    console.error('Error deleting group:', error)
+    showMessage('error', 'Failed to delete group')
+  } finally {
+    deletingGroup.value = false
+    showDeleteGroupModal.value = false
+    deleteTargetGroup.value = null
+  }
+}
+
+const cancelDeleteGroup = () => {
+  if (deletingGroup.value) return
+  showDeleteGroupModal.value = false
+  deleteTargetGroup.value = null
+}
+
+const closeCreateGroupModal = () => {
+  showCreateGroupModal.value = false
+  newGroupName.value = ''
+  newGroupDescription.value = ''
+  newGroupColor.value = '#3498db'
+}
+
+const toggleGroupExpansion = (groupId: number) => {
+  if (expandedGroups.value.has(groupId)) {
+    expandedGroups.value.delete(groupId)
+  } else {
+    expandedGroups.value.add(groupId)
+  }
+}
+
 const addGuest = async () => {
   if (!newGuestName.value.trim()) return
+
+  // Check if a group is selected
+  if (!selectedGroupForNewGuest.value) {
+    showMessage('error', 'Please select a group for the guest')
+    return
+  }
 
   isAddingGuest.value = true
 
   try {
     const response = await guestService.createGuest(props.eventId, {
       name: newGuestName.value.trim(),
+      group: selectedGroupForNewGuest.value,
     })
 
     if (response.success && response.data) {
-      guests.value.unshift(response.data) // Add to beginning of list
+      // Add guest to the guests array
+      guests.value.unshift(response.data)
       showMessage('success', `${response.data.name} added to guest list`)
       newGuestName.value = ''
+      selectedGroupForNewGuest.value = null
       closeAddGuestModal()
-      // Refresh stats
+      // Refresh stats and groups to get updated guest counts
       loadGuestStats()
+      loadGroups()
     } else {
       showMessage('error', response.message || 'Failed to add guest')
     }
@@ -833,6 +993,8 @@ const cancelDeleteGuest = () => {
 const closeAddGuestModal = () => {
   showAddGuestModal.value = false
   newGuestName.value = ''
+  selectedGroupForNewGuest.value = null
+  selectedGroupForImport.value = null
   resetImportState()
 }
 
@@ -842,6 +1004,7 @@ const resetImportState = () => {
   isDragging.value = false
   importPreview.value = []
   showImportPreview.value = false
+  selectedGroupForImport.value = null
 }
 
 const switchMode = (mode: 'single' | 'bulk') => {
@@ -891,152 +1054,50 @@ const processFile = async (file: File) => {
   }
 
   selectedFile.value = file
-  await parseFile(file)
-}
-
-const parseFile = async (file: File) => {
-  try {
-    const text = await file.text()
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-
-    // Parse CSV/TXT - assume first column is name, or entire line if single column
-    const parsedGuests: { name: string; status: 'valid' | 'duplicate' }[] = []
-    const existingNames = new Set(guests.value.map((g) => g.name.toLowerCase()))
-
-    for (const line of lines) {
-      // Skip header row if it looks like a header
-      if (
-        line.toLowerCase().includes('name') &&
-        line.toLowerCase().includes('guest') &&
-        lines.indexOf(line) === 0
-      ) {
-        continue
-      }
-
-      // Parse CSV (handle quoted strings)
-      let name = ''
-      if (line.includes(',')) {
-        // Simple CSV parsing - take first column
-        const match = line.match(/^"([^"]*)"|^([^,]*)/)
-        name = (match?.[1] || match?.[2] || '').trim()
-      } else {
-        // Single column or TXT file
-        name = line.trim()
-      }
-
-      if (name.length > 0) {
-        const isDuplicate = existingNames.has(name.toLowerCase())
-        parsedGuests.push({
-          name,
-          status: isDuplicate ? 'duplicate' : 'valid',
-        })
-      }
-    }
-
-    if (parsedGuests.length === 0) {
-      showMessage('error', 'No valid guest names found in file')
-      selectedFile.value = null
-      return
-    }
-
-    importPreview.value = parsedGuests
-    showImportPreview.value = true
-  } catch (error) {
-    console.error('Error parsing file:', error)
-    showMessage('error', 'Failed to parse file. Please check the format.')
-    selectedFile.value = null
-  }
 }
 
 const confirmBulkImport = async () => {
-  if (importPreview.value.length === 0) return
+  if (!selectedFile.value) {
+    showMessage('error', 'Please select a file to import')
+    return
+  }
 
-  // Filter out duplicates
-  const validGuests = importPreview.value
-    .filter((g) => g.status === 'valid')
-    .map((g) => ({ name: g.name }))
-
-  if (validGuests.length === 0) {
-    showMessage('error', 'No new guests to import (all are duplicates)')
+  if (!selectedGroupForImport.value) {
+    showMessage('error', 'Please select a group for the import')
     return
   }
 
   isImporting.value = true
 
   try {
-    // Try bulk import endpoint first
-    try {
-      const response = await guestService.bulkImportGuests(props.eventId, validGuests)
+    const response = await guestGroupService.bulkImportToGroup(
+      props.eventId,
+      selectedGroupForImport.value,
+      selectedFile.value,
+    )
 
-      if (response.success && response.data) {
-        const { created, failed } = response.data
+    if (response.success && response.data) {
+      const { created, skipped, created_guests, skipped_guests } = response.data
 
-        // Add created guests to the list
-        if (created.length > 0) {
-          guests.value.unshift(...created)
-          loadGuestStats()
-        }
+      // Refresh guests and stats
+      await loadGuests()
+      await loadGuestStats()
+      await loadGroups()
 
-        // Show results
-        if (failed.length > 0) {
-          showMessage(
-            'error',
-            `Imported ${created.length} guests. ${failed.length} failed: ${failed.map((f) => f.name).join(', ')}`,
-          )
-        } else {
-          showMessage('success', `Successfully imported ${created.length} guests`)
-        }
-
-        closeAddGuestModal()
-        return
+      // Show results
+      if (skipped > 0) {
+        showMessage(
+          'success',
+          `Imported ${created} guests. ${skipped} skipped: ${skipped_guests.map((g) => g.name).join(', ')}`,
+        )
+      } else {
+        showMessage('success', `Successfully imported ${created} guests`)
       }
-    } catch (_bulkError) {
-      console.warn('Bulk import endpoint not available, falling back to individual imports')
-    }
 
-    // Fallback: Import one by one using existing endpoint
-    const created: EventGuest[] = []
-    const failed: { name: string; error: string }[] = []
-
-    for (const guest of validGuests) {
-      try {
-        const response = await guestService.createGuest(props.eventId, guest)
-        if (response.success && response.data) {
-          created.push(response.data)
-        } else {
-          failed.push({
-            name: guest.name,
-            error: response.message || 'Unknown error',
-          })
-        }
-      } catch (error) {
-        failed.push({
-          name: guest.name,
-          error: 'Failed to create guest',
-        })
-      }
-    }
-
-    // Add created guests to the list
-    if (created.length > 0) {
-      guests.value.unshift(...created)
-      loadGuestStats()
-    }
-
-    // Show results
-    if (failed.length > 0) {
-      showMessage(
-        'error',
-        `Imported ${created.length} guests. ${failed.length} failed: ${failed.map((f) => f.name).join(', ')}`,
-      )
+      closeAddGuestModal()
     } else {
-      showMessage('success', `Successfully imported ${created.length} guests`)
+      showMessage('error', response.message || 'Failed to import guests')
     }
-
-    closeAddGuestModal()
   } catch (error) {
     console.error('Error importing guests:', error)
     showMessage('error', 'Failed to import guests')
@@ -1046,7 +1107,7 @@ const confirmBulkImport = async () => {
 }
 
 const downloadTemplate = () => {
-  const csvContent = 'Guest Name\nJohn Doe\nJane Smith\nMichael Johnson'
+  const csvContent = 'name\nJohn Doe\nJane Smith\nMichael Johnson'
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
@@ -1218,6 +1279,7 @@ onMounted(() => {
 // Watch for template payment status changes
 watch(hasTemplatePayment, (isActivated) => {
   if (isActivated) {
+    loadGroups()
     loadGuests()
     loadGuestStats()
   }
