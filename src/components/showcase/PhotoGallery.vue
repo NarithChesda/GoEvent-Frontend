@@ -180,8 +180,8 @@ onUnmounted(() => {
   cursor: pointer;
   overflow: hidden;
   border-radius: 0.5rem;
-  opacity: 0;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
@@ -199,6 +199,9 @@ onUnmounted(() => {
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: auto;
+  /* Ensure proper loading */
+  background-color: rgba(0, 0, 0, 0.05);
+  min-height: 200px;
 }
 
 /* Mobile optimizations for messaging app browsers */
@@ -209,7 +212,7 @@ onUnmounted(() => {
 
   .photo-item {
     /* Lighter animation on mobile for better performance */
-    transform: translateY(10px);
+    transform: translateY(0);
     transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     /* Optimize paint and layout */
     contain: layout style paint;
