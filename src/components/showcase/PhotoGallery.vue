@@ -45,13 +45,13 @@
         v-for="(photo, index) in photos"
         :key="photo.id"
         :ref="(el) => setPhotoRef(el, index)"
-        class="photo-item"
+        class="photo-item photo-visible"
         @click="handlePhotoClick(photo)"
       >
         <img
           :src="getMediaUrl(photo.image)"
           :alt="photo.caption || 'Event Photo'"
-          loading="lazy"
+          :loading="index < 4 ? 'eager' : 'lazy'"
           :decoding="index < 3 ? 'sync' : 'async'"
           :fetchpriority="index < 2 ? 'high' : 'auto'"
         />
@@ -122,50 +122,14 @@ const handlePhotoClick = (photo: EventPhoto) => {
   emit('openPhoto', photo)
 }
 
-// Scroll animation with Intersection Observer
+// Simplified gallery - no scroll animations needed for mobile compatibility
 const photoRefs = ref<(Element | null)[]>([])
-const observer = ref<IntersectionObserver | null>(null)
 
 const setPhotoRef = (el: any, index: number) => {
   if (el) {
     photoRefs.value[index] = el as Element
   }
 }
-
-onMounted(() => {
-  // Use Intersection Observer for scroll animations - optimized for mobile
-  observer.value = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('photo-visible')
-          // Unobserve after animation to improve performance
-          observer.value?.unobserve(entry.target)
-        }
-      })
-    },
-    {
-      threshold: 0.1, // Trigger when 10% visible
-      rootMargin: '50px', // Start animation slightly before entering viewport
-    }
-  )
-
-  // Observe all photo items
-  photoRefs.value.forEach((ref) => {
-    if (ref) {
-      observer.value?.observe(ref)
-    }
-  })
-})
-
-onUnmounted(() => {
-  // Clean up observer
-  if (observer.value) {
-    observer.value.disconnect()
-    observer.value = null
-  }
-  photoRefs.value = []
-})
 </script>
 
 <style scoped>
