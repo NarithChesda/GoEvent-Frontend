@@ -199,9 +199,6 @@ onUnmounted(() => {
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: auto;
-  /* Ensure proper loading */
-  background-color: rgba(0, 0, 0, 0.05);
-  min-height: 200px;
 }
 
 /* Mobile optimizations for messaging app browsers */
