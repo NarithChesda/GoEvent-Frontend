@@ -32,9 +32,10 @@ coverage
 test-results/
 playwright-report/
 
-# Documentation and Design Files (production excludes all except README)
+# Documentation and Design Files (production excludes all except README and CLAUDE.md)
 *.md
 !README.md
+!CLAUDE.md
 DESIGN_GUIDE/
 docs/
 .claude/
@@ -47,7 +48,6 @@ docs/
 .env.production
 .env.test
 .env.*.local
-CLAUDE.md
 
 # Development Tools & Settings
 .vscode/settings.json

@@ -182,7 +182,7 @@ import {
   ArcElement,
   Tooltip,
   Legend,
-  ChartOptions,
+  type ChartOptions,
 } from 'chart.js'
 import { Coins, ChevronDown } from 'lucide-vue-next'
 import { guestService, type GuestGroup } from '../../services/api'
