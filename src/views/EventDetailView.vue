@@ -39,7 +39,8 @@
         :can-view-event-texts="canViewEventTexts"
         :can-view-template="canViewTemplate"
         :can-view-payment="canViewPayment"
-        :can-view-invitation="canViewInvitation"
+        :can-view-guest-management="canViewGuestManagement"
+        :can-view-social-media="canViewSocialMedia"
         @tab-change="activeTab = $event"
       />
 
@@ -57,7 +58,8 @@
             :can-view-event-texts="canViewEventTexts"
             :can-view-template="canViewTemplate"
             :can-view-payment="canViewPayment"
-            :can-view-invitation="canViewInvitation"
+            :can-view-guest-management="canViewGuestManagement"
+            :can-view-social-media="canViewSocialMedia"
             :can-edit="event.can_edit"
             @tab-change="activeTab = $event"
           />
@@ -202,9 +204,9 @@
               />
             </div>
 
-            <!-- Invitation Tab -->
-            <div v-if="activeTab === 'invitation'">
-              <div v-if="!canViewInvitation" class="text-center py-12">
+            <!-- Guest Management Tab -->
+            <div v-if="activeTab === 'guest-management'">
+              <div v-if="!canViewGuestManagement" class="text-center py-12">
                 <div
                   class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
                 >
@@ -212,16 +214,32 @@
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
                 <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view and manage invitations.
+                  Only the event organizer and collaborators can view and manage guests.
                 </p>
               </div>
-              <EventInvitationTab
+              <EventGuestManagementTab
                 v-else-if="event?.id"
                 :event-id="event.id"
                 :event="event"
                 :can-edit="event.can_edit || false"
                 @tab-change="activeTab = $event"
               />
+            </div>
+
+            <!-- Social Media Preview Tab -->
+            <div v-if="activeTab === 'social-media'">
+              <div v-if="!canViewSocialMedia" class="text-center py-12">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view social media preview.
+                </p>
+              </div>
+              <SocialMediaPreview v-else :event-data="event" />
             </div>
 
             <!-- Template Tab -->
@@ -333,6 +351,7 @@ import {
   Monitor,
   CreditCard,
   Mail,
+  Share2,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
@@ -348,7 +367,8 @@ import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
 import EventAttendeesTab from '../components/EventAttendeesTab.vue'
 import EventTemplateTab from '../components/EventTemplateTab.vue'
 import EventPaymentTab from '../components/EventPaymentTab.vue'
-import EventInvitationTab from '../components/EventInvitationTab.vue'
+import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
+import SocialMediaPreview from '../components/SocialMediaPreview.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import EventActionMenu from '../components/EventActionMenu.vue'
@@ -379,7 +399,8 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'template', label: 'Template', icon: 'monitor' },
   { id: 'payment', label: 'Payment', icon: 'credit-card' },
-  { id: 'invitation', label: 'Invitations', icon: 'mail' },
+  { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
+  { id: 'social-media', label: 'Social Media Preview', icon: 'share-2', mobileLabel: 'Social' },
 ])
 
 // Computed properties
@@ -434,7 +455,11 @@ const canViewPayment = computed(() => {
   return canViewRestrictedTabs.value
 })
 
-const canViewInvitation = computed(() => {
+const canViewGuestManagement = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewSocialMedia = computed(() => {
   return canViewRestrictedTabs.value
 })
 
@@ -463,6 +488,7 @@ const currentTabIcon = computed(() => {
     monitor: Monitor,
     'credit-card': CreditCard,
     mail: Mail,
+    'share-2': Share2,
   } as const
   return iconMap[tab.icon as keyof typeof iconMap] || FileText
 })

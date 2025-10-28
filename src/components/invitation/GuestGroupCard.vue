@@ -26,21 +26,21 @@
 
             <!-- Stats Row -->
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-              <span class="inline-flex items-center text-slate-600">
+              <span class="inline-flex items-center text-slate-600 whitespace-nowrap">
                 <Users class="w-3.5 h-3.5 mr-1" />
                 <span class="font-medium">{{ group.guest_count }} </span> guests
               </span>
-              <span v-if="groupStats.sent > 0" class="inline-flex items-center text-blue-600">
+              <span v-if="groupStats.sent > 0" class="inline-flex items-center text-blue-600 whitespace-nowrap">
                 <Send class="w-3.5 h-3.5 mr-1" />
-                <span class="font-medium">{{ groupStats.sent }}</span> sent
+                <span class="font-medium">{{ groupStats.sent }} </span> sent
               </span>
-              <span v-if="groupStats.viewed > 0" class="inline-flex items-center text-green-600">
+              <span v-if="groupStats.viewed > 0" class="inline-flex items-center text-green-600 whitespace-nowrap">
                 <Eye class="w-3.5 h-3.5 mr-1" />
-                <span class="font-medium">{{ groupStats.viewed }}</span> viewed
+                <span class="font-medium">{{ groupStats.viewed }} </span> viewed
               </span>
-              <span v-if="groupStats.pending > 0" class="inline-flex items-center text-slate-500">
+              <span v-if="groupStats.pending > 0" class="inline-flex items-center text-slate-500 whitespace-nowrap">
                 <Clock class="w-3.5 h-3.5 mr-1" />
-                <span class="font-medium">{{ groupStats.pending }}</span> pending
+                <span class="font-medium">{{ groupStats.pending }} </span> pending
               </span>
             </div>
           </div>

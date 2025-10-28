@@ -24,76 +24,108 @@
     </div>
 
     <!-- Chart and Stats -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Pie Chart -->
-      <div class="flex items-center justify-center">
-        <div class="w-full max-w-sm">
-          <Pie :data="chartData" :options="chartOptions" />
+    <div v-else class="space-y-6">
+      <!-- Currency Breakdown Stats -->
+      <div>
+        <h4 class="text-sm font-semibold text-slate-700 mb-3">Currency Summary</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div
+            v-for="currency in currencyBreakdown"
+            :key="currency.code"
+            class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white"
+          >
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                <span class="text-xs font-bold text-amber-700">{{ currency.code }}</span>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-900">
+                  {{ formatCurrency(currency.total, currency.code) }}
+                </p>
+                <p class="text-xs text-slate-500">{{ currency.count }} gifts</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Stats and Currency Breakdown -->
+      <!-- Pie Charts by Currency -->
       <div class="space-y-6">
-        <!-- Total by Group -->
-        <div>
-          <h4 class="text-sm font-semibold text-slate-700 mb-3">Total by Group</h4>
-          <div class="space-y-2">
-            <div
-              v-for="group in groupTotals"
-              :key="group.id"
-              class="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
-            >
-              <div class="flex items-center gap-2">
+        <div
+          v-for="currencyData in currencyChartData"
+          :key="currencyData.currency"
+          class="border border-slate-200 rounded-2xl p-6 bg-white"
+        >
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+              <span class="text-sm font-bold text-amber-700">{{ currencyData.currency }}</span>
+            </div>
+            <div>
+              <h4 class="text-base font-bold text-slate-900">
+                {{ currencyData.currency }} Distribution by Group
+              </h4>
+              <p class="text-xs text-slate-600">
+                {{ formatCurrency(currencyData.totalAmount, currencyData.currency) }} from {{ currencyData.guestCount }} guests
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Pie Chart -->
+            <div class="flex items-center justify-center">
+              <div class="w-full max-w-sm">
+                <Pie :data="currencyData.chartData" :options="chartOptions" />
+              </div>
+            </div>
+
+            <!-- Group Breakdown -->
+            <div>
+              <h5 class="text-sm font-semibold text-slate-700 mb-3">Group Breakdown</h5>
+              <div class="space-y-2">
                 <div
-                  class="w-3 h-3 rounded-full flex-shrink-0"
-                  :style="{ backgroundColor: group.color }"
-                ></div>
-                <span class="text-sm font-medium text-slate-900">{{ group.name }}</span>
-                <span class="text-xs text-slate-500">({{ group.guestCount }} guests)</span>
+                  v-for="group in currencyData.groupTotals"
+                  :key="group.id"
+                  class="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-3 h-3 rounded-full flex-shrink-0"
+                      :style="{ backgroundColor: group.color }"
+                    ></div>
+                    <span class="text-sm font-medium text-slate-900">{{ group.name }}</span>
+                    <span class="text-xs text-slate-500">({{ group.guestCount }} guests)</span>
+                  </div>
+                  <span class="text-sm font-semibold text-slate-900">
+                    {{ formatCurrency(group.total, currencyData.currency) }}
+                  </span>
+                </div>
               </div>
-              <span class="text-sm font-semibold text-slate-900">
-                {{ formatAmount(group.total) }}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Currency Breakdown -->
-        <div>
-          <h4 class="text-sm font-semibold text-slate-700 mb-3">Currency Breakdown</h4>
-          <div class="space-y-2">
-            <div
-              v-for="currency in currencyBreakdown"
-              :key="currency.code"
-              class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white"
-            >
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                  <span class="text-xs font-bold text-amber-700">{{ currency.code }}</span>
+              <!-- Currency Total Summary -->
+              <div class="mt-4 pt-4 border-t-2 border-slate-200">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-semibold text-slate-700">Total {{ currencyData.currency }}</span>
+                  <span class="text-lg font-bold text-amber-600">
+                    {{ formatCurrency(currencyData.totalAmount, currencyData.currency) }}
+                  </span>
                 </div>
-                <div>
-                  <p class="text-sm font-medium text-slate-900">
-                    {{ formatCurrency(currency.total, currency.code) }}
-                  </p>
-                  <p class="text-xs text-slate-500">{{ currency.count }} gifts</p>
+                <div class="mt-1 text-xs text-slate-500">
+                  From {{ currencyData.guestCount }} guest{{ currencyData.guestCount !== 1 ? 's' : '' }}
                 </div>
-              </div>
-              <div class="text-right">
-                <p class="text-xs text-slate-600">{{ currency.percentage }}%</p>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Grand Total -->
-        <div class="border-t-2 border-slate-200 pt-4">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold text-slate-700">Total Gifts Received</span>
-            <span class="text-lg font-bold text-amber-600">{{ totalGifts }}</span>
-          </div>
-          <div class="mt-2 text-xs text-slate-500">
-            From {{ totalGuestsWithGifts }} out of {{ totalGuests }} guests
-          </div>
+      <!-- Overall Grand Total -->
+      <div class="border-t-2 border-slate-200 pt-4 px-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold text-slate-700">Total Gifts Received (All Currencies)</span>
+          <span class="text-lg font-bold text-amber-600">{{ totalGifts }}</span>
+        </div>
+        <div class="mt-2 text-xs text-slate-500">
+          From {{ totalGuestsWithGifts }} out of {{ totalGuests }} guests
         </div>
       </div>
     </div>
@@ -156,38 +188,76 @@ const loadGuestData = async () => {
   }
 }
 
-// Computed: Group totals
-const groupTotals = computed(() => {
-  const totalsMap = new Map<number, { id: number; name: string; color: string; total: number; guestCount: number }>()
+// Computed: Group totals by currency
+const currencyChartData = computed(() => {
+  // Group guests by currency
+  const currencyMap = new Map<string, any[]>()
 
-  // Initialize with all groups
-  props.groups.forEach(group => {
-    totalsMap.set(group.id, {
-      id: group.id,
-      name: group.name,
-      color: group.color || '#3498db',
-      total: 0,
-      guestCount: 0,
-    })
-  })
-
-  // Calculate totals
   allGuests.value.forEach(guest => {
-    const groupData = totalsMap.get(guest.group)
-    if (groupData) {
-      const amount = parseFloat(guest.cash_gift_amount) || 0
-      groupData.total += amount
-      groupData.guestCount += 1
+    const currency = guest.cash_gift_currency || 'USD'
+    if (!currencyMap.has(currency)) {
+      currencyMap.set(currency, [])
     }
+    currencyMap.get(currency)!.push(guest)
   })
 
-  // Convert to array and filter out groups with no gifts
-  return Array.from(totalsMap.values())
-    .filter(g => g.total > 0)
-    .sort((a, b) => b.total - a.total)
+  // For each currency, calculate group breakdown
+  return Array.from(currencyMap.entries()).map(([currency, guests]) => {
+    const groupTotalsMap = new Map<number, { id: number; name: string; color: string; total: number; guestCount: number }>()
+
+    // Initialize with all groups
+    props.groups.forEach(group => {
+      groupTotalsMap.set(group.id, {
+        id: group.id,
+        name: group.name,
+        color: group.color || '#3498db',
+        total: 0,
+        guestCount: 0,
+      })
+    })
+
+    // Calculate totals for this currency
+    guests.forEach(guest => {
+      const groupData = groupTotalsMap.get(guest.group)
+      if (groupData) {
+        const amount = parseFloat(guest.cash_gift_amount) || 0
+        groupData.total += amount
+        groupData.guestCount += 1
+      }
+    })
+
+    // Filter out groups with no gifts in this currency
+    const groupTotals = Array.from(groupTotalsMap.values())
+      .filter(g => g.total > 0)
+      .sort((a, b) => b.total - a.total)
+
+    // Create chart data
+    const chartData = {
+      labels: groupTotals.map(g => g.name),
+      datasets: [
+        {
+          data: groupTotals.map(g => g.total),
+          backgroundColor: groupTotals.map(g => g.color),
+          borderColor: '#ffffff',
+          borderWidth: 2,
+        },
+      ],
+    }
+
+    const totalAmount = groupTotals.reduce((sum, g) => sum + g.total, 0)
+    const guestCount = groupTotals.reduce((sum, g) => sum + g.guestCount, 0)
+
+    return {
+      currency,
+      groupTotals,
+      chartData,
+      totalAmount,
+      guestCount,
+    }
+  }).sort((a, b) => b.totalAmount - a.totalAmount) // Sort by total amount descending
 })
 
-// Computed: Currency breakdown
+// Computed: Currency breakdown (for summary cards)
 const currencyBreakdown = computed(() => {
   const currencyMap = new Map<string, { code: string; total: number; count: number }>()
 
@@ -204,28 +274,9 @@ const currencyBreakdown = computed(() => {
     data.count += 1
   })
 
-  const totalAmount = Array.from(currencyMap.values()).reduce((sum, c) => sum + c.total, 0)
-
   return Array.from(currencyMap.values())
-    .map(c => ({
-      ...c,
-      percentage: totalAmount > 0 ? Math.round((c.total / totalAmount) * 100) : 0,
-    }))
     .sort((a, b) => b.total - a.total)
 })
-
-// Computed: Chart data
-const chartData = computed(() => ({
-  labels: groupTotals.value.map(g => g.name),
-  datasets: [
-    {
-      data: groupTotals.value.map(g => g.total),
-      backgroundColor: groupTotals.value.map(g => g.color),
-      borderColor: '#ffffff',
-      borderWidth: 2,
-    },
-  ],
-}))
 
 // Chart options
 const chartOptions: ChartOptions<'pie'> = {
@@ -291,8 +342,9 @@ watch(() => props.groups, (newGroups) => {
   }
 }, { deep: true })
 
-// Expose refresh method
+// Expose refresh method and currency breakdown
 defineExpose({
   refresh: loadGuestData,
+  currencyBreakdown,
 })
 </script>
