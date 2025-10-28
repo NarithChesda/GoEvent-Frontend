@@ -224,74 +224,6 @@
           </div>
         </div>
 
-        <!-- Cash Gifts Section (Collapsible on Mobile) -->
-        <div v-if="cashGiftStats.length > 0" class="border-t border-slate-200 pt-4 sm:pt-6">
-          <button
-            @click="showCashGifts = !showCashGifts"
-            class="w-full flex items-center justify-between mb-3 sm:mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 -m-2"
-            :aria-expanded="showCashGifts"
-            aria-controls="cash-gifts-section"
-            type="button"
-          >
-            <div class="flex items-center gap-2">
-              <DollarSign class="w-5 h-5 text-emerald-600" aria-hidden="true" />
-              <h4 class="text-sm sm:text-base font-bold text-slate-900">Cash Gifts</h4>
-              <span class="text-xs text-slate-600">({{ totalCashGiftGuests }} guests)</span>
-            </div>
-            <ChevronDown
-              class="w-5 h-5 text-slate-400 transition-transform"
-              :class="{ 'rotate-180': showCashGifts }"
-              aria-hidden="true"
-            />
-          </button>
-
-          <Transition name="expand">
-            <div v-if="showCashGifts" id="cash-gifts-section" class="space-y-3">
-              <div
-                v-for="cashStat in cashGiftStats"
-                :key="cashStat.currency"
-                class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 sm:p-4"
-                role="region"
-                :aria-label="`${cashStat.currency} cash gifts total`"
-              >
-                <div class="flex items-start justify-between">
-                  <div>
-                    <div class="text-lg sm:text-xl font-bold text-emerald-900 mb-1">
-                      {{ loadingStats ? '—' : cashStat.total.toLocaleString() }} {{ cashStat.currency }}
-                    </div>
-                    <p class="text-xs sm:text-sm text-emerald-700">
-                      From {{ cashStat.count }} guest{{ cashStat.count !== 1 ? 's' : '' }}
-                    </p>
-                  </div>
-                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-emerald-600 flex items-center justify-center">
-                    <span class="text-xs sm:text-sm font-bold text-white">{{ cashStat.currency }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Cash Gift Progress -->
-              <div class="bg-slate-50 rounded-lg p-3">
-                <div class="flex items-center justify-between text-xs sm:text-sm mb-2">
-                  <span class="font-medium text-slate-700">Gift Participation</span>
-                  <span class="text-slate-600">{{ totalCashGiftGuests }}/{{ totalGuests }}</span>
-                </div>
-                <div class="relative w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    class="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
-                    :style="{ width: cashGiftPercentage + '%' }"
-                    role="progressbar"
-                    :aria-valuenow="cashGiftPercentage"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    :aria-label="`${cashGiftPercentage}% guests contributed cash gifts`"
-                  ></div>
-                </div>
-                <p class="text-xs text-slate-600 mt-2">{{ cashGiftPercentage }}% participation rate</p>
-              </div>
-            </div>
-          </Transition>
-        </div>
-
         <!-- Detailed Engagement Breakdown (Collapsible) -->
         <div v-if="!loadingStats && totalGuests > 0" class="border-t border-slate-200 pt-4 sm:pt-6 mt-4 sm:mt-6">
           <button
@@ -475,7 +407,6 @@ import {
   Send,
   Eye,
   Clock,
-  DollarSign,
   ChevronDown,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
@@ -558,7 +489,6 @@ const showCreateGroupModal = ref(false)
 const isAddingGuest = ref(false)
 const isCreatingGroup = ref(false)
 const groupCardRefs = new Map<number, any>()
-const showCashGifts = ref(true) // Default open on mobile
 const showDetailedBreakdown = ref(false) // Default collapsed
 
 // Edit guest modal state
@@ -621,29 +551,6 @@ const viewRate = computed(() => {
   const sent = sentInvitations.value
   if (sent === 0) return 0
   return Math.round((acceptedInvitations.value / sent) * 100)
-})
-
-// Cash gift stats computed properties - get from CashGiftAnalytics component
-const cashGiftStats = computed(() => {
-  if (!cashGiftAnalyticsRef.value?.currencyBreakdown) {
-    return []
-  }
-  return cashGiftAnalyticsRef.value.currencyBreakdown.map(item => ({
-    currency: item.code,
-    total: item.total,
-    count: item.count,
-  }))
-})
-
-// Total cash gift guests and percentage
-const totalCashGiftGuests = computed(() => {
-  return cashGiftStats.value.reduce((sum, stat) => sum + stat.count, 0)
-})
-
-const cashGiftPercentage = computed(() => {
-  const total = totalGuests.value
-  if (total === 0) return 0
-  return Math.round((totalCashGiftGuests.value / total) * 100)
 })
 
 // Methods

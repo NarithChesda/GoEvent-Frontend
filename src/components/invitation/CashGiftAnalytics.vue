@@ -118,15 +118,57 @@
         </div>
       </div>
 
-      <!-- Overall Grand Total -->
-      <div class="border-t-2 border-slate-200 pt-4 px-4">
-        <div class="flex items-center justify-between">
+      <!-- Overall Grand Total (Collapsible) -->
+      <div class="border-t-2 border-slate-200 pt-4 mt-6">
+        <button
+          @click="showTotalBreakdown = !showTotalBreakdown"
+          class="w-full flex items-center justify-between mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded-lg p-2"
+          :aria-expanded="showTotalBreakdown"
+          aria-controls="total-breakdown-section"
+          type="button"
+        >
           <span class="text-sm font-semibold text-slate-700">Total Gifts Received (All Currencies)</span>
-          <span class="text-lg font-bold text-amber-600">{{ totalGifts }}</span>
-        </div>
-        <div class="mt-2 text-xs text-slate-500">
-          From {{ totalGuestsWithGifts }} out of {{ totalGuests }} guests
-        </div>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold text-amber-600">{{ totalGifts }}</span>
+            <ChevronDown
+              class="w-5 h-5 text-slate-400 transition-transform"
+              :class="{ 'rotate-180': showTotalBreakdown }"
+              aria-hidden="true"
+            />
+          </div>
+        </button>
+
+        <Transition name="expand">
+          <div v-if="showTotalBreakdown" id="total-breakdown-section">
+            <div class="bg-slate-50 rounded-lg p-3 sm:p-4">
+              <div class="flex items-center justify-between text-sm mb-2">
+                <span class="font-medium text-slate-700">Gift Participation</span>
+                <span class="text-slate-600">{{ totalGuestsWithGifts }}/{{ totalGuests }}</span>
+              </div>
+              <div class="relative w-full h-2.5 bg-slate-200 rounded-full overflow-hidden mb-3">
+                <div
+                  class="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-500"
+                  :style="{ width: giftParticipationPercentage + '%' }"
+                  role="progressbar"
+                  :aria-valuenow="giftParticipationPercentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  :aria-label="`${giftParticipationPercentage}% guests contributed gifts`"
+                ></div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 text-xs">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                  <span class="text-slate-600">With Gifts: {{ totalGuestsWithGifts }} ({{ giftParticipationPercentage }}%)</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+                  <span class="text-slate-600">Without Gifts: {{ totalGuests - totalGuestsWithGifts }} ({{ 100 - giftParticipationPercentage }}%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -142,7 +184,7 @@ import {
   Legend,
   ChartOptions,
 } from 'chart.js'
-import { Coins } from 'lucide-vue-next'
+import { Coins, ChevronDown } from 'lucide-vue-next'
 import { guestService, type GuestGroup } from '../../services/api'
 
 // Register Chart.js components
@@ -157,6 +199,7 @@ const props = defineProps<{
 // State
 const loading = ref(false)
 const allGuests = ref<any[]>([])
+const showTotalBreakdown = ref(false) // Default collapsed
 
 // Fetch all guests with cash gifts
 const loadGuestData = async () => {
@@ -314,6 +357,11 @@ const totalGuestsWithGifts = computed(() => allGuests.value.length)
 const totalGuests = computed(() => {
   return props.groups.reduce((sum, group) => sum + group.guest_count, 0)
 })
+const giftParticipationPercentage = computed(() => {
+  const total = totalGuests.value
+  if (total === 0) return 0
+  return Math.round((totalGuestsWithGifts.value / total) * 100)
+})
 
 // Format amount (simplified without currency)
 const formatAmount = (amount: number) => {
@@ -348,3 +396,38 @@ defineExpose({
   currencyBreakdown,
 })
 </script>
+
+<style scoped>
+/* Expand transition for collapsible sections */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-8px);
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .expand-enter-active,
+  .expand-leave-active {
+    transition: none;
+  }
+
+  div[role='progressbar'] {
+    transition: none !important;
+  }
+}
+</style>
