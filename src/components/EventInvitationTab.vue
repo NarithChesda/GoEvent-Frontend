@@ -66,42 +66,140 @@
 
     <!-- Invitation Management Section -->
     <div v-else class="space-y-6">
-      <!-- Guest Groups Header and Stats -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-        <div class="flex flex-col gap-3 sm:gap-2 mb-3 sm:mb-4">
-          <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full">
-            <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-              <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-              Guest Groups
-            </h3>
-            <div class="ml-auto flex items-center gap-2">
-              <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2 py-1 text-xs">
-                <CheckCircle class="w-3 h-3 mr-1 text-green-600" />
-                <span>{{ loadingStats ? '...' : acceptedInvitations }}</span>
-                <span class="ml-1 hidden md:inline">Viewed</span>
-              </span>
-              <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2 py-1 text-xs">
-                <Users class="w-3 h-3 mr-1 text-slate-600" />
-                <span>{{ loadingStats ? '...' : totalGuests }}</span>
-                <span class="ml-1 hidden md:inline">Total</span>
-              </span>
-              <button
-                @click="showCreateGroupModal = true"
-                class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg inline-flex items-center text-xs sm:text-sm"
-              >
-                <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
-                <span class="hidden sm:inline">Create Group</span>
-                <span class="sm:hidden">Group</span>
-              </button>
-              <button
-                @click="showAddGuestModal = true"
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-xs sm:text-sm"
-              >
-                <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
-                <span class="hidden sm:inline">Add Guest</span>
-                <span class="sm:hidden">Add</span>
-              </button>
+      <!-- Enhanced Stats Dashboard -->
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
+        <div class="mb-6">
+          <h3 class="text-lg sm:text-xl font-bold text-slate-900">Guest Management</h3>
+          <p class="text-sm text-slate-600 mt-1">Track and manage your invitations</p>
+        </div>
+
+        <!-- Stats Cards Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- Total Guests -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <Users class="w-8 h-8 text-blue-600" />
+              <div class="text-right">
+                <div class="text-2xl sm:text-3xl font-bold text-blue-900">
+                  {{ loadingStats ? '...' : totalGuests }}
+                </div>
+              </div>
             </div>
+            <p class="text-sm font-medium text-blue-700">Total Guests</p>
+          </div>
+
+          <!-- Sent Invitations -->
+          <div class="bg-gradient-to-br from-sky-50 to-sky-100/50 border border-sky-200/50 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <Send class="w-8 h-8 text-sky-600" />
+              <div class="text-right">
+                <div class="text-2xl sm:text-3xl font-bold text-sky-900">
+                  {{ loadingStats ? '...' : sentInvitations }}
+                </div>
+              </div>
+            </div>
+            <p class="text-sm font-medium text-sky-700">Sent</p>
+            <p class="text-xs text-sky-600 mt-1">
+              {{ loadingStats ? '...' : sentPercentage }}% of total
+            </p>
+          </div>
+
+          <!-- Viewed Invitations -->
+          <div class="bg-gradient-to-br from-green-50 to-green-100/50 border border-green-200/50 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <Eye class="w-8 h-8 text-green-600" />
+              <div class="text-right">
+                <div class="text-2xl sm:text-3xl font-bold text-green-900">
+                  {{ loadingStats ? '...' : acceptedInvitations }}
+                </div>
+              </div>
+            </div>
+            <p class="text-sm font-medium text-green-700">Viewed</p>
+            <p class="text-xs text-green-600 mt-1">
+              {{ loadingStats ? '...' : viewRate }}% view rate
+            </p>
+          </div>
+
+          <!-- Pending Invitations -->
+          <div class="bg-gradient-to-br from-slate-50 to-slate-100/50 border border-slate-200/50 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <Clock class="w-8 h-8 text-slate-600" />
+              <div class="text-right">
+                <div class="text-2xl sm:text-3xl font-bold text-slate-900">
+                  {{ loadingStats ? '...' : pendingInvitations }}
+                </div>
+              </div>
+            </div>
+            <p class="text-sm font-medium text-slate-700">Pending</p>
+            <p class="text-xs text-slate-600 mt-1">Not sent yet</p>
+          </div>
+        </div>
+
+        <!-- Engagement Bar -->
+        <div v-if="!loadingStats && totalGuests > 0" class="bg-slate-50 rounded-xl p-4">
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span class="font-medium text-slate-700">Engagement Overview</span>
+            <span class="text-slate-600">{{ acceptedInvitations }}/{{ sentInvitations }} viewed</span>
+          </div>
+          <div class="relative w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              class="absolute top-0 left-0 h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
+              :style="{ width: sentPercentage + '%' }"
+            ></div>
+            <div
+              class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all duration-500"
+              :style="{ width: viewedPercentage + '%' }"
+            ></div>
+          </div>
+          <div class="flex items-center gap-4 mt-3 text-xs">
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-gradient-to-r from-sky-400 to-sky-500"></div>
+              <span class="text-slate-600">Sent ({{ sentPercentage }}%)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-green-500"></div>
+              <span class="text-slate-600">Viewed ({{ viewedPercentage }}%)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+              <span class="text-slate-600">Pending ({{ pendingPercentage }}%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash Gift Analytics -->
+      <CashGiftAnalytics
+        v-if="groups.length > 0"
+        ref="cashGiftAnalyticsRef"
+        :event-id="props.eventId"
+        :groups="groups"
+      />
+
+      <!-- Guest Groups Section -->
+      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+            <Users class="w-5 h-5 text-[#1e90ff] mr-2" />
+            Guest Groups
+          </h3>
+          <div class="flex items-center gap-2">
+            <button
+              @click="showCreateGroupModal = true"
+              class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg inline-flex items-center text-sm"
+            >
+              <UserPlus class="w-4 h-4 mr-1.5 sm:mr-2" />
+              <span class="hidden sm:inline">Create Group</span>
+              <span class="sm:hidden">Group</span>
+            </button>
+            <button
+              @click="showAddGuestModal = true"
+              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
+            >
+              <UserPlus class="w-4 h-4 mr-1.5 sm:mr-2" />
+              <span class="hidden sm:inline">Add Guest</span>
+              <span class="sm:hidden">Add</span>
+            </button>
           </div>
         </div>
 
@@ -124,6 +222,7 @@
           <GuestGroupCard
             v-for="group in groups"
             :key="group.id"
+            :ref="el => groupCardRefs.set(group.id, el)"
             :group="group"
             :guests="getGroupGuests(group.id)"
             :loading="isGroupLoading(group.id)"
@@ -133,13 +232,17 @@
             :page-size="PAGE_SIZE"
             :search-term="getGroupPagination(group.id).searchTerm"
             @toggle="handleGroupToggle(group.id)"
+            @edit="openEditGroupModal"
             @delete="openDeleteGroupModal"
             @copy-link="copyShowcaseLink"
             @mark-sent="handleMarkAsSent"
+            @edit-guest="openEditGuestModal"
             @delete-guest="openDeleteGuestModal"
             @next-page="nextGroupPage(group.id)"
             @previous-page="previousGroupPage(group.id)"
             @search="(searchTerm) => handleGroupSearch(group.id, searchTerm)"
+            @bulk-mark-sent="handleBulkMarkSent(group.id)"
+            @bulk-delete="handleBulkDelete(group.id)"
           />
         </div>
       </div>
@@ -192,6 +295,27 @@
       @drag-leave="handleDragLeave"
     />
 
+    <!-- Edit Guest Modal -->
+    <EditGuestModal
+      ref="editGuestModalRef"
+      :show="showEditGuestModal"
+      :guest="editTargetGuest"
+      :groups="groups"
+      :is-updating="isUpdatingGuest"
+      @close="handleCloseEditGuestModal"
+      @update-guest="handleUpdateGuest"
+    />
+
+    <!-- Edit Group Modal -->
+    <EditGroupModal
+      ref="editGroupModalRef"
+      :show="showEditGroupModal"
+      :group="editTargetGroup"
+      :is-updating="isUpdatingGroup"
+      @close="handleCloseEditGroupModal"
+      @update-group="handleUpdateGroup"
+    />
+
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
       <div v-if="message" class="fixed bottom-4 sm:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-50">
@@ -218,18 +342,25 @@ import {
   Mail,
   UserPlus,
   AlertCircle,
+  Send,
+  Eye,
+  Clock,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestGroups } from '../composables/invitation/useGuestGroups'
 import { useGuests } from '../composables/invitation/useGuests'
 import { useBulkImport } from '../composables/invitation/useBulkImport'
 import type { Event, EventGuest, GuestGroup } from '../services/api'
+import { guestService } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import SocialMediaPreview from './SocialMediaPreview.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import GuestGroupCard from './invitation/GuestGroupCard.vue'
 import CreateGroupModal from './invitation/CreateGroupModal.vue'
 import AddGuestModal from './invitation/AddGuestModal.vue'
+import EditGuestModal from './invitation/EditGuestModal.vue'
+import EditGroupModal from './invitation/EditGroupModal.vue'
+import CashGiftAnalytics from './invitation/CashGiftAnalytics.vue'
 
 // Props
 const props = defineProps<{
@@ -251,6 +382,7 @@ const {
   loadingGroups,
   loadGroups,
   createGroup,
+  updateGroup,
   deleteGroup,
   toggleGroupExpansion,
   isGroupExpanded,
@@ -267,6 +399,7 @@ const {
   loadGuestsForGroup,
   loadGuestStats,
   createGuest,
+  updateGuest,
   deleteGuest,
   markGuestAsSent,
   nextGroupPage,
@@ -293,6 +426,22 @@ const showAddGuestModal = ref(false)
 const showCreateGroupModal = ref(false)
 const isAddingGuest = ref(false)
 const isCreatingGroup = ref(false)
+const groupCardRefs = new Map<number, any>()
+
+// Edit guest modal state
+const showEditGuestModal = ref(false)
+const editTargetGuest = ref<EventGuest | null>(null)
+const isUpdatingGuest = ref(false)
+const editGuestModalRef = ref<InstanceType<typeof EditGuestModal> | null>(null)
+
+// Edit group modal state
+const showEditGroupModal = ref(false)
+const editTargetGroup = ref<GuestGroup | null>(null)
+const isUpdatingGroup = ref(false)
+const editGroupModalRef = ref<InstanceType<typeof EditGroupModal> | null>(null)
+
+// Cash gift analytics ref
+const cashGiftAnalyticsRef = ref<InstanceType<typeof CashGiftAnalytics> | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -310,6 +459,36 @@ const hasTemplatePayment = computed(() => {
 
 const acceptedInvitations = computed(() => guestStats.value?.viewed || 0)
 const totalGuests = computed(() => guestStats.value?.total_guests || 0)
+const sentInvitations = computed(() => guestStats.value?.sent || 0)
+const pendingInvitations = computed(() => {
+  const total = totalGuests.value
+  const sent = sentInvitations.value
+  return Math.max(0, total - sent)
+})
+
+const sentPercentage = computed(() => {
+  const total = totalGuests.value
+  if (total === 0) return 0
+  return Math.round((sentInvitations.value / total) * 100)
+})
+
+const viewedPercentage = computed(() => {
+  const total = totalGuests.value
+  if (total === 0) return 0
+  return Math.round((acceptedInvitations.value / total) * 100)
+})
+
+const pendingPercentage = computed(() => {
+  const total = totalGuests.value
+  if (total === 0) return 0
+  return Math.round((pendingInvitations.value / total) * 100)
+})
+
+const viewRate = computed(() => {
+  const sent = sentInvitations.value
+  if (sent === 0) return 0
+  return Math.round((acceptedInvitations.value / sent) * 100)
+})
 
 // Methods
 const redirectToPaymentTab = () => {
@@ -363,6 +542,11 @@ const handleAddGuest = async (name: string, groupId: number) => {
     // Refresh stats and groups
     await loadGuestStats()
     await loadGroups()
+
+    // Refresh cash gift analytics (in case guest has default gift)
+    if (cashGiftAnalyticsRef.value) {
+      await cashGiftAnalyticsRef.value.refresh()
+    }
   } else {
     showMessage('error', response.message || 'Failed to add guest')
   }
@@ -384,6 +568,11 @@ const handleBulkImport = async (groupId: number) => {
     const pagination = getGroupPagination(groupId)
     await loadGuestsForGroup(groupId, pagination.currentPage)
 
+    // Refresh cash gift analytics (imported guests may have cash gifts)
+    if (cashGiftAnalyticsRef.value) {
+      await cashGiftAnalyticsRef.value.refresh()
+    }
+
     // Show results
     if (skipped > 0) {
       showMessage(
@@ -403,6 +592,49 @@ const handleBulkImport = async (groupId: number) => {
 const handleCloseAddGuestModal = () => {
   showAddGuestModal.value = false
   resetImportState()
+}
+
+const openEditGroupModal = (group: GuestGroup) => {
+  editTargetGroup.value = group
+  showEditGroupModal.value = true
+}
+
+const handleCloseEditGroupModal = () => {
+  showEditGroupModal.value = false
+  editTargetGroup.value = null
+}
+
+const handleUpdateGroup = async (groupId: number, data: any) => {
+  if (!editTargetGroup.value) return
+
+  isUpdatingGroup.value = true
+
+  const response = await updateGroup(groupId, data)
+
+  if (response.success && response.data) {
+    showMessage('success', `Group "${response.data.name}" updated successfully`)
+    showEditGroupModal.value = false
+    editTargetGroup.value = null
+    await loadGroups()
+  } else {
+    // Handle validation errors
+    if (response.errors && typeof response.errors === 'object') {
+      const hasFieldErrors = Object.keys(response.errors).some(key =>
+        Array.isArray(response.errors![key])
+      )
+
+      if (hasFieldErrors && editGroupModalRef.value) {
+        editGroupModalRef.value.setFieldErrors(response.errors as Record<string, string[]>)
+      } else if (editGroupModalRef.value) {
+        editGroupModalRef.value.setErrorMessage(response.message || 'Failed to update group')
+      }
+    } else if (editGroupModalRef.value) {
+      editGroupModalRef.value.setErrorMessage(response.message || 'Failed to update group')
+    }
+    showMessage('error', response.message || 'Failed to update group')
+  }
+
+  isUpdatingGroup.value = false
 }
 
 const openDeleteGroupModal = (group: GuestGroup) => {
@@ -455,6 +687,11 @@ const confirmDeleteGuest = async () => {
     showMessage('success', deleteTargetGuest.value.name + ' removed from guest list')
     await loadGuestStats()
     await loadGroups()
+
+    // Refresh cash gift analytics (deleted guest may have had a gift)
+    if (cashGiftAnalyticsRef.value) {
+      await cashGiftAnalyticsRef.value.refresh()
+    }
   } else {
     showMessage('error', response.message || 'Failed to remove guest')
   }
@@ -480,6 +717,68 @@ const handleMarkAsSent = async (guest: EventGuest) => {
   }
 }
 
+const openEditGuestModal = (guest: EventGuest) => {
+  editTargetGuest.value = guest
+  showEditGuestModal.value = true
+}
+
+const handleCloseEditGuestModal = () => {
+  showEditGuestModal.value = false
+  editTargetGuest.value = null
+}
+
+const handleUpdateGuest = async (guestId: number, data: any) => {
+  console.log('[EventInvitationTab] handleUpdateGuest called with:', { guestId, data })
+  if (!editTargetGuest.value) {
+    console.log('[EventInvitationTab] No edit target guest')
+    return
+  }
+
+  const originalGroupId = editTargetGuest.value.group
+  isUpdatingGuest.value = true
+
+  const response = await updateGuest(guestId, originalGroupId, data)
+  console.log('[EventInvitationTab] Update response:', response)
+
+  if (response.success && response.data) {
+    showMessage('success', `${response.data.name} updated successfully`)
+    showEditGuestModal.value = false
+    editTargetGuest.value = null
+
+    // Refresh stats and groups if the group changed
+    if (data.group && data.group !== originalGroupId) {
+      await loadGuestStats()
+      await loadGroups()
+    }
+
+    // Refresh cash gift analytics if cash gift info was updated
+    if (data.cash_gift_amount !== undefined || data.cash_gift_currency !== undefined) {
+      if (cashGiftAnalyticsRef.value) {
+        await cashGiftAnalyticsRef.value.refresh()
+      }
+    }
+  } else {
+    // Handle validation errors
+    if (response.errors && typeof response.errors === 'object') {
+      // Check if errors is in the field-specific format
+      const hasFieldErrors = Object.keys(response.errors).some(key =>
+        Array.isArray(response.errors![key])
+      )
+
+      if (hasFieldErrors && editGuestModalRef.value) {
+        editGuestModalRef.value.setFieldErrors(response.errors as Record<string, string[]>)
+      } else if (editGuestModalRef.value) {
+        editGuestModalRef.value.setErrorMessage(response.message || 'Failed to update guest')
+      }
+    } else if (editGuestModalRef.value) {
+      editGuestModalRef.value.setErrorMessage(response.message || 'Failed to update guest')
+    }
+    showMessage('error', response.message || 'Failed to update guest')
+  }
+
+  isUpdatingGuest.value = false
+}
+
 const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {
   return getGuestSSRMetaUrl(props.eventId, guest.name, language)
 }
@@ -499,6 +798,72 @@ const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
     .catch(() => {
       showMessage('error', 'Failed to copy link')
     })
+}
+
+const handleBulkMarkSent = async (groupId: number) => {
+  const groupCard = groupCardRefs.get(groupId)
+  if (!groupCard) return
+
+  const selectedIds = Array.from(groupCard.selectedGuestIds as Set<number>)
+  if (selectedIds.length === 0) return
+
+  // Mark each selected guest as sent
+  let successCount = 0
+  for (const guestId of selectedIds) {
+    const response = await guestService.markInvitationSent(props.eventId, guestId)
+    if (response.success) {
+      successCount++
+    }
+  }
+
+  if (successCount > 0) {
+    showMessage('success', `Marked ${successCount} guest(s) as sent`)
+    await loadGuestStats()
+    await loadGroups()
+    const pagination = getGroupPagination(groupId)
+    await loadGuestsForGroup(groupId, pagination.currentPage)
+  }
+
+  // Clear selections
+  groupCard.clearSelection()
+}
+
+const handleBulkDelete = async (groupId: number) => {
+  const groupCard = groupCardRefs.get(groupId)
+  if (!groupCard) return
+
+  const selectedIds = Array.from(groupCard.selectedGuestIds as Set<number>)
+  if (selectedIds.length === 0) return
+
+  // Confirm bulk delete
+  if (!confirm(`Are you sure you want to delete ${selectedIds.length} guest(s)?`)) {
+    return
+  }
+
+  // Delete each selected guest
+  let successCount = 0
+  for (const guestId of selectedIds) {
+    const response = await guestService.deleteGuest(props.eventId, guestId)
+    if (response.success) {
+      successCount++
+    }
+  }
+
+  if (successCount > 0) {
+    showMessage('success', `Deleted ${successCount} guest(s)`)
+    await loadGuestStats()
+    await loadGroups()
+    const pagination = getGroupPagination(groupId)
+    await loadGuestsForGroup(groupId, pagination.currentPage)
+
+    // Refresh cash gift analytics (deleted guests may have had gifts)
+    if (cashGiftAnalyticsRef.value) {
+      await cashGiftAnalyticsRef.value.refresh()
+    }
+  }
+
+  // Clear selections
+  groupCard.clearSelection()
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {

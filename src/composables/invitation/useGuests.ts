@@ -129,6 +129,35 @@ export function useGuests(eventId: string) {
     }
   }
 
+  const updateGuest = async (guestId: number, groupId: number, data: Partial<import('../../services/api').CreateGuestRequest>) => {
+    try {
+      const response = await guestService.updateGuest(eventId, guestId, data)
+
+      if (response.success) {
+        // Refresh the group's guest list if it's currently loaded
+        if (groupPagination.value.has(groupId)) {
+          const currentPage = getGroupPagination(groupId).currentPage
+          await loadGuestsForGroup(groupId, currentPage, true)
+        }
+        // If the guest was moved to a different group, refresh that group too
+        if (data.group && data.group !== groupId) {
+          if (groupPagination.value.has(data.group)) {
+            const currentPage = getGroupPagination(data.group).currentPage
+            await loadGuestsForGroup(data.group, currentPage, true)
+          }
+        }
+      }
+
+      return response
+    } catch (error) {
+      console.error('Error updating guest:', error)
+      return {
+        success: false,
+        message: 'Failed to update guest',
+      } as ApiResponse<EventGuest>
+    }
+  }
+
   const deleteGuest = async (guestId: number, groupId: number) => {
     try {
       const response = await guestService.deleteGuest(eventId, guestId)
@@ -223,6 +252,7 @@ export function useGuests(eventId: string) {
     loadGuestsForGroup,
     loadGuestStats,
     createGuest,
+    updateGuest,
     deleteGuest,
     markGuestAsSent,
     goToGroupPage,

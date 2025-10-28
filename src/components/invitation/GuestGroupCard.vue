@@ -5,37 +5,73 @@
     <!-- Group Header -->
     <div
       @click="handleToggle"
-      class="flex items-center justify-between p-3 sm:p-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
+      class="p-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
     >
-      <div class="flex items-center gap-3 flex-1 min-w-0">
-        <div
-          class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-          :style="{ backgroundColor: group.color || '#3498db' }"
-        >
-          {{ group.guest_count }}
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3 flex-1 min-w-0">
+          <!-- Color Badge -->
+          <div
+            class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-md"
+            :style="{ backgroundColor: group.color || '#3498db' }"
+          >
+            {{ group.guest_count }}
+          </div>
+
+          <!-- Group Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="text-base font-semibold text-slate-900">{{ group.name }}</h4>
+            </div>
+            <p v-if="group.description" class="text-sm text-slate-600 mb-2">{{ group.description }}</p>
+
+            <!-- Stats Row -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+              <span class="inline-flex items-center text-slate-600">
+                <Users class="w-3.5 h-3.5 mr-1" />
+                <span class="font-medium">{{ group.guest_count }} </span> guests
+              </span>
+              <span v-if="groupStats.sent > 0" class="inline-flex items-center text-blue-600">
+                <Send class="w-3.5 h-3.5 mr-1" />
+                <span class="font-medium">{{ groupStats.sent }}</span> sent
+              </span>
+              <span v-if="groupStats.viewed > 0" class="inline-flex items-center text-green-600">
+                <Eye class="w-3.5 h-3.5 mr-1" />
+                <span class="font-medium">{{ groupStats.viewed }}</span> viewed
+              </span>
+              <span v-if="groupStats.pending > 0" class="inline-flex items-center text-slate-500">
+                <Clock class="w-3.5 h-3.5 mr-1" />
+                <span class="font-medium">{{ groupStats.pending }}</span> pending
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="flex-1 min-w-0">
-          <h4 class="text-sm sm:text-base font-semibold text-slate-900 truncate">{{ group.name }}</h4>
-          <p v-if="group.description" class="text-xs text-slate-500 truncate">{{ group.description }}</p>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button
+            @click.stop="$emit('edit', group)"
+            class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Edit Group"
+          >
+            <Edit class="w-4 h-4" />
+          </button>
+          <button
+            @click.stop="$emit('delete', group)"
+            class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete Group"
+          >
+            <Trash2 class="w-4 h-4" />
+          </button>
+          <svg
+            class="w-5 h-5 text-slate-400 transition-transform"
+            :class="{ 'rotate-180': isExpanded }"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
-      </div>
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <button
-          @click.stop="$emit('delete', group)"
-          class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          title="Delete Group"
-        >
-          <Trash2 class="w-4 h-4" />
-        </button>
-        <svg
-          class="w-5 h-5 text-slate-400 transition-transform"
-          :class="{ 'rotate-180': isExpanded }"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
       </div>
     </div>
 
@@ -113,15 +149,49 @@
           </div>
         </Transition>
 
+        <!-- Select All Row -->
+        <div v-if="guests.length > 0" class="px-4 py-3 bg-slate-50/50 border-b border-slate-200 flex items-center gap-3">
+          <input
+            type="checkbox"
+            :checked="allSelected"
+            @change="toggleSelectAll"
+            class="w-4 h-4 rounded border-slate-300 text-[#1e90ff] focus:ring-[#1e90ff] focus:ring-offset-0 cursor-pointer"
+          />
+          <span class="text-sm text-slate-700 font-medium">
+            {{ selectedCount > 0 ? `${selectedCount} selected` : 'Select all' }}
+          </span>
+
+          <!-- Bulk Actions -->
+          <div v-if="selectedCount > 0" class="ml-auto flex items-center gap-2">
+            <button
+              @click="$emit('bulk-mark-sent')"
+              class="px-3 py-1.5 text-xs rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1.5 font-medium"
+            >
+              <Send class="w-3.5 h-3.5" />
+              Mark Sent
+            </button>
+            <button
+              @click="$emit('bulk-delete')"
+              class="px-3 py-1.5 text-xs rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors flex items-center gap-1.5 font-medium"
+            >
+              <Trash2 class="w-3.5 h-3.5" />
+              Delete
+            </button>
+          </div>
+        </div>
+
         <!-- Scrollable Guest list -->
         <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 transition-opacity duration-150" :class="{ 'opacity-40': loading }">
           <GuestListItem
             v-for="guest in guests"
             :key="guest.id"
             :guest="guest"
+            :selected="isGuestSelected(guest.id)"
             @copy-link="(guest, lang) => $emit('copy-link', guest, lang)"
             @mark-sent="$emit('mark-sent', $event)"
+            @edit="$emit('edit-guest', $event)"
             @delete="$emit('delete-guest', $event)"
+            @toggle-select="handleToggleSelect"
           />
         </div>
       </div>
@@ -136,7 +206,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { Trash2, Search, X } from 'lucide-vue-next'
+import { Trash2, Search, X, Send, Users, Eye, Clock, Edit } from 'lucide-vue-next'
 import type { GuestGroup, EventGuest } from '../../services/api'
 import GuestListItem from './GuestListItem.vue'
 
@@ -155,17 +225,22 @@ const props = defineProps<{
 // Emits
 const emit = defineEmits<{
   toggle: []
+  edit: [group: GuestGroup]
   delete: [group: GuestGroup]
   'copy-link': [guest: EventGuest, language: 'en' | 'kh']
   'mark-sent': [guest: EventGuest]
+  'edit-guest': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
   'next-page': []
   'previous-page': []
   'search': [searchTerm: string]
+  'bulk-mark-sent': []
+  'bulk-delete': []
 }>()
 
 // Local state
 const searchInput = ref(props.searchTerm || '')
+const selectedGuestIds = ref<Set<number>>(new Set())
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Watch for external search term changes
@@ -173,8 +248,28 @@ watch(() => props.searchTerm, (newValue) => {
   searchInput.value = newValue || ''
 })
 
+// Watch for page changes - clear selections when page changes
+watch(() => props.currentPage, () => {
+  selectedGuestIds.value.clear()
+})
+
 // Computed
 const totalPages = computed(() => Math.ceil(props.totalCount / props.pageSize))
+
+const selectedCount = computed(() => selectedGuestIds.value.size)
+
+const allSelected = computed(() => {
+  if (props.guests.length === 0) return false
+  return props.guests.every(guest => selectedGuestIds.value.has(guest.id))
+})
+
+const groupStats = computed(() => {
+  const sent = props.guests.filter(g => g.invitation_status === 'sent' || g.invitation_status === 'viewed').length
+  const viewed = props.guests.filter(g => g.invitation_status === 'viewed').length
+  const pending = props.guests.filter(g => g.invitation_status === 'not_sent').length
+
+  return { sent, viewed, pending }
+})
 
 const handleToggle = () => {
   emit('toggle')
@@ -194,6 +289,36 @@ const clearSearch = () => {
   searchInput.value = ''
   emit('search', '')
 }
+
+const isGuestSelected = (guestId: number) => {
+  return selectedGuestIds.value.has(guestId)
+}
+
+const handleToggleSelect = (guest: EventGuest) => {
+  if (selectedGuestIds.value.has(guest.id)) {
+    selectedGuestIds.value.delete(guest.id)
+  } else {
+    selectedGuestIds.value.add(guest.id)
+  }
+}
+
+const toggleSelectAll = () => {
+  if (allSelected.value) {
+    // Deselect all
+    selectedGuestIds.value.clear()
+  } else {
+    // Select all current page guests
+    props.guests.forEach(guest => {
+      selectedGuestIds.value.add(guest.id)
+    })
+  }
+}
+
+// Expose selected guest IDs for parent component
+defineExpose({
+  selectedGuestIds,
+  clearSelection: () => selectedGuestIds.value.clear(),
+})
 </script>
 
 <style scoped>

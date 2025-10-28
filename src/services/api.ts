@@ -1627,6 +1627,10 @@ export interface GuestGroupStats {
 export interface EventGuest {
   id: number
   name: string
+  email?: string
+  phone_number?: string
+  cash_gift_amount?: string
+  cash_gift_currency?: string
   invitation_status: 'not_sent' | 'sent' | 'viewed'
   invitation_status_display: string
   showcase_link: string
@@ -1655,6 +1659,10 @@ export interface EventGuest {
 export interface CreateGuestRequest {
   name: string
   group: number
+  email?: string
+  phone_number?: string
+  cash_gift_amount?: string
+  cash_gift_currency?: string
 }
 
 export interface GuestListFilters {
