@@ -15,6 +15,7 @@ import {
   ImageIcon,
   Monitor,
   CreditCard,
+  DollarSign,
 } from 'lucide-vue-next'
 import type { TabConfig } from './EventNavigationTabs.vue'
 
@@ -40,6 +41,7 @@ const iconComponent = computed(() => {
     image: ImageIcon,
     monitor: Monitor,
     'credit-card': CreditCard,
+    'dollar-sign': DollarSign,
   }
   return iconMap[props.tab.icon as keyof typeof iconMap] || Calendar
 })

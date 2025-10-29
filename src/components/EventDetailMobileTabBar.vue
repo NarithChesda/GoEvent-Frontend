@@ -58,6 +58,7 @@ import {
   CreditCard,
   Mail,
   Share2,
+  DollarSign,
 } from 'lucide-vue-next'
 import type { TabConfig } from './EventNavigationTabs.vue'
 
@@ -71,6 +72,7 @@ interface Props {
   canViewTemplate?: boolean
   canViewPayment?: boolean
   canViewGuestManagement?: boolean
+  canViewExpenses?: boolean
   canViewSocialMedia?: boolean
 }
 
@@ -91,6 +93,7 @@ const visibleTabs = computed(() => {
     if (tab.id === 'template' && !props.canViewTemplate) return false
     if (tab.id === 'payment' && !props.canViewPayment) return false
     if (tab.id === 'guest-management' && !props.canViewGuestManagement) return false
+    if (tab.id === 'expenses' && !props.canViewExpenses) return false
     if (tab.id === 'social-media' && !props.canViewSocialMedia) return false
     return tab.visible !== false
   })
@@ -104,6 +107,7 @@ const iconMap = {
   image: ImageIcon,
   monitor: Monitor,
   'credit-card': CreditCard,
+  'dollar-sign': DollarSign,
   mail: Mail,
   'share-2': Share2,
 } as const

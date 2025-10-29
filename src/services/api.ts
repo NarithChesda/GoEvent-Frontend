@@ -2128,3 +2128,339 @@ export const userService = {
     this.userCache.clear()
   },
 }
+
+// ============================================================================
+// EXPENSE TRACKING API SERVICES
+// ============================================================================
+
+// Expense Category Types and Interfaces
+export interface ExpenseCategory {
+  id: number
+  name: string
+  description?: string
+  icon?: string
+  color: string
+  is_active: boolean
+  created_by: number
+  created_by_info?: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+  }
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateExpenseCategoryRequest {
+  name: string
+  description?: string
+  icon?: string
+  color?: string
+  is_active?: boolean
+}
+
+// Expense Budget Types and Interfaces
+export interface ExpenseBudget {
+  id: number
+  event: string
+  category: number
+  category_info: {
+    id: number
+    name: string
+    description?: string
+    icon?: string
+    color: string
+    is_active: boolean
+  }
+  budgeted_amount: string
+  currency: 'USD' | 'KHR'
+  notes?: string
+  spent_amount: string
+  remaining_amount: string
+  percentage_used: number
+  is_over_budget: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateExpenseBudgetRequest {
+  category_id: number
+  budgeted_amount: number
+  currency: 'USD' | 'KHR'
+  notes?: string
+}
+
+// Expense Record Types and Interfaces
+export interface ExpenseRecord {
+  id: number
+  event: string
+  category: number
+  category_info: {
+    id: number
+    name: string
+    description?: string
+    icon?: string
+    color: string
+  }
+  description: string
+  amount: string
+  currency: 'USD' | 'KHR'
+  date: string
+  paid_to?: string
+  payment_method: 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other'
+  receipt?: string
+  notes?: string
+  added_by: number
+  added_by_info?: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+  }
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateExpenseRecordRequest {
+  category_id: number
+  description: string
+  amount: number
+  currency: 'USD' | 'KHR'
+  date: string
+  paid_to?: string
+  payment_method: 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other'
+  notes?: string
+}
+
+export interface ExpenseFilters {
+  search?: string
+  ordering?: string
+  page?: number
+}
+
+// Expense Summary Types and Interfaces
+export interface ExpenseSummary {
+  event_id: string
+  event_title: string
+  categories: Array<{
+    category_id: number
+    category_name: string
+    currency: string
+    total_amount: number
+    expense_count: number
+    budget?: {
+      category_name: string
+      budgeted_amount: number
+      currency: string
+      spent_amount: number
+      remaining_amount: number
+      percentage_used: number
+      is_over_budget: boolean
+    }
+  }>
+  overall_totals: {
+    [currency: string]: {
+      total_expenses: number
+      total_budget: number
+      expense_count: number
+    }
+  }
+}
+
+// Expense Categories API Service
+export const expenseCategoriesService = {
+  // List all expense categories for the current user
+  async getCategories(params?: {
+    search?: string
+    ordering?: string
+  }): Promise<ApiResponse<PaginatedResponse<ExpenseCategory>>> {
+    return apiService.get<PaginatedResponse<ExpenseCategory>>(
+      '/api/events/expense-categories/',
+      params,
+    )
+  },
+
+  // Get a specific expense category
+  async getCategory(categoryId: number): Promise<ApiResponse<ExpenseCategory>> {
+    return apiService.get<ExpenseCategory>(`/api/events/expense-categories/${categoryId}/`)
+  },
+
+  // Create a new expense category
+  async createCategory(
+    data: CreateExpenseCategoryRequest,
+  ): Promise<ApiResponse<ExpenseCategory>> {
+    return apiService.post<ExpenseCategory>('/api/events/expense-categories/', data)
+  },
+
+  // Update an expense category (full update)
+  async updateCategory(
+    categoryId: number,
+    data: CreateExpenseCategoryRequest,
+  ): Promise<ApiResponse<ExpenseCategory>> {
+    return apiService.put<ExpenseCategory>(`/api/events/expense-categories/${categoryId}/`, data)
+  },
+
+  // Partially update an expense category
+  async patchCategory(
+    categoryId: number,
+    data: Partial<CreateExpenseCategoryRequest>,
+  ): Promise<ApiResponse<ExpenseCategory>> {
+    return apiService.patch<ExpenseCategory>(`/api/events/expense-categories/${categoryId}/`, data)
+  },
+
+  // Delete an expense category
+  async deleteCategory(categoryId: number): Promise<ApiResponse<void>> {
+    return apiService.delete(`/api/events/expense-categories/${categoryId}/`)
+  },
+}
+
+// Expense Budgets API Service
+export const expenseBudgetsService = {
+  // List all budgets for an event
+  async getBudgets(
+    eventId: string,
+    params?: { ordering?: string },
+  ): Promise<ApiResponse<PaginatedResponse<ExpenseBudget>>> {
+    return apiService.get<PaginatedResponse<ExpenseBudget>>(
+      `/api/events/${eventId}/expense-budgets/`,
+      params,
+    )
+  },
+
+  // Get a specific budget
+  async getBudget(eventId: string, budgetId: number): Promise<ApiResponse<ExpenseBudget>> {
+    return apiService.get<ExpenseBudget>(`/api/events/${eventId}/expense-budgets/${budgetId}/`)
+  },
+
+  // Create a new budget for an event
+  async createBudget(
+    eventId: string,
+    data: CreateExpenseBudgetRequest,
+  ): Promise<ApiResponse<ExpenseBudget>> {
+    return apiService.post<ExpenseBudget>(`/api/events/${eventId}/expense-budgets/`, data)
+  },
+
+  // Update a budget (full update)
+  async updateBudget(
+    eventId: string,
+    budgetId: number,
+    data: Partial<CreateExpenseBudgetRequest>,
+  ): Promise<ApiResponse<ExpenseBudget>> {
+    return apiService.put<ExpenseBudget>(
+      `/api/events/${eventId}/expense-budgets/${budgetId}/`,
+      data,
+    )
+  },
+
+  // Partially update a budget
+  async patchBudget(
+    eventId: string,
+    budgetId: number,
+    data: Partial<CreateExpenseBudgetRequest>,
+  ): Promise<ApiResponse<ExpenseBudget>> {
+    return apiService.patch<ExpenseBudget>(
+      `/api/events/${eventId}/expense-budgets/${budgetId}/`,
+      data,
+    )
+  },
+
+  // Delete a budget
+  async deleteBudget(eventId: string, budgetId: number): Promise<ApiResponse<void>> {
+    return apiService.delete(`/api/events/${eventId}/expense-budgets/${budgetId}/`)
+  },
+}
+
+// Expenses API Service
+export const expensesService = {
+  // List all expenses for an event
+  async getExpenses(
+    eventId: string,
+    filters?: ExpenseFilters,
+  ): Promise<ApiResponse<PaginatedResponse<ExpenseRecord>>> {
+    return apiService.get<PaginatedResponse<ExpenseRecord>>(
+      `/api/events/${eventId}/expenses/`,
+      filters,
+    )
+  },
+
+  // Get a specific expense
+  async getExpense(eventId: string, expenseId: number): Promise<ApiResponse<ExpenseRecord>> {
+    return apiService.get<ExpenseRecord>(`/api/events/${eventId}/expenses/${expenseId}/`)
+  },
+
+  // Create a new expense with optional receipt upload
+  async createExpense(
+    eventId: string,
+    data: CreateExpenseRecordRequest,
+    receiptFile?: File,
+  ): Promise<ApiResponse<ExpenseRecord>> {
+    if (receiptFile) {
+      // Use FormData for file upload
+      const formData = new FormData()
+      formData.append('category_id', data.category_id.toString())
+      formData.append('description', data.description)
+      formData.append('amount', data.amount.toString())
+      formData.append('currency', data.currency)
+      formData.append('date', data.date)
+      formData.append('payment_method', data.payment_method)
+
+      if (data.paid_to) formData.append('paid_to', data.paid_to)
+      if (data.notes) formData.append('notes', data.notes)
+      formData.append('receipt', receiptFile)
+
+      return apiService.postFormData<ExpenseRecord>(`/api/events/${eventId}/expenses/`, formData)
+    } else {
+      // Use JSON for requests without file upload
+      return apiService.post<ExpenseRecord>(`/api/events/${eventId}/expenses/`, data)
+    }
+  },
+
+  // Update an expense with optional receipt upload
+  async updateExpense(
+    eventId: string,
+    expenseId: number,
+    data: Partial<CreateExpenseRecordRequest>,
+    receiptFile?: File,
+  ): Promise<ApiResponse<ExpenseRecord>> {
+    if (receiptFile) {
+      // Use FormData for file upload
+      const formData = new FormData()
+
+      if (data.category_id !== undefined)
+        formData.append('category_id', data.category_id.toString())
+      if (data.description) formData.append('description', data.description)
+      if (data.amount !== undefined) formData.append('amount', data.amount.toString())
+      if (data.currency) formData.append('currency', data.currency)
+      if (data.date) formData.append('date', data.date)
+      if (data.payment_method) formData.append('payment_method', data.payment_method)
+      if (data.paid_to !== undefined) formData.append('paid_to', data.paid_to)
+      if (data.notes !== undefined) formData.append('notes', data.notes)
+
+      formData.append('receipt', receiptFile)
+
+      return apiService.patchFormData<ExpenseRecord>(
+        `/api/events/${eventId}/expenses/${expenseId}/`,
+        formData,
+      )
+    } else {
+      // Use JSON for requests without file upload
+      return apiService.patch<ExpenseRecord>(
+        `/api/events/${eventId}/expenses/${expenseId}/`,
+        data,
+      )
+    }
+  },
+
+  // Delete an expense
+  async deleteExpense(eventId: string, expenseId: number): Promise<ApiResponse<void>> {
+    return apiService.delete(`/api/events/${eventId}/expenses/${expenseId}/`)
+  },
+
+  // Get expense summary for an event
+  async getExpenseSummary(eventId: string): Promise<ApiResponse<ExpenseSummary>> {
+    return apiService.get<ExpenseSummary>(`/api/events/${eventId}/expenses/summary/`)
+  },
+}
