@@ -16,93 +16,76 @@
       </button>
     </div>
 
-    <!-- Budget List -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <!-- Budget Card 1: Venue -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6 hover:shadow-xl transition-all duration-300">
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-              <Building2 class="w-6 h-6 text-red-600" />
-            </div>
-            <div>
-              <h4 class="font-bold text-slate-900">Venue</h4>
-              <p class="text-xs text-slate-500">Venue rental and facility costs</p>
-            </div>
-          </div>
-          <div v-if="canEdit" class="flex items-center gap-1">
-            <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-              <Edit2 class="w-4 h-4" />
-            </button>
-            <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-              <Trash2 class="w-4 h-4" />
-            </button>
-          </div>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex justify-center items-center py-12">
+      <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="bg-red-50/50 border border-red-200/50 rounded-2xl p-6">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <AlertCircle class="w-5 h-5 text-red-600" />
         </div>
-
-        <div class="space-y-3">
-          <!-- Budget Amount -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Budgeted</span>
-            <span class="text-lg font-bold text-slate-900">$5,000.00</span>
-          </div>
-
-          <!-- Spent Amount -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Spent</span>
-            <span class="text-lg font-bold text-emerald-600">$4,500.00</span>
-          </div>
-
-          <!-- Remaining Amount -->
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-            <span class="text-sm text-slate-500">Remaining</span>
-            <span class="text-lg font-bold text-blue-600">$500.00</span>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="pt-2">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-medium text-slate-600">Budget Usage</span>
-              <span class="text-xs font-bold text-emerald-600">90%</span>
-            </div>
-            <div class="relative h-2.5 bg-slate-200 rounded-full overflow-hidden">
-              <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-500" style="width: 90%"></div>
-            </div>
-          </div>
-
-          <!-- Currency & Notes -->
-          <div class="pt-3 border-t border-slate-200">
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1 text-slate-500">
-                <DollarSign class="w-3 h-3" />
-                <span>USD</span>
-              </div>
-              <span class="text-slate-400">Maximum budget for venue rental</span>
-            </div>
-          </div>
+        <div>
+          <h4 class="font-semibold text-red-900 mb-1">Error Loading Budgets</h4>
+          <p class="text-sm text-red-700">{{ error }}</p>
+          <button @click="loadBudgets" class="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
+            Try Again
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Budget Card 2: Catering (Over Budget) -->
-      <div class="bg-red-50/50 border border-red-200/50 rounded-2xl shadow-lg shadow-red-500/10 p-6 hover:shadow-xl transition-all duration-300">
+    <!-- Budget List -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Dynamic Budget Cards -->
+      <div
+        v-for="budget in budgets"
+        :key="budget.id"
+        :class="[
+          'rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300',
+          budget.is_over_budget
+            ? 'bg-red-50/50 border border-red-200/50 shadow-red-500/10'
+            : 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-emerald-500/10'
+        ]"
+      >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-              <UtensilsCrossed class="w-6 h-6 text-red-600" />
+            <div
+              class="w-12 h-12 rounded-xl flex items-center justify-center"
+              :style="{ backgroundColor: `${budget.category_info.color}20` }"
+            >
+              <component
+                :is="getIconComponent(budget.category_info.icon)"
+                class="w-6 h-6"
+                :style="{ color: budget.category_info.color }"
+              />
             </div>
             <div>
               <h4 class="font-bold text-slate-900 flex items-center gap-2">
-                Catering
-                <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-medium rounded-full">Over Budget</span>
+                {{ budget.category_info.name }}
+                <span
+                  v-if="budget.is_over_budget"
+                  class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-medium rounded-full"
+                >
+                  Over Budget
+                </span>
               </h4>
-              <p class="text-xs text-slate-500">Food and beverage expenses</p>
+              <p class="text-xs text-slate-500">{{ budget.category_info.description || 'No description' }}</p>
             </div>
           </div>
           <div v-if="canEdit" class="flex items-center gap-1">
-            <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+            <button
+              @click="editBudget(budget)"
+              class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+            >
               <Edit2 class="w-4 h-4" />
             </button>
-            <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+            <button
+              @click="confirmDeleteBudget(budget)"
+              class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+            >
               <Trash2 class="w-4 h-4" />
             </button>
           </div>
@@ -112,19 +95,32 @@
           <!-- Budget Amount -->
           <div class="flex items-center justify-between">
             <span class="text-sm text-slate-500">Budgeted</span>
-            <span class="text-lg font-bold text-slate-900">$8,000.00</span>
+            <span class="text-lg font-bold text-slate-900">{{ budget.currency === 'USD' ? '$' : '៛' }}{{ parseFloat(budget.budgeted_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
           </div>
 
           <!-- Spent Amount -->
           <div class="flex items-center justify-between">
             <span class="text-sm text-slate-500">Spent</span>
-            <span class="text-lg font-bold text-red-600">$8,500.00</span>
+            <span
+              class="text-lg font-bold"
+              :class="budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'"
+            >
+              {{ budget.currency === 'USD' ? '$' : '៛' }}{{ parseFloat(budget.spent_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+            </span>
           </div>
 
-          <!-- Over Budget Amount -->
-          <div class="flex items-center justify-between pb-3 border-b border-red-200">
-            <span class="text-sm text-slate-500">Over Budget</span>
-            <span class="text-lg font-bold text-red-600">-$500.00</span>
+          <!-- Remaining Amount -->
+          <div
+            class="flex items-center justify-between pb-3 border-b"
+            :class="budget.is_over_budget ? 'border-red-200' : 'border-slate-200'"
+          >
+            <span class="text-sm text-slate-500">{{ budget.is_over_budget ? 'Over Budget' : 'Remaining' }}</span>
+            <span
+              class="text-lg font-bold"
+              :class="budget.is_over_budget ? 'text-red-600' : 'text-blue-600'"
+            >
+              {{ budget.currency === 'USD' ? '$' : '៛' }}{{ Math.abs(parseFloat(budget.remaining_amount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+            </span>
           </div>
 
           <!-- Progress Bar -->
@@ -132,88 +128,35 @@
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-medium text-slate-600">Budget Usage</span>
               <div class="flex items-center gap-1">
-                <AlertTriangle class="w-3 h-3 text-red-600" />
-                <span class="text-xs font-bold text-red-600">106%</span>
+                <AlertTriangle v-if="budget.is_over_budget" class="w-3 h-3 text-red-600" />
+                <span
+                  class="text-xs font-bold"
+                  :class="budget.is_over_budget ? 'text-red-600' : budget.percentage_used >= 90 ? 'text-amber-600' : 'text-emerald-600'"
+                >
+                  {{ budget.percentage_used.toFixed(1) }}%
+                </span>
               </div>
             </div>
             <div class="relative h-2.5 bg-slate-200 rounded-full overflow-hidden">
-              <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-500" style="width: 100%"></div>
+              <div
+                class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                :class="budget.is_over_budget ? 'bg-gradient-to-r from-red-500 to-red-600' : budget.percentage_used >= 90 ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500'"
+                :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
+              ></div>
             </div>
           </div>
 
           <!-- Currency & Notes -->
-          <div class="pt-3 border-t border-red-200">
+          <div
+            class="pt-3 border-t"
+            :class="budget.is_over_budget ? 'border-red-200' : 'border-slate-200'"
+          >
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-1 text-slate-500">
                 <DollarSign class="w-3 h-3" />
-                <span>USD</span>
+                <span>{{ budget.currency }}</span>
               </div>
-              <span class="text-slate-400">Food and drinks for 200 guests</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Budget Card 3: Decoration -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6 hover:shadow-xl transition-all duration-300">
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Palette class="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <h4 class="font-bold text-slate-900">Decoration</h4>
-              <p class="text-xs text-slate-500">Floral arrangements, lighting, and décor</p>
-            </div>
-          </div>
-          <div v-if="canEdit" class="flex items-center gap-1">
-            <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-              <Edit2 class="w-4 h-4" />
-            </button>
-            <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-              <Trash2 class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-3">
-          <!-- Budget Amount -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Budgeted</span>
-            <span class="text-lg font-bold text-slate-900">$3,000.00</span>
-          </div>
-
-          <!-- Spent Amount -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Spent</span>
-            <span class="text-lg font-bold text-purple-600">$2,800.00</span>
-          </div>
-
-          <!-- Remaining Amount -->
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-            <span class="text-sm text-slate-500">Remaining</span>
-            <span class="text-lg font-bold text-blue-600">$200.00</span>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="pt-2">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-medium text-slate-600">Budget Usage</span>
-              <span class="text-xs font-bold text-purple-600">93%</span>
-            </div>
-            <div class="relative h-2.5 bg-slate-200 rounded-full overflow-hidden">
-              <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500" style="width: 93%"></div>
-            </div>
-          </div>
-
-          <!-- Currency & Notes -->
-          <div class="pt-3 border-t border-slate-200">
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1 text-slate-500">
-                <DollarSign class="w-3 h-3" />
-                <span>USD</span>
-              </div>
-              <span class="text-slate-400">Flowers, lighting, and table decorations</span>
+              <span class="text-slate-400 truncate max-w-[200px]">{{ budget.notes || 'No notes' }}</span>
             </div>
           </div>
         </div>
@@ -245,9 +188,9 @@
         >
           <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-xl font-bold text-slate-900">Add Budget</h3>
+              <h3 class="text-xl font-bold text-slate-900">{{ editingBudget ? 'Edit Budget' : 'Add Budget' }}</h3>
               <button
-                @click="showAddBudgetModal = false"
+                @click="closeModal"
                 class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
               >
                 <X class="w-5 h-5" />
@@ -255,20 +198,27 @@
             </div>
 
             <form @submit.prevent="handleAddBudget" class="space-y-4">
+              <!-- Error Message -->
+              <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                <p class="text-sm text-red-600">{{ error }}</p>
+              </div>
+
               <!-- Category Selection -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Category *</label>
                 <select
                   v-model="newBudget.category_id"
                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                   required
                 >
                   <option value="">Select a category</option>
-                  <option value="1">Venue</option>
-                  <option value="2">Catering</option>
-                  <option value="3">Decoration</option>
-                  <option value="4">Photography</option>
-                  <option value="5">Entertainment</option>
+                  <option
+                    v-for="category in categories"
+                    :key="category.id"
+                    :value="category.id"
+                  >
+                    {{ category.name }}
+                  </option>
                 </select>
               </div>
 
@@ -319,16 +269,18 @@
               <div class="flex items-center gap-3 pt-4">
                 <button
                   type="button"
-                  @click="showAddBudgetModal = false"
+                  @click="closeModal"
                   class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all"
+                  :disabled="submitting"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all"
+                  class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="submitting"
                 >
-                  Add Budget
+                  {{ submitting ? 'Saving...' : (editingBudget ? 'Update Budget' : 'Add Budget') }}
                 </button>
               </div>
             </form>
@@ -336,11 +288,71 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="deletingBudget"
+          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          @click.self="deletingBudget = null"
+        >
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <AlertCircle class="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Delete Budget?</h3>
+                <p class="text-sm text-slate-600">
+                  Are you sure you want to delete the budget for <strong>{{ deletingBudget.category_info.name }}</strong>?
+                  This action cannot be undone. Expenses will remain but won't have budget tracking.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                @click="deletingBudget = null"
+                class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all"
+                :disabled="submitting"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                @click="handleDelete"
+                class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="submitting"
+              >
+                {{ submitting ? 'Deleting...' : 'Delete' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Success Toast -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div
+          v-if="showSuccessToast"
+          class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
+        >
+          <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+            <Check class="w-4 h-4" />
+          </div>
+          <span class="font-medium">{{ successMessage }}</span>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import {
   Plus,
   Edit2,
@@ -350,8 +362,17 @@ import {
   UtensilsCrossed,
   Palette,
   AlertTriangle,
-  X
+  X,
+  AlertCircle,
+  Check
 } from 'lucide-vue-next'
+import {
+  expenseBudgetsService,
+  expenseCategoriesService,
+  type ExpenseBudget,
+  type ExpenseCategory,
+  type CreateExpenseBudgetRequest
+} from '@/services/api'
 
 interface Props {
   eventId: string
@@ -360,20 +381,197 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const loading = ref(false)
+const error = ref<string | null>(null)
+const budgets = ref<ExpenseBudget[]>([])
+const categories = ref<ExpenseCategory[]>([])
 const showAddBudgetModal = ref(false)
+const showSuccessToast = ref(false)
+const successMessage = ref('')
+const submitting = ref(false)
+const editingBudget = ref<ExpenseBudget | null>(null)
+const deletingBudget = ref<ExpenseBudget | null>(null)
 
 const newBudget = ref({
   category_id: '',
-  budgeted_amount: null,
-  currency: 'USD',
+  budgeted_amount: null as number | null,
+  currency: 'USD' as 'USD' | 'KHR',
   notes: ''
 })
 
-const handleAddBudget = () => {
-  // API logic will be added by vue-api-specialist agent
-  console.log('Adding budget:', newBudget.value)
-  showAddBudgetModal.value = false
+// Icon mapping for categories
+const iconMap: Record<string, any> = {
+  'fa-building': Building2,
+  'fa-utensils': UtensilsCrossed,
+  'fa-palette': Palette,
 }
+
+const getIconComponent = (icon?: string) => {
+  if (!icon) return Building2
+  return iconMap[icon] || Building2
+}
+
+const showSuccess = (message: string) => {
+  successMessage.value = message
+  showSuccessToast.value = true
+  setTimeout(() => {
+    showSuccessToast.value = false
+  }, 3000)
+}
+
+const loadBudgets = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const response = await expenseBudgetsService.getBudgets(props.eventId)
+
+    if (response.success && response.data) {
+      budgets.value = response.data.results
+    } else {
+      error.value = response.message || 'Failed to load budgets'
+    }
+  } catch (err) {
+    error.value = 'An unexpected error occurred while loading budgets'
+    console.error('Error loading budgets:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadCategories = async () => {
+  try {
+    const response = await expenseCategoriesService.getCategories()
+
+    if (response.success && response.data) {
+      categories.value = response.data.results
+    }
+  } catch (err) {
+    console.error('Error loading categories:', err)
+  }
+}
+
+const closeModal = () => {
+  showAddBudgetModal.value = false
+  editingBudget.value = null
+  error.value = null
+  newBudget.value = {
+    category_id: '',
+    budgeted_amount: null,
+    currency: 'USD',
+    notes: ''
+  }
+}
+
+const editBudget = (budget: ExpenseBudget) => {
+  editingBudget.value = budget
+  error.value = null
+  newBudget.value = {
+    category_id: budget.category.toString(),
+    budgeted_amount: parseFloat(budget.budgeted_amount),
+    currency: budget.currency,
+    notes: budget.notes || ''
+  }
+  showAddBudgetModal.value = true
+}
+
+const confirmDeleteBudget = (budget: ExpenseBudget) => {
+  deletingBudget.value = budget
+}
+
+const handleAddBudget = async () => {
+  if (!newBudget.value.category_id || !newBudget.value.budgeted_amount) {
+    error.value = 'Please fill in all required fields'
+    return
+  }
+
+  submitting.value = true
+  error.value = null
+
+  try {
+    const categoryId = parseInt(newBudget.value.category_id)
+
+    // API expects both 'category' and 'category_id' fields (backend requirement)
+    const requestData: any = {
+      category: categoryId,
+      category_id: categoryId,
+      budgeted_amount: newBudget.value.budgeted_amount,
+      currency: newBudget.value.currency,
+      notes: newBudget.value.notes || undefined
+    }
+
+    console.log('Submitting budget data:', requestData)
+
+    let response
+    if (editingBudget.value) {
+      response = await expenseBudgetsService.patchBudget(
+        props.eventId,
+        editingBudget.value.id,
+        requestData
+      )
+      if (response.success) {
+        showSuccess('Budget updated successfully!')
+      }
+    } else {
+      response = await expenseBudgetsService.createBudget(props.eventId, requestData)
+      if (response.success) {
+        showSuccess('Budget added successfully!')
+      }
+    }
+
+    console.log('Budget API response:', response)
+
+    if (response.success) {
+      closeModal()
+      await loadBudgets()
+    } else {
+      // Display specific field errors if available
+      if (response.errors) {
+        const errorMessages = Object.entries(response.errors)
+          .map(([field, messages]: [string, any]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('; ')
+        error.value = errorMessages || response.message || 'Failed to save budget'
+      } else {
+        error.value = response.message || 'Failed to save budget'
+      }
+    }
+  } catch (err: any) {
+    error.value = err.message || 'An unexpected error occurred'
+    console.error('Error saving budget:', err)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleDelete = async () => {
+  if (!deletingBudget.value) return
+
+  submitting.value = true
+
+  try {
+    const response = await expenseBudgetsService.deleteBudget(
+      props.eventId,
+      deletingBudget.value.id
+    )
+
+    if (response.success) {
+      showSuccess('Budget deleted successfully!')
+      deletingBudget.value = null
+      await loadBudgets()
+    } else {
+      error.value = response.message || 'Failed to delete budget'
+    }
+  } catch (err) {
+    error.value = 'An unexpected error occurred'
+    console.error('Error deleting budget:', err)
+  } finally {
+    submitting.value = false
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([loadBudgets(), loadCategories()])
+})
 </script>
 
 <style scoped>
@@ -395,5 +593,16 @@ const handleAddBudget = () => {
 .modal-enter-from > div,
 .modal-leave-to > div {
   transform: scale(0.9);
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(1rem);
 }
 </style>
