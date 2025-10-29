@@ -2225,6 +2225,7 @@ export interface ExpenseRecord {
 }
 
 export interface CreateExpenseRecordRequest {
+  category: number
   category_id: number
   description: string
   amount: number
@@ -2400,6 +2401,7 @@ export const expensesService = {
     if (receiptFile) {
       // Use FormData for file upload
       const formData = new FormData()
+      formData.append('category', data.category.toString())
       formData.append('category_id', data.category_id.toString())
       formData.append('description', data.description)
       formData.append('amount', data.amount.toString())
@@ -2429,6 +2431,8 @@ export const expensesService = {
       // Use FormData for file upload
       const formData = new FormData()
 
+      if (data.category !== undefined)
+        formData.append('category', data.category.toString())
       if (data.category_id !== undefined)
         formData.append('category_id', data.category_id.toString())
       if (data.description) formData.append('description', data.description)
