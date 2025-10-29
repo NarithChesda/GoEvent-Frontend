@@ -305,10 +305,45 @@ import {
   Music,
   Gift
 } from 'lucide-vue-next'
-import { expensesService, type ExpenseSummary } from '@/services/api'
+import {
+  expensesService,
+  expenseBudgetsService,
+  type ExpenseRecord,
+  type ExpenseBudget
+} from '@/services/api'
 
 interface Props {
   eventId: string
+}
+
+interface CategorySummary {
+  category_id: number
+  category_name: string
+  category_icon?: string
+  category_color?: string
+  currency: string
+  total_amount: number
+  expense_count: number
+  budget?: {
+    category_name: string
+    budgeted_amount: number
+    currency: string
+    spent_amount: number
+    remaining_amount: number
+    percentage_used: number
+    is_over_budget: boolean
+  }
+}
+
+interface ExpenseSummary {
+  categories: CategorySummary[]
+  overall_totals: {
+    [currency: string]: {
+      total_expenses: number
+      total_budget: number
+      expense_count: number
+    }
+  }
 }
 
 const props = defineProps<Props>()
@@ -345,17 +380,98 @@ const loadSummary = async () => {
   error.value = null
 
   try {
-    const response = await expensesService.getExpenseSummary(props.eventId)
+    // Fetch both budgets and expenses
+    const [budgetsResponse, expensesResponse] = await Promise.all([
+      expenseBudgetsService.getBudgets(props.eventId),
+      expensesService.getExpenses(props.eventId)
+    ])
 
-    if (response.success && response.data) {
-      summary.value = response.data
-      // Set default currency to the first available
-      const currencies = Object.keys(response.data.overall_totals)
-      if (currencies.length > 0) {
-        selectedCurrency.value = currencies[0]
+    if (!budgetsResponse.success || !expensesResponse.success) {
+      error.value = 'Failed to load expense data'
+      return
+    }
+
+    const budgets = budgetsResponse.data?.results || []
+    const expenses = expensesResponse.data?.results || []
+
+    // Build summary from budgets and expenses
+    const categoriesMap = new Map<string, CategorySummary>()
+    const overallTotals: ExpenseSummary['overall_totals'] = {}
+
+    // Process budgets first
+    budgets.forEach(budget => {
+      const key = `${budget.category}-${budget.currency}`
+      categoriesMap.set(key, {
+        category_id: budget.category,
+        category_name: budget.category_info.name,
+        category_icon: budget.category_info.icon,
+        category_color: budget.category_info.color,
+        currency: budget.currency,
+        total_amount: parseFloat(budget.spent_amount),
+        expense_count: 0,
+        budget: {
+          category_name: budget.category_info.name,
+          budgeted_amount: parseFloat(budget.budgeted_amount),
+          currency: budget.currency,
+          spent_amount: parseFloat(budget.spent_amount),
+          remaining_amount: parseFloat(budget.remaining_amount),
+          percentage_used: budget.percentage_used,
+          is_over_budget: budget.is_over_budget
+        }
+      })
+
+      // Initialize overall totals
+      if (!overallTotals[budget.currency]) {
+        overallTotals[budget.currency] = {
+          total_budget: 0,
+          total_expenses: 0,
+          expense_count: 0
+        }
       }
-    } else {
-      error.value = response.message || 'Failed to load expense summary'
+      overallTotals[budget.currency].total_budget += parseFloat(budget.budgeted_amount)
+    })
+
+    // Process expenses
+    expenses.forEach(expense => {
+      const key = `${expense.category}-${expense.currency}`
+
+      if (!categoriesMap.has(key)) {
+        // Category without budget
+        categoriesMap.set(key, {
+          category_id: expense.category,
+          category_name: expense.category_info.name,
+          category_icon: expense.category_info.icon,
+          category_color: expense.category_info.color,
+          currency: expense.currency,
+          total_amount: 0,
+          expense_count: 0
+        })
+      }
+
+      const category = categoriesMap.get(key)!
+      category.expense_count++
+
+      // Initialize overall totals if needed
+      if (!overallTotals[expense.currency]) {
+        overallTotals[expense.currency] = {
+          total_budget: 0,
+          total_expenses: 0,
+          expense_count: 0
+        }
+      }
+      overallTotals[expense.currency].total_expenses += parseFloat(expense.amount)
+      overallTotals[expense.currency].expense_count++
+    })
+
+    summary.value = {
+      categories: Array.from(categoriesMap.values()),
+      overall_totals: overallTotals
+    }
+
+    // Set default currency to the first available
+    const currencies = Object.keys(overallTotals)
+    if (currencies.length > 0) {
+      selectedCurrency.value = currencies[0]
     }
   } catch (err) {
     error.value = 'An unexpected error occurred while loading the summary'
@@ -406,16 +522,16 @@ const getBudgetedCategoriesCount = (currency: string): number => {
 }
 
 const getCategoryColor = (categoryId: number): string => {
-  // This would ideally come from the category info in the API response
-  // For now, return a default color based on category ID
-  const colors = ['#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#2ecc71']
-  return colors[categoryId % colors.length]
+  if (!summary.value) return '#3498db'
+  const category = summary.value.categories.find(cat => cat.category_id === categoryId)
+  return category?.category_color || '#3498db'
 }
 
 const getCategoryIcon = (categoryId: number): any => {
-  // This would ideally come from the category info in the API response
-  // For now, return a default icon
-  return null
+  if (!summary.value) return null
+  const category = summary.value.categories.find(cat => cat.category_id === categoryId)
+  if (!category?.category_icon) return null
+  return iconMap[category.category_icon] || null
 }
 
 onMounted(() => {
