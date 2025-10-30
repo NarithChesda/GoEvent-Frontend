@@ -405,7 +405,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'template', label: 'Template', icon: 'monitor' },
   { id: 'payment', label: 'Payment', icon: 'credit-card' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
-  { id: 'expenses', label: 'Expenses', icon: 'dollar-sign', mobileLabel: 'Expenses' },
+  { id: 'expenses', label: 'Expense Tracking', icon: 'dollar-sign', mobileLabel: 'Expenses' },
 ])
 
 // Computed properties
