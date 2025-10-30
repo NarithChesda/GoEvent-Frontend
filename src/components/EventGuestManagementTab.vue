@@ -91,9 +91,9 @@
 
     <!-- Content Area -->
     <div v-else class="min-h-[400px]">
-      <!-- Guest Groups View -->
+      <!-- Guests View (renamed from Guest Groups View) -->
       <GuestGroupsView
-        v-if="activeSubTab === 'groups'"
+        v-if="activeSubTab === 'guests'"
         :groups="groups"
         :loading-groups="loadingGroups"
         :page-size="PAGE_SIZE"
@@ -101,7 +101,6 @@
         :is-group-loading="isGroupLoading"
         :is-group-expanded="isGroupExpanded"
         :get-group-pagination="getGroupPagination"
-        @create-group="showCreateGroupModal = true"
         @add-guest="showAddGuestModal = true"
         @toggle-group="handleGroupToggle"
         @edit-group="openEditGroupModal"
@@ -116,6 +115,17 @@
         @bulk-mark-sent="handleBulkMarkSent"
         @bulk-delete="handleBulkDelete"
         @register-group-card="(groupId, el) => groupCardRefs.set(groupId, el)"
+      />
+
+      <!-- Guest Groups Management View (new) -->
+      <GuestGroupsManagementView
+        v-if="activeSubTab === 'groups'"
+        :groups="groups"
+        :loading-groups="loadingGroups"
+        @create-group="handleCreateGroupFromManagement"
+        @update-group="handleUpdateGroupFromManagement"
+        @delete-group="handleDeleteGroupFromManagement"
+        @reload-groups="loadGroups"
       />
 
       <!-- Statistics View -->
@@ -244,6 +254,7 @@ import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
 import EditGroupModal from './invitation/EditGroupModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
+import GuestGroupsManagementView from './invitation/GuestGroupsManagementView.vue'
 import GuestStatisticsView from './invitation/GuestStatisticsView.vue'
 import GuestCashGiftView from './invitation/GuestCashGiftView.vue'
 
@@ -306,7 +317,7 @@ const {
 } = useBulkImport(props.eventId)
 
 // Local state
-const activeSubTab = ref('groups')
+const activeSubTab = ref('guests')
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showAddGuestModal = ref(false)
 const showCreateGroupModal = ref(false)
@@ -316,6 +327,7 @@ const groupCardRefs = new Map<number, any>()
 
 // Sub-tabs configuration
 const subTabs = [
+  { id: 'guests', label: 'Guests', icon: UserPlus },
   { id: 'groups', label: 'Guest Groups', icon: Users },
   { id: 'statistics', label: 'Statistics', icon: BarChart3 },
   { id: 'cash-gifts', label: 'Cash Gifts', icon: DollarSign },
@@ -725,6 +737,46 @@ const handleBulkDelete = async (groupId: number) => {
 
   // Clear selections
   groupCard.clearSelection()
+}
+
+const handleCreateGroupFromManagement = async (data: { name: string; description?: string; color: string }) => {
+  const response = await createGroup({
+    name: data.name,
+    description: data.description,
+    color: data.color,
+    order: groups.value.length + 1,
+  })
+
+  if (response.success && response.data) {
+    showMessage('success', `Group "${response.data.name}" created`)
+    await loadGroups()
+  } else {
+    showMessage('error', response.message || 'Failed to create group')
+  }
+}
+
+const handleUpdateGroupFromManagement = async (groupId: number, data: { name: string; description?: string; color: string }) => {
+  const response = await updateGroup(groupId, data)
+
+  if (response.success && response.data) {
+    showMessage('success', `Group "${response.data.name}" updated`)
+    await loadGroups()
+  } else {
+    showMessage('error', response.message || 'Failed to update group')
+  }
+}
+
+const handleDeleteGroupFromManagement = async (groupId: number) => {
+  const response = await deleteGroup(groupId)
+
+  if (response.success) {
+    const group = groups.value.find(g => g.id === groupId)
+    showMessage('success', `Group "${group?.name || ''}" deleted`)
+    await loadGuestStats()
+    await loadGroups()
+  } else {
+    showMessage('error', response.message || 'Failed to delete group')
+  }
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {

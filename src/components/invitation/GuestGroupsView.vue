@@ -3,17 +3,9 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4">
       <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
         <Users class="w-5 h-5 text-[#1e90ff] mr-2" />
-        Guest Groups
+        Guests
       </h3>
       <div class="flex items-center gap-2">
-        <button
-          @click="$emit('create-group')"
-          class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg inline-flex items-center text-sm"
-        >
-          <UserPlus class="w-4 h-4 mr-1.5 sm:mr-2" />
-          <span class="hidden sm:inline">Create Group</span>
-          <span class="sm:hidden">Group</span>
-        </button>
         <button
           @click="$emit('add-guest')"
           class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
@@ -33,9 +25,9 @@
 
     <div v-else-if="groups.length === 0" class="text-center py-8 sm:py-12">
       <Users class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
-      <p class="text-sm sm:text-base text-slate-500">No guest groups yet</p>
+      <p class="text-sm sm:text-base text-slate-500">No guests yet</p>
       <p class="text-xs sm:text-sm text-slate-400 mt-1">
-        Create a group before adding guests
+        Add your first guest to get started
       </p>
     </div>
 
@@ -92,7 +84,6 @@ interface Props {
 defineProps<Props>()
 
 defineEmits<{
-  'create-group': []
   'add-guest': []
   'toggle-group': [groupId: number]
   'edit-group': [group: GuestGroup]
