@@ -69,13 +69,28 @@
       </div>
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty State - Add Expense Card -->
+    <div
+      v-else-if="filteredExpenses.length === 0 && canEdit"
+      @click="showAddExpenseModal = true"
+      class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group"
+    >
+      <div class="flex flex-col items-center justify-center">
+        <div class="w-16 h-16 bg-slate-200 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300">
+          <Plus class="w-8 h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+        </div>
+        <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Add New Expense</h4>
+        <p class="text-sm text-slate-400 mt-1">{{ searchQuery || activeFilter !== 'all' ? 'No expenses match your filters. Click to add one.' : 'Start tracking expenses for your event' }}</p>
+      </div>
+    </div>
+
+    <!-- Empty State - No Edit Permission -->
     <div v-else-if="filteredExpenses.length === 0" class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 text-center">
       <div class="w-16 h-16 bg-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <AlertCircle class="w-8 h-8 text-slate-400" />
       </div>
       <h4 class="font-semibold text-slate-600 mb-2">No Expenses Found</h4>
-      <p class="text-sm text-slate-400">{{ searchQuery || activeFilter !== 'all' ? 'Try adjusting your filters' : 'Start by adding your first expense' }}</p>
+      <p class="text-sm text-slate-400">{{ searchQuery || activeFilter !== 'all' ? 'Try adjusting your filters' : 'No expenses have been added yet' }}</p>
     </div>
 
     <!-- Expense List -->
@@ -675,12 +690,23 @@ const deletingExpense = ref<ExpenseRecord | null>(null)
 const selectedFile = ref<File | null>(null)
 const receiptInput = ref<HTMLInputElement | null>(null)
 
-const categoryFilters = [
-  { id: 'all', label: 'All Categories', icon: Filter },
-  { id: 'venue', label: 'Venue', icon: Building2 },
-  { id: 'catering', label: 'Catering', icon: UtensilsCrossed },
-  { id: 'decoration', label: 'Decoration', icon: Palette },
-]
+// Computed category filters based on loaded categories
+const categoryFilters = computed(() => {
+  const filters = [
+    { id: 'all', label: 'All Categories', icon: Filter }
+  ]
+
+  // Add all loaded categories
+  categories.value.forEach(category => {
+    filters.push({
+      id: category.id.toString(),
+      label: category.name,
+      icon: getIconComponent(category.icon)
+    })
+  })
+
+  return filters
+})
 
 const newExpense = ref({
   category_id: '',
@@ -722,7 +748,7 @@ const filteredExpenses = computed(() => {
   // Filter by category
   if (activeFilter.value !== 'all') {
     result = result.filter(expense =>
-      expense.category_info.name.toLowerCase() === activeFilter.value.toLowerCase()
+      expense.category.toString() === activeFilter.value
     )
   }
 
