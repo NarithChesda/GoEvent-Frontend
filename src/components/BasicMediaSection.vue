@@ -74,10 +74,11 @@
             'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
             canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
           ]">
-            <ImageIcon :class="[
+            <Plus v-if="canEdit" :class="[
               'w-8 h-8 transition-colors',
-              canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+              'text-slate-400 group-hover:text-emerald-600'
             ]" />
+            <ImageIcon v-else class="w-8 h-8 text-slate-400" />
           </div>
           <p :class="[
             'font-semibold transition-colors',
@@ -164,10 +165,11 @@
               'w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300',
               canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
             ]">
-              <ImageIcon :class="[
+              <Plus v-if="canEdit" :class="[
                 'w-6 h-6 transition-colors',
-                canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+                'text-slate-400 group-hover:text-emerald-600'
               ]" />
+              <ImageIcon v-else class="w-6 h-6 text-slate-400" />
             </div>
             <p :class="[
               'text-sm font-semibold transition-colors',
@@ -252,10 +254,11 @@
               'w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300',
               canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
             ]">
-              <ImageIcon :class="[
+              <Plus v-if="canEdit" :class="[
                 'w-6 h-6 transition-colors',
-                canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+                'text-slate-400 group-hover:text-emerald-600'
               ]" />
+              <ImageIcon v-else class="w-6 h-6 text-slate-400" />
             </div>
             <p :class="[
               'text-sm font-semibold transition-colors',
@@ -343,10 +346,11 @@
             'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
             canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
           ]">
-            <Play :class="[
+            <Plus v-if="canEdit" :class="[
               'w-8 h-8 transition-colors',
-              canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+              'text-slate-400 group-hover:text-emerald-600'
             ]" />
+            <Play v-else class="w-8 h-8 text-slate-400" />
           </div>
           <p :class="[
             'font-semibold transition-colors',
@@ -434,10 +438,11 @@
             'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
             canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
           ]">
-            <Music :class="[
+            <Plus v-if="canEdit" :class="[
               'w-8 h-8 transition-colors',
-              canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+              'text-slate-400 group-hover:text-emerald-600'
             ]" />
+            <Music v-else class="w-8 h-8 text-slate-400" />
           </div>
           <p :class="[
             'font-semibold transition-colors',
@@ -478,7 +483,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { Upload, ImageIcon, Play, Music, X, AlertCircle, MoreHorizontal } from 'lucide-vue-next'
+import { Upload, ImageIcon, Play, Music, X, AlertCircle, MoreHorizontal, Plus } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
