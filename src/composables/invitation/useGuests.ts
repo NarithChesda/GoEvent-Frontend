@@ -23,6 +23,15 @@ export function useGuests(eventId: string) {
   const loadingStats = ref(false)
   const groupPagination = ref<Map<number, GroupPagination>>(new Map())
 
+  // Separate pagination state for "All Groups" view
+  const allGroupsPagination = ref<GroupPagination>({
+    currentPage: 1,
+    totalCount: 0,
+    guests: [],
+    loading: false,
+    searchTerm: '',
+  })
+
   const getGroupPagination = (groupId: number): GroupPagination => {
     if (!groupPagination.value.has(groupId)) {
       groupPagination.value.set(groupId, {
@@ -85,6 +94,40 @@ export function useGuests(eventId: string) {
     }
   }
 
+  const loadAllGuests = async (page: number = 1, silent: boolean = false) => {
+    // Only show loading state if not silent (silent is used for pagination)
+    if (!silent) {
+      allGroupsPagination.value.loading = true
+    }
+
+    try {
+      const response = await guestService.getGuests(eventId, {
+        // No group filter - loads all guests
+        ordering: 'name',
+        page: page,
+        page_size: PAGE_SIZE,
+        search: allGroupsPagination.value.searchTerm || undefined,
+      })
+
+      if (response.success && response.data) {
+        // Update data atomically to prevent flicker
+        allGroupsPagination.value.guests = response.data.results
+        allGroupsPagination.value.totalCount = response.data.count
+        allGroupsPagination.value.currentPage = page
+      }
+
+      return response
+    } catch (error) {
+      console.error('Error loading all guests:', error)
+      return {
+        success: false,
+        message: 'Failed to load guests',
+      } as ApiResponse<PaginatedResponse<EventGuest>>
+    } finally {
+      allGroupsPagination.value.loading = false
+    }
+  }
+
   const loadGuestStats = async () => {
     loadingStats.value = true
     try {
@@ -117,6 +160,10 @@ export function useGuests(eventId: string) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
         }
+        // Refresh All Guests pagination if it's been loaded
+        if (allGroupsPagination.value.guests.length > 0) {
+          await loadAllGuests(allGroupsPagination.value.currentPage, true)
+        }
       }
 
       return response
@@ -146,6 +193,10 @@ export function useGuests(eventId: string) {
             await loadGuestsForGroup(data.group, currentPage, true)
           }
         }
+        // Refresh All Guests pagination if it's been loaded
+        if (allGroupsPagination.value.guests.length > 0) {
+          await loadAllGuests(allGroupsPagination.value.currentPage, true)
+        }
       }
 
       return response
@@ -168,6 +219,10 @@ export function useGuests(eventId: string) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
         }
+        // Refresh All Guests pagination if it's been loaded
+        if (allGroupsPagination.value.guests.length > 0) {
+          await loadAllGuests(allGroupsPagination.value.currentPage, true)
+        }
       }
 
       return response
@@ -189,6 +244,10 @@ export function useGuests(eventId: string) {
         if (groupPagination.value.has(groupId)) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage, true)
+        }
+        // Refresh All Guests pagination if it's been loaded
+        if (allGroupsPagination.value.guests.length > 0) {
+          await loadAllGuests(allGroupsPagination.value.currentPage, true)
         }
         // Also refresh stats to update the count
         await loadGuestStats()
@@ -239,11 +298,39 @@ export function useGuests(eventId: string) {
     loadGuestsForGroup(groupId, 1, true)
   }
 
+  // All Groups pagination functions
+  const nextAllGuestsPage = () => {
+    const totalPages = Math.ceil(allGroupsPagination.value.totalCount / PAGE_SIZE)
+    if (allGroupsPagination.value.currentPage < totalPages) {
+      loadAllGuests(allGroupsPagination.value.currentPage + 1, true)
+    }
+  }
+
+  const previousAllGuestsPage = () => {
+    if (allGroupsPagination.value.currentPage > 1) {
+      loadAllGuests(allGroupsPagination.value.currentPage - 1, true)
+    }
+  }
+
+  const setAllGuestsSearchTerm = (searchTerm: string) => {
+    allGroupsPagination.value.searchTerm = searchTerm
+    // Reset to page 1 when searching
+    loadAllGuests(1, true)
+  }
+
+  const getAllGuestsPagination = () => {
+    return allGroupsPagination.value
+  }
+
+  const isAllGuestsLoading = () => {
+    return allGroupsPagination.value.loading
+  }
+
   return {
     guests,
     guestStats,
     loadingStats,
-    groupPagination,
+    groupPagination, // Export for external access to pagination state
     PAGE_SIZE,
     getGroupPagination,
     getGroupTotalPages,
@@ -260,5 +347,12 @@ export function useGuests(eventId: string) {
     previousGroupPage,
     setGroupSearchTerm,
     clearGroupSearch,
+    // All Groups pagination
+    loadAllGuests,
+    getAllGuestsPagination,
+    isAllGuestsLoading,
+    nextAllGuestsPage,
+    previousAllGuestsPage,
+    setAllGuestsSearchTerm,
   }
 }
