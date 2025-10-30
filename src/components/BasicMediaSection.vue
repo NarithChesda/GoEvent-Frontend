@@ -454,13 +454,6 @@
       </div>
     </div>
 
-    <!-- Payment Methods Section -->
-    <PaymentMethodsSection
-      v-if="eventData?.id"
-      :event-id="eventData.id"
-      :can-edit="canEdit"
-    />
-
     <!-- Error Display -->
     <div v-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-4">
       <div class="flex items-center space-x-2">
@@ -486,7 +479,6 @@ import { ref, watch } from 'vue'
 import { Upload, ImageIcon, Play, Music, X, AlertCircle, MoreHorizontal, Plus } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import PaymentMethodsSection from './PaymentMethodsSection.vue'
 
 interface Props {
   eventData?: Event

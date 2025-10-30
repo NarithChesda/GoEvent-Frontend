@@ -65,6 +65,18 @@
             <Video class="w-4 h-4" />
             <span>Videos & Maps</span>
           </button>
+          <button
+            @click="activeSection = 'payment'"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSection === 'payment'
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <CreditCard class="w-4 h-4" />
+            <span>Event Payment</span>
+          </button>
         </div>
       </div>
     </div>
@@ -164,6 +176,15 @@
           @updated="handleEventUpdated"
         />
       </div>
+
+      <!-- Event Payment Section -->
+      <div v-if="activeSection === 'payment'">
+        <PaymentMethodsSection
+          v-if="localEventData?.id"
+          :event-id="localEventData.id"
+          :can-edit="canEdit"
+        />
+      </div>
     </div>
 
     <!-- Upload Modal -->
@@ -211,7 +232,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle } from 'lucide-vue-next'
+import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle, CreditCard } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
@@ -219,6 +240,7 @@ import EditMediaModal from './EditMediaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import BasicMediaSection from './BasicMediaSection.vue'
 import EmbedsSection from './EmbedsSection.vue'
+import PaymentMethodsSection from './PaymentMethodsSection.vue'
 
 interface Props {
   eventId?: string
@@ -239,7 +261,7 @@ const emit = defineEmits<Emits>()
 const media = ref<EventPhoto[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const activeSection = ref<'basic' | 'gallery' | 'embeds'>('basic')
+const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment'>('basic')
 const showUploadModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)

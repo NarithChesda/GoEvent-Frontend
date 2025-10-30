@@ -1,67 +1,66 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4 sm:mb-6">
-      <div>
-        <h5 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center">
-          <CreditCard class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-          Payment Methods
-        </h5>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">
-          Manage payment options for gifts, donations, and sponsorships
-        </p>
-      </div>
-      <button
-        v-if="canEdit"
-        @click="showAddModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-1.5 sm:space-x-2 text-sm sm:text-base"
-      >
-        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-        <span class="hidden sm:inline">Add Payment Method</span>
-        <span class="sm:hidden">Add</span>
-      </button>
+    <div class="mb-6">
+      <h5 class="font-semibold text-slate-900">Payment Methods</h5>
+      <p class="text-sm text-slate-600">Add payment options for gifts, donations, and sponsorships</p>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center py-6 sm:py-8">
-      <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+    <div v-if="loading">
+      <div class="flex justify-center py-6 sm:py-8">
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+      </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-3 sm:mb-4">
-      <div class="flex items-center space-x-2">
-        <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-        <div class="flex-1">
-          <p class="text-xs sm:text-sm text-red-600 font-medium">{{ error }}</p>
-          <button
-            @click="loadPaymentMethods"
-            class="text-red-600 text-xs sm:text-sm hover:text-red-700 underline mt-1"
-          >
-            Try again
-          </button>
+    <div v-else-if="error">
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-4">
+        <div class="flex items-center space-x-2">
+          <AlertCircle class="w-5 h-5 text-red-500" />
+          <div class="flex-1">
+            <p class="text-sm text-red-600 font-medium">{{ error }}</p>
+            <button
+              @click="loadPaymentMethods"
+              class="text-red-600 text-sm hover:text-red-700 underline mt-1"
+            >
+              Try again
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="paymentMethods.length === 0" class="text-center py-8 sm:py-12">
+    <div v-else-if="paymentMethods.length === 0">
       <div
-        class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4"
+        @click="canEdit ? showAddModal = true : null"
+        :class="[
+          'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+          canEdit
+            ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+            : 'border-slate-300 bg-slate-50'
+        ]"
       >
-        <CreditCard class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
+        <div class="flex flex-col items-center justify-center min-h-[120px]">
+          <div :class="[
+            'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
+            canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+          ]">
+            <Plus v-if="canEdit" :class="[
+              'w-8 h-8 transition-colors',
+              'text-slate-400 group-hover:text-emerald-600'
+            ]" />
+            <CreditCard v-else class="w-8 h-8 text-slate-400" />
+          </div>
+          <p :class="[
+            'font-semibold transition-colors',
+            canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+          ]">No payment methods added</p>
+          <p class="text-sm text-slate-500 mt-1">Add payment options for gifts, donations, and sponsorships</p>
+          <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to add</p>
+        </div>
       </div>
-      <h3 class="text-base sm:text-lg font-medium text-slate-900 mb-1.5 sm:mb-2">No Payment Methods</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4 px-4">
-        Add payment methods to allow guests to send gifts or make donations
-      </p>
-      <button
-        v-if="canEdit"
-        @click="showAddModal = true"
-        class="inline-flex items-center space-x-1.5 sm:space-x-2 bg-[#1e90ff] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-xl hover:bg-[#1873cc] transition-colors duration-200 text-sm sm:text-base"
-      >
-        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-        <span>Add First Payment Method</span>
-      </button>
     </div>
 
     <!-- Payment Methods List -->
@@ -235,6 +234,21 @@
                 <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Add Another Payment Method Button -->
+        <div
+          v-if="canEdit"
+          @click="showAddModal = true"
+          class="border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
+        >
+          <div class="flex flex-col items-center justify-center">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
+              <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
+            </div>
+            <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">Add Another Payment Method</p>
+            <p class="text-xs text-slate-400 mt-1">Click to add</p>
           </div>
         </div>
       </div>
