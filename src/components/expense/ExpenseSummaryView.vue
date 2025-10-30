@@ -289,7 +289,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   Wallet,
   TrendingUp,
@@ -311,6 +311,7 @@ import {
   type ExpenseRecord,
   type ExpenseBudget
 } from '@/services/api'
+import { useExpenseIcons } from '@/composables/useExpenseIcons'
 
 interface Props {
   eventId: string
@@ -352,16 +353,10 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const summary = ref<ExpenseSummary | null>(null)
 const selectedCurrency = ref<string>('USD')
+const abortController = ref<AbortController | null>(null)
 
-// Icon mapping for categories
-const iconMap: Record<string, any> = {
-  'fa-building': Building2,
-  'fa-utensils': UtensilsCrossed,
-  'fa-palette': Palette,
-  'fa-camera': Camera,
-  'fa-music': Music,
-  'fa-gift': Gift,
-}
+// Use shared icon utilities
+const { getIconComponent: getIconComp } = useExpenseIcons()
 
 const filteredCategories = computed(() => {
   if (!summary.value) return []
@@ -376,6 +371,12 @@ const topExpenseCategories = computed(() => {
 })
 
 const loadSummary = async () => {
+  // Cancel previous request if exists
+  if (abortController.value) {
+    abortController.value.abort()
+  }
+
+  abortController.value = new AbortController()
   loading.value = true
   error.value = null
 
@@ -385,6 +386,11 @@ const loadSummary = async () => {
       expenseBudgetsService.getBudgets(props.eventId),
       expensesService.getExpenses(props.eventId)
     ])
+
+    // Check if request was cancelled
+    if (abortController.value?.signal.aborted) {
+      return
+    }
 
     if (!budgetsResponse.success || !expensesResponse.success) {
       error.value = 'Failed to load expense data'
@@ -473,7 +479,11 @@ const loadSummary = async () => {
     if (currencies.length > 0) {
       selectedCurrency.value = currencies[0]
     }
-  } catch (err) {
+  } catch (err: any) {
+    // Don't show error if request was aborted
+    if (err.name === 'AbortError' || abortController.value?.signal.aborted) {
+      return
+    }
     error.value = 'An unexpected error occurred while loading the summary'
     console.error('Error loading expense summary:', err)
   } finally {
@@ -531,10 +541,17 @@ const getCategoryIcon = (categoryId: number): any => {
   if (!summary.value) return null
   const category = summary.value.categories.find(cat => cat.category_id === categoryId)
   if (!category?.category_icon) return null
-  return iconMap[category.category_icon] || null
+  return getIconComp(category.category_icon)
 }
 
 onMounted(() => {
   loadSummary()
+})
+
+onUnmounted(() => {
+  // Abort any pending requests to prevent race conditions
+  if (abortController.value) {
+    abortController.value.abort()
+  }
 })
 </script>

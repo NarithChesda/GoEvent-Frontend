@@ -295,7 +295,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import {
   Plus,
   Edit2,
@@ -311,6 +311,7 @@ import {
   Check
 } from 'lucide-vue-next'
 import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
+import { useExpenseIcons } from '@/composables/useExpenseIcons'
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -321,6 +322,9 @@ const successMessage = ref('')
 const submitting = ref(false)
 const editingCategory = ref<ExpenseCategory | null>(null)
 const deletingCategory = ref<ExpenseCategory | null>(null)
+
+// Use shared icon utilities
+const { getIconComponent } = useExpenseIcons()
 
 const formData = ref({
   name: '',
@@ -347,20 +351,6 @@ const colorOptions = [
   '#607d8b', // Blue Gray
   '#673ab7', // Deep Purple
 ]
-
-// Icon mapping - map Font Awesome icons to Lucide icons
-const iconMap: Record<string, any> = {
-  'fa-building': Building2,
-  'fa-utensils': UtensilsCrossed,
-  'fa-palette': Palette,
-  'fa-camera': Camera,
-  'fa-music': Music,
-}
-
-const getIconComponent = (icon?: string) => {
-  if (!icon) return null
-  return iconMap[icon] || null
-}
 
 const loadCategories = async () => {
   loading.value = true
@@ -480,6 +470,14 @@ const handleDelete = async () => {
 
 onMounted(() => {
   loadCategories()
+})
+
+onUnmounted(() => {
+  // Clean up modals and toasts to prevent memory leaks
+  showAddCategoryModal.value = false
+  deletingCategory.value = null
+  showSuccessToast.value = false
+  editingCategory.value = null
 })
 </script>
 

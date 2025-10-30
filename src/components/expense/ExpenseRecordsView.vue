@@ -640,7 +640,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import {
   Plus,
   Search,
@@ -667,6 +667,8 @@ import {
   type ExpenseCategory,
   type CreateExpenseRecordRequest
 } from '@/services/api'
+import { useExpenseIcons } from '@/composables/useExpenseIcons'
+import { formatPaymentMethod } from '@/constants/paymentMethods'
 
 interface Props {
   eventId: string
@@ -689,6 +691,9 @@ const editingExpense = ref<ExpenseRecord | null>(null)
 const deletingExpense = ref<ExpenseRecord | null>(null)
 const selectedFile = ref<File | null>(null)
 const receiptInput = ref<HTMLInputElement | null>(null)
+
+// Use shared icon utilities
+const { getIconComponent } = useExpenseIcons()
 
 // Computed category filters based on loaded categories
 const categoryFilters = computed(() => {
@@ -718,18 +723,6 @@ const newExpense = ref({
   paid_to: '',
   notes: ''
 })
-
-// Icon mapping for categories
-const iconMap: Record<string, any> = {
-  'fa-building': Building2,
-  'fa-utensils': UtensilsCrossed,
-  'fa-palette': Palette,
-}
-
-const getIconComponent = (icon?: string) => {
-  if (!icon) return Building2
-  return iconMap[icon] || Building2
-}
 
 // Computed filtered expenses
 const filteredExpenses = computed(() => {
@@ -852,11 +845,11 @@ const handleAddExpense = async () => {
     const categoryId = parseInt(newExpense.value.category_id)
 
     // API expects both 'category' and 'category_id' fields (backend requirement)
-    const requestData: any = {
+    const requestData: CreateExpenseRecordRequest = {
       category: categoryId,
       category_id: categoryId,
       description: newExpense.value.description,
-      amount: newExpense.value.amount,
+      amount: newExpense.value.amount!,
       currency: newExpense.value.currency,
       date: newExpense.value.date,
       payment_method: newExpense.value.payment_method,
@@ -864,7 +857,9 @@ const handleAddExpense = async () => {
       notes: newExpense.value.notes || undefined
     }
 
-    console.log('Submitting expense data:', requestData, 'Receipt:', selectedFile.value)
+    if (import.meta.env.DEV) {
+      console.log('Submitting expense data:', requestData, 'Receipt:', selectedFile.value)
+    }
 
     let response
     if (editingExpense.value) {
@@ -888,7 +883,9 @@ const handleAddExpense = async () => {
       }
     }
 
-    console.log('Expense API response:', response)
+    if (import.meta.env.DEV) {
+      console.log('Expense API response:', response)
+    }
 
     if (response.success) {
       closeModal()
@@ -897,15 +894,15 @@ const handleAddExpense = async () => {
       // Display specific field errors if available
       if (response.errors) {
         const errorMessages = Object.entries(response.errors)
-          .map(([field, messages]: [string, any]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .map(([field, messages]: [string, string[] | string]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
           .join('; ')
         error.value = errorMessages || response.message || 'Failed to save expense'
       } else {
         error.value = response.message || 'Failed to save expense'
       }
     }
-  } catch (err: any) {
-    error.value = err.message || 'An unexpected error occurred'
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'An unexpected error occurred'
     console.error('Error saving expense:', err)
   } finally {
     submitting.value = false
@@ -938,20 +935,17 @@ const handleDelete = async () => {
   }
 }
 
-const formatPaymentMethod = (method: string) => {
-  const methods: Record<string, string> = {
-    'cash': 'Cash',
-    'bank_transfer': 'Bank Transfer',
-    'credit_card': 'Credit Card',
-    'mobile_payment': 'Mobile Payment',
-    'check': 'Check',
-    'other': 'Other'
-  }
-  return methods[method] || method
-}
-
 onMounted(async () => {
   await Promise.all([loadExpenses(), loadCategories()])
+})
+
+onUnmounted(() => {
+  // Clean up modals and toasts to prevent memory leaks
+  showAddExpenseModal.value = false
+  deletingExpense.value = null
+  showSuccessToast.value = false
+  editingExpense.value = null
+  selectedFile.value = null
 })
 </script>
 

@@ -352,7 +352,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import {
   Plus,
   Edit2,
@@ -373,6 +373,7 @@ import {
   type ExpenseCategory,
   type CreateExpenseBudgetRequest
 } from '@/services/api'
+import { useExpenseIcons } from '@/composables/useExpenseIcons'
 
 interface Props {
   eventId: string
@@ -392,24 +393,15 @@ const submitting = ref(false)
 const editingBudget = ref<ExpenseBudget | null>(null)
 const deletingBudget = ref<ExpenseBudget | null>(null)
 
+// Use shared icon utilities
+const { getIconComponent } = useExpenseIcons()
+
 const newBudget = ref({
   category_id: '',
   budgeted_amount: null as number | null,
   currency: 'USD' as 'USD' | 'KHR',
   notes: ''
 })
-
-// Icon mapping for categories
-const iconMap: Record<string, any> = {
-  'fa-building': Building2,
-  'fa-utensils': UtensilsCrossed,
-  'fa-palette': Palette,
-}
-
-const getIconComponent = (icon?: string) => {
-  if (!icon) return Building2
-  return iconMap[icon] || Building2
-}
 
 const showSuccess = (message: string) => {
   successMessage.value = message
@@ -492,15 +484,17 @@ const handleAddBudget = async () => {
     const categoryId = parseInt(newBudget.value.category_id)
 
     // API expects both 'category' and 'category_id' fields (backend requirement)
-    const requestData: any = {
+    const requestData: CreateExpenseBudgetRequest & { category: number } = {
       category: categoryId,
       category_id: categoryId,
-      budgeted_amount: newBudget.value.budgeted_amount,
+      budgeted_amount: newBudget.value.budgeted_amount!,
       currency: newBudget.value.currency,
       notes: newBudget.value.notes || undefined
     }
 
-    console.log('Submitting budget data:', requestData)
+    if (import.meta.env.DEV) {
+      console.log('Submitting budget data:', requestData)
+    }
 
     let response
     if (editingBudget.value) {
@@ -519,7 +513,9 @@ const handleAddBudget = async () => {
       }
     }
 
-    console.log('Budget API response:', response)
+    if (import.meta.env.DEV) {
+      console.log('Budget API response:', response)
+    }
 
     if (response.success) {
       closeModal()
@@ -528,15 +524,15 @@ const handleAddBudget = async () => {
       // Display specific field errors if available
       if (response.errors) {
         const errorMessages = Object.entries(response.errors)
-          .map(([field, messages]: [string, any]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .map(([field, messages]: [string, string[] | string]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
           .join('; ')
         error.value = errorMessages || response.message || 'Failed to save budget'
       } else {
         error.value = response.message || 'Failed to save budget'
       }
     }
-  } catch (err: any) {
-    error.value = err.message || 'An unexpected error occurred'
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'An unexpected error occurred'
     console.error('Error saving budget:', err)
   } finally {
     submitting.value = false
@@ -571,6 +567,14 @@ const handleDelete = async () => {
 
 onMounted(async () => {
   await Promise.all([loadBudgets(), loadCategories()])
+})
+
+onUnmounted(() => {
+  // Clean up modals and toasts to prevent memory leaks
+  showAddBudgetModal.value = false
+  deletingBudget.value = null
+  showSuccessToast.value = false
+  editingBudget.value = null
 })
 </script>
 
