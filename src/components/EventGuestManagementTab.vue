@@ -101,6 +101,9 @@
         :is-group-loading="isGroupLoading"
         :is-group-expanded="isGroupExpanded"
         :get-group-pagination="getGroupPagination"
+        :get-all-guests-pagination="getAllGuestsPagination"
+        :is-all-guests-loading="isAllGuestsLoading"
+        :load-all-guests="loadAllGuests"
         @add-guest="showAddGuestModal = true"
         @toggle-group="handleGroupToggle"
         @edit-group="openEditGroupModal"
@@ -112,6 +115,9 @@
         @next-page="nextGroupPage"
         @previous-page="previousGroupPage"
         @search="handleGroupSearch"
+        @next-all-page="nextAllGuestsPage"
+        @previous-all-page="previousAllGuestsPage"
+        @search-all="setAllGuestsSearchTerm"
         @bulk-mark-sent="handleBulkMarkSent"
         @bulk-delete="handleBulkDelete"
         @register-group-card="(groupId, el) => groupCardRefs.set(groupId, el)"
@@ -287,6 +293,7 @@ const {
 const {
   guestStats,
   loadingStats,
+  groupPagination,
   PAGE_SIZE,
   getGroupPagination,
   getGroupTotalPages,
@@ -301,6 +308,13 @@ const {
   nextGroupPage,
   previousGroupPage,
   setGroupSearchTerm,
+  // All Groups pagination
+  loadAllGuests,
+  getAllGuestsPagination,
+  isAllGuestsLoading,
+  nextAllGuestsPage,
+  previousAllGuestsPage,
+  setAllGuestsSearchTerm,
 } = useGuests(props.eventId)
 
 const {
@@ -601,9 +615,7 @@ const handleCloseEditGuestModal = () => {
 }
 
 const handleUpdateGuest = async (guestId: number, data: any) => {
-  console.log('[EventInvitationTab] handleUpdateGuest called with:', { guestId, data })
   if (!editTargetGuest.value) {
-    console.log('[EventInvitationTab] No edit target guest')
     return
   }
 
@@ -611,7 +623,6 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
   isUpdatingGuest.value = true
 
   const response = await updateGuest(guestId, originalGroupId, data)
-  console.log('[EventInvitationTab] Update response:', response)
 
   if (response.success && response.data) {
     showMessage('success', `${response.data.name} updated successfully`)
@@ -796,6 +807,20 @@ watch(hasTemplatePayment, (isActivated) => {
   if (isActivated) {
     loadGroups()
     loadGuestStats()
+  }
+})
+
+// Watch for subtab changes to refresh guest data when returning to guests tab
+watch(activeSubTab, (newTab, oldTab) => {
+  if (newTab === 'guests' && oldTab && oldTab !== 'guests') {
+    // User returned to guests tab from another tab - reload guest data
+    // This ensures pagination displays correctly after switching tabs
+    const expandedGroups = Array.from(groupPagination.value.keys())
+    expandedGroups.forEach(groupId => {
+      const pagination = getGroupPagination(groupId)
+      // Reload the current page for each expanded group
+      loadGuestsForGroup(groupId, pagination.currentPage, true)
+    })
   }
 })
 </script>

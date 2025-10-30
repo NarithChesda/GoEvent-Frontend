@@ -179,7 +179,6 @@
                 </button>
                 <button
                   type="submit"
-                  @click="() => console.log('[EditGuestModal] Submit button clicked, disabled:', !isFormValid || isUpdating)"
                   :disabled="!isFormValid || isUpdating"
                   class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
@@ -242,7 +241,6 @@ const fieldErrors = ref<Record<string, string>>({})
 // Initialize form data when guest prop changes
 watch(() => props.guest, (newGuest) => {
   if (newGuest) {
-    console.log('[EditGuestModal] Guest data changed:', newGuest)
     formData.value = {
       name: newGuest.name || '',
       group: newGuest.group ?? null,
@@ -251,7 +249,6 @@ watch(() => props.guest, (newGuest) => {
       cash_gift_amount: newGuest.cash_gift_amount || '',
       cash_gift_currency: newGuest.cash_gift_currency || '',
     }
-    console.log('[EditGuestModal] Form data updated:', formData.value)
     errorMessage.value = ''
     fieldErrors.value = {}
   }
@@ -272,13 +269,7 @@ const isFormValid = computed(() => {
 
 // Handle form submission
 const handleSubmit = () => {
-  console.log('[EditGuestModal] handleSubmit called')
-  console.log('[EditGuestModal] props.guest:', props.guest)
-  console.log('[EditGuestModal] isFormValid:', isFormValid.value)
-  console.log('[EditGuestModal] formData:', formData.value)
-
   if (!props.guest || !isFormValid.value) {
-    console.log('[EditGuestModal] Form validation failed or no guest')
     return
   }
 
