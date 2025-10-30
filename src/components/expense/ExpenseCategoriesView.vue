@@ -428,10 +428,11 @@ const handleSubmit = async () => {
   } else {
     // Add temporary category
     const tempCategory: ExpenseCategory = {
-      id: `temp-${Date.now()}`,
+      id: Date.now(), // Use timestamp as temporary numeric ID
       ...requestData,
       description: requestData.description || '',
       icon: requestData.icon || '',
+      created_by: 0, // Temporary value, will be replaced by server response
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
@@ -439,7 +440,6 @@ const handleSubmit = async () => {
     showSuccess('Category created successfully!')
   }
 
-  closeModal()
   submitting.value = true
 
   try {
@@ -453,6 +453,7 @@ const handleSubmit = async () => {
     if (response.success) {
       // Replace with real data from server
       await loadCategories()
+      closeModal() // Close modal only on success
     } else {
       // ROLLBACK: Restore original data on error
       categories.value = backup

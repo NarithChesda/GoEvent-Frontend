@@ -507,7 +507,7 @@ const handleAddBudget = async () => {
   } else if (categoryInfo) {
     // Add temporary budget
     const tempBudget: ExpenseBudget = {
-      id: `temp-${Date.now()}`,
+      id: Date.now(), // Use numeric timestamp as temporary ID
       ...requestData,
       category: categoryId,
       category_info: categoryInfo,
@@ -522,7 +522,6 @@ const handleAddBudget = async () => {
     showSuccess('Budget added successfully!')
   }
 
-  closeModal()
   submitting.value = true
   error.value = null
 
@@ -549,6 +548,7 @@ const handleAddBudget = async () => {
     if (response.success) {
       // Replace with real data from server
       await loadBudgets()
+      closeModal() // Close modal only on success
     } else {
       // ROLLBACK: Restore original data on error
       budgets.value = backup

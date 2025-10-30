@@ -915,7 +915,7 @@ const handleAddExpense = async () => {
   } else if (categoryInfo) {
     // Add temporary expense with _temp flag
     const tempExpense: ExpenseRecord & { _temp?: boolean } = {
-      id: `temp-${Date.now()}`,
+      id: Date.now(), // Use numeric timestamp as temporary ID
       ...requestData,
       category: categoryId,
       category_info: categoryInfo,
@@ -928,7 +928,6 @@ const handleAddExpense = async () => {
     showSuccess('Expense added successfully!')
   }
 
-  closeModal()
   submitting.value = true
   error.value = null
 
@@ -960,6 +959,7 @@ const handleAddExpense = async () => {
     if (response.success) {
       // Replace with real data from server
       await loadExpenses()
+      closeModal() // Close modal only on success
     } else {
       // ROLLBACK: Restore original data on error
       expenses.value = backup
