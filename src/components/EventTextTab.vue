@@ -27,57 +27,72 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <div class="flex flex-col space-y-1.5">
           <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</label>
-          <select
-            v-model="filters.textType"
-            @change="applyFilters"
-            class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm"
-          >
-            <option value="">All Types</option>
-            <option value="cover_header">Cover Header</option>
-            <option value="welcome_message">Welcome Message</option>
-            <option value="instructions">Instructions</option>
-            <option value="description">Description</option>
-            <option value="short_description">Short Description</option>
-            <option value="date_text">Date Text</option>
-            <option value="time_text">Time Text</option>
-            <option value="location_text">Location Text</option>
-            <option value="thank_you_message">Thank You Message</option>
-            <option value="custom">Custom</option>
-          </select>
+          <div class="relative">
+            <select
+              v-model="filters.textType"
+              @change="applyFilters"
+              class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm appearance-none pr-8"
+            >
+              <option value="">All Types</option>
+              <option value="cover_header">Cover Header</option>
+              <option value="welcome_message">Welcome Message</option>
+              <option value="instructions">Instructions</option>
+              <option value="description">Description</option>
+              <option value="short_description">Short Description</option>
+              <option value="date_text">Date Text</option>
+              <option value="time_text">Time Text</option>
+              <option value="location_text">Location Text</option>
+              <option value="thank_you_message">Thank You Message</option>
+              <option value="custom">Custom</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+              <ChevronDown class="w-3.5 h-3.5 text-slate-500" />
+            </div>
+          </div>
         </div>
 
         <div class="flex flex-col space-y-1.5">
           <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide"
             >Language</label
           >
-          <select
-            v-model="filters.language"
-            @change="applyFilters"
-            class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm"
-          >
-            <option value="">All Languages</option>
-            <option value="en">English</option>
-            <option value="kh">Khmer</option>
-            <option value="fr">French</option>
-            <option value="ja">Japanese</option>
-            <option value="ko">Korean</option>
-            <option value="zh-cn">Chinese (Simplified)</option>
-            <option value="th">Thai</option>
-            <option value="vn">Vietnamese</option>
-          </select>
+          <div class="relative">
+            <select
+              v-model="filters.language"
+              @change="applyFilters"
+              class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm appearance-none pr-8"
+            >
+              <option value="">All Languages</option>
+              <option value="en">English</option>
+              <option value="kh">Khmer</option>
+              <option value="fr">French</option>
+              <option value="ja">Japanese</option>
+              <option value="ko">Korean</option>
+              <option value="zh-cn">Chinese (Simplified)</option>
+              <option value="th">Thai</option>
+              <option value="vn">Vietnamese</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+              <ChevronDown class="w-3.5 h-3.5 text-slate-500" />
+            </div>
+          </div>
         </div>
 
         <div class="flex flex-col space-y-1.5">
           <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
-          <select
-            v-model="filters.isActive"
-            @change="applyFilters"
-            class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm"
-          >
-            <option value="">All Statuses</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
+          <div class="relative">
+            <select
+              v-model="filters.isActive"
+              @change="applyFilters"
+              class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm appearance-none pr-8"
+            >
+              <option value="">All Statuses</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+              <ChevronDown class="w-3.5 h-3.5 text-slate-500" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -208,6 +223,7 @@ import {
   Clock,
   MapPin,
   Heart,
+  ChevronDown,
 } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EventTextCard from './EventTextCard.vue'
