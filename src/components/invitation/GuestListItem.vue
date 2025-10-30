@@ -88,14 +88,14 @@
             >
               <Link class="w-3.5 h-3.5" />
               Copy Link
-              <ChevronDown class="w-3 h-3" />
+              <ChevronUp class="w-3 h-3" />
             </button>
 
             <!-- Dropdown Menu -->
             <Transition name="dropdown">
               <div
                 v-if="showLinkMenu"
-                class="absolute left-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10 overflow-hidden"
+                class="absolute left-0 bottom-full mb-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10 overflow-hidden"
                 @click.stop
               >
                 <button
@@ -111,13 +111,6 @@
                 >
                   <Globe class="w-4 h-4" />
                   English (EN)
-                </button>
-                <button
-                  @click="handleCopyBothLinks"
-                  class="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100"
-                >
-                  <Copy class="w-4 h-4" />
-                  Copy Both
                 </button>
               </div>
             </Transition>
@@ -223,9 +216,8 @@ import {
   Phone,
   Coins,
   Link,
-  ChevronDown,
+  ChevronUp,
   Globe,
-  Copy,
   MoreHorizontal,
   X,
 } from 'lucide-vue-next'
@@ -278,14 +270,6 @@ const toggleLinkMenu = () => {
 
 const handleCopyLink = (language: 'en' | 'kh') => {
   emit('copy-link', props.guest, language)
-  showLinkMenu.value = false
-}
-
-const handleCopyBothLinks = () => {
-  emit('copy-link', props.guest, 'kh')
-  setTimeout(() => {
-    emit('copy-link', props.guest, 'en')
-  }, 100)
   showLinkMenu.value = false
 }
 
