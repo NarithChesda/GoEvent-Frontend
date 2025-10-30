@@ -609,6 +609,13 @@ const handleDrop = async (event: DragEvent) => {
 onMounted(() => {
   loadPaymentMethods()
 })
+
+// Expose method for parent component (Smart FAB via EventMediaTab)
+defineExpose({
+  openAddModal: () => {
+    showAddModal.value = true
+  }
+})
 </script>
 
 <style scoped>

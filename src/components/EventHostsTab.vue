@@ -467,6 +467,13 @@ onUnmounted(() => {
     }
   }
 })
+
+// Expose method for parent component (Smart FAB)
+defineExpose({
+  openAddModal: () => {
+    showCreateModal.value = true
+  }
+})
 </script>
 
 <style scoped>

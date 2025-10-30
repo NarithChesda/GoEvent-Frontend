@@ -808,6 +808,13 @@ watch(
     }
   },
 )
+
+// Expose method for parent component (Smart FAB)
+defineExpose({
+  openCheckinModal: () => {
+    showCheckinModal.value = true
+  }
+})
 </script>
 
 <style scoped>

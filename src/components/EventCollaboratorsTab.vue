@@ -720,6 +720,13 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 onMounted(() => {
   loadCollaborators()
 })
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openInviteModal: () => {
+    showInviteModal.value = true
+  }
+})
 </script>
 
 <style scoped>

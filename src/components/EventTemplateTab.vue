@@ -503,6 +503,13 @@ onMounted(async () => {
 onUnmounted(() => {
   clearTemplate()
 })
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openBrowseTemplates: () => {
+    openTemplateSelector()
+  }
+})
 </script>
 
 <style scoped>

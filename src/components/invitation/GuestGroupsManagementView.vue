@@ -432,6 +432,13 @@ const handleDelete = async () => {
     submitting.value = false
   }
 }
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openAddGroupModal: () => {
+    showAddGroupModal.value = true
+  }
+})
 </script>
 
 <style scoped>

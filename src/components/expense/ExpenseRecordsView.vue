@@ -1071,6 +1071,13 @@ onUnmounted(() => {
   editingExpense.value = null
   selectedFile.value = null
 })
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openAddExpenseModal: () => {
+    showAddExpenseModal.value = true
+  }
+})
 </script>
 
 <style scoped>

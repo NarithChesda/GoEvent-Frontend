@@ -1353,6 +1353,13 @@ onMounted(async () => {
     await loadPaymentMethods()
   }
 })
+
+// Expose method for parent component (Smart FAB)
+defineExpose({
+  openPaymentModal: () => {
+    handleStartPayment()
+  }
+})
 </script>
 
 <style scoped>

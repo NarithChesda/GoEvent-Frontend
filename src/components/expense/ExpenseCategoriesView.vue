@@ -547,6 +547,13 @@ onUnmounted(() => {
   showSuccessToast.value = false
   editingCategory.value = null
 })
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openAddCategoryModal: () => {
+    showAddCategoryModal.value = true
+  }
+})
 </script>
 
 <style scoped>

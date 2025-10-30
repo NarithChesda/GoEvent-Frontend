@@ -126,6 +126,7 @@
       <!-- Guest Groups Management View (new) -->
       <GuestGroupsManagementView
         v-if="activeSubTab === 'groups'"
+        ref="guestGroupsManagementViewRef"
         :groups="groups"
         :loading-groups="loadingGroups"
         @create-group="handleCreateGroupFromManagement"
@@ -352,6 +353,9 @@ const showEditGuestModal = ref(false)
 const editTargetGuest = ref<EventGuest | null>(null)
 const isUpdatingGuest = ref(false)
 const editGuestModalRef = ref<InstanceType<typeof EditGuestModal> | null>(null)
+
+// Guest Groups Management View ref
+const guestGroupsManagementViewRef = ref<InstanceType<typeof GuestGroupsManagementView> | null>(null)
 
 // Edit group modal state
 const showEditGroupModal = ref(false)
@@ -822,6 +826,17 @@ watch(activeSubTab, (newTab, oldTab) => {
       loadGuestsForGroup(groupId, pagination.currentPage, true)
     })
   }
+})
+
+// Expose methods for parent component (Smart FAB) and sub-tab tracking
+defineExpose({
+  openAddGuestModal: () => {
+    showAddGuestModal.value = true
+  },
+  openAddGroupModal: () => {
+    guestGroupsManagementViewRef.value?.openAddGroupModal()
+  },
+  getActiveSubTab: () => activeSubTab.value,
 })
 </script>
 

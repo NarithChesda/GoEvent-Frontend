@@ -656,6 +656,13 @@ onUnmounted(() => {
   showSuccessToast.value = false
   editingBudget.value = null
 })
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openAddBudgetModal: () => {
+    showAddBudgetModal.value = true
+  }
+})
 </script>
 
 <style scoped>

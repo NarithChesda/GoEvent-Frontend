@@ -44,13 +44,26 @@
       <ExpenseSummaryView v-if="activeSubTab === 'summary'" :event-id="eventId" />
 
       <!-- Budgets View -->
-      <ExpenseBudgetsView v-if="activeSubTab === 'budgets'" :event-id="eventId" :can-edit="canEdit" />
+      <ExpenseBudgetsView
+        v-if="activeSubTab === 'budgets'"
+        ref="budgetsViewRef"
+        :event-id="eventId"
+        :can-edit="canEdit"
+      />
 
       <!-- Expenses View -->
-      <ExpenseRecordsView v-if="activeSubTab === 'expenses'" :event-id="eventId" :can-edit="canEdit" />
+      <ExpenseRecordsView
+        v-if="activeSubTab === 'expenses'"
+        ref="expensesViewRef"
+        :event-id="eventId"
+        :can-edit="canEdit"
+      />
 
       <!-- Categories View -->
-      <ExpenseCategoriesView v-if="activeSubTab === 'categories'" />
+      <ExpenseCategoriesView
+        v-if="activeSubTab === 'categories'"
+        ref="categoriesViewRef"
+      />
     </div>
   </div>
 </template>
@@ -78,6 +91,25 @@ const subTabs = [
   { id: 'expenses', label: 'Expenses', icon: Receipt },
   { id: 'categories', label: 'Categories', icon: FolderOpen },
 ]
+
+// Refs for expense sub-views
+const budgetsViewRef = ref<InstanceType<typeof ExpenseBudgetsView> | null>(null)
+const expensesViewRef = ref<InstanceType<typeof ExpenseRecordsView> | null>(null)
+const categoriesViewRef = ref<InstanceType<typeof ExpenseCategoriesView> | null>(null)
+
+// Expose methods for parent component (Smart FAB) and sub-tab tracking
+defineExpose({
+  openAddBudgetModal: () => {
+    budgetsViewRef.value?.openAddBudgetModal()
+  },
+  openAddExpenseModal: () => {
+    expensesViewRef.value?.openAddExpenseModal()
+  },
+  openAddCategoryModal: () => {
+    categoriesViewRef.value?.openAddCategoryModal()
+  },
+  getActiveSubTab: () => activeSubTab.value,
+})
 </script>
 
 <style scoped>

@@ -217,6 +217,7 @@
       <div v-if="activeSection === 'payment'">
         <PaymentMethodsSection
           v-if="localEventData?.id"
+          ref="paymentMethodsSectionRef"
           :event-id="localEventData.id"
           :can-edit="canEdit"
         />
@@ -263,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle, CreditCard, Share2 } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import MediaCard from './MediaCard.vue'
@@ -287,7 +288,11 @@ interface Emits {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits<{
+  'media-updated': [media: EventPhoto[]]
+  'event-updated': [event: Event]
+  'sub-tab-change': [subTab: string]
+}>()
 
 // State
 const media = ref<EventPhoto[]>([])
@@ -305,6 +310,9 @@ const localEventData = ref<Event | undefined>(props.eventData ? { ...props.event
 
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)
+
+// Template ref for PaymentMethodsSection
+const paymentMethodsSectionRef = ref<InstanceType<typeof PaymentMethodsSection> | null>(null)
 
 // Computed properties
 const totalPhotos = computed(() => {
@@ -340,6 +348,14 @@ watch(
     }
   },
   { deep: true },
+)
+
+// Watch for active section changes and emit to parent
+watch(
+  () => activeSection.value,
+  (newSection) => {
+    emit('sub-tab-change', newSection)
+  },
 )
 
 // Methods
@@ -565,6 +581,28 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 // Lifecycle
 onMounted(() => {
   fetchMedia()
+})
+
+// Expose methods for parent component (Smart FAB)
+defineExpose({
+  openAddModal: () => {
+    // Default behavior: set active section to gallery and open upload modal
+    activeSection.value = 'gallery'
+    showUploadModal.value = true
+  },
+  openPhotoGalleryModal: () => {
+    // Specifically for photo gallery
+    activeSection.value = 'gallery'
+    showUploadModal.value = true
+  },
+  // Method to trigger payment method addition
+  openPaymentMethodModal: async () => {
+    // Switch to payment section and open the add modal
+    activeSection.value = 'payment'
+    // Use nextTick to ensure the PaymentMethodsSection is rendered before calling its method
+    await nextTick()
+    paymentMethodsSectionRef.value?.openAddModal()
+  }
 })
 </script>
 

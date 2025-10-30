@@ -77,6 +77,7 @@
             <div v-if="activeTab === 'agenda'">
               <EventAgendaTab
                 v-if="event?.id"
+                ref="agendaTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
               />
@@ -86,6 +87,7 @@
             <div v-if="activeTab === 'hosts'">
               <EventHostsTab
                 v-if="event?.id"
+                ref="hostsTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
               />
@@ -112,7 +114,7 @@
                   </p>
                 </div>
               </div>
-              <EventTextTab v-else :event-id="event.id" />
+              <EventTextTab v-else ref="textTabRef" :event-id="event.id" />
             </div>
 
             <!-- Attendees Tab -->
@@ -130,6 +132,7 @@
               </div>
               <EventAttendeesTab
                 v-else
+                ref="attendeesTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :registrations="event.registrations_details"
@@ -151,12 +154,14 @@
               </div>
               <EventMediaTab
                 v-else-if="event?.id"
+                ref="mediaTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :initial-media="event.photos || []"
                 :event-data="event"
                 @media-updated="handleMediaUpdated"
                 @event-updated="handleEventUpdated"
+                @sub-tab-change="activeSubTab = $event"
               />
             </div>
 
@@ -175,6 +180,7 @@
               </div>
               <EventCollaboratorsTab
                 v-else-if="event?.id"
+                ref="collaboratorTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :organizer-details="event.organizer_details"
@@ -196,6 +202,7 @@
               </div>
               <EventPaymentTab
                 v-else-if="event?.id"
+                ref="paymentTabRef"
                 :event-id="event.id"
                 :event="event as any"
                 :can-edit="event.can_edit || false"
@@ -219,6 +226,7 @@
               </div>
               <EventGuestManagementTab
                 v-else-if="event?.id"
+                ref="guestManagementTabRef"
                 :event-id="event.id"
                 :event="event"
                 :can-edit="event.can_edit || false"
@@ -241,6 +249,7 @@
               </div>
               <EventExpenseTab
                 v-else-if="event?.id"
+                ref="expenseTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
               />
@@ -261,6 +270,7 @@
               </div>
               <EventTemplateTab
                 v-else
+                ref="templateTabRef"
                 :event="event"
                 :can-edit="event.can_edit || false"
                 @template-updated="handleTemplateUpdated"
@@ -276,28 +286,34 @@
         <Footer />
       </div>
 
-      <!-- Floating Edit Button -->
-      <div v-if="event?.can_edit" class="fixed bottom-24 lg:bottom-8 right-6 z-[60]" @click.stop>
-        <button
-          @click="toggleActionMenu"
-          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
-          :class="{ 'ring-4 ring-[#87CEEB]': showActionMenu }"
-        >
-          <Pencil class="w-6 h-6" />
-        </button>
-
-        <!-- Event Action Menu -->
-        <EventActionMenu
-          :is-open="showActionMenu"
-          :can-delete="canDeleteEvent"
-          :event-title="event?.title || ''"
-          :event-id="event?.id || ''"
-          @close="closeActionMenu"
-          @edit="handleEditEvent"
-          @delete="handleDeleteEvent"
-          ref="actionMenuRef"
-        />
-      </div>
+      <!-- Smart Floating Action Button -->
+      <SmartFloatingActionButton
+        v-if="event"
+        ref="smartFabRef"
+        :active-tab="activeTab"
+        :active-sub-tab="activeSubTab"
+        :guest-management-sub-tab="guestManagementSubTab"
+        :expense-tracking-sub-tab="expenseTrackingSubTab"
+        :can-edit="event.can_edit || false"
+        :can-delete="canDeleteEvent"
+        :event-title="event.title || ''"
+        :event-id="event.id || ''"
+        @add-agenda="handleAddAgenda"
+        @add-host="handleAddHost"
+        @add-photo="handleAddPhoto"
+        @add-event-text="handleAddEventText"
+        @open-checkin="handleOpenCheckin"
+        @open-payment="handleOpenPayment"
+        @invite-collaborator="handleInviteCollaborator"
+        @browse-template="handleBrowseTemplate"
+        @add-guest="handleAddGuest"
+        @add-group="handleAddGroup"
+        @add-budget="handleAddBudget"
+        @add-expense="handleAddExpense"
+        @add-category="handleAddCategory"
+        @edit="handleEditEvent"
+        @delete="handleDeleteEvent"
+      />
     </div>
 
     <!-- Error State -->
@@ -339,7 +355,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Lock,
@@ -376,7 +392,7 @@ import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
 import EventExpenseTab from '../components/EventExpenseTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
-import EventActionMenu from '../components/EventActionMenu.vue'
+import SmartFloatingActionButton from '../components/SmartFloatingActionButton.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
 const route = useRoute()
@@ -390,8 +406,22 @@ const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const isRegistering = ref(false)
 const activeTab = ref('about')
-const showActionMenu = ref(false)
-const actionMenuRef = ref<InstanceType<typeof EventActionMenu> | null>(null)
+const activeSubTab = ref<string>('')
+const guestManagementSubTab = ref<string>('guests')
+const expenseTrackingSubTab = ref<string>('summary')
+
+// Template refs for tab components (for Smart FAB)
+const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
+const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
+const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
+const textTabRef = ref<InstanceType<typeof EventTextTab> | null>(null)
+const attendeesTabRef = ref<InstanceType<typeof EventAttendeesTab> | null>(null)
+const paymentTabRef = ref<InstanceType<typeof EventPaymentTab> | null>(null)
+const collaboratorTabRef = ref<InstanceType<typeof EventCollaboratorsTab> | null>(null)
+const templateTabRef = ref<InstanceType<typeof EventTemplateTab> | null>(null)
+const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> | null>(null)
+const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
+const smartFabRef = ref<InstanceType<typeof SmartFloatingActionButton> | null>(null)
 
 // Navigation tabs configuration - optimized for user flow
 const navigationTabs = ref<TabConfig[]>([
@@ -552,14 +582,6 @@ const registerForEvent = async () => {
   }
 }
 
-const toggleActionMenu = () => {
-  showActionMenu.value = !showActionMenu.value
-}
-
-const closeActionMenu = () => {
-  showActionMenu.value = false
-}
-
 const handleEditEvent = (eventId: string) => {
   router.push(`/events/${eventId}/edit`)
 }
@@ -570,21 +592,89 @@ const handleDeleteEvent = async (eventId: string) => {
 
     if (response.success) {
       showMessage('success', 'Event deleted successfully')
-      // Close the action menu and reset its state
-      actionMenuRef.value?.resetDeleting()
-      closeActionMenu()
+      // Close the smart FAB action menu and reset its state
+      smartFabRef.value?.resetDeleting()
+      smartFabRef.value?.closeActionMenu()
       // Navigate back to events list after a short delay
       setTimeout(() => {
         router.push('/events')
       }, 1500)
     } else {
       showMessage('error', response.message || 'Failed to delete event')
-      actionMenuRef.value?.resetDeleting()
+      smartFabRef.value?.resetDeleting()
     }
   } catch (error) {
     showMessage('error', 'An error occurred while deleting the event')
-    actionMenuRef.value?.resetDeleting()
+    smartFabRef.value?.resetDeleting()
   }
+}
+
+// Smart FAB handlers
+const handleAddAgenda = () => {
+  agendaTabRef.value?.openAddModal()
+}
+
+const handleAddHost = () => {
+  hostsTabRef.value?.openAddModal()
+}
+
+const handleAddPhoto = () => {
+  mediaTabRef.value?.openAddModal()
+}
+
+const handleAddEventText = () => {
+  textTabRef.value?.openAddModal()
+}
+
+const handleOpenCheckin = () => {
+  // Open check-in modal in EventAttendeesTab
+  attendeesTabRef.value?.openCheckinModal()
+}
+
+const handleOpenPayment = () => {
+  // Determine which payment modal to open based on context
+  if (activeTab.value === 'media' && activeSubTab.value === 'payment') {
+    // In Media tab > Payment sub-tab: Open payment method modal (for adding bank transfer, QR, etc.)
+    mediaTabRef.value?.openPaymentMethodModal()
+  } else if (activeTab.value === 'payment') {
+    // In Payment main tab: Open payment modal (for making payment)
+    paymentTabRef.value?.openPaymentModal()
+  }
+}
+
+const handleInviteCollaborator = () => {
+  // Open invite collaborator modal in EventCollaboratorsTab
+  collaboratorTabRef.value?.openInviteModal()
+}
+
+const handleBrowseTemplate = () => {
+  // Open template selector in EventTemplateTab
+  templateTabRef.value?.openBrowseTemplates()
+}
+
+const handleAddGuest = () => {
+  // Open add guest modal in EventGuestManagementTab
+  guestManagementTabRef.value?.openAddGuestModal()
+}
+
+const handleAddGroup = () => {
+  // Open add group modal in EventGuestManagementTab
+  guestManagementTabRef.value?.openAddGroupModal()
+}
+
+const handleAddBudget = () => {
+  // Open add budget modal in EventExpenseTab
+  expenseTabRef.value?.openAddBudgetModal()
+}
+
+const handleAddExpense = () => {
+  // Open add expense modal in EventExpenseTab
+  expenseTabRef.value?.openAddExpenseModal()
+}
+
+const handleAddCategory = () => {
+  // Open add category modal in EventExpenseTab
+  expenseTabRef.value?.openAddCategoryModal()
 }
 
 const joinVirtualEvent = () => {
@@ -681,16 +771,6 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   setTimeout(() => {
     message.value = null
   }, 5000)
-}
-
-// Click outside handler for dropdown
-const handleClickOutside = (clickEvent: MouseEvent) => {
-  const target = clickEvent.target as Element
-  const menuContainer = document.querySelector('[class*="fixed"][class*="bottom-"][class*="right-"]')
-
-  if (showActionMenu.value && menuContainer && !menuContainer.contains(target)) {
-    closeActionMenu()
-  }
 }
 
 // Date formatting utilities (still used in About section)
@@ -796,14 +876,86 @@ END:VCALENDAR`
   URL.revokeObjectURL(url)
 }
 
+// Watch for tab changes and reset sub-tab
+watch(
+  () => activeTab.value,
+  () => {
+    // Reset sub-tab when main tab changes
+    activeSubTab.value = ''
+    // Update guest management subtab when switching to guest-management tab
+    if (activeTab.value === 'guest-management') {
+      // Use nextTick to ensure component is mounted
+      nextTick(() => {
+        const currentSubTab = guestManagementTabRef.value?.getActiveSubTab()
+        if (currentSubTab) {
+          guestManagementSubTab.value = currentSubTab
+        }
+      })
+    }
+    // Update expense tracking subtab when switching to expenses tab
+    if (activeTab.value === 'expenses') {
+      // Use nextTick to ensure component is mounted
+      nextTick(() => {
+        const currentSubTab = expenseTabRef.value?.getActiveSubTab()
+        if (currentSubTab) {
+          expenseTrackingSubTab.value = currentSubTab
+        }
+      })
+    }
+  }
+)
+
+// Watch for updates to guest management subtab
+watch(
+  () => guestManagementTabRef.value,
+  () => {
+    if (activeTab.value === 'guest-management' && guestManagementTabRef.value) {
+      // Poll for subtab changes
+      const interval = setInterval(() => {
+        if (!guestManagementTabRef.value || activeTab.value !== 'guest-management') {
+          clearInterval(interval)
+          return
+        }
+        const currentSubTab = guestManagementTabRef.value.getActiveSubTab()
+        if (currentSubTab && currentSubTab !== guestManagementSubTab.value) {
+          guestManagementSubTab.value = currentSubTab
+        }
+      }, 100)
+
+      // Clean up on unmount
+      onUnmounted(() => clearInterval(interval))
+    }
+  },
+  { immediate: true }
+)
+
+// Watch for updates to expense tracking subtab
+watch(
+  () => expenseTabRef.value,
+  () => {
+    if (activeTab.value === 'expenses' && expenseTabRef.value) {
+      // Poll for subtab changes
+      const interval = setInterval(() => {
+        if (!expenseTabRef.value || activeTab.value !== 'expenses') {
+          clearInterval(interval)
+          return
+        }
+        const currentSubTab = expenseTabRef.value.getActiveSubTab()
+        if (currentSubTab && currentSubTab !== expenseTrackingSubTab.value) {
+          expenseTrackingSubTab.value = currentSubTab
+        }
+      }, 100)
+
+      // Clean up on unmount
+      onUnmounted(() => clearInterval(interval))
+    }
+  },
+  { immediate: true }
+)
+
 // Lifecycle
 onMounted(() => {
   loadEvent()
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
