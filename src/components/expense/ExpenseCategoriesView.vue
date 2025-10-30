@@ -124,122 +124,152 @@
       <Transition name="modal">
         <div
           v-if="showAddCategoryModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          class="fixed inset-0 z-50 overflow-y-auto"
           @click.self="closeModal"
         >
-          <div
-            ref="addModalRef"
-            role="dialog"
-            aria-labelledby="add-category-modal-title"
-            aria-modal="true"
-            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
-          >
-            <div class="flex items-center justify-between mb-6">
-              <h3 id="add-category-modal-title" class="text-xl font-bold text-slate-900">
-                {{ editingCategory ? 'Edit Category' : 'Create Category' }}
-              </h3>
-              <button
-                @click="closeModal"
-                aria-label="Close dialog"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-              >
-                <X class="w-5 h-5" />
-              </button>
-            </div>
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-            <form @submit.prevent="handleSubmit" class="space-y-4">
-              <!-- Category Name -->
-              <div>
-                <label for="category-name" class="block text-sm font-medium text-slate-700 mb-2">Category Name *</label>
-                <input
-                  id="category-name"
-                  type="text"
-                  v-model="formData.name"
-                  placeholder="E.g., Venue, Catering, Photography..."
-                  maxlength="100"
-                  aria-required="true"
-                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                  required
-                />
-              </div>
-
-              <!-- Description -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
-                <textarea
-                  v-model="formData.description"
-                  rows="3"
-                  placeholder="Describe what expenses this category covers..."
-                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
-                ></textarea>
-              </div>
-
-              <!-- Color Picker -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Color</label>
-                <div class="grid grid-cols-8 gap-2">
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div
+              ref="addModalRef"
+              role="dialog"
+              aria-labelledby="add-category-modal-title"
+              aria-modal="true"
+              class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+              @click.stop
+            >
+              <!-- Header -->
+              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <Palette class="w-4.5 h-4.5" />
+                    </div>
+                    <h2 id="add-category-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">
+                      {{ editingCategory ? 'Edit Category' : 'Create Category' }}
+                    </h2>
+                  </div>
                   <button
-                    v-for="color in colorOptions"
-                    :key="color"
-                    type="button"
-                    @click="formData.color = color"
-                    :class="[
-                      'w-10 h-10 rounded-lg transition-all',
-                      formData.color === color ? 'ring-2 ring-emerald-500 ring-offset-2 scale-110' : 'hover:scale-105'
-                    ]"
-                    :style="{ backgroundColor: color }"
-                  ></button>
+                    @click="closeModal"
+                    aria-label="Close dialog"
+                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  >
+                    <X class="w-4 h-4" />
+                  </button>
                 </div>
-                <div class="flex items-center gap-2 mt-3">
+              </div>
+
+              <!-- Form -->
+              <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- Error Message -->
+                <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                </div>
+
+                <!-- Category Name -->
+                <div>
+                  <label for="category-name" class="block text-sm font-medium text-slate-700 mb-2">
+                    Category Name <span class="text-red-500">*</span>
+                  </label>
                   <input
+                    id="category-name"
                     type="text"
-                    v-model="formData.color"
-                    placeholder="#3498db"
-                    pattern="^#[0-9A-Fa-f]{6}$"
-                    class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    v-model="formData.name"
+                    placeholder="E.g., Venue, Catering, Photography..."
+                    maxlength="100"
+                    aria-required="true"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    required
                   />
-                  <div class="w-10 h-10 rounded-lg border-2 border-slate-200" :style="{ backgroundColor: formData.color }"></div>
                 </div>
-              </div>
 
-              <!-- Icon Selection -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Icon (Font Awesome class)</label>
-                <select
-                  v-model="formData.icon"
-                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                >
-                  <option value="">Select an icon</option>
-                  <option value="fa-building">Building (fa-building)</option>
-                  <option value="fa-utensils">Utensils (fa-utensils)</option>
-                  <option value="fa-palette">Palette (fa-palette)</option>
-                  <option value="fa-camera">Camera (fa-camera)</option>
-                  <option value="fa-music">Music (fa-music)</option>
-                  <option value="fa-gift">Gift (fa-gift)</option>
-                  <option value="fa-car">Car (fa-car)</option>
-                  <option value="fa-hotel">Hotel (fa-hotel)</option>
-                </select>
-              </div>
+                <!-- Description -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                  <textarea
+                    v-model="formData.description"
+                    rows="3"
+                    placeholder="Describe what expenses this category covers..."
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                  ></textarea>
+                </div>
 
-              <!-- Actions -->
-              <div class="flex items-center gap-3 pt-4">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all"
-                  :disabled="submitting"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="submitting"
-                >
-                  {{ submitting ? 'Saving...' : (editingCategory ? 'Update' : 'Create') }}
-                </button>
-              </div>
-            </form>
+                <!-- Color Picker -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Color</label>
+                  <div class="grid grid-cols-8 gap-2">
+                    <button
+                      v-for="color in colorOptions"
+                      :key="color"
+                      type="button"
+                      @click="formData.color = color"
+                      :class="[
+                        'w-10 h-10 rounded-lg transition-all',
+                        formData.color === color ? 'ring-2 ring-sky-500 ring-offset-2 scale-110' : 'hover:scale-105'
+                      ]"
+                      :style="{ backgroundColor: color }"
+                    ></button>
+                  </div>
+                  <div class="flex items-center gap-2 mt-3">
+                    <input
+                      type="text"
+                      v-model="formData.color"
+                      placeholder="#3498db"
+                      pattern="^#[0-9A-Fa-f]{6}$"
+                      class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    />
+                    <div class="w-10 h-10 rounded-lg border-2 border-slate-200" :style="{ backgroundColor: formData.color }"></div>
+                  </div>
+                </div>
+
+                <!-- Icon Selection -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
+                  <div class="relative">
+                    <select
+                      v-model="formData.icon"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                    >
+                      <option value="">Select an icon</option>
+                      <option value="fa-building">Building (fa-building)</option>
+                      <option value="fa-utensils">Utensils (fa-utensils)</option>
+                      <option value="fa-palette">Palette (fa-palette)</option>
+                      <option value="fa-camera">Camera (fa-camera)</option>
+                      <option value="fa-music">Music (fa-music)</option>
+                      <option value="fa-gift">Gift (fa-gift)</option>
+                      <option value="fa-car">Car (fa-car)</option>
+                      <option value="fa-hotel">Hotel (fa-hotel)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                  <button
+                    type="button"
+                    @click="closeModal"
+                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                    :disabled="submitting"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    :disabled="submitting"
+                  >
+                    <span
+                      v-if="submitting"
+                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    ></span>
+                    {{ submitting ? 'Saving...' : (editingCategory ? 'Update Category' : 'Create Category') }}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </Transition>
@@ -287,7 +317,8 @@ import {
   X,
   Info,
   AlertCircle,
-  Check
+  Check,
+  ChevronDown
 } from 'lucide-vue-next'
 import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
@@ -521,22 +552,31 @@ onUnmounted(() => {
 <style scoped>
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-}
-
-.modal-enter-active > div,
-.modal-leave-active > div {
-  transition: transform 0.3s ease;
-}
-
-.modal-enter-from > div,
-.modal-leave-to > div {
   transform: scale(0.9);
+}
+
+/* Custom scrollbar for modal content */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .toast-enter-active,

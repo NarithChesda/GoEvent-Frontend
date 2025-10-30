@@ -449,22 +449,27 @@
                   <label for="expense-category" class="block text-sm font-medium text-slate-700 mb-2">
                     Category <span class="text-red-500">*</span>
                   </label>
-                  <select
-                    id="expense-category"
-                    v-model="newExpense.category_id"
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    required
-                  >
-                    <option value="">Select a category</option>
-                    <option
-                      v-for="category in categories"
-                      :key="category.id"
-                      :value="category.id"
+                  <div class="relative">
+                    <select
+                      id="expense-category"
+                      v-model="newExpense.category_id"
+                      aria-required="true"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      required
                     >
-                      {{ category.name }}
-                    </option>
-                  </select>
+                      <option value="">Select a category</option>
+                      <option
+                        v-for="category in categories"
+                        :key="category.id"
+                        :value="category.id"
+                      >
+                        {{ category.name }}
+                      </option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Description -->
@@ -509,14 +514,19 @@
                   <label class="block text-sm font-medium text-slate-700 mb-2">
                     Currency <span class="text-red-500">*</span>
                   </label>
-                  <select
-                    v-model="newExpense.currency"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    required
-                  >
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="KHR">KHR - Cambodian Riel</option>
-                  </select>
+                  <div class="relative">
+                    <select
+                      v-model="newExpense.currency"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      required
+                    >
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="KHR">KHR - Cambodian Riel</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Date -->
@@ -537,71 +547,99 @@
                   <label class="block text-sm font-medium text-slate-700 mb-2">
                     Payment Method <span class="text-red-500">*</span>
                   </label>
-                  <select
-                    v-model="newExpense.payment_method"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    required
-                  >
-                    <option value="">Select payment method</option>
-                    <option value="cash">Cash</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="credit_card">Credit Card</option>
-                    <option value="mobile_payment">Mobile Payment</option>
-                    <option value="check">Check</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <!-- Paid To -->
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Paid To (Vendor/Recipient)</label>
-                  <input
-                    type="text"
-                    v-model="newExpense.paid_to"
-                    placeholder="E.g., Luxury Hotel Group, Premium Catering Co."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                  />
-                </div>
-
-                <!-- Receipt Upload -->
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Receipt/Invoice (Optional)</label>
                   <div class="relative">
-                    <input
-                      type="file"
-                      ref="receiptInput"
-                      @change="handleFileChange"
-                      accept="image/*,.pdf"
-                      class="hidden"
-                    />
-                    <button
-                      type="button"
-                      @click="receiptInput?.click()"
-                      class="w-full px-4 py-6 border-2 border-slate-200 border-dashed rounded-lg hover:bg-slate-50 hover:border-sky-300 transition-all group"
+                    <select
+                      v-model="newExpense.payment_method"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      required
                     >
-                      <div class="flex flex-col items-center">
-                        <div class="w-10 h-10 bg-slate-100 group-hover:bg-sky-100 rounded-lg flex items-center justify-center mb-2 transition-all">
-                          <Upload class="w-5 h-5 text-slate-400 group-hover:text-sky-600 transition-colors" />
-                        </div>
-                        <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
-                          {{ selectedFile ? selectedFile.name : 'Click to upload receipt' }}
-                        </p>
-                        <p class="text-xs text-slate-400 mt-1">PDF, PNG, JPG (max 5MB)</p>
-                      </div>
-                    </button>
+                      <option value="">Select payment method</option>
+                      <option value="cash">Cash</option>
+                      <option value="bank_transfer">Bank Transfer</option>
+                      <option value="credit_card">Credit Card</option>
+                      <option value="mobile_payment">Mobile Payment</option>
+                      <option value="check">Check</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Notes -->
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Notes (Optional)</label>
-                  <textarea
-                    v-model="newExpense.notes"
-                    rows="3"
-                    placeholder="Add any additional notes about this expense..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-                  ></textarea>
-                </div>
+              <!-- Additional Details (collapsible) -->
+              <div class="rounded-xl border border-slate-200 bg-white/70">
+                <button
+                  type="button"
+                  class="w-full flex items-center justify-between px-4 py-3"
+                  @click="additionalDetailsOpen = !additionalDetailsOpen"
+                  :aria-expanded="additionalDetailsOpen ? 'true' : 'false'"
+                  aria-controls="additional-details-section"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-slate-700">Additional Details</span>
+                    <span class="hidden sm:inline text-xs text-slate-500">Vendor, receipt, and notes</span>
+                  </div>
+                  <ChevronDown
+                    class="w-4 h-4 text-slate-500 transition-transform"
+                    :class="additionalDetailsOpen ? 'rotate-180' : ''"
+                  />
+                </button>
+                <Transition name="collapse">
+                  <div v-show="additionalDetailsOpen" id="additional-details-section" class="px-4 pb-4 space-y-3">
+                    <!-- Paid To -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">Paid To (Vendor/Recipient)</label>
+                      <input
+                        type="text"
+                        v-model="newExpense.paid_to"
+                        placeholder="E.g., Luxury Hotel Group, Premium Catering Co."
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                      />
+                    </div>
+
+                    <!-- Receipt Upload -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">Receipt/Invoice</label>
+                      <div class="relative">
+                        <input
+                          type="file"
+                          ref="receiptInput"
+                          @change="handleFileChange"
+                          accept="image/*,.pdf"
+                          class="hidden"
+                        />
+                        <button
+                          type="button"
+                          @click="receiptInput?.click()"
+                          class="w-full px-4 py-6 border-2 border-slate-200 border-dashed rounded-lg hover:bg-slate-50 hover:border-sky-300 transition-all group"
+                        >
+                          <div class="flex flex-col items-center">
+                            <div class="w-10 h-10 bg-slate-100 group-hover:bg-sky-100 rounded-lg flex items-center justify-center mb-2 transition-all">
+                              <Upload class="w-5 h-5 text-slate-400 group-hover:text-sky-600 transition-colors" />
+                            </div>
+                            <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
+                              {{ selectedFile ? selectedFile.name : 'Click to upload receipt' }}
+                            </p>
+                            <p class="text-xs text-slate-400 mt-1">PDF, PNG, JPG (max 5MB)</p>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                      <textarea
+                        v-model="newExpense.notes"
+                        rows="3"
+                        placeholder="Add any additional notes about this expense..."
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                      ></textarea>
+                    </div>
+                  </div>
+                </Transition>
               </div>
 
               <!-- Action Buttons -->
@@ -679,7 +717,8 @@ import {
   Upload,
   AlertCircle,
   Filter,
-  Check
+  Check,
+  ChevronDown
 } from 'lucide-vue-next'
 import {
   expensesService,
@@ -715,6 +754,7 @@ const editingExpense = ref<ExpenseRecord | null>(null)
 const deletingExpense = ref<ExpenseRecord | null>(null)
 const selectedFile = ref<File | null>(null)
 const receiptInput = ref<HTMLInputElement | null>(null)
+const additionalDetailsOpen = ref(false)
 
 // Focus trap for modals (accessibility)
 const addModalRef = ref<HTMLElement>()
@@ -1081,5 +1121,22 @@ onUnmounted(() => {
 .toast-leave-to {
   opacity: 0;
   transform: translateY(1rem);
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.2s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  max-height: 1000px;
+  opacity: 1;
 }
 </style>
