@@ -1,115 +1,72 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Media</h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">
-          Manage all visual content and media for your event
-        </p>
-      </div>
-      <button
-        v-if="canEdit && activeSection === 'gallery'"
-        @click="openUploadModal"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
-      >
-        <Upload class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        <span class="hidden sm:inline">Upload Media</span>
-        <span class="sm:hidden">Upload</span>
-      </button>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <ImageIcon class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
+    <!-- Header with Sub-navigation -->
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 overflow-hidden">
+      <!-- Title Section -->
+      <div class="px-6 py-4 border-b border-slate-200/80">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
+              <ImageIcon class="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Event Media</h2>
+              <p class="text-sm text-slate-500">Manage all visual content and media for your event</p>
+            </div>
           </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ totalPhotos }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Photos</p>
-          </div>
+          <button
+            v-if="canEdit && activeSection === 'gallery'"
+            @click="openUploadModal"
+            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm"
+          >
+            <Upload class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Upload Media</span>
+            <span class="sm:hidden">Upload</span>
+          </button>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Star class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ featuredCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Featured</p>
-          </div>
+      <!-- Sub-navigation Tabs -->
+      <div class="px-4 bg-slate-50/50">
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide py-3">
+          <button
+            @click="activeSection = 'basic'"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSection === 'basic'
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <Layout class="w-4 h-4" />
+            <span>Basic Media</span>
+          </button>
+          <button
+            @click="activeSection = 'gallery'"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSection === 'gallery'
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <ImageIcon class="w-4 h-4" />
+            <span>Photo Gallery</span>
+          </button>
+          <button
+            @click="activeSection = 'embeds'"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSection === 'embeds'
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <Video class="w-4 h-4" />
+            <span>Videos & Maps</span>
+          </button>
         </div>
       </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <Video class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ videosCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Videos</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Layout class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ hasBanner ? 1 : 0 }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Banner</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Media Tabs -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-1.5 sm:p-2">
-      <nav class="flex space-x-1">
-        <button
-          @click="activeSection = 'basic'"
-          :class="[
-            'flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200',
-            activeSection === 'basic'
-              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-              : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
-          ]"
-        >
-          <span class="hidden sm:inline">Basic Media</span>
-          <span class="sm:hidden">Basic</span>
-        </button>
-        <button
-          @click="activeSection = 'gallery'"
-          :class="[
-            'flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200',
-            activeSection === 'gallery'
-              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-              : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
-          ]"
-        >
-          <span class="hidden sm:inline">Photo Gallery</span>
-          <span class="sm:hidden">Gallery</span>
-        </button>
-        <button
-          @click="activeSection = 'embeds'"
-          :class="[
-            'flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200',
-            activeSection === 'embeds'
-              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg'
-              : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1873cc]',
-          ]"
-        >
-          <span class="hidden sm:inline">Videos & Maps</span>
-          <span class="sm:hidden">Media</span>
-        </button>
-      </nav>
     </div>
 
     <!-- Tab Content -->
@@ -603,5 +560,14 @@ onMounted(() => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

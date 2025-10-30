@@ -1,10 +1,5 @@
 <template>
-  <div class="space-y-8" @click="closeAllDropdowns">
-    <div>
-      <h4 class="text-lg font-semibold text-slate-900 mb-2">Basic Media</h4>
-      <p class="text-sm text-slate-600 mb-6">Upload banner image, logos, and event video</p>
-    </div>
-
+  <div class="space-y-6" @click="closeAllDropdowns">
     <!-- Banner Image -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
       <div class="flex items-center justify-between mb-4">
