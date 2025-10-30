@@ -2,6 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { resetMetaTags } from '../utils/metaUtils'
 
+// Route guard validation cache to prevent excessive token validation
+// The authService already has internal caching, but this adds an extra layer
+// to prevent even calling ensureValidToken on every single navigation
+let lastRouteValidationTime: number = 0
+const ROUTE_VALIDATION_CACHE_DURATION = 2 * 60 * 1000 // 2 minutes
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {
@@ -114,43 +120,53 @@ router.beforeEach(async (to, from, next) => {
 
       // Basic authentication check
       if (!authStore.isAuthenticated) {
-        // Redirect to signin with the current path as a query parameter
+        console.info('User not authenticated, redirecting to sign in')
         next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
         return
       }
 
-      // Enhanced security: Validate token with server for sensitive routes
+      // Enhanced security: Validate token for sensitive routes
+      // But use caching to avoid validating on every single navigation
       const sensitiveRoutes = ['settings', 'security', 'commission', 'event-edit']
-      if (sensitiveRoutes.includes(to.name as string)) {
+      const now = Date.now()
+      const timeSinceLastValidation = now - lastRouteValidationTime
+      const needsValidation =
+        sensitiveRoutes.includes(to.name as string) &&
+        timeSinceLastValidation > ROUTE_VALIDATION_CACHE_DURATION
+
+      if (needsValidation) {
+        console.debug('Validating token for sensitive route:', to.name)
         try {
           const isTokenValid = await authService.ensureValidToken()
-          if (!isTokenValid) {
-            console.warn('Token validation failed, redirecting to sign in')
+
+          if (isTokenValid) {
+            // Update validation cache
+            lastRouteValidationTime = now
+            console.debug('Token validation successful for route guard')
+          } else {
+            // Token is definitively invalid
+            console.warn('Token validation failed definitively, logging out')
             await authStore.logout()
             next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
             return
           }
         } catch (error) {
-          console.warn('Token validation error:', error)
-          // Continue to route but user might face API errors
+          console.warn('Token validation error in route guard:', error)
+          // On network errors, allow navigation - don't force logout
+          // The API service will handle token refresh if needed
+          console.info('Allowing navigation despite validation error')
         }
+      } else if (sensitiveRoutes.includes(to.name as string)) {
+        console.debug(
+          'Skipping token validation (cached, last validated',
+          Math.round(timeSinceLastValidation / 1000),
+          'seconds ago)',
+        )
       }
 
       // Specific checks for event editing
       if (to.name === 'event-edit' && to.params.id) {
-        // Note: In a real application, you'd validate if user can edit this specific event
-        // This would require an API call to check permissions
-        console.info('Event edit access granted for event:', to.params.id)
-      }
-    }
-
-    // Security headers simulation (would be better handled by server)
-    if (typeof document !== 'undefined') {
-      // Prevent iframe embedding on sensitive pages
-      if (to.meta.requiresAuth) {
-        // X-Frame-Options should be set via HTTP headers, not meta tags
-        // This is a security feature that prevents clickjacking
-        // Remove the meta tag approach as it's not effective and causes console warnings
+        console.debug('Navigating to event edit:', to.params.id)
       }
     }
 
@@ -161,14 +177,15 @@ router.beforeEach(async (to, from, next) => {
 
     // Reset meta tags when leaving showcase pages (but not when entering)
     if (from.name === 'event-showcase' && to.name !== 'event-showcase') {
-      console.log('🏷️ Leaving showcase page, resetting meta tags')
+      console.debug('Leaving showcase page, resetting meta tags')
       resetMetaTags()
     }
 
     next()
   } catch (error) {
     console.error('Route guard error:', error)
-    // Allow navigation to continue in case of errors
+    // Allow navigation to continue in case of errors - don't block the user
+    console.warn('Allowing navigation despite route guard error')
     next()
   }
 })

@@ -4,7 +4,7 @@
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
-    class="absolute inset-0 flex justify-center px-4 sm:px-6 md:px-8 text-center transition-all duration-700 ease-out"
+    class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
     :class="{
       'swipe-up-hidden': isContentHidden,
       'cursor-pointer': !isInteractionDisabled,
@@ -14,7 +14,7 @@
   >
     <!-- Inner Container with Dynamic Top Position -->
     <div
-      class="inner-container-rows flex flex-col w-full max-w-5xl mx-auto absolute"
+      class="inner-container-rows flex flex-col w-full mx-auto absolute"
       style="height: 53vh"
       :style="containerStyle"
     >
@@ -104,20 +104,30 @@
 
     <!-- Swipe Up Arrow Indicator -->
     <div class="swipe-up-arrow animation-delay-800">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        :stroke="primaryColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="arrow-icon"
-      >
-        <polyline points="6 19 12 13 18 19"></polyline>
-        <polyline points="6 13 12 7 18 13"></polyline>
-        <polyline points="6 7 12 1 18 7"></polyline>
-      </svg>
+      <div class="arrow-stack">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          :stroke="primaryColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="arrow-icon arrow-1"
+        >
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          :stroke="primaryColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="arrow-icon arrow-2"
+        >
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </div>
     </div>
   </div>
 </template>
@@ -309,7 +319,7 @@ const fallbackLogoStyle = computed(() => {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  max-width: 90%;
+  max-width: 95%;
 }
 
 .guest-name-blur-wrapper {
@@ -318,7 +328,8 @@ const fallbackLogoStyle = computed(() => {
   backdrop-filter: blur(10px);
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
-  width: 100%;
+  display: inline-block;
+  max-width: 100%;
 }
 
 .guest-name-line {
@@ -338,8 +349,8 @@ const fallbackLogoStyle = computed(() => {
   white-space: nowrap !important;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-  width: 100%;
+  display: inline-block;
+  max-width: 100%;
   padding-bottom: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
@@ -366,15 +377,20 @@ const fallbackLogoStyle = computed(() => {
 /* Mobile - reduce guest name size */
 @media (max-width: 640px) {
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.55rem, 2.2vh, 1.1rem) !important;
+    font-size: clamp(0.5rem, 1.8vh, 0.95rem) !important;
   }
 
   .content-row-guest .scaled-guest-name[style*="Great Vibes"] {
-    font-size: clamp(0.75rem, 2.8vh, 1.4rem) !important;
+    font-size: clamp(0.65rem, 2.4vh, 1.2rem) !important;
   }
 
   .guest-name-container {
     gap: 0;
+    max-width: 90%;
+  }
+
+  .guest-name-blur-wrapper {
+    padding: 0.5rem 1rem;
   }
 
   .guest-name-line:first-child {
@@ -396,38 +412,95 @@ const fallbackLogoStyle = computed(() => {
   transform: translateX(-50%);
   z-index: 20;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.arrow-icon {
-  width: 40px;
-  height: 40px;
-  display: block;
-  animation: bounceArrow 2s ease-in-out infinite;
+.arrow-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: -32px;
 }
 
-@keyframes bounceArrow {
+.arrow-icon {
+  width: 48px;
+  height: 48px;
+  display: block;
+  stroke-width: 3;
+  margin-top: -16px;
+}
+
+.arrow-icon:first-child {
+  margin-top: 0;
+}
+
+.arrow-1 {
+  animation: arrowFloat1 1.5s ease-in-out infinite;
+}
+
+.arrow-2 {
+  animation: arrowFloat2 1.5s ease-in-out infinite;
+}
+
+@keyframes arrowFloat1 {
   0%, 100% {
     transform: translateY(0);
+    opacity: 0.4;
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-12px);
+    opacity: 1;
+  }
+}
+
+@keyframes arrowFloat2 {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-12px);
+    opacity: 1;
   }
 }
 
 /* Responsive arrow size */
 @media (max-width: 640px) {
   .arrow-icon {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+    margin-top: -14px;
+  }
+
+  .arrow-icon:first-child {
+    margin-top: 0;
+  }
+
+  .swipe-up-arrow {
+    bottom: 3vh;
+  }
+
+  .arrow-stack {
+    margin-top: -28px;
   }
 }
 
 @media (min-width: 1024px) {
   .arrow-icon {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
+    margin-top: -18px;
+  }
+
+  .arrow-icon:first-child {
+    margin-top: 0;
+  }
+
+  .arrow-stack {
+    margin-top: -36px;
   }
 }
 

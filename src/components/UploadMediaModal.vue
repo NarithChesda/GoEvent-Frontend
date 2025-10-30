@@ -6,40 +6,40 @@
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
 
         <!-- Modal -->
-        <div class="flex min-h-full items-center justify-center p-3 sm:p-4">
+        <div class="flex min-h-full items-center justify-center p-4">
           <div
             ref="modalRef"
-            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden"
+            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 sm:px-8 py-4 sm:py-6 text-white">
+            <!-- Header (neutral style) -->
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <ImagePlus class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <ImagePlus class="w-4.5 h-4.5" />
                   </div>
-                  <div>
-                    <h2 class="text-lg sm:text-2xl font-bold">Upload Media</h2>
-                    <p class="text-white/90 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                      Add photos and visual content to your event
-                    </p>
-                  </div>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Upload Media</h2>
                 </div>
                 <button
                   @click="$emit('close')"
-                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  aria-label="Close"
                 >
-                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <X class="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <!-- Content -->
-            <div class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6">
-              <!-- File Upload Area -->
-              <div class="space-y-3 sm:space-y-4">
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700">Select Images</label>
+            <!-- Form -->
+            <form @submit.prevent="uploadFiles" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div class="space-y-5">
+                <!-- File Upload Area -->
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
+                    <ImageIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                    Select Images
+                  </h4>
 
                 <!-- Drop Zone -->
                 <div
@@ -85,18 +85,18 @@
                 </div>
 
                 <!-- Selected Files Preview -->
-                <div v-if="selectedFiles.length > 0" class="space-y-2 sm:space-y-3">
-                  <h4 class="text-xs sm:text-sm font-medium text-slate-700">
+                <div v-if="selectedFiles.length > 0" class="space-y-3">
+                  <h4 class="text-sm font-medium text-slate-700">
                     Selected Files ({{ selectedFiles.length }})
                   </h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div
                       v-for="(file, index) in selectedFiles"
                       :key="index"
-                      class="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl"
+                      class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl"
                     >
                       <!-- Preview Thumbnail -->
-                      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
+                      <div class="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
                         <img
                           v-if="file.preview"
                           :src="file.preview"
@@ -104,126 +104,124 @@
                           class="w-full h-full object-cover"
                         />
                         <div v-else class="w-full h-full flex items-center justify-center">
-                          <ImageIcon class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                          <ImageIcon class="w-5 h-5 text-gray-400" />
                         </div>
                       </div>
 
                       <!-- File Info -->
                       <div class="flex-1 min-w-0">
-                        <p class="text-xs sm:text-sm font-medium text-slate-900 truncate">
+                        <p class="text-sm font-medium text-slate-900 truncate">
                           {{ file.file.name }}
                         </p>
-                        <p class="text-[10px] sm:text-xs text-slate-500">{{ formatFileSize(file.file.size) }}</p>
+                        <p class="text-xs text-slate-500">{{ formatFileSize(file.file.size) }}</p>
                       </div>
 
                       <!-- Remove Button -->
                       <button
+                        type="button"
                         @click="removeFile(index)"
-                        class="p-0.5 sm:p-1 text-slate-400 hover:text-red-500 transition-colors duration-200"
+                        class="p-1 text-slate-400 hover:text-red-500 transition-colors duration-200"
                       >
-                        <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <X class="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Upload Options -->
-              <div class="space-y-3 sm:space-y-4">
-                <h4 class="text-xs sm:text-sm font-semibold text-slate-700">Upload Options</h4>
+                <!-- Upload Options -->
+                <div class="space-y-3 sm:space-y-4">
+                  <h4 class="text-sm font-semibold text-slate-900">Upload Options</h4>
 
-                <!-- Default Caption -->
-                <div>
-                  <label
-                    for="defaultCaption"
-                    class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"
-                  >
-                    Default Caption (Optional)
-                  </label>
-                  <input
-                    id="defaultCaption"
-                    v-model="defaultCaption"
-                    type="text"
-                    placeholder="Enter a caption for all images"
-                    class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                  />
-                  <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-                    This caption will be applied to all uploaded images
-                  </p>
-                </div>
-
-                <!-- Featured Toggle -->
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <input
-                    id="markAsFeatured"
-                    v-model="markAsFeatured"
-                    type="checkbox"
-                    class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
-                  />
-                  <label for="markAsFeatured" class="text-xs sm:text-sm font-semibold text-slate-700">
-                    Mark as featured content
-                  </label>
-                </div>
-              </div>
-
-              <!-- Error Display -->
-              <div v-if="error" class="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl">
-                <div class="flex items-start space-x-2 sm:space-x-3">
-                  <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500 shrink-0 mt-0.5" />
+                  <!-- Default Caption -->
                   <div>
-                    <p class="text-xs sm:text-sm font-medium text-red-800">Upload Error</p>
-                    <p class="text-xs sm:text-sm text-red-600 mt-0.5 sm:mt-1">{{ error }}</p>
+                    <label
+                      for="defaultCaption"
+                      class="block text-sm font-medium text-slate-700 mb-2"
+                    >
+                      Default Caption (Optional)
+                    </label>
+                    <input
+                      id="defaultCaption"
+                      v-model="defaultCaption"
+                      type="text"
+                      placeholder="Enter a caption for all images"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    />
+                    <p class="text-xs text-slate-500 mt-1">
+                      This caption will be applied to all uploaded images
+                    </p>
+                  </div>
+
+                  <!-- Featured Toggle -->
+                  <div class="flex items-center gap-3">
+                    <input
+                      id="markAsFeatured"
+                      v-model="markAsFeatured"
+                      type="checkbox"
+                      class="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-200"
+                    />
+                    <label for="markAsFeatured" class="text-sm font-medium text-slate-700">
+                      Mark as featured content
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Error Display -->
+                <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div class="flex items-start space-x-3">
+                    <AlertCircle class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p class="text-sm font-medium text-red-800">Upload Error</p>
+                      <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Upload Progress -->
+                <div v-if="uploading" class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-700">
+                      Uploading {{ selectedFiles.length }} {{ selectedFiles.length === 1 ? 'photo' : 'photos' }}...
+                    </p>
+                    <p class="text-sm text-slate-500">{{ Math.round(uploadProgress) }}%</p>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-2 rounded-full transition-all duration-300"
+                      :style="{ width: `${uploadProgress}%` }"
+                    ></div>
                   </div>
                 </div>
               </div>
 
-              <!-- Upload Progress -->
-              <div v-if="uploading" class="space-y-2 sm:space-y-3">
-                <div class="flex items-center justify-between">
-                  <p class="text-xs sm:text-sm font-medium text-slate-700">
-                    Uploading {{ selectedFiles.length }} {{ selectedFiles.length === 1 ? 'photo' : 'photos' }}...
-                  </p>
-                  <p class="text-xs sm:text-sm text-slate-500">{{ Math.round(uploadProgress) }}%</p>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 overflow-hidden">
-                  <div
-                    class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-1.5 sm:h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${uploadProgress}%` }"
-                  ></div>
-                </div>
+              <!-- Action Buttons -->
+              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                <button
+                  type="button"
+                  @click="$emit('close')"
+                  :disabled="uploading"
+                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  :disabled="selectedFiles.length === 0 || uploading"
+                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <span
+                    v-if="uploading"
+                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                  ></span>
+                  {{
+                    uploading
+                      ? 'Uploading...'
+                      : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}`
+                  }}
+                </button>
               </div>
-            </div>
-
-            <!-- Footer -->
-            <div
-              class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 md:gap-4 p-4 sm:p-6 md:p-8 border-t border-gray-200"
-            >
-              <button
-                type="button"
-                @click="$emit('close')"
-                :disabled="uploading"
-                class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                @click="uploadFiles"
-                :disabled="selectedFiles.length === 0 || uploading"
-                class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
-              >
-                <div
-                  v-if="uploading"
-                  class="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5 sm:mr-2"
-                ></div>
-                <Upload v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                {{
-                  uploading
-                    ? 'Uploading...'
-                    : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}`
-                }}
-              </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>

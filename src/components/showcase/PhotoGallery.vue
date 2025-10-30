@@ -45,7 +45,7 @@
         v-for="(photo, index) in photos"
         :key="photo.id"
         :ref="(el) => setPhotoRef(el, index)"
-        class="photo-item"
+        class="photo-item photo-visible"
         @click="handlePhotoClick(photo)"
       >
         <!-- Loading Placeholder -->
@@ -79,7 +79,7 @@
           v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
           :src="getMediaUrl(photo.image)"
           :alt="photo.caption || 'Event Photo'"
-          loading="lazy"
+          :loading="index < 4 ? 'eager' : 'lazy'"
           :decoding="index < 3 ? 'sync' : 'async'"
           :fetchpriority="index < 2 ? 'high' : 'auto'"
           @load="handleImageLoad(photo.id)"
@@ -176,7 +176,7 @@ const handlePhotoClick = (photo: EventPhoto) => {
   emit('openPhoto', photo)
 }
 
-// Scroll animation with Intersection Observer
+// Simplified gallery - no scroll animations needed for mobile compatibility
 const photoRefs = ref<(Element | null)[]>([])
 const observer = ref<IntersectionObserver | null>(null)
 
@@ -237,8 +237,8 @@ onUnmounted(() => {
   cursor: pointer;
   overflow: hidden;
   border-radius: 0.5rem;
-  opacity: 0;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
@@ -295,7 +295,7 @@ onUnmounted(() => {
 
   .photo-item {
     /* Lighter animation on mobile for better performance */
-    transform: translateY(10px);
+    transform: translateY(0);
     transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     /* Optimize paint and layout */
     contain: layout style paint;

@@ -58,6 +58,28 @@ export function useGuestGroups(eventId: string) {
     }
   }
 
+  const updateGroup = async (groupId: number, data: Partial<CreateGuestGroupRequest>) => {
+    try {
+      const response = await guestGroupService.updateGroup(eventId, groupId, data)
+
+      if (response.success && response.data) {
+        // Update the group in the local array
+        const index = groups.value.findIndex((g) => g.id === groupId)
+        if (index !== -1) {
+          groups.value[index] = response.data
+        }
+      }
+
+      return response
+    } catch (error) {
+      console.error('Error updating group:', error)
+      return {
+        success: false,
+        message: 'Failed to update group',
+      } as ApiResponse<GuestGroup>
+    }
+  }
+
   const deleteGroup = async (groupId: number) => {
     try {
       const response = await guestGroupService.deleteGroup(eventId, groupId)
@@ -100,6 +122,7 @@ export function useGuestGroups(eventId: string) {
     expandedGroups,
     loadGroups,
     createGroup,
+    updateGroup,
     deleteGroup,
     toggleGroupExpansion,
     isGroupExpanded,

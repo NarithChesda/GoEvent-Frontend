@@ -1,12 +1,14 @@
 import { apiService, type ApiResponse } from './api'
 import { secureStorage } from '../utils/secureStorage'
+import { jwtUtils } from '../utils/jwtUtils'
 
 // Import API base URL for direct fetch in logout
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
-// Token lifetime constants (as documented in API)
-const ACCESS_TOKEN_LIFETIME = 60 * 60 * 1000 // 60 minutes in milliseconds
-const REFRESH_TOKEN_LIFETIME = 24 * 60 * 60 * 1000 // 1 day in milliseconds
+// Validation cache to prevent excessive server validation
+const VALIDATION_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+let lastValidationTime: number = 0
+let lastValidationResult: boolean = false
 
 export interface User {
   id: number
@@ -324,6 +326,9 @@ class AuthService {
     secureStorage.setItem('access_token', accessToken)
     secureStorage.setItem('refresh_token', refreshToken)
 
+    // Clear validation cache when new tokens are set
+    this.clearValidationCache()
+
     // Migrate existing localStorage data if present
     secureStorage.migrateToSecureStorage(['access_token', 'refresh_token', 'user'])
   }
@@ -471,10 +476,21 @@ class AuthService {
   clearTokens(): void {
     secureStorage.removeItem('access_token')
     secureStorage.removeItem('refresh_token')
+    // Clear validation cache when tokens are cleared
+    lastValidationTime = 0
+    lastValidationResult = false
   }
 
   clearUser(): void {
     secureStorage.removeItem('user')
+  }
+
+  /**
+   * Clear validation cache (useful after token refresh or login)
+   */
+  clearValidationCache(): void {
+    lastValidationTime = 0
+    lastValidationResult = false
   }
 
   isAuthenticated(): boolean {
@@ -482,28 +498,33 @@ class AuthService {
   }
 
   /**
-   * Check if we should attempt token refresh
-   * Uses a simple heuristic instead of parsing JWT client-side
+   * Check if we should attempt token refresh based on actual token expiration
    */
   private shouldRefreshToken(): boolean {
     try {
-      const lastRefresh = secureStorage.getItem('last_token_refresh')
-      if (!lastRefresh) return true
+      const accessToken = this.getAccessToken()
 
-      const lastRefreshTime = parseInt(lastRefresh, 10)
+      if (!accessToken) {
+        return false // No token to refresh
+      }
 
-      // Validate parsed timestamp
-      if (isNaN(lastRefreshTime) || lastRefreshTime <= 0) {
-        console.warn('Invalid timestamp in storage, forcing refresh')
+      // Check if token is expired or will expire within 5 minutes
+      const isExpired = jwtUtils.isTokenExpired(accessToken)
+      const willExpireSoon = jwtUtils.willExpireSoon(accessToken, 5)
+
+      if (isExpired) {
+        console.info('Access token is expired, refresh needed')
         return true
       }
 
-      const now = Date.now()
+      if (willExpireSoon) {
+        console.info('Access token will expire soon, proactive refresh needed')
+        return true
+      }
 
-      // Refresh if more than 50 minutes have passed (assuming 60-minute token expiry)
-      return now - lastRefreshTime > 50 * 60 * 1000
+      return false
     } catch (error) {
-      console.warn('Error checking refresh timestamp, forcing refresh:', error)
+      console.warn('Error checking token expiration, will attempt refresh:', error)
       return true
     }
   }
@@ -525,44 +546,66 @@ class AuthService {
       const accessToken = this.getAccessToken()
 
       if (!accessToken) {
+        console.info('No access token found')
         return false
       }
 
-      // Check if we should attempt refresh based on time heuristic
-      if (this.shouldRefreshToken()) {
-        // First try to validate current token with server
-        const isValid = await this.validateTokenWithServer()
+      // Check validation cache first to avoid excessive server calls
+      const now = Date.now()
+      if (now - lastValidationTime < VALIDATION_CACHE_DURATION && lastValidationResult) {
+        console.debug('Using cached validation result')
+        return true
+      }
 
-        if (isValid) {
-          // Update last refresh time
-          try {
-            secureStorage.setItem('last_token_refresh', Date.now().toString())
-          } catch (storageError) {
-            console.warn('Failed to update refresh timestamp:', storageError)
-            // Continue anyway, token is still valid
-          }
+      // Check if token is expired client-side first
+      const isExpired = jwtUtils.isTokenExpired(accessToken)
+
+      if (isExpired === true) {
+        console.info('Access token is expired, attempting refresh')
+        const refreshResponse = await this.refreshToken()
+
+        if (refreshResponse.success) {
+          console.info('Token refreshed successfully')
+          lastValidationTime = now
+          lastValidationResult = true
           return true
         }
 
-        // Token is invalid, try to refresh
+        console.warn('Token refresh failed')
+        lastValidationTime = now
+        lastValidationResult = false
+        return false
+      }
+
+      // Check if token will expire soon and proactively refresh
+      if (this.shouldRefreshToken()) {
+        console.info('Token will expire soon, proactive refresh')
+
         const refreshResponse = await this.refreshToken()
         if (refreshResponse.success) {
-          try {
-            secureStorage.setItem('last_token_refresh', Date.now().toString())
-          } catch (storageError) {
-            console.warn('Failed to update refresh timestamp after refresh:', storageError)
-            // Continue anyway, token refresh was successful
-          }
+          console.info('Proactive token refresh successful')
+          lastValidationTime = now
+          lastValidationResult = true
           return true
         }
 
-        return false
+        // If proactive refresh fails, check if current token is still valid
+        console.warn('Proactive refresh failed, checking current token validity')
+        const isStillValid = await this.validateTokenWithServer()
+
+        lastValidationTime = now
+        lastValidationResult = isStillValid
+        return isStillValid
       }
 
-      // Token should still be valid based on time heuristic
+      // Token should be valid, update cache
+      lastValidationTime = now
+      lastValidationResult = true
       return true
     } catch (error) {
       console.error('Error in ensureValidToken:', error)
+      lastValidationTime = Date.now()
+      lastValidationResult = false
       return false
     }
   }
