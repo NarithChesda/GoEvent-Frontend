@@ -604,56 +604,14 @@
     </Teleport>
 
     <!-- Delete Confirmation Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="deletingExpense"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          @click.self="deletingExpense = null"
-        >
-          <div
-            ref="deleteModalRef"
-            role="alertdialog"
-            aria-labelledby="delete-expense-dialog-title"
-            aria-describedby="delete-expense-dialog-description"
-            aria-modal="true"
-            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
-          >
-            <div class="flex items-start gap-4 mb-6">
-              <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <AlertCircle class="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 id="delete-expense-dialog-title" class="text-xl font-bold text-slate-900 mb-2">Delete Expense?</h3>
-                <p id="delete-expense-dialog-description" class="text-sm text-slate-600">
-                  Are you sure you want to delete the expense <strong>{{ deletingExpense.description }}</strong>?
-                  This action cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <button
-                type="button"
-                @click="deletingExpense = null"
-                class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all"
-                :disabled="submitting"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                @click="handleDelete"
-                class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="submitting"
-              >
-                {{ submitting ? 'Deleting...' : 'Delete' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <DeleteConfirmModal
+      :show="!!deletingExpense"
+      :loading="submitting"
+      title="Delete Expense"
+      :item-name="deletingExpense?.description"
+      @confirm="handleDelete"
+      @cancel="deletingExpense = null"
+    />
 
     <!-- Success Toast -->
     <Teleport to="body">
@@ -704,6 +662,7 @@ import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { formatPaymentMethod } from '@/constants/paymentMethods'
 import { getErrorMessage } from '@/utils/errorMessages'
 import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 
 interface Props {
   eventId: string
@@ -729,12 +688,7 @@ const receiptInput = ref<HTMLInputElement | null>(null)
 
 // Focus trap for modals (accessibility)
 const addModalRef = ref<HTMLElement>()
-const deleteModalRef = ref<HTMLElement>()
 const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
-  immediate: false,
-  escapeDeactivates: true
-})
-const { activate: activateDeleteModal, deactivate: deactivateDeleteModal } = useFocusTrap(deleteModalRef, {
   immediate: false,
   escapeDeactivates: true
 })
@@ -802,15 +756,6 @@ watch(showAddExpenseModal, async (isOpen) => {
     activateAddModal()
   } else {
     deactivateAddModal()
-  }
-})
-
-watch(deletingExpense, async (value) => {
-  if (value) {
-    await nextTick()
-    activateDeleteModal()
-  } else {
-    deactivateDeleteModal()
   }
 })
 

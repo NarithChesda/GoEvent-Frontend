@@ -246,56 +246,15 @@
     </Teleport>
 
     <!-- Delete Confirmation Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="deletingCategory"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          @click.self="deletingCategory = null"
-        >
-          <div
-            ref="deleteModalRef"
-            role="alertdialog"
-            aria-labelledby="delete-category-dialog-title"
-            aria-describedby="delete-category-dialog-description"
-            aria-modal="true"
-            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
-          >
-            <div class="flex items-start gap-4 mb-6">
-              <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <AlertCircle class="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 id="delete-category-dialog-title" class="text-xl font-bold text-slate-900 mb-2">Delete Category?</h3>
-                <p id="delete-category-dialog-description" class="text-sm text-slate-600">
-                  Are you sure you want to delete <strong>{{ deletingCategory.name }}</strong>?
-                  This action cannot be undone. Categories with existing budgets or expenses cannot be deleted.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <button
-                type="button"
-                @click="deletingCategory = null"
-                class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all"
-                :disabled="submitting"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                @click="handleDelete"
-                class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="submitting"
-              >
-                {{ submitting ? 'Deleting...' : 'Delete' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <DeleteConfirmModal
+      :show="!!deletingCategory"
+      :loading="submitting"
+      title="Delete Category"
+      :item-name="deletingCategory?.name"
+      warning-message="Categories with existing budgets or expenses cannot be deleted."
+      @confirm="handleDelete"
+      @cancel="deletingCategory = null"
+    />
 
     <!-- Success Toast -->
     <Teleport to="body">
@@ -334,6 +293,7 @@ import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { getErrorMessage } from '@/utils/errorMessages'
 import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -347,12 +307,7 @@ const deletingCategory = ref<ExpenseCategory | null>(null)
 
 // Focus trap for modals (accessibility)
 const addModalRef = ref<HTMLElement>()
-const deleteModalRef = ref<HTMLElement>()
 const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
-  immediate: false,
-  escapeDeactivates: true
-})
-const { activate: activateDeleteModal, deactivate: deactivateDeleteModal } = useFocusTrap(deleteModalRef, {
   immediate: false,
   escapeDeactivates: true
 })
@@ -393,15 +348,6 @@ watch(showAddCategoryModal, async (isOpen) => {
     activateAddModal()
   } else {
     deactivateAddModal()
-  }
-})
-
-watch(deletingCategory, async (value) => {
-  if (value) {
-    await nextTick()
-    activateDeleteModal()
-  } else {
-    deactivateDeleteModal()
   }
 })
 
