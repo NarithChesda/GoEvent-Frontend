@@ -13,9 +13,11 @@
             <Search class="w-4 h-4 text-slate-400" />
           </div>
           <input
+            id="expense-search"
             type="text"
             v-model="searchQuery"
             placeholder="Search expenses..."
+            aria-label="Search expenses by description, vendor, or notes"
             class="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
           />
         </div>
@@ -31,10 +33,13 @@
     </div>
 
     <!-- Filter Pills -->
-    <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
+    <div role="tablist" aria-label="Expense categories filter" class="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
       <button
         v-for="filter in categoryFilters"
         :key="filter.id"
+        role="tab"
+        :aria-selected="activeFilter === filter.id"
+        :aria-controls="'expenses-panel'"
         @click="activeFilter = filter.id"
         :class="[
           'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
@@ -94,7 +99,13 @@
     </div>
 
     <!-- Expense List -->
-    <div v-else class="space-y-3">
+    <div
+      v-else
+      id="expenses-panel"
+      role="tabpanel"
+      :aria-label="`${activeFilter === 'all' ? 'All' : categoryFilters.find(f => f.id === activeFilter)?.label || ''} expenses`"
+      class="space-y-3"
+    >
       <!-- Dynamic Expense Items -->
       <div
         v-for="expense in filteredExpenses"
@@ -171,12 +182,16 @@
                 <div v-if="canEdit" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     @click="editExpense(expense)"
+                    :aria-label="`Edit expense: ${expense.description}`"
+                    title="Edit expense"
                     class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                   >
                     <Edit2 class="w-4 h-4" />
                   </button>
                   <button
                     @click="confirmDeleteExpense(expense)"
+                    :aria-label="`Delete expense: ${expense.description}`"
+                    title="Delete expense"
                     class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                   >
                     <Trash2 class="w-4 h-4" />
@@ -389,13 +404,20 @@
         <div
           v-if="showAddExpenseModal"
           class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto"
-          @click.self="showAddExpenseModal = false"
+          @click.self="closeModal"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 my-8 transform transition-all">
+          <div
+            ref="addModalRef"
+            role="dialog"
+            aria-labelledby="add-expense-modal-title"
+            aria-modal="true"
+            class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 my-8 transform transition-all"
+          >
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-xl font-bold text-slate-900">{{ editingExpense ? 'Edit Expense' : 'Add Expense' }}</h3>
+              <h3 id="add-expense-modal-title" class="text-xl font-bold text-slate-900">{{ editingExpense ? 'Edit Expense' : 'Add Expense' }}</h3>
               <button
                 @click="closeModal"
+                aria-label="Close dialog"
                 class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
               >
                 <X class="w-5 h-5" />
@@ -411,9 +433,11 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Category -->
                 <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Category *</label>
+                  <label for="expense-category" class="block text-sm font-medium text-slate-700 mb-2">Category *</label>
                   <select
+                    id="expense-category"
                     v-model="newExpense.category_id"
+                    aria-required="true"
                     class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                     required
                   >
@@ -430,11 +454,13 @@
 
                 <!-- Description -->
                 <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Description *</label>
+                  <label for="expense-description" class="block text-sm font-medium text-slate-700 mb-2">Description *</label>
                   <input
+                    id="expense-description"
                     type="text"
                     v-model="newExpense.description"
                     placeholder="E.g., Venue rental, Catering service..."
+                    aria-required="true"
                     class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                     required
                   />
@@ -585,14 +611,21 @@
           class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           @click.self="deletingExpense = null"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+          <div
+            ref="deleteModalRef"
+            role="alertdialog"
+            aria-labelledby="delete-expense-dialog-title"
+            aria-describedby="delete-expense-dialog-description"
+            aria-modal="true"
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+          >
             <div class="flex items-start gap-4 mb-6">
               <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <AlertCircle class="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">Delete Expense?</h3>
-                <p class="text-sm text-slate-600">
+                <h3 id="delete-expense-dialog-title" class="text-xl font-bold text-slate-900 mb-2">Delete Expense?</h3>
+                <p id="delete-expense-dialog-description" class="text-sm text-slate-600">
                   Are you sure you want to delete the expense <strong>{{ deletingExpense.description }}</strong>?
                   This action cannot be undone.
                 </p>
@@ -640,7 +673,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import {
   Plus,
   Search,
@@ -669,6 +702,8 @@ import {
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { formatPaymentMethod } from '@/constants/paymentMethods'
+import { getErrorMessage } from '@/utils/errorMessages'
+import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 
 interface Props {
   eventId: string
@@ -691,6 +726,18 @@ const editingExpense = ref<ExpenseRecord | null>(null)
 const deletingExpense = ref<ExpenseRecord | null>(null)
 const selectedFile = ref<File | null>(null)
 const receiptInput = ref<HTMLInputElement | null>(null)
+
+// Focus trap for modals (accessibility)
+const addModalRef = ref<HTMLElement>()
+const deleteModalRef = ref<HTMLElement>()
+const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
+  immediate: false,
+  escapeDeactivates: true
+})
+const { activate: activateDeleteModal, deactivate: deactivateDeleteModal } = useFocusTrap(deleteModalRef, {
+  immediate: false,
+  escapeDeactivates: true
+})
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -748,6 +795,25 @@ const filteredExpenses = computed(() => {
   return result
 })
 
+// Activate/deactivate focus trap when modals open/close
+watch(showAddExpenseModal, async (isOpen) => {
+  if (isOpen) {
+    await nextTick()
+    activateAddModal()
+  } else {
+    deactivateAddModal()
+  }
+})
+
+watch(deletingExpense, async (value) => {
+  if (value) {
+    await nextTick()
+    activateDeleteModal()
+  } else {
+    deactivateDeleteModal()
+  }
+})
+
 const showSuccess = (message: string) => {
   successMessage.value = message
   showSuccessToast.value = true
@@ -769,7 +835,7 @@ const loadExpenses = async () => {
       error.value = response.message || 'Failed to load expenses'
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred while loading expenses'
+    error.value = getErrorMessage(err, 'load expenses')
     console.error('Error loading expenses:', err)
   } finally {
     loading.value = false
@@ -838,49 +904,78 @@ const handleAddExpense = async () => {
     return
   }
 
+  const categoryId = parseInt(newExpense.value.category_id)
+  const isEditing = !!editingExpense.value
+
+  // API expects both 'category' and 'category_id' fields (backend requirement)
+  const requestData: CreateExpenseRecordRequest = {
+    category: categoryId,
+    category_id: categoryId,
+    description: newExpense.value.description,
+    amount: newExpense.value.amount!,
+    currency: newExpense.value.currency,
+    date: newExpense.value.date,
+    payment_method: newExpense.value.payment_method,
+    paid_to: newExpense.value.paid_to || undefined,
+    notes: newExpense.value.notes || undefined
+  }
+
+  // OPTIMISTIC UPDATE: Update UI immediately
+  const backup = [...expenses.value]
+  const categoryInfo = categories.value.find(c => c.id === categoryId)
+
+  if (isEditing && editingExpense.value) {
+    // Update existing expense in the list
+    const index = expenses.value.findIndex(e => e.id === editingExpense.value!.id)
+    if (index !== -1 && categoryInfo) {
+      expenses.value[index] = {
+        ...editingExpense.value,
+        ...requestData,
+        category: categoryId,
+        category_info: categoryInfo,
+        receipt: selectedFile.value ? URL.createObjectURL(selectedFile.value) : editingExpense.value.receipt
+      } as ExpenseRecord
+    }
+    showSuccess('Expense updated successfully!')
+  } else if (categoryInfo) {
+    // Add temporary expense with _temp flag
+    const tempExpense: ExpenseRecord & { _temp?: boolean } = {
+      id: `temp-${Date.now()}`,
+      ...requestData,
+      category: categoryId,
+      category_info: categoryInfo,
+      receipt: selectedFile.value ? URL.createObjectURL(selectedFile.value) : null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      _temp: true
+    }
+    expenses.value = [tempExpense, ...expenses.value]
+    showSuccess('Expense added successfully!')
+  }
+
+  closeModal()
   submitting.value = true
   error.value = null
 
   try {
-    const categoryId = parseInt(newExpense.value.category_id)
-
-    // API expects both 'category' and 'category_id' fields (backend requirement)
-    const requestData: CreateExpenseRecordRequest = {
-      category: categoryId,
-      category_id: categoryId,
-      description: newExpense.value.description,
-      amount: newExpense.value.amount!,
-      currency: newExpense.value.currency,
-      date: newExpense.value.date,
-      payment_method: newExpense.value.payment_method,
-      paid_to: newExpense.value.paid_to || undefined,
-      notes: newExpense.value.notes || undefined
-    }
-
     if (import.meta.env.DEV) {
       console.log('Submitting expense data:', requestData, 'Receipt:', selectedFile.value)
     }
 
     let response
-    if (editingExpense.value) {
+    if (isEditing && editingExpense.value) {
       response = await expensesService.updateExpense(
         props.eventId,
         editingExpense.value.id,
         requestData,
         selectedFile.value || undefined
       )
-      if (response.success) {
-        showSuccess('Expense updated successfully!')
-      }
     } else {
       response = await expensesService.createExpense(
         props.eventId,
         requestData,
         selectedFile.value || undefined
       )
-      if (response.success) {
-        showSuccess('Expense added successfully!')
-      }
     }
 
     if (import.meta.env.DEV) {
@@ -888,9 +983,12 @@ const handleAddExpense = async () => {
     }
 
     if (response.success) {
-      closeModal()
+      // Replace with real data from server
       await loadExpenses()
     } else {
+      // ROLLBACK: Restore original data on error
+      expenses.value = backup
+
       // Display specific field errors if available
       if (response.errors) {
         const errorMessages = Object.entries(response.errors)
@@ -902,7 +1000,9 @@ const handleAddExpense = async () => {
       }
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An unexpected error occurred'
+    // ROLLBACK: Restore original data on error
+    expenses.value = backup
+    error.value = getErrorMessage(err, isEditing ? 'update expense' : 'create expense')
     console.error('Error saving expense:', err)
   } finally {
     submitting.value = false
@@ -912,23 +1012,32 @@ const handleAddExpense = async () => {
 const handleDelete = async () => {
   if (!deletingExpense.value) return
 
+  // OPTIMISTIC UPDATE: Remove from UI immediately
+  const backup = [...expenses.value]
+  const deletedId = deletingExpense.value.id
+  const deletedDescription = deletingExpense.value.description
+
+  expenses.value = expenses.value.filter(expense => expense.id !== deletedId)
+  deletingExpense.value = null
+  showSuccess('Expense deleted successfully!')
+
   submitting.value = true
 
   try {
     const response = await expensesService.deleteExpense(
       props.eventId,
-      deletingExpense.value.id
+      deletedId
     )
 
-    if (response.success) {
-      showSuccess('Expense deleted successfully!')
-      deletingExpense.value = null
-      await loadExpenses()
-    } else {
-      error.value = response.message || 'Failed to delete expense'
+    if (!response.success) {
+      // ROLLBACK: Restore on error
+      expenses.value = backup
+      error.value = response.message || `Failed to delete "${deletedDescription}"`
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred'
+    // ROLLBACK: Restore on error
+    expenses.value = backup
+    error.value = getErrorMessage(err, 'delete expense')
     console.error('Error deleting expense:', err)
   } finally {
     submitting.value = false

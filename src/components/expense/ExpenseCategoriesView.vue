@@ -79,12 +79,16 @@
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               @click="editCategory(category)"
+              :aria-label="`Edit category: ${category.name}`"
+              title="Edit category"
               class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
             >
               <Edit2 class="w-4 h-4" />
             </button>
             <button
               @click="confirmDeleteCategory(category)"
+              :aria-label="`Delete category: ${category.name}`"
+              title="Delete category"
               class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             >
               <Trash2 class="w-4 h-4" />
@@ -123,13 +127,20 @@
           class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           @click.self="closeModal"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+          <div
+            ref="addModalRef"
+            role="dialog"
+            aria-labelledby="add-category-modal-title"
+            aria-modal="true"
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+          >
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-xl font-bold text-slate-900">
+              <h3 id="add-category-modal-title" class="text-xl font-bold text-slate-900">
                 {{ editingCategory ? 'Edit Category' : 'Create Category' }}
               </h3>
               <button
                 @click="closeModal"
+                aria-label="Close dialog"
                 class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
               >
                 <X class="w-5 h-5" />
@@ -139,12 +150,14 @@
             <form @submit.prevent="handleSubmit" class="space-y-4">
               <!-- Category Name -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Category Name *</label>
+                <label for="category-name" class="block text-sm font-medium text-slate-700 mb-2">Category Name *</label>
                 <input
+                  id="category-name"
                   type="text"
                   v-model="formData.name"
                   placeholder="E.g., Venue, Catering, Photography..."
                   maxlength="100"
+                  aria-required="true"
                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                   required
                 />
@@ -240,14 +253,21 @@
           class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           @click.self="deletingCategory = null"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+          <div
+            ref="deleteModalRef"
+            role="alertdialog"
+            aria-labelledby="delete-category-dialog-title"
+            aria-describedby="delete-category-dialog-description"
+            aria-modal="true"
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+          >
             <div class="flex items-start gap-4 mb-6">
               <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <AlertCircle class="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">Delete Category?</h3>
-                <p class="text-sm text-slate-600">
+                <h3 id="delete-category-dialog-title" class="text-xl font-bold text-slate-900 mb-2">Delete Category?</h3>
+                <p id="delete-category-dialog-description" class="text-sm text-slate-600">
                   Are you sure you want to delete <strong>{{ deletingCategory.name }}</strong>?
                   This action cannot be undone. Categories with existing budgets or expenses cannot be deleted.
                 </p>
@@ -295,7 +315,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import {
   Plus,
   Edit2,
@@ -312,6 +332,8 @@ import {
 } from 'lucide-vue-next'
 import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
+import { getErrorMessage } from '@/utils/errorMessages'
+import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -322,6 +344,18 @@ const successMessage = ref('')
 const submitting = ref(false)
 const editingCategory = ref<ExpenseCategory | null>(null)
 const deletingCategory = ref<ExpenseCategory | null>(null)
+
+// Focus trap for modals (accessibility)
+const addModalRef = ref<HTMLElement>()
+const deleteModalRef = ref<HTMLElement>()
+const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
+  immediate: false,
+  escapeDeactivates: true
+})
+const { activate: activateDeleteModal, deactivate: deactivateDeleteModal } = useFocusTrap(deleteModalRef, {
+  immediate: false,
+  escapeDeactivates: true
+})
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -352,6 +386,25 @@ const colorOptions = [
   '#673ab7', // Deep Purple
 ]
 
+// Activate/deactivate focus trap when modals open/close
+watch(showAddCategoryModal, async (isOpen) => {
+  if (isOpen) {
+    await nextTick()
+    activateAddModal()
+  } else {
+    deactivateAddModal()
+  }
+})
+
+watch(deletingCategory, async (value) => {
+  if (value) {
+    await nextTick()
+    activateDeleteModal()
+  } else {
+    deactivateDeleteModal()
+  }
+})
+
 const loadCategories = async () => {
   loading.value = true
   error.value = null
@@ -365,7 +418,7 @@ const loadCategories = async () => {
       error.value = response.message || 'Failed to load categories'
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred while loading categories'
+    error.value = getErrorMessage(err, 'load categories')
     console.error('Error loading categories:', err)
   } finally {
     loading.value = false
@@ -403,38 +456,66 @@ const editCategory = (category: ExpenseCategory) => {
 }
 
 const handleSubmit = async () => {
+  const isEditing = !!editingCategory.value
+
+  const requestData = {
+    name: formData.value.name,
+    description: formData.value.description || undefined,
+    icon: formData.value.icon || undefined,
+    color: formData.value.color,
+    is_active: true
+  }
+
+  // OPTIMISTIC UPDATE: Update UI immediately
+  const backup = [...categories.value]
+
+  if (isEditing && editingCategory.value) {
+    // Update existing category in the list
+    const index = categories.value.findIndex(c => c.id === editingCategory.value!.id)
+    if (index !== -1) {
+      categories.value[index] = {
+        ...editingCategory.value,
+        ...requestData
+      } as ExpenseCategory
+    }
+    showSuccess('Category updated successfully!')
+  } else {
+    // Add temporary category
+    const tempCategory: ExpenseCategory = {
+      id: `temp-${Date.now()}`,
+      ...requestData,
+      description: requestData.description || '',
+      icon: requestData.icon || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    categories.value = [tempCategory, ...categories.value]
+    showSuccess('Category created successfully!')
+  }
+
+  closeModal()
   submitting.value = true
 
   try {
-    const requestData = {
-      name: formData.value.name,
-      description: formData.value.description || undefined,
-      icon: formData.value.icon || undefined,
-      color: formData.value.color,
-      is_active: true
-    }
-
     let response
-    if (editingCategory.value) {
+    if (isEditing && editingCategory.value) {
       response = await expenseCategoriesService.patchCategory(editingCategory.value.id, requestData)
-      if (response.success) {
-        showSuccess('Category updated successfully!')
-      }
     } else {
       response = await expenseCategoriesService.createCategory(requestData)
-      if (response.success) {
-        showSuccess('Category created successfully!')
-      }
     }
 
     if (response.success) {
-      closeModal()
+      // Replace with real data from server
       await loadCategories()
     } else {
+      // ROLLBACK: Restore original data on error
+      categories.value = backup
       error.value = response.message || 'Failed to save category'
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred'
+    // ROLLBACK: Restore original data on error
+    categories.value = backup
+    error.value = getErrorMessage(err, isEditing ? 'update category' : 'create category')
     console.error('Error saving category:', err)
   } finally {
     submitting.value = false
@@ -448,20 +529,29 @@ const confirmDeleteCategory = (category: ExpenseCategory) => {
 const handleDelete = async () => {
   if (!deletingCategory.value) return
 
+  // OPTIMISTIC UPDATE: Remove from UI immediately
+  const backup = [...categories.value]
+  const deletedId = deletingCategory.value.id
+  const deletedName = deletingCategory.value.name
+
+  categories.value = categories.value.filter(category => category.id !== deletedId)
+  deletingCategory.value = null
+  showSuccess('Category deleted successfully!')
+
   submitting.value = true
 
   try {
-    const response = await expenseCategoriesService.deleteCategory(deletingCategory.value.id)
+    const response = await expenseCategoriesService.deleteCategory(deletedId)
 
-    if (response.success) {
-      showSuccess('Category deleted successfully!')
-      deletingCategory.value = null
-      await loadCategories()
-    } else {
-      error.value = response.message || 'Failed to delete category'
+    if (!response.success) {
+      // ROLLBACK: Restore on error
+      categories.value = backup
+      error.value = response.message || `Failed to delete "${deletedName}"`
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred'
+    // ROLLBACK: Restore on error
+    categories.value = backup
+    error.value = getErrorMessage(err, 'delete category')
     console.error('Error deleting category:', err)
   } finally {
     submitting.value = false

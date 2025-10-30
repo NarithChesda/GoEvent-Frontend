@@ -78,12 +78,16 @@
           <div v-if="canEdit" class="flex items-center gap-1">
             <button
               @click="editBudget(budget)"
+              :aria-label="`Edit budget for ${budget.category_info.name}`"
+              title="Edit budget"
               class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
             >
               <Edit2 class="w-4 h-4" />
             </button>
             <button
               @click="confirmDeleteBudget(budget)"
+              :aria-label="`Delete budget for ${budget.category_info.name}`"
+              title="Delete budget"
               class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             >
               <Trash2 class="w-4 h-4" />
@@ -184,13 +188,20 @@
         <div
           v-if="showAddBudgetModal"
           class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          @click.self="showAddBudgetModal = false"
+          @click.self="closeModal"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+          <div
+            ref="addModalRef"
+            role="dialog"
+            aria-labelledby="add-budget-modal-title"
+            aria-modal="true"
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+          >
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-xl font-bold text-slate-900">{{ editingBudget ? 'Edit Budget' : 'Add Budget' }}</h3>
+              <h3 id="add-budget-modal-title" class="text-xl font-bold text-slate-900">{{ editingBudget ? 'Edit Budget' : 'Add Budget' }}</h3>
               <button
                 @click="closeModal"
+                aria-label="Close dialog"
                 class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
               >
                 <X class="w-5 h-5" />
@@ -205,9 +216,11 @@
 
               <!-- Category Selection -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Category *</label>
+                <label for="budget-category" class="block text-sm font-medium text-slate-700 mb-2">Category *</label>
                 <select
+                  id="budget-category"
                   v-model="newBudget.category_id"
+                  aria-required="true"
                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                   required
                 >
@@ -297,14 +310,21 @@
           class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           @click.self="deletingBudget = null"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+          <div
+            ref="deleteModalRef"
+            role="alertdialog"
+            aria-labelledby="delete-budget-dialog-title"
+            aria-describedby="delete-budget-dialog-description"
+            aria-modal="true"
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+          >
             <div class="flex items-start gap-4 mb-6">
               <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <AlertCircle class="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">Delete Budget?</h3>
-                <p class="text-sm text-slate-600">
+                <h3 id="delete-budget-dialog-title" class="text-xl font-bold text-slate-900 mb-2">Delete Budget?</h3>
+                <p id="delete-budget-dialog-description" class="text-sm text-slate-600">
                   Are you sure you want to delete the budget for <strong>{{ deletingBudget.category_info.name }}</strong>?
                   This action cannot be undone. Expenses will remain but won't have budget tracking.
                 </p>
@@ -352,7 +372,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import {
   Plus,
   Edit2,
@@ -374,6 +394,8 @@ import {
   type CreateExpenseBudgetRequest
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
+import { getErrorMessage } from '@/utils/errorMessages'
+import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 
 interface Props {
   eventId: string
@@ -393,6 +415,18 @@ const submitting = ref(false)
 const editingBudget = ref<ExpenseBudget | null>(null)
 const deletingBudget = ref<ExpenseBudget | null>(null)
 
+// Focus trap for modals (accessibility)
+const addModalRef = ref<HTMLElement>()
+const deleteModalRef = ref<HTMLElement>()
+const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
+  immediate: false,
+  escapeDeactivates: true
+})
+const { activate: activateDeleteModal, deactivate: deactivateDeleteModal } = useFocusTrap(deleteModalRef, {
+  immediate: false,
+  escapeDeactivates: true
+})
+
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
 
@@ -401,6 +435,25 @@ const newBudget = ref({
   budgeted_amount: null as number | null,
   currency: 'USD' as 'USD' | 'KHR',
   notes: ''
+})
+
+// Activate/deactivate focus trap when modals open/close
+watch(showAddBudgetModal, async (isOpen) => {
+  if (isOpen) {
+    await nextTick()
+    activateAddModal()
+  } else {
+    deactivateAddModal()
+  }
+})
+
+watch(deletingBudget, async (value) => {
+  if (value) {
+    await nextTick()
+    activateDeleteModal()
+  } else {
+    deactivateDeleteModal()
+  }
 })
 
 const showSuccess = (message: string) => {
@@ -424,7 +477,7 @@ const loadBudgets = async () => {
       error.value = response.message || 'Failed to load budgets'
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred while loading budgets'
+    error.value = getErrorMessage(err, 'load budgets')
     console.error('Error loading budgets:', err)
   } finally {
     loading.value = false
@@ -477,40 +530,70 @@ const handleAddBudget = async () => {
     return
   }
 
+  const categoryId = parseInt(newBudget.value.category_id)
+  const isEditing = !!editingBudget.value
+
+  // API expects both 'category' and 'category_id' fields (backend requirement)
+  const requestData: CreateExpenseBudgetRequest & { category: number } = {
+    category: categoryId,
+    category_id: categoryId,
+    budgeted_amount: newBudget.value.budgeted_amount!,
+    currency: newBudget.value.currency,
+    notes: newBudget.value.notes || undefined
+  }
+
+  // OPTIMISTIC UPDATE: Update UI immediately
+  const backup = [...budgets.value]
+  const categoryInfo = categories.value.find(c => c.id === categoryId)
+
+  if (isEditing && editingBudget.value) {
+    // Update existing budget in the list
+    const index = budgets.value.findIndex(b => b.id === editingBudget.value!.id)
+    if (index !== -1 && categoryInfo) {
+      budgets.value[index] = {
+        ...editingBudget.value,
+        ...requestData,
+        category: categoryId,
+        category_info: categoryInfo
+      } as ExpenseBudget
+    }
+    showSuccess('Budget updated successfully!')
+  } else if (categoryInfo) {
+    // Add temporary budget
+    const tempBudget: ExpenseBudget = {
+      id: `temp-${Date.now()}`,
+      ...requestData,
+      category: categoryId,
+      category_info: categoryInfo,
+      spent_amount: '0.00',
+      remaining_amount: requestData.budgeted_amount.toString(),
+      percentage_used: 0,
+      is_over_budget: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    budgets.value = [tempBudget, ...budgets.value]
+    showSuccess('Budget added successfully!')
+  }
+
+  closeModal()
   submitting.value = true
   error.value = null
 
   try {
-    const categoryId = parseInt(newBudget.value.category_id)
-
-    // API expects both 'category' and 'category_id' fields (backend requirement)
-    const requestData: CreateExpenseBudgetRequest & { category: number } = {
-      category: categoryId,
-      category_id: categoryId,
-      budgeted_amount: newBudget.value.budgeted_amount!,
-      currency: newBudget.value.currency,
-      notes: newBudget.value.notes || undefined
-    }
-
     if (import.meta.env.DEV) {
       console.log('Submitting budget data:', requestData)
     }
 
     let response
-    if (editingBudget.value) {
+    if (isEditing && editingBudget.value) {
       response = await expenseBudgetsService.patchBudget(
         props.eventId,
         editingBudget.value.id,
         requestData
       )
-      if (response.success) {
-        showSuccess('Budget updated successfully!')
-      }
     } else {
       response = await expenseBudgetsService.createBudget(props.eventId, requestData)
-      if (response.success) {
-        showSuccess('Budget added successfully!')
-      }
     }
 
     if (import.meta.env.DEV) {
@@ -518,9 +601,12 @@ const handleAddBudget = async () => {
     }
 
     if (response.success) {
-      closeModal()
+      // Replace with real data from server
       await loadBudgets()
     } else {
+      // ROLLBACK: Restore original data on error
+      budgets.value = backup
+
       // Display specific field errors if available
       if (response.errors) {
         const errorMessages = Object.entries(response.errors)
@@ -532,7 +618,9 @@ const handleAddBudget = async () => {
       }
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An unexpected error occurred'
+    // ROLLBACK: Restore original data on error
+    budgets.value = backup
+    error.value = getErrorMessage(err, isEditing ? 'update budget' : 'create budget')
     console.error('Error saving budget:', err)
   } finally {
     submitting.value = false
@@ -542,23 +630,32 @@ const handleAddBudget = async () => {
 const handleDelete = async () => {
   if (!deletingBudget.value) return
 
+  // OPTIMISTIC UPDATE: Remove from UI immediately
+  const backup = [...budgets.value]
+  const deletedId = deletingBudget.value.id
+  const deletedCategory = deletingBudget.value.category_info.name
+
+  budgets.value = budgets.value.filter(budget => budget.id !== deletedId)
+  deletingBudget.value = null
+  showSuccess('Budget deleted successfully!')
+
   submitting.value = true
 
   try {
     const response = await expenseBudgetsService.deleteBudget(
       props.eventId,
-      deletingBudget.value.id
+      deletedId
     )
 
-    if (response.success) {
-      showSuccess('Budget deleted successfully!')
-      deletingBudget.value = null
-      await loadBudgets()
-    } else {
-      error.value = response.message || 'Failed to delete budget'
+    if (!response.success) {
+      // ROLLBACK: Restore on error
+      budgets.value = backup
+      error.value = response.message || `Failed to delete budget for "${deletedCategory}"`
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred'
+    // ROLLBACK: Restore on error
+    budgets.value = backup
+    error.value = getErrorMessage(err, 'delete budget')
     console.error('Error deleting budget:', err)
   } finally {
     submitting.value = false
