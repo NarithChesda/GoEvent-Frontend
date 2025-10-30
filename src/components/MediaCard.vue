@@ -45,15 +45,6 @@
         class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
       >
         <div class="flex items-center space-x-1.5 sm:space-x-2">
-          <!-- Edit Button -->
-          <button
-            @click="$emit('edit', media)"
-            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white text-slate-700 hover:text-[#1e90ff] rounded-lg transition-colors duration-200"
-            title="Edit media"
-          >
-            <Edit2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
-
           <!-- Featured Toggle Button -->
           <button
             @click="$emit('set-featured', media)"
@@ -121,7 +112,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Edit2, Trash2, Star, Calendar, ImageIcon, GripVertical } from 'lucide-vue-next'
+import { Trash2, Star, Calendar, ImageIcon, GripVertical } from 'lucide-vue-next'
 import type { EventPhoto } from '../services/api'
 
 interface Props {
@@ -131,7 +122,6 @@ interface Props {
 }
 
 interface Emits {
-  edit: [media: EventPhoto]
   delete: [media: EventPhoto]
   'set-featured': [media: EventPhoto]
   'drag-start': [media: EventPhoto]

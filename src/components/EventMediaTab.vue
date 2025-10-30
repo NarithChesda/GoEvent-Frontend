@@ -66,6 +66,18 @@
             <CreditCard class="w-4 h-4" />
             <span>Event Payment</span>
           </button>
+          <button
+            @click="activeSection = 'social-media'"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSection === 'social-media'
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <Share2 class="w-4 h-4" />
+            <span>Social Media</span>
+          </button>
         </div>
       </div>
     </div>
@@ -167,7 +179,6 @@
                 :media="mediaItem"
                 :can-edit="canEdit"
                 :draggable="canEdit"
-                @edit="editMedia"
                 @delete="deleteMedia"
                 @set-featured="toggleFeatured"
                 @drag-start="handleDragStart"
@@ -210,24 +221,19 @@
           :can-edit="canEdit"
         />
       </div>
+
+      <!-- Social Media Preview Section -->
+      <div v-if="activeSection === 'social-media'">
+        <SocialMediaPreview v-if="localEventData" :event-data="localEventData" />
+      </div>
     </div>
 
     <!-- Upload Modal -->
     <UploadMediaModal
       v-if="showUploadModal && props.eventId"
       :event-id="props.eventId"
-      :current-photo-count="media.length"
       @close="showUploadModal = false"
       @uploaded="handleMediaUploaded"
-    />
-
-    <!-- Edit Modal -->
-    <EditMediaModal
-      v-if="showEditModal && selectedMedia && props.eventId"
-      :event-id="props.eventId"
-      :media="selectedMedia"
-      @close="showEditModal = false"
-      @updated="handleMediaUpdated"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -258,15 +264,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle, CreditCard } from 'lucide-vue-next'
+import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle, CreditCard, Share2 } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
-import EditMediaModal from './EditMediaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import BasicMediaSection from './BasicMediaSection.vue'
 import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
+import SocialMediaPreview from './SocialMediaPreview.vue'
 
 interface Props {
   eventId?: string
@@ -287,11 +293,9 @@ const emit = defineEmits<Emits>()
 const media = ref<EventPhoto[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment'>('basic')
+const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment' | 'social-media'>('basic')
 const showUploadModal = ref(false)
-const showEditModal = ref(false)
 const showDeleteModal = ref(false)
-const selectedMedia = ref<EventPhoto | null>(null)
 const mediaToDelete = ref<EventPhoto | null>(null)
 const deleting = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -382,11 +386,6 @@ const openUploadModal = () => {
 
 const handleUploadClick = () => {
   openUploadModal()
-}
-
-const editMedia = (mediaItem: EventPhoto) => {
-  selectedMedia.value = mediaItem
-  showEditModal.value = true
 }
 
 const deleteMedia = (mediaItem: EventPhoto) => {
@@ -480,22 +479,6 @@ watch(showUploadModal, (newValue, oldValue) => {
     uploadBatchStart.value = 0
   }
 })
-
-const handleMediaUpdated = (updatedMedia: EventPhoto) => {
-  if (Array.isArray(media.value)) {
-    const index = media.value.findIndex((item) => item.id === updatedMedia.id)
-    if (index !== -1) {
-      media.value[index] = updatedMedia
-    }
-  } else {
-    media.value = [updatedMedia]
-  }
-  showEditModal.value = false
-  selectedMedia.value = null
-  // Emit updated media to parent
-  emit('media-updated', media.value)
-  showMessage('success', 'Photo updated successfully')
-}
 
 const handleEventUpdated = (updatedEvent: Event) => {
   // Force reactivity by creating a new object reference
