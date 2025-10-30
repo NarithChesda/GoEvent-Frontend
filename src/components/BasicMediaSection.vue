@@ -16,19 +16,8 @@
             class="hidden"
           />
 
-          <!-- Upload button when no content -->
-          <button
-            v-if="canEdit && !eventData?.banner_image"
-            @click="($refs.bannerInput as HTMLInputElement)?.click()"
-            :disabled="uploading.banner_image"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Upload class="w-4 h-4" />
-            <span>{{ uploading.banner_image ? 'Uploading...' : 'Upload Banner' }}</span>
-          </button>
-
           <!-- Options button when content exists -->
-          <div v-else-if="canEdit && eventData?.banner_image" class="relative">
+          <div v-if="canEdit && eventData?.banner_image" class="relative">
             <button
               @click.stop="toggleDropdown('banner')"
               :disabled="uploading.banner_image"
@@ -70,9 +59,32 @@
           <p class="text-white font-medium">Banner Image</p>
         </div>
       </div>
-      <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
-        <ImageIcon class="w-12 h-12 text-slate-400 mx-auto mb-2" />
-        <p class="text-slate-600">No banner image uploaded</p>
+      <div
+        v-else
+        @click="canEdit ? ($refs.bannerInput as HTMLInputElement)?.click() : null"
+        :class="[
+          'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+          canEdit
+            ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+            : 'border-slate-300 bg-slate-50'
+        ]"
+      >
+        <div class="flex flex-col items-center justify-center min-h-[120px]">
+          <div :class="[
+            'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
+            canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+          ]">
+            <ImageIcon :class="[
+              'w-8 h-8 transition-colors',
+              canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+            ]" />
+          </div>
+          <p :class="[
+            'font-semibold transition-colors',
+            canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+          ]">No banner image uploaded</p>
+          <p v-if="canEdit" class="text-sm text-slate-400 mt-1">Click to upload</p>
+        </div>
       </div>
     </div>
 
@@ -94,19 +106,8 @@
               class="hidden"
             />
 
-            <!-- Upload button when no content -->
-            <button
-              v-if="canEdit && !eventData?.logo_one"
-              @click="($refs.logoOneInput as HTMLInputElement)?.click()"
-              :disabled="uploading.logo_one"
-              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Upload class="w-4 h-4" />
-              <span class="hidden sm:inline">{{ uploading.logo_one ? 'Uploading...' : 'Upload' }}</span>
-            </button>
-
             <!-- Options button when content exists -->
-            <div v-else-if="canEdit && eventData?.logo_one" class="relative">
+            <div v-if="canEdit && eventData?.logo_one" class="relative">
               <button
                 @click.stop="toggleDropdown('logoOne')"
                 :disabled="uploading.logo_one"
@@ -148,9 +149,32 @@
             <p class="text-white font-medium">Primary Logo</p>
           </div>
         </div>
-        <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center">
-          <ImageIcon class="w-8 h-8 text-slate-400 mx-auto mb-2" />
-          <p class="text-sm text-slate-600">No logo uploaded</p>
+        <div
+          v-else
+          @click="canEdit ? ($refs.logoOneInput as HTMLInputElement)?.click() : null"
+          :class="[
+            'border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center',
+            canEdit
+              ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+              : 'border-slate-300 bg-slate-50'
+          ]"
+        >
+          <div class="flex flex-col items-center justify-center min-h-[100px]">
+            <div :class="[
+              'w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300',
+              canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+            ]">
+              <ImageIcon :class="[
+                'w-6 h-6 transition-colors',
+                canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+              ]" />
+            </div>
+            <p :class="[
+              'text-sm font-semibold transition-colors',
+              canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+            ]">No logo uploaded</p>
+            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+          </div>
         </div>
       </div>
 
@@ -170,19 +194,8 @@
               class="hidden"
             />
 
-            <!-- Upload button when no content -->
-            <button
-              v-if="canEdit && !eventData?.logo_two"
-              @click="($refs.logoTwoInput as HTMLInputElement)?.click()"
-              :disabled="uploading.logo_two"
-              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Upload class="w-4 h-4" />
-              <span class="hidden sm:inline">{{ uploading.logo_two ? 'Uploading...' : 'Upload' }}</span>
-            </button>
-
             <!-- Options button when content exists -->
-            <div v-else-if="canEdit && eventData?.logo_two" class="relative">
+            <div v-if="canEdit && eventData?.logo_two" class="relative">
               <button
                 @click.stop="toggleDropdown('logoTwo')"
                 :disabled="uploading.logo_two"
@@ -224,9 +237,32 @@
             <p class="text-white font-medium">Secondary Logo</p>
           </div>
         </div>
-        <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center">
-          <ImageIcon class="w-8 h-8 text-slate-400 mx-auto mb-2" />
-          <p class="text-sm text-slate-600">No logo uploaded</p>
+        <div
+          v-else
+          @click="canEdit ? ($refs.logoTwoInput as HTMLInputElement)?.click() : null"
+          :class="[
+            'border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center',
+            canEdit
+              ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+              : 'border-slate-300 bg-slate-50'
+          ]"
+        >
+          <div class="flex flex-col items-center justify-center min-h-[100px]">
+            <div :class="[
+              'w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300',
+              canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+            ]">
+              <ImageIcon :class="[
+                'w-6 h-6 transition-colors',
+                canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+              ]" />
+            </div>
+            <p :class="[
+              'text-sm font-semibold transition-colors',
+              canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+            ]">No logo uploaded</p>
+            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+          </div>
         </div>
       </div>
     </div>
@@ -247,19 +283,8 @@
             class="hidden"
           />
 
-          <!-- Upload button when no content -->
-          <button
-            v-if="canEdit && !eventData?.event_video"
-            @click="($refs.videoInput as HTMLInputElement)?.click()"
-            :disabled="uploading.event_video"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Upload class="w-4 h-4" />
-            <span>{{ uploading.event_video ? 'Uploading...' : 'Upload Video' }}</span>
-          </button>
-
           <!-- Options button when content exists -->
-          <div v-else-if="canEdit && eventData?.event_video" class="relative">
+          <div v-if="canEdit && eventData?.event_video" class="relative">
             <button
               @click.stop="toggleDropdown('video')"
               :disabled="uploading.event_video"
@@ -303,10 +328,33 @@
           Event Video
         </div>
       </div>
-      <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
-        <Play class="w-12 h-12 text-slate-400 mx-auto mb-2" />
-        <p class="text-slate-600">No video uploaded</p>
-        <p class="text-sm text-slate-500 mt-1">Consider using YouTube embed for large files</p>
+      <div
+        v-else
+        @click="canEdit ? ($refs.videoInput as HTMLInputElement)?.click() : null"
+        :class="[
+          'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+          canEdit
+            ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+            : 'border-slate-300 bg-slate-50'
+        ]"
+      >
+        <div class="flex flex-col items-center justify-center min-h-[120px]">
+          <div :class="[
+            'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
+            canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+          ]">
+            <Play :class="[
+              'w-8 h-8 transition-colors',
+              canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+            ]" />
+          </div>
+          <p :class="[
+            'font-semibold transition-colors',
+            canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+          ]">No video uploaded</p>
+          <p class="text-sm text-slate-500 mt-1">Consider using YouTube embed for large files</p>
+          <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+        </div>
       </div>
     </div>
 
@@ -326,19 +374,8 @@
             class="hidden"
           />
 
-          <!-- Upload button when no content -->
-          <button
-            v-if="canEdit && !eventData?.music"
-            @click="($refs.musicInput as HTMLInputElement)?.click()"
-            :disabled="uploading.music"
-            class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Upload class="w-4 h-4" />
-            <span>{{ uploading.music ? 'Uploading...' : 'Upload Music' }}</span>
-          </button>
-
           <!-- Options button when content exists -->
-          <div v-else-if="canEdit && eventData?.music" class="relative">
+          <div v-if="canEdit && eventData?.music" class="relative">
             <button
               @click.stop="toggleDropdown('music')"
               :disabled="uploading.music"
@@ -382,10 +419,33 @@
           <p class="text-sm text-slate-600">Event Music</p>
         </div>
       </div>
-      <div v-else class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center">
-        <Music class="w-12 h-12 text-slate-400 mx-auto mb-2" />
-        <p class="text-slate-600">No music uploaded</p>
-        <p class="text-sm text-slate-500 mt-1">Upload audio files for background music</p>
+      <div
+        v-else
+        @click="canEdit ? ($refs.musicInput as HTMLInputElement)?.click() : null"
+        :class="[
+          'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+          canEdit
+            ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+            : 'border-slate-300 bg-slate-50'
+        ]"
+      >
+        <div class="flex flex-col items-center justify-center min-h-[120px]">
+          <div :class="[
+            'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
+            canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+          ]">
+            <Music :class="[
+              'w-8 h-8 transition-colors',
+              canEdit ? 'text-slate-400 group-hover:text-emerald-600' : 'text-slate-400'
+            ]" />
+          </div>
+          <p :class="[
+            'font-semibold transition-colors',
+            canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+          ]">No music uploaded</p>
+          <p class="text-sm text-slate-500 mt-1">Upload audio files for background music</p>
+          <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+        </div>
       </div>
     </div>
 
