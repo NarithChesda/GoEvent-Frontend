@@ -41,14 +41,19 @@
     </div>
 
     <!-- Filter Pills (Guest Groups) -->
-    <div role="tablist" aria-label="Guest groups filter" class="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
+    <div
+      ref="tabsContainer"
+      role="tablist"
+      aria-label="Guest groups filter"
+      class="flex items-center gap-2 overflow-x-auto scrollbar-visible pb-2 scroll-smooth"
+    >
       <button
         role="tab"
         :aria-selected="activeFilter === 'all'"
         :aria-controls="'guests-panel'"
         @click="activeFilter = 'all'"
         :class="[
-          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex-shrink-0',
           activeFilter === 'all'
             ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
             : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50'
@@ -66,7 +71,7 @@
         :aria-controls="'guests-panel'"
         @click="activeFilter = group.id.toString()"
         :class="[
-          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex-shrink-0',
           activeFilter === group.id.toString()
             ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
             : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50'
@@ -280,6 +285,9 @@ const activeFilter = ref('all')
 const groupSearchQuery = ref('')
 const selectedGuestIds = ref<Set<number>>(new Set())
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+// Tab container ref
+const tabsContainer = ref<HTMLElement | null>(null)
 
 // Function to trigger group expansion based on active filter
 const triggerGroupExpansion = () => {
@@ -503,6 +511,31 @@ const handleNextPage = () => {
   display: none;
 }
 
+/* Visible scrollbar for tabs container */
+.scrollbar-visible {
+  scrollbar-width: auto;
+  scrollbar-color: rgb(203 213 225) rgb(241 245 249);
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: rgb(241 245 249);
+  border-radius: 4px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
+}
+
 /* Custom scrollbar for guest list */
 .custom-scrollbar {
   scrollbar-width: thin;
@@ -528,7 +561,7 @@ const handleNextPage = () => {
   background: rgb(148 163 184);
 }
 
-/* Fade transition for loading overlay */
+/* Fade transition for loading overlay and scroll buttons */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.15s ease;
