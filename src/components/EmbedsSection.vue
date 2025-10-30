@@ -1,10 +1,5 @@
 <template>
   <div class="space-y-6 sm:space-y-8">
-    <div>
-      <h4 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Videos & Maps</h4>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Embed YouTube videos and Google Maps location</p>
-    </div>
-
     <!-- YouTube Embed -->
     <div class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
       <div class="mb-3 sm:mb-4">

@@ -50,7 +50,6 @@ interface Props {
   canViewPayment?: boolean
   canViewGuestManagement?: boolean
   canViewExpenses?: boolean
-  canViewSocialMedia?: boolean
   canEdit?: boolean
 }
 
@@ -72,7 +71,6 @@ const visibleTabs = computed(() => {
     if (tab.id === 'payment' && !props.canViewPayment) return false
     if (tab.id === 'guest-management' && !props.canViewGuestManagement) return false
     if (tab.id === 'expenses' && !props.canViewExpenses) return false
-    if (tab.id === 'social-media' && !props.canViewSocialMedia) return false
 
     return tab.visible !== false
   })

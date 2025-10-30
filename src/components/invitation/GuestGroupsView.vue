@@ -188,7 +188,7 @@
         </div>
 
         <!-- Scrollable container with max height -->
-        <div class="max-h-[600px] overflow-y-auto space-y-3 pr-2 custom-scrollbar relative">
+        <div class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative">
           <!-- Loading overlay for pagination -->
           <Transition name="fade">
             <div v-if="isAnyGroupLoading" class="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">

@@ -41,7 +41,6 @@
         :can-view-payment="canViewPayment"
         :can-view-guest-management="canViewGuestManagement"
         :can-view-expenses="canViewExpenses"
-        :can-view-social-media="canViewSocialMedia"
         @tab-change="activeTab = $event"
       />
 
@@ -61,7 +60,6 @@
             :can-view-payment="canViewPayment"
             :can-view-guest-management="canViewGuestManagement"
             :can-view-expenses="canViewExpenses"
-            :can-view-social-media="canViewSocialMedia"
             :can-edit="event.can_edit"
             @tab-change="activeTab = $event"
           />
@@ -248,22 +246,6 @@
               />
             </div>
 
-            <!-- Social Media Preview Tab -->
-            <div v-if="activeTab === 'social-media'">
-              <div v-if="!canViewSocialMedia" class="text-center py-12">
-                <div
-                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <Lock class="w-8 h-8 text-slate-400" />
-                </div>
-                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
-                <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view social media preview.
-                </p>
-              </div>
-              <SocialMediaPreview v-else :event-data="event" />
-            </div>
-
             <!-- Template Tab -->
             <div v-if="activeTab === 'template'">
               <div v-if="!canViewTemplate" class="text-center py-12">
@@ -391,7 +373,6 @@ import EventAttendeesTab from '../components/EventAttendeesTab.vue'
 import EventTemplateTab from '../components/EventTemplateTab.vue'
 import EventPaymentTab from '../components/EventPaymentTab.vue'
 import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
-import SocialMediaPreview from '../components/SocialMediaPreview.vue'
 import EventExpenseTab from '../components/EventExpenseTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
@@ -425,7 +406,6 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'payment', label: 'Payment', icon: 'credit-card' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
   { id: 'expenses', label: 'Expenses', icon: 'dollar-sign', mobileLabel: 'Expenses' },
-  { id: 'social-media', label: 'Social Media Preview', icon: 'share-2', mobileLabel: 'Social' },
 ])
 
 // Computed properties
@@ -481,10 +461,6 @@ const canViewPayment = computed(() => {
 })
 
 const canViewGuestManagement = computed(() => {
-  return canViewRestrictedTabs.value
-})
-
-const canViewSocialMedia = computed(() => {
   return canViewRestrictedTabs.value
 })
 
