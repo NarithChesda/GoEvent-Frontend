@@ -403,42 +403,57 @@
       <Transition name="modal">
         <div
           v-if="showAddExpenseModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto"
+          class="fixed inset-0 z-50 overflow-y-auto"
           @click.self="closeModal"
         >
-          <div
-            ref="addModalRef"
-            role="dialog"
-            aria-labelledby="add-expense-modal-title"
-            aria-modal="true"
-            class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 my-8 transform transition-all"
-          >
-            <div class="flex items-center justify-between mb-6">
-              <h3 id="add-expense-modal-title" class="text-xl font-bold text-slate-900">{{ editingExpense ? 'Edit Expense' : 'Add Expense' }}</h3>
-              <button
-                @click="closeModal"
-                aria-label="Close dialog"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-              >
-                <X class="w-5 h-5" />
-              </button>
-            </div>
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-            <form @submit.prevent="handleAddExpense" class="space-y-4">
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div
+              ref="addModalRef"
+              role="dialog"
+              aria-labelledby="add-expense-modal-title"
+              aria-modal="true"
+              class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+              @click.stop
+            >
+              <!-- Header -->
+              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <DollarSign class="w-4.5 h-4.5" />
+                    </div>
+                    <h2 id="add-expense-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">{{ editingExpense ? 'Edit Expense' : 'Add Expense' }}</h2>
+                  </div>
+                  <button
+                    @click="closeModal"
+                    aria-label="Close dialog"
+                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  >
+                    <X class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+            <!-- Form -->
+            <form @submit.prevent="handleAddExpense" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
               <!-- Error Message -->
               <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
                 <p class="text-sm text-red-600">{{ error }}</p>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <!-- Category -->
                 <div class="md:col-span-2">
-                  <label for="expense-category" class="block text-sm font-medium text-slate-700 mb-2">Category *</label>
+                  <label for="expense-category" class="block text-sm font-medium text-slate-700 mb-2">
+                    Category <span class="text-red-500">*</span>
+                  </label>
                   <select
                     id="expense-category"
                     v-model="newExpense.category_id"
                     aria-required="true"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     required
                   >
                     <option value="">Select a category</option>
@@ -454,24 +469,28 @@
 
                 <!-- Description -->
                 <div class="md:col-span-2">
-                  <label for="expense-description" class="block text-sm font-medium text-slate-700 mb-2">Description *</label>
+                  <label for="expense-description" class="block text-sm font-medium text-slate-700 mb-2">
+                    Description <span class="text-red-500">*</span>
+                  </label>
                   <input
                     id="expense-description"
                     type="text"
                     v-model="newExpense.description"
                     placeholder="E.g., Venue rental, Catering service..."
                     aria-required="true"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     required
                   />
                 </div>
 
                 <!-- Amount -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Amount *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Amount <span class="text-red-500">*</span>
+                  </label>
                   <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <DollarSign class="w-5 h-5 text-slate-400" />
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <DollarSign class="w-4 h-4 text-slate-400" />
                     </div>
                     <input
                       type="number"
@@ -479,7 +498,7 @@
                       placeholder="0.00"
                       step="0.01"
                       min="0.01"
-                      class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                       required
                     />
                   </div>
@@ -487,10 +506,12 @@
 
                 <!-- Currency -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Currency *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Currency <span class="text-red-500">*</span>
+                  </label>
                   <select
                     v-model="newExpense.currency"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     required
                   >
                     <option value="USD">USD - US Dollar</option>
@@ -500,21 +521,25 @@
 
                 <!-- Date -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Date <span class="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
                     v-model="newExpense.date"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     required
                   />
                 </div>
 
                 <!-- Payment Method -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Payment Method *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Payment Method <span class="text-red-500">*</span>
+                  </label>
                   <select
                     v-model="newExpense.payment_method"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     required
                   >
                     <option value="">Select payment method</option>
@@ -534,7 +559,7 @@
                     type="text"
                     v-model="newExpense.paid_to"
                     placeholder="E.g., Luxury Hotel Group, Premium Catering Co."
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                   />
                 </div>
 
@@ -552,11 +577,11 @@
                     <button
                       type="button"
                       @click="receiptInput?.click()"
-                      class="w-full px-4 py-8 bg-slate-50 border-2 border-slate-200 border-dashed rounded-xl hover:bg-slate-100 hover:border-emerald-400 transition-all group"
+                      class="w-full px-4 py-6 border-2 border-slate-200 border-dashed rounded-lg hover:bg-slate-50 hover:border-sky-300 transition-all group"
                     >
                       <div class="flex flex-col items-center">
-                        <div class="w-12 h-12 bg-slate-200 group-hover:bg-emerald-100 rounded-xl flex items-center justify-center mb-3 transition-all">
-                          <Upload class="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                        <div class="w-10 h-10 bg-slate-100 group-hover:bg-sky-100 rounded-lg flex items-center justify-center mb-2 transition-all">
+                          <Upload class="w-5 h-5 text-slate-400 group-hover:text-sky-600 transition-colors" />
                         </div>
                         <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
                           {{ selectedFile ? selectedFile.name : 'Click to upload receipt' }}
@@ -574,31 +599,36 @@
                     v-model="newExpense.notes"
                     rows="3"
                     placeholder="Add any additional notes about this expense..."
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
                   ></textarea>
                 </div>
               </div>
 
-              <!-- Actions -->
-              <div class="flex items-center gap-3 pt-4">
+              <!-- Action Buttons -->
+              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
                 <button
                   type="button"
                   @click="closeModal"
-                  class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all"
+                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                   :disabled="submitting"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   :disabled="submitting"
                 >
+                  <span
+                    v-if="submitting"
+                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                  ></span>
                   {{ submitting ? 'Saving...' : (editingExpense ? 'Update Expense' : 'Add Expense') }}
                 </button>
               </div>
             </form>
           </div>
+        </div>
         </div>
       </Transition>
     </Teleport>
@@ -1015,22 +1045,31 @@ onUnmounted(() => {
 
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-}
-
-.modal-enter-active > div,
-.modal-leave-active > div {
-  transition: transform 0.3s ease;
-}
-
-.modal-enter-from > div,
-.modal-leave-to > div {
   transform: scale(0.9);
+}
+
+/* Custom scrollbar for modal content */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .toast-enter-active,
