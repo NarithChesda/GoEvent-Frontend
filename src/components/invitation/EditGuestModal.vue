@@ -35,17 +35,22 @@
                 <label for="editGuestGroup" class="block text-sm font-medium text-slate-700 mb-2">
                   Select Group <span class="text-red-500">*</span>
                 </label>
-                <select
-                  id="editGuestGroup"
-                  v-model="formData.group"
-                  required
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                >
-                  <option :value="null" disabled>Choose a group...</option>
-                  <option v-for="group in groups" :key="group.id" :value="group.id">
-                    {{ group.name }} ({{ group.guest_count }} guests)
-                  </option>
-                </select>
+                <div class="relative">
+                  <select
+                    id="editGuestGroup"
+                    v-model="formData.group"
+                    required
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                  >
+                    <option :value="null" disabled>Choose a group...</option>
+                    <option v-for="group in groups" :key="group.id" :value="group.id">
+                      {{ group.name }} ({{ group.guest_count }} guests)
+                    </option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <ChevronDown class="w-4 h-4 text-slate-500" />
+                  </div>
+                </div>
               </div>
 
               <!-- Guest Name -->
@@ -128,25 +133,30 @@
                     <label for="editCashGiftCurrency" class="block text-sm font-medium text-slate-700 mb-2">
                       Currency
                     </label>
-                    <select
-                      id="editCashGiftCurrency"
-                      v-model="formData.cash_gift_currency"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_currency }"
-                    >
-                      <option value="">Select...</option>
-                      <option value="USD">USD - US Dollar</option>
-                      <option value="KHR">KHR - Cambodian Riel</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="GBP">GBP - British Pound</option>
-                      <option value="JPY">JPY - Japanese Yen</option>
-                      <option value="CNY">CNY - Chinese Yuan</option>
-                      <option value="THB">THB - Thai Baht</option>
-                      <option value="VND">VND - Vietnamese Dong</option>
-                      <option value="SGD">SGD - Singapore Dollar</option>
-                      <option value="AUD">AUD - Australian Dollar</option>
-                      <option value="CAD">CAD - Canadian Dollar</option>
-                    </select>
+                    <div class="relative">
+                      <select
+                        id="editCashGiftCurrency"
+                        v-model="formData.cash_gift_currency"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                        :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_currency }"
+                      >
+                        <option value="">Select...</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="KHR">KHR - Cambodian Riel</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                        <option value="JPY">JPY - Japanese Yen</option>
+                        <option value="CNY">CNY - Chinese Yuan</option>
+                        <option value="THB">THB - Thai Baht</option>
+                        <option value="VND">VND - Vietnamese Dong</option>
+                        <option value="SGD">SGD - Singapore Dollar</option>
+                        <option value="AUD">AUD - Australian Dollar</option>
+                        <option value="CAD">CAD - Canadian Dollar</option>
+                      </select>
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <ChevronDown class="w-4 h-4 text-slate-500" />
+                      </div>
+                    </div>
                     <p v-if="fieldErrors.cash_gift_currency" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_currency }}</p>
                   </div>
                 </div>
@@ -190,7 +200,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { UserCog, X, Coins } from 'lucide-vue-next'
+import { UserCog, X, Coins, ChevronDown } from 'lucide-vue-next'
 import type { EventGuest, GuestGroup } from '../../services/api'
 
 // Props
