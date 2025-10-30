@@ -1,13 +1,41 @@
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Guest Management
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">Organize guests, send invitations, and track responses</p>
+    <!-- Header with Sub-navigation -->
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 overflow-hidden">
+      <!-- Title Section -->
+      <div class="px-6 py-4 border-b border-slate-200/80">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
+              <Users class="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Guest Management</h2>
+              <p class="text-sm text-slate-500">Organize guests, send invitations, and track responses</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-navigation Tabs -->
+      <div class="px-4 bg-slate-50/50">
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide py-3">
+          <button
+            v-for="tab in subTabs"
+            :key="tab.id"
+            @click="activeSubTab = tab.id"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSubTab === tab.id
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <component :is="tab.icon" class="w-4 h-4" />
+            <span>{{ tab.label }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -61,250 +89,46 @@
       </button>
     </div>
 
-    <!-- Invitation Management Section -->
-    <div v-else class="space-y-6">
-      <!-- Guest Groups Section -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-          <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-            <Users class="w-5 h-5 text-[#1e90ff] mr-2" />
-            Guest Groups
-          </h3>
-          <div class="flex items-center gap-2">
-            <button
-              @click="showCreateGroupModal = true"
-              class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg inline-flex items-center text-sm"
-            >
-              <UserPlus class="w-4 h-4 mr-1.5 sm:mr-2" />
-              <span class="hidden sm:inline">Create Group</span>
-              <span class="sm:hidden">Group</span>
-            </button>
-            <button
-              @click="showAddGuestModal = true"
-              class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
-            >
-              <UserPlus class="w-4 h-4 mr-1.5 sm:mr-2" />
-              <span class="hidden sm:inline">Add Guest</span>
-              <span class="sm:hidden">Add</span>
-            </button>
-          </div>
-        </div>
+    <!-- Content Area -->
+    <div v-else class="min-h-[400px]">
+      <!-- Guest Groups View -->
+      <GuestGroupsView
+        v-if="activeSubTab === 'groups'"
+        :groups="groups"
+        :loading-groups="loadingGroups"
+        :page-size="PAGE_SIZE"
+        :get-group-guests="getGroupGuests"
+        :is-group-loading="isGroupLoading"
+        :is-group-expanded="isGroupExpanded"
+        :get-group-pagination="getGroupPagination"
+        @create-group="showCreateGroupModal = true"
+        @add-guest="showAddGuestModal = true"
+        @toggle-group="handleGroupToggle"
+        @edit-group="openEditGroupModal"
+        @delete-group="openDeleteGroupModal"
+        @copy-link="copyShowcaseLink"
+        @mark-sent="handleMarkAsSent"
+        @edit-guest="openEditGuestModal"
+        @delete-guest="openDeleteGuestModal"
+        @next-page="nextGroupPage"
+        @previous-page="previousGroupPage"
+        @search="handleGroupSearch"
+        @bulk-mark-sent="handleBulkMarkSent"
+        @bulk-delete="handleBulkDelete"
+        @register-group-card="(groupId, el) => groupCardRefs.set(groupId, el)"
+      />
 
-        <!-- Guest Groups Display -->
-        <div v-if="loadingGroups" class="text-center py-6 sm:py-8">
-          <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:h-8 border-b-2 border-[#1e90ff] mx-auto"></div>
-          <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading guest groups...</p>
-        </div>
+      <!-- Statistics View -->
+      <GuestStatisticsView
+        v-if="activeSubTab === 'statistics'"
+        :guest-stats="guestStats"
+        :loading-stats="loadingStats"
+      />
 
-        <div v-else-if="groups.length === 0" class="text-center py-8 sm:py-12">
-          <Users class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
-          <p class="text-sm sm:text-base text-slate-500">No guest groups yet</p>
-          <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            Create a group before adding guests
-          </p>
-        </div>
-
-        <!-- Group List -->
-        <div v-else class="space-y-3">
-          <GuestGroupCard
-            v-for="group in groups"
-            :key="group.id"
-            :ref="el => groupCardRefs.set(group.id, el)"
-            :group="group"
-            :guests="getGroupGuests(group.id)"
-            :loading="isGroupLoading(group.id)"
-            :is-expanded="isGroupExpanded(group.id)"
-            :current-page="getGroupPagination(group.id).currentPage"
-            :total-count="getGroupPagination(group.id).totalCount"
-            :page-size="PAGE_SIZE"
-            :search-term="getGroupPagination(group.id).searchTerm"
-            @toggle="handleGroupToggle(group.id)"
-            @edit="openEditGroupModal"
-            @delete="openDeleteGroupModal"
-            @copy-link="copyShowcaseLink"
-            @mark-sent="handleMarkAsSent"
-            @edit-guest="openEditGuestModal"
-            @delete-guest="openDeleteGuestModal"
-            @next-page="nextGroupPage(group.id)"
-            @previous-page="previousGroupPage(group.id)"
-            @search="(searchTerm) => handleGroupSearch(group.id, searchTerm)"
-            @bulk-mark-sent="handleBulkMarkSent(group.id)"
-            @bulk-delete="handleBulkDelete(group.id)"
-          />
-        </div>
-      </div>
-
-      <!-- Enhanced Stats Dashboard -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-        <!-- Header -->
-        <div class="mb-4 sm:mb-6">
-          <h3 class="text-base sm:text-lg font-bold text-slate-900">Statistics</h3>
-          <p class="text-xs sm:text-sm text-slate-600 mt-1">Track and manage your invitations</p>
-        </div>
-
-        <!-- Primary Stats Grid (No Scroll) -->
-        <div class="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-          <!-- Total Guests (Emphasis) -->
-          <div
-            class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 sm:p-5 shadow-lg"
-            role="region"
-            aria-label="Total guests count"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                  <Users class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" aria-hidden="true" />
-                  <p class="text-xs sm:text-sm font-semibold text-white/90 uppercase tracking-wide">Total Guests</p>
-                </div>
-                <div class="text-3xl sm:text-4xl font-bold text-white mb-1" aria-live="polite">
-                  {{ loadingStats ? '—' : totalGuests }}
-                </div>
-                <!-- Mini progress indicator -->
-                <div class="flex items-center gap-2 text-white/80 text-xs sm:text-sm">
-                  <div class="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                    <div
-                      class="h-full bg-white/40 rounded-full transition-all duration-500"
-                      :style="{ width: sentPercentage + '%' }"
-                      role="progressbar"
-                      :aria-valuenow="sentPercentage"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                      :aria-label="`${sentPercentage}% invitations sent`"
-                    ></div>
-                  </div>
-                  <span class="font-medium whitespace-nowrap">{{ sentPercentage }}% sent</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Secondary Stats Grid - 3 columns -->
-          <div class="grid grid-cols-3 gap-2 sm:gap-3">
-            <!-- Sent Invitations -->
-            <div
-              class="bg-white border-2 border-sky-200 rounded-xl p-3 sm:p-4"
-              role="region"
-              aria-label="Sent invitations count"
-            >
-              <Send class="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 mb-1 sm:mb-2" aria-hidden="true" />
-              <div class="text-lg sm:text-2xl font-bold text-slate-900 mb-0.5" aria-live="polite">
-                {{ loadingStats ? '—' : sentInvitations }}
-              </div>
-              <p class="text-[10px] sm:text-sm font-medium text-slate-700 leading-tight">Sent</p>
-              <p class="text-[9px] sm:text-xs text-sky-600 mt-0.5 sm:mt-1">{{ loadingStats ? '—' : sentPercentage }}%</p>
-            </div>
-
-            <!-- Viewed Invitations -->
-            <div
-              class="bg-white border-2 border-green-200 rounded-xl p-3 sm:p-4"
-              role="region"
-              aria-label="Viewed invitations count"
-            >
-              <Eye class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-1 sm:mb-2" aria-hidden="true" />
-              <div class="text-lg sm:text-2xl font-bold text-slate-900 mb-0.5" aria-live="polite">
-                {{ loadingStats ? '—' : acceptedInvitations }}
-              </div>
-              <p class="text-[10px] sm:text-sm font-medium text-slate-700 leading-tight">Viewed</p>
-              <p class="text-[9px] sm:text-xs text-green-600 mt-0.5 sm:mt-1">{{ loadingStats ? '—' : viewRate }}%</p>
-            </div>
-
-            <!-- Pending Invitations -->
-            <div
-              class="bg-white border-2 border-slate-200 rounded-xl p-3 sm:p-4"
-              role="region"
-              aria-label="Pending invitations count"
-            >
-              <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 mb-1 sm:mb-2" aria-hidden="true" />
-              <div class="text-lg sm:text-2xl font-bold text-slate-900 mb-0.5" aria-live="polite">
-                {{ loadingStats ? '—' : pendingInvitations }}
-              </div>
-              <p class="text-[10px] sm:text-sm font-medium text-slate-700 leading-tight">Pending</p>
-              <p class="text-[9px] sm:text-xs text-slate-600 mt-0.5 sm:mt-1 opacity-0">—</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Detailed Engagement Breakdown (Collapsible) -->
-        <div v-if="!loadingStats && totalGuests > 0" class="border-t border-slate-200 pt-4 sm:pt-6 mt-4 sm:mt-6">
-          <button
-            @click="showDetailedBreakdown = !showDetailedBreakdown"
-            class="w-full flex items-center justify-between mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 -m-2"
-            :aria-expanded="showDetailedBreakdown"
-            aria-controls="detailed-breakdown-section"
-            type="button"
-          >
-            <h4 class="text-sm sm:text-base font-semibold text-slate-700">Detailed Breakdown</h4>
-            <ChevronDown
-              class="w-5 h-5 text-slate-400 transition-transform"
-              :class="{ 'rotate-180': showDetailedBreakdown }"
-              aria-hidden="true"
-            />
-          </button>
-
-          <Transition name="expand">
-            <div v-if="showDetailedBreakdown" id="detailed-breakdown-section" class="space-y-3">
-              <!-- Invitation Status -->
-              <div class="bg-slate-50 rounded-lg p-3 sm:p-4">
-                <div class="flex items-center justify-between text-sm mb-2">
-                  <span class="font-medium text-slate-700">Invitation Status</span>
-                  <span class="text-slate-600">{{ sentInvitations }}/{{ totalGuests }} sent</span>
-                </div>
-                <div class="relative w-full h-2.5 bg-slate-200 rounded-full overflow-hidden mb-3">
-                  <div
-                    class="absolute top-0 left-0 h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
-                    :style="{ width: sentPercentage + '%' }"
-                    role="progressbar"
-                    :aria-valuenow="sentPercentage"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    :aria-label="`${sentPercentage}% invitations sent`"
-                  ></div>
-                </div>
-                <div class="flex flex-wrap items-center gap-3 text-xs">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-3 h-3 rounded-full bg-sky-500"></div>
-                    <span class="text-slate-600">Sent: {{ sentInvitations }} ({{ sentPercentage }}%)</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-3 h-3 rounded-full bg-slate-300"></div>
-                    <span class="text-slate-600">Pending: {{ pendingInvitations }} ({{ pendingPercentage }}%)</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- View Rate -->
-              <div class="bg-slate-50 rounded-lg p-3 sm:p-4">
-                <div class="flex items-center justify-between text-sm mb-2">
-                  <span class="font-medium text-slate-700">View Engagement</span>
-                  <span class="text-slate-600">{{ acceptedInvitations }}/{{ sentInvitations }} viewed</span>
-                </div>
-                <div class="relative w-full h-2.5 bg-slate-200 rounded-full overflow-hidden mb-3">
-                  <div
-                    class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all duration-500"
-                    :style="{ width: viewedPercentage + '%' }"
-                    role="progressbar"
-                    :aria-valuenow="viewedPercentage"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    :aria-label="`${viewedPercentage}% of sent invitations viewed`"
-                  ></div>
-                </div>
-                <div class="flex flex-wrap items-center gap-3 text-xs">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span class="text-slate-600">Viewed: {{ acceptedInvitations }} ({{ viewRate }}% rate)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </div>
-
-      <!-- Cash Gift Analytics -->
-      <CashGiftAnalytics
-        v-if="groups.length > 0"
-        ref="cashGiftAnalyticsRef"
+      <!-- Cash Gift Analytics View -->
+      <GuestCashGiftView
+        v-if="activeSubTab === 'cash-gifts'"
+        ref="cashGiftViewRef"
         :event-id="props.eventId"
         :groups="groups"
       />
@@ -404,10 +228,8 @@ import {
   Mail,
   UserPlus,
   AlertCircle,
-  Send,
-  Eye,
-  Clock,
-  ChevronDown,
+  BarChart3,
+  DollarSign,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestGroups } from '../composables/invitation/useGuestGroups'
@@ -417,12 +239,13 @@ import type { Event, EventGuest, GuestGroup } from '../services/api'
 import { guestService } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import GuestGroupCard from './invitation/GuestGroupCard.vue'
 import CreateGroupModal from './invitation/CreateGroupModal.vue'
 import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
 import EditGroupModal from './invitation/EditGroupModal.vue'
-import CashGiftAnalytics from './invitation/CashGiftAnalytics.vue'
+import GuestGroupsView from './invitation/GuestGroupsView.vue'
+import GuestStatisticsView from './invitation/GuestStatisticsView.vue'
+import GuestCashGiftView from './invitation/GuestCashGiftView.vue'
 
 // Props
 const props = defineProps<{
@@ -483,13 +306,20 @@ const {
 } = useBulkImport(props.eventId)
 
 // Local state
+const activeSubTab = ref('groups')
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showAddGuestModal = ref(false)
 const showCreateGroupModal = ref(false)
 const isAddingGuest = ref(false)
 const isCreatingGroup = ref(false)
 const groupCardRefs = new Map<number, any>()
-const showDetailedBreakdown = ref(false) // Default collapsed
+
+// Sub-tabs configuration
+const subTabs = [
+  { id: 'groups', label: 'Guest Groups', icon: Users },
+  { id: 'statistics', label: 'Statistics', icon: BarChart3 },
+  { id: 'cash-gifts', label: 'Cash Gifts', icon: DollarSign },
+]
 
 // Edit guest modal state
 const showEditGuestModal = ref(false)
@@ -503,8 +333,8 @@ const editTargetGroup = ref<GuestGroup | null>(null)
 const isUpdatingGroup = ref(false)
 const editGroupModalRef = ref<InstanceType<typeof EditGroupModal> | null>(null)
 
-// Cash gift analytics ref
-const cashGiftAnalyticsRef = ref<InstanceType<typeof CashGiftAnalytics> | null>(null)
+// Cash gift view ref
+const cashGiftViewRef = ref<InstanceType<typeof GuestCashGiftView> | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -520,38 +350,6 @@ const hasTemplatePayment = computed(() => {
   return isTemplateActivated.value
 })
 
-const acceptedInvitations = computed(() => guestStats.value?.viewed || 0)
-const totalGuests = computed(() => guestStats.value?.total_guests || 0)
-const sentInvitations = computed(() => guestStats.value?.sent || 0)
-const pendingInvitations = computed(() => {
-  const total = totalGuests.value
-  const sent = sentInvitations.value
-  return Math.max(0, total - sent)
-})
-
-const sentPercentage = computed(() => {
-  const total = totalGuests.value
-  if (total === 0) return 0
-  return Math.round((sentInvitations.value / total) * 100)
-})
-
-const viewedPercentage = computed(() => {
-  const total = totalGuests.value
-  if (total === 0) return 0
-  return Math.round((acceptedInvitations.value / total) * 100)
-})
-
-const pendingPercentage = computed(() => {
-  const total = totalGuests.value
-  if (total === 0) return 0
-  return Math.round((pendingInvitations.value / total) * 100)
-})
-
-const viewRate = computed(() => {
-  const sent = sentInvitations.value
-  if (sent === 0) return 0
-  return Math.round((acceptedInvitations.value / sent) * 100)
-})
 
 // Methods
 const redirectToPaymentTab = () => {
@@ -607,8 +405,8 @@ const handleAddGuest = async (name: string, groupId: number) => {
     await loadGroups()
 
     // Refresh cash gift analytics (in case guest has default gift)
-    if (cashGiftAnalyticsRef.value) {
-      await cashGiftAnalyticsRef.value.refresh()
+    if (cashGiftViewRef.value) {
+      await cashGiftViewRef.value.refresh()
     }
   } else {
     showMessage('error', response.message || 'Failed to add guest')
@@ -632,8 +430,8 @@ const handleBulkImport = async (groupId: number) => {
     await loadGuestsForGroup(groupId, pagination.currentPage)
 
     // Refresh cash gift analytics (imported guests may have cash gifts)
-    if (cashGiftAnalyticsRef.value) {
-      await cashGiftAnalyticsRef.value.refresh()
+    if (cashGiftViewRef.value) {
+      await cashGiftViewRef.value.refresh()
     }
 
     // Show results
@@ -752,8 +550,8 @@ const confirmDeleteGuest = async () => {
     await loadGroups()
 
     // Refresh cash gift analytics (deleted guest may have had a gift)
-    if (cashGiftAnalyticsRef.value) {
-      await cashGiftAnalyticsRef.value.refresh()
+    if (cashGiftViewRef.value) {
+      await cashGiftViewRef.value.refresh()
     }
   } else {
     showMessage('error', response.message || 'Failed to remove guest')
@@ -816,8 +614,8 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
 
     // Refresh cash gift analytics if cash gift info was updated
     if (data.cash_gift_amount !== undefined || data.cash_gift_currency !== undefined) {
-      if (cashGiftAnalyticsRef.value) {
-        await cashGiftAnalyticsRef.value.refresh()
+      if (cashGiftViewRef.value) {
+        await cashGiftViewRef.value.refresh()
       }
     }
   } else {
@@ -920,8 +718,8 @@ const handleBulkDelete = async (groupId: number) => {
     await loadGuestsForGroup(groupId, pagination.currentPage)
 
     // Refresh cash gift analytics (deleted guests may have had gifts)
-    if (cashGiftAnalyticsRef.value) {
-      await cashGiftAnalyticsRef.value.refresh()
+    if (cashGiftViewRef.value) {
+      await cashGiftViewRef.value.refresh()
     }
   }
 
@@ -971,48 +769,11 @@ watch(hasTemplatePayment, (isActivated) => {
   -ms-overflow-style: none;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* Ensure scrollbar-hide container enables scrolling */
-.scrollbar-hide {
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-/* Expand transition for collapsible sections */
-.expand-enter-active,
-.expand-leave-active {
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.expand-enter-from,
-.expand-leave-to {
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-8px);
-}
-
-.expand-enter-to,
-.expand-leave-from {
-  opacity: 1;
-  max-height: 800px;
-  transform: translateY(0);
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .expand-enter-active,
-  .expand-leave-active {
-    transition: none;
-  }
-
-  div[role='progressbar'] {
-    transition: none !important;
-  }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>
