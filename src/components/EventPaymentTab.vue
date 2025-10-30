@@ -640,7 +640,6 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  ExternalLink,
   History,
   Pencil,
 } from 'lucide-vue-next'
@@ -1020,11 +1019,15 @@ const openPaymentLink = (paymentLink: string): void => {
   // Validate URL format for security
   try {
     const url = new URL(paymentLink)
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    // Allow both standard protocols and app-specific schemes (e.g., payway://, banking://)
+    if (!url.protocol) {
       console.warn('Invalid protocol in payment link')
       return
     }
-    window.open(paymentLink, '_blank', 'noopener,noreferrer')
+
+    // Use location.href for better mobile deep link support
+    // This allows the OS to intercept and route to native apps
+    window.location.href = paymentLink
   } catch (err) {
     console.error('Invalid payment link format:', err)
   }
