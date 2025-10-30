@@ -22,7 +22,7 @@
                   <div>
                     <h2 class="text-lg sm:text-2xl font-bold">Upload Media</h2>
                     <p class="text-white/90 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                      Add photos and visual content to your event
+                      {{ currentTotalPhotos }} photos uploaded
                     </p>
                   </div>
                 </div>
@@ -166,6 +166,17 @@
                 </div>
               </div>
 
+              <!-- Success Display -->
+              <div v-if="successMessage" class="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg sm:rounded-xl">
+                <div class="flex items-start space-x-2 sm:space-x-3">
+                  <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p class="text-xs sm:text-sm font-medium text-green-800">Success</p>
+                    <p class="text-xs sm:text-sm text-green-600 mt-0.5 sm:mt-1">{{ successMessage }}</p>
+                  </div>
+                </div>
+              </div>
+
               <!-- Error Display -->
               <div v-if="error" class="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl">
                 <div class="flex items-start space-x-2 sm:space-x-3">
@@ -232,12 +243,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Upload, X, ImageIcon, AlertCircle, ImagePlus } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { Upload, X, ImageIcon, AlertCircle, ImagePlus, CheckCircle } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
 
 interface Props {
   eventId: string
+  currentPhotoCount?: number
 }
 
 interface Emits {
@@ -250,7 +262,9 @@ interface FileWithPreview {
   preview: string | null
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  currentPhotoCount: 0,
+})
 const emit = defineEmits<Emits>()
 
 // Refs
@@ -266,6 +280,13 @@ const currentUpload = ref(0)
 const error = ref<string | null>(null)
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
+const photosUploadedInSession = ref(0) // Track photos uploaded in this modal session
+const successMessage = ref<string | null>(null)
+
+// Computed
+const currentTotalPhotos = computed(() => {
+  return props.currentPhotoCount + photosUploadedInSession.value
+})
 
 // Methods
 const handleBackdropClick = (event: MouseEvent) => {
@@ -373,13 +394,26 @@ const uploadFiles = async () => {
     if (response.success && response.data) {
       uploadProgress.value = 100
 
+      // Track how many photos were uploaded in this session
+      photosUploadedInSession.value += response.data.photos.length
+
       // Emit each uploaded photo individually to maintain compatibility
       response.data.photos.forEach((photo) => {
         emit('uploaded', photo)
       })
 
-      // Close modal after successful upload
-      emit('close')
+      // Clear selected files for next batch (if user wants to upload more)
+      selectedFiles.value = []
+      defaultCaption.value = ''
+
+      // Show success message
+      const uploadedCount = response.data.photos.length
+      successMessage.value = `${uploadedCount} photo${uploadedCount === 1 ? '' : 's'} uploaded successfully!`
+      setTimeout(() => {
+        successMessage.value = null
+      }, 3000)
+
+      error.value = null
     } else {
       error.value = response.message || 'Upload failed. Please try again.'
     }

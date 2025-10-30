@@ -89,33 +89,29 @@
     </div>
 
     <!-- Content -->
-    <div class="p-3 sm:p-4">
-      <!-- Caption and Order -->
-      <div class="flex items-start justify-between mb-1.5 sm:mb-2">
-        <div class="flex-1 min-w-0">
-          <h4 class="text-sm sm:text-base font-medium text-slate-900 truncate">
-            {{ media.caption || 'Untitled Media' }}
-          </h4>
+    <div class="px-2 py-1.5 sm:px-2.5 sm:py-2">
+      <!-- Date and Order -->
+      <div class="flex items-center justify-between">
+        <!-- Upload Date -->
+        <div class="flex items-center text-[10px] text-slate-500">
+          <Calendar class="w-2.5 h-2.5 mr-0.5" />
+          {{ formatDate(media.created_at) }}
         </div>
+
+        <!-- Order Badge -->
         <span
-          class="ml-1.5 sm:ml-2 inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 text-slate-700 shrink-0"
+          class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 shrink-0"
         >
           #{{ media.order }}
         </span>
       </div>
 
-      <!-- Upload Date -->
-      <div class="flex items-center text-[10px] sm:text-xs text-slate-500">
-        <Calendar class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-        {{ formatDate(media.created_at) }}
-      </div>
-
       <!-- Featured Status (for non-edit mode) -->
-      <div v-if="!canEdit && media.is_featured" class="mt-1.5 sm:mt-2">
+      <div v-if="!canEdit && media.is_featured" class="mt-1">
         <span
-          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
+          class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
         >
-          <Star class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+          <Star class="w-2.5 h-2.5 mr-0.5" />
           Featured
         </span>
       </div>
