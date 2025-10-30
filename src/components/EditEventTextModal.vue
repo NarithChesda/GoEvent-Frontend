@@ -29,19 +29,19 @@
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="updateText" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div class="space-y-4 sm:space-y-5 md:space-y-6">
-                <!-- Text Type and Language -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                  <!-- Text Type -->
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                      Text Type <span class="text-red-500">*</span>
-                    </label>
+            <form @submit.prevent="updateText" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <!-- Text Type and Language -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <!-- Text Type -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Text Type <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
                     <select
                       v-model="formData.text_type"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                     >
                       <option value="">Select type</option>
                       <option value="cover_header">Cover Header</option>
@@ -55,17 +55,22 @@
                       <option value="thank_you_message">Thank You Message</option>
                       <option value="custom">Custom Content</option>
                     </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                    </div>
                   </div>
+                </div>
 
-                  <!-- Language -->
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                      Language <span class="text-red-500">*</span>
-                    </label>
+                <!-- Language -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Language <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
                     <select
                       v-model="formData.language"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                     >
                       <option value="">Select language</option>
                       <option value="en">English</option>
@@ -77,63 +82,60 @@
                       <option value="th">Thai</option>
                       <option value="vn">Vietnamese</option>
                     </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Title -->
-                <div>
-                  <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                    Title (Optional)
-                  </label>
-                  <input
-                    v-model="formData.title"
-                    type="text"
-                    class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                    placeholder="Enter an optional title"
-                  />
+              <!-- Title -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  Title
+                </label>
+                <input
+                  v-model="formData.title"
+                  type="text"
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  placeholder="Enter an optional title"
+                />
+              </div>
+
+              <!-- Content -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  Content <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  v-model="formData.content"
+                  rows="6"
+                  required
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                  placeholder="Enter the text content..."
+                ></textarea>
+                <div class="mt-1 text-xs text-slate-500">
+                  {{ formData.content.length }} characters
                 </div>
-
-                <!-- Content -->
-                <div>
-                  <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                    Content <span class="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    v-model="formData.content"
-                    rows="6"
-                    required
-                    class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                    placeholder="Enter the text content..."
-                  ></textarea>
-                  <div class="mt-1 text-xs text-slate-500">
-                    {{ formData.content.length }} characters
-                  </div>
-                </div>
-
-                <!-- Minimalist: removed order/active controls, info, and metadata -->
               </div>
 
               <!-- Action Buttons -->
-              <div
-                class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-5 md:pt-6 border-t border-gray-200"
-              >
+              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  :disabled="
-                    loading || !formData.text_type || !formData.language || !formData.content
-                  "
-                  class="flex-1 sm:flex-none px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-bold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                  :disabled="loading || !formData.text_type || !formData.language || !formData.content"
+                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <span
                     v-if="loading"
-                    class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
                   {{ loading ? 'Updating...' : 'Update Text Content' }}
                 </button>
@@ -148,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { X, FileEdit } from 'lucide-vue-next'
+import { X, FileEdit, ChevronDown } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 
 interface Props {
