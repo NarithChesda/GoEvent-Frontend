@@ -108,27 +108,6 @@
       :aria-label="`${activeFilter === 'all' ? 'All groups' : groups.find(g => g.id.toString() === activeFilter)?.name || ''} guests`"
       class="space-y-4"
     >
-      <!-- Bulk Actions (shown when guests are selected) -->
-      <div v-if="totalSelectedCount > 0" class="bg-slate-50/50 rounded-xl p-4 border border-slate-200">
-        <div class="flex items-center justify-center gap-2">
-          <span class="text-sm text-slate-600 font-medium">{{ totalSelectedCount }} selected</span>
-          <button
-            @click="handleBulkMarkSent"
-            class="px-3 py-2 text-sm rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1.5 font-medium"
-          >
-            <Send class="w-4 h-4" />
-            Mark Sent
-          </button>
-          <button
-            @click="handleBulkDelete"
-            class="px-3 py-2 text-sm rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors flex items-center gap-1.5 font-medium"
-          >
-            <Trash2 class="w-4 h-4" />
-            Delete
-          </button>
-        </div>
-      </div>
-
       <!-- Loading State -->
       <div v-if="isAnyGroupLoading && !hasAnyGuests" class="flex justify-center items-center py-12">
         <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -136,15 +115,48 @@
 
       <!-- Guest List Items (Scrollable) -->
       <div v-else-if="hasAnyGuests" class="space-y-4">
-        <!-- Centered Pagination (Above List) -->
-        <div v-if="showPagination" class="flex flex-col sm:flex-row items-center justify-between gap-3 py-4 px-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-sm">
-          <!-- Guest count info -->
-          <div class="text-sm text-slate-600">
-            Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
+        <!-- Combined Selection, Actions, and Pagination Bar -->
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-3 py-3 px-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-sm">
+          <!-- Left: Select All & Selection Count -->
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                :checked="isAllCurrentPageSelected"
+                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
+                @change="handleToggleSelectAll"
+                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              />
+              <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">Select All</span>
+            </label>
+
+            <!-- Selection actions (shown when guests are selected) -->
+            <div v-if="totalSelectedCount > 0" class="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200">
+              <span class="text-sm text-slate-600 font-medium">{{ totalSelectedCount }} selected</span>
+              <button
+                @click="handleBulkMarkSent"
+                class="px-2.5 py-1.5 text-xs rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1.5 font-medium"
+              >
+                <Send class="w-3.5 h-3.5" />
+                Mark Sent
+              </button>
+              <button
+                @click="handleBulkDelete"
+                class="px-2.5 py-1.5 text-xs rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors flex items-center gap-1.5 font-medium"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </div>
+
+            <!-- Guest count info (shown when no selections) -->
+            <div v-else class="text-sm text-slate-600 ml-2 pl-3 border-l border-slate-200">
+              Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
+            </div>
           </div>
 
-          <!-- Pagination controls -->
-          <div class="flex items-center gap-2">
+          <!-- Right: Pagination controls -->
+          <div v-if="showPagination" class="flex items-center gap-2">
             <button
               @click="handlePreviousPage"
               :disabled="currentPageNumber === 1 || isAnyGroupLoading"
@@ -173,9 +185,6 @@
               </svg>
             </button>
           </div>
-
-          <!-- Empty space for balance on mobile -->
-          <div class="hidden sm:block w-32"></div>
         </div>
 
         <!-- Scrollable container with max height -->
@@ -424,6 +433,25 @@ const handleToggleSelect = (guest: EventGuest) => {
 
 const isGuestSelected = (guestId: number) => {
   return selectedGuestIds.value.has(guestId)
+}
+
+const isAllCurrentPageSelected = computed(() => {
+  if (allFilteredGuests.value.length === 0) return false
+  return allFilteredGuests.value.every(guest => selectedGuestIds.value.has(guest.id))
+})
+
+const handleToggleSelectAll = () => {
+  if (isAllCurrentPageSelected.value) {
+    // Deselect all on current page
+    allFilteredGuests.value.forEach(guest => {
+      selectedGuestIds.value.delete(guest.id)
+    })
+  } else {
+    // Select all on current page
+    allFilteredGuests.value.forEach(guest => {
+      selectedGuestIds.value.add(guest.id)
+    })
+  }
 }
 
 const handleBulkMarkSent = () => {
