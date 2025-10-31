@@ -62,6 +62,7 @@
         <!-- Copy Link with smart dropdown -->
         <div class="relative" ref="linkMenuContainer">
           <button
+            ref="linkButton"
             @click.stop="toggleLinkMenu"
             title="Copy invitation link"
             class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
@@ -69,33 +70,6 @@
           >
             <Link class="w-4 h-4" />
           </button>
-
-          <!-- Smart Dropdown Menu (adjusts position based on available space) -->
-          <Transition name="dropdown">
-            <div
-              v-if="showLinkMenu"
-              :class="[
-                'absolute right-0 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden',
-                dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
-              ]"
-              @click.stop
-            >
-              <button
-                @click="handleCopyLink('kh')"
-                class="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
-              >
-                <Globe class="w-3.5 h-3.5" />
-                Khmer
-              </button>
-              <button
-                @click="handleCopyLink('en')"
-                class="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
-              >
-                <Globe class="w-3.5 h-3.5" />
-                English
-              </button>
-            </div>
-          </Transition>
         </div>
 
         <!-- Edit -->
@@ -118,10 +92,38 @@
       </div>
     </div>
   </div>
+
+  <!-- Teleport dropdown to body to escape overflow constraints -->
+  <Teleport to="body">
+    <Transition name="dropdown">
+      <div
+        v-if="showLinkMenu"
+        ref="dropdownMenu"
+        :style="dropdownStyle"
+        class="fixed w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] overflow-hidden"
+        @click.stop
+      >
+        <button
+          @click="handleCopyLink('kh')"
+          class="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
+        >
+          <Globe class="w-3.5 h-3.5" />
+          Khmer
+        </button>
+        <button
+          @click="handleCopyLink('en')"
+          class="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
+        >
+          <Globe class="w-3.5 h-3.5" />
+          English
+        </button>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import {
   Trash2,
   Send,
@@ -132,6 +134,40 @@ import {
   CheckCheck,
 } from 'lucide-vue-next'
 import type { EventGuest } from '../../services/api'
+
+// Global state manager for dropdowns (singleton pattern)
+class DropdownManager {
+  private static instance: DropdownManager
+  private currentOpenDropdown: { close: () => void } | null = null
+
+  static getInstance() {
+    if (!DropdownManager.instance) {
+      DropdownManager.instance = new DropdownManager()
+    }
+    return DropdownManager.instance
+  }
+
+  register(closeCallback: () => void) {
+    // Close any currently open dropdown
+    if (this.currentOpenDropdown) {
+      this.currentOpenDropdown.close()
+    }
+    this.currentOpenDropdown = { close: closeCallback }
+  }
+
+  unregister(closeCallback: () => void) {
+    if (this.currentOpenDropdown?.close === closeCallback) {
+      this.currentOpenDropdown = null
+    }
+  }
+
+  closeAll() {
+    if (this.currentOpenDropdown) {
+      this.currentOpenDropdown.close()
+      this.currentOpenDropdown = null
+    }
+  }
+}
 
 // Props
 const props = defineProps<{
@@ -151,7 +187,12 @@ const emit = defineEmits<{
 // Local state
 const showLinkMenu = ref(false)
 const linkMenuContainer = ref<HTMLElement | null>(null)
+const linkButton = ref<HTMLElement | null>(null)
+const dropdownMenu = ref<HTMLElement | null>(null)
 const dropdownPosition = ref<'top' | 'bottom'>('bottom')
+const dropdownStyle = ref<Record<string, string>>({})
+
+const dropdownManager = DropdownManager.getInstance()
 
 // Methods
 const getInitials = (name: string) => {
@@ -176,43 +217,64 @@ const formatCurrency = (amount: string | number, currency: string = 'USD') => {
 }
 
 const calculateDropdownPosition = () => {
-  if (!linkMenuContainer.value) return
+  if (!linkButton.value) return
 
-  // Find the scrollable container
-  const scrollContainer = linkMenuContainer.value.closest('.custom-scrollbar') ||
-                         linkMenuContainer.value.closest('.overflow-y-auto')
+  const buttonRect = linkButton.value.getBoundingClientRect()
+  const dropdownHeight = 88 // Approximate height of 2 buttons
+  const dropdownWidth = 128 // 32 * 4 = 128px (w-32)
 
-  if (scrollContainer) {
-    // Get position relative to scrollable container
-    const containerRect = scrollContainer.getBoundingClientRect()
-    const buttonRect = linkMenuContainer.value.getBoundingClientRect()
-    const dropdownHeight = 100
+  // Calculate space below button
+  const spaceBelow = window.innerHeight - buttonRect.bottom
+  const spaceAbove = buttonRect.top
 
-    // Calculate space below button within the container
-    const spaceBelow = containerRect.bottom - buttonRect.bottom
+  // Determine if dropdown should be above or below
+  const showAbove = spaceBelow < dropdownHeight && spaceAbove > dropdownHeight
 
-    // If not enough space below within container, show on top
-    if (spaceBelow < dropdownHeight) {
-      dropdownPosition.value = 'top'
-    } else {
-      dropdownPosition.value = 'bottom'
-    }
+  // Calculate position
+  let top: number
+  let left: number
+
+  if (showAbove) {
+    // Position above button
+    top = buttonRect.top - dropdownHeight - 4 // 4px gap
+    dropdownPosition.value = 'top'
   } else {
-    // Fallback to viewport-based calculation
-    const rect = linkMenuContainer.value.getBoundingClientRect()
-    const spaceBelow = window.innerHeight - rect.bottom
+    // Position below button
+    top = buttonRect.bottom + 4 // 4px gap
+    dropdownPosition.value = 'bottom'
+  }
 
-    if (spaceBelow < 100) {
-      dropdownPosition.value = 'top'
-    } else {
-      dropdownPosition.value = 'bottom'
-    }
+  // Align dropdown to the right of button
+  left = buttonRect.right - dropdownWidth
+
+  // Ensure dropdown doesn't go off-screen on the left
+  if (left < 8) {
+    left = 8
+  }
+
+  // Ensure dropdown doesn't go off-screen on the right
+  if (left + dropdownWidth > window.innerWidth - 8) {
+    left = window.innerWidth - dropdownWidth - 8
+  }
+
+  dropdownStyle.value = {
+    top: `${top}px`,
+    left: `${left}px`,
   }
 }
 
+const closeDropdown = () => {
+  showLinkMenu.value = false
+}
+
 const toggleLinkMenu = () => {
-  showLinkMenu.value = !showLinkMenu.value
   if (showLinkMenu.value) {
+    // If already open, close it
+    closeDropdown()
+  } else {
+    // Register this dropdown as the active one (closes others)
+    dropdownManager.register(closeDropdown)
+    showLinkMenu.value = true
     // Calculate position after menu state changes
     setTimeout(() => calculateDropdownPosition(), 0)
   }
@@ -220,17 +282,39 @@ const toggleLinkMenu = () => {
 
 const handleCopyLink = (language: 'en' | 'kh') => {
   emit('copy-link', props.guest, language)
-  showLinkMenu.value = false
+  closeDropdown()
 }
 
-// Close dropdown when clicking outside
-if (typeof window !== 'undefined') {
-  window.addEventListener('click', () => {
-    if (showLinkMenu.value) {
-      showLinkMenu.value = false
+// Global click handler to close dropdown when clicking outside
+const handleGlobalClick = (event: MouseEvent) => {
+  if (showLinkMenu.value) {
+    // Check if click is outside the button and dropdown
+    const target = event.target as HTMLElement
+    if (
+      linkButton.value &&
+      !linkButton.value.contains(target) &&
+      dropdownMenu.value &&
+      !dropdownMenu.value.contains(target)
+    ) {
+      closeDropdown()
     }
-  })
+  }
 }
+
+// Setup global click listener
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    document.addEventListener('click', handleGlobalClick)
+  }
+})
+
+// Cleanup
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    document.removeEventListener('click', handleGlobalClick)
+  }
+  dropdownManager.unregister(closeDropdown)
+})
 </script>
 
 <style scoped>

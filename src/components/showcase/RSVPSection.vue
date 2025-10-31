@@ -1,5 +1,6 @@
 <template>
-  <div id="rsvp" class="space-y-3">
+  <!-- Hide entire RSVP section for past events -->
+  <div v-if="eventStatus !== 'ended'" id="rsvp" class="space-y-3">
     <!-- RSVP Header -->
     <div class="text-sm sm:text-base font-medium leading-snug">
       <span
@@ -16,7 +17,7 @@
     <div class="rsvp-content">
       <!-- Not Authenticated: Single Sign In Button -->
       <button
-        v-if="eventStatus !== 'ended' && !isUserAuthenticated"
+        v-if="!isUserAuthenticated"
         @click="handleSignInClick"
         class="rsvp-btn-signin"
         :style="{
@@ -32,12 +33,12 @@
       </button>
 
       <!-- Loading State -->
-      <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated && isLoading" class="rsvp-loader">
+      <div v-else-if="isUserAuthenticated && isLoading" class="rsvp-loader">
         <div class="spinner-white"></div>
       </div>
 
       <!-- Authenticated: RSVP Section -->
-      <div v-else-if="eventStatus !== 'ended' && isUserAuthenticated" class="rsvp-section-wrapper">
+      <div v-else-if="isUserAuthenticated" class="rsvp-section-wrapper">
         <!-- Main Row: Toggle Switch + Guest Counter -->
         <div class="rsvp-main-row">
           <!-- Toggle Switch with Label -->
@@ -369,7 +370,12 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
     if (response.success && response.data) {
       // Preserve confirmation code if it exists and isn't in the new response
       const existingConfirmationCode = currentRegistration.value?.confirmation_code
-      currentRegistration.value = response.data
+
+      // FIX: Backend returns wrapped response { message, registration } for POST /rsvp/
+      // but returns direct registration object for GET /my-registration/
+      // Unwrap if needed to ensure consistent data structure
+      const registrationData = (response.data as any).registration || response.data
+      currentRegistration.value = registrationData
 
       // If response doesn't have confirmation code but we had one before, preserve it
       if (!currentRegistration.value.confirmation_code && existingConfirmationCode) {
@@ -383,9 +389,9 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
 
       if (status === 'coming') {
         const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-        const unit = getPersonUnit(response.data.total_attendees, currentLang)
+        const unit = getPersonUnit(registrationData.total_attendees, currentLang)
         successMessage.value = translateRSVP('rsvp_registration_success', currentLang, {
-          count: response.data.total_attendees,
+          count: registrationData.total_attendees,
           unit: unit,
         })
         savedGuestCount.value = additionalGuests.value
@@ -472,17 +478,31 @@ const updateGuestCountInAPI = async () => {
     })
 
     if (response.success && response.data) {
-      // Update the current registration data
-      currentRegistration.value = response.data
+      // Preserve confirmation code if it exists and isn't in the new response
+      const existingConfirmationCode = currentRegistration.value?.confirmation_code
+
+      // FIX: Backend returns wrapped response { message, registration } for POST /rsvp/
+      // Unwrap if needed to ensure consistent data structure
+      const registrationData = (response.data as any).registration || response.data
+      currentRegistration.value = registrationData
+
+      // If response doesn't have confirmation code but we had one before, preserve it
+      if (!currentRegistration.value.confirmation_code && existingConfirmationCode) {
+        currentRegistration.value = {
+          ...currentRegistration.value,
+          confirmation_code: existingConfirmationCode
+        }
+      }
+
       // Mark as saved
       savedGuestCount.value = additionalGuests.value
       hasUnsavedGuestChanges.value = false
 
       // Show brief success feedback
       const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-      const unit = getPersonUnit(response.data.total_attendees, currentLang)
+      const unit = getPersonUnit(registrationData.total_attendees, currentLang)
       successMessage.value = translateRSVP('rsvp_guest_update_success', currentLang, {
-        count: response.data.total_attendees,
+        count: registrationData.total_attendees,
         unit: unit,
       })
       setTimeout(() => {
