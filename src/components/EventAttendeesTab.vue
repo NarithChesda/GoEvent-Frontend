@@ -13,11 +13,11 @@
         <button
           v-if="canEdit"
           @click="showCheckinModal = true"
-          class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 flex items-center text-sm sm:text-base"
+          class="hidden sm:flex bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 flex items-center text-sm sm:text-base"
         >
           <UserCheck class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           <span class="hidden sm:inline">Check-in Attendee</span>
-          <span class="sm:hidden">Check-in</span>
+
         </button>
         <!-- Refresh Button -->
         <button
@@ -272,22 +272,23 @@
           @click="closeCheckinModal"
         >
           <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl w-full overflow-hidden"
-            :class="showQRScanner ? 'h-full md:h-auto md:max-w-md md:mx-4 md:rounded-3xl' : 'rounded-3xl max-w-md mx-4'"
+            class="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl w-full overflow-hidden relative"
+            :class="showQRScanner ? 'h-full md:h-auto md:max-w-lg md:mx-4 md:rounded-3xl' : 'rounded-3xl max-w-lg mx-4'"
             @click.stop
           >
             <!-- Header -->
-            <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6 text-white">
+            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <UserCheck class="w-5 h-5" />
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
+                    <UserCheck class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-2xl font-bold">Check-in Attendee</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Check-in Attendee</h2>
                 </div>
                 <button
                   @click="closeCheckinModal"
-                  class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors duration-200"
+                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                  aria-label="Close"
                 >
                   <X class="w-4 h-4" />
                 </button>
@@ -295,7 +296,7 @@
             </div>
 
             <!-- Content -->
-            <div class="p-8">
+            <div class="p-6">
               <!-- QR Scanner View (Mobile Only) -->
               <div v-if="showQRScanner" class="space-y-4">
                 <QRCodeScanner
@@ -306,17 +307,17 @@
               </div>
 
               <!-- Manual Input View -->
-              <div v-else class="space-y-6">
+              <div v-else class="space-y-5">
                 <div>
-                  <label class="block text-sm font-semibold text-slate-700 mb-2"
-                    >Confirmation Code</label
+                  <label class="block text-sm font-medium text-slate-700 mb-2"
+                    >Confirmation Code <span class="text-red-500">*</span></label
                   >
                   <div class="relative">
                     <input
                       v-model="checkinCode"
                       type="text"
                       placeholder="Enter confirmation code..."
-                      class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                       :class="isMobile ? 'pr-12' : ''"
                       :disabled="isChecking"
                       @keyup.enter="performCheckin"
@@ -326,7 +327,7 @@
                       v-if="isMobile"
                       type="button"
                       @click.prevent="showQRScanner = true"
-                      class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-[#1e90ff] transition-colors duration-200 rounded-lg hover:bg-slate-100 active:bg-slate-200"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-sky-600 transition-colors duration-200 rounded-lg hover:bg-slate-100 active:bg-slate-200"
                       :disabled="isChecking"
                       title="Scan QR Code"
                     >
@@ -357,24 +358,24 @@
                   </p>
                 </div>
 
-                <div class="flex space-x-4">
+                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
                   <button
                     @click="closeCheckinModal"
-                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-200"
+                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                     :disabled="isChecking"
                   >
                     Cancel
                   </button>
                   <button
                     @click="performCheckin"
-                    class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     :disabled="!checkinCode.trim() || isChecking"
                   >
-                    <UserCheck v-if="!isChecking" class="w-4 h-4 mr-2" />
-                    <div
-                      v-else
-                      class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
-                    ></div>
+                    <span
+                      v-if="isChecking"
+                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    ></span>
+                    <UserCheck v-else class="w-4 h-4 mr-2" />
                     {{ isChecking ? 'Checking in...' : 'Check In' }}
                   </button>
                 </div>
@@ -399,16 +400,7 @@
       </div>
     </Transition>
 
-    <!-- Mobile Scan FAB -->
-    <button
-      v-if="isMobile && canEdit"
-      @click="showCheckinModal = true; showQRScanner = true"
-      class="fixed bottom-24 right-6 z-40 shadow-xl rounded-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white p-4 transition-transform hover:scale-105"
-      aria-label="Open scanner"
-      title="Scan QR"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-    </button>
+
   </div>
 </template>
 
