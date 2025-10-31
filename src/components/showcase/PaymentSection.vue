@@ -281,8 +281,6 @@
                     <div v-if="method.payment_url" class="text-center">
                       <a
                         :href="method.payment_url"
-                        :target="isDeepLink(method.payment_url) ? '_self' : '_blank'"
-                        rel="noopener noreferrer"
                         class="payment-link-minimalist group inline-flex items-center justify-center w-full"
                         :style="{
                           fontFamily: secondaryFont || currentFont,
@@ -571,13 +569,6 @@ const onImageError = () => {
 const capitalizeText = (text: string | undefined): string => {
   if (!text) return ''
   return text.toUpperCase()
-}
-
-const isDeepLink = (url: string): boolean => {
-  // Check if URL uses a custom protocol/scheme (not http/https)
-  // Deep links typically use patterns like: payway://, bakong://, app://
-  const deepLinkPatterns = /^(?!https?:\/\/)[a-zA-Z][a-zA-Z0-9+.-]*:\/\//
-  return deepLinkPatterns.test(url)
 }
 </script>
 

@@ -256,19 +256,28 @@
                       Online Payment Link
                     </h5>
 
-                    <div>
-                      <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                        Payment URL (Optional)
-                      </label>
-                      <input
-                        v-model="formData.payment_url"
-                        type="url"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                        placeholder="https://example.com/payment-link"
-                      />
-                      <p class="text-[10px] sm:text-xs text-slate-500 mt-1">
-                        Online banking or payment gateway link (must be HTTPS)
-                      </p>
+                    <div class="space-y-3">
+                      <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
+                          Payment URL (Optional)
+                        </label>
+                        <input
+                          v-model="formData.payment_url"
+                          type="text"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          placeholder="https://example.com/payment or payway://... or bakong://..."
+                        />
+                        <p class="text-[10px] sm:text-xs text-slate-500 mt-1">
+                          Web link (https://...) or deep link (payway://, bakong://, etc.) for mobile apps
+                        </p>
+                      </div>
+
+                      <!-- Deep Link Info Box -->
+                      <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+                        <p class="text-[10px] sm:text-xs text-blue-800 leading-relaxed">
+                          <strong>💡 Tip for PayWay/Bakong:</strong> Use deep links (e.g., <code class="bg-blue-100 px-1 rounded">payway://...</code>) to open the banking app directly. Web links (https://...) will only show a QR code page.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -407,7 +416,9 @@ const isFormValid = computed(() => {
   }
 
   if (formData.payment_method === 'payment_url') {
-    return !!(formData.payment_url && formData.payment_url.startsWith('https://'))
+    // Accept both HTTPS URLs and deep link URLs (custom protocols)
+    const urlPattern = /^(https?:\/\/|[a-zA-Z][a-zA-Z0-9+.-]*:\/\/)/
+    return !!(formData.payment_url && urlPattern.test(formData.payment_url))
   }
 
   return true

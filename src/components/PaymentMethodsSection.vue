@@ -208,7 +208,6 @@
               <a
                 v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
                 :href="paymentMethod.payment_url"
-                :target="isDeepLink(paymentMethod.payment_url) ? '_self' : '_blank'"
                 class="text-slate-400 hover:text-purple-600 p-1.5 sm:p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
                 title="Open Payment Link"
                 @click.stop
@@ -603,13 +602,6 @@ const handleDrop = async (event: DragEvent) => {
   }
 
   handleDragEnd()
-}
-
-const isDeepLink = (url: string): boolean => {
-  // Check if URL uses a custom protocol/scheme (not http/https)
-  // Deep links typically use patterns like: payway://, bakong://, app://
-  const deepLinkPatterns = /^(?!https?:\/\/)[a-zA-Z][a-zA-Z0-9+.-]*:\/\//
-  return deepLinkPatterns.test(url)
 }
 
 // Initialize
