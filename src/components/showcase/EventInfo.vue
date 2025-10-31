@@ -99,8 +99,79 @@
             </div>
           </div>
 
+          <!-- Countdown Display - Below Map, Above RSVP -->
+          <div v-if="countdown" class="countdown-container px-4 pt-2 pb-2">
+            <div class="countdown-wrapper">
+              <!-- Countdown Header -->
+              <div
+                class="countdown-header text-sm sm:text-base font-medium leading-snug mb-2"
+                :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+                :style="{
+                  fontFamily: secondaryFont || currentFont,
+                  color: 'white',
+                }"
+              >
+                {{ countdownHeader }}
+              </div>
+
+              <!-- Time display with individual labels -->
+              <div class="countdown-time-row">
+                <!-- Days -->
+                <div class="countdown-unit">
+                  <div
+                    class="countdown-number"
+                    style="font-family: 'Rajdhani', sans-serif;"
+                  >
+                    {{ countdown.formattedDays }}
+                  </div>
+                  <div
+                    class="countdown-unit-label"
+                    :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+                    :style="{
+                      fontFamily: secondaryFont || currentFont,
+                    }"
+                  >
+                    {{ dayLabel }}
+                  </div>
+                </div>
+
+                <!-- Separator -->
+                <div
+                  class="countdown-separator"
+                  style="font-family: 'Rajdhani', sans-serif;"
+                >
+                  :
+                </div>
+
+                <!-- Hours -->
+                <div class="countdown-unit">
+                  <div
+                    class="countdown-number"
+                    style="font-family: 'Rajdhani', sans-serif;"
+                  >
+                    {{ countdown.formattedHours }}
+                  </div>
+                  <div
+                    class="countdown-unit-label"
+                    :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+                    :style="{
+                      fontFamily: secondaryFont || currentFont,
+                    }"
+                  >
+                    {{ hourLabel }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider between Countdown and RSVP -->
+          <div v-if="countdown && showRsvp" class="countdown-divider">
+            <div class="divider-line"></div>
+          </div>
+
           <!-- RSVP Section Integrated Below Map -->
-          <div v-if="showRsvp" class="pt-4">
+          <div v-if="showRsvp">
             <slot name="rsvp"></slot>
           </div>
         </div>
@@ -111,6 +182,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useCountdown } from '../../composables/useCountdown'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface Props {
   descriptionTitle?: string
@@ -128,11 +201,15 @@ interface Props {
   secondaryFont?: string
   currentLanguage?: string
   showRsvp?: boolean
+  eventStartDate?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showRsvp: false
 })
+
+// Countdown logic
+const countdown = props.eventStartDate ? useCountdown(props.eventStartDate) : null
 
 defineEmits<{
   openMap: []
@@ -145,6 +222,22 @@ const capitalizedDescription = computed(() => {
   if (text.length === 0) return ''
   return text.charAt(0).toUpperCase() + text.slice(1)
 })
+
+// Countdown header and labels
+const countdownHeader = computed(() => {
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('countdown_header', currentLang)
+})
+
+const dayLabel = computed(() => {
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('countdown_day', currentLang)
+})
+
+const hourLabel = computed(() => {
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('countdown_hour', currentLang)
+})
 </script>
 
 <style scoped>
@@ -156,10 +249,134 @@ const capitalizedDescription = computed(() => {
   backdrop-filter: blur(10px);
 }
 
+/* Countdown styles */
+.countdown-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.countdown-wrapper {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.countdown-time-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+.countdown-number {
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  /* Fixed width for consistent alignment - minimum 2 characters */
+  min-width: 2ch;
+  /* Responsive font size based on container width */
+  font-size: clamp(3.5rem, 15vw, 8rem);
+}
+
+.countdown-separator {
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  /* Match the number size */
+  font-size: clamp(3.5rem, 15vw, 8rem);
+  /* Align with numbers - needs to account for the unit label height */
+  margin-bottom: 0.875rem;
+  flex-shrink: 0;
+}
+
+.countdown-unit-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Divider between Countdown and RSVP */
+.countdown-divider {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 0 0.75rem 0;
+}
+
+.divider-line {
+  width: 60%;
+  max-width: 200px;
+  height: 1px;
+  background: white;
+  opacity: 0.3;
+}
+
 /* Khmer text fix now defined globally in src/assets/main.css */
+
+/* Mobile and Tablet adjustments */
+@media (max-width: 1023px) {
+  .countdown-number {
+    font-size: clamp(4rem, 18vw, 8rem);
+  }
+
+  .countdown-separator {
+    font-size: clamp(4rem, 18vw, 8rem);
+    margin-bottom: 0.875rem;
+  }
+
+  .countdown-unit-label {
+    font-size: 0.875rem;
+  }
+
+  .countdown-time-row {
+    gap: 0.5rem;
+  }
+}
 
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
 @media (min-width: 1024px) and (max-width: 1365px) {
+  .countdown-number {
+    font-size: clamp(3rem, 12vw, 5.5rem);
+  }
+
+  .countdown-separator {
+    font-size: clamp(3rem, 12vw, 5.5rem);
+    margin-bottom: 0.875rem;
+  }
+
+  .countdown-unit-label {
+    font-size: 0.875rem;
+  }
+
+  .countdown-time-row {
+    gap: 0.65rem;
+  }
+
   /* Title - match mobile base text-base (1rem = 16px) */
   h2 {
     font-size: 1rem !important; /* 16px - same as mobile base text-base */

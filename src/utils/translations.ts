@@ -114,6 +114,11 @@ export const rsvpTranslations: Record<
 
     // Envelope button
     open_invitation: string
+
+    // Countdown section
+    countdown_header: string
+    countdown_day: string
+    countdown_hour: string
   }
 > = {
   en: {
@@ -226,6 +231,11 @@ export const rsvpTranslations: Record<
 
     // Envelope button
     open_invitation: 'Open Invitation',
+
+    // Countdown section
+    countdown_header: 'Countdown',
+    countdown_day: 'Day',
+    countdown_hour: 'Hour',
   },
 
   kh: {
@@ -338,6 +348,11 @@ export const rsvpTranslations: Record<
 
     // Envelope button
     open_invitation: 'បើកសំបុត្រ',
+
+    // Countdown section
+    countdown_header: 'រាប់ថយក្រោយ',
+    countdown_day: 'ថ្ងៃ',
+    countdown_hour: 'ម៉ោង',
   },
 
   'zh-cn': {
@@ -450,6 +465,11 @@ export const rsvpTranslations: Record<
 
     // Envelope button
     open_invitation: '打开邀请函',
+
+    // Countdown section
+    countdown_header: '倒计时',
+    countdown_day: '天',
+    countdown_hour: '小时',
   },
 }
 
