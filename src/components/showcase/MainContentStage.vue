@@ -106,6 +106,7 @@
                     :secondary-font="secondaryFont"
                     :current-language="currentLanguage"
                     :show-rsvp="true"
+                    :event-start-date="event.start_date"
                     @open-map="$emit('openMap')"
                   >
                     <template #rsvp>
