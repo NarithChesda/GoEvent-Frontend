@@ -6,7 +6,35 @@ import { secureStorage } from '../utils/secureStorage'
 // Import token manager to avoid circular dependency with auth.ts
 import { tokenManager, type TokenRefreshResponse } from './tokenManager'
 
-// Network state management
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+// Request timeout in milliseconds
+const DEFAULT_REQUEST_TIMEOUT = 30000
+
+// User cache duration in milliseconds (5 minutes)
+const USER_CACHE_DURATION = 5 * 60 * 1000
+
+// Development mode flag
+const IS_DEV_MODE = import.meta.env.DEV
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+/**
+ * Query parameters for GET requests
+ * Uses more specific types instead of 'any'
+ * Index signature allows for extension by specific filter interfaces
+ */
+export type QueryParams = Record<string, string | number | boolean | null | undefined> & {
+  [key: string]: string | number | boolean | null | undefined
+}
+
+/**
+ * Network state management
+ */
 interface NetworkState {
   isOnline: boolean
   retryQueue: (() => Promise<void>)[]
@@ -19,6 +47,9 @@ const networkState: NetworkState = {
   isRetrying: false,
 }
 
+/**
+ * Standard API response wrapper
+ */
 export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
@@ -26,6 +57,9 @@ export interface ApiResponse<T = unknown> {
   errors?: Record<string, string[]>
 }
 
+/**
+ * Paginated response wrapper for list endpoints
+ */
 export interface PaginatedResponse<T = unknown> {
   count: number
   next: string | null
@@ -33,6 +67,9 @@ export interface PaginatedResponse<T = unknown> {
   results: T[]
 }
 
+/**
+ * Request options for API calls
+ */
 export interface RequestOptions {
   signal?: AbortSignal
   timeout?: number
@@ -40,20 +77,126 @@ export interface RequestOptions {
 
 /**
  * Error data interface for API error responses
+ * More strict typing with proper type guards
  */
 interface ErrorData {
   detail?: string
   message?: string
   code?: string
+  errors?: Record<string, string[]>
   [key: string]: unknown
+}
+
+/**
+ * Type guard to check if an object is ErrorData
+ */
+function isErrorData(data: unknown): data is ErrorData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    (
+      'detail' in data ||
+      'message' in data ||
+      'code' in data ||
+      'errors' in data
+    )
+  )
+}
+
+/**
+ * Type guard to check if data contains field-specific errors
+ */
+function hasFieldErrors(data: unknown): data is Record<string, string[]> {
+  if (typeof data !== 'object' || data === null) return false
+
+  const errorData = data as Record<string, unknown>
+
+  // Check if it has field-specific error format (no detail/message, but has array values)
+  if ('detail' in errorData || 'message' in errorData) return false
+
+  return Object.values(errorData).some(
+    value => Array.isArray(value) && value.length > 0 && typeof value[0] === 'string'
+  )
+}
+
+/**
+ * Secure logging utility that sanitizes sensitive data in development mode
+ */
+class SecureLogger {
+  /**
+   * Log debug information (only in development mode)
+   */
+  static debug(context: string, data: Record<string, unknown>): void {
+    if (!IS_DEV_MODE) return
+
+    // Sanitize sensitive fields
+    const sanitized = this.sanitizeLogData(data)
+    console.debug(`[API Debug] ${context}:`, sanitized)
+  }
+
+  /**
+   * Log errors with context
+   */
+  static error(context: string, error: unknown, data?: Record<string, unknown>): void {
+    const sanitized = data ? this.sanitizeLogData(data) : {}
+    console.error(`[API Error] ${context}:`, error, sanitized)
+  }
+
+  /**
+   * Log warnings
+   */
+  static warn(context: string, message: string, data?: Record<string, unknown>): void {
+    const sanitized = data ? this.sanitizeLogData(data) : {}
+    console.warn(`[API Warning] ${context}:`, message, sanitized)
+  }
+
+  /**
+   * Sanitize sensitive data from logs
+   * Remove tokens, passwords, and other sensitive fields
+   */
+  private static sanitizeLogData(data: Record<string, unknown>): Record<string, unknown> {
+    const sensitiveKeys = ['token', 'access', 'refresh', 'password', 'Authorization', 'authorization']
+    const sanitized: Record<string, unknown> = {}
+
+    for (const [key, value] of Object.entries(data)) {
+      if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))) {
+        sanitized[key] = '[REDACTED]'
+      } else if (typeof value === 'string' && value.length > 200) {
+        // Truncate long strings (like response bodies)
+        sanitized[key] = value.substring(0, 200) + '... (truncated)'
+      } else if (typeof value === 'object' && value !== null) {
+        sanitized[key] = this.sanitizeLogData(value as Record<string, unknown>)
+      } else {
+        sanitized[key] = value
+      }
+    }
+
+    return sanitized
+  }
 }
 
 class ApiService {
   private baseURL: string
 
+  /**
+   * Request deduplication map to prevent duplicate concurrent requests
+   * Key: request signature (method + URL + params hash)
+   * Value: Promise for the ongoing request
+   */
+  private pendingRequests: Map<string, Promise<ApiResponse<unknown>>>
+
   constructor() {
     this.baseURL = API_BASE_URL
+    this.pendingRequests = new Map()
     this.initializeNetworkListeners()
+  }
+
+  /**
+   * Generate a unique key for request deduplication
+   */
+  private getRequestKey(method: string, url: string, body?: unknown): string {
+    const bodyStr = body ? JSON.stringify(body) : ''
+    return `${method}:${url}:${bodyStr}`
   }
 
   /**
@@ -189,7 +332,7 @@ class ApiService {
 
     // Create AbortController for this request
     const controller = new AbortController()
-    const { signal: externalSignal, timeout = 30000 } = options
+    const { signal: externalSignal, timeout = DEFAULT_REQUEST_TIMEOUT } = options
 
     // If external signal is provided, abort our controller when it aborts
     if (externalSignal) {
@@ -245,46 +388,53 @@ class ApiService {
   /**
    * Enhanced error handling with better user messages
    * Handles documented API error formats including field-specific errors and authentication errors
+   * Now with proper type guards for safer error handling
    */
   private getUserFriendlyErrorMessage(status: number, data: unknown): string {
-    const errorData = data as ErrorData
+    // Use type guard to safely check if data is ErrorData
+    if (!isErrorData(data)) {
+      // If data doesn't match ErrorData format, return generic message
+      return this.getDefaultErrorMessage(status)
+    }
 
     switch (status) {
       case 400:
         // Handle documented field-specific error format: { "field_name": ["Error message"] }
-        if (errorData && typeof errorData === 'object' && !errorData.detail && !errorData.message) {
-          const fieldErrors = Object.entries(errorData)
-            .filter(([key, value]) => Array.isArray(value) && value.length > 0)
-            .map(([field, errors]) => `${field}: ${(errors as string[])[0]}`)
+        if (hasFieldErrors(data)) {
+          const fieldErrors = Object.entries(data)
+            .filter(([_key, value]) => Array.isArray(value) && value.length > 0 && typeof value[0] === 'string')
+            .map(([field, errors]) => {
+              const errorArray = errors as string[]
+              return `${field}: ${errorArray[0]}`
+            })
 
           if (fieldErrors.length > 0) {
             return fieldErrors.join(', ')
           }
         }
 
-        if (errorData?.detail) return errorData.detail
-        if (errorData?.message) return errorData.message
+        if (data.detail) return String(data.detail)
+        if (data.message) return String(data.message)
         return 'Invalid request. Please check your input and try again.'
 
       case 401:
-        // Handle documented auth error format: { "detail": "Authentication credentials were not provided." }
-        // or token errors: { "detail": "Token is invalid or expired", "code": "token_not_valid" }
-        if (errorData?.detail) {
-          if (errorData.code === 'token_not_valid') {
+        // Handle documented auth error format
+        if (data.detail) {
+          if (data.code === 'token_not_valid') {
             return 'Your session has expired. Please sign in again.'
           }
-          return errorData.detail
+          return data.detail
         }
         return 'Authentication required. Please sign in.'
 
       case 403:
-        return errorData?.detail || 'You do not have permission to perform this action.'
+        return data.detail || 'You do not have permission to perform this action.'
 
       case 404:
         return 'The requested resource was not found.'
 
       case 409:
-        return errorData?.detail || errorData?.message || 'This action conflicts with existing data.'
+        return data.detail || data.message || 'This action conflicts with existing data.'
 
       case 422:
         return 'Please check your input and try again.'
@@ -301,7 +451,37 @@ class ApiService {
         return 'Service is temporarily unavailable. Please try again later.'
 
       default:
-        return errorData?.detail || errorData?.message || 'An unexpected error occurred.'
+        return data.detail || data.message || 'An unexpected error occurred.'
+    }
+  }
+
+  /**
+   * Get default error message for status code
+   */
+  private getDefaultErrorMessage(status: number): string {
+    switch (status) {
+      case 400:
+        return 'Invalid request. Please check your input and try again.'
+      case 401:
+        return 'Authentication required. Please sign in.'
+      case 403:
+        return 'You do not have permission to perform this action.'
+      case 404:
+        return 'The requested resource was not found.'
+      case 409:
+        return 'This action conflicts with existing data.'
+      case 422:
+        return 'Please check your input and try again.'
+      case 429:
+        return 'Too many requests. Please wait a moment and try again.'
+      case 500:
+        return 'A server error occurred. Please try again later.'
+      case 502:
+      case 503:
+      case 504:
+        return 'Service is temporarily unavailable. Please try again later.'
+      default:
+        return 'An unexpected error occurred.'
     }
   }
 
@@ -325,46 +505,61 @@ class ApiService {
       // Check if response has a body before trying to parse it
       const text = await response.text()
 
-      // DEBUG: Log response details for authentication requests
-      if (response.url.includes('/api/auth/')) {
-        console.debug('Auth API Response Debug:', {
+      // Secure debug logging for authentication requests (only in dev mode)
+      if (IS_DEV_MODE && response.url.includes('/api/auth/')) {
+        SecureLogger.debug('Auth API Response', {
           url: response.url,
           status: response.status,
           ok: response.ok,
-          contentType: contentType,
+          contentType: contentType || 'none',
           isJson: isJson,
-          textLength: text?.length,
-          textPreview: text?.substring(0, 200),
+          textLength: text?.length || 0,
         })
       }
 
       let data
 
-      // Enhanced JSON parsing for auth responses
+      // Enhanced JSON parsing with strict content-type validation
       if (text) {
         if (isJson) {
           try {
             data = JSON.parse(text)
           } catch (parseError) {
-            // If JSON parsing fails on an auth request, log the error and raw response
-            if (response.url.includes('/api/auth/')) {
-              console.error('JSON Parse Error for Auth Response:', {
-                error: (parseError as Error).message,
-                rawText: text,
-                contentType: contentType,
-              })
-            }
+            // Secure error logging for parsing failures
+            SecureLogger.error(
+              'JSON Parse Error',
+              parseError,
+              {
+                url: response.url,
+                status: response.status,
+                contentType: contentType || 'none',
+              }
+            )
             throw parseError // Re-throw to be caught by outer catch block
           }
         } else {
-          // For non-JSON responses, check if it's actually JSON despite wrong content-type
-          try {
-            data = JSON.parse(text)
-            if (response.url.includes('/api/auth/')) {
-              console.warn('Auth response had wrong content-type but contained valid JSON')
+          // SECURITY FIX: Only attempt JSON parsing if content-type suggests JSON
+          // This prevents lenient parsing that could lead to security issues
+          const mightBeJson = contentType?.includes('json') || text.trim().startsWith('{') || text.trim().startsWith('[')
+
+          if (mightBeJson) {
+            try {
+              data = JSON.parse(text)
+              // Log warning about incorrect content-type in dev mode only
+              if (IS_DEV_MODE) {
+                SecureLogger.warn(
+                  'Content-Type Mismatch',
+                  'Response had non-JSON content-type but contained valid JSON',
+                  { url: response.url, contentType: contentType || 'none' }
+                )
+              }
+            } catch {
+              // If JSON parse fails, treat as plain text
+              data = text
             }
-          } catch {
-            data = text // Use as plain text if not JSON
+          } else {
+            // Definitely not JSON, use as plain text
+            data = text
           }
         }
       } else {
@@ -372,29 +567,33 @@ class ApiService {
       }
 
       if (!response.ok) {
-        // Log detailed error information for debugging
-        if (response.status === 400 && typeof data === 'object' && data !== null) {
-          console.error('400 Bad Request - Full error response:', data)
-          if (data.translations && Array.isArray(data.translations)) {
-            console.error('Translation validation errors:', data.translations)
-          }
-          console.error(
-            'All validation errors:',
-            Object.keys(data).map((key) => `${key}: ${JSON.stringify(data[key])}`),
-          )
+        // Secure error logging with proper type guards
+        if (response.status === 400 && isErrorData(data)) {
+          SecureLogger.error('400 Bad Request', new Error('Validation error'), {
+            url: response.url,
+            status: response.status,
+            hasFieldErrors: hasFieldErrors(data),
+          })
         } else if (response.status >= 500) {
-          console.error(`${response.status} Server Error - Response:`, data)
+          SecureLogger.error('Server Error', new Error(`${response.status} error`), {
+            url: response.url,
+            status: response.status,
+          })
         }
 
         // Handle 401 specifically for auth token issues
         if (response.status === 401 && !isRetry && requestFn) {
-          console.info('Received 401 error, attempting token refresh and retry')
+          if (IS_DEV_MODE) {
+            SecureLogger.debug('Token Refresh', { message: 'Attempting token refresh after 401' })
+          }
 
           // Attempt to refresh the token
           const refreshSuccess = await this.attemptTokenRefresh()
 
           if (refreshSuccess) {
-            console.info('Token refresh successful, retrying original request')
+            if (IS_DEV_MODE) {
+              SecureLogger.debug('Token Refresh', { message: 'Token refresh successful, retrying request' })
+            }
             // Retry the original request with new token
             try {
               // Create new AbortController for retry
@@ -402,21 +601,21 @@ class ApiService {
               const retryResponse = await requestFn(retryController.signal)
               return this.handleResponse<T>(retryResponse, undefined, true)
             } catch (retryError) {
-              console.error('Retry request failed:', retryError)
+              SecureLogger.error('Retry Failed', retryError)
               return {
                 success: false,
                 message: 'Request failed after token refresh',
               }
             }
           } else {
-            console.warn('Token refresh failed, user needs to re-authenticate')
+            SecureLogger.warn('Token Refresh Failed', 'User needs to re-authenticate')
             // Refresh failed, clear all auth data
             tokenManager.clearTokens()
             secureStorage.removeItem('user')
           }
         } else if (response.status === 401 && isRetry) {
           // If we already retried and still got 401, clear everything
-          console.warn('Retry also failed with 401, clearing all auth data')
+          SecureLogger.warn('Auth Failed', 'Retry also failed with 401, clearing auth data')
           tokenManager.clearTokens()
           secureStorage.removeItem('user')
         }
@@ -430,11 +629,10 @@ class ApiService {
         }
       }
 
-      // DEBUG: Log successful auth responses
-      if (response.url.includes('/api/auth/')) {
-        console.debug('Auth Success Response:', {
+      // Secure debug logging for successful auth responses (dev mode only)
+      if (IS_DEV_MODE && response.url.includes('/api/auth/')) {
+        SecureLogger.debug('Auth Success Response', {
           dataType: typeof data,
-          dataKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A',
           hasTokens: data && typeof data === 'object' && 'tokens' in data,
           hasUser: data && typeof data === 'object' && 'user' in data,
         })
@@ -445,15 +643,16 @@ class ApiService {
         data: data || null,
       }
     } catch (error) {
-      // Enhanced error logging for auth requests
-      if (response.url.includes('/api/auth/')) {
-        console.error('Auth API Response Parsing Error:', {
-          error: (error as Error).message,
+      // Secure error logging for parsing errors
+      SecureLogger.error(
+        'Response Parsing Error',
+        error,
+        {
           url: response.url,
           status: response.status,
-          contentType: contentType,
-        })
-      }
+          contentType: contentType || 'none',
+        }
+      )
 
       return {
         success: false,
@@ -464,7 +663,7 @@ class ApiService {
 
   async get<T>(
     endpoint: string,
-    params?: Record<string, any>,
+    params?: QueryParams,
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     const url = new URL(`${this.baseURL}${endpoint}`)
@@ -477,7 +676,23 @@ class ApiService {
       })
     }
 
-    return this.handleNetworkRequest<T>(
+    // Request deduplication: check if identical request is already in flight
+    const requestKey = this.getRequestKey('GET', url.toString())
+    const existingRequest = this.pendingRequests.get(requestKey)
+
+    if (existingRequest) {
+      if (IS_DEV_MODE) {
+        SecureLogger.debug('Request Deduplication', {
+          message: 'Reusing existing request',
+          method: 'GET',
+          endpoint,
+        })
+      }
+      return existingRequest as Promise<ApiResponse<T>>
+    }
+
+    // Create new request and store in pending map
+    const requestPromise = this.handleNetworkRequest<T>(
       async (signal) => {
         return fetch(url.toString(), {
           method: 'GET',
@@ -489,7 +704,13 @@ class ApiService {
         })
       },
       options
-    )
+    ).finally(() => {
+      // Remove from pending requests when done
+      this.pendingRequests.delete(requestKey)
+    })
+
+    this.pendingRequests.set(requestKey, requestPromise as Promise<ApiResponse<unknown>>)
+    return requestPromise
   }
 
   /**
@@ -498,7 +719,7 @@ class ApiService {
    */
   async getPublic<T>(
     endpoint: string,
-    params?: Record<string, any>,
+    params?: QueryParams,
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     const url = new URL(`${this.baseURL}${endpoint}`)
@@ -526,9 +747,9 @@ class ApiService {
     )
   }
 
-  async post<T>(
+  async post<T, D = unknown>(
     endpoint: string,
-    data?: any,
+    data?: D,
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     return this.handleNetworkRequest<T>(
@@ -547,9 +768,9 @@ class ApiService {
     )
   }
 
-  async put<T>(
+  async put<T, D = unknown>(
     endpoint: string,
-    data?: any,
+    data?: D,
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     return this.handleNetworkRequest<T>(
@@ -568,9 +789,9 @@ class ApiService {
     )
   }
 
-  async patch<T>(
+  async patch<T, D = unknown>(
     endpoint: string,
-    data?: any,
+    data?: D,
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     return this.handleNetworkRequest<T>(
@@ -1102,7 +1323,7 @@ export interface EventRegistrationDetail {
   notes?: string
 }
 
-export interface EventFilters {
+export interface EventFilters extends QueryParams {
   search?: string
   category?: number | string
   organizer?: number | string
@@ -1186,7 +1407,7 @@ export const eventsService = {
   },
 
   // Delete event
-  async deleteEvent(id: string): Promise<ApiResponse<any>> {
+  async deleteEvent(id: string): Promise<ApiResponse<void>> {
     return apiService.delete(`/api/events/${id}/`)
   },
 
@@ -1304,7 +1525,7 @@ export const eventsService = {
   },
 
   // Delete photo
-  async deleteEventPhoto(eventId: string, photoId: number): Promise<ApiResponse<any>> {
+  async deleteEventPhoto(eventId: string, photoId: number): Promise<ApiResponse<void>> {
     return apiService.delete(`/api/events/${eventId}/photos/${photoId}/`)
   },
 
@@ -1333,7 +1554,7 @@ export const eventsService = {
   },
 
   // Remove collaborator
-  async removeCollaborator(eventId: string, collaboratorId: number): Promise<ApiResponse<any>> {
+  async removeCollaborator(eventId: string, collaboratorId: number): Promise<ApiResponse<void>> {
     return apiService.delete(`/api/events/${eventId}/collaborators/${collaboratorId}/`)
   },
 
@@ -1341,8 +1562,8 @@ export const eventsService = {
   async getEventShowcase(
     eventId: string,
     params?: { lang?: string; guest_name?: string },
-  ): Promise<ApiResponse<any>> {
-    return apiService.getPublic<any>(`/api/events/${eventId}/showcase/`, params)
+  ): Promise<ApiResponse<unknown>> {
+    return apiService.getPublic<unknown>(`/api/events/${eventId}/showcase/`, params)
   },
 }
 
@@ -1888,7 +2109,7 @@ export interface CreateGuestRequest {
   cash_gift_currency?: string
 }
 
-export interface GuestListFilters {
+export interface GuestListFilters extends QueryParams {
   search?: string
   invitation_status?: 'not_sent' | 'sent' | 'viewed'
   group?: number
@@ -2075,7 +2296,7 @@ export interface CreateCommentRequest {
   // User ID is automatically added from authenticated user
 }
 
-export interface CommentFilters {
+export interface CommentFilters extends QueryParams {
   event?: string
   page?: number
   page_size?: number
@@ -2306,8 +2527,8 @@ export const userService = {
   // Simple cache to avoid repeated API calls for the same user
   userCache: new Map<number, { data: UserDetails; timestamp: number }>(),
 
-  // Cache duration: 5 minutes
-  CACHE_DURATION: 5 * 60 * 1000,
+  // Cache duration: 5 minutes (using constant)
+  CACHE_DURATION: USER_CACHE_DURATION,
 
   // Try to get user details from potential /api/users/ endpoint
   async getUserDetails(userId: number): Promise<UserDetails | null> {
@@ -2455,7 +2676,7 @@ export interface CreateExpenseRecordRequest {
   notes?: string
 }
 
-export interface ExpenseFilters {
+export interface ExpenseFilters extends QueryParams {
   search?: string
   ordering?: string
   page?: number
