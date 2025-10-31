@@ -176,7 +176,8 @@
       "Bash(python:*)",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYxNTQwNjYyLCJpYXQiOjE3NjE1MzcwNjIsImp0aSI6ImYzZWRmNDA4NDJmZDQ1Mjc4YjRkYmYxOTY2OWRlZDBiIiwidXNlcl9pZCI6MX0.c5c_h1u7tVmbDRUnRmC1eJy7zR2g9wuMg-psHAA0c2A\")",
       "Bash(timeout 120 npm run dev)",
-      "Read(//c/Users/narit/OneDrive/Desktop/GoEvent/**)"
+      "Read(//c/Users/narit/OneDrive/Desktop/GoEvent/**)",
+      "Bash(timeout 60 bash:*)"
     ],
     "deny": [],
     "additionalDirectories": [

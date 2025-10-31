@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, onUnmounted } from 'vue'
 import { X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 
@@ -226,6 +226,13 @@ watch(
   },
   { immediate: true },
 )
+
+onUnmounted(() => {
+  // Always clean up event listener
+  document.removeEventListener('keydown', handleKeydown)
+  // Reset body overflow
+  document.body.style.overflow = ''
+})
 </script>
 
 <style scoped>

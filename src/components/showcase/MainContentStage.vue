@@ -692,6 +692,19 @@ const textLookupMap = computed(() => {
   return map
 })
 
+// Memoized event text object lookup map for O(1) access
+const eventTextMap = computed(() => {
+  const map = new Map<string, EventText>()
+  if (props.eventTexts?.length && props.currentLanguage) {
+    props.eventTexts.forEach(text => {
+      if (text.language === props.currentLanguage) {
+        map.set(text.text_type, text)
+      }
+    })
+  }
+  return map
+})
+
 /**
  * Get text content from database or frontend translations
  * @param textType - The type of text to retrieve
@@ -713,10 +726,11 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 /**
- * Find event text by type
+ * Find event text by type - optimized with O(1) map lookup
  */
-const findEventText = (textType: string) =>
-  props.eventTexts?.find((text) => text.text_type === textType)
+const findEventText = (textType: string): EventText | undefined => {
+  return eventTextMap.value.get(textType)
+}
 
 // Computed properties for event text content
 const welcomeMessage = computed(() => findEventText('welcome_message')?.content)

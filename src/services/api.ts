@@ -3,11 +3,13 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 // Import secure storage for token management
 import { secureStorage } from '../utils/secureStorage'
+// Import token manager to avoid circular dependency with auth.ts
+import { tokenManager, type TokenRefreshResponse } from './tokenManager'
 
 // Network state management
 interface NetworkState {
   isOnline: boolean
-  retryQueue: (() => Promise<any>)[]
+  retryQueue: (() => Promise<void>)[]
   isRetrying: boolean
 }
 
@@ -17,24 +19,37 @@ const networkState: NetworkState = {
   isRetrying: false,
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message?: string
   errors?: Record<string, string[]>
 }
 
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
   count: number
   next: string | null
   previous: string | null
   results: T[]
 }
 
+export interface RequestOptions {
+  signal?: AbortSignal
+  timeout?: number
+}
+
+/**
+ * Error data interface for API error responses
+ */
+interface ErrorData {
+  detail?: string
+  message?: string
+  code?: string
+  [key: string]: unknown
+}
+
 class ApiService {
   private baseURL: string
-  private isRefreshingToken: boolean = false
-  private refreshTokenPromise: Promise<boolean> | null = null
 
   constructor() {
     this.baseURL = API_BASE_URL
@@ -110,7 +125,7 @@ class ApiService {
   }
 
   private getAuthHeaders(): Record<string, string> {
-    const token = secureStorage.getItem('access_token')
+    const token = tokenManager.getAccessToken()
     const headers: Record<string, string> = {}
 
     if (token) {
@@ -125,51 +140,41 @@ class ApiService {
 
   /**
    * Attempt to refresh the access token
-   * Uses a promise to ensure only one refresh happens at a time
+   * Uses tokenManager to avoid circular dependency with auth.ts
    */
   private async attemptTokenRefresh(): Promise<boolean> {
-    // If already refreshing, wait for that promise
-    if (this.isRefreshingToken && this.refreshTokenPromise) {
-      console.debug('Token refresh already in progress, waiting...')
-      return this.refreshTokenPromise
-    }
+    return tokenManager.attemptTokenRefresh(async (refreshToken: string) => {
+      // Make direct API call to refresh endpoint
+      const response = await fetch(`${this.baseURL}/api/auth/token/refresh/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      })
 
-    // Start a new refresh
-    this.isRefreshingToken = true
-    this.refreshTokenPromise = (async () => {
-      try {
-        console.info('Attempting to refresh access token')
-        // Import authService dynamically to avoid circular dependency
-        const { authService } = await import('./auth')
-        const refreshResponse = await authService.refreshToken()
-
-        if (refreshResponse.success) {
-          console.info('Token refresh successful')
-          return true
-        }
-
-        console.warn('Token refresh failed:', refreshResponse.message)
-        // Clear all auth data if refresh fails
-        authService.clearTokens()
-        authService.clearUser()
-        return false
-      } catch (error) {
-        console.error('Token refresh error:', error)
-        return false
-      } finally {
-        this.isRefreshingToken = false
-        this.refreshTokenPromise = null
+      if (!response.ok) {
+        throw new Error('Token refresh failed')
       }
-    })()
 
-    return this.refreshTokenPromise
+      const data = await response.json()
+
+      // Return in the format tokenManager expects
+      return {
+        access: data.access,
+        refresh: data.refresh,
+      } as TokenRefreshResponse
+    })
   }
 
   /**
    * Check network connectivity and queue requests if offline
+   * Supports AbortController for request cancellation
    */
   private async handleNetworkRequest<T>(
-    requestFn: () => Promise<Response>,
+    requestFn: (signal: AbortSignal) => Promise<Response>,
+    options: RequestOptions = {},
     isRetry: boolean = false,
   ): Promise<ApiResponse<T>> {
     // Update network state
@@ -182,29 +187,51 @@ class ApiService {
       }
     }
 
-    try {
-      const response = await Promise.race([
-        requestFn(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Request timeout')), 30000),
-        ),
-      ])
+    // Create AbortController for this request
+    const controller = new AbortController()
+    const { signal: externalSignal, timeout = 30000 } = options
 
-      return this.handleResponse<T>(response, requestFn, isRetry)
-    } catch (error: any) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        // Network error
+    // If external signal is provided, abort our controller when it aborts
+    if (externalSignal) {
+      externalSignal.addEventListener('abort', () => {
+        controller.abort()
+      })
+    }
+
+    // Set up timeout
+    const timeoutId = setTimeout(() => {
+      controller.abort()
+    }, timeout)
+
+    try {
+      // Pass our controller's signal to the request
+      const response = await requestFn(controller.signal)
+
+      clearTimeout(timeoutId)
+      return this.handleResponse<T>(response, (signal) => requestFn(signal), isRetry)
+    } catch (error: unknown) {
+      clearTimeout(timeoutId)
+
+      // Handle abort
+      if (error instanceof Error && error.name === 'AbortError') {
+        if (externalSignal?.aborted) {
+          return {
+            success: false,
+            message: 'Request was cancelled',
+          }
+        }
+        return {
+          success: false,
+          message: 'Request timeout. Please try again.',
+        }
+      }
+
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes('fetch')) {
         networkState.isOnline = false
         return {
           success: false,
           message: 'Network error. Please check your internet connection and try again.',
-        }
-      }
-
-      if (error.message === 'Request timeout') {
-        return {
-          success: false,
-          message: 'Request timeout. Please try again.',
         }
       }
 
@@ -219,43 +246,45 @@ class ApiService {
    * Enhanced error handling with better user messages
    * Handles documented API error formats including field-specific errors and authentication errors
    */
-  private getUserFriendlyErrorMessage(status: number, data: any): string {
+  private getUserFriendlyErrorMessage(status: number, data: unknown): string {
+    const errorData = data as ErrorData
+
     switch (status) {
       case 400:
         // Handle documented field-specific error format: { "field_name": ["Error message"] }
-        if (data && typeof data === 'object' && !data.detail && !data.message) {
-          const fieldErrors = Object.entries(data)
+        if (errorData && typeof errorData === 'object' && !errorData.detail && !errorData.message) {
+          const fieldErrors = Object.entries(errorData)
             .filter(([key, value]) => Array.isArray(value) && value.length > 0)
-            .map(([field, errors]: [string, any]) => `${field}: ${errors[0]}`)
+            .map(([field, errors]) => `${field}: ${(errors as string[])[0]}`)
 
           if (fieldErrors.length > 0) {
             return fieldErrors.join(', ')
           }
         }
 
-        if (data?.detail) return data.detail
-        if (data?.message) return data.message
+        if (errorData?.detail) return errorData.detail
+        if (errorData?.message) return errorData.message
         return 'Invalid request. Please check your input and try again.'
 
       case 401:
         // Handle documented auth error format: { "detail": "Authentication credentials were not provided." }
         // or token errors: { "detail": "Token is invalid or expired", "code": "token_not_valid" }
-        if (data?.detail) {
-          if (data.code === 'token_not_valid') {
+        if (errorData?.detail) {
+          if (errorData.code === 'token_not_valid') {
             return 'Your session has expired. Please sign in again.'
           }
-          return data.detail
+          return errorData.detail
         }
         return 'Authentication required. Please sign in.'
 
       case 403:
-        return data?.detail || 'You do not have permission to perform this action.'
+        return errorData?.detail || 'You do not have permission to perform this action.'
 
       case 404:
         return 'The requested resource was not found.'
 
       case 409:
-        return data?.detail || data?.message || 'This action conflicts with existing data.'
+        return errorData?.detail || errorData?.message || 'This action conflicts with existing data.'
 
       case 422:
         return 'Please check your input and try again.'
@@ -272,13 +301,13 @@ class ApiService {
         return 'Service is temporarily unavailable. Please try again later.'
 
       default:
-        return data?.detail || data?.message || 'An unexpected error occurred.'
+        return errorData?.detail || errorData?.message || 'An unexpected error occurred.'
     }
   }
 
   private async handleResponse<T>(
     response: Response,
-    requestFn?: () => Promise<Response>,
+    requestFn?: (signal: AbortSignal) => Promise<Response>,
     isRetry: boolean = false,
   ): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type')
@@ -368,7 +397,9 @@ class ApiService {
             console.info('Token refresh successful, retrying original request')
             // Retry the original request with new token
             try {
-              const retryResponse = await requestFn()
+              // Create new AbortController for retry
+              const retryController = new AbortController()
+              const retryResponse = await requestFn(retryController.signal)
               return this.handleResponse<T>(retryResponse, undefined, true)
             } catch (retryError) {
               console.error('Retry request failed:', retryError)
@@ -380,15 +411,13 @@ class ApiService {
           } else {
             console.warn('Token refresh failed, user needs to re-authenticate')
             // Refresh failed, clear all auth data
-            secureStorage.removeItem('access_token')
-            secureStorage.removeItem('refresh_token')
+            tokenManager.clearTokens()
             secureStorage.removeItem('user')
           }
         } else if (response.status === 401 && isRetry) {
           // If we already retried and still got 401, clear everything
           console.warn('Retry also failed with 401, clearing all auth data')
-          secureStorage.removeItem('access_token')
-          secureStorage.removeItem('refresh_token')
+          tokenManager.clearTokens()
           secureStorage.removeItem('user')
         }
 
@@ -433,7 +462,11 @@ class ApiService {
     }
   }
 
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+  async get<T>(
+    endpoint: string,
+    params?: Record<string, any>,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
     const url = new URL(`${this.baseURL}${endpoint}`)
 
     if (params) {
@@ -444,22 +477,30 @@ class ApiService {
       })
     }
 
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
-        },
-      })
-    })
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(url.toString(), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
+          },
+          signal,
+        })
+      },
+      options
+    )
   }
 
   /**
    * Public GET request without authentication headers
    * Used for endpoints that should work without authentication
    */
-  async getPublic<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+  async getPublic<T>(
+    endpoint: string,
+    params?: Record<string, any>,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
     const url = new URL(`${this.baseURL}${endpoint}`)
 
     if (params) {
@@ -470,108 +511,311 @@ class ApiService {
       })
     }
 
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest', // Only add security header, no auth
-        },
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(url.toString(), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest', // Only add security header, no auth
+          },
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async post<T>(
+    endpoint: string,
+    data?: any,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
+          },
+          body: data ? JSON.stringify(data) : undefined,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async put<T>(
+    endpoint: string,
+    data?: any,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
+          },
+          body: data ? JSON.stringify(data) : undefined,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async patch<T>(
+    endpoint: string,
+    data?: any,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        const isFormData = data instanceof FormData
+
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'PATCH',
+          headers: {
+            // Don't set Content-Type for FormData, let the browser handle it
+            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...this.getAuthHeaders(),
+          },
+          body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async postFormData<T>(
+    endpoint: string,
+    data: FormData,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'POST',
+          headers: {
+            // Don't set Content-Type for FormData, let the browser handle it
+            ...this.getAuthHeaders(),
+          },
+          body: data,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async putFormData<T>(
+    endpoint: string,
+    data: FormData,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'PUT',
+          headers: {
+            // Don't set Content-Type for FormData, let the browser handle it
+            ...this.getAuthHeaders(),
+          },
+          body: data,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async patchFormData<T>(
+    endpoint: string,
+    data: FormData,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'PATCH',
+          headers: {
+            // Don't set Content-Type for FormData, let the browser handle it
+            ...this.getAuthHeaders(),
+          },
+          body: data,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  async delete<T>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
+          },
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  /**
+   * Upload a file with optional progress tracking
+   * Unified method for single file uploads that properly integrates with ApiService
+   * @param endpoint API endpoint
+   * @param formData FormData containing the file and additional fields
+   * @param options Optional request options including progress callback
+   * @returns ApiResponse with uploaded resource
+   */
+  async uploadFile<T>(
+    endpoint: string,
+    formData: FormData,
+    options?: RequestOptions & {
+      onProgress?: (progress: number) => void
+    }
+  ): Promise<ApiResponse<T>> {
+    return this.handleNetworkRequest<T>(
+      async (signal) => {
+        // If progress callback is provided, use XMLHttpRequest
+        if (options?.onProgress) {
+          return this.uploadWithProgress(endpoint, formData, options.onProgress, signal)
+        }
+
+        // Otherwise use standard fetch
+        return fetch(`${this.baseURL}${endpoint}`, {
+          method: 'POST',
+          headers: {
+            // Don't set Content-Type for FormData, let browser handle it
+            ...this.getAuthHeaders(),
+          },
+          body: formData,
+          signal,
+        })
+      },
+      options
+    )
+  }
+
+  /**
+   * Upload with progress using XMLHttpRequest
+   * Private helper for uploadFile when progress tracking is needed
+   * @private
+   */
+  private uploadWithProgress(
+    endpoint: string,
+    formData: FormData,
+    onProgress: (progress: number) => void,
+    signal: AbortSignal
+  ): Promise<Response> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+
+      // Handle abort signal
+      signal.addEventListener('abort', () => {
+        xhr.abort()
+        reject(new DOMException('Request aborted', 'AbortError'))
       })
+
+      // Progress event
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100
+          onProgress(percentComplete)
+        }
+      })
+
+      // Load event
+      xhr.addEventListener('load', () => {
+        // Convert XMLHttpRequest response to Response object
+        const response = new Response(xhr.responseText, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers: new Headers(
+            xhr.getAllResponseHeaders()
+              .trim()
+              .split('\n')
+              .reduce((acc: Record<string, string>, line) => {
+                const [key, value] = line.split(': ')
+                if (key && value) acc[key] = value
+                return acc
+              }, {})
+          ),
+        })
+        resolve(response)
+      })
+
+      // Error event
+      xhr.addEventListener('error', () => {
+        reject(new TypeError('Network request failed'))
+      })
+
+      // Abort event
+      xhr.addEventListener('abort', () => {
+        reject(new DOMException('Request aborted', 'AbortError'))
+      })
+
+      // Setup and send
+      xhr.open('POST', `${this.baseURL}${endpoint}`)
+
+      // Add auth headers
+      const authHeaders = this.getAuthHeaders()
+      Object.entries(authHeaders).forEach(([key, value]) => {
+        xhr.setRequestHeader(key, value)
+      })
+
+      xhr.send(formData)
     })
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
-        },
-        body: data ? JSON.stringify(data) : undefined,
-      })
-    })
-  }
+  /**
+   * Bulk upload multiple files with optional progress tracking
+   * Unified method for multi-file uploads that properly integrates with ApiService
+   * @param endpoint API endpoint
+   * @param files Array of files to upload
+   * @param options Optional request options and additional form fields
+   * @returns ApiResponse with bulk upload result
+   */
+  async bulkUploadFiles<T>(
+    endpoint: string,
+    files: File[],
+    options?: RequestOptions & {
+      fieldName?: string // FormData field name for files (default: 'files')
+      additionalFields?: Record<string, string | string[]>
+      onProgress?: (progress: number) => void
+    }
+  ): Promise<ApiResponse<T>> {
+    const formData = new FormData()
 
-  async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
-        },
-        body: data ? JSON.stringify(data) : undefined,
-      })
+    // Append all files
+    const fieldName = options?.fieldName || 'files'
+    files.forEach((file) => {
+      formData.append(fieldName, file)
     })
-  }
 
-  async patch<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      const isFormData = data instanceof FormData
-
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'PATCH',
-        headers: {
-          // Don't set Content-Type for FormData, let the browser handle it
-          ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-          ...this.getAuthHeaders(),
-        },
-        body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
+    // Append additional fields if provided
+    if (options?.additionalFields) {
+      Object.entries(options.additionalFields).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => formData.append(key, v))
+        } else {
+          formData.append(key, value)
+        }
       })
-    })
-  }
+    }
 
-  async postFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          // Don't set Content-Type for FormData, let the browser handle it
-          ...this.getAuthHeaders(),
-        },
-        body: data,
-      })
-    })
-  }
-
-  async putFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'PUT',
-        headers: {
-          // Don't set Content-Type for FormData, let the browser handle it
-          ...this.getAuthHeaders(),
-        },
-        body: data,
-      })
-    })
-  }
-
-  async patchFormData<T>(endpoint: string, data: FormData): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'PATCH',
-        headers: {
-          // Don't set Content-Type for FormData, let the browser handle it
-          ...this.getAuthHeaders(),
-        },
-        body: data,
-      })
-    })
-  }
-
-  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-    return this.handleNetworkRequest<T>(async () => {
-      return fetch(`${this.baseURL}${endpoint}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
-        },
-      })
-    })
+    return this.uploadFile<T>(endpoint, formData, options)
   }
 }
 
@@ -1022,30 +1266,21 @@ export const eventsService = {
     eventId: string,
     file: File,
     photoData: { caption?: string; order?: number; is_featured?: boolean },
+    options?: { onProgress?: (progress: number) => void }
   ): Promise<ApiResponse<EventPhoto>> {
     const formData = new FormData()
     formData.append('image', file)
+
     if (photoData.caption) formData.append('caption', photoData.caption)
-    if (photoData.order) formData.append('order', photoData.order.toString())
+    if (photoData.order !== undefined) formData.append('order', photoData.order.toString())
     if (photoData.is_featured !== undefined)
       formData.append('is_featured', photoData.is_featured.toString())
 
-    try {
-      const response = await fetch(`${apiService['baseURL']}/api/events/${eventId}/photos/`, {
-        method: 'POST',
-        headers: {
-          ...apiService['getAuthHeaders'](),
-        },
-        body: formData,
-      })
-
-      return apiService['handleResponse']<EventPhoto>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error',
-      }
-    }
+    return apiService.uploadFile<EventPhoto>(
+      `/api/events/${eventId}/photos/`,
+      formData,
+      options
+    )
   },
 
   // Update photo
@@ -1266,37 +1501,31 @@ export const mediaService = {
     eventId: string,
     file: File,
     mediaData: { caption?: string; order?: number; is_featured?: boolean },
+    options?: { onProgress?: (progress: number) => void }
   ): Promise<ApiResponse<EventPhoto>> {
     const formData = new FormData()
     formData.append('image', file)
+
     if (mediaData.caption) formData.append('caption', mediaData.caption)
     if (mediaData.order !== undefined) formData.append('order', mediaData.order.toString())
     if (mediaData.is_featured !== undefined)
       formData.append('is_featured', mediaData.is_featured.toString())
 
-    try {
-      const response = await fetch(`${apiService['baseURL']}/api/events/${eventId}/photos/`, {
-        method: 'POST',
-        headers: {
-          ...apiService['getAuthHeaders'](),
-        },
-        body: formData,
-      })
-
-      return apiService['handleResponse']<EventPhoto>(response)
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error while uploading media',
-      }
-    }
+    return apiService.uploadFile<EventPhoto>(
+      `/api/events/${eventId}/photos/`,
+      formData,
+      options
+    )
   },
 
   // Bulk upload multiple photos (up to 50 per request)
   async bulkUploadEventMedia(
     eventId: string,
     files: File[],
-    options?: { captions?: string[] },
+    options?: {
+      captions?: string[]
+      onProgress?: (progress: number) => void
+    },
   ): Promise<
     ApiResponse<{
       status: string
@@ -1304,53 +1533,35 @@ export const mediaService = {
       photos: EventPhoto[]
     }>
   > {
-    const formData = new FormData()
+    const additionalFields: Record<string, string[]> = {}
 
-    // Append all images
-    files.forEach((file) => {
-      formData.append('images', file)
-    })
-
-    // Append captions if provided
     if (options?.captions && options.captions.length > 0) {
-      options.captions.forEach((caption) => {
-        formData.append('captions', caption)
-      })
+      additionalFields.captions = options.captions
     }
 
-    try {
-      const response = await fetch(
-        `${apiService['baseURL']}/api/events/${eventId}/photos/bulk-upload/`,
-        {
-          method: 'POST',
-          headers: {
-            ...apiService['getAuthHeaders'](),
-          },
-          body: formData,
-        },
-      )
-
-      const result = await apiService['handleResponse']<{
-        status: string
-        count: number
-        photos: EventPhoto[]
-      }>(response)
-
-      // Convert relative image URLs to full URLs
-      if (result.success && result.data?.photos) {
-        result.data.photos = result.data.photos.map((photo) => ({
-          ...photo,
-          image: apiService.getProfilePictureUrl(photo.image) || photo.image,
-        }))
+    const result = await apiService.bulkUploadFiles<{
+      status: string
+      count: number
+      photos: EventPhoto[]
+    }>(
+      `/api/events/${eventId}/photos/bulk-upload/`,
+      files,
+      {
+        fieldName: 'images', // Backend expects 'images' field
+        additionalFields,
+        onProgress: options?.onProgress,
       }
+    )
 
-      return result
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error while uploading media',
-      }
+    // Convert relative image URLs to full URLs
+    if (result.success && result.data?.photos) {
+      result.data.photos = result.data.photos.map((photo) => ({
+        ...photo,
+        image: apiService.getProfilePictureUrl(photo.image) || photo.image,
+      }))
     }
+
+    return result
   },
 
   // Update media/photo
@@ -1556,6 +1767,18 @@ export interface EventTemplate {
   updated_at?: string
 }
 
+/**
+ * Template assets returned by public template assets endpoint
+ */
+export interface TemplateAssets {
+  open_envelope_button?: string
+  basic_decoration_photo?: string
+  basic_background_photo?: string
+  standard_cover_video?: string
+  standard_background_video?: string
+  [key: string]: unknown // Allow additional assets
+}
+
 export interface BrowseTemplatesResponse {
   message: string
   templates: EventTemplate[]
@@ -1571,8 +1794,8 @@ export const eventTemplateService = {
   },
 
   // Get public template assets (no auth required)
-  async getPublicTemplateAssets(templateId: number): Promise<ApiResponse<any>> {
-    return apiService.get<any>(
+  async getPublicTemplateAssets(templateId: number): Promise<ApiResponse<TemplateAssets>> {
+    return apiService.get<TemplateAssets>(
       `/api/core-data/event-templates/${templateId}/public_template_assets/`,
     )
   },
@@ -1583,8 +1806,8 @@ export const eventTemplateService = {
   },
 
   // Select template for event (using event update endpoint since select_template doesn't exist)
-  async selectEventTemplate(eventId: string, templateId: number): Promise<ApiResponse<any>> {
-    return apiService.patch<any>(`/api/events/${eventId}/`, {
+  async selectEventTemplate(eventId: string, templateId: number): Promise<ApiResponse<Event>> {
+    return apiService.patch<Event>(`/api/events/${eventId}/`, {
       event_template: templateId,
     })
   },
@@ -1888,15 +2111,9 @@ export const commentsService = {
 
   // Create a new comment
   async createComment(eventId: string, commentText: string): Promise<ApiResponse<EventComment>> {
+    // No need to check auth explicitly - API will return 401 if not authenticated
     const authStore = await import('../stores/auth').then((m) => m.useAuthStore())
     const userId = authStore.user?.id
-
-    if (!userId) {
-      return {
-        success: false,
-        message: 'User not authenticated',
-      }
-    }
 
     const data = {
       event: eventId,
@@ -1921,19 +2138,21 @@ export const commentsService = {
 
   // Check if user has already commented on an event
   async hasUserCommented(eventId: string): Promise<boolean> {
-    try {
-      const response = await this.getEventComments(eventId)
-      if (response.success && response.data) {
-        const authStore = await import('../stores/auth').then((m) => m.useAuthStore())
-        const userId = authStore.user?.id
-        if (userId) {
-          return response.data.results.some((comment) => comment.user === userId)
-        }
-      }
-      return false
-    } catch {
+    const response = await this.getEventComments(eventId)
+
+    if (!response.success || !response.data) {
+      console.warn('Failed to check if user commented:', response.message)
       return false
     }
+
+    const authStore = await import('../stores/auth').then((m) => m.useAuthStore())
+    const userId = authStore.user?.id
+
+    if (!userId) {
+      return false
+    }
+
+    return response.data.results.some((comment) => comment.user === userId)
   },
 }
 
@@ -2072,55 +2291,55 @@ export const paymentMethodsService = {
   },
 }
 
+/**
+ * User details interface for user service
+ */
+export interface UserDetails {
+  username: string
+  first_name?: string
+  last_name?: string
+  profile_picture?: string
+}
+
 // User Details API Service
 export const userService = {
   // Simple cache to avoid repeated API calls for the same user
-  userCache: new Map<number, { data: any; timestamp: number }>(),
+  userCache: new Map<number, { data: UserDetails; timestamp: number }>(),
 
   // Cache duration: 5 minutes
   CACHE_DURATION: 5 * 60 * 1000,
 
   // Try to get user details from potential /api/users/ endpoint
-  async getUserDetails(
-    userId: number,
-  ): Promise<{
-    username?: string
-    first_name?: string
-    last_name?: string
-    profile_picture?: string
-  } | null> {
+  async getUserDetails(userId: number): Promise<UserDetails | null> {
     // Check cache first
     const cached = this.userCache.get(userId)
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       return cached.data
     }
 
-    try {
-      // Try to fetch user details from a potential users API
-      const response = await apiService.get<any>(`/api/users/${userId}/`)
+    // Try to fetch user details from a potential users API
+    const response = await apiService.get<UserDetails>(`/api/users/${userId}/`)
 
-      if (response.success && response.data) {
-        const userDetails = {
-          username: response.data.username,
-          first_name: response.data.first_name,
-          last_name: response.data.last_name,
-          profile_picture: response.data.profile_picture,
-        }
-
-        // Cache the result
-        this.userCache.set(userId, {
-          data: userDetails,
-          timestamp: Date.now(),
-        })
-
-        return userDetails
-      }
-    } catch (error) {
+    if (!response.success || !response.data) {
       // If the API doesn't exist or fails, silently fail
       console.debug('Failed to fetch user details for user', userId, '- API might not be available')
+      return null
     }
 
-    return null
+    const userDetails = {
+      username: response.data.username,
+      first_name: response.data.first_name,
+      last_name: response.data.last_name,
+      profile_picture: response.data.profile_picture,
+    }
+
+    // Cache the result
+    this.userCache.set(userId, {
+      data: userDetails,
+      timestamp: Date.now(),
+    })
+
+    return userDetails
   },
 
   // Clear cache (useful for testing or when needed)

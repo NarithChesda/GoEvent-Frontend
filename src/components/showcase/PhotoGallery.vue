@@ -44,8 +44,7 @@
       <div
         v-for="(photo, index) in photos"
         :key="photo.id"
-        :ref="(el) => setPhotoRef(el, index)"
-        class="photo-item photo-visible"
+        class="photo-item animate-reveal"
         @click="handlePhotoClick(photo)"
       >
         <!-- Loading Placeholder -->
@@ -77,6 +76,7 @@
         <!-- Actual Image -->
         <img
           v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
+          :data-photo-id="photo.id"
           :src="getMediaUrl(photo.image)"
           :alt="photo.caption || 'Event Photo'"
           :loading="index < 4 ? 'eager' : 'lazy'"
@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, reactive } from 'vue'
+import { computed, onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
@@ -123,12 +123,20 @@ const emit = defineEmits<{
 // Image loading states
 const imageLoadingStates = reactive<Record<string, boolean>>({})
 const imageErrorStates = reactive<Record<string, boolean>>({})
+const imageRetryCount = reactive<Record<string, number>>({})
+const MAX_RETRIES = 3
+
+// IntersectionObserver for lazy image loading states
+const lazyImageObserver = ref<IntersectionObserver | null>(null)
 
 // Initialize loading states for all photos
 const initializeImageStates = () => {
-  props.photos.forEach((photo) => {
-    imageLoadingStates[photo.id] = true
+  props.photos.forEach((photo, index) => {
+    // Only show loading state for eagerly loaded images (first 4)
+    // Lazy images will be handled by browser's native lazy loading
+    imageLoadingStates[photo.id] = index < 4
     imageErrorStates[photo.id] = false
+    imageRetryCount[photo.id] = 0
   })
 }
 
@@ -138,10 +146,28 @@ const handleImageLoad = (photoId: string) => {
   imageErrorStates[photoId] = false
 }
 
-// Handle image load error
+// Handle image load error with retry mechanism
 const handleImageError = (photoId: string) => {
-  imageLoadingStates[photoId] = false
-  imageErrorStates[photoId] = true
+  const retries = imageRetryCount[photoId] || 0
+
+  if (retries < MAX_RETRIES) {
+    imageRetryCount[photoId] = retries + 1
+    // Retry with exponential backoff: 1s, 2s, 4s
+    setTimeout(() => {
+      const img = document.querySelector(`img[data-photo-id="${photoId}"]`) as HTMLImageElement
+      if (img) {
+        const currentSrc = img.src
+        img.src = '' // Reset
+        nextTick(() => {
+          img.src = currentSrc // Trigger reload
+        })
+      }
+    }, Math.pow(2, retries) * 1000)
+  } else {
+    // Max retries reached, show error state
+    imageLoadingStates[photoId] = false
+    imageErrorStates[photoId] = true
+  }
 }
 
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -176,52 +202,96 @@ const handlePhotoClick = (photo: EventPhoto) => {
   emit('openPhoto', photo)
 }
 
-// Simplified gallery - no scroll animations needed for mobile compatibility
-const photoRefs = ref<(Element | null)[]>([])
-const observer = ref<IntersectionObserver | null>(null)
+// Setup observer for lazy-loaded images
+const setupLazyImageObserver = () => {
+  lazyImageObserver.value = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const photoId = entry.target.getAttribute('data-photo-id')
+          if (photoId && !imageErrorStates[photoId]) {
+            // Image is in viewport, show loading state if not already loaded
+            const img = entry.target as HTMLImageElement
+            if (!img.complete) {
+              imageLoadingStates[photoId] = true
+            }
+          }
+        }
+      })
+    },
+    {
+      threshold: 0.01,
+      rootMargin: '50px' // Start loading slightly before entering viewport
+    }
+  )
 
-const setPhotoRef = (el: any, index: number) => {
-  if (el) {
-    photoRefs.value[index] = el as Element
-  }
+  // Observe all lazy-loaded images (index >= 4)
+  props.photos.forEach((photo, index) => {
+    if (index >= 4) {
+      const img = document.querySelector(`img[data-photo-id="${photo.id}"]`) as HTMLImageElement
+      if (img && lazyImageObserver.value) {
+        lazyImageObserver.value.observe(img)
+      }
+    }
+  })
 }
 
 onMounted(() => {
   // Initialize image loading states
   initializeImageStates()
 
-  // Use Intersection Observer for scroll animations - optimized for mobile
-  observer.value = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('photo-visible')
-          // Unobserve after animation to improve performance
-          observer.value?.unobserve(entry.target)
-        }
-      })
-    },
-    {
-      threshold: 0.1, // Trigger when 10% visible
-      rootMargin: '50px', // Start animation slightly before entering viewport
-    }
-  )
-
-  // Observe all photo items
-  photoRefs.value.forEach((ref) => {
-    if (ref) {
-      observer.value?.observe(ref)
-    }
-  })
+  // Setup lazy image observer
+  setTimeout(() => {
+    setupLazyImageObserver()
+  }, 100)
 })
 
-onUnmounted(() => {
-  // Clean up observer
-  if (observer.value) {
-    observer.value.disconnect()
-    observer.value = null
+// Watch for photo changes to reinitialize states
+watch(() => props.photos, (newPhotos, oldPhotos) => {
+  if (newPhotos !== oldPhotos) {
+    // Disconnect old observer
+    if (lazyImageObserver.value) {
+      lazyImageObserver.value.disconnect()
+    }
+
+    // Clear old states
+    Object.keys(imageLoadingStates).forEach(key => {
+      delete imageLoadingStates[key]
+    })
+    Object.keys(imageErrorStates).forEach(key => {
+      delete imageErrorStates[key]
+    })
+    Object.keys(imageRetryCount).forEach(key => {
+      delete imageRetryCount[key]
+    })
+
+    // Initialize new states
+    initializeImageStates()
+
+    // Re-setup observer for new photos
+    setTimeout(() => {
+      setupLazyImageObserver()
+    }, 100)
   }
-  photoRefs.value = []
+}, { deep: false })
+
+onUnmounted(() => {
+  // Disconnect observer
+  if (lazyImageObserver.value) {
+    lazyImageObserver.value.disconnect()
+    lazyImageObserver.value = null
+  }
+
+  // Clear image states
+  Object.keys(imageLoadingStates).forEach(key => {
+    delete imageLoadingStates[key]
+  })
+  Object.keys(imageErrorStates).forEach(key => {
+    delete imageErrorStates[key]
+  })
+  Object.keys(imageRetryCount).forEach(key => {
+    delete imageRetryCount[key]
+  })
 })
 </script>
 
@@ -237,14 +307,6 @@ onUnmounted(() => {
   cursor: pointer;
   overflow: hidden;
   border-radius: 0.5rem;
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.photo-item.photo-visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .photo-item img {
@@ -294,9 +356,6 @@ onUnmounted(() => {
   }
 
   .photo-item {
-    /* Lighter animation on mobile for better performance */
-    transform: translateY(0);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     /* Optimize paint and layout */
     contain: layout style paint;
   }
@@ -324,15 +383,6 @@ onUnmounted(() => {
 
 /* Reduce motion for accessibility and battery saving */
 @media (prefers-reduced-motion: reduce) {
-  .photo-item {
-    transform: none;
-    transition: opacity 0.3s ease;
-  }
-
-  .photo-item.photo-visible {
-    transform: none;
-  }
-
   .loading-spinner {
     animation: none;
     border-top-color: transparent;

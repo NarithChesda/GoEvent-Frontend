@@ -190,58 +190,6 @@ const {
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
 
-// Mobile memory management with messaging app detection
-const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-const isMessagingApp = videoResourceManager.isMessagingAppBrowser()
-const memoryCleanupTimer = ref<number | null>(null)
-
-// Periodic cleanup for mobile devices to prevent memory buildup
-const setupMobileMemoryManagement = () => {
-  if (!isMobile) return
-
-  // Determine cleanup interval and thresholds based on browser environment
-  const cleanupInterval = isMessagingApp
-    ? 120000 // 2 minutes for messaging apps (Telegram, WhatsApp, etc.)
-    : 300000 // 5 minutes for regular mobile browsers
-
-  const blobUrlThreshold = isMessagingApp ? 2 : 3 // More aggressive for messaging apps
-  const videoThreshold = isMessagingApp ? 1 : 2 // More aggressive for messaging apps
-
-  // Log setup for development
-  if (import.meta.env.DEV) {
-    console.log('📱 Memory management setup:', {
-      isMobile,
-      isMessagingApp,
-      cleanupInterval: `${cleanupInterval / 1000}s`,
-      blobUrlThreshold,
-      videoThreshold,
-    })
-  }
-
-  // Clean up memory periodically based on browser environment
-  memoryCleanupTimer.value = window.setInterval(() => {
-    if (videoResourceManager) {
-      const stats = videoResourceManager.getMemoryStats()
-
-      // Log memory stats in development
-      if (import.meta.env.DEV) {
-        console.log('📊 Periodic memory check:', stats)
-      }
-
-      // Force cleanup if too many resources are active
-      if (stats.activeBlobUrls > blobUrlThreshold || stats.managedVideos > videoThreshold) {
-        if (import.meta.env.DEV) {
-          console.log('🧹 Triggering memory cleanup:', {
-            reason: stats.activeBlobUrls > blobUrlThreshold ? 'Too many blob URLs' : 'Too many videos',
-            stats,
-          })
-        }
-        videoResourceManager.triggerMemoryCleanup()
-      }
-    }
-  }, cleanupInterval)
-}
-
 // CoverStage component ref
 const coverStageRef = ref<InstanceType<typeof CoverStage> | null>(null)
 
@@ -327,14 +275,23 @@ watch(
 )
 
 // Watch for event data changes to update meta tags for social media sharing
+// Using targeted property watching instead of deep watch to reduce reactive overhead
 watch(
-  () => event.value,
+  () => ({
+    id: event.value?.id,
+    title: event.value?.title,
+    description: event.value?.description,
+    banner_image: event.value?.banner_image,
+    logo_one: event.value?.logo_one,
+    start_date: event.value?.start_date,
+    organizer_details: event.value?.organizer_details,
+  }),
   (eventData) => {
-    if (eventData && eventData.id) {
-      updateEventMetaTags(eventData)
+    if (eventData?.id) {
+      updateEventMetaTags(event.value)
     }
   },
-  { immediate: true, deep: true },
+  { immediate: true, deep: false },
 )
 
 // Helper function to update meta tags for the current event
@@ -416,9 +373,6 @@ const preloadLogo = (logoUrl: string | null | undefined) => {
 onMounted(async () => {
   await authStore.initializeAuth()
 
-  // Setup mobile memory management before loading showcase
-  setupMobileMemoryManagement()
-
   // Initialize showcase - video resource manager is provided via Vue's provide/inject pattern
   await loadShowcase()
 
@@ -426,30 +380,10 @@ onMounted(async () => {
   if (event.value?.logo_one) {
     preloadLogo(event.value.logo_one)
   }
-
-  // Mobile memory management initialized
 })
 
 onUnmounted(() => {
-  // Clear mobile memory cleanup timer
-  if (memoryCleanupTimer.value) {
-    clearInterval(memoryCleanupTimer.value)
-    memoryCleanupTimer.value = null
-    if (import.meta.env.DEV) {
-      console.log('📱 Memory management timer cleared')
-    }
-  }
-
-  // Final memory cleanup for mobile and messaging apps
-  if (isMobile && videoResourceManager) {
-    if (import.meta.env.DEV) {
-      const browserType = isMessagingApp ? 'messaging app' : 'mobile'
-      console.log(`📱 Final ${browserType} memory cleanup`)
-    }
-    videoResourceManager.triggerMemoryCleanup()
-  }
-
-  // All other cleanup is handled by the composable's onUnmounted hook
+  // All cleanup is handled by the composable's onUnmounted hook
   // No additional manual cleanup needed as we're using proper Vue provide/inject pattern
 })
 </script>

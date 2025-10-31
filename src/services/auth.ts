@@ -1,6 +1,7 @@
 import { apiService, type ApiResponse } from './api'
 import { secureStorage } from '../utils/secureStorage'
 import { jwtUtils } from '../utils/jwtUtils'
+import { tokenManager } from './tokenManager'
 
 // Import API base URL for direct fetch in logout
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
@@ -314,21 +315,7 @@ class AuthService {
 
   // Secure storage management
   private setTokens(accessToken: string, refreshToken: string): void {
-    // Validate token format before storing
-    if (
-      !secureStorage.isValidTokenFormat(accessToken) ||
-      !secureStorage.isValidTokenFormat(refreshToken)
-    ) {
-      console.warn('Invalid token format detected')
-      return
-    }
-
-    secureStorage.setItem('access_token', accessToken)
-    secureStorage.setItem('refresh_token', refreshToken)
-
-    // Clear validation cache when new tokens are set
-    this.clearValidationCache()
-
+    tokenManager.setTokens(accessToken, refreshToken)
     // Migrate existing localStorage data if present
     secureStorage.migrateToSecureStorage(['access_token', 'refresh_token', 'user'])
   }
@@ -339,7 +326,10 @@ class AuthService {
       return
     }
 
+    // Note: tokenManager.setTokens requires both access and refresh
+    // This method is kept for backward compatibility but now validates and stores directly
     secureStorage.setItem('access_token', accessToken)
+    tokenManager.clearValidationCache()
   }
 
   setUser(user: User): void {
@@ -384,21 +374,7 @@ class AuthService {
   }
 
   getAccessToken(): string | null {
-    try {
-      const token = secureStorage.getItem('access_token')
-
-      // Validate token format if we got a token
-      if (token && !secureStorage.isValidTokenFormat(token)) {
-        console.warn('Invalid token format in storage, clearing tokens')
-        this.clearTokens()
-        return null
-      }
-
-      return token
-    } catch (error) {
-      console.error('Error retrieving access token from storage:', error)
-      return null
-    }
+    return tokenManager.getAccessToken()
   }
 
   /**
@@ -415,21 +391,7 @@ class AuthService {
   }
 
   getRefreshToken(): string | null {
-    try {
-      const token = secureStorage.getItem('refresh_token')
-
-      // Validate token format if we got a token
-      if (token && !secureStorage.isValidTokenFormat(token)) {
-        console.warn('Invalid refresh token format in storage, clearing tokens')
-        this.clearTokens()
-        return null
-      }
-
-      return token
-    } catch (error) {
-      console.error('Error retrieving refresh token from storage:', error)
-      return null
-    }
+    return tokenManager.getRefreshToken()
   }
 
   /**
@@ -474,11 +436,7 @@ class AuthService {
   }
 
   clearTokens(): void {
-    secureStorage.removeItem('access_token')
-    secureStorage.removeItem('refresh_token')
-    // Clear validation cache when tokens are cleared
-    lastValidationTime = 0
-    lastValidationResult = false
+    tokenManager.clearTokens()
   }
 
   clearUser(): void {
@@ -489,44 +447,18 @@ class AuthService {
    * Clear validation cache (useful after token refresh or login)
    */
   clearValidationCache(): void {
-    lastValidationTime = 0
-    lastValidationResult = false
+    tokenManager.clearValidationCache()
   }
 
   isAuthenticated(): boolean {
-    return !!this.getAccessToken()
+    return tokenManager.isAuthenticated()
   }
 
   /**
    * Check if we should attempt token refresh based on actual token expiration
    */
   private shouldRefreshToken(): boolean {
-    try {
-      const accessToken = this.getAccessToken()
-
-      if (!accessToken) {
-        return false // No token to refresh
-      }
-
-      // Check if token is expired or will expire within 5 minutes
-      const isExpired = jwtUtils.isTokenExpired(accessToken)
-      const willExpireSoon = jwtUtils.willExpireSoon(accessToken, 5)
-
-      if (isExpired) {
-        console.info('Access token is expired, refresh needed')
-        return true
-      }
-
-      if (willExpireSoon) {
-        console.info('Access token will expire soon, proactive refresh needed')
-        return true
-      }
-
-      return false
-    } catch (error) {
-      console.warn('Error checking token expiration, will attempt refresh:', error)
-      return true
-    }
+    return tokenManager.shouldRefreshToken(5)
   }
 
   /**
