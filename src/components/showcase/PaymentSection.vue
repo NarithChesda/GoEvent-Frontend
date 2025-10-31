@@ -279,8 +279,9 @@
 
                     <!-- Payment Button -->
                     <div v-if="method.payment_url" class="text-center">
-                      <a
-                        :href="method.payment_url"
+                      <button
+                        type="button"
+                        @click="navigateToPayment(method.payment_url)"
                         class="payment-link-minimalist group inline-flex items-center justify-center w-full"
                         :style="{
                           fontFamily: secondaryFont || currentFont,
@@ -295,7 +296,7 @@
                         }"
                       >
                         <span class="font-regular">{{ getPaymentTypeLabel(method) }}</span>
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -570,6 +571,12 @@ const capitalizeText = (text: string | undefined): string => {
   if (!text) return ''
   return text.toUpperCase()
 }
+
+const navigateToPayment = (url: string) => {
+  // Use window.location.href for direct navigation to ensure
+  // Universal Links / App Links work properly with full URL parameters
+  window.location.href = url
+}
 </script>
 
 <style scoped>
@@ -700,6 +707,8 @@ const capitalizeText = (text: string | undefined): string => {
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(12px);
