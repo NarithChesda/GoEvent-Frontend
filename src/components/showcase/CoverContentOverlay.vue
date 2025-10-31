@@ -1,8 +1,8 @@
 <template>
   <div
     @click="handleClick"
-    @touchstart="handleTouchStart"
-    @touchmove="handleTouchMove"
+    @touchstart.passive="handleTouchStart"
+    @touchmove.passive="handleTouchMove"
     @touchend="handleTouchEnd"
     class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
     :class="{
@@ -187,11 +187,8 @@ const handleTouchStart = (e: TouchEvent) => {
 const handleTouchMove = (e: TouchEvent) => {
   touchEndY.value = e.touches[0].clientY
 
-  // Prevent default scrolling behavior during swipe
-  const swipeDistance = touchStartY.value - touchEndY.value
-  if (Math.abs(swipeDistance) > 10) {
-    e.preventDefault()
-  }
+  // Note: Scrolling is prevented by CSS touch-action: none (see line 13)
+  // No need to call preventDefault() here
 }
 
 const handleTouchEnd = (e: TouchEvent) => {

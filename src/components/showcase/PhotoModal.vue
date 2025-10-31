@@ -38,8 +38,8 @@
       <div
         class="relative max-w-full max-h-full px-4 sm:px-0 flex flex-col items-center"
         @click.stop
-        @touchstart="handleTouchStart"
-        @touchmove="handleTouchMove"
+        @touchstart.passive="handleTouchStart"
+        @touchmove.passive="handleTouchMove"
         @touchend="handleTouchEnd"
       >
         <img
