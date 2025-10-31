@@ -410,6 +410,10 @@ const activeSubTab = ref<string>('')
 const guestManagementSubTab = ref<string>('guests')
 const expenseTrackingSubTab = ref<string>('summary')
 
+// Interval IDs for polling
+const guestManagementPollInterval = ref<number | null>(null)
+const expenseTrackingPollInterval = ref<number | null>(null)
+
 // Template refs for tab components (for Smart FAB)
 const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
@@ -909,21 +913,27 @@ watch(
 watch(
   () => guestManagementTabRef.value,
   () => {
+    // Clear existing interval if any
+    if (guestManagementPollInterval.value !== null) {
+      clearInterval(guestManagementPollInterval.value)
+      guestManagementPollInterval.value = null
+    }
+
     if (activeTab.value === 'guest-management' && guestManagementTabRef.value) {
       // Poll for subtab changes
-      const interval = setInterval(() => {
+      guestManagementPollInterval.value = setInterval(() => {
         if (!guestManagementTabRef.value || activeTab.value !== 'guest-management') {
-          clearInterval(interval)
+          if (guestManagementPollInterval.value !== null) {
+            clearInterval(guestManagementPollInterval.value)
+            guestManagementPollInterval.value = null
+          }
           return
         }
         const currentSubTab = guestManagementTabRef.value.getActiveSubTab()
         if (currentSubTab && currentSubTab !== guestManagementSubTab.value) {
           guestManagementSubTab.value = currentSubTab
         }
-      }, 100)
-
-      // Clean up on unmount
-      onUnmounted(() => clearInterval(interval))
+      }, 100) as unknown as number
     }
   },
   { immediate: true }
@@ -933,21 +943,27 @@ watch(
 watch(
   () => expenseTabRef.value,
   () => {
+    // Clear existing interval if any
+    if (expenseTrackingPollInterval.value !== null) {
+      clearInterval(expenseTrackingPollInterval.value)
+      expenseTrackingPollInterval.value = null
+    }
+
     if (activeTab.value === 'expenses' && expenseTabRef.value) {
       // Poll for subtab changes
-      const interval = setInterval(() => {
+      expenseTrackingPollInterval.value = setInterval(() => {
         if (!expenseTabRef.value || activeTab.value !== 'expenses') {
-          clearInterval(interval)
+          if (expenseTrackingPollInterval.value !== null) {
+            clearInterval(expenseTrackingPollInterval.value)
+            expenseTrackingPollInterval.value = null
+          }
           return
         }
         const currentSubTab = expenseTabRef.value.getActiveSubTab()
         if (currentSubTab && currentSubTab !== expenseTrackingSubTab.value) {
           expenseTrackingSubTab.value = currentSubTab
         }
-      }, 100)
-
-      // Clean up on unmount
-      onUnmounted(() => clearInterval(interval))
+      }, 100) as unknown as number
     }
   },
   { immediate: true }
@@ -956,6 +972,16 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadEvent()
+})
+
+// Clean up intervals on unmount
+onUnmounted(() => {
+  if (guestManagementPollInterval.value !== null) {
+    clearInterval(guestManagementPollInterval.value)
+  }
+  if (expenseTrackingPollInterval.value !== null) {
+    clearInterval(expenseTrackingPollInterval.value)
+  }
 })
 </script>
 

@@ -41,6 +41,7 @@ import {
   Wallet,
   Receipt,
   FolderOpen,
+  Camera,
 } from 'lucide-vue-next'
 import EventActionMenu from './EventActionMenu.vue'
 
@@ -141,7 +142,7 @@ const fabIcon = computed(() => {
     case 'event-texts':
       return FileText
     case 'attendees':
-      return UserCheck
+      return Camera
     case 'payment':
       return CreditCard
     case 'collaborator':
