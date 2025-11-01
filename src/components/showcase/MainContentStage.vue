@@ -128,6 +128,7 @@
                           :is-event-past="isEventPast"
                           :event-texts="eventTexts"
                           :current-language="currentLanguage"
+                          :event-type="eventType"
                           :current-font="currentFont"
                           :primary-font="primaryFont"
                           :secondary-font="secondaryFont"

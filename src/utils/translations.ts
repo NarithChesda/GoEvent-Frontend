@@ -7,6 +7,8 @@ export const rsvpTranslations: Record<
   {
     // Main headers
     rsvp_header: string
+    rsvp_header_birthday: string
+    rsvp_header_default: string
     invite_text: string
 
     // Buttons
@@ -126,6 +128,8 @@ export const rsvpTranslations: Record<
   en: {
     // Main headers
     rsvp_header: 'Will you attend our wedding?',
+    rsvp_header_birthday: 'Will you join our birthday party?',
+    rsvp_header_default: 'Will you attend our event?',
     invite_text: "You're Invited",
 
     // Buttons
@@ -245,6 +249,8 @@ export const rsvpTranslations: Record<
   kh: {
     // Main headers
     rsvp_header: 'តើលោកអ្នកនឹងចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងខ្ញុំទេ?',
+    rsvp_header_birthday: 'តើលោកអ្នកនឹងចូលរួមពិធីជប់លៀងខួបកំណើតរបស់យើងខ្ញុំទេ?',
+    rsvp_header_default: 'តើលោកអ្នកនឹងចូលរួមព្រឹត្តិការណ៍របស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
 
     // Buttons
@@ -364,6 +370,8 @@ export const rsvpTranslations: Record<
   'zh-cn': {
     // Main headers
     rsvp_header: '您会参加我们的婚礼吗？',
+    rsvp_header_birthday: '您会参加我们的生日派对吗？',
+    rsvp_header_default: '您会参加我们的活动吗？',
     invite_text: '诚邀您',
 
     // Buttons

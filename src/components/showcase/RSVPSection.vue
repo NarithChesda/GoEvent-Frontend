@@ -165,6 +165,7 @@ interface Props {
   currentFont?: string
   primaryFont?: string
   secondaryFont?: string
+  eventType?: string  // Event category name for dynamic RSVP header
 }
 
 const props = defineProps<Props>()
@@ -246,6 +247,8 @@ const getTextContent = (textType: string, fallback = ''): string => {
     keyof typeof import('../../utils/translations').rsvpTranslations.en
   > = {
     rsvp_header: 'rsvp_header',
+    rsvp_header_birthday: 'rsvp_header_birthday',
+    rsvp_header_default: 'rsvp_header_default',
     rsvp_yes_button: 'rsvp_yes_button',
     rsvp_no_button: 'rsvp_no_button',
     rsvp_attending: 'rsvp_attending',
@@ -282,7 +285,30 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 // RSVP-related text content computed properties
-const rsvpHeaderText = computed(() => getTextContent('rsvp_header', 'Will you attend our wedding?'))
+const rsvpHeaderText = computed(() => {
+  // Determine which header to use based on event type
+  const eventType = props.eventType?.toLowerCase() || 'default'
+
+  // Map event types to translation keys (similar to AgendaSection)
+  const headerKeyMap: Record<string, string> = {
+    'wedding': 'rsvp_header',
+    'birthday': 'rsvp_header_birthday',
+    'birthday party': 'rsvp_header_birthday',
+    'default': 'rsvp_header_default',
+  }
+
+  // Select the appropriate header key, defaulting to 'rsvp_header_default' for unknown types
+  const headerKey = headerKeyMap[eventType] || 'rsvp_header_default'
+
+  // Fallback text based on event type
+  const fallbackMap: Record<string, string> = {
+    'rsvp_header': 'Will you attend our wedding?',
+    'rsvp_header_birthday': 'Will you join our birthday party?',
+    'rsvp_header_default': 'Will you attend our event?',
+  }
+
+  return getTextContent(headerKey, fallbackMap[headerKey] || 'Will you attend our event?')
+})
 
 const rsvpAttendingText = computed(() => getTextContent('rsvp_attending', 'Attending'))
 
