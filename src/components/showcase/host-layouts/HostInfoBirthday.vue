@@ -32,26 +32,7 @@
       </div>
     </div>
 
-    <!-- Logo (Centered) -->
-    <div class="flex justify-center mb-3 sm:mb-4">
-      <img
-        v-if="logoUrl"
-        :src="logoUrl"
-        alt="Event Logo"
-        class="birthday-logo"
-      />
-      <div
-        v-else-if="!hosts[0]?.profile_image"
-        class="logo-fallback"
-        :style="{
-          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-        }"
-      >
-        <span class="logo-initial" :style="{ fontFamily: primaryFont || currentFont }">
-          {{ eventInitial }}
-        </span>
-      </div>
-    </div>
+
 
     <!-- Host Title & Name (Centered) -->
     <div v-if="hosts.length > 0" class="text-center space-y-1 sm:space-y-1.5 px-4">

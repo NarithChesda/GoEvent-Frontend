@@ -4,10 +4,15 @@
     class="agenda-birthday mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
   >
     <!-- Fun Header -->
-    <div class="text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+    <div
+      :class="[
+        'text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3',
+        currentLanguage === 'kh' ? 'mb-4 sm:mb-5 md:mb-6' : 'mb-6 sm:mb-7 md:mb-8'
+      ]"
+    >
       <h2
         :class="[
-          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize agenda-header',
+          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular capitalize agenda-header',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
