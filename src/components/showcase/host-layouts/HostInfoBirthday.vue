@@ -16,6 +16,53 @@
       </h2>
     </div>
 
+    <!-- Parent Names Row (Two-column layout like wedding) -->
+    <div
+      v-if="hosts.length > 0 && (hosts[0].parent_a_name || hosts[0].parent_b_name)"
+      class="parent-row"
+    >
+      <!-- Parent A Name (Left) -->
+      <div class="host-parent-left">
+        <p
+          v-if="hosts[0].parent_a_name"
+          :class="[
+            'parent-name-text leading-normal text-center opacity-90',
+            currentLanguage === 'kh' && 'khmer-text-fix',
+          ]"
+          :style="{
+            color: primaryColor,
+            fontFamily: primaryFont || currentFont,
+            wordWrap: 'break-word',
+            hyphens: 'auto',
+          }"
+        >
+          {{ hosts[0].parent_a_name }}
+        </p>
+      </div>
+
+      <!-- Center spacer -->
+      <div class="center-spacer"></div>
+
+      <!-- Parent B Name (Right) -->
+      <div class="host-parent-right">
+        <p
+          v-if="hosts[0].parent_b_name"
+          :class="[
+            'parent-name-text leading-normal text-center opacity-90',
+            currentLanguage === 'kh' && 'khmer-text-fix',
+          ]"
+          :style="{
+            color: primaryColor,
+            fontFamily: primaryFont || currentFont,
+            wordWrap: 'break-word',
+            hyphens: 'auto',
+          }"
+        >
+          {{ hosts[0].parent_b_name }}
+        </p>
+      </div>
+    </div>
+
     <!-- Single Host Profile Picture (Large & Centered) -->
     <div v-if="hosts[0]?.profile_image" class="flex justify-center mb-3 sm:mb-4">
       <div
@@ -113,6 +160,60 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+/* Parent Names Row Layout (matching wedding style) */
+.parent-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  width: 100%;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+}
+
+.host-parent-left,
+.host-parent-right {
+  text-align: center;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.center-spacer {
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+/* Khmer-specific center spacer adjustments */
+.khmer-text .center-spacer {
+  width: 0.5rem;
+}
+
+/* Parent name text styles (matching EventInfo header: text-base sm:text-lg md:text-xl lg:text-2xl) */
+.parent-name-text {
+  font-size: 1rem; /* text-base: 16px (mobile) */
+}
+
+/* Responsive parent name sizes matching EventInfo */
+@media (min-width: 640px) {
+  .parent-name-text {
+    font-size: 1.125rem; /* text-lg: 18px (sm) */
+  }
+}
+
+@media (min-width: 768px) {
+  .parent-name-text {
+    font-size: 1.25rem; /* text-xl: 20px (md) */
+  }
+}
+
+@media (min-width: 1024px) {
+  .parent-name-text {
+    font-size: 1.5rem; /* text-2xl: 24px (lg) */
+  }
 }
 
 /* Large Profile Picture */
