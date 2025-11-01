@@ -82,6 +82,7 @@
                     :secondary-font="secondaryFont"
                     :welcome-message="welcomeMessage"
                     :current-language="currentLanguage"
+                    :event-type="eventType"
                   />
                 </div>
 
@@ -504,6 +505,12 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Extract event type from category for layout detection
+const eventType = computed(() => {
+  // Try category_details.name first (showcase API), then category_name (events list API)
+  return props.event.category_details?.name || props.event.category_name || 'default'
+})
 
 // Computed properties for dynamic styling and components
 const containerClasses = computed(() => [
