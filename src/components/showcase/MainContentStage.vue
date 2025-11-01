@@ -89,7 +89,12 @@
                 <!-- Event Information with Integrated RSVP -->
                 <div
                   ref="eventInfoRef"
-                  class="mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10 mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
+                  :class="[
+                    eventType === 'Birthday'
+                      ? 'mt-3 sm:mt-4 laptop-sm:mt-4 laptop-md:mt-5 laptop-lg:mt-6 desktop:mt-5'
+                      : 'mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10',
+                    'mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal'
+                  ]"
                 >
                   <EventInfo
                     :description-title="descriptionTitle"
@@ -151,6 +156,7 @@
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
+                    :event-type="eventType"
                   />
 
                   <!-- Agenda Section Divider -->

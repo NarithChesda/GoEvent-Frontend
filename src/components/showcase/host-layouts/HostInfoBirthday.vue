@@ -17,7 +17,7 @@
     </div>
 
     <!-- Single Host Profile Picture (Large & Centered) -->
-    <div v-if="hosts[0]?.profile_image" class="flex justify-center mb-6 sm:mb-8">
+    <div v-if="hosts[0]?.profile_image" class="flex justify-center mb-3 sm:mb-4">
       <div
         class="profile-picture-large"
         :style="{
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Logo (Centered) -->
-    <div class="flex justify-center mb-6 sm:mb-8">
+    <div class="flex justify-center mb-3 sm:mb-4">
       <img
         v-if="logoUrl"
         :src="logoUrl"
@@ -54,7 +54,7 @@
     </div>
 
     <!-- Host Title & Name (Centered) -->
-    <div v-if="hosts.length > 0" class="text-center space-y-2 sm:space-y-3 px-4">
+    <div v-if="hosts.length > 0" class="text-center space-y-1 sm:space-y-1.5 px-4">
       <!-- Title -->
       <p
         :class="[
@@ -72,7 +72,7 @@
       <!-- Name -->
       <h3
         :class="[
-          'text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight',
+          'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold leading-tight',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
