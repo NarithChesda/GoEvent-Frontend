@@ -428,93 +428,157 @@
                     <div
                       v-for="(translation, index) in formData.translations"
                       :key="index"
-                      class="bg-gray-50 rounded-xl p-4 relative"
+                      class="rounded-xl border border-slate-200 bg-white/70"
                     >
-                      <button
-                        type="button"
-                        @click="removeTranslation(index)"
-                        class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
-                      >
-                        <X class="w-4 h-4" />
-                      </button>
+                      <!-- Translation Header -->
+                      <div class="flex items-center justify-between px-4 py-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-between"
+                          @click="toggleTranslation(index)"
+                          :aria-expanded="translationExpandStates[index] ? 'true' : 'false'"
+                        >
+                          <div class="flex items-center gap-3">
+                            <Languages class="w-4 h-4 text-slate-600" />
+                            <span class="text-sm font-medium text-slate-700">
+                              {{ getLanguageName(translation.language) }}
+                            </span>
+                          </div>
+                          <svg
+                            class="h-4 w-4 text-slate-500 transition-transform"
+                            :class="translationExpandStates[index] ? 'rotate-180' : ''"
+                            viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="removeTranslation(index)"
+                          class="ml-3 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        >
+                          <X class="w-4 h-4" />
+                        </button>
+                      </div>
 
-                      <div class="space-y-3 pr-8">
-                        <div>
-                          <label class="block text-xs font-medium text-slate-600 mb-1">
-                            Language: {{ getLanguageName(translation.language) }}
-                          </label>
-                        </div>
+                      <!-- Translation Fields (Collapsible) -->
+                      <Transition name="collapse">
+                        <div v-show="translationExpandStates[index]" class="px-4 pb-4 space-y-3">
+                          <!-- Title and Start Time -->
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
+                                Title
+                              </label>
+                              <input
+                                v-model="translation.title"
+                                type="text"
+                                placeholder="Translated title"
+                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
+                                Start Time
+                              </label>
+                              <input
+                                v-model="translation.start_time_text"
+                                type="text"
+                                placeholder="Translated start time"
+                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                              />
+                            </div>
+                          </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <!-- End Time and Date Text -->
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
+                                End Time
+                              </label>
+                              <input
+                                v-model="translation.end_time_text"
+                                type="text"
+                                placeholder="Translated end time"
+                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
+                                Date Display Text
+                              </label>
+                              <input
+                                v-model="translation.date_text"
+                                type="text"
+                                placeholder="Translated date text"
+                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                              />
+                            </div>
+                          </div>
+
+                          <!-- Description -->
                           <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+                              Description
+                            </label>
+                            <textarea
+                              v-model="translation.description"
+                              rows="2"
+                              placeholder="Translated description"
+                              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
+                            ></textarea>
+                          </div>
+
+                          <!-- Speaker -->
+                          <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+                              Speaker(s)
+                            </label>
                             <input
-                              v-model="translation.title"
+                              v-model="translation.speaker"
                               type="text"
-                              placeholder="Translated title"
+                              placeholder="Translated speaker name(s)"
                               class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                             />
                           </div>
-                          <div>
-                            <input
-                              v-model="translation.start_time_text"
-                              type="text"
-                              placeholder="Translated start time"
-                              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                            />
-                          </div>
                         </div>
-                  </div>
-                </div>
+                      </Transition>
+                    </div>
                   </div>
 
-                  <!-- Add Translation Modal -->
+                  <!-- Add Translation Dropdown -->
                   <div
                     v-if="showAddTranslation"
                     class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
                   >
                     <div class="flex items-center justify-between mb-3">
-                      <h5 class="font-medium text-slate-900">Add Translation</h5>
+                      <h5 class="font-medium text-slate-900">Select Language</h5>
                       <button
                         type="button"
-                        @click="showAddTranslation = false"
+                        @click="closeAddTranslation"
                         class="text-gray-400 hover:text-gray-600"
                       >
                         <X class="w-4 h-4" />
                       </button>
                     </div>
 
-                    <div class="space-y-3">
+                    <div class="relative">
                       <select
                         v-model="newTranslation.language"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                        @change="onLanguageSelect"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                       >
                         <option value="">Select language</option>
                         <option
-                          v-for="lang in availableLanguages"
+                          v-for="lang in availableLanguagesForAdd"
                           :key="lang.code"
                           :value="lang.code"
                         >
                           {{ lang.name }}
                         </option>
                       </select>
-
-                      <div class="flex space-x-2">
-                        <button
-                          type="button"
-                          @click="addTranslation"
-                          :disabled="!newTranslation.language"
-                          class="px-4 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                        >
-                          Add
-                        </button>
-                        <button
-                          type="button"
-                          @click="showAddTranslation = false"
-                          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                      <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -550,7 +614,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import {
   X,
   Calendar,
@@ -592,6 +656,7 @@ const detailsOpen = ref(false)
 const locationOpen = ref(false)
 const displayOpen = ref(false)
 const scheduleMoreOpen = ref(false)
+const translationExpandStates = ref<Record<number, boolean>>({})
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -637,6 +702,11 @@ const newTranslation = reactive<
   speaker: '',
 })
 
+// Computed
+const availableLanguagesForAdd = computed(() =>
+  availableLanguages.filter((lang) => !formData.translations?.some((t) => t.language === lang.code))
+)
+
 // Methods
 const fetchIcons = async () => {
   try {
@@ -662,12 +732,17 @@ const getLanguageName = (code: string) => {
   return availableLanguages.find((lang) => lang.code === code)?.name || code
 }
 
-const addTranslation = () => {
+const toggleTranslation = (index: number) => {
+  translationExpandStates.value[index] = !translationExpandStates.value[index]
+}
+
+const onLanguageSelect = () => {
   if (!newTranslation.language) return
 
   // Check if translation for this language already exists
   if (formData.translations?.some((t) => t.language === newTranslation.language)) {
     alert('Translation for this language already exists')
+    newTranslation.language = ''
     return
   }
 
@@ -675,6 +750,8 @@ const addTranslation = () => {
     formData.translations = []
   }
 
+  // Add the translation
+  const translationIndex = formData.translations.length
   formData.translations.push({ ...newTranslation })
 
   // Reset form
@@ -689,11 +766,32 @@ const addTranslation = () => {
   })
 
   showAddTranslation.value = false
+
+  // Auto-expand the newly added translation
+  translationExpandStates.value[translationIndex] = true
+}
+
+const closeAddTranslation = () => {
+  newTranslation.language = ''
+  showAddTranslation.value = false
 }
 
 const removeTranslation = (index: number) => {
   if (formData.translations) {
     formData.translations.splice(index, 1)
+    // Remove the expand state for this index
+    delete translationExpandStates.value[index]
+    // Reindex the remaining expand states
+    const newStates: Record<number, boolean> = {}
+    Object.keys(translationExpandStates.value).forEach((key) => {
+      const numKey = Number(key)
+      if (numKey > index) {
+        newStates[numKey - 1] = translationExpandStates.value[numKey]
+      } else if (numKey < index) {
+        newStates[numKey] = translationExpandStates.value[numKey]
+      }
+    })
+    translationExpandStates.value = newStates
   }
 }
 
