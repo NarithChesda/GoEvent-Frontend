@@ -240,15 +240,10 @@ const guestNameTextStyle = computed(() => {
     ? '"Great Vibes", cursive'
     : props.primaryFont || props.currentFont
 
-  // Enhanced styling for Great Vibes to make it more visible
-  const textShadow = isEnglishText
-    ? '0 2px 8px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2)'
-    : 'none'
-
   return {
     fontFamily,
     color: '#FFFFFF',
-    textShadow,
+    textShadow: 'none',
     fontWeight: isEnglishText ? '400' : 'normal',
   }
 })
@@ -428,7 +423,7 @@ const fallbackLogoStyle = computed(() => {
   height: 48px;
   display: block;
   stroke-width: 3;
-  margin-top: -16px;
+  margin-top: -28px;
 }
 
 .arrow-icon:first-child {
@@ -470,7 +465,7 @@ const fallbackLogoStyle = computed(() => {
   .arrow-icon {
     width: 40px;
     height: 40px;
-    margin-top: -14px;
+    margin-top: -24px;
   }
 
   .arrow-icon:first-child {
@@ -490,7 +485,7 @@ const fallbackLogoStyle = computed(() => {
   .arrow-icon {
     width: 56px;
     height: 56px;
-    margin-top: -18px;
+    margin-top: -32px;
   }
 
   .arrow-icon:first-child {

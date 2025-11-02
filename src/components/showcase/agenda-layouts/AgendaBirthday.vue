@@ -34,9 +34,9 @@
             class="birthday-tab-button"
             :class="{ active: activeTab === date }"
             :style="{
-              background: activeTab === date ? primaryColor : 'transparent',
-              color: activeTab === date ? (backgroundColor || '#ffffff') : primaryColor,
-              borderColor: activeTab === date ? 'transparent' : primaryColor,
+              backgroundColor: 'transparent',
+              color: primaryColor,
+              borderColor: activeTab === date ? primaryColor : 'transparent',
             }"
             @click="selectTab(date)"
           >
