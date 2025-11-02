@@ -14,17 +14,18 @@
       </div>
 
       <!-- Category Select -->
-      <div class="w-full lg:w-56">
+      <div class="w-full lg:w-56 relative">
         <label class="sr-only" for="template-category">Category</label>
         <select
           id="template-category"
           :value="selectedCategory === null ? '' : String(selectedCategory)"
           @change="onCategoryChange"
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg bg-white/90 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg bg-white/90 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 appearance-none pr-10"
         >
           <option value="">All categories</option>
           <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
         </select>
+        <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
       </div>
 
       <!-- Plan Segmented -->
@@ -67,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next'
+import { Search, ChevronDown } from 'lucide-vue-next'
 import type { Category } from '../../composables/useTemplateFiltering'
 
 interface Props {
