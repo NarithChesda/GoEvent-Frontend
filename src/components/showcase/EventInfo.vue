@@ -42,7 +42,7 @@
       <div
         class="block relative gradient-stroke-container"
         :style="{
-          background: `${secondaryColor || primaryColor}60`,
+          background: `${primaryColor}60`,
           padding: '2px',
           borderRadius: '2rem',
         }"
@@ -51,7 +51,7 @@
           class="px-4 pt-3 pb-4 backdrop-blur-sm space-y-2 relative"
           style="border-radius: calc(2rem - 2px); border: 2px solid white"
           :style="{
-           background: `${secondaryColor || primaryColor}60`,
+           background: `${primaryColor}60`,
           }"
         >
           <!-- Date Text -->

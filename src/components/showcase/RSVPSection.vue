@@ -65,7 +65,7 @@
               <span
                 class="toggle-thumb"
                 :style="{
-                  background: rsvpStatus === 'coming' ? (secondaryColor || primaryColor) : 'white',
+                  background: rsvpStatus === 'coming' ? primaryColor : 'white',
                   transform: rsvpStatus === 'coming' ? 'translateX(1.25rem)' : 'translateX(0)'
                 }"
               ></span>
