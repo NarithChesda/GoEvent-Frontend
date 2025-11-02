@@ -28,7 +28,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <Languages :size="20" :color="primaryColor" />
+            <Languages :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.language }}</span>
           </button>
         </div>
@@ -44,7 +44,7 @@
             <component
               :is="props.isMusicPlaying ? VolumeX : Volume2"
               :size="20"
-              :color="primaryColor"
+              :color="themeColor"
             />
             <span class="menu-text">{{
               props.isMusicPlaying ? translations.musicOff : translations.musicOn
@@ -59,7 +59,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <UserCheck :size="20" :color="primaryColor" />
+            <UserCheck :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.rsvp }}</span>
           </button>
         </div>
@@ -71,7 +71,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <Bell :size="20" :color="primaryColor" />
+            <Bell :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.reminder }}</span>
           </button>
         </div>
@@ -83,7 +83,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <Calendar :size="20" :color="primaryColor" />
+            <Calendar :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.agenda }}</span>
           </button>
         </div>
@@ -95,7 +95,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <Play :size="20" :color="primaryColor" />
+            <Play :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.video }}</span>
           </button>
         </div>
@@ -107,7 +107,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <Image :size="20" :color="primaryColor" />
+            <Image :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.gallery }}</span>
           </button>
         </div>
@@ -119,7 +119,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <Gift :size="20" :color="primaryColor" />
+            <Gift :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.gift }}</span>
           </button>
         </div>
@@ -131,7 +131,7 @@
             class="menu-button glass-section"
             :style="menuButtonStyle"
           >
-            <MessageCircle :size="20" :color="primaryColor" />
+            <MessageCircle :size="20" :color="themeColor" />
             <span class="menu-text">{{ translations.comment }}</span>
           </button>
         </div>
@@ -159,7 +159,7 @@
               {{ translations.selectLanguage }}
             </h3>
             <button @click="closeLanguageModal" class="close-button">
-              <X :size="20" :color="primaryColor" />
+              <X :size="20" :color="themeColor" />
             </button>
           </div>
           <div class="language-options">
@@ -170,8 +170,8 @@
               class="language-option glass-inner"
               :class="{ active: currentLanguage === lang.code }"
               :style="{
-                borderColor: currentLanguage === lang.code ? primaryColor : 'transparent',
-                color: currentLanguage === lang.code ? primaryColor : 'white',
+                borderColor: currentLanguage === lang.code ? themeColor : 'transparent',
+                color: currentLanguage === lang.code ? themeColor : 'white',
               }"
             >
               <span class="language-flag">{{ lang.flag }}</span>
@@ -207,6 +207,7 @@ import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 interface Props {
   primaryColor?: string
   accentColor?: string
+  backgroundColor?: string
   currentLanguage?: string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   isMusicPlaying?: boolean
@@ -295,27 +296,30 @@ const translations = computed(() => ({
   selectLanguage: translateRSVP('floating_menu_select_language', currentLang.value),
 }))
 
+// Computed color for icons and borders
+const themeColor = computed(() => props.backgroundColor || props.primaryColor)
+
 // Computed styles for better performance (avoid recreating style objects on every render)
 const fabButtonStyle = computed(() => ({
-  background: props.primaryColor,
-  borderLeft: `2px solid ${props.primaryColor}`,
-  borderTop: `2px solid ${props.primaryColor}`,
-  borderBottom: `2px solid ${props.primaryColor}`,
+  background: themeColor.value,
+  borderLeft: `2px solid ${themeColor.value}`,
+  borderTop: `2px solid ${themeColor.value}`,
+  borderBottom: `2px solid ${themeColor.value}`,
   borderRight: 'none',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
 }))
 
 const menuButtonStyle = computed(() => ({
-  borderColor: props.primaryColor,
+  borderColor: themeColor.value,
 }))
 
 const logoutButtonStyle = computed(() => ({
-  borderColor: props.primaryColor,
-  background: props.primaryColor,
+  borderColor: themeColor.value,
+  background: themeColor.value,
 }))
 
 const modalTitleStyle = computed(() => ({
-  color: props.primaryColor,
+  color: themeColor.value,
 }))
 
 const toggleMenu = () => {

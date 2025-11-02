@@ -32,6 +32,7 @@
       :primaryColor="primaryColor"
       :secondaryColor="secondaryColor"
       :accentColor="accentColor"
+      :backgroundColor="backgroundColor"
       :currentFont="currentFont"
       :primaryFont="primaryFont"
       :secondaryFont="secondaryFont"
@@ -97,6 +98,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string

@@ -33,6 +33,7 @@
       class="z-30"
       :primary-color="primaryColor"
       :accent-color="accentColor"
+      :background-color="backgroundColor"
       :current-language="currentLanguage"
       :available-languages="availableLanguages"
       :is-music-playing="isMusicPlaying"
@@ -107,6 +108,7 @@
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
+                    :background-color="backgroundColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
@@ -125,6 +127,7 @@
                           :secondary-color="secondaryColor"
                           @show-auth-modal="$emit('showAuthModal')"
                           :accent-color="accentColor"
+                          :background-color="backgroundColor"
                           :is-event-past="isEventPast"
                           :event-texts="eventTexts"
                           :current-language="currentLanguage"
@@ -152,6 +155,7 @@
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor"
                     :accent-color="accentColor"
+                    :background-color="backgroundColor"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
                     :current-font="currentFont"
@@ -253,6 +257,7 @@
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor"
                     :accent-color="accentColor"
+                    :background-color="backgroundColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
@@ -284,11 +289,11 @@
                   <div
                     class="footer-card-container rounded-none px-6 pt-6 pb-4 text-center backdrop-blur-16 transition-all duration-300 relative overflow-hidden"
                     :style="{
-                      background: `${primaryColor}90`,
+                      background: `${backgroundColor || primaryColor}90`,
                       boxShadow: `
-                        0 12px 36px -6px ${primaryColor}25,
-                        0 6px 24px -3px ${primaryColor}20,
-                        0 3px 12px -1px ${primaryColor}15,
+                        0 12px 36px -6px ${backgroundColor || primaryColor}25,
+                        0 6px 24px -3px ${backgroundColor || primaryColor}20,
+                        0 3px 12px -1px ${backgroundColor || primaryColor}15,
                         inset 0 1px 2px rgba(255, 255, 255, 0.2)
                       `,
                     }"
@@ -498,6 +503,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string

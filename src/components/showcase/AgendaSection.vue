@@ -42,6 +42,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string

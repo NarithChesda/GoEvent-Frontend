@@ -20,8 +20,8 @@
       ref="commentFormRef"
       class="comment-form-liquid mb-3 animate-form-reveal"
       :style="{
-        backgroundColor: `${primaryColor}20`,
-        border: `1px solid ${primaryColor}40`,
+        backgroundColor: `${backgroundColor}20`,
+        border: `1px solid ${backgroundColor}40`,
       }"
     >
       <!-- Sign In Prompt for Unauthenticated Users -->
@@ -36,9 +36,9 @@
           @click="handleSignInClick"
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02]"
           :style="{
-            background: primaryColor,
+            background: backgroundColor,
             color: '#ffffff',
-            border: `1px solid ${primaryColor}60`,
+            border: `1px solid ${backgroundColor}60`,
           }"
         >
           <span :style="{ fontFamily: secondaryFont || currentFont }">{{
@@ -68,10 +68,10 @@
             maxlength="500"
             class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
             :style="{
-              backgroundColor: `${primaryColor}25`,
-              '--tw-ring-color': primaryColor + '80',
+              backgroundColor: `${backgroundColor}25`,
+              '--tw-ring-color': backgroundColor + '80',
               color: primaryColor,
-              border: `1px solid ${commentValidation.isValid ? primaryColor + '30' : '#dc262630'}`,
+              border: `1px solid ${commentValidation.isValid ? backgroundColor + '30' : '#dc262630'}`,
               fontFamily: secondaryFont || currentFont,
             }"
             @input="handleCommentInput"
@@ -102,9 +102,9 @@
           "
           class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           :style="{
-            background: primaryColor,
+            background: backgroundColor,
             color: '#ffffff',
-            border: `1px solid ${primaryColor}60`,
+            border: `1px solid ${backgroundColor}60`,
           }"
         >
           <span :style="{ fontFamily: secondaryFont || currentFont }">{{
@@ -126,8 +126,8 @@
           v-if="loadingComments"
           class="liquid-glass-state text-center py-8"
           :style="{
-            backgroundColor: `${primaryColor}18`,
-            border: `1px solid ${primaryColor}40`,
+            backgroundColor: `${backgroundColor}18`,
+            border: `1px solid ${backgroundColor}40`,
           }"
         >
           <div class="inline-flex items-center gap-2">
@@ -152,13 +152,13 @@
           v-else-if="comments.length === 0"
           class="liquid-glass-state text-center py-8"
           :style="{
-            backgroundColor: `${primaryColor}18`,
-            border: `1px solid ${primaryColor}40`,
+            backgroundColor: `${backgroundColor}18`,
+            border: `1px solid ${backgroundColor}40`,
           }"
         >
           <div
             class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
-            :style="{ backgroundColor: `${primaryColor}15` }"
+            :style="{ backgroundColor: `${backgroundColor}15` }"
           >
             <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
           </div>
@@ -185,13 +185,13 @@
             :style="
               isUserCommentOwner(comment)
                 ? {
-                    backgroundColor: `${primaryColor}25`,
-                    border: `1px solid ${primaryColor}60`,
+                    backgroundColor: `${backgroundColor}25`,
+                    border: `1px solid ${backgroundColor}60`,
                     transform: 'translateY(-2px)',
                   }
                 : {
-                    backgroundColor: `${primaryColor}15`,
-                    border: `1px solid ${primaryColor}40`,
+                    backgroundColor: `${backgroundColor}15`,
+                    border: `1px solid ${backgroundColor}40`,
                   }
             "
           >
@@ -212,7 +212,7 @@
                   <div
                     v-else
                     class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
-                    :style="{ backgroundColor: primaryColor }"
+                    :style="{ backgroundColor: backgroundColor }"
                   >
                     {{ getCommentInitial(comment) }}
                   </div>
@@ -229,7 +229,7 @@
                       v-if="isUserCommentOwner(comment)"
                       class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium"
                       :style="{
-                        backgroundColor: primaryColor + '80',
+                        backgroundColor: backgroundColor + '80',
                         fontFamily: secondaryFont || currentFont,
                       }"
                     >
@@ -255,9 +255,9 @@
                   @click="startEditComment(comment)"
                   class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110"
                   :style="{
-                    backgroundColor: `${primaryColor}08`,
+                    backgroundColor: `${backgroundColor}08`,
                     color: primaryColor,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`,
+                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${backgroundColor}15`,
                   }"
                   title="Edit comment"
                 >
@@ -269,9 +269,9 @@
                   "
                   class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110 group"
                   :style="{
-                    backgroundColor: `${primaryColor}08`,
+                    backgroundColor: `${backgroundColor}08`,
                     color: primaryColor,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${primaryColor}15`,
+                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${backgroundColor}15`,
                   }"
                   title="Delete comment"
                   :disabled="isDeletingComment === comment.id"
@@ -308,9 +308,9 @@
                 v-model="editCommentText"
                 class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
                 :style="{
-                  backgroundColor: `${primaryColor}08`,
-                  boxShadow: `inset 0 2px 4px ${primaryColor}15, 0 2px 8px ${primaryColor}10`,
-                  '--tw-ring-color': primaryColor + '60',
+                  backgroundColor: `${backgroundColor}08`,
+                  boxShadow: `inset 0 2px 4px ${backgroundColor}15, 0 2px 8px ${backgroundColor}10`,
+                  '--tw-ring-color': backgroundColor + '60',
                   color: primaryColor,
                   fontFamily: secondaryFont || currentFont,
                 }"
@@ -330,10 +330,10 @@
                     @click="cancelEditComment"
                     class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105"
                     :style="{
-                      backgroundColor: `${primaryColor}06`,
+                      backgroundColor: `${backgroundColor}06`,
                       color: primaryColor,
                       opacity: '0.8',
-                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}10`,
+                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${backgroundColor}10`,
                       fontFamily: secondaryFont || currentFont,
                     }"
                     :disabled="isUpdatingComment"
@@ -349,12 +349,12 @@
                     "
                     class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     :style="{
-                      background: `${primaryColor}12`,
+                      background: `${backgroundColor}12`,
                       color: primaryColor,
                       boxShadow: `
-                        0 4px 16px -2px ${primaryColor}20,
+                        0 4px 16px -2px ${backgroundColor}20,
                         inset 0 2px 4px rgba(255, 255, 255, 0.1),
-                        inset 0 -1px 2px ${primaryColor}10
+                        inset 0 -1px 2px ${backgroundColor}10
                       `,
                       fontFamily: secondaryFont || currentFont,
                     }"
@@ -377,7 +377,7 @@
             v-if="loadingMoreComments"
             class="liquid-glass-state text-center py-4 mt-2"
             :style="{
-              backgroundColor: `${primaryColor}04`,
+              backgroundColor: `${backgroundColor}04`,
             }"
           >
             <div class="inline-flex items-center gap-2">
@@ -471,6 +471,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string | null
   currentFont?: string
   primaryFont?: string
   secondaryFont?: string
@@ -630,6 +631,9 @@ const {
 
 // Computed
 const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments.value)
+
+// Background color with fallback to primaryColor
+const backgroundColor = computed(() => props.backgroundColor || props.primaryColor)
 
 // Helper function to process comments (simplified since backend now provides user_info)
 const processComments = (comments: EventComment[]): EventComment[] => {

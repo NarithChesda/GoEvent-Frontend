@@ -1,5 +1,5 @@
 <template>
-  <div class="showcase-wrapper" :style="{ backgroundColor: primaryColor || '#000' }">
+  <div class="showcase-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor || '#000' }">
     <!-- Loading State -->
     <LoadingSpinner
       v-if="loading"
@@ -25,6 +25,7 @@
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
+        :background-color="backgroundColor"
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
@@ -54,6 +55,7 @@
             :primary-color="primaryColor"
             :secondary-color="secondaryColor"
             :accent-color="accentColor"
+            :background-color="backgroundColor"
             :current-font="currentFont"
             :primary-font="primaryFont"
             :secondary-font="secondaryFont"
@@ -153,6 +155,7 @@ const {
   primaryColor,
   secondaryColor,
   accentColor,
+  backgroundColor,
   currentFont,
   primaryFont,
   secondaryFont,

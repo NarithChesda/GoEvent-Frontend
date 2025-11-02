@@ -23,7 +23,7 @@
         :style="{
           fontFamily: secondaryFont || currentFont,
           background: 'white',
-          color: primaryColor,
+          color: backgroundColor || primaryColor,
         }"
       >
         <svg class="signin-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -65,7 +65,7 @@
               <span
                 class="toggle-thumb"
                 :style="{
-                  background: rsvpStatus === 'coming' ? primaryColor : 'white',
+                  background: rsvpStatus === 'coming' ? (backgroundColor || primaryColor) : 'white',
                   transform: rsvpStatus === 'coming' ? 'translateX(1.25rem)' : 'translateX(0)'
                 }"
               ></span>
@@ -159,6 +159,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
   isEventPast?: boolean
   eventTexts?: EventText[]
   currentLanguage?: string

@@ -430,6 +430,29 @@ export function useEventShowcase() {
     return colors.accentColor
   })
 
+  const backgroundColor = computed(() => {
+    // First, try to find a color named "background"
+    if (templateColors.value) {
+      const backgroundColorObj = templateColors.value.find(
+        (color) => color.name?.toLowerCase() === 'background'
+      )
+      if (backgroundColorObj) {
+        return backgroundColorObj.hex_color_code || backgroundColorObj.hex_code
+      }
+
+      // Second, try to find a color named "primary"
+      const primaryColorObj = templateColors.value.find(
+        (color) => color.name?.toLowerCase() === 'primary'
+      )
+      if (primaryColorObj) {
+        return primaryColorObj.hex_color_code || primaryColorObj.hex_code
+      }
+    }
+
+    // Final fallback to the primaryColor
+    return primaryColor.value
+  })
+
   const isEventPast = computed(() => {
     if (!event.value?.end_date) return false
     return new Date(event.value.end_date) < new Date()
@@ -983,6 +1006,7 @@ export function useEventShowcase() {
     primaryColor,
     secondaryColor,
     accentColor,
+    backgroundColor,
     currentFont: primaryFont, // Deprecated: use primaryFont instead
     primaryFont,
     secondaryFont,

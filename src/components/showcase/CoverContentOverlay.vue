@@ -88,7 +88,7 @@
           class="guest-content-container flex items-center justify-center px-4 w-full"
         >
           <div class="guest-name-container">
-            <div class="guest-name-blur-wrapper" :style="{ backgroundColor: primaryColor }">
+            <div class="guest-name-blur-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor }">
               <h2
                 class="scaled-guest-name font-regular capitalize khmer-text-fix text-center guest-name-single-line"
                 :style="guestNameTextStyle"
@@ -156,6 +156,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -253,7 +254,7 @@ const guestNameTextStyle = computed(() => {
 })
 
 const inviteTextStyle = computed(() => ({
-  color: props.secondaryColor || props.primaryColor || 'rgba(255, 255, 255, 0.9)',
+  color: props.primaryColor || props.secondaryColor || 'rgba(255, 255, 255, 0.9)',
   fontFamily: props.secondaryFont || props.currentFont,
   textShadow: 'none',
 }))

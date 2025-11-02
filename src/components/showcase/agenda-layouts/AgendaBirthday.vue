@@ -34,8 +34,8 @@
             class="birthday-tab-button"
             :class="{ active: activeTab === date }"
             :style="{
-              background: activeTab === date ? `linear-gradient(135deg, ${primaryColor}, ${accentColor})` : 'transparent',
-              color: activeTab === date ? '#ffffff' : primaryColor,
+              background: activeTab === date ? primaryColor : 'transparent',
+              color: activeTab === date ? (backgroundColor || '#ffffff') : primaryColor,
               borderColor: activeTab === date ? 'transparent' : primaryColor,
             }"
             @click="selectTab(date)"
@@ -156,6 +156,7 @@ interface Props {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
