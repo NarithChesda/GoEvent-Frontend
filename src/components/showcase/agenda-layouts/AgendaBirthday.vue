@@ -6,8 +6,8 @@
     <!-- Fun Header -->
     <div
       :class="[
-        'text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3',
-        currentLanguage === 'kh' ? 'mb-4 sm:mb-5 md:mb-6' : 'mb-6 sm:mb-7 md:mb-8'
+        'text-center laptop-sm:mb-1 laptop-md:mb-2 laptop-lg:mb-3 desktop:mb-4 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3',
+        currentLanguage === 'kh' ? 'mb-2 sm:mb-3 md:mb-4' : 'mb-3 sm:mb-4 md:mb-5'
       ]"
     >
       <h2
@@ -296,12 +296,13 @@ onMounted(() => {
 
 .tab-bar-scroll-wrapper {
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   scrollbar-width: none;
   -ms-overflow-style: none;
   margin-bottom: 2rem;
   display: flex;
   justify-content: center;
+  padding: 0.5rem 0;
 }
 
 .tab-bar-scroll-wrapper::-webkit-scrollbar {
@@ -314,6 +315,7 @@ onMounted(() => {
   min-width: min-content;
   justify-content: center;
   flex-wrap: nowrap;
+  padding: 0.25rem 0;
 }
 
 /* Fun Birthday Tab Buttons */
@@ -322,27 +324,24 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 1.5rem;
-  border: 2px solid;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid;
   transition: all 0.3s ease;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .birthday-tab-button:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .birthday-tab-button.active {
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
   transform: scale(1.05);
 }
 
 .tab-date {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -375,7 +374,13 @@ onMounted(() => {
   opacity: 0;
   animation: smoothScrollIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: calc(var(--item-index) * 0.15s);
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .agenda-item-wrapper {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .agenda-item-wrapper:last-child {
@@ -473,17 +478,17 @@ onMounted(() => {
     margin-bottom: 1.5rem !important;
   }
 
+  /* Tab button compact sizing - matching AgendaWedding */
   .birthday-tab-button {
-    padding: 0.58rem 1.16rem !important;
-    border-radius: 1.16rem;
+    padding: 0.625rem 1.25rem !important;
   }
 
   .tab-date {
-    font-size: 0.728rem !important;
+    font-size: 0.75rem !important;
   }
 
   .agenda-item-wrapper {
-    margin-bottom: 1.9406rem !important; /* 2.5rem * 0.77625 */
+    margin-bottom: 1.16rem !important; /* 1.5rem * 0.77625 */
   }
 }
 
@@ -497,21 +502,8 @@ onMounted(() => {
     padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
   }
 
-  .tab-bar-scroll-wrapper {
-    margin-bottom: 1.725rem !important;
-  }
-
-  .birthday-tab-button {
-    padding: 0.647rem 1.294rem !important;
-    border-radius: 1.294rem;
-  }
-
-  .tab-date {
-    font-size: 0.809rem !important;
-  }
-
   .agenda-item-wrapper {
-    margin-bottom: 2.1563rem !important; /* 2.5rem * 0.8625 */
+    margin-bottom: 1.29rem !important; /* 1.5rem * 0.8625 */
   }
 }
 
