@@ -140,12 +140,6 @@
         v-if="activeSubTab === 'statistics'"
         :guest-stats="guestStats"
         :loading-stats="loadingStats"
-      />
-
-      <!-- Cash Gift Analytics View -->
-      <GuestCashGiftView
-        v-if="activeSubTab === 'cash-gifts'"
-        ref="cashGiftViewRef"
         :event-id="props.eventId"
         :groups="groups"
       />
@@ -246,7 +240,6 @@ import {
   UserPlus,
   AlertCircle,
   BarChart3,
-  DollarSign,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestGroups } from '../composables/invitation/useGuestGroups'
@@ -263,7 +256,6 @@ import EditGroupModal from './invitation/EditGroupModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
 import GuestGroupsManagementView from './invitation/GuestGroupsManagementView.vue'
 import GuestStatisticsView from './invitation/GuestStatisticsView.vue'
-import GuestCashGiftView from './invitation/GuestCashGiftView.vue'
 
 // Props
 const props = defineProps<{
@@ -345,7 +337,6 @@ const subTabs = [
   { id: 'guests', label: 'Guests', icon: UserPlus },
   { id: 'groups', label: 'Guest Groups', icon: Users },
   { id: 'statistics', label: 'Statistics', icon: BarChart3 },
-  { id: 'cash-gifts', label: 'Cash Gifts', icon: DollarSign },
 ]
 
 // Edit guest modal state
@@ -362,9 +353,6 @@ const showEditGroupModal = ref(false)
 const editTargetGroup = ref<GuestGroup | null>(null)
 const isUpdatingGroup = ref(false)
 const editGroupModalRef = ref<InstanceType<typeof EditGroupModal> | null>(null)
-
-// Cash gift view ref
-const cashGiftViewRef = ref<InstanceType<typeof GuestCashGiftView> | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -433,11 +421,6 @@ const handleAddGuest = async (name: string, groupId: number) => {
     // Refresh stats and groups
     await loadGuestStats()
     await loadGroups()
-
-    // Refresh cash gift analytics (in case guest has default gift)
-    if (cashGiftViewRef.value) {
-      await cashGiftViewRef.value.refresh()
-    }
   } else {
     showMessage('error', response.message || 'Failed to add guest')
   }
@@ -458,11 +441,6 @@ const handleBulkImport = async (groupId: number) => {
     // Refresh the group's guest list if it's currently loaded
     const pagination = getGroupPagination(groupId)
     await loadGuestsForGroup(groupId, pagination.currentPage)
-
-    // Refresh cash gift analytics (imported guests may have cash gifts)
-    if (cashGiftViewRef.value) {
-      await cashGiftViewRef.value.refresh()
-    }
 
     // Show results
     if (skipped > 0) {
@@ -578,11 +556,6 @@ const confirmDeleteGuest = async () => {
     showMessage('success', deleteTargetGuest.value.name + ' removed from guest list')
     await loadGuestStats()
     await loadGroups()
-
-    // Refresh cash gift analytics (deleted guest may have had a gift)
-    if (cashGiftViewRef.value) {
-      await cashGiftViewRef.value.refresh()
-    }
   } else {
     showMessage('error', response.message || 'Failed to remove guest')
   }
@@ -637,13 +610,6 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
     if (data.group && data.group !== originalGroupId) {
       await loadGuestStats()
       await loadGroups()
-    }
-
-    // Refresh cash gift analytics if cash gift info was updated
-    if (data.cash_gift_amount !== undefined || data.cash_gift_currency !== undefined) {
-      if (cashGiftViewRef.value) {
-        await cashGiftViewRef.value.refresh()
-      }
     }
   } else {
     // Handle validation errors
@@ -743,11 +709,6 @@ const handleBulkDelete = async (groupId: number) => {
     await loadGroups()
     const pagination = getGroupPagination(groupId)
     await loadGuestsForGroup(groupId, pagination.currentPage)
-
-    // Refresh cash gift analytics (deleted guests may have had gifts)
-    if (cashGiftViewRef.value) {
-      await cashGiftViewRef.value.refresh()
-    }
   }
 
   // Clear selections

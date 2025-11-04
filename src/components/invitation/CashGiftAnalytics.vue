@@ -1,30 +1,30 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h3 class="text-lg font-bold text-slate-900 flex items-center">
-          <Coins class="w-5 h-5 text-amber-600 mr-2" />
-          Cash Gift Analytics
-        </h3>
-        <p class="text-sm text-slate-600 mt-1">Breakdown by guest group and currency</p>
+  <div>
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
+      <div class="space-y-2">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-slate-900">Cash Gift Analytics</h3>
+          <p class="text-sm text-slate-500 mt-1">Breakdown by guest group and currency</p>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
-      <span class="ml-3 text-sm text-slate-600">Loading cash gift data...</span>
-    </div>
+    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+      <!-- Loading State -->
+      <div v-if="loading" class="flex items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        <span class="ml-3 text-sm text-slate-600">Loading cash gift data...</span>
+      </div>
 
-    <!-- No Data State -->
-    <div v-else-if="totalGifts === 0" class="text-center py-12">
-      <Coins class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-      <p class="text-base text-slate-500">No cash gifts recorded yet</p>
-      <p class="text-sm text-slate-400 mt-1">Cash gifts will appear here once guests add them</p>
-    </div>
+      <!-- No Data State -->
+      <div v-else-if="totalGifts === 0" class="text-center py-12">
+        <Coins class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <p class="text-base text-slate-500">No cash gifts recorded yet</p>
+        <p class="text-sm text-slate-400 mt-1">Cash gifts will appear here once guests add them</p>
+      </div>
 
-    <!-- Chart and Stats -->
-    <div v-else class="space-y-6">
+      <!-- Chart and Stats -->
+      <div v-else class="space-y-6">
       <!-- Currency Breakdown Stats -->
       <div>
         <h4 class="text-sm font-semibold text-slate-700 mb-3">Currency Summary</h4>
@@ -169,6 +169,7 @@
             </div>
           </div>
         </Transition>
+      </div>
       </div>
     </div>
   </div>

@@ -1,174 +1,109 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-    <!-- Header -->
-    <div class="mb-4 sm:mb-6">
-      <h3 class="text-base sm:text-lg font-bold text-slate-900">Statistics</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mt-1">Track and manage your invitations</p>
-    </div>
+  <div class="space-y-8">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="space-y-2">
 
-    <!-- Primary Stats Grid (No Scroll) -->
-    <div class="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-      <!-- Total Guests (Emphasis) -->
-      <div
-        class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 sm:p-5 shadow-lg"
-        role="region"
-        aria-label="Total guests count"
-      >
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <Users class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" aria-hidden="true" />
-              <p class="text-xs sm:text-sm font-semibold text-white/90 uppercase tracking-wide">Total Guests</p>
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-slate-900">Guest Overview</h3>
+          <p class="text-sm text-slate-500 mt-1">A refined snapshot focused on the metrics that matter most for your invitation flow.</p>
+        </div>
+      </div>
+
+    </header>
+
+    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Invited Guests</p>
+            <p class="text-4xl font-semibold tracking-tight text-slate-900" aria-live="polite">
+              {{ loadingStats ? '...' : totalGuests }}
+            </p>
+            <p class="mt-1 text-sm text-slate-500">Total audience you're keeping in the loop.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-600 ring-1 ring-emerald-200">
+              <Send class="h-4 w-4" aria-hidden="true" />
+              <span>{{ loadingStats ? '...' : `${sentInvitations} sent` }}</span>
             </div>
-            <div class="text-3xl sm:text-4xl font-bold text-white mb-1" aria-live="polite">
-              {{ loadingStats ? '—' : totalGuests }}
-            </div>
-            <!-- Mini progress indicator -->
-            <div class="flex items-center gap-2 text-white/80 text-xs sm:text-sm">
-              <div class="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-white/40 rounded-full transition-all duration-500"
-                  :style="{ width: sentPercentage + '%' }"
-                  role="progressbar"
-                  :aria-valuenow="sentPercentage"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  :aria-label="`${sentPercentage}% invitations sent`"
-                ></div>
+
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
+            <div
+              class="h-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 transition-[width] duration-500"
+              :style="{ width: segmentWidth(acceptedInvitations) }"
+            ></div>
+            <div
+              class="h-full bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600 transition-[width] duration-500"
+              :style="{ width: segmentWidth(awaitingViewInvitations) }"
+            ></div>
+            <div
+              class="h-full bg-gradient-to-r from-slate-300 via-slate-300 to-slate-400 transition-[width] duration-500"
+              :style="{ width: segmentWidth(pendingInvitations) }"
+            ></div>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Viewed</p>
+                <span class="text-xs font-semibold text-emerald-600">
+                  {{ loadingStats ? '...' : `${viewedPercentage}%` }}
+                </span>
               </div>
-              <span class="font-medium whitespace-nowrap">{{ sentPercentage }}% sent</span>
+              <p class="mt-3 text-lg font-semibold text-slate-900">
+                {{ loadingStats ? '...' : `${acceptedInvitations} guests` }}
+              </p>
+              <p class="text-xs text-emerald-700/70">Already engaged with their invite.</p>
+            </div>
+
+            <div class="rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-sky-600">Awaiting View</p>
+                <span class="text-xs font-semibold text-sky-600">
+                  {{ loadingStats ? '...' : `${awaitingViewPercentage}%` }}
+                </span>
+              </div>
+              <p class="mt-3 text-lg font-semibold text-slate-900">
+                {{ loadingStats ? '...' : `${awaitingViewInvitations} guests` }}
+              </p>
+              <p class="text-xs text-sky-700/70">Haven't opened their invitation yet.</p>
+            </div>
+
+            <div class="rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Pending</p>
+                <span class="text-xs font-semibold text-slate-600">
+                  {{ loadingStats ? '...' : `${pendingPercentage}%` }}
+                </span>
+              </div>
+              <p class="mt-3 text-lg font-semibold text-slate-900">
+                {{ loadingStats ? '...' : `${pendingInvitations} guests` }}
+              </p>
+              <p class="text-xs text-slate-500">Still waiting to receive an invite.</p>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Secondary Stats Grid - 3 columns -->
-      <div class="grid grid-cols-3 gap-2 sm:gap-3">
-        <!-- Sent Invitations -->
-        <div
-          class="bg-white border-2 border-sky-200 rounded-xl p-3 sm:p-4"
-          role="region"
-          aria-label="Sent invitations count"
-        >
-          <Send class="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 mb-1 sm:mb-2" aria-hidden="true" />
-          <div class="text-lg sm:text-2xl font-bold text-slate-900 mb-0.5" aria-live="polite">
-            {{ loadingStats ? '—' : sentInvitations }}
-          </div>
-          <p class="text-[10px] sm:text-sm font-medium text-slate-700 leading-tight">Sent</p>
-          <p class="text-[9px] sm:text-xs text-sky-600 mt-0.5 sm:mt-1">{{ loadingStats ? '—' : sentPercentage }}%</p>
-        </div>
-
-        <!-- Viewed Invitations -->
-        <div
-          class="bg-white border-2 border-green-200 rounded-xl p-3 sm:p-4"
-          role="region"
-          aria-label="Viewed invitations count"
-        >
-          <Eye class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-1 sm:mb-2" aria-hidden="true" />
-          <div class="text-lg sm:text-2xl font-bold text-slate-900 mb-0.5" aria-live="polite">
-            {{ loadingStats ? '—' : acceptedInvitations }}
-          </div>
-          <p class="text-[10px] sm:text-sm font-medium text-slate-700 leading-tight">Viewed</p>
-          <p class="text-[9px] sm:text-xs text-green-600 mt-0.5 sm:mt-1">{{ loadingStats ? '—' : viewRate }}%</p>
-        </div>
-
-        <!-- Pending Invitations -->
-        <div
-          class="bg-white border-2 border-slate-200 rounded-xl p-3 sm:p-4"
-          role="region"
-          aria-label="Pending invitations count"
-        >
-          <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 mb-1 sm:mb-2" aria-hidden="true" />
-          <div class="text-lg sm:text-2xl font-bold text-slate-900 mb-0.5" aria-live="polite">
-            {{ loadingStats ? '—' : pendingInvitations }}
-          </div>
-          <p class="text-[10px] sm:text-sm font-medium text-slate-700 leading-tight">Pending</p>
-          <p class="text-[9px] sm:text-xs text-slate-600 mt-0.5 sm:mt-1 opacity-0">—</p>
-        </div>
-      </div>
     </div>
 
-    <!-- Detailed Engagement Breakdown (Collapsible) -->
-    <div v-if="!loadingStats && totalGuests > 0" class="border-t border-slate-200 pt-4 sm:pt-6 mt-4 sm:mt-6">
-      <button
-        @click="showDetailedBreakdown = !showDetailedBreakdown"
-        class="w-full flex items-center justify-between mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 -m-2"
-        :aria-expanded="showDetailedBreakdown"
-        aria-controls="detailed-breakdown-section"
-        type="button"
-      >
-        <h4 class="text-sm sm:text-base font-semibold text-slate-700">Detailed Breakdown</h4>
-        <ChevronDown
-          class="w-5 h-5 text-slate-400 transition-transform"
-          :class="{ 'rotate-180': showDetailedBreakdown }"
-          aria-hidden="true"
-        />
-      </button>
-
-      <Transition name="expand">
-        <div v-if="showDetailedBreakdown" id="detailed-breakdown-section" class="space-y-3">
-          <!-- Invitation Status -->
-          <div class="bg-slate-50 rounded-lg p-3 sm:p-4">
-            <div class="flex items-center justify-between text-sm mb-2">
-              <span class="font-medium text-slate-700">Invitation Status</span>
-              <span class="text-slate-600">{{ sentInvitations }}/{{ totalGuests }} sent</span>
-            </div>
-            <div class="relative w-full h-2.5 bg-slate-200 rounded-full overflow-hidden mb-3">
-              <div
-                class="absolute top-0 left-0 h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
-                :style="{ width: sentPercentage + '%' }"
-                role="progressbar"
-                :aria-valuenow="sentPercentage"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :aria-label="`${sentPercentage}% invitations sent`"
-              ></div>
-            </div>
-            <div class="flex flex-wrap items-center gap-3 text-xs">
-              <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded-full bg-sky-500"></div>
-                <span class="text-slate-600">Sent: {{ sentInvitations }} ({{ sentPercentage }}%)</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded-full bg-slate-300"></div>
-                <span class="text-slate-600">Pending: {{ pendingInvitations }} ({{ pendingPercentage }}%)</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- View Rate -->
-          <div class="bg-slate-50 rounded-lg p-3 sm:p-4">
-            <div class="flex items-center justify-between text-sm mb-2">
-              <span class="font-medium text-slate-700">View Engagement</span>
-              <span class="text-slate-600">{{ acceptedInvitations }}/{{ sentInvitations }} viewed</span>
-            </div>
-            <div class="relative w-full h-2.5 bg-slate-200 rounded-full overflow-hidden mb-3">
-              <div
-                class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all duration-500"
-                :style="{ width: viewedPercentage + '%' }"
-                role="progressbar"
-                :aria-valuenow="viewedPercentage"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :aria-label="`${viewedPercentage}% of sent invitations viewed`"
-              ></div>
-            </div>
-            <div class="flex flex-wrap items-center gap-3 text-xs">
-              <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                <span class="text-slate-600">Viewed: {{ acceptedInvitations }} ({{ viewRate }}% rate)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </div>
+    <!-- Cash Gift Analytics Section -->
+    <CashGiftAnalytics
+      ref="cashGiftAnalyticsRef"
+      :event-id="eventId"
+      :groups="groups"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Users, Send, Eye, Clock, ChevronDown } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { Eye, Send } from 'lucide-vue-next'
+import CashGiftAnalytics from './CashGiftAnalytics.vue'
+import type { GuestGroup } from '../../services/api'
 
 interface GuestStats {
   total_guests: number
@@ -179,11 +114,11 @@ interface GuestStats {
 interface Props {
   guestStats: GuestStats | null
   loadingStats: boolean
+  eventId: string
+  groups: GuestGroup[]
 }
 
 const props = defineProps<Props>()
-
-const showDetailedBreakdown = ref(false)
 
 const acceptedInvitations = computed(() => props.guestStats?.viewed || 0)
 const totalGuests = computed(() => props.guestStats?.total_guests || 0)
@@ -192,6 +127,12 @@ const pendingInvitations = computed(() => {
   const total = totalGuests.value
   const sent = sentInvitations.value
   return Math.max(0, total - sent)
+})
+
+const awaitingViewInvitations = computed(() => {
+  const sent = sentInvitations.value
+  const viewed = acceptedInvitations.value
+  return Math.max(0, sent - viewed)
 })
 
 const sentPercentage = computed(() => {
@@ -212,44 +153,23 @@ const pendingPercentage = computed(() => {
   return Math.round((pendingInvitations.value / total) * 100)
 })
 
+const awaitingViewPercentage = computed(() => {
+  const total = totalGuests.value
+  if (total === 0) return 0
+  return Math.round((awaitingViewInvitations.value / total) * 100)
+})
+
 const viewRate = computed(() => {
   const sent = sentInvitations.value
   if (sent === 0) return 0
   return Math.round((acceptedInvitations.value / sent) * 100)
 })
+
+const segmentWidth = (count: number) => {
+  const total = totalGuests.value
+  if (total === 0) return '0%'
+  const normalizedCount = Math.min(Math.max(count, 0), total)
+  const percentage = (normalizedCount / total) * 100
+  return `${percentage.toFixed(1)}%`
+}
 </script>
-
-<style scoped>
-/* Expand transition for collapsible sections */
-.expand-enter-active,
-.expand-leave-active {
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.expand-enter-from,
-.expand-leave-to {
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-8px);
-}
-
-.expand-enter-to,
-.expand-leave-from {
-  opacity: 1;
-  max-height: 800px;
-  transform: translateY(0);
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .expand-enter-active,
-  .expand-leave-active {
-    transition: none;
-  }
-
-  div[role='progressbar'] {
-    transition: none !important;
-  }
-}
-</style>
