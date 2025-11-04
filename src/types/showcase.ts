@@ -77,6 +77,8 @@ export interface TemplateAssets {
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
+  cover_content_top_position?: number
+  display_liquid_glass_background?: boolean
 }
 
 export interface EventPhoto {

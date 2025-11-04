@@ -62,7 +62,10 @@
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card animate-slideUp">
             <!-- Glass Background Effects -->
-            <div class="glass-background"></div>
+            <div
+              v-if="showLiquidGlass"
+              class="glass-background"
+            ></div>
 
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
@@ -490,6 +493,7 @@ import WeddingSectionDivider from './WeddingSectionDivider.vue'
 // Types
 interface TemplateAssets {
   standard_background_video?: string
+  display_liquid_glass_background?: boolean
 }
 
 interface Props {
@@ -523,6 +527,15 @@ const props = defineProps<Props>()
 const eventType = computed(() => {
   // Try category_details.name first (showcase API), then category_name (events list API)
   return props.event.category_details?.name || props.event.category_name || 'default'
+})
+
+// Computed property to control liquid glass background visibility
+const showLiquidGlass = computed(() => {
+  const value = props.templateAssets?.display_liquid_glass_background
+  console.log('MainContentStage - display_liquid_glass_background:', value)
+  console.log('MainContentStage - templateAssets:', props.templateAssets)
+  // Show liquid glass by default (true or undefined), hide only when explicitly false
+  return value !== false
 })
 
 // Computed properties for dynamic styling and components

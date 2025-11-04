@@ -129,6 +129,7 @@ export interface TemplateAssets {
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
   cover_content_top_position?: number
+  display_liquid_glass_background?: boolean
 }
 
 export interface EventPhoto {
@@ -299,7 +300,27 @@ export function useEventShowcase() {
       : guestNameFromQuery
     return meta.value.guest_name || guestNameStr || ''
   })
-  const templateAssets = computed(() => event.value?.template_assets?.assets || null)
+  const templateAssets = computed(() => {
+    const assets = event.value?.template_assets?.assets || null
+    const displayLiquidGlass = event.value?.template_assets?.display_liquid_glass_background
+
+    // If assets exist, spread them and add the display_liquid_glass_background field
+    if (assets) {
+      return {
+        ...assets,
+        display_liquid_glass_background: displayLiquidGlass
+      }
+    }
+
+    // If no assets but we have display_liquid_glass_background, return just that
+    if (displayLiquidGlass !== undefined) {
+      return {
+        display_liquid_glass_background: displayLiquidGlass
+      }
+    }
+
+    return null
+  })
 
   const templateColors = computed(() => {
     return templateProcessor.normalizeTemplateColors(
