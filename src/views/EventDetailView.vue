@@ -807,18 +807,54 @@ const addToGoogleCalendar = () => {
     return date.toISOString().replace(/-|:|\.\d\d\d/g, '')
   }
 
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: event.value.title,
-    dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
-    details: event.value.description || event.value.short_description || '',
-    location: event.value.is_virtual
-      ? event.value.virtual_link || 'Virtual Event'
-      : event.value.location || '',
-    trp: 'false',
-  })
+  // Sanitize text for Google Calendar (mobile-friendly)
+  const sanitizeText = (text: string, maxLength = 1000): string => {
+    if (!text) return ''
 
-  window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
+    // Remove HTML tags
+    let cleaned = text.replace(/<[^>]*>/g, '')
+
+    // Replace problematic characters
+    cleaned = cleaned
+      .replace(/[\r\n]+/g, ' ') // Replace newlines with spaces
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '') // Remove non-printable chars
+      .trim()
+
+    // Truncate if too long (prevents URL length issues on mobile)
+    if (cleaned.length > maxLength) {
+      cleaned = cleaned.substring(0, maxLength) + '...'
+    }
+
+    return cleaned
+  }
+
+  const title = sanitizeText(event.value.title, 200)
+  const description = sanitizeText(
+    event.value.description || event.value.short_description || '',
+    500 // Shorter limit for description to prevent mobile URL issues
+  )
+
+  // Sanitize location
+  let location = ''
+  if (event.value.is_virtual) {
+    location = event.value.virtual_link || 'Virtual Event'
+  } else {
+    location = sanitizeText(event.value.location || '', 200)
+  }
+
+  // Build URL manually to ensure proper encoding for mobile
+  const baseUrl = 'https://calendar.google.com/calendar/render'
+  const params = [
+    'action=TEMPLATE',
+    `text=${encodeURIComponent(title)}`,
+    `dates=${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
+    `details=${encodeURIComponent(description)}`,
+    `location=${encodeURIComponent(location)}`,
+    'trp=false'
+  ].join('&')
+
+  window.open(`${baseUrl}?${params}`, '_blank')
 }
 
 const addToOutlookCalendar = () => {
