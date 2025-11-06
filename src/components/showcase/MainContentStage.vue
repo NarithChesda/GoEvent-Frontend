@@ -1131,7 +1131,7 @@ const handleComment = () => scrollToSection('comment-section')
 const handleVideo = () => scrollToSection('video-section')
 
 const handleReminder = () => {
-  // Add event to Google Calendar
+  // Add event to Google Calendar (mobile-friendly)
   if (!props.event) return
 
   const startDate = new Date(props.event.start_date)
@@ -1141,18 +1141,54 @@ const handleReminder = () => {
     return date.toISOString().replace(/-|:|\.\d\d\d/g, '')
   }
 
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: props.event.title,
-    dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
-    details: props.event.description || props.event.short_description || '',
-    location: props.event.is_virtual
-      ? props.event.virtual_link || 'Virtual Event'
-      : props.event.location || '',
-    trp: 'false',
-  })
+  // Sanitize text for Google Calendar (mobile-friendly)
+  const sanitizeText = (text: string, maxLength = 1000): string => {
+    if (!text) return ''
 
-  window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank')
+    // Remove HTML tags
+    let cleaned = text.replace(/<[^>]*>/g, '')
+
+    // Replace problematic characters
+    cleaned = cleaned
+      .replace(/[\r\n]+/g, ' ') // Replace newlines with spaces
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '') // Remove non-printable chars
+      .trim()
+
+    // Truncate if too long (prevents URL length issues on mobile)
+    if (cleaned.length > maxLength) {
+      cleaned = cleaned.substring(0, maxLength) + '...'
+    }
+
+    return cleaned
+  }
+
+  const title = sanitizeText(props.event.title, 200)
+  const description = sanitizeText(
+    props.event.description || props.event.short_description || '',
+    500 // Shorter limit for description to prevent mobile URL issues
+  )
+
+  // Sanitize location
+  let location = ''
+  if (props.event.is_virtual) {
+    location = props.event.virtual_link || 'Virtual Event'
+  } else {
+    location = sanitizeText(props.event.location || '', 200)
+  }
+
+  // Build URL manually to ensure proper encoding for mobile
+  const baseUrl = 'https://calendar.google.com/calendar/render'
+  const params = [
+    'action=TEMPLATE',
+    `text=${encodeURIComponent(title)}`,
+    `dates=${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
+    `details=${encodeURIComponent(description)}`,
+    `location=${encodeURIComponent(location)}`,
+    'trp=false'
+  ].join('&')
+
+  window.open(`${baseUrl}?${params}`, '_blank')
 }
 
 // Cleanup on component unmount
