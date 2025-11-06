@@ -19,8 +19,7 @@
         <div class="flex justify-center mb-6 sm:mb-8 md:mb-10">
           <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 w-full max-w-xl sm:max-w-2xl md:max-w-3xl px-4 sm:px-6">
             <button
-              v-if="authStore.isAuthenticated"
-              @click="currentView = 'my'"
+              @click="handleViewChange('my')"
               :class="[
                 'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
                 currentView === 'my'
@@ -33,9 +32,8 @@
             </button>
 
             <button
-              @click="currentView = 'all'"
+              @click="handleViewChange('all')"
               :class="[
-                authStore.isAuthenticated ? '' : 'col-start-2',
                 'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
                 currentView === 'all'
                   ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
@@ -47,8 +45,7 @@
             </button>
 
             <button
-              v-if="authStore.isAuthenticated"
-              @click="currentView = 'registered'"
+              @click="handleViewChange('registered')"
               :class="[
                 'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
                 currentView === 'registered'
@@ -110,78 +107,189 @@
 
         <!-- Events Grid -->
         <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
-          <!-- Section Label -->
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
-              {{ getSectionLabel() }}
-            </h2>
-            <span v-if="pagination.totalItems > 0" class="text-xs sm:text-sm text-slate-500">
-              {{ pagination.totalItems }} {{ pagination.totalItems === 1 ? 'event' : 'events' }}
-            </span>
-          </div>
+          <!-- For Public Events: Show by Category -->
+          <template v-if="currentView === 'all'">
+            <div v-for="categoryGroup in eventsByCategory" :key="categoryGroup.category?.id || 'uncategorized'" class="space-y-4 sm:space-y-6">
+              <!-- Category Header -->
+              <div class="flex items-center justify-between px-4 sm:px-0">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
+                  {{ categoryGroup.category?.name || 'Uncategorized' }}
+                </h2>
+                <div class="flex items-center gap-3 sm:gap-4">
+                  <span class="text-xs sm:text-sm text-slate-500">
+                    {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
+                  </span>
+                  <!-- Navigation Arrows - Only show if content overflows -->
+                  <div v-if="categoryHasOverflow(categoryGroup.category?.id || 'uncategorized')" class="flex items-center gap-2">
+                    <button
+                      @click="scrollCategory(categoryGroup.category?.id || 'uncategorized', 'left')"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft class="w-4 h-4 text-slate-600" />
+                    </button>
+                    <button
+                      @click="scrollCategory(categoryGroup.category?.id || 'uncategorized', 'right')"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight class="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-          <!-- Mobile: Horizontal scrolling container -->
-          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-            <EventCard
-              v-for="event in safeEvents"
-              :key="`mobile-${event.id}`"
-              :event="event"
-              @click="viewEvent(event)"
-              @edit="editEvent"
-              @delete="deleteEvent"
-              class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
-            />
-          </div>
-
-          <!-- Desktop: Grid layout -->
-          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
-            <EventCard
-              v-for="event in safeEvents"
-              :key="`desktop-${event.id}`"
-              :event="event"
-              @click="viewEvent(event)"
-              @edit="editEvent"
-              @delete="deleteEvent"
-              class="cursor-pointer"
-            />
-          </div>
-
-          <!-- Pagination -->
-          <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
-            <div class="flex items-center space-x-1.5 sm:space-x-2">
-              <button
-                @click="loadPage(pagination.currentPage - 1)"
-                :disabled="pagination.currentPage <= 1"
-                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              <!-- Horizontal scrolling container for all screen sizes -->
+              <div
+                :ref="el => setCategoryScrollRef(categoryGroup.category?.id || 'uncategorized', el)"
+                class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
               >
-                <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-              </button>
-
-              <template v-for="page in getVisiblePages()" :key="page">
-                <button
-                  v-if="page !== '...'"
-                  @click="loadPage(page as number)"
-                  :class="
-                    page === pagination.currentPage
-                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
-                      : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-                  "
-                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
-                >
-                  {{ page }}
-                </button>
-                <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
-              </template>
-
-              <button
-                @click="loadPage(pagination.currentPage + 1)"
-                :disabled="pagination.currentPage >= pagination.totalPages"
-                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              >
-                <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-              </button>
+                <EventCard
+                  v-for="event in categoryGroup.events"
+                  :key="event.id"
+                  :event="event"
+                  @click="viewEvent(event)"
+                  @edit="editEvent"
+                  @delete="deleteEvent"
+                  class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
+                />
+              </div>
             </div>
+
+            <!-- Pagination for Public Events -->
+            <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
+              <div class="flex items-center space-x-1.5 sm:space-x-2">
+                <button
+                  @click="loadPage(pagination.currentPage - 1)"
+                  :disabled="pagination.currentPage <= 1"
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                </button>
+
+                <template v-for="page in getVisiblePages()" :key="page">
+                  <button
+                    v-if="page !== '...'"
+                    @click="loadPage(page as number)"
+                    :class="
+                      page === pagination.currentPage
+                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
+                        : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
+                    "
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
+                  >
+                    {{ page }}
+                  </button>
+                  <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
+                </template>
+
+                <button
+                  @click="loadPage(pagination.currentPage + 1)"
+                  :disabled="pagination.currentPage >= pagination.totalPages"
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- For My Events and Registered: Show in single section -->
+          <template v-else>
+            <!-- Section Label -->
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
+                {{ getSectionLabel() }}
+              </h2>
+              <span v-if="pagination.totalItems > 0" class="text-xs sm:text-sm text-slate-500">
+                {{ pagination.totalItems }} {{ pagination.totalItems === 1 ? 'event' : 'events' }}
+              </span>
+            </div>
+
+            <!-- Mobile: Horizontal scrolling container -->
+            <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+              <EventCard
+                v-for="event in safeEvents"
+                :key="`mobile-${event.id}`"
+                :event="event"
+                @click="viewEvent(event)"
+                @edit="editEvent"
+                @delete="deleteEvent"
+                class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
+              />
+            </div>
+
+            <!-- Desktop: Grid layout -->
+            <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
+              <EventCard
+                v-for="event in safeEvents"
+                :key="`desktop-${event.id}`"
+                :event="event"
+                @click="viewEvent(event)"
+                @edit="editEvent"
+                @delete="deleteEvent"
+                class="cursor-pointer"
+              />
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
+              <div class="flex items-center space-x-1.5 sm:space-x-2">
+                <button
+                  @click="loadPage(pagination.currentPage - 1)"
+                  :disabled="pagination.currentPage <= 1"
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                </button>
+
+                <template v-for="page in getVisiblePages()" :key="page">
+                  <button
+                    v-if="page !== '...'"
+                    @click="loadPage(page as number)"
+                    :class="
+                      page === pagination.currentPage
+                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
+                        : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
+                    "
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
+                  >
+                    {{ page }}
+                  </button>
+                  <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
+                </template>
+
+                <button
+                  @click="loadPage(pagination.currentPage + 1)"
+                  :disabled="pagination.currentPage >= pagination.totalPages"
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Login Required State for Unauthenticated Users -->
+        <div v-else-if="showLoginPrompt" class="text-center py-12 sm:py-16 px-4">
+          <div
+            class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
+          >
+            <User class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
           </div>
+          <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
+            Sign In Required
+          </h3>
+          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
+            {{ getLoginPromptMessage() }}
+          </p>
+          <button
+            @click="goToLogin"
+            class="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:shadow-lg text-sm sm:text-base"
+          >
+            Sign In to Continue
+          </button>
         </div>
 
         <!-- Empty State -->
@@ -254,7 +362,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   Calendar,
@@ -309,7 +417,48 @@ const pagination = reactive({
 // Computed
 const safeEvents = computed(() => events.value || [])
 const hasEvents = computed(() => safeEvents.value.length > 0)
-const isEmpty = computed(() => !loading.value && safeEvents.value.length === 0)
+const showLoginPrompt = computed(() => {
+  return !loading.value && !authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')
+})
+const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && safeEvents.value.length === 0)
+
+// Group events by category for public events view
+const eventsByCategory = computed(() => {
+  if (currentView.value !== 'all') {
+    return []
+  }
+
+  // Create a map to group events by category
+  const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
+
+  safeEvents.value.forEach(event => {
+    const categoryId = event.category || 'uncategorized'
+
+    if (!categoryMap.has(categoryId)) {
+      // Find the full category details from the categories list
+      const categoryDetails = event.category
+        ? categories.value.find(cat => cat.id === event.category)
+        : null
+
+      categoryMap.set(categoryId, {
+        category: categoryDetails || null,
+        events: []
+      })
+    }
+
+    categoryMap.get(categoryId)!.events.push(event)
+  })
+
+  // Convert map to array and sort by category name
+  return Array.from(categoryMap.values()).sort((a, b) => {
+    const nameA = a.category?.name || 'Uncategorized'
+    const nameB = b.category?.name || 'Uncategorized'
+    // Put uncategorized at the end
+    if (nameA === 'Uncategorized') return 1
+    if (nameB === 'Uncategorized') return -1
+    return nameA.localeCompare(nameB)
+  })
+})
 
 const getEmptyStateTitle = () => {
   switch (currentView.value) {
@@ -344,8 +493,78 @@ const getSectionLabel = () => {
   }
 }
 
+const getLoginPromptMessage = () => {
+  switch (currentView.value) {
+    case 'my':
+      return 'Please sign in to view and manage your events.'
+    case 'registered':
+      return 'Please sign in to see the events you have registered for.'
+    default:
+      return 'Please sign in to continue.'
+  }
+}
+
 // Methods
+const handleViewChange = (view: ViewType) => {
+  currentView.value = view
+}
+
+const goToLogin = () => {
+  router.push('/signin')
+}
+
+// Category scroll management
+const categoryScrollRefs = ref<Record<string | number, HTMLElement>>({})
+const categoryOverflowState = ref<Record<string | number, boolean>>({})
+
+const setCategoryScrollRef = (categoryId: string | number, el: unknown) => {
+  if (el && el instanceof HTMLElement) {
+    categoryScrollRefs.value[categoryId] = el
+    // Check if content overflows after a short delay to allow rendering
+    setTimeout(() => {
+      checkCategoryOverflow(categoryId)
+    }, 100)
+  }
+}
+
+const checkCategoryOverflow = (categoryId: string | number) => {
+  const container = categoryScrollRefs.value[categoryId]
+  if (!container) return
+
+  // Check if scrollWidth is greater than clientWidth (content overflows)
+  categoryOverflowState.value[categoryId] = container.scrollWidth > container.clientWidth
+}
+
+const categoryHasOverflow = (categoryId: string | number): boolean => {
+  return categoryOverflowState.value[categoryId] || false
+}
+
+const scrollCategory = (categoryId: string | number, direction: 'left' | 'right') => {
+  const container = categoryScrollRefs.value[categoryId]
+  if (!container) return
+
+  const scrollAmount = container.clientWidth * 0.8 // Scroll 80% of container width
+  const currentScroll = container.scrollLeft
+  const targetScroll = direction === 'left'
+    ? currentScroll - scrollAmount
+    : currentScroll + scrollAmount
+
+  container.scrollTo({
+    left: targetScroll,
+    behavior: 'smooth'
+  })
+}
+
 const loadEvents = async (page = 1) => {
+  // Don't load events if user is not authenticated and trying to view 'my' or 'registered' tabs
+  if (!authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
+    events.value = []
+    pagination.totalItems = 0
+    pagination.totalPages = 0
+    loading.value = false
+    return
+  }
+
   loading.value = true
 
   try {
@@ -739,15 +958,26 @@ watch(
   (isAuthenticated) => {
     if (isAuthenticated) {
       maybeOpenCreateModalFromRoute()
-      return
-    }
-
-    // If user logs out and is on "my" or "registered" tab, switch to "all"
-    if (!isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
-      currentView.value = 'all'
+      // Reload events when user logs in
+      loadEvents()
+    } else {
+      // User logged out - if they're on 'my' or 'registered' tabs, clear events to show login prompt
+      if (currentView.value === 'my' || currentView.value === 'registered') {
+        events.value = []
+        pagination.totalItems = 0
+        pagination.totalPages = 0
+      }
     }
   },
 )
+
+// Handle window resize to recalculate overflow
+const handleResize = () => {
+  // Recalculate overflow for all categories
+  Object.keys(categoryScrollRefs.value).forEach(categoryId => {
+    checkCategoryOverflow(categoryId)
+  })
+}
 
 // Lifecycle
 onMounted(async () => {
@@ -756,6 +986,14 @@ onMounted(async () => {
 
   // Load events after categories
   loadEvents()
+
+  // Add resize listener
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  // Clean up resize listener
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
