@@ -119,8 +119,8 @@
                   <span class="text-xs sm:text-sm text-slate-500">
                     {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
                   </span>
-                  <!-- Navigation Arrows - Only show if content overflows -->
-                  <div v-if="categoryHasOverflow(categoryGroup.category?.id || 'uncategorized')" class="flex items-center gap-2">
+                  <!-- Navigation Arrows - Only show if content overflows (hidden on mobile) -->
+                  <div v-if="categoryHasOverflow(categoryGroup.category?.id || 'uncategorized')" class="hidden md:flex items-center gap-2">
                     <button
                       @click="scrollCategory(categoryGroup.category?.id || 'uncategorized', 'left')"
                       class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
@@ -157,29 +157,103 @@
             </div>
           </template>
 
-          <!-- For My Events and Registered: Show in single section with horizontal scroll -->
-          <template v-else>
-            <!-- Section Label -->
-            <div class="flex items-center justify-between px-4 sm:px-0">
-              <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
-                {{ getSectionLabel() }}
-              </h2>
-              <span v-if="safeEvents.length > 0" class="text-xs sm:text-sm text-slate-500">
-                {{ safeEvents.length }} {{ safeEvents.length === 1 ? 'event' : 'events' }}
-              </span>
-            </div>
+          <!-- For My Events: Show by Category (like Public Events) -->
+          <template v-else-if="currentView === 'my'">
+            <div v-for="categoryGroup in myEventsByCategory" :key="categoryGroup.category?.id || 'uncategorized'" class="space-y-4 sm:space-y-6">
+              <!-- Category Header -->
+              <div class="flex items-center justify-between px-4 sm:px-0">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
+                  {{ categoryGroup.category?.name || 'Uncategorized' }}
+                </h2>
+                <div class="flex items-center gap-3 sm:gap-4">
+                  <span class="text-xs sm:text-sm text-slate-500">
+                    {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
+                  </span>
+                  <!-- Navigation Arrows - Only show if content overflows (hidden on mobile) -->
+                  <div v-if="categoryHasOverflow('my-' + (categoryGroup.category?.id || 'uncategorized'))" class="hidden md:flex items-center gap-2">
+                    <button
+                      @click="scrollCategory('my-' + (categoryGroup.category?.id || 'uncategorized'), 'left')"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft class="w-4 h-4 text-slate-600" />
+                    </button>
+                    <button
+                      @click="scrollCategory('my-' + (categoryGroup.category?.id || 'uncategorized'), 'right')"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight class="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-            <!-- Horizontal scrolling container for all screen sizes -->
-            <div class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-              <EventCard
-                v-for="event in safeEvents"
-                :key="event.id"
-                :event="event"
-                @click="viewEvent(event)"
-                @edit="editEvent"
-                @delete="deleteEvent"
-                class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
-              />
+              <!-- Horizontal scrolling container for all screen sizes -->
+              <div
+                :ref="el => setCategoryScrollRef('my-' + (categoryGroup.category?.id || 'uncategorized'), el)"
+                class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
+              >
+                <EventCard
+                  v-for="event in categoryGroup.events"
+                  :key="event.id"
+                  :event="event"
+                  @click="viewEvent(event)"
+                  @edit="editEvent"
+                  @delete="deleteEvent"
+                  class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
+                />
+              </div>
+            </div>
+          </template>
+
+          <!-- For Registered: Show by Category (like Public Events) -->
+          <template v-else>
+            <div v-for="categoryGroup in registeredEventsByCategory" :key="categoryGroup.category?.id || 'uncategorized'" class="space-y-4 sm:space-y-6">
+              <!-- Category Header -->
+              <div class="flex items-center justify-between px-4 sm:px-0">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
+                  {{ categoryGroup.category?.name || 'Uncategorized' }}
+                </h2>
+                <div class="flex items-center gap-3 sm:gap-4">
+                  <span class="text-xs sm:text-sm text-slate-500">
+                    {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
+                  </span>
+                  <!-- Navigation Arrows - Only show if content overflows (hidden on mobile) -->
+                  <div v-if="categoryHasOverflow('registered-' + (categoryGroup.category?.id || 'uncategorized'))" class="hidden md:flex items-center gap-2">
+                    <button
+                      @click="scrollCategory('registered-' + (categoryGroup.category?.id || 'uncategorized'), 'left')"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft class="w-4 h-4 text-slate-600" />
+                    </button>
+                    <button
+                      @click="scrollCategory('registered-' + (categoryGroup.category?.id || 'uncategorized'), 'right')"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight class="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Horizontal scrolling container for all screen sizes -->
+              <div
+                :ref="el => setCategoryScrollRef('registered-' + (categoryGroup.category?.id || 'uncategorized'), el)"
+                class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
+              >
+                <EventCard
+                  v-for="event in categoryGroup.events"
+                  :key="event.id"
+                  :event="event"
+                  @click="viewEvent(event)"
+                  @edit="editEvent"
+                  @delete="deleteEvent"
+                  class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
+                />
+              </div>
             </div>
           </template>
         </div>
@@ -383,6 +457,110 @@ const eventsByCategory = computed(() => {
         const dateA = new Date(a.start_date || 0).getTime()
         const dateB = new Date(b.start_date || 0).getTime()
         return dateB - dateA // Descending order (newest first)
+      })
+
+      return {
+        category: categoryGroup.category,
+        events: sortedEvents
+      }
+    })
+    .sort((a, b) => {
+      const nameA = a.category?.name || 'Uncategorized'
+      const nameB = b.category?.name || 'Uncategorized'
+      // Put uncategorized at the end
+      if (nameA === 'Uncategorized') return 1
+      if (nameB === 'Uncategorized') return -1
+      return nameA.localeCompare(nameB)
+    })
+})
+
+// Group events by category for my events view
+const myEventsByCategory = computed(() => {
+  if (currentView.value !== 'my') {
+    return []
+  }
+
+  // Create a map to group events by category
+  const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
+
+  safeEvents.value.forEach(event => {
+    const categoryId = event.category || 'uncategorized'
+
+    if (!categoryMap.has(categoryId)) {
+      // Find the full category details from the categories list
+      const categoryDetails = event.category
+        ? categories.value.find(cat => cat.id === event.category)
+        : null
+
+      categoryMap.set(categoryId, {
+        category: categoryDetails || null,
+        events: []
+      })
+    }
+
+    categoryMap.get(categoryId)!.events.push(event)
+  })
+
+  // Convert map to array, sort categories alphabetically, and sort events within each category
+  return Array.from(categoryMap.values())
+    .map(categoryGroup => {
+      // Sort events within each category by created_at (most recent first)
+      const sortedEvents = [...categoryGroup.events].sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA // Descending order (most recent first)
+      })
+
+      return {
+        category: categoryGroup.category,
+        events: sortedEvents
+      }
+    })
+    .sort((a, b) => {
+      const nameA = a.category?.name || 'Uncategorized'
+      const nameB = b.category?.name || 'Uncategorized'
+      // Put uncategorized at the end
+      if (nameA === 'Uncategorized') return 1
+      if (nameB === 'Uncategorized') return -1
+      return nameA.localeCompare(nameB)
+    })
+})
+
+// Group events by category for registered events view
+const registeredEventsByCategory = computed(() => {
+  if (currentView.value !== 'registered') {
+    return []
+  }
+
+  // Create a map to group events by category
+  const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
+
+  safeEvents.value.forEach(event => {
+    const categoryId = event.category || 'uncategorized'
+
+    if (!categoryMap.has(categoryId)) {
+      // Find the full category details from the categories list
+      const categoryDetails = event.category
+        ? categories.value.find(cat => cat.id === event.category)
+        : null
+
+      categoryMap.set(categoryId, {
+        category: categoryDetails || null,
+        events: []
+      })
+    }
+
+    categoryMap.get(categoryId)!.events.push(event)
+  })
+
+  // Convert map to array, sort categories alphabetically, and sort events within each category
+  return Array.from(categoryMap.values())
+    .map(categoryGroup => {
+      // Sort events within each category by created_at (most recent first)
+      const sortedEvents = [...categoryGroup.events].sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA // Descending order (most recent first)
       })
 
       return {
@@ -896,6 +1074,36 @@ watch(
     nextTick(() => {
       eventsByCategory.value.forEach(categoryGroup => {
         const categoryId = categoryGroup.category?.id || 'uncategorized'
+        checkCategoryOverflow(categoryId)
+      })
+    })
+  },
+  { deep: true }
+)
+
+// Watch myEventsByCategory changes to ensure all categories are properly rendered
+watch(
+  myEventsByCategory,
+  () => {
+    // Wait for DOM to update, then check all category overflows
+    nextTick(() => {
+      myEventsByCategory.value.forEach(categoryGroup => {
+        const categoryId = 'my-' + (categoryGroup.category?.id || 'uncategorized')
+        checkCategoryOverflow(categoryId)
+      })
+    })
+  },
+  { deep: true }
+)
+
+// Watch registeredEventsByCategory changes to ensure all categories are properly rendered
+watch(
+  registeredEventsByCategory,
+  () => {
+    // Wait for DOM to update, then check all category overflows
+    nextTick(() => {
+      registeredEventsByCategory.value.forEach(categoryGroup => {
+        const categoryId = 'registered-' + (categoryGroup.category?.id || 'uncategorized')
         checkCategoryOverflow(categoryId)
       })
     })
