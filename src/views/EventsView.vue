@@ -155,120 +155,48 @@
                 />
               </div>
             </div>
-
-            <!-- Pagination for Public Events -->
-            <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
-              <div class="flex items-center space-x-1.5 sm:space-x-2">
-                <button
-                  @click="loadPage(pagination.currentPage - 1)"
-                  :disabled="pagination.currentPage <= 1"
-                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                </button>
-
-                <template v-for="page in getVisiblePages()" :key="page">
-                  <button
-                    v-if="page !== '...'"
-                    @click="loadPage(page as number)"
-                    :class="
-                      page === pagination.currentPage
-                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
-                        : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-                    "
-                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
-                  >
-                    {{ page }}
-                  </button>
-                  <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
-                </template>
-
-                <button
-                  @click="loadPage(pagination.currentPage + 1)"
-                  :disabled="pagination.currentPage >= pagination.totalPages"
-                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                </button>
-              </div>
-            </div>
           </template>
 
-          <!-- For My Events and Registered: Show in single section -->
+          <!-- For My Events and Registered: Show in single section with horizontal scroll -->
           <template v-else>
             <!-- Section Label -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between px-4 sm:px-0">
               <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
                 {{ getSectionLabel() }}
               </h2>
-              <span v-if="pagination.totalItems > 0" class="text-xs sm:text-sm text-slate-500">
-                {{ pagination.totalItems }} {{ pagination.totalItems === 1 ? 'event' : 'events' }}
+              <span v-if="safeEvents.length > 0" class="text-xs sm:text-sm text-slate-500">
+                {{ safeEvents.length }} {{ safeEvents.length === 1 ? 'event' : 'events' }}
               </span>
             </div>
 
-            <!-- Mobile: Horizontal scrolling container -->
-            <div class="flex md:hidden overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+            <!-- Horizontal scrolling container for all screen sizes -->
+            <div class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
               <EventCard
                 v-for="event in safeEvents"
-                :key="`mobile-${event.id}`"
+                :key="event.id"
                 :event="event"
                 @click="viewEvent(event)"
                 @edit="editEvent"
                 @delete="deleteEvent"
-                class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] snap-center mobile-card"
+                class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
               />
-            </div>
-
-            <!-- Desktop: Grid layout -->
-            <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 lg:gap-8">
-              <EventCard
-                v-for="event in safeEvents"
-                :key="`desktop-${event.id}`"
-                :event="event"
-                @click="viewEvent(event)"
-                @edit="editEvent"
-                @delete="deleteEvent"
-                class="cursor-pointer"
-              />
-            </div>
-
-            <!-- Pagination -->
-            <div v-if="pagination.totalPages > 1" class="flex justify-center pt-6 sm:pt-8">
-              <div class="flex items-center space-x-1.5 sm:space-x-2">
-                <button
-                  @click="loadPage(pagination.currentPage - 1)"
-                  :disabled="pagination.currentPage <= 1"
-                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  <ChevronLeft class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                </button>
-
-                <template v-for="page in getVisiblePages()" :key="page">
-                  <button
-                    v-if="page !== '...'"
-                    @click="loadPage(page as number)"
-                    :class="
-                      page === pagination.currentPage
-                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
-                        : 'text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-                    "
-                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 transition-all duration-200 min-w-[32px] sm:min-w-[40px] text-xs sm:text-sm"
-                  >
-                    {{ page }}
-                  </button>
-                  <span v-else class="px-1 sm:px-2 text-slate-400 text-xs sm:text-sm">...</span>
-                </template>
-
-                <button
-                  @click="loadPage(pagination.currentPage + 1)"
-                  :disabled="pagination.currentPage >= pagination.totalPages"
-                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200 text-slate-600 hover:bg-[#E6F4FF] hover:text-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  <ChevronRight class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                </button>
-              </div>
             </div>
           </template>
+        </div>
+
+        <!-- Infinite Scroll Loading Indicator -->
+        <div
+          v-if="currentView === 'all' && hasEvents"
+          ref="loadMoreTrigger"
+          class="py-8 flex justify-center"
+        >
+          <div v-if="isLoadingMore" class="flex items-center gap-3 text-slate-600">
+            <div class="w-6 h-6 border-3 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-sm font-medium">Loading more events...</span>
+          </div>
+          <div v-else-if="!hasMore" class="text-sm text-slate-500 font-medium">
+            No more events to load
+          </div>
         </div>
 
         <!-- Login Required State for Unauthenticated Users -->
@@ -362,7 +290,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   Calendar,
@@ -406,13 +334,11 @@ const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const eventToDelete = ref<Event | null>(null)
 
-// Pagination
-const pagination = reactive({
-  currentPage: 1,
-  totalPages: 1,
-  totalItems: 0,
-  itemsPerPage: 20, // Match Django REST framework default page size
-})
+// Infinite scroll state
+const currentPage = ref(1)
+const hasMore = ref(true)
+const isLoadingMore = ref(false)
+const loadMoreTrigger = ref<HTMLElement | null>(null)
 
 // Computed
 const safeEvents = computed(() => events.value || [])
@@ -449,15 +375,29 @@ const eventsByCategory = computed(() => {
     categoryMap.get(categoryId)!.events.push(event)
   })
 
-  // Convert map to array and sort by category name
-  return Array.from(categoryMap.values()).sort((a, b) => {
-    const nameA = a.category?.name || 'Uncategorized'
-    const nameB = b.category?.name || 'Uncategorized'
-    // Put uncategorized at the end
-    if (nameA === 'Uncategorized') return 1
-    if (nameB === 'Uncategorized') return -1
-    return nameA.localeCompare(nameB)
-  })
+  // Convert map to array, sort categories alphabetically, and sort events within each category
+  return Array.from(categoryMap.values())
+    .map(categoryGroup => {
+      // Sort events within each category by start_date (newest first)
+      const sortedEvents = [...categoryGroup.events].sort((a, b) => {
+        const dateA = new Date(a.start_date || 0).getTime()
+        const dateB = new Date(b.start_date || 0).getTime()
+        return dateB - dateA // Descending order (newest first)
+      })
+
+      return {
+        category: categoryGroup.category,
+        events: sortedEvents
+      }
+    })
+    .sort((a, b) => {
+      const nameA = a.category?.name || 'Uncategorized'
+      const nameB = b.category?.name || 'Uncategorized'
+      // Put uncategorized at the end
+      if (nameA === 'Uncategorized') return 1
+      if (nameB === 'Uncategorized') return -1
+      return nameA.localeCompare(nameB)
+    })
 })
 
 const getEmptyStateTitle = () => {
@@ -555,26 +495,30 @@ const scrollCategory = (categoryId: string | number, direction: 'left' | 'right'
   })
 }
 
-const loadEvents = async (page = 1) => {
+const loadEvents = async (append = false) => {
   // Don't load events if user is not authenticated and trying to view 'my' or 'registered' tabs
   if (!authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
     events.value = []
-    pagination.totalItems = 0
-    pagination.totalPages = 0
     loading.value = false
     return
   }
 
-  loading.value = true
+  // Set loading state based on whether we're appending or replacing
+  if (append) {
+    isLoadingMore.value = true
+  } else {
+    loading.value = true
+    // Reset pagination when loading fresh
+    currentPage.value = 1
+    hasMore.value = true
+  }
 
   try {
     let response: any = null
 
     const requestParams = {
-      page,
       ...filters.value,
     }
-
 
     if (currentView.value === 'my') {
       // Use dedicated /api/events/my/ endpoint for user's events
@@ -607,14 +551,12 @@ const loadEvents = async (page = 1) => {
           )
         }
 
-        // Create a mock pagination response to match expected structure
+        // Create a mock response to match expected structure
         response = {
           success: true,
           data: {
-            count: allMyEvents.length,
             results: allMyEvents,
-            next: null,
-            previous: null,
+            next: null, // No pagination for my events
           },
         }
       } else {
@@ -643,14 +585,12 @@ const loadEvents = async (page = 1) => {
           )
         }
 
-        // Create a mock pagination response to match expected structure
+        // Create a mock response to match expected structure
         response = {
           success: true,
           data: {
-            count: registeredEvents.length,
             results: registeredEvents,
-            next: null,
-            previous: null,
+            next: null, // No pagination for registered events
           },
         }
       } else {
@@ -660,46 +600,71 @@ const loadEvents = async (page = 1) => {
         }
       }
     } else {
-      // For all public events - use user's filter choices, but default to public/published if not specified
+      // For all public events - use pagination
       const publicEventParams = {
         ...requestParams,
+        page: append ? currentPage.value : 1,
         // Only set defaults if user hasn't specified these filters
         privacy: requestParams.privacy || 'public',
         status: requestParams.status || 'published',
+        // Order by category name first (alphabetically), then by start_date (newest first)
+        ordering: requestParams.ordering || 'category__name,-start_date',
       }
       response = await eventsService.getEvents(publicEventParams)
     }
 
     if (response.success && response.data) {
-      events.value = response.data.results || []
-      pagination.currentPage = page
-      pagination.totalItems = response.data.count || 0
+      const newEvents = response.data.results || []
 
-
-      // Use the presence of next/previous to determine if there are more pages
-      if (response.data.next || response.data.previous) {
-        // If there's pagination metadata, calculate total pages properly
-        const pageSize = response.data.results?.length || pagination.itemsPerPage
-        pagination.totalPages = Math.ceil((response.data.count || 0) / pageSize)
+      if (append) {
+        // Append new events to existing ones
+        events.value = [...events.value, ...newEvents]
       } else {
-        // If no pagination, this is the only page
-        pagination.totalPages = 1
+        // Replace events
+        events.value = newEvents
       }
+
+      // Check if there are more pages
+      hasMore.value = !!response.data.next
+
+      // Re-check category overflow after DOM updates
+      nextTick(() => {
+        Object.keys(categoryScrollRefs.value).forEach(categoryId => {
+          checkCategoryOverflow(categoryId)
+        })
+      })
     } else {
-      events.value = []
-      pagination.totalItems = 0
-      pagination.totalPages = 0
+      if (!append) {
+        events.value = []
+      }
       showMessage('error', response.message || 'Failed to load events')
     }
   } catch (error) {
     console.error('Error loading events:', error)
-    events.value = []
-    pagination.totalItems = 0
-    pagination.totalPages = 0
+    if (!append) {
+      events.value = []
+    }
     showMessage('error', 'An error occurred while loading events')
   } finally {
     loading.value = false
+    isLoadingMore.value = false
   }
+}
+
+const loadMoreEvents = async () => {
+  // Only load more if we're not already loading and there are more pages
+  if (isLoadingMore.value || !hasMore.value || loading.value) {
+    return
+  }
+
+  // Only apply infinite scroll to public events view
+  if (currentView.value !== 'all') {
+    return
+  }
+
+  // Increment page and load more events
+  currentPage.value++
+  await loadEvents(true)
 }
 
 const loadCategories = async () => {
@@ -707,59 +672,12 @@ const loadCategories = async () => {
     const response = await eventCategoriesService.getCategories()
     if (response.success && response.data) {
       categories.value = response.data.results || []
-
     } else {
       console.error('Failed to load categories:', response.message)
     }
   } catch (error) {
     console.error('Failed to load categories:', error)
   }
-}
-
-
-const loadPage = (page: number) => {
-  if (page >= 1 && page <= pagination.totalPages) {
-    loadEvents(page)
-  }
-}
-
-const getVisiblePages = () => {
-  const current = pagination.currentPage
-  const total = pagination.totalPages
-  const pages: (number | string)[] = []
-
-  if (total <= 7) {
-    // Show all pages if 7 or fewer
-    for (let i = 1; i <= total; i++) {
-      pages.push(i)
-    }
-  } else {
-    // Always show first page
-    pages.push(1)
-
-    if (current > 3) {
-      pages.push('...')
-    }
-
-    // Show pages around current
-    const start = Math.max(2, current - 1)
-    const end = Math.min(total - 1, current + 1)
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i)
-    }
-
-    if (current < total - 2) {
-      pages.push('...')
-    }
-
-    // Always show last page
-    if (total > 1) {
-      pages.push(total)
-    }
-  }
-
-  return pages
 }
 
 const viewEvent = (event: Event) => {
@@ -789,8 +707,8 @@ const handleDeleteConfirm = async () => {
     if (response.success) {
       showMessage('success', 'Event deleted successfully')
       closeDeleteModal()
-      // Reload current page events
-      loadEvents(pagination.currentPage)
+      // Reload events
+      loadEvents()
     } else {
       showMessage('error', response.message || 'Failed to delete event')
       isDeleting.value = false
@@ -946,8 +864,9 @@ watch(
 watch(
   [() => currentView.value, filters],
   () => {
-    pagination.currentPage = 1
     loadEvents()
+    // Re-setup infinite scroll when view changes
+    setupInfiniteScroll()
   },
   { deep: true },
 )
@@ -964,11 +883,24 @@ watch(
       // User logged out - if they're on 'my' or 'registered' tabs, clear events to show login prompt
       if (currentView.value === 'my' || currentView.value === 'registered') {
         events.value = []
-        pagination.totalItems = 0
-        pagination.totalPages = 0
       }
     }
   },
+)
+
+// Watch eventsByCategory changes to ensure all categories are properly rendered
+watch(
+  eventsByCategory,
+  () => {
+    // Wait for DOM to update, then check all category overflows
+    nextTick(() => {
+      eventsByCategory.value.forEach(categoryGroup => {
+        const categoryId = categoryGroup.category?.id || 'uncategorized'
+        checkCategoryOverflow(categoryId)
+      })
+    })
+  },
+  { deep: true }
 )
 
 // Handle window resize to recalculate overflow
@@ -979,13 +911,61 @@ const handleResize = () => {
   })
 }
 
+// Intersection Observer for infinite scroll
+let observer: IntersectionObserver | null = null
+
+const setupInfiniteScroll = () => {
+  // Clean up existing observer
+  if (observer) {
+    observer.disconnect()
+  }
+
+  // Only set up for public events view
+  if (currentView.value !== 'all') {
+    return
+  }
+
+  // Wait for trigger element to be available
+  const checkTrigger = () => {
+    const trigger = loadMoreTrigger.value
+    if (!trigger) {
+      // Try again after a short delay
+      setTimeout(checkTrigger, 100)
+      return
+    }
+
+    // Create intersection observer
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasMore.value && !isLoadingMore.value) {
+            loadMoreEvents()
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '200px', // Trigger 200px before reaching the element
+        threshold: 0,
+      }
+    )
+
+    observer.observe(trigger)
+  }
+
+  checkTrigger()
+}
+
 // Lifecycle
 onMounted(async () => {
   // Load initial data
   await loadCategories()
 
   // Load events after categories
-  loadEvents()
+  await loadEvents()
+
+  // Set up infinite scroll
+  setupInfiniteScroll()
 
   // Add resize listener
   window.addEventListener('resize', handleResize)
@@ -994,6 +974,11 @@ onMounted(async () => {
 onUnmounted(() => {
   // Clean up resize listener
   window.removeEventListener('resize', handleResize)
+
+  // Clean up intersection observer
+  if (observer) {
+    observer.disconnect()
+  }
 })
 </script>
 
