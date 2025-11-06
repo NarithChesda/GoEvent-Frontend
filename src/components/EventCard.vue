@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group relative bg-white rounded-2xl border border-gray-200/60 hover:border-gray-300/80 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/40 cursor-pointer overflow-hidden"
+    class="group relative bg-white rounded-2xl border border-gray-200/60 hover:border-gray-300/80 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/40 cursor-pointer overflow-hidden flex flex-col"
     role="article"
     :aria-label="`Event: ${event.title}`"
     @click="$emit('view', event)"
@@ -145,7 +145,7 @@
     </div>
 
     <!-- Content -->
-    <div class="p-4 sm:p-5 md:p-6">
+    <div class="p-4 sm:p-5 md:p-6 flex flex-col flex-1">
       <!-- Category -->
       <div v-if="event.category_name" class="mb-3 sm:mb-4">
         <span
@@ -189,7 +189,7 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
+      <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 mt-auto">
         <!-- Attendees -->
         <div class="flex items-center text-sm sm:text-base text-gray-600">
           <Users class="w-4 sm:w-4.5 h-4 sm:h-4.5 mr-1.5 sm:mr-2 text-gray-500 flex-shrink-0" />
@@ -201,14 +201,64 @@
           </span>
         </div>
 
-        <!-- Organizer -->
+        <!-- Hosts or Organizer fallback -->
         <div class="flex items-center text-sm sm:text-base text-gray-600 min-w-0">
-          <div class="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-gray-100 flex items-center justify-center mr-2 sm:mr-2.5 flex-shrink-0">
-            <span class="text-xs sm:text-sm font-medium text-gray-700">
-              {{ (event.organizer_name || 'U').charAt(0).toUpperCase() }}
-            </span>
-          </div>
-          <span class="truncate max-w-32 sm:max-w-40 md:max-w-48">{{ event.organizer_name || 'Unknown' }}</span>
+          <!-- Single host -->
+          <template v-if="event.hosts && event.hosts.length === 1">
+            <div class="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-gray-100 flex items-center justify-center mr-2 sm:mr-2.5 flex-shrink-0 overflow-hidden">
+              <img
+                v-if="event.hosts[0].profile_image"
+                :src="getHostImageUrl(event.hosts[0].profile_image)"
+                :alt="event.hosts[0].name"
+                class="w-full h-full object-cover"
+              />
+              <span v-else class="text-xs sm:text-sm font-medium text-gray-700">
+                {{ event.hosts[0].name.charAt(0).toUpperCase() }}
+              </span>
+            </div>
+            <span class="truncate max-w-32 sm:max-w-40 md:max-w-48">{{ event.hosts[0].name }}</span>
+          </template>
+
+          <!-- Multiple hosts -->
+          <template v-else-if="event.hosts && event.hosts.length > 1">
+            <div class="flex -space-x-2 mr-2 sm:mr-2.5 flex-shrink-0">
+              <div
+                v-for="(host, index) in event.hosts.slice(0, 3)"
+                :key="host.id"
+                class="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white overflow-hidden"
+                :style="{ zIndex: event.hosts.length - index }"
+                :title="host.name"
+              >
+                <img
+                  v-if="host.profile_image"
+                  :src="getHostImageUrl(host.profile_image)"
+                  :alt="host.name"
+                  class="w-full h-full object-cover"
+                />
+                <span v-else class="text-xs sm:text-sm font-medium text-gray-700">
+                  {{ host.name.charAt(0).toUpperCase() }}
+                </span>
+              </div>
+              <div
+                v-if="event.hosts.length > 3"
+                class="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-gray-200 flex items-center justify-center border-2 border-white"
+                :title="`+${event.hosts.length - 3} more hosts`"
+              >
+                <span class="text-xs font-medium text-gray-600">+{{ event.hosts.length - 3 }}</span>
+              </div>
+            </div>
+            <span class="truncate max-w-24 sm:max-w-32 md:max-w-36">{{ event.hosts.length }} hosts</span>
+          </template>
+
+          <!-- Fallback to organizer -->
+          <template v-else>
+            <div class="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-gray-100 flex items-center justify-center mr-2 sm:mr-2.5 flex-shrink-0">
+              <span class="text-xs sm:text-sm font-medium text-gray-700">
+                {{ (event.organizer_name || 'U').charAt(0).toUpperCase() }}
+              </span>
+            </div>
+            <span class="truncate max-w-32 sm:max-w-40 md:max-w-48">{{ event.organizer_name || 'Unknown' }}</span>
+          </template>
         </div>
       </div>
     </div>
@@ -372,6 +422,24 @@ const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
 
   // If it doesn't start with /, assume it needs /media/ prefix
   return `${API_BASE_URL}/media/${bannerImage}`
+}
+
+const getHostImageUrl = (profileImage: string | null): string | undefined => {
+  if (!profileImage) return undefined
+
+  // If it's already a full URL, return as is
+  if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
+    return profileImage
+  }
+
+  // If it's a relative URL, prepend the API base URL
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  if (profileImage.startsWith('/')) {
+    return `${API_BASE_URL}${profileImage}`
+  }
+
+  // If it doesn't start with /, assume it needs /media/ prefix
+  return `${API_BASE_URL}/media/${profileImage}`
 }
 
 const formatDate = (dateString: string): string => {
