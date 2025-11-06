@@ -1,15 +1,9 @@
 import { apiService, type ApiResponse } from './api'
 import { secureStorage } from '../utils/secureStorage'
-import { jwtUtils } from '../utils/jwtUtils'
 import { tokenManager } from './tokenManager'
 
 // Import API base URL for direct fetch in logout
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-
-// Validation cache to prevent excessive server validation
-const VALIDATION_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-let lastValidationTime: number = 0
-let lastValidationResult: boolean = false
 
 export interface User {
   id: number
@@ -130,56 +124,45 @@ class AuthService {
 
   async logout(): Promise<ApiResponse<{ message: string }>> {
     try {
-      // CRITICAL: Capture tokens BEFORE setting logout mode to prevent any storage interference
-      const accessToken = this.getAccessTokenDirect()
-      const refreshToken = this.getRefreshTokenDirect()
+      console.info('[AuthService] Starting logout process')
 
-      // Now set logout mode to prevent any further storage operations
-      secureStorage.setLogoutMode(true)
+      // Capture tokens before clearing
+      const accessToken = this.getAccessToken()
+      const refreshToken = this.getRefreshToken()
 
-      // Make logout request with refresh token in body as documented
-      const response = await fetch(`${API_BASE_URL}/api/auth/logout/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify({
-          ...(refreshToken ? { refresh: refreshToken } : {}),
-        }),
-      })
-
-      // Always clear tokens regardless of response
-      this.clearTokens()
-      this.clearUser()
-
-      // Reset logout mode
-      secureStorage.setLogoutMode(false)
-
-      // Convert response to ApiResponse format
-      if (response.ok || response.status === 404) {
-        const responseData = response.ok ? await response.json() : null
-        return {
-          success: true,
-          data: responseData || { message: 'Successfully logged out' },
-        }
-      } else {
-        // Even if logout API fails, we've cleared local tokens so logout is successful
-        return {
-          success: true,
-          data: { message: 'Logged out locally' },
-        }
+      // Make logout request with refresh token in body
+      // Don't await - fire and forget for better UX
+      if (refreshToken) {
+        fetch(`${API_BASE_URL}/api/auth/logout/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({ refresh: refreshToken }),
+        }).catch((error) => {
+          console.warn('[AuthService] Logout API call failed (non-critical):', error)
+        })
       }
-    } catch (error) {
-      // Clear tokens even if network fails and reset logout mode
+
+      // Clear local auth data immediately for better UX
       this.clearTokens()
       this.clearUser()
-      secureStorage.setLogoutMode(false)
-      console.error('Logout error:', error)
+
+      console.info('[AuthService] Logout completed')
       return {
         success: true,
-        data: { message: 'Logged out locally due to network error' },
+        data: { message: 'Successfully logged out' },
+      }
+    } catch (error) {
+      console.error('[AuthService] Logout error:', error)
+      // Even on error, clear local data
+      this.clearTokens()
+      this.clearUser()
+      return {
+        success: true,
+        data: { message: 'Logged out locally' },
       }
     }
   }
@@ -271,65 +254,10 @@ class AuthService {
     return apiService.post('/api/auth/change-password/', data)
   }
 
-  // Token management
-  async refreshToken(): Promise<ApiResponse<TokenRefreshResponse>> {
-    const refreshToken = this.getRefreshToken()
-
-    if (!refreshToken) {
-      return {
-        success: false,
-        message: 'No refresh token available',
-      }
-    }
-
-    const response = await apiService.post<TokenRefreshResponse>('/api/auth/token/refresh/', {
-      refresh: refreshToken,
-    })
-
-    if (response.success && response.data) {
-      // Handle token rotation: both access and refresh tokens are returned
-      this.setTokens(response.data.access, response.data.refresh)
-    } else {
-      // If refresh fails, clear tokens but preserve user data
-      // The auth store's logout() will handle full cleanup if needed
-      this.clearTokens()
-    }
-
-    return response
-  }
-
-  async verifyToken(): Promise<ApiResponse<unknown>> {
-    const accessToken = this.getAccessToken()
-
-    if (!accessToken) {
-      return {
-        success: false,
-        message: 'No access token available',
-      }
-    }
-
-    return apiService.post('/api/auth/token/verify/', {
-      token: accessToken,
-    })
-  }
-
-  // Secure storage management
+  // Token management - simplified to use tokenManager
   private setTokens(accessToken: string, refreshToken: string): void {
     tokenManager.setTokens(accessToken, refreshToken)
-    // Migrate existing localStorage data if present
-    secureStorage.migrateToSecureStorage(['access_token', 'refresh_token', 'user'])
-  }
-
-  private setAccessToken(accessToken: string): void {
-    if (!secureStorage.isValidTokenFormat(accessToken)) {
-      console.warn('Invalid access token format detected')
-      return
-    }
-
-    // Note: tokenManager.setTokens requires both access and refresh
-    // This method is kept for backward compatibility but now validates and stores directly
-    secureStorage.setItem('access_token', accessToken)
-    tokenManager.clearValidationCache()
+    console.info('[AuthService] Tokens stored via tokenManager')
   }
 
   setUser(user: User): void {
@@ -377,34 +305,8 @@ class AuthService {
     return tokenManager.getAccessToken()
   }
 
-  /**
-   * Get access token directly from storage without any validation or migration
-   * Used during logout to prevent token corruption
-   */
-  private getAccessTokenDirect(): string | null {
-    try {
-      return secureStorage.getItemDirect('access_token')
-    } catch (error) {
-      console.error('Error retrieving access token directly:', error)
-      return null
-    }
-  }
-
   getRefreshToken(): string | null {
     return tokenManager.getRefreshToken()
-  }
-
-  /**
-   * Get refresh token directly from storage without any validation or migration
-   * Used during logout to prevent token corruption
-   */
-  private getRefreshTokenDirect(): string | null {
-    try {
-      return secureStorage.getItemDirect('refresh_token')
-    } catch (error) {
-      console.error('Error retrieving refresh token directly:', error)
-      return null
-    }
   }
 
   getUser(): User | null {
@@ -437,17 +339,12 @@ class AuthService {
 
   clearTokens(): void {
     tokenManager.clearTokens()
+    console.info('[AuthService] Tokens cleared via tokenManager')
   }
 
   clearUser(): void {
     secureStorage.removeItem('user')
-  }
-
-  /**
-   * Clear validation cache (useful after token refresh or login)
-   */
-  clearValidationCache(): void {
-    tokenManager.clearValidationCache()
+    console.info('[AuthService] User data cleared')
   }
 
   isAuthenticated(): boolean {
@@ -455,89 +352,40 @@ class AuthService {
   }
 
   /**
-   * Check if we should attempt token refresh based on actual token expiration
+   * Ensure token is valid - delegates to tokenManager for single source of truth
+   *
+   * IMPROVEMENTS:
+   * - Uses tokenManager.ensureValidToken() as single source of truth
+   * - No redundant validation caching
+   * - Better error handling
    */
-  private shouldRefreshToken(): boolean {
-    return tokenManager.shouldRefreshToken(5)
-  }
-
-  /**
-   * Validate token by making a server request instead of parsing JWT
-   */
-  async validateTokenWithServer(): Promise<boolean> {
-    try {
-      const response = await this.verifyToken()
-      return response.success
-    } catch {
-      return false
-    }
-  }
-
   async ensureValidToken(): Promise<boolean> {
     try {
-      const accessToken = this.getAccessToken()
+      return await tokenManager.ensureValidToken(
+        // Verify callback - validates token with server
+        async (token: string) => {
+          const response = await apiService.post('/api/auth/token/verify/', { token })
+          return response.success
+        },
+        // Refresh callback - gets new tokens from server
+        async (refreshToken: string) => {
+          const response = await apiService.post<TokenRefreshResponse>(
+            '/api/auth/token/refresh/',
+            { refresh: refreshToken }
+          )
 
-      if (!accessToken) {
-        console.info('No access token found')
-        return false
-      }
+          if (response.success && response.data) {
+            return {
+              access: response.data.access,
+              refresh: response.data.refresh,
+            }
+          }
 
-      // Check validation cache first to avoid excessive server calls
-      const now = Date.now()
-      if (now - lastValidationTime < VALIDATION_CACHE_DURATION && lastValidationResult) {
-        console.debug('Using cached validation result')
-        return true
-      }
-
-      // Check if token is expired client-side first
-      const isExpired = jwtUtils.isTokenExpired(accessToken)
-
-      if (isExpired === true) {
-        console.info('Access token is expired, attempting refresh')
-        const refreshResponse = await this.refreshToken()
-
-        if (refreshResponse.success) {
-          console.info('Token refreshed successfully')
-          lastValidationTime = now
-          lastValidationResult = true
-          return true
+          throw new Error('Token refresh failed')
         }
-
-        console.warn('Token refresh failed')
-        lastValidationTime = now
-        lastValidationResult = false
-        return false
-      }
-
-      // Check if token will expire soon and proactively refresh
-      if (this.shouldRefreshToken()) {
-        console.info('Token will expire soon, proactive refresh')
-
-        const refreshResponse = await this.refreshToken()
-        if (refreshResponse.success) {
-          console.info('Proactive token refresh successful')
-          lastValidationTime = now
-          lastValidationResult = true
-          return true
-        }
-
-        // If proactive refresh fails, check if current token is still valid
-        console.warn('Proactive refresh failed, checking current token validity')
-        const isStillValid = await this.validateTokenWithServer()
-
-        lastValidationTime = now
-        lastValidationResult = isStillValid
-        return isStillValid
-      }
-
-      // Token should be valid, update cache
-      lastValidationTime = now
-      lastValidationResult = true
-      return true
+      )
     } catch (error) {
-      console.error('Error in ensureValidToken:', error)
-      lastValidationTime = Date.now()
-      lastValidationResult = false
+      console.error('[AuthService] Error in ensureValidToken:', error)
       return false
     }
   }

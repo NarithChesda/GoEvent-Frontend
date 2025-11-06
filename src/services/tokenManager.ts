@@ -1,26 +1,37 @@
 /**
  * Token Manager Service
  *
- * Centralized token management to avoid circular dependencies between api.ts and auth.ts.
- * This service handles token storage, validation, and refresh logic.
+ * Centralized token management to avoid circular dependencies.
+ * Handles token storage, validation, refresh logic, and request queuing.
+ *
+ * IMPROVEMENTS:
+ * - Single source of truth for token validation
+ * - Request queue for pending requests during token refresh
+ * - Simplified validation caching (single cache, consistent duration)
+ * - Better error handling and logging
  */
 
 import { secureStorage } from '../utils/secureStorage'
 import { jwtUtils } from '../utils/jwtUtils'
 
-// Token refresh state management
+// Token refresh state management with request queuing
 interface TokenRefreshState {
   isRefreshing: boolean
   refreshPromise: Promise<boolean> | null
+  pendingRequests: Array<{
+    resolve: (value: boolean) => void
+    reject: (error: Error) => void
+  }>
 }
 
 const refreshState: TokenRefreshState = {
   isRefreshing: false,
   refreshPromise: null,
+  pendingRequests: [],
 }
 
-// Validation cache to prevent excessive checks
-const VALIDATION_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+// Single validation cache for consistency
+const VALIDATION_CACHE_DURATION = 3 * 60 * 1000 // 3 minutes
 let lastValidationTime = 0
 let lastValidationResult = false
 
@@ -43,14 +54,14 @@ class TokenManager {
       const token = secureStorage.getItem('access_token')
 
       if (token && !secureStorage.isValidTokenFormat(token)) {
-        console.warn('Invalid access token format in storage, clearing tokens')
+        console.warn('[TokenManager] Invalid access token format, clearing tokens')
         this.clearTokens()
         return null
       }
 
       return token
     } catch (error) {
-      console.error('Error retrieving access token:', error)
+      console.error('[TokenManager] Error retrieving access token:', error)
       return null
     }
   }
@@ -63,14 +74,14 @@ class TokenManager {
       const token = secureStorage.getItem('refresh_token')
 
       if (token && !secureStorage.isValidTokenFormat(token)) {
-        console.warn('Invalid refresh token format in storage, clearing tokens')
+        console.warn('[TokenManager] Invalid refresh token format, clearing tokens')
         this.clearTokens()
         return null
       }
 
       return token
     } catch (error) {
-      console.error('Error retrieving refresh token:', error)
+      console.error('[TokenManager] Error retrieving refresh token:', error)
       return null
     }
   }
@@ -83,7 +94,7 @@ class TokenManager {
       !secureStorage.isValidTokenFormat(accessToken) ||
       !secureStorage.isValidTokenFormat(refreshToken)
     ) {
-      console.warn('Invalid token format detected')
+      console.warn('[TokenManager] Invalid token format detected, not storing')
       return
     }
 
@@ -93,8 +104,7 @@ class TokenManager {
     // Clear validation cache when new tokens are set
     this.clearValidationCache()
 
-    // Migrate existing localStorage data if present
-    secureStorage.migrateToSecureStorage(['access_token', 'refresh_token', 'user'])
+    console.info('[TokenManager] Tokens stored successfully')
   }
 
   /**
@@ -104,6 +114,7 @@ class TokenManager {
     secureStorage.removeItem('access_token')
     secureStorage.removeItem('refresh_token')
     this.clearValidationCache()
+    console.info('[TokenManager] Tokens cleared')
   }
 
   /**
@@ -118,11 +129,17 @@ class TokenManager {
    * Check if user is authenticated (has valid access token)
    */
   isAuthenticated(): boolean {
-    return !!this.getAccessToken()
+    const token = this.getAccessToken()
+    if (!token) return false
+
+    // Quick client-side expiration check
+    const isExpired = jwtUtils.isTokenExpired(token)
+    return isExpired !== true // null or false means potentially valid
   }
 
   /**
    * Check if token is expired or will expire soon
+   * Used for proactive refresh decisions
    */
   shouldRefreshToken(minutesBeforeExpiry: number = 5): boolean {
     try {
@@ -133,66 +150,69 @@ class TokenManager {
       }
 
       const isExpired = jwtUtils.isTokenExpired(accessToken)
+      if (isExpired === true) {
+        return true
+      }
+
       const willExpireSoon = jwtUtils.willExpireSoon(accessToken, minutesBeforeExpiry)
-
-      if (isExpired) {
-        console.info('Access token is expired, refresh needed')
-        return true
-      }
-
-      if (willExpireSoon) {
-        console.info('Access token will expire soon, proactive refresh needed')
-        return true
-      }
-
-      return false
+      return willExpireSoon
     } catch (error) {
-      console.warn('Error checking token expiration:', error)
-      return true
+      console.warn('[TokenManager] Error checking token expiration:', error)
+      return true // Assume refresh needed on error
     }
   }
 
   /**
    * Attempt to refresh the access token using the refresh token
-   * Returns a promise that resolves to true if refresh was successful
    *
-   * This method ensures only one refresh happens at a time using a promise lock
+   * IMPROVEMENTS:
+   * - Single refresh at a time (promise lock)
+   * - Queues concurrent requests and resolves them all after refresh
+   * - Better error handling and cleanup
    */
   async attemptTokenRefresh(
     refreshCallback: (refreshToken: string) => Promise<TokenRefreshResponse>
   ): Promise<boolean> {
-    // If already refreshing, wait for that promise
+    // If already refreshing, queue this request
     if (refreshState.isRefreshing && refreshState.refreshPromise) {
-      console.debug('Token refresh already in progress, waiting...')
-      return refreshState.refreshPromise
+      console.debug('[TokenManager] Refresh in progress, queueing request')
+      return new Promise<boolean>((resolve, reject) => {
+        refreshState.pendingRequests.push({ resolve, reject })
+      })
     }
 
     // Start a new refresh
+    console.info('[TokenManager] Starting token refresh')
     refreshState.isRefreshing = true
     refreshState.refreshPromise = (async () => {
       try {
-        console.info('Attempting to refresh access token')
-
         const refreshToken = this.getRefreshToken()
         if (!refreshToken) {
-          console.warn('No refresh token available')
+          console.warn('[TokenManager] No refresh token available')
+          this.clearTokens()
+          this.rejectPendingRequests(new Error('No refresh token available'))
           return false
         }
 
         const response = await refreshCallback(refreshToken)
 
         if (response && response.access && response.refresh) {
-          console.info('Token refresh successful')
+          console.info('[TokenManager] Token refresh successful')
           this.setTokens(response.access, response.refresh)
+
+          // Resolve all pending requests
+          this.resolvePendingRequests(true)
           return true
         }
 
-        console.warn('Token refresh failed: Invalid response')
+        console.warn('[TokenManager] Token refresh failed: Invalid response')
         this.clearTokens()
+        this.rejectPendingRequests(new Error('Invalid refresh response'))
         return false
       } catch (error) {
-        console.error('Token refresh error:', error)
+        console.error('[TokenManager] Token refresh error:', error)
         this.clearTokens()
+        this.rejectPendingRequests(error as Error)
         return false
       } finally {
         refreshState.isRefreshing = false
@@ -204,7 +224,45 @@ class TokenManager {
   }
 
   /**
-   * Validate token using cached result or server verification
+   * Resolve all pending requests after successful refresh
+   */
+  private resolvePendingRequests(value: boolean): void {
+    const pending = [...refreshState.pendingRequests]
+    refreshState.pendingRequests = []
+
+    pending.forEach(({ resolve }) => {
+      resolve(value)
+    })
+
+    if (pending.length > 0) {
+      console.info(`[TokenManager] Resolved ${pending.length} pending requests after refresh`)
+    }
+  }
+
+  /**
+   * Reject all pending requests after failed refresh
+   */
+  private rejectPendingRequests(error: Error): void {
+    const pending = [...refreshState.pendingRequests]
+    refreshState.pendingRequests = []
+
+    pending.forEach(({ reject }) => {
+      reject(error)
+    })
+
+    if (pending.length > 0) {
+      console.warn(`[TokenManager] Rejected ${pending.length} pending requests after refresh failure`)
+    }
+  }
+
+  /**
+   * Ensure token is valid (single source of truth for validation)
+   *
+   * IMPROVEMENTS:
+   * - Single validation cache (3 minutes)
+   * - Proactive refresh before expiry
+   * - Better error handling
+   * - Clear logging
    */
   async ensureValidToken(
     verifyCallback: (token: string) => Promise<boolean>,
@@ -214,14 +272,15 @@ class TokenManager {
       const accessToken = this.getAccessToken()
 
       if (!accessToken) {
-        console.info('No access token found')
+        console.debug('[TokenManager] No access token found')
         return false
       }
 
-      // Check validation cache first
+      // Check validation cache first (reduce server load)
       const now = Date.now()
-      if (now - lastValidationTime < VALIDATION_CACHE_DURATION && lastValidationResult) {
-        console.debug('Using cached validation result')
+      const cacheAge = now - lastValidationTime
+      if (cacheAge < VALIDATION_CACHE_DURATION && lastValidationResult) {
+        console.debug(`[TokenManager] Using cached validation (age: ${Math.round(cacheAge / 1000)}s)`)
         return true
       }
 
@@ -229,7 +288,7 @@ class TokenManager {
       const isExpired = jwtUtils.isTokenExpired(accessToken)
 
       if (isExpired === true) {
-        console.info('Access token is expired, attempting refresh')
+        console.info('[TokenManager] Access token expired, attempting refresh')
         const refreshSuccess = await this.attemptTokenRefresh(refreshCallback)
 
         lastValidationTime = now
@@ -237,25 +296,30 @@ class TokenManager {
         return refreshSuccess
       }
 
-      // Check if token will expire soon and proactively refresh
-      if (this.shouldRefreshToken()) {
-        console.info('Token will expire soon, proactive refresh')
+      // Check if token will expire soon (proactive refresh)
+      if (this.shouldRefreshToken(5)) {
+        console.info('[TokenManager] Token expiring soon, proactive refresh')
 
         const refreshSuccess = await this.attemptTokenRefresh(refreshCallback)
         if (refreshSuccess) {
-          console.info('Proactive token refresh successful')
           lastValidationTime = now
           lastValidationResult = true
           return true
         }
 
-        // If proactive refresh fails, check if current token is still valid
-        console.warn('Proactive refresh failed, verifying current token')
-        const isStillValid = await verifyCallback(accessToken)
-
-        lastValidationTime = now
-        lastValidationResult = isStillValid
-        return isStillValid
+        // Proactive refresh failed, verify current token is still usable
+        console.warn('[TokenManager] Proactive refresh failed, verifying current token')
+        try {
+          const isStillValid = await verifyCallback(accessToken)
+          lastValidationTime = now
+          lastValidationResult = isStillValid
+          return isStillValid
+        } catch (verifyError) {
+          console.error('[TokenManager] Token verification failed:', verifyError)
+          lastValidationTime = now
+          lastValidationResult = false
+          return false
+        }
       }
 
       // Token should be valid, update cache
@@ -263,10 +327,30 @@ class TokenManager {
       lastValidationResult = true
       return true
     } catch (error) {
-      console.error('Error in ensureValidToken:', error)
+      console.error('[TokenManager] Error in ensureValidToken:', error)
       lastValidationTime = Date.now()
       lastValidationResult = false
       return false
+    }
+  }
+
+  /**
+   * Get validation cache info (for debugging)
+   */
+  getValidationCacheInfo(): {
+    lastValidationTime: number
+    lastValidationResult: boolean
+    cacheAge: number
+    isValid: boolean
+  } {
+    const now = Date.now()
+    const cacheAge = now - lastValidationTime
+
+    return {
+      lastValidationTime,
+      lastValidationResult,
+      cacheAge,
+      isValid: cacheAge < VALIDATION_CACHE_DURATION && lastValidationResult,
     }
   }
 }

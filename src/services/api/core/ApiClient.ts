@@ -81,32 +81,54 @@ export class ApiClient {
 
   /**
    * Attempt to refresh the access token
-   * Uses tokenManager to avoid circular dependency with auth.ts
+   * Uses tokenManager which handles request queuing automatically
+   *
+   * IMPROVEMENTS:
+   * - TokenManager handles concurrent refresh attempts
+   * - All pending requests are queued and resolved after refresh
+   * - Better error handling
    */
   private async attemptTokenRefresh(): Promise<boolean> {
-    return tokenManager.attemptTokenRefresh(async (refreshToken: string) => {
-      // Make direct API call to refresh endpoint
-      const response = await fetch(`${this.baseURL}/api/auth/token/refresh/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ refresh: refreshToken }),
+    try {
+      return await tokenManager.attemptTokenRefresh(async (refreshToken: string) => {
+        console.debug('[ApiClient] Calling token refresh endpoint')
+
+        // Make direct API call to refresh endpoint
+        const response = await fetch(`${this.baseURL}/api/auth/token/refresh/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ refresh: refreshToken }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('[ApiClient] Token refresh failed:', response.status, errorText)
+          throw new Error(`Token refresh failed: ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        // Validate response format
+        if (!data.access || !data.refresh) {
+          console.error('[ApiClient] Invalid refresh response format:', data)
+          throw new Error('Invalid refresh response format')
+        }
+
+        console.info('[ApiClient] Token refresh endpoint returned new tokens')
+
+        // Return in the format tokenManager expects
+        return {
+          access: data.access,
+          refresh: data.refresh,
+        } as TokenRefreshResponse
       })
-
-      if (!response.ok) {
-        throw new Error('Token refresh failed')
-      }
-
-      const data = await response.json()
-
-      // Return in the format tokenManager expects
-      return {
-        access: data.access,
-        refresh: data.refresh,
-      } as TokenRefreshResponse
-    })
+    } catch (error) {
+      console.error('[ApiClient] Token refresh attempt failed:', error)
+      return false
+    }
   }
 
   /**
@@ -384,17 +406,13 @@ export class ApiClient {
 
         // Handle 401 specifically for auth token issues
         if (response.status === 401 && !isRetry && requestFn) {
-          if (IS_DEV_MODE) {
-            SecureLogger.debug('Token Refresh', { message: 'Attempting token refresh after 401' })
-          }
+          console.debug('[ApiClient] Received 401, attempting token refresh')
 
-          // Attempt to refresh the token
+          // Attempt to refresh the token (tokenManager handles queuing automatically)
           const refreshSuccess = await this.attemptTokenRefresh()
 
           if (refreshSuccess) {
-            if (IS_DEV_MODE) {
-              SecureLogger.debug('Token Refresh', { message: 'Token refresh successful, retrying request' })
-            }
+            console.info('[ApiClient] Token refresh successful, retrying original request')
             // Retry the original request with new token
             try {
               // Create new AbortController for retry
@@ -402,21 +420,21 @@ export class ApiClient {
               const retryResponse = await requestFn(retryController.signal)
               return this.handleResponse<T>(retryResponse, undefined, true)
             } catch (retryError) {
-              SecureLogger.error('Retry Failed', retryError)
+              console.error('[ApiClient] Retry after token refresh failed:', retryError)
               return {
                 success: false,
                 message: 'Request failed after token refresh',
               }
             }
           } else {
-            SecureLogger.warn('Token Refresh Failed', 'User needs to re-authenticate')
+            console.warn('[ApiClient] Token refresh failed, clearing auth data')
             // Refresh failed, clear all auth data
             tokenManager.clearTokens()
             secureStorage.removeItem('user')
           }
         } else if (response.status === 401 && isRetry) {
           // If we already retried and still got 401, clear everything
-          SecureLogger.warn('Auth Failed', 'Retry also failed with 401, clearing auth data')
+          console.warn('[ApiClient] Retry also failed with 401, clearing auth data')
           tokenManager.clearTokens()
           secureStorage.removeItem('user')
         }

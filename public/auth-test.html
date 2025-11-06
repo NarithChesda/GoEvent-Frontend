@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Authentication Testing - GoEvent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .test-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-card p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.1s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.running {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .debug-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .debug-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .token-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .token-info h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .token-info p {
+            color: #666;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-actions button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JWT Authentication Testing Suite</h1>
+            <p>Test your GoEvent JWT authentication implementation</p>
+            <p><strong>Backend:</strong> http://localhost:8000 | <strong>Test Credentials:</strong> test@goevent.com / test123</p>
+        </div>
+
+        <div class="quick-actions">
+            <button onclick="checkTokens()">Check Tokens</button>
+            <button onclick="decodeTokens()">Decode Tokens</button>
+            <button onclick="clearAllTokens()">Clear All Tokens</button>
+            <button onclick="runFullTestSuite()">Run Full Test Suite</button>
+        </div>
+
+        <div class="test-grid">
+            <!-- Test 1: Basic Login -->
+            <div class="test-card">
+                <h3><span>🔐</span> Test 1: Basic Login</h3>
+                <p>Test the login flow with test credentials</p>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" value="test@goevent.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" value="test123">
+                </div>
+                <button onclick="testLogin()">Test Login</button>
+                <div id="login-result"></div>
+            </div>
+
+            <!-- Test 2: Token in API Requests -->
+            <div class="test-card">
+                <h3><span>📡</span> Test 2: API Request with Token</h3>
+                <p>Verify that API requests include Authorization header</p>
+                <button onclick="testApiRequest()">Test API Call</button>
+                <div id="api-result"></div>
+            </div>
+
+            <!-- Test 3: Token Refresh -->
+            <div class="test-card">
+                <h3><span>🔄</span> Test 3: Token Refresh</h3>
+                <p>Force token refresh by removing access token</p>
+                <button onclick="testTokenRefresh()">Test Refresh</button>
+                <div id="refresh-result"></div>
+            </div>
+
+            <!-- Test 4: Logout -->
+            <div class="test-card">
+                <h3><span>🚪</span> Test 4: Logout</h3>
+                <p>Test logout and token cleanup</p>
+                <button onclick="testLogout()">Test Logout</button>
+                <div id="logout-result"></div>
+            </div>
+
+            <!-- Test 5: Fire-and-Forget Logout -->
+            <div class="test-card">
+                <h3><span>⚡</span> Test 5: Logout with Expired Token</h3>
+                <p>Test logout with corrupted refresh token</p>
+                <button onclick="testExpiredLogout()">Test Expired Logout</button>
+                <div id="expired-logout-result"></div>
+            </div>
+
+            <!-- Test 6: Token Blacklist -->
+            <div class="test-card">
+                <h3><span>🚫</span> Test 6: Blacklisted Token</h3>
+                <p>Verify old tokens can't be reused after logout</p>
+                <button onclick="testBlacklist()">Test Blacklist</button>
+                <div id="blacklist-result"></div>
+            </div>
+
+            <!-- Test 7: Concurrent Requests -->
+            <div class="test-card">
+                <h3><span>⚙️</span> Test 7: Concurrent Requests</h3>
+                <p>Test multiple simultaneous API calls</p>
+                <button onclick="testConcurrentRequests()">Test Concurrent</button>
+                <div id="concurrent-result"></div>
+            </div>
+
+            <!-- Test 8: Invalid Login -->
+            <div class="test-card">
+                <h3><span>❌</span> Test 8: Invalid Credentials</h3>
+                <p>Test login with wrong password</p>
+                <button onclick="testInvalidLogin()">Test Invalid Login</button>
+                <div id="invalid-login-result"></div>
+            </div>
+        </div>
+
+        <!-- Debug Section -->
+        <div class="debug-section">
+            <h3>🔍 Debug Information</h3>
+            <div id="debug-info"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const TOKEN_PREFIX = 'goevent_v3_';
+
+        // Utility functions
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.innerHTML = message;
+        }
+
+        function getTokens() {
+            return {
+                access: localStorage.getItem(TOKEN_PREFIX + 'access_token'),
+                refresh: localStorage.getItem(TOKEN_PREFIX + 'refresh_token')
+            };
+        }
+
+        function setTokens(access, refresh) {
+            localStorage.setItem(TOKEN_PREFIX + 'access_token', access);
+            localStorage.setItem(TOKEN_PREFIX + 'refresh_token', refresh);
+        }
+
+        function clearTokens() {
+            localStorage.removeItem(TOKEN_PREFIX + 'access_token');
+            localStorage.removeItem(TOKEN_PREFIX + 'refresh_token');
+            localStorage.removeItem(TOKEN_PREFIX + 'user');
+        }
+
+        function decodeJWT(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Test functions
+        async function testLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            showResult('login-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.tokens) {
+                    setTokens(data.tokens.access, data.tokens.refresh);
+                    showResult('login-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p><strong>Login successful!</strong></p>
+                        <p>User: ${data.user.email}</p>
+                        <p>Tokens stored in localStorage</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`,
+                        'success'
+                    );
+                    updateDebugInfo();
+                } else {
+                    showResult('login-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Login failed: ${data.message || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('login-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Network error: ${error.message}</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testApiRequest() {
+            showResult('api-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            const tokens = getTokens();
+            if (!tokens.access) {
+                showResult('api-result',
+                    `<span class="status-badge error">✗ NO TOKEN</span>
+                    <p>Please login first to get an access token</p>`,
+                    'error'
+                );
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/events/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${tokens.access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('api-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>API request successful with Authorization header</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Events received: ${data.results ? data.results.length : 'N/A'}</p>`,
+                        'success'
+                    );
+                } else {
+                    showResult('api-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>API request failed: ${data.detail || data.message || 'Unknown error'}</p>
+                        <p>Status: ${response.status}</p>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('api-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Network error: ${error.message}</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testTokenRefresh() {
+            showResult('refresh-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            const tokens = getTokens();
+            if (!tokens.refresh) {
+                showResult('refresh-result',
+                    `<span class="status-badge error">✗ NO TOKEN</span>
+                    <p>Please login first to get a refresh token</p>`,
+                    'error'
+                );
+                return;
+            }
+
+            // Remove access token to force refresh
+            localStorage.removeItem(TOKEN_PREFIX + 'access_token');
+            showResult('refresh-result',
+                `<span class="status-badge info">INFO</span>
+                <p>Removed access token. Attempting refresh...</p>`,
+                'info'
+            );
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refresh: tokens.refresh })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.access) {
+                    setTokens(data.access, data.refresh);
+                    showResult('refresh-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>Token refresh successful!</p>
+                        <p>New access token stored</p>
+                        <p>New refresh token: ${data.refresh !== tokens.refresh ? 'Yes (rotated)' : 'No'}</p>`,
+                        'success'
+                    );
+                    updateDebugInfo();
+                } else {
+                    showResult('refresh-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Token refresh failed: ${data.detail || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('refresh-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Network error: ${error.message}</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testLogout() {
+            showResult('logout-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            const tokens = getTokens();
+            if (!tokens.refresh) {
+                showResult('logout-result',
+                    `<span class="status-badge error">✗ NO TOKEN</span>
+                    <p>Please login first</p>`,
+                    'error'
+                );
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(tokens.access ? { 'Authorization': `Bearer ${tokens.access}` } : {})
+                    },
+                    body: JSON.stringify({ refresh: tokens.refresh })
+                });
+
+                const data = await response.json();
+
+                clearTokens();
+
+                if (response.ok) {
+                    showResult('logout-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>Logout successful!</p>
+                        <p>Tokens cleared from localStorage</p>
+                        <p>Message: ${data.message}</p>`,
+                        'success'
+                    );
+                    updateDebugInfo();
+                } else {
+                    showResult('logout-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Logout request failed, but tokens were cleared locally</p>
+                        <p>Status: ${response.status}</p>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                clearTokens();
+                showResult('logout-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Network error: ${error.message}</p>
+                    <p>Tokens cleared locally anyway</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testExpiredLogout() {
+            showResult('expired-logout-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            // Set invalid token
+            localStorage.setItem(TOKEN_PREFIX + 'refresh_token', 'invalid_token_12345');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refresh: 'invalid_token_12345' })
+                });
+
+                const data = await response.json();
+
+                clearTokens();
+
+                if (response.ok) {
+                    showResult('expired-logout-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>Fire-and-forget logout works! Status: ${response.status}</p>
+                        <p>Even with invalid token, logout succeeded</p>
+                        <p>Message: ${data.message}</p>`,
+                        'success'
+                    );
+                } else {
+                    showResult('expired-logout-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Logout failed with invalid token (this is bad!)</p>
+                        <p>Status: ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('expired-logout-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Network error: ${error.message}</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testBlacklist() {
+            showResult('blacklist-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            // First login to get a token
+            try {
+                const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'test@goevent.com', password: 'test123' })
+                });
+
+                const loginData = await loginResponse.json();
+
+                if (!loginResponse.ok || !loginData.tokens) {
+                    showResult('blacklist-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Could not login to get token</p>`,
+                        'error'
+                    );
+                    return;
+                }
+
+                const oldRefresh = loginData.tokens.refresh;
+
+                // Now logout to blacklist the token
+                await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh: oldRefresh })
+                });
+
+                // Try to use the old token
+                const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh: oldRefresh })
+                });
+
+                const refreshData = await refreshResponse.json();
+
+                if (refreshResponse.status === 401 && refreshData.detail === 'Token is blacklisted') {
+                    showResult('blacklist-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>Token blacklist working correctly!</p>
+                        <p>Old token was rejected with 401</p>
+                        <p>Detail: ${refreshData.detail}</p>`,
+                        'success'
+                    );
+                } else {
+                    showResult('blacklist-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Blacklisted token was not rejected!</p>
+                        <p>Status: ${refreshResponse.status}</p>
+                        <pre>${JSON.stringify(refreshData, null, 2)}</pre>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('blacklist-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Error: ${error.message}</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testConcurrentRequests() {
+            showResult('concurrent-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            const tokens = getTokens();
+            if (!tokens.access) {
+                showResult('concurrent-result',
+                    `<span class="status-badge error">✗ NO TOKEN</span>
+                    <p>Please login first</p>`,
+                    'error'
+                );
+                return;
+            }
+
+            // Use only endpoints that exist on the backend
+            const endpoints = [
+                '/api/events/',
+                '/api/auth/profile/',
+                '/api/events/',  // Call same endpoint multiple times to test concurrency
+                '/api/auth/profile/'
+            ];
+
+            try {
+                const startTime = Date.now();
+
+                const requests = endpoints.map(endpoint =>
+                    fetch(`${API_BASE_URL}${endpoint}`, {
+                        headers: {
+                            'Authorization': `Bearer ${tokens.access}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                );
+
+                const responses = await Promise.all(requests);
+                const endTime = Date.now();
+
+                // Check which responses succeeded and which failed
+                const statusCodes = responses.map(r => r.status);
+                const allSuccessful = responses.every(r => r.ok);
+
+                // Try to parse JSON, but handle errors gracefully
+                const results = [];
+                for (const response of responses) {
+                    try {
+                        const clone = response.clone();
+                        const text = await clone.text();
+                        if (text && text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                            results.push(JSON.parse(text));
+                        } else {
+                            results.push({ error: 'Non-JSON response', text: text.substring(0, 100) });
+                        }
+                    } catch (e) {
+                        results.push({ error: 'Failed to parse response', message: e.message });
+                    }
+                }
+
+                if (allSuccessful) {
+                    showResult('concurrent-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>All ${endpoints.length} concurrent requests succeeded!</p>
+                        <p>Time: ${endTime - startTime}ms</p>
+                        <p>Status codes: ${statusCodes.join(', ')}</p>
+                        <p>Check Network tab to verify only one refresh occurred (if needed)</p>`,
+                        'success'
+                    );
+                } else {
+                    const successCount = responses.filter(r => r.ok).length;
+                    showResult('concurrent-result',
+                        `<span class="status-badge ${successCount > 0 ? 'success' : 'error'}">
+                        ${successCount > 0 ? '⚠ PARTIAL' : '✗ FAILED'}</span>
+                        <p>Requests completed: ${successCount}/${endpoints.length}</p>
+                        <p>Status codes: ${statusCodes.join(', ')}</p>
+                        <p>Time: ${endTime - startTime}ms</p>
+                        <pre>Results: ${JSON.stringify(results, null, 2)}</pre>`,
+                        successCount > 0 ? 'info' : 'error'
+                    );
+                }
+            } catch (error) {
+                showResult('concurrent-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Error: ${error.message}</p>
+                    <p>This might indicate a network issue or CORS problem</p>`,
+                    'error'
+                );
+            }
+        }
+
+        async function testInvalidLogin() {
+            showResult('invalid-login-result', '<span class="status-badge running">RUNNING...</span>', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'test@goevent.com', password: 'wrong_password' })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showResult('invalid-login-result',
+                        `<span class="status-badge success">✓ SUCCESS</span>
+                        <p>Invalid login correctly rejected!</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Error message: ${data.message || data.detail || 'Unknown'}</p>`,
+                        'success'
+                    );
+                } else {
+                    showResult('invalid-login-result',
+                        `<span class="status-badge error">✗ FAILED</span>
+                        <p>Invalid credentials were accepted (security issue!)</p>`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('invalid-login-result',
+                    `<span class="status-badge error">✗ ERROR</span>
+                    <p>Error: ${error.message}</p>`,
+                    'error'
+                );
+            }
+        }
+
+        // Utility test functions
+        function checkTokens() {
+            const tokens = getTokens();
+            const hasAccess = !!tokens.access;
+            const hasRefresh = !!tokens.refresh;
+
+            let message = `<h4>Token Status</h4>`;
+            message += `<p>Access Token: ${hasAccess ? '✓ Present' : '✗ Missing'}</p>`;
+            message += `<p>Refresh Token: ${hasRefresh ? '✓ Present' : '✗ Missing'}</p>`;
+
+            if (hasAccess) {
+                message += `<p>Access Token (first 50 chars): ${tokens.access.substring(0, 50)}...</p>`;
+            }
+
+            if (hasRefresh) {
+                message += `<p>Refresh Token (first 50 chars): ${tokens.refresh.substring(0, 50)}...</p>`;
+            }
+
+            alert(message.replace(/<[^>]*>/g, '\n'));
+            updateDebugInfo();
+        }
+
+        function decodeTokens() {
+            const tokens = getTokens();
+
+            if (!tokens.access && !tokens.refresh) {
+                alert('No tokens found. Please login first.');
+                return;
+            }
+
+            let message = '';
+
+            if (tokens.access) {
+                const decoded = decodeJWT(tokens.access);
+                if (decoded) {
+                    const now = Math.floor(Date.now() / 1000);
+                    const expiresIn = decoded.exp - now;
+                    message += `Access Token:\n`;
+                    message += `  User ID: ${decoded.user_id}\n`;
+                    message += `  Issued: ${new Date(decoded.iat * 1000).toLocaleString()}\n`;
+                    message += `  Expires: ${new Date(decoded.exp * 1000).toLocaleString()}\n`;
+                    message += `  Time remaining: ${Math.floor(expiresIn / 60)} minutes\n\n`;
+                }
+            }
+
+            if (tokens.refresh) {
+                const decoded = decodeJWT(tokens.refresh);
+                if (decoded) {
+                    const now = Math.floor(Date.now() / 1000);
+                    const expiresIn = decoded.exp - now;
+                    message += `Refresh Token:\n`;
+                    message += `  User ID: ${decoded.user_id}\n`;
+                    message += `  Issued: ${new Date(decoded.iat * 1000).toLocaleString()}\n`;
+                    message += `  Expires: ${new Date(decoded.exp * 1000).toLocaleString()}\n`;
+                    message += `  Time remaining: ${Math.floor(expiresIn / 60 / 24)} days\n`;
+                }
+            }
+
+            alert(message);
+            updateDebugInfo();
+        }
+
+        function clearAllTokens() {
+            clearTokens();
+            alert('All tokens cleared!');
+            updateDebugInfo();
+        }
+
+        function updateDebugInfo() {
+            const tokens = getTokens();
+            const debugDiv = document.getElementById('debug-info');
+
+            let html = '';
+
+            if (tokens.access) {
+                const decoded = decodeJWT(tokens.access);
+                if (decoded) {
+                    const now = Math.floor(Date.now() / 1000);
+                    const expiresIn = decoded.exp - now;
+                    html += `
+                        <div class="token-info">
+                            <h4>Access Token</h4>
+                            <p><strong>User ID:</strong> ${decoded.user_id}</p>
+                            <p><strong>Issued:</strong> ${new Date(decoded.iat * 1000).toLocaleString()}</p>
+                            <p><strong>Expires:</strong> ${new Date(decoded.exp * 1000).toLocaleString()}</p>
+                            <p><strong>Time remaining:</strong> ${Math.floor(expiresIn / 60)} minutes</p>
+                            <p><strong>Status:</strong> ${expiresIn > 0 ? '✓ Valid' : '✗ Expired'}</p>
+                        </div>
+                    `;
+                }
+            } else {
+                html += '<div class="token-info"><h4>Access Token</h4><p>Not present</p></div>';
+            }
+
+            if (tokens.refresh) {
+                const decoded = decodeJWT(tokens.refresh);
+                if (decoded) {
+                    const now = Math.floor(Date.now() / 1000);
+                    const expiresIn = decoded.exp - now;
+                    html += `
+                        <div class="token-info">
+                            <h4>Refresh Token</h4>
+                            <p><strong>User ID:</strong> ${decoded.user_id}</p>
+                            <p><strong>Issued:</strong> ${new Date(decoded.iat * 1000).toLocaleString()}</p>
+                            <p><strong>Expires:</strong> ${new Date(decoded.exp * 1000).toLocaleString()}</p>
+                            <p><strong>Time remaining:</strong> ${Math.floor(expiresIn / 60 / 24)} days</p>
+                            <p><strong>Status:</strong> ${expiresIn > 0 ? '✓ Valid' : '✗ Expired'}</p>
+                        </div>
+                    `;
+                }
+            } else {
+                html += '<div class="token-info"><h4>Refresh Token</h4><p>Not present</p></div>';
+            }
+
+            debugDiv.innerHTML = html;
+        }
+
+        async function runFullTestSuite() {
+            if (!confirm('This will run all tests sequentially. Continue?')) {
+                return;
+            }
+
+            // Clear existing tokens
+            clearTokens();
+
+            // Run tests one by one
+            await testLogin();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testApiRequest();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testTokenRefresh();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testConcurrentRequests();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testLogout();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testExpiredLogout();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testBlacklist();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testInvalidLogin();
+
+            alert('Full test suite completed! Check results above.');
+        }
+
+        // Initialize debug info on page load
+        updateDebugInfo();
+    </script>
+</body>
+</html>

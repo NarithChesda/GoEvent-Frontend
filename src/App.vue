@@ -2,16 +2,33 @@
 import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { secureStorage } from './utils/secureStorage'
 
 const authStore = useAuthStore()
 
-// Initialize auth store when app starts
+/**
+ * App initialization
+ *
+ * IMPROVEMENTS:
+ * - Explicitly migrates legacy storage on startup
+ * - Migration happens once, not on every token retrieval
+ * - Better error handling
+ */
 onMounted(async () => {
   try {
+    console.info('[App] Starting app initialization')
+
+    // Migrate legacy storage explicitly on app startup
+    // This only happens once, ensuring clean migration from v2 encrypted format
+    secureStorage.migrateFromLegacyStorage(['access_token', 'refresh_token', 'user'])
+
+    // Initialize authentication
     await authStore.initializeAuth()
+
+    console.info('[App] App initialization completed')
   } catch (error) {
-    console.error('Failed to initialize auth:', error)
-    // Don't let auth failures prevent the app from loading
+    console.error('[App] Failed to initialize app:', error)
+    // Don't let initialization failures prevent the app from loading
   }
 })
 </script>

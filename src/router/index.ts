@@ -2,11 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { resetMetaTags } from '../utils/metaUtils'
 
-// Route guard validation cache to prevent excessive token validation
-// The authService already has internal caching, but this adds an extra layer
-// to prevent even calling ensureValidToken on every single navigation
-let lastRouteValidationTime: number = 0
-const ROUTE_VALIDATION_CACHE_DURATION = 2 * 60 * 1000 // 2 minutes
+/**
+ * Router Configuration
+ *
+ * IMPROVEMENTS:
+ * - Removed redundant route-level validation caching
+ * - Uses authService.ensureValidToken() which has proper caching (via tokenManager)
+ * - Simplified route guard logic
+ * - Better error handling
+ */
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -109,83 +113,75 @@ const router = createRouter({
   ],
 })
 
-// Enhanced route guard with security checks
+/**
+ * Route guard for authentication
+ *
+ * IMPROVEMENTS:
+ * - Simplified logic - no redundant caching (tokenManager handles it)
+ * - Validates tokens for sensitive routes only
+ * - Better error handling - network errors don't block navigation
+ * - Clear logging
+ */
 router.beforeEach(async (to, from, next) => {
   try {
-    if (to.meta.requiresAuth) {
-      // Dynamically import to avoid circular dependency
-      const { useAuthStore } = await import('../stores/auth')
-      const { authService } = await import('../services/auth')
-      const authStore = useAuthStore()
-
-      // Basic authentication check
-      if (!authStore.isAuthenticated) {
-        console.info('User not authenticated, redirecting to sign in')
-        next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
-        return
-      }
-
-      // Enhanced security: Validate token for sensitive routes
-      // But use caching to avoid validating on every single navigation
-      const sensitiveRoutes = ['settings', 'security', 'commission', 'event-edit']
-      const now = Date.now()
-      const timeSinceLastValidation = now - lastRouteValidationTime
-      const needsValidation =
-        sensitiveRoutes.includes(to.name as string) &&
-        timeSinceLastValidation > ROUTE_VALIDATION_CACHE_DURATION
-
-      if (needsValidation) {
-        console.debug('Validating token for sensitive route:', to.name)
-        try {
-          const isTokenValid = await authService.ensureValidToken()
-
-          if (isTokenValid) {
-            // Update validation cache
-            lastRouteValidationTime = now
-            console.debug('Token validation successful for route guard')
-          } else {
-            // Token is definitively invalid
-            console.warn('Token validation failed definitively, logging out')
-            await authStore.logout()
-            next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
-            return
-          }
-        } catch (error) {
-          console.warn('Token validation error in route guard:', error)
-          // On network errors, allow navigation - don't force logout
-          // The API service will handle token refresh if needed
-          console.info('Allowing navigation despite validation error')
-        }
-      } else if (sensitiveRoutes.includes(to.name as string)) {
-        console.debug(
-          'Skipping token validation (cached, last validated',
-          Math.round(timeSinceLastValidation / 1000),
-          'seconds ago)',
-        )
-      }
-
-      // Specific checks for event editing
-      if (to.name === 'event-edit' && to.params.id) {
-        console.debug('Navigating to event edit:', to.params.id)
-      }
-    }
-
     // Update document title based on route meta
     if (to.meta.title) {
       document.title = to.meta.title as string
     }
 
-    // Reset meta tags when leaving showcase pages (but not when entering)
+    // Reset meta tags when leaving showcase pages
     if (from.name === 'event-showcase' && to.name !== 'event-showcase') {
-      console.debug('Leaving showcase page, resetting meta tags')
       resetMetaTags()
+    }
+
+    // Check if route requires authentication
+    if (!to.meta.requiresAuth) {
+      next()
+      return
+    }
+
+    // Dynamically import to avoid circular dependency
+    const { useAuthStore } = await import('../stores/auth')
+    const { authService } = await import('../services/auth')
+    const authStore = useAuthStore()
+
+    // Basic authentication check
+    if (!authStore.isAuthenticated) {
+      console.info('[Router] User not authenticated, redirecting to sign in')
+      next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
+      return
+    }
+
+    // Validate token for sensitive routes
+    // TokenManager has internal caching, so this won't cause excessive server calls
+    const sensitiveRoutes = ['settings', 'security', 'commission', 'event-edit']
+    if (sensitiveRoutes.includes(to.name as string)) {
+      console.debug(`[Router] Validating token for sensitive route: ${to.name}`)
+
+      try {
+        const isTokenValid = await authService.ensureValidToken()
+
+        if (!isTokenValid) {
+          console.warn('[Router] Token validation failed, logging out')
+          await authStore.logout()
+          next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
+          return
+        }
+
+        console.debug('[Router] Token validation successful')
+      } catch (error) {
+        console.warn('[Router] Token validation error (non-critical):', error)
+        // On network errors, allow navigation
+        // The API will handle token refresh when needed
+        console.info('[Router] Allowing navigation despite validation error')
+      }
     }
 
     next()
   } catch (error) {
-    console.error('Route guard error:', error)
-    // Allow navigation to continue in case of errors - don't block the user
-    console.warn('Allowing navigation despite route guard error')
+    console.error('[Router] Route guard error:', error)
+    // Allow navigation on unexpected errors - don't block the user
+    console.warn('[Router] Allowing navigation despite route guard error')
     next()
   }
 })
