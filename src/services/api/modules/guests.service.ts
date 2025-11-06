@@ -14,6 +14,7 @@ import type {
   GuestListFilters,
   GuestStats,
   GuestGroupStats,
+  BulkOperationResponse,
 } from '../types'
 
 // Guest Service
@@ -63,6 +64,28 @@ export const guestService = {
   // Mark invitation as viewed
   async markInvitationViewed(eventId: string, guestId: number): Promise<ApiResponse<EventGuest>> {
     return apiClient.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/mark-viewed/`, {})
+  },
+
+  // Bulk mark invitations as sent
+  async bulkMarkInvitationSent(
+    eventId: string,
+    guestIds: number[],
+  ): Promise<ApiResponse<BulkOperationResponse>> {
+    return apiClient.post<BulkOperationResponse>(
+      `/api/events/${eventId}/guests/bulk-mark-sent/`,
+      { guest_ids: guestIds },
+    )
+  },
+
+  // Bulk delete guests
+  async bulkDeleteGuests(
+    eventId: string,
+    guestIds: number[],
+  ): Promise<ApiResponse<BulkOperationResponse>> {
+    return apiClient.post<BulkOperationResponse>(
+      `/api/events/${eventId}/guests/bulk-delete/`,
+      { guest_ids: guestIds },
+    )
   },
 
   // Bulk import guests (DEPRECATED - use guestGroupService.bulkImportToGroup instead)

@@ -272,6 +272,7 @@ const emit = defineEmits<{
 // Use composables
 const { isTemplateActivated, loadPayments, loadingPayments } = usePaymentTemplateIntegration(props.event)
 
+// Initialize guest groups composable first
 const {
   groups,
   loadingGroups,
@@ -281,8 +282,95 @@ const {
   deleteGroup,
   toggleGroupExpansion,
   isGroupExpanded,
+  incrementGroupGuestCount,
+  decrementGroupGuestCount,
 } = useGuestGroups(props.eventId)
 
+// Create callback functions to connect composables reactively
+/**
+ * Handles changes to a group's guest count without making API calls.
+ * This provides immediate UI feedback when guests are added/removed.
+ */
+const handleGroupCountChange = (groupId: number, delta: number) => {
+  incrementGroupGuestCount(groupId, delta)
+}
+
+/**
+ * Process items in batches to avoid overwhelming the server with too many concurrent requests.
+ * Makes parallel requests within each batch, then processes batches sequentially.
+ *
+ * @param items - Items to process
+ * @param processor - Async function to process each item
+ * @param batchSize - Number of items to process concurrently per batch (default: 20)
+ * @returns Array of results from Promise.allSettled for all items
+ *
+ * @example
+ * const results = await processBatch(
+ *   guestIds,
+ *   id => guestService.markInvitationSent(eventId, id),
+ *   20
+ * )
+ */
+const processBatch = async <T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  batchSize: number = 20
+): Promise<Array<PromiseSettledResult<R>>> => {
+  const allResults: Array<PromiseSettledResult<R>> = []
+
+  // Split items into batches and process each batch
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize)
+    const promises = batch.map(processor)
+    const results = await Promise.allSettled(promises)
+    allResults.push(...results)
+  }
+
+  return allResults
+}
+
+/**
+ * Handles changes to overall guest statistics without making API calls.
+ * This provides immediate UI feedback when guests are added/removed/updated.
+ */
+const handleStatsChange = (delta: number, statusChange?: { from?: string; to?: string }) => {
+  const stats = guestStats.value
+  if (!stats) return
+
+  // Update total count
+  stats.total_guests += delta
+
+  // Handle status changes
+  if (statusChange) {
+    const { from, to } = statusChange
+
+    // Handle deletions (to is undefined)
+    if (from && !to) {
+      if (from === 'not_sent') {
+        stats.not_sent = Math.max(0, stats.not_sent - 1)
+      } else if (from === 'sent') {
+        stats.sent = Math.max(0, stats.sent - 1)
+      } else if (from === 'viewed') {
+        stats.viewed = Math.max(0, stats.viewed - 1)
+      }
+    }
+    // Handle status transitions (existing code)
+    else if (from && to) {
+      if (from === 'not_sent' && to === 'sent') {
+        stats.not_sent = Math.max(0, stats.not_sent - 1)
+        stats.sent += 1
+      } else if (from === 'sent' && to === 'viewed') {
+        stats.sent = Math.max(0, stats.sent - 1)
+        stats.viewed += 1
+      }
+    }
+  } else if (delta > 0) {
+    // New guest additions (no status change info)
+    stats.not_sent += delta
+  }
+}
+
+// Initialize guests composable with callbacks
 const {
   guestStats,
   loadingStats,
@@ -308,8 +396,9 @@ const {
   nextAllGuestsPage,
   previousAllGuestsPage,
   setAllGuestsSearchTerm,
-} = useGuests(props.eventId)
+} = useGuests(props.eventId, handleGroupCountChange, handleStatsChange)
 
+// Initialize bulk import composable with callbacks
 const {
   selectedFile,
   isDragging,
@@ -321,7 +410,7 @@ const {
   importGuests,
   downloadTemplate,
   resetImportState,
-} = useBulkImport(props.eventId)
+} = useBulkImport(props.eventId, handleGroupCountChange, handleStatsChange)
 
 // Local state
 const activeSubTab = ref('guests')
@@ -418,9 +507,7 @@ const handleAddGuest = async (name: string, groupId: number) => {
   if (response.success && response.data) {
     showMessage('success', `${response.data.name} added to guest list`)
     showAddGuestModal.value = false
-    // Refresh stats and groups
-    await loadGuestStats()
-    await loadGroups()
+    // Counts are now updated reactively via callbacks - no need for loadGuestStats() or loadGroups()
   } else {
     showMessage('error', response.message || 'Failed to add guest')
   }
@@ -434,13 +521,16 @@ const handleBulkImport = async (groupId: number) => {
   if (response.success && response.data) {
     const { created, skipped, skipped_guests } = response.data
 
-    // Refresh stats and groups
-    await loadGuestStats()
-    await loadGroups()
-
-    // Refresh the group's guest list if it's currently loaded
+    // Counts are now updated reactively via callbacks in useBulkImport
+    // Just refresh the specific group's guest list to show the new guests
     const pagination = getGroupPagination(groupId)
     await loadGuestsForGroup(groupId, pagination.currentPage)
+
+    // Also refresh "All Guests" view if it's been loaded
+    const allGuestsPagination = getAllGuestsPagination()
+    if (allGuestsPagination.guests.length > 0) {
+      await loadAllGuests(allGuestsPagination.currentPage, true)
+    }
 
     // Show results
     if (skipped > 0) {
@@ -515,15 +605,18 @@ const confirmDeleteGroup = async () => {
   if (!deleteTargetGroup.value) return
 
   deletingGroup.value = true
+  const groupName = deleteTargetGroup.value.name
+  const guestCount = deleteTargetGroup.value.guest_count
 
   const response = await deleteGroup(deleteTargetGroup.value.id)
 
   if (response.success) {
-    showMessage(
-      'success',
-      `Group "${deleteTargetGroup.value.name}" and all its guests have been deleted`,
-    )
-    await loadGuestStats()
+    showMessage('success', `Group "${groupName}" and ${guestCount} guest(s) deleted`)
+
+    // Update stats reactively using callback
+    if (guestCount > 0) {
+      handleStatsChange(-guestCount)
+    }
   } else {
     showMessage('error', response.message || 'Failed to delete group')
   }
@@ -554,8 +647,7 @@ const confirmDeleteGuest = async () => {
 
   if (response.success) {
     showMessage('success', deleteTargetGuest.value.name + ' removed from guest list')
-    await loadGuestStats()
-    await loadGroups()
+    // Counts are now updated reactively via callbacks - no need for loadGuestStats() or loadGroups()
   } else {
     showMessage('error', response.message || 'Failed to remove guest')
   }
@@ -606,11 +698,8 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
     showEditGuestModal.value = false
     editTargetGuest.value = null
 
-    // Refresh stats and groups if the group changed
-    if (data.group && data.group !== originalGroupId) {
-      await loadGuestStats()
-      await loadGroups()
-    }
+    // Counts are now updated reactively via callbacks when group changes
+    // No need for loadGuestStats() or loadGroups()
   } else {
     // Handle validation errors
     if (response.errors && typeof response.errors === 'object') {
@@ -654,65 +743,100 @@ const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
     })
 }
 
-const handleBulkMarkSent = async (groupId: number) => {
-  const groupCard = groupCardRefs.get(groupId)
-  if (!groupCard) return
-
-  const selectedIds = Array.from(groupCard.selectedGuestIds as Set<number>)
-  if (selectedIds.length === 0) return
-
-  // Mark each selected guest as sent
-  let successCount = 0
-  for (const guestId of selectedIds) {
-    const response = await guestService.markInvitationSent(props.eventId, guestId)
-    if (response.success) {
-      successCount++
-    }
-  }
-
-  if (successCount > 0) {
-    showMessage('success', `Marked ${successCount} guest(s) as sent`)
-    await loadGuestStats()
-    await loadGroups()
-    const pagination = getGroupPagination(groupId)
-    await loadGuestsForGroup(groupId, pagination.currentPage)
-  }
-
-  // Clear selections
-  groupCard.clearSelection()
-}
-
-const handleBulkDelete = async (groupId: number) => {
-  const groupCard = groupCardRefs.get(groupId)
-  if (!groupCard) return
-
-  const selectedIds = Array.from(groupCard.selectedGuestIds as Set<number>)
-  if (selectedIds.length === 0) return
-
-  // Confirm bulk delete
-  if (!confirm(`Are you sure you want to delete ${selectedIds.length} guest(s)?`)) {
+const handleBulkMarkSent = async (groupId: number, selectedIds: number[]) => {
+  if (selectedIds.length === 0) {
+    showMessage('error', 'No guests selected')
     return
   }
 
-  // Delete each selected guest
-  let successCount = 0
-  for (const guestId of selectedIds) {
-    const response = await guestService.deleteGuest(props.eventId, guestId)
-    if (response.success) {
-      successCount++
-    }
-  }
+  // Use bulk endpoint - single API call for all guests
+  const response = await guestService.bulkMarkInvitationSent(props.eventId, selectedIds)
 
-  if (successCount > 0) {
-    showMessage('success', `Deleted ${successCount} guest(s)`)
-    await loadGuestStats()
-    await loadGroups()
+  if (response.success && response.data) {
+    const count = response.data.count
+
+    // Update stats for each successfully marked guest
+    // Each guest transitions from 'not_sent' to 'sent'
+    for (let i = 0; i < count; i++) {
+      handleStatsChange(0, { from: 'not_sent', to: 'sent' })
+    }
+
+    showMessage('success', `Marked ${count} guest(s) as sent`)
+
+    // Refresh lists
     const pagination = getGroupPagination(groupId)
     await loadGuestsForGroup(groupId, pagination.currentPage)
+
+    const allGuestsPagination = getAllGuestsPagination()
+    if (allGuestsPagination.guests.length > 0) {
+      await loadAllGuests(allGuestsPagination.currentPage, true)
+    }
+  } else {
+    showMessage('error', response.message || 'Failed to mark guests as sent')
+  }
+}
+
+const handleBulkDelete = async (groupId: number, selectedIds: number[]) => {
+  if (selectedIds.length === 0) {
+    showMessage('error', 'No guests selected')
+    return
   }
 
-  // Clear selections
-  groupCard.clearSelection()
+  const confirmDelete = confirm(`Delete ${selectedIds.length} guest(s)?`)
+  if (!confirmDelete) return
+
+  // Get guest statuses BEFORE deletion for accurate stats tracking
+  const pagination = getGroupPagination(groupId)
+  const guestsToDelete = pagination.guests.filter(g => selectedIds.includes(g.id))
+
+  // Count guests by status before deletion
+  const statusCounts = {
+    not_sent: 0,
+    sent: 0,
+    viewed: 0,
+  }
+  guestsToDelete.forEach(guest => {
+    const status = guest.invitation_status || 'not_sent'
+    if (status in statusCounts) {
+      statusCounts[status as keyof typeof statusCounts]++
+    } else {
+      statusCounts.not_sent++ // fallback
+    }
+  })
+
+  // Use bulk delete endpoint - single API call
+  const response = await guestService.bulkDeleteGuests(props.eventId, selectedIds)
+
+  if (response.success && response.data) {
+    const count = response.data.count
+
+    // Update group count
+    handleGroupCountChange(groupId, -count)
+
+    // Update stats based on actual guest statuses
+    for (let i = 0; i < statusCounts.not_sent; i++) {
+      handleStatsChange(-1, { from: 'not_sent', to: undefined })
+    }
+    for (let i = 0; i < statusCounts.sent; i++) {
+      handleStatsChange(-1, { from: 'sent', to: undefined })
+    }
+    for (let i = 0; i < statusCounts.viewed; i++) {
+      handleStatsChange(-1, { from: 'viewed', to: undefined })
+    }
+
+    showMessage('success', `Deleted ${count} guest(s)`)
+
+    // Refresh lists
+    const pagination = getGroupPagination(groupId)
+    await loadGuestsForGroup(groupId, pagination.currentPage)
+
+    const allGuestsPagination = getAllGuestsPagination()
+    if (allGuestsPagination.guests.length > 0) {
+      await loadAllGuests(allGuestsPagination.currentPage, true)
+    }
+  } else {
+    showMessage('error', response.message || 'Failed to delete guests')
+  }
 }
 
 const handleCreateGroupFromManagement = async (data: { name: string; description?: string; color: string }) => {

@@ -17,7 +17,18 @@ interface GroupPagination {
   searchTerm: string
 }
 
-export function useGuests(eventId: string) {
+/**
+ * Composable for managing event guests with pagination and search.
+ *
+ * @param eventId - The event ID
+ * @param onGroupCountChange - Optional callback invoked when a group's guest count changes
+ * @param onStatsChange - Optional callback invoked when overall stats change (e.g., total guests)
+ */
+export function useGuests(
+  eventId: string,
+  onGroupCountChange?: (groupId: number, delta: number) => void,
+  onStatsChange?: (delta: number, statusChange?: { from?: string; to?: string }) => void
+) {
   const guests = ref<EventGuest[]>([])
   const guestStats = ref<GuestStats | null>(null)
   const loadingStats = ref(false)
@@ -155,7 +166,7 @@ export function useGuests(eventId: string) {
       })
 
       if (response.success && response.data) {
-        // Refresh the group's guest list if it's currently loaded
+        // 1. Refresh guest lists FIRST (await all async operations)
         if (groupPagination.value.has(groupId)) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
@@ -163,6 +174,19 @@ export function useGuests(eventId: string) {
         // Refresh All Guests pagination if it's been loaded
         if (allGroupsPagination.value.guests.length > 0) {
           await loadAllGuests(allGroupsPagination.value.currentPage, true)
+        }
+
+        // 2. THEN update counts via callbacks (with error handling)
+        try {
+          if (onGroupCountChange) {
+            onGroupCountChange(groupId, 1)
+          }
+          if (onStatsChange) {
+            onStatsChange(1)
+          }
+        } catch (error) {
+          console.error('Error updating counts via callback:', error)
+          // Don't throw - continue execution
         }
       }
 
@@ -181,7 +205,7 @@ export function useGuests(eventId: string) {
       const response = await guestService.updateGuest(eventId, guestId, data)
 
       if (response.success) {
-        // Refresh the group's guest list if it's currently loaded
+        // 1. Refresh guest lists FIRST (await all async operations)
         if (groupPagination.value.has(groupId)) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage, true)
@@ -192,10 +216,18 @@ export function useGuests(eventId: string) {
             const currentPage = getGroupPagination(data.group).currentPage
             await loadGuestsForGroup(data.group, currentPage, true)
           }
-        }
-        // Refresh All Guests pagination if it's been loaded
-        if (allGroupsPagination.value.guests.length > 0) {
-          await loadAllGuests(allGroupsPagination.value.currentPage, true)
+
+          // 2. THEN update group counts when moving between groups (with error handling)
+          try {
+            if (onGroupCountChange) {
+              onGroupCountChange(groupId, -1) // Decrement old group
+              onGroupCountChange(data.group, 1) // Increment new group
+            }
+            // Total count doesn't change when moving between groups
+          } catch (error) {
+            console.error('Error updating counts via callback:', error)
+            // Don't throw - continue execution
+          }
         }
       }
 
@@ -211,10 +243,15 @@ export function useGuests(eventId: string) {
 
   const deleteGuest = async (guestId: number, groupId: number) => {
     try {
+      // Capture guest status BEFORE deletion
+      const pagination = getGroupPagination(groupId)
+      const guestToDelete = pagination.guests.find(g => g.id === guestId)
+      const guestStatus = guestToDelete?.invitation_status || 'not_sent'
+
       const response = await guestService.deleteGuest(eventId, guestId)
 
       if (response.success) {
-        // Refresh the group's guest list if it's currently loaded
+        // 1. Refresh guest lists FIRST (await all async operations)
         if (groupPagination.value.has(groupId)) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
@@ -222,6 +259,19 @@ export function useGuests(eventId: string) {
         // Refresh All Guests pagination if it's been loaded
         if (allGroupsPagination.value.guests.length > 0) {
           await loadAllGuests(allGroupsPagination.value.currentPage, true)
+        }
+
+        // 2. THEN update counts with actual status (with error handling)
+        try {
+          if (onGroupCountChange) {
+            onGroupCountChange(groupId, -1)
+          }
+          if (onStatsChange) {
+            onStatsChange(-1, { from: guestStatus, to: undefined })
+          }
+        } catch (error) {
+          console.error('Error updating counts via callback:', error)
+          // Don't throw - continue execution
         }
       }
 
@@ -240,7 +290,7 @@ export function useGuests(eventId: string) {
       const response = await guestService.markInvitationSent(eventId, guestId)
 
       if (response.success) {
-        // Refresh the group's guest list to show updated status
+        // 1. Refresh guest lists FIRST (await all async operations)
         if (groupPagination.value.has(groupId)) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage, true)
@@ -249,8 +299,17 @@ export function useGuests(eventId: string) {
         if (allGroupsPagination.value.guests.length > 0) {
           await loadAllGuests(allGroupsPagination.value.currentPage, true)
         }
-        // Also refresh stats to update the count
-        await loadGuestStats()
+
+        // 2. THEN update stats reactively (with error handling)
+        // Guest moved from 'not_sent' to 'sent'
+        try {
+          if (onStatsChange) {
+            onStatsChange(0, { from: 'not_sent', to: 'sent' })
+          }
+        } catch (error) {
+          console.error('Error updating counts via callback:', error)
+          // Don't throw - continue execution
+        }
       }
 
       return response

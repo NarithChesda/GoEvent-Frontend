@@ -275,8 +275,8 @@ const emit = defineEmits<{
   'next-all-page': []
   'previous-all-page': []
   'search-all': [searchTerm: string]
-  'bulk-mark-sent': [groupId: number]
-  'bulk-delete': [groupId: number]
+  'bulk-mark-sent': [groupId: number, selectedIds: number[]]
+  'bulk-delete': [groupId: number, selectedIds: number[]]
   'register-group-card': [groupId: number, el: any]
 }>()
 
@@ -463,18 +463,42 @@ const handleToggleSelectAll = () => {
 }
 
 const handleBulkMarkSent = () => {
-  // Emit for all filtered groups
+  // Get selected IDs as array
+  const selectedIds = Array.from(selectedGuestIds.value)
+
+  // Emit event for each group that has selected guests
   filteredGroups.value.forEach(group => {
-    emit('bulk-mark-sent', group.id)
+    const groupGuests = props.getGroupGuests(group.id)
+    const groupSelectedIds = selectedIds.filter(id =>
+      groupGuests.some(g => g.id === id)
+    )
+
+    if (groupSelectedIds.length > 0) {
+      emit('bulk-mark-sent', group.id, groupSelectedIds)
+    }
   })
+
+  // Clear selection after emitting
   selectedGuestIds.value.clear()
 }
 
 const handleBulkDelete = () => {
-  // Emit for all filtered groups
+  // Get selected IDs as array
+  const selectedIds = Array.from(selectedGuestIds.value)
+
+  // Emit event for each group that has selected guests
   filteredGroups.value.forEach(group => {
-    emit('bulk-delete', group.id)
+    const groupGuests = props.getGroupGuests(group.id)
+    const groupSelectedIds = selectedIds.filter(id =>
+      groupGuests.some(g => g.id === id)
+    )
+
+    if (groupSelectedIds.length > 0) {
+      emit('bulk-delete', group.id, groupSelectedIds)
+    }
   })
+
+  // Clear selection after emitting
   selectedGuestIds.value.clear()
 }
 

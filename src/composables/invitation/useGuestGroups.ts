@@ -116,6 +116,30 @@ export function useGuestGroups(eventId: string) {
     return expandedGroups.value.has(groupId)
   }
 
+  /**
+   * Increment or decrement the guest count for a specific group reactively.
+   * This avoids making full API calls to refresh the group list.
+   *
+   * @param groupId - The ID of the group to update
+   * @param delta - The amount to increment (positive) or decrement (negative)
+   */
+  const incrementGroupGuestCount = (groupId: number, delta: number = 1) => {
+    const group = groups.value.find((g) => g.id === groupId)
+    if (group) {
+      group.guest_count = Math.max(0, group.guest_count + delta)
+    }
+  }
+
+  /**
+   * Decrement the guest count for a specific group by 1.
+   * Convenience method for single guest deletions.
+   *
+   * @param groupId - The ID of the group to update
+   */
+  const decrementGroupGuestCount = (groupId: number) => {
+    incrementGroupGuestCount(groupId, -1)
+  }
+
   return {
     groups,
     loadingGroups,
@@ -126,5 +150,7 @@ export function useGuestGroups(eventId: string) {
     deleteGroup,
     toggleGroupExpansion,
     isGroupExpanded,
+    incrementGroupGuestCount,
+    decrementGroupGuestCount,
   }
 }

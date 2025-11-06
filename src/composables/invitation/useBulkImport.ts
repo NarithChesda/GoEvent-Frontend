@@ -17,7 +17,18 @@ export interface BulkImportResult {
   errors: Array<{ name: string; error: string }>
 }
 
-export function useBulkImport(eventId: string) {
+/**
+ * Composable for bulk importing guests from files.
+ *
+ * @param eventId - The event ID
+ * @param onGroupCountChange - Optional callback invoked when a group's guest count changes
+ * @param onStatsChange - Optional callback invoked when overall stats change
+ */
+export function useBulkImport(
+  eventId: string,
+  onGroupCountChange?: (groupId: number, delta: number) => void,
+  onStatsChange?: (delta: number) => void
+) {
   const selectedFile = ref<File | null>(null)
   const isDragging = ref(false)
   const isImporting = ref(false)
@@ -83,6 +94,26 @@ export function useBulkImport(eventId: string) {
         groupId,
         selectedFile.value,
       )
+
+      // Update counts reactively if import was successful
+      if (response.success && response.data) {
+        const createdCount = response.data.created || 0
+
+        // Update counts via callbacks (with error handling)
+        if (createdCount > 0) {
+          try {
+            if (onGroupCountChange) {
+              onGroupCountChange(groupId, createdCount)
+            }
+            if (onStatsChange) {
+              onStatsChange(createdCount)
+            }
+          } catch (error) {
+            console.error('Error updating counts via callback:', error)
+            // Don't throw - continue execution
+          }
+        }
+      }
 
       return response
     } catch (error) {

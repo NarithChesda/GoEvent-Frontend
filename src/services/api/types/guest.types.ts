@@ -93,3 +93,8 @@ export interface GuestStats {
   sent: number
   viewed: number
 }
+
+export interface BulkOperationResponse {
+  status: string
+  count: number
+}
