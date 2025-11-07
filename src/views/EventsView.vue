@@ -422,16 +422,15 @@ const showLoginPrompt = computed(() => {
 })
 const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && safeEvents.value.length === 0)
 
-// Group events by category for public events view
-const eventsByCategory = computed(() => {
-  if (currentView.value !== 'all') {
-    return []
-  }
-
+// Helper function to group events by category (DRY principle)
+const groupEventsByCategory = (
+  events: Event[],
+  sortByField: 'start_date' | 'created_at' = 'start_date'
+): Array<{ category: EventCategory | null; events: Event[] }> => {
   // Create a map to group events by category
   const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
 
-  safeEvents.value.forEach(event => {
+  events.forEach(event => {
     const categoryId = event.category || 'uncategorized'
 
     if (!categoryMap.has(categoryId)) {
@@ -452,10 +451,10 @@ const eventsByCategory = computed(() => {
   // Convert map to array, sort categories alphabetically, and sort events within each category
   return Array.from(categoryMap.values())
     .map(categoryGroup => {
-      // Sort events within each category by start_date (newest first)
+      // Sort events within each category by the specified field (newest first)
       const sortedEvents = [...categoryGroup.events].sort((a, b) => {
-        const dateA = new Date(a.start_date || 0).getTime()
-        const dateB = new Date(b.start_date || 0).getTime()
+        const dateA = new Date((sortByField === 'start_date' ? a.start_date : a.created_at) || 0).getTime()
+        const dateB = new Date((sortByField === 'start_date' ? b.start_date : b.created_at) || 0).getTime()
         return dateB - dateA // Descending order (newest first)
       })
 
@@ -472,110 +471,24 @@ const eventsByCategory = computed(() => {
       if (nameB === 'Uncategorized') return -1
       return nameA.localeCompare(nameB)
     })
+}
+
+// Group events by category for public events view
+const eventsByCategory = computed(() => {
+  if (currentView.value !== 'all') return []
+  return groupEventsByCategory(safeEvents.value, 'start_date')
 })
 
 // Group events by category for my events view
 const myEventsByCategory = computed(() => {
-  if (currentView.value !== 'my') {
-    return []
-  }
-
-  // Create a map to group events by category
-  const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
-
-  safeEvents.value.forEach(event => {
-    const categoryId = event.category || 'uncategorized'
-
-    if (!categoryMap.has(categoryId)) {
-      // Find the full category details from the categories list
-      const categoryDetails = event.category
-        ? categories.value.find(cat => cat.id === event.category)
-        : null
-
-      categoryMap.set(categoryId, {
-        category: categoryDetails || null,
-        events: []
-      })
-    }
-
-    categoryMap.get(categoryId)!.events.push(event)
-  })
-
-  // Convert map to array, sort categories alphabetically, and sort events within each category
-  return Array.from(categoryMap.values())
-    .map(categoryGroup => {
-      // Sort events within each category by created_at (most recent first)
-      const sortedEvents = [...categoryGroup.events].sort((a, b) => {
-        const dateA = new Date(a.created_at || 0).getTime()
-        const dateB = new Date(b.created_at || 0).getTime()
-        return dateB - dateA // Descending order (most recent first)
-      })
-
-      return {
-        category: categoryGroup.category,
-        events: sortedEvents
-      }
-    })
-    .sort((a, b) => {
-      const nameA = a.category?.name || 'Uncategorized'
-      const nameB = b.category?.name || 'Uncategorized'
-      // Put uncategorized at the end
-      if (nameA === 'Uncategorized') return 1
-      if (nameB === 'Uncategorized') return -1
-      return nameA.localeCompare(nameB)
-    })
+  if (currentView.value !== 'my') return []
+  return groupEventsByCategory(safeEvents.value, 'created_at')
 })
 
 // Group events by category for registered events view
 const registeredEventsByCategory = computed(() => {
-  if (currentView.value !== 'registered') {
-    return []
-  }
-
-  // Create a map to group events by category
-  const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
-
-  safeEvents.value.forEach(event => {
-    const categoryId = event.category || 'uncategorized'
-
-    if (!categoryMap.has(categoryId)) {
-      // Find the full category details from the categories list
-      const categoryDetails = event.category
-        ? categories.value.find(cat => cat.id === event.category)
-        : null
-
-      categoryMap.set(categoryId, {
-        category: categoryDetails || null,
-        events: []
-      })
-    }
-
-    categoryMap.get(categoryId)!.events.push(event)
-  })
-
-  // Convert map to array, sort categories alphabetically, and sort events within each category
-  return Array.from(categoryMap.values())
-    .map(categoryGroup => {
-      // Sort events within each category by created_at (most recent first)
-      const sortedEvents = [...categoryGroup.events].sort((a, b) => {
-        const dateA = new Date(a.created_at || 0).getTime()
-        const dateB = new Date(b.created_at || 0).getTime()
-        return dateB - dateA // Descending order (most recent first)
-      })
-
-      return {
-        category: categoryGroup.category,
-        events: sortedEvents
-      }
-    })
-    .sort((a, b) => {
-      const nameA = a.category?.name || 'Uncategorized'
-      const nameB = b.category?.name || 'Uncategorized'
-      // Put uncategorized at the end
-      if (nameA === 'Uncategorized') return 1
-      if (nameB === 'Uncategorized') return -1
-      return nameA.localeCompare(nameB)
-    })
+  if (currentView.value !== 'registered') return []
+  return groupEventsByCategory(safeEvents.value, 'created_at')
 })
 
 const getEmptyStateTitle = () => {
@@ -646,11 +559,16 @@ const setCategoryScrollRef = (categoryId: string | number, el: unknown) => {
 }
 
 const checkCategoryOverflow = (categoryId: string | number) => {
-  const container = categoryScrollRefs.value[categoryId]
-  if (!container) return
+  try {
+    const container = categoryScrollRefs.value[categoryId]
+    if (!container) return
 
-  // Check if scrollWidth is greater than clientWidth (content overflows)
-  categoryOverflowState.value[categoryId] = container.scrollWidth > container.clientWidth
+    // Check if scrollWidth is greater than clientWidth (content overflows)
+    categoryOverflowState.value[categoryId] = container.scrollWidth > container.clientWidth
+  } catch (error) {
+    // Silently handle errors to prevent UI disruption
+    console.warn(`Failed to check overflow for category ${categoryId}:`, error)
+  }
 }
 
 const categoryHasOverflow = (categoryId: string | number): boolean => {
@@ -1061,12 +979,21 @@ const handleEventCreate = async (formData: EventFormData) => {
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
 
+      // Store the target view to prevent race conditions
+      const targetView = 'my'
+
       // Switch to "My Events" tab to show the newly created event
-      currentView.value = 'my'
+      currentView.value = targetView
 
       // Reload events to show the newly created event
       // (The watcher won't trigger if we're already on 'my' tab)
       await loadEvents()
+
+      // Verify we're still on the correct view after loading completes
+      // This handles the edge case where user switches tabs during loading
+      if (currentView.value !== targetView) {
+        console.log('View changed during event creation, skipping reload')
+      }
     } else {
       console.error('Create event failed:', response)
       let errorMessage = response.message || 'Failed to create event'
@@ -1104,9 +1031,10 @@ watch(
 
 watch(
   [() => currentView.value, filters],
-  () => {
-    loadEvents()
-    // Re-setup infinite scroll when view changes
+  async () => {
+    await loadEvents()
+    // Re-setup infinite scroll after events are loaded and DOM is updated
+    await nextTick()
     setupInfiniteScroll()
   },
   { deep: true },
@@ -1129,49 +1057,33 @@ watch(
   },
 )
 
-// Watch eventsByCategory changes to ensure all categories are properly rendered
+// Optimized: Single watcher for category overflow checking based on current view
+// This prevents unnecessary watchers from firing on irrelevant view changes
 watch(
-  eventsByCategory,
+  [() => currentView.value, () => events.value.length],
   () => {
-    // Wait for DOM to update, then check all category overflows
+    // Wait for DOM to update, then check category overflows for the current view only
     nextTick(() => {
-      eventsByCategory.value.forEach(categoryGroup => {
-        const categoryId = categoryGroup.category?.id || 'uncategorized'
-        checkCategoryOverflow(categoryId)
-      })
-    })
-  },
-  { deep: true }
-)
+      let categoriesToCheck: Array<{ category: EventCategory | null; events: Event[] }> = []
+      let prefix = ''
 
-// Watch myEventsByCategory changes to ensure all categories are properly rendered
-watch(
-  myEventsByCategory,
-  () => {
-    // Wait for DOM to update, then check all category overflows
-    nextTick(() => {
-      myEventsByCategory.value.forEach(categoryGroup => {
-        const categoryId = 'my-' + (categoryGroup.category?.id || 'uncategorized')
-        checkCategoryOverflow(categoryId)
-      })
-    })
-  },
-  { deep: true }
-)
+      if (currentView.value === 'all') {
+        categoriesToCheck = eventsByCategory.value
+        prefix = ''
+      } else if (currentView.value === 'my') {
+        categoriesToCheck = myEventsByCategory.value
+        prefix = 'my-'
+      } else if (currentView.value === 'registered') {
+        categoriesToCheck = registeredEventsByCategory.value
+        prefix = 'registered-'
+      }
 
-// Watch registeredEventsByCategory changes to ensure all categories are properly rendered
-watch(
-  registeredEventsByCategory,
-  () => {
-    // Wait for DOM to update, then check all category overflows
-    nextTick(() => {
-      registeredEventsByCategory.value.forEach(categoryGroup => {
-        const categoryId = 'registered-' + (categoryGroup.category?.id || 'uncategorized')
+      categoriesToCheck.forEach(categoryGroup => {
+        const categoryId = prefix + (categoryGroup.category?.id || 'uncategorized')
         checkCategoryOverflow(categoryId)
       })
     })
-  },
-  { deep: true }
+  }
 )
 
 // Handle window resize to recalculate overflow
