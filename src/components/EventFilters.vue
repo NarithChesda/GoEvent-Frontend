@@ -29,12 +29,12 @@
           <button
             v-if="hasActiveFilters"
             @click="clearFilters"
-            class="inline-flex items-center justify-center px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
+            class="inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-red-500 shadow-sm hover:shadow-md bg-white text-red-500 hover:bg-red-50 hover:border-red-600 hover:text-red-600"
             aria-label="Clear all filters"
             title="Clear all filters"
           >
             <X class="w-3 h-3 mr-1" />
-            <span class="text-[10px] sm:text-xs font-medium">Clear</span>
+            Clear
           </button>
 
           <!-- Category Pill Dropdown -->
