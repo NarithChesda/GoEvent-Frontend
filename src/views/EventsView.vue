@@ -1064,7 +1064,9 @@ const handleEventCreate = async (formData: EventFormData) => {
       // Switch to "My Events" tab to show the newly created event
       currentView.value = 'my'
 
-      // The watcher on currentView will automatically reload events
+      // Reload events to show the newly created event
+      // (The watcher won't trigger if we're already on 'my' tab)
+      await loadEvents()
     } else {
       console.error('Create event failed:', response)
       let errorMessage = response.message || 'Failed to create event'
