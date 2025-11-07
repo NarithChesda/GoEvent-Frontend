@@ -4,35 +4,35 @@
     <!-- Header with Sub-navigation -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 overflow-hidden">
       <!-- Title Section -->
-      <div class="px-6 py-4 border-b border-slate-200/80">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200/80">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
-              <Users class="w-5 h-5 text-white" />
+          <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md">
+              <Users class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
-              <h2 class="text-xl font-bold text-slate-900">Guest Management</h2>
-              <p class="text-sm text-slate-500">Organize guests, send invitations, and track responses</p>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight tracking-tight">Guest Management</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">Organize guests, send invitations, and track responses</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Sub-navigation Tabs -->
-      <div class="px-4 bg-slate-50/50">
-        <div class="flex gap-2 overflow-x-auto scrollbar-hide py-3">
+      <div class="px-3 sm:px-4 bg-slate-50/50">
+        <div class="flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide py-2 sm:py-3">
           <button
             v-for="tab in subTabs"
             :key="tab.id"
             @click="activeSubTab = tab.id"
             :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 whitespace-nowrap',
               activeSubTab === tab.id
                 ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
                 : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
             ]"
           >
-            <component :is="tab.icon" class="w-4 h-4" />
+            <component :is="tab.icon" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{{ tab.label }}</span>
           </button>
         </div>
