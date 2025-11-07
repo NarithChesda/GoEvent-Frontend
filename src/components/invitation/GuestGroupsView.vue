@@ -76,13 +76,13 @@
             <div class="relative z-[100]" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 min-w-[180px]"
+                class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 min-w-[180px]"
               >
-                <Filter class="w-4 h-4 text-emerald-600" />
-                <span class="flex-1 text-left text-slate-900 truncate">
+                <Filter class="w-4 h-4 text-white" />
+                <span class="flex-1 text-left text-white truncate">
                   {{ activeFilterLabel }}
                 </span>
-                <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
+                <ChevronDown class="w-4 h-4 text-white transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
 
               <!-- Dropdown Menu -->
@@ -180,7 +180,7 @@
           </div>
 
           <!-- Right: Pagination controls -->
-          <div v-if="showPagination" class="flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1">
+          <div v-if="showPagination" class="flex items-center gap-1 bg-slate-50 rounded-xl px-2 py-1">
             <button
               @click="handlePreviousPage"
               :disabled="currentPageNumber === 1 || isAnyGroupLoading"
