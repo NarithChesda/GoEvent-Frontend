@@ -142,8 +142,8 @@
               <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <Palette class="w-4.5 h-4.5" />
+                    <div class="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                      <Palette class="w-5 h-5" />
                     </div>
                     <h2 id="add-category-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">
                       {{ editingCategory ? 'Edit Category' : 'Create Category' }}
@@ -178,7 +178,7 @@
                     placeholder="E.g., Venue, Catering, Photography..."
                     maxlength="100"
                     aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                     required
                   />
                 </div>
@@ -190,58 +190,54 @@
                     v-model="formData.description"
                     rows="3"
                     placeholder="Describe what expenses this category covers..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
                   ></textarea>
                 </div>
 
-                <!-- Color Picker -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Color</label>
-                  <div class="grid grid-cols-8 gap-2">
-                    <button
-                      v-for="color in colorOptions"
-                      :key="color"
-                      type="button"
-                      @click="formData.color = color"
-                      :class="[
-                        'w-10 h-10 rounded-lg transition-all',
-                        formData.color === color ? 'ring-2 ring-sky-500 ring-offset-2 scale-110' : 'hover:scale-105'
-                      ]"
-                      :style="{ backgroundColor: color }"
-                    ></button>
+                <!-- Color and Icon Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Category Color -->
+                  <div>
+                    <label for="categoryColor" class="block text-sm font-medium text-slate-700 mb-2">
+                      Category Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                      <input
+                        id="categoryColor"
+                        v-model="formData.color"
+                        type="color"
+                        class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+                      />
+                      <input
+                        v-model="formData.color"
+                        type="text"
+                        placeholder="#3498db"
+                        class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                      />
+                    </div>
                   </div>
-                  <div class="flex items-center gap-2 mt-3">
-                    <input
-                      type="text"
-                      v-model="formData.color"
-                      placeholder="#3498db"
-                      pattern="^#[0-9A-Fa-f]{6}$"
-                      class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    />
-                    <div class="w-10 h-10 rounded-lg border-2 border-slate-200" :style="{ backgroundColor: formData.color }"></div>
-                  </div>
-                </div>
 
-                <!-- Icon Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
-                  <div class="relative">
-                    <select
-                      v-model="formData.icon"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
-                    >
-                      <option value="">Select an icon</option>
-                      <option value="fa-building">Building (fa-building)</option>
-                      <option value="fa-utensils">Utensils (fa-utensils)</option>
-                      <option value="fa-palette">Palette (fa-palette)</option>
-                      <option value="fa-camera">Camera (fa-camera)</option>
-                      <option value="fa-music">Music (fa-music)</option>
-                      <option value="fa-gift">Gift (fa-gift)</option>
-                      <option value="fa-car">Car (fa-car)</option>
-                      <option value="fa-hotel">Hotel (fa-hotel)</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
+                  <!-- Icon Selection -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
+                    <div class="relative">
+                      <select
+                        v-model="formData.icon"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
+                      >
+                        <option value="">Select an icon</option>
+                        <option value="fa-building">Building (fa-building)</option>
+                        <option value="fa-utensils">Utensils (fa-utensils)</option>
+                        <option value="fa-palette">Palette (fa-palette)</option>
+                        <option value="fa-camera">Camera (fa-camera)</option>
+                        <option value="fa-music">Music (fa-music)</option>
+                        <option value="fa-gift">Gift (fa-gift)</option>
+                        <option value="fa-car">Car (fa-car)</option>
+                        <option value="fa-hotel">Hotel (fa-hotel)</option>
+                      </select>
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <ChevronDown class="w-4 h-4 text-slate-500" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -258,14 +254,14 @@
                   </button>
                   <button
                     type="submit"
-                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     :disabled="submitting"
                   >
                     <span
                       v-if="submitting"
                       class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                     ></span>
-                    {{ submitting ? 'Saving...' : (editingCategory ? 'Update Category' : 'Create Category') }}
+                    {{ submitting ? 'Saving...' : (editingCategory ? 'Create Category' : 'Update Category') }}
                   </button>
                 </div>
               </form>
@@ -310,10 +306,7 @@ import {
   Edit2,
   Trash2,
   Building2,
-  UtensilsCrossed,
   Palette,
-  Camera,
-  Music,
   X,
   Info,
   AlertCircle,
