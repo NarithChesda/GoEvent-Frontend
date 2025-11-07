@@ -526,9 +526,9 @@ const handleBulkImport = async (groupId: number) => {
     const pagination = getGroupPagination(groupId)
     await loadGuestsForGroup(groupId, pagination.currentPage)
 
-    // Also refresh "All Guests" view if it's been loaded
+    // Also refresh "All Guests" view only if it has been loaded before
     const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.guests.length > 0) {
+    if (allGuestsPagination.hasLoaded) {
       await loadAllGuests(allGuestsPagination.currentPage, true)
     }
 
@@ -768,7 +768,7 @@ const handleBulkMarkSent = async (groupId: number, selectedIds: number[]) => {
     await loadGuestsForGroup(groupId, pagination.currentPage)
 
     const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.guests.length > 0) {
+    if (allGuestsPagination.hasLoaded) {
       await loadAllGuests(allGuestsPagination.currentPage, true)
     }
   } else {
@@ -831,7 +831,7 @@ const handleBulkDelete = async (groupId: number, selectedIds: number[]) => {
     await loadGuestsForGroup(groupId, pagination.currentPage)
 
     const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.guests.length > 0) {
+    if (allGuestsPagination.hasLoaded) {
       await loadAllGuests(allGuestsPagination.currentPage, true)
     }
   } else {

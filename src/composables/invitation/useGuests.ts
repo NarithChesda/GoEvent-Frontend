@@ -15,6 +15,7 @@ interface GroupPagination {
   guests: EventGuest[]
   loading: boolean
   searchTerm: string
+  hasLoaded: boolean // Track if this group has been loaded at least once
 }
 
 /**
@@ -41,6 +42,7 @@ export function useGuests(
     guests: [],
     loading: false,
     searchTerm: '',
+    hasLoaded: false,
   })
 
   const getGroupPagination = (groupId: number): GroupPagination => {
@@ -51,6 +53,7 @@ export function useGuests(
         guests: [],
         loading: false,
         searchTerm: '',
+        hasLoaded: false,
       })
     }
     return groupPagination.value.get(groupId)!
@@ -91,6 +94,7 @@ export function useGuests(
         pagination.guests = response.data.results
         pagination.totalCount = response.data.count
         pagination.currentPage = page
+        pagination.hasLoaded = true // Mark as loaded
       }
 
       return response
@@ -125,6 +129,7 @@ export function useGuests(
         allGroupsPagination.value.guests = response.data.results
         allGroupsPagination.value.totalCount = response.data.count
         allGroupsPagination.value.currentPage = page
+        allGroupsPagination.value.hasLoaded = true // Mark as loaded
       }
 
       return response
@@ -167,12 +172,13 @@ export function useGuests(
 
       if (response.success && response.data) {
         // 1. Refresh guest lists FIRST (await all async operations)
-        if (groupPagination.value.has(groupId)) {
+        // Only refresh if this specific group has been loaded before
+        if (groupPagination.value.has(groupId) && getGroupPagination(groupId).hasLoaded) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
         }
-        // Refresh All Guests pagination if it's been loaded
-        if (allGroupsPagination.value.guests.length > 0) {
+        // Refresh All Guests pagination only if it has been loaded before
+        if (allGroupsPagination.value.hasLoaded) {
           await loadAllGuests(allGroupsPagination.value.currentPage, true)
         }
 
@@ -252,12 +258,13 @@ export function useGuests(
 
       if (response.success) {
         // 1. Refresh guest lists FIRST (await all async operations)
-        if (groupPagination.value.has(groupId)) {
+        // Only refresh if this specific group has been loaded before
+        if (groupPagination.value.has(groupId) && getGroupPagination(groupId).hasLoaded) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
         }
-        // Refresh All Guests pagination if it's been loaded
-        if (allGroupsPagination.value.guests.length > 0) {
+        // Refresh All Guests pagination only if it has been loaded before
+        if (allGroupsPagination.value.hasLoaded) {
           await loadAllGuests(allGroupsPagination.value.currentPage, true)
         }
 
@@ -291,12 +298,13 @@ export function useGuests(
 
       if (response.success) {
         // 1. Refresh guest lists FIRST (await all async operations)
-        if (groupPagination.value.has(groupId)) {
+        // Only refresh if this specific group has been loaded before
+        if (groupPagination.value.has(groupId) && getGroupPagination(groupId).hasLoaded) {
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage, true)
         }
-        // Refresh All Guests pagination if it's been loaded
-        if (allGroupsPagination.value.guests.length > 0) {
+        // Refresh All Guests pagination only if it has been loaded before
+        if (allGroupsPagination.value.hasLoaded) {
           await loadAllGuests(allGroupsPagination.value.currentPage, true)
         }
 
