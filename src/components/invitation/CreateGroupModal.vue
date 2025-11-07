@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="$emit('close')"></div>
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
 
         <div class="flex min-h-full items-center justify-center p-4">
           <div

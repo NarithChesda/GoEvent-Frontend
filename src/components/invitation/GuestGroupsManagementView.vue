@@ -7,7 +7,7 @@
         <p class="text-sm text-slate-500 mt-1">Create and manage guest groups for better organization</p>
       </div>
       <button
-        @click="showAddGroupModal = true"
+        @click="showCreateGroupModal = true"
         class="hidden sm:flex flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 whitespace-nowrap"
       >
         <Plus class="w-4 h-4" />
@@ -98,7 +98,7 @@
 
       <!-- Add Group Placeholder -->
       <div
-        @click="showAddGroupModal = true"
+        @click="showCreateGroupModal = true"
         class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-6 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group min-h-[180px] flex items-center justify-center"
       >
         <div class="text-center">
@@ -111,158 +111,22 @@
       </div>
     </div>
 
-    <!-- Add/Edit Group Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showAddGroupModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
-          @click.self="closeModal"
-        >
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <!-- Create Group Modal -->
+    <CreateGroupModal
+      :show="showCreateGroupModal"
+      :is-creating="submitting"
+      @close="showCreateGroupModal = false"
+      @create="handleCreate"
+    />
 
-          <div class="flex min-h-full items-center justify-center p-4">
-            <div
-              ref="addModalRef"
-              role="dialog"
-              aria-labelledby="add-group-modal-title"
-              aria-modal="true"
-              class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-              @click.stop
-            >
-              <!-- Header -->
-              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <Users class="w-4.5 h-4.5" />
-                    </div>
-                    <h2 id="add-group-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">
-                      {{ editingGroup ? 'Edit Group' : 'Create Group' }}
-                    </h2>
-                  </div>
-                  <button
-                    @click="closeModal"
-                    aria-label="Close dialog"
-                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  >
-                    <X class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Form -->
-              <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
-                <!-- Error Message -->
-                <div v-if="formError" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <p class="text-sm text-red-600">{{ formError }}</p>
-                </div>
-
-                <!-- Group Name -->
-                <div>
-                  <label for="group-name" class="block text-sm font-medium text-slate-700 mb-2">
-                    Group Name <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="group-name"
-                    type="text"
-                    v-model="formData.name"
-                    placeholder="E.g., Family, Friends, Colleagues..."
-                    maxlength="100"
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    required
-                  />
-                </div>
-
-                <!-- Description & Color (Same Row) -->
-                <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
-                  <!-- Description -->
-                  <div class="flex flex-col">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
-                    <textarea
-                      v-model="formData.description"
-                      placeholder="Describe this group of guests..."
-                      class="flex-1 w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-                    ></textarea>
-                  </div>
-
-                  <!-- Color Picker -->
-                  <div class="relative flex flex-col">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Color</label>
-                    <div class="relative flex-1">
-                      <button
-                        type="button"
-                        @click="showColorPicker = !showColorPicker"
-                        class="w-full h-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 flex items-center gap-2 hover:bg-slate-50 transition-colors"
-                      >
-                        <div class="w-6 h-6 rounded border-2 border-slate-200 flex-shrink-0" :style="{ backgroundColor: formData.color }"></div>
-                        <span class="text-xs text-slate-600 flex-1 text-left truncate">{{ formData.color }}</span>
-                      </button>
-
-                      <!-- Color Dropdown -->
-                      <Transition name="dropdown">
-                        <div
-                          v-if="showColorPicker"
-                          ref="colorPickerRef"
-                          class="absolute z-10 w-40 sm:right-full sm:mr-2 sm:bottom-0 bottom-full mb-2 sm:mb-0 left-0 sm:left-auto bg-white border border-slate-300 rounded-lg shadow-xl p-2"
-                        >
-                          <div class="grid grid-cols-4 gap-1 mb-2">
-                            <button
-                              v-for="color in colorOptions"
-                              :key="color"
-                              type="button"
-                              @click="formData.color = color; showColorPicker = false"
-                              :class="[
-                                'w-full aspect-square rounded transition-all',
-                                formData.color === color ? 'ring-2 ring-sky-500 scale-105' : 'hover:scale-105'
-                              ]"
-                              :style="{ backgroundColor: color }"
-                              :title="color"
-                            ></button>
-                          </div>
-                          <input
-                            type="text"
-                            v-model="formData.color"
-                            placeholder="#3498db"
-                            pattern="^#[0-9A-Fa-f]{6}$"
-                            class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-sky-200 focus:border-sky-400"
-                            @click.stop
-                          />
-                        </div>
-                      </Transition>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                  <button
-                    type="button"
-                    @click="closeModal"
-                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                    :disabled="submitting"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    :disabled="submitting"
-                  >
-                    <span
-                      v-if="submitting"
-                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                    ></span>
-                    {{ submitting ? 'Saving...' : (editingGroup ? 'Update Group' : 'Create Group') }}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <!-- Edit Group Modal -->
+    <EditGroupModal
+      :show="showEditGroupModal"
+      :group="editingGroup"
+      :is-updating="submitting"
+      @close="closeEditModal"
+      @update-group="handleUpdate"
+    />
 
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
@@ -293,21 +157,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref } from 'vue'
 import {
   Plus,
   Edit2,
   Trash2,
   Users,
-  X,
   Info,
   AlertCircle,
   Check,
 } from 'lucide-vue-next'
 import type { GuestGroup } from '@/services/api'
-import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
-import { onClickOutside } from '@vueuse/core'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
+import CreateGroupModal from './CreateGroupModal.vue'
+import EditGroupModal from './EditGroupModal.vue'
 
 interface Props {
   groups: GuestGroup[]
@@ -325,63 +188,13 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const error = ref<string | null>(null)
-const showAddGroupModal = ref(false)
+const showCreateGroupModal = ref(false)
+const showEditGroupModal = ref(false)
 const showSuccessToast = ref(false)
-const showColorPicker = ref(false)
 const successMessage = ref('')
 const submitting = ref(false)
 const editingGroup = ref<GuestGroup | null>(null)
 const deletingGroup = ref<GuestGroup | null>(null)
-const formError = ref<string | null>(null)
-
-// Focus trap for modals (accessibility)
-const addModalRef = ref<HTMLElement>()
-const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
-  immediate: false,
-  escapeDeactivates: true
-})
-
-// Color picker click outside handler
-const colorPickerRef = ref<HTMLElement>()
-onClickOutside(colorPickerRef, () => {
-  showColorPicker.value = false
-})
-
-const formData = ref({
-  name: '',
-  description: '',
-  color: '#3498db'
-})
-
-const colorOptions = [
-  '#e74c3c', // Red
-  '#3498db', // Blue
-  '#9b59b6', // Purple
-  '#f1c40f', // Yellow
-  '#e67e22', // Orange
-  '#1abc9c', // Turquoise
-  '#2ecc71', // Green
-  '#95a5a6', // Gray
-  '#34495e', // Dark Blue
-  '#e91e63', // Pink
-  '#00bcd4', // Cyan
-  '#ff9800', // Amber
-  '#8bc34a', // Light Green
-  '#ff5722', // Deep Orange
-  '#607d8b', // Blue Gray
-  '#673ab7', // Deep Purple
-]
-
-// Activate/deactivate focus trap when modals open/close
-watch(showAddGroupModal, async (isOpen) => {
-  if (isOpen) {
-    await nextTick()
-    activateAddModal()
-  } else {
-    deactivateAddModal()
-    showColorPicker.value = false
-  }
-})
 
 const showSuccess = (message: string) => {
   successMessage.value = message
@@ -391,51 +204,38 @@ const showSuccess = (message: string) => {
   }, 3000)
 }
 
-const closeModal = () => {
-  showAddGroupModal.value = false
-  editingGroup.value = null
-  formError.value = null
-  formData.value = {
-    name: '',
-    description: '',
-    color: '#3498db'
-  }
-}
-
 const editGroup = (group: GuestGroup) => {
   editingGroup.value = group
-  formData.value = {
-    name: group.name,
-    description: group.description || '',
-    color: group.color
-  }
-  showAddGroupModal.value = true
+  showEditGroupModal.value = true
 }
 
-const handleSubmit = async () => {
-  const isEditing = !!editingGroup.value
-  formError.value = null
+const closeEditModal = () => {
+  showEditGroupModal.value = false
+  editingGroup.value = null
+}
+
+const handleCreate = (data: { name: string; description?: string; color: string }) => {
   submitting.value = true
-
   try {
-    const requestData = {
-      name: formData.value.name,
-      description: formData.value.description || undefined,
-      color: formData.value.color,
-    }
-
-    if (isEditing && editingGroup.value) {
-      emit('update-group', editingGroup.value.id, requestData)
-      showSuccess('Group updated successfully!')
-    } else {
-      emit('create-group', requestData)
-      showSuccess('Group created successfully!')
-    }
-
-    closeModal()
+    emit('create-group', data)
+    showSuccess('Group created successfully!')
+    showCreateGroupModal.value = false
   } catch (err) {
-    formError.value = isEditing ? 'Failed to update group' : 'Failed to create group'
-    console.error('Error saving group:', err)
+    console.error('Error creating group:', err)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleUpdate = (groupId: number, data: { name: string; description?: string; color: string }) => {
+  submitting.value = true
+  try {
+    emit('update-group', groupId, data)
+    showSuccess('Group updated successfully!')
+    showEditGroupModal.value = false
+    editingGroup.value = null
+  } catch (err) {
+    console.error('Error updating group:', err)
   } finally {
     submitting.value = false
   }
@@ -466,41 +266,12 @@ const handleDelete = async () => {
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openAddGroupModal: () => {
-    showAddGroupModal.value = true
+    showCreateGroupModal.value = true
   }
 })
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
-/* Custom scrollbar for modal content */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
@@ -510,31 +281,5 @@ defineExpose({
 .toast-leave-to {
   opacity: 0;
   transform: translateY(1rem);
-}
-
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-}
-
-/* Mobile: slide up from bottom */
-@media (max-width: 639px) {
-  .dropdown-enter-from,
-  .dropdown-leave-to {
-    transform: translateY(0.5rem);
-  }
-}
-
-/* Desktop: slide from right */
-@media (min-width: 640px) {
-  .dropdown-enter-from,
-  .dropdown-leave-to {
-    transform: translateX(0.5rem);
-  }
 }
 </style>

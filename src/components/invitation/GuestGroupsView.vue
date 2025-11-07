@@ -69,16 +69,16 @@
       class="space-y-4"
     >
       <!-- Filter and Actions Bar - Always Visible -->
-      <div class="flex flex-col lg:flex-row items-center justify-between gap-3 py-3 px-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-sm relative z-10">
+      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 py-4 px-6 bg-white border border-slate-200 rounded-xl relative z-10">
         <!-- Left: Filter Dropdown, Select All & Selection Count -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-4">
             <!-- Filter Dropdown -->
             <div class="relative z-[100]" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 min-w-[180px]"
+                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 min-w-[180px]"
               >
-                <Filter class="w-4 h-4 text-slate-600" />
+                <Filter class="w-4 h-4 text-emerald-600" />
                 <span class="flex-1 text-left text-slate-900 truncate">
                   {{ activeFilterLabel }}
                 </span>
@@ -140,9 +140,8 @@
               ></div>
             </div>
 
-            <!-- Divider -->
-            <div class="h-8 w-px bg-slate-200"></div>
-            <label class="flex items-center gap-2 cursor-pointer group">
+            <!-- Select All Checkbox -->
+            <label class="flex items-center gap-2.5 cursor-pointer group">
               <input
                 type="checkbox"
                 :checked="isAllCurrentPageSelected"
@@ -150,49 +149,51 @@
                 @change="handleToggleSelectAll"
                 class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               />
-              <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">Select All</span>
+              <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Select All</span>
             </label>
 
             <!-- Selection actions (shown when guests are selected) -->
-            <div v-if="totalSelectedCount > 0" class="flex items-center gap-1 ml-2 pl-3 border-l border-slate-200">
-              <span class="text-sm text-slate-600 font-medium">{{ totalSelectedCount }} selected</span>
-              <button
-                @click="handleBulkMarkSent"
-                title="Mark all selected as sent"
-                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-              >
-                <Send class="w-4 h-4" />
-              </button>
-              <button
-                @click="handleBulkDelete"
-                title="Delete all selected"
-                class="p-1.5 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
-              >
-                <Trash2 class="w-4 h-4" />
-              </button>
+            <div v-if="totalSelectedCount > 0" class="flex items-center gap-2">
+              <span class="text-sm text-slate-600 font-medium px-2">{{ totalSelectedCount }} selected</span>
+              <div class="flex items-center gap-1">
+                <button
+                  @click="handleBulkMarkSent"
+                  title="Mark all selected as sent"
+                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                >
+                  <Send class="w-4 h-4" />
+                </button>
+                <button
+                  @click="handleBulkDelete"
+                  title="Delete all selected"
+                  class="p-2 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
+                >
+                  <Trash2 class="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <!-- Guest count info (shown when no selections) -->
-            <div v-else class="text-sm text-slate-600 ml-2 pl-3 border-l border-slate-200">
+            <div v-else class="text-sm text-slate-600">
               Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
             </div>
           </div>
 
           <!-- Right: Pagination controls -->
-          <div v-if="showPagination" class="flex items-center gap-2">
+          <div v-if="showPagination" class="flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1">
             <button
               @click="handlePreviousPage"
               :disabled="currentPageNumber === 1 || isAnyGroupLoading"
-              class="p-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              class="p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               :title="currentPageNumber === 1 ? 'First page' : 'Previous page'"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
 
-            <div class="flex items-center gap-1 px-3">
-              <span class="text-sm font-medium text-slate-900">{{ currentPageNumber }}</span>
+            <div class="flex items-center gap-1 px-3 min-w-[60px] justify-center">
+              <span class="text-sm font-semibold text-slate-900">{{ currentPageNumber }}</span>
               <span class="text-sm text-slate-400">/</span>
               <span class="text-sm text-slate-600">{{ totalPagesCount }}</span>
             </div>
@@ -200,10 +201,10 @@
             <button
               @click="handleNextPage"
               :disabled="currentPageNumber >= totalPagesCount || isAnyGroupLoading"
-              class="p-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              class="p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               :title="currentPageNumber >= totalPagesCount ? 'Last page' : 'Next page'"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>

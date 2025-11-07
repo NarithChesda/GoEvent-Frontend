@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="$emit('close')"></div>
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
 
         <div class="flex min-h-full items-center justify-center p-4">
           <div
@@ -79,20 +79,53 @@
                     </button>
                   </div>
                   <div class="relative">
-                    <select
-                      id="guestGroup"
-                      v-model="localSelectedGroup"
-                      required
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                    <button
+                      type="button"
+                      @click="isGroupDropdownOpen = !isGroupDropdownOpen"
+                      class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     >
-                      <option :value="null" disabled>Choose a group...</option>
-                      <option v-for="group in groups" :key="group.id" :value="group.id">
-                        {{ group.name }} ({{ group.guest_count }} guests)
-                      </option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
+                      <Users class="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span class="flex-1 text-left text-slate-900 truncate">
+                        {{ localSelectedGroup ? groups.find(g => g.id === localSelectedGroup)?.name : 'Choose a group...' }}
+                      </span>
+                      <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isGroupDropdownOpen }" />
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <Transition name="dropdown">
+                      <div
+                        v-if="isGroupDropdownOpen"
+                        class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[300px] overflow-y-auto"
+                        @click.stop
+                      >
+                        <button
+                          v-for="group in groups"
+                          :key="group.id"
+                          type="button"
+                          @click="selectGroup(group.id)"
+                          :class="[
+                            'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
+                            localSelectedGroup === group.id
+                              ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
+                              : 'text-slate-700 hover:bg-slate-50'
+                          ]"
+                        >
+                          <div
+                            class="w-3 h-3 rounded-full flex-shrink-0"
+                            :style="{ backgroundColor: localSelectedGroup === group.id ? 'white' : (group.color || '#3498db') }"
+                          />
+                          <span class="flex-1 text-left truncate">{{ group.name }}</span>
+                          <span class="text-xs opacity-75">({{ group.guest_count }})</span>
+                        </button>
+                      </div>
+                    </Transition>
+
+                    <!-- Click outside to close dropdown -->
+                    <div
+                      v-if="isGroupDropdownOpen"
+                      @click="isGroupDropdownOpen = false"
+                      class="fixed inset-0 z-[90]"
+                    ></div>
                   </div>
                   <p v-if="groups.length === 0" class="mt-2 text-xs text-red-600">
                     Please create a group first before adding guests.
@@ -110,7 +143,7 @@
                     type="text"
                     required
                     placeholder="Enter guest's full name"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 bg-white transition-all duration-200 hover:border-emerald-300"
                   />
                 </div>
 
@@ -155,20 +188,53 @@
                     </button>
                   </div>
                   <div class="relative">
-                    <select
-                      id="importGroup"
-                      v-model="localSelectedGroupForImport"
-                      required
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                    <button
+                      type="button"
+                      @click="isImportGroupDropdownOpen = !isImportGroupDropdownOpen"
+                      class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     >
-                      <option :value="null" disabled>Choose a group...</option>
-                      <option v-for="group in groups" :key="group.id" :value="group.id">
-                        {{ group.name }} ({{ group.guest_count }} guests)
-                      </option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
+                      <Users class="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span class="flex-1 text-left text-slate-900 truncate">
+                        {{ localSelectedGroupForImport ? groups.find(g => g.id === localSelectedGroupForImport)?.name : 'Choose a group...' }}
+                      </span>
+                      <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isImportGroupDropdownOpen }" />
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <Transition name="dropdown">
+                      <div
+                        v-if="isImportGroupDropdownOpen"
+                        class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[300px] overflow-y-auto"
+                        @click.stop
+                      >
+                        <button
+                          v-for="group in groups"
+                          :key="group.id"
+                          type="button"
+                          @click="selectImportGroup(group.id)"
+                          :class="[
+                            'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
+                            localSelectedGroupForImport === group.id
+                              ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
+                              : 'text-slate-700 hover:bg-slate-50'
+                          ]"
+                        >
+                          <div
+                            class="w-3 h-3 rounded-full flex-shrink-0"
+                            :style="{ backgroundColor: localSelectedGroupForImport === group.id ? 'white' : (group.color || '#3498db') }"
+                          />
+                          <span class="flex-1 text-left truncate">{{ group.name }}</span>
+                          <span class="text-xs opacity-75">({{ group.guest_count }})</span>
+                        </button>
+                      </div>
+                    </Transition>
+
+                    <!-- Click outside to close dropdown -->
+                    <div
+                      v-if="isImportGroupDropdownOpen"
+                      @click="isImportGroupDropdownOpen = false"
+                      class="fixed inset-0 z-[90]"
+                    ></div>
                   </div>
                   <p v-if="groups.length === 0" class="mt-2 text-xs text-red-600">
                     Please create a group first before importing guests.
@@ -258,7 +324,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { UserPlus, X, Upload, Download, FileText, ChevronDown } from 'lucide-vue-next'
+import { UserPlus, X, Upload, Download, FileText, ChevronDown, Users } from 'lucide-vue-next'
 import type { GuestGroup } from '../../services/api'
 
 // Props
@@ -291,6 +357,8 @@ const localGuestName = ref('')
 const localSelectedGroup = ref<number | null>(null)
 const localSelectedGroupForImport = ref<number | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const isGroupDropdownOpen = ref(false)
+const isImportGroupDropdownOpen = ref(false)
 
 // Reset form when modal is closed
 watch(() => props.show, (newShow) => {
@@ -299,12 +367,25 @@ watch(() => props.show, (newShow) => {
     localGuestName.value = ''
     localSelectedGroup.value = null
     localSelectedGroupForImport.value = null
+    isGroupDropdownOpen.value = false
+    isImportGroupDropdownOpen.value = false
   } else if (newShow && props.pendingGroupId) {
     // Auto-select the pending group when modal opens
     localSelectedGroup.value = props.pendingGroupId
     localSelectedGroupForImport.value = props.pendingGroupId
   }
 })
+
+// Methods for dropdown
+const selectGroup = (groupId: number) => {
+  localSelectedGroup.value = groupId
+  isGroupDropdownOpen.value = false
+}
+
+const selectImportGroup = (groupId: number) => {
+  localSelectedGroupForImport.value = groupId
+  isImportGroupDropdownOpen.value = false
+}
 
 const handleAddGuest = () => {
   if (!localGuestName.value.trim() || !localSelectedGroup.value) return
@@ -365,5 +446,17 @@ const handleDragLeave = () => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Dropdown transition */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

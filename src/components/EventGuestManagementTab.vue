@@ -437,7 +437,7 @@ const groupCardRefs = new Map<number, any>()
 
 // Sub-tabs configuration
 const subTabs = [
-  { id: 'guests', label: 'Guests', icon: UserPlus },
+  { id: 'guests', label: 'Guest List', icon: UserPlus },
   { id: 'groups', label: 'Guest Groups', icon: Users },
   { id: 'statistics', label: 'Statistics', icon: BarChart3 },
 ]
