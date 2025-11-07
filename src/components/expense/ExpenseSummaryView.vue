@@ -23,109 +23,154 @@
 
     <!-- Summary Content -->
     <template v-else-if="summary">
-      <!-- Overall Totals Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Total Budget Card -->
-        <div
-          v-for="currency in Object.keys(summary.overall_totals)"
-          :key="`budget-${currency}`"
-          class="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 rounded-2xl p-6 shadow-lg shadow-blue-500/10"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
-              <Wallet class="w-6 h-6 text-white" />
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-medium text-blue-600">Total Budget</p>
-              <p class="text-2xl font-bold text-blue-900">
+      <!-- Header -->
+      <header class="flex flex-col gap-2">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-slate-900">Expense Overview</h3>
+          <p class="text-sm text-slate-500">Track your budget utilization and spending patterns across categories.</p>
+        </div>
+      </header>
+      <!-- Budget Summary Cards (per currency) -->
+      <div
+        v-for="currency in Object.keys(summary.overall_totals)"
+        :key="`summary-${currency}`"
+        class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60"
+      >
+        <div class="flex flex-col gap-6">
+          <!-- Currency Header with Budget Stats -->
+          <div class="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ currency }} Budget</p>
+              <p class="text-4xl font-semibold tracking-tight text-slate-900" aria-live="polite">
                 {{ formatCurrency(summary.overall_totals[currency].total_budget, currency) }}
               </p>
+              <p class="mt-1 text-sm text-slate-500">{{ getBudgetedCategoriesCount(currency) }} categories budgeted</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <div
+                :class="[
+                  'inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold ring-1',
+                  isOverBudget(currency)
+                    ? 'bg-red-50 text-red-600 ring-red-200'
+                    : 'bg-emerald-50 text-emerald-600 ring-emerald-200'
+                ]"
+              >
+                <TrendingUp class="h-4 w-4" aria-hidden="true" />
+                <span>{{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }} spent</span>
+              </div>
             </div>
           </div>
-          <div class="pt-3 border-t border-blue-200/50">
-            <p class="text-xs text-blue-600">{{ currency }} - {{ getBudgetedCategoriesCount(currency) }} categories</p>
-          </div>
-        </div>
 
-        <!-- Total Spent Card -->
-        <div
-          v-for="currency in Object.keys(summary.overall_totals)"
-          :key="`spent-${currency}`"
-          :class="[
-            'border rounded-2xl p-6 shadow-lg',
-            isOverBudget(currency)
-              ? 'bg-gradient-to-br from-red-50 to-red-100/50 border-red-200/50 shadow-red-500/10'
-              : 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200/50 shadow-emerald-500/10'
-          ]"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div
-              :class="[
-                'w-12 h-12 rounded-xl flex items-center justify-center shadow-md',
-                isOverBudget(currency) ? 'bg-red-500' : 'bg-emerald-500'
-              ]"
-            >
-              <TrendingUp class="w-6 h-6 text-white" />
+          <!-- Progress Visualization -->
+          <div class="space-y-5">
+            <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
+              <div
+                :class="[
+                  'h-full transition-[width] duration-500',
+                  isOverBudget(currency)
+                    ? 'bg-gradient-to-r from-red-400 via-red-500 to-red-600'
+                    : 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600'
+                ]"
+                :style="{ width: Math.min(getBudgetPercentage(currency), 100) + '%' }"
+              ></div>
             </div>
-            <div class="text-right">
-              <p :class="['text-sm font-medium', isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600']">
-                Total Spent
-              </p>
-              <p :class="['text-2xl font-bold', isOverBudget(currency) ? 'text-red-900' : 'text-emerald-900']">
-                {{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }}
-              </p>
-            </div>
-          </div>
-          <div :class="['pt-3 border-t', isOverBudget(currency) ? 'border-red-200/50' : 'border-emerald-200/50']">
-            <p :class="['text-xs', isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600']">
-              {{ summary.overall_totals[currency].expense_count }} expenses recorded
-            </p>
-          </div>
-        </div>
 
-        <!-- Remaining/Over Budget Card -->
-        <div
-          v-for="currency in Object.keys(summary.overall_totals)"
-          :key="`remaining-${currency}`"
-          :class="[
-            'border rounded-2xl p-6 shadow-lg',
-            isOverBudget(currency)
-              ? 'bg-gradient-to-br from-red-50 to-red-100/50 border-red-200/50 shadow-red-500/10'
-              : 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200/50 shadow-emerald-500/10'
-          ]"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div
-              :class="[
-                'w-12 h-12 rounded-xl flex items-center justify-center shadow-md',
-                isOverBudget(currency) ? 'bg-red-500' : 'bg-emerald-500'
-              ]"
-            >
-              <AlertCircle v-if="isOverBudget(currency)" class="w-6 h-6 text-white" />
-              <DollarSign v-else class="w-6 h-6 text-white" />
+            <div class="grid gap-3 sm:grid-cols-3">
+              <!-- Budget Spent -->
+              <div
+                :class="[
+                  'rounded-2xl border border-transparent p-4 shadow-sm',
+                  isOverBudget(currency)
+                    ? 'bg-red-50/80 shadow-red-100/70'
+                    : 'bg-emerald-50/80 shadow-emerald-100/70'
+                ]"
+              >
+                <div class="flex items-center justify-between">
+                  <p
+                    :class="[
+                      'text-xs font-semibold uppercase tracking-wide',
+                      isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600'
+                    ]"
+                  >
+                    Spent
+                  </p>
+                  <span
+                    :class="[
+                      'text-xs font-semibold',
+                      isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600'
+                    ]"
+                  >
+                    {{ getBudgetPercentage(currency) }}%
+                  </span>
+                </div>
+                <p class="mt-3 text-lg font-semibold text-slate-900">
+                  {{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }}
+                </p>
+                <p :class="['text-xs', isOverBudget(currency) ? 'text-red-700/70' : 'text-emerald-700/70']">
+                  {{ summary.overall_totals[currency].expense_count }} expense{{ summary.overall_totals[currency].expense_count !== 1 ? 's' : '' }} recorded
+                </p>
+              </div>
+
+              <!-- Remaining/Over Budget -->
+              <div
+                :class="[
+                  'rounded-2xl border border-transparent p-4 shadow-sm',
+                  isOverBudget(currency)
+                    ? 'bg-red-50/80 shadow-red-100/70'
+                    : 'bg-sky-50/80 shadow-sky-100/70'
+                ]"
+              >
+                <div class="flex items-center justify-between">
+                  <p
+                    :class="[
+                      'text-xs font-semibold uppercase tracking-wide',
+                      isOverBudget(currency) ? 'text-red-600' : 'text-sky-600'
+                    ]"
+                  >
+                    {{ isOverBudget(currency) ? 'Over Budget' : 'Remaining' }}
+                  </p>
+                  <span
+                    :class="[
+                      'text-xs font-semibold',
+                      isOverBudget(currency) ? 'text-red-600' : 'text-sky-600'
+                    ]"
+                  >
+                    {{ Math.abs(getRemainingBudget(currency)) > 0 ? (isOverBudget(currency) ? '+' : '') : '' }}{{ Math.abs(100 - getBudgetPercentage(currency)) }}%
+                  </span>
+                </div>
+                <p class="mt-3 text-lg font-semibold text-slate-900">
+                  {{ formatCurrency(Math.abs(getRemainingBudget(currency)), currency) }}
+                </p>
+                <p :class="['text-xs', isOverBudget(currency) ? 'text-red-700/70' : 'text-sky-700/70']">
+                  {{ isOverBudget(currency) ? 'Exceeded your budget limit' : 'Still available to spend' }}
+                </p>
+              </div>
+
+              <!-- Budget Status -->
+              <div class="rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Status</p>
+                </div>
+                <p class="mt-3 text-lg font-semibold text-slate-900">
+                  {{ isOverBudget(currency) ? 'Over Budget' : 'On Track' }}
+                </p>
+                <p class="text-xs text-slate-500">
+                  {{ isOverBudget(currency) ? 'Review spending to get back on track' : 'Budget is under control' }}
+                </p>
+              </div>
             </div>
-            <div class="text-right">
-              <p :class="['text-sm font-medium', isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600']">
-                {{ isOverBudget(currency) ? 'Over Budget' : 'Remaining' }}
-              </p>
-              <p :class="['text-2xl font-bold', isOverBudget(currency) ? 'text-red-900' : 'text-emerald-900']">
-                {{ formatCurrency(getRemainingBudget(currency), currency) }}
-              </p>
-            </div>
-          </div>
-          <div :class="['pt-3 border-t', isOverBudget(currency) ? 'border-red-200/50' : 'border-emerald-200/50']">
-            <p :class="['text-xs', isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600']">
-              {{ getBudgetPercentage(currency) }}% of budget used
-            </p>
           </div>
         </div>
       </div>
 
       <!-- Category Breakdown -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6">
+      <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-bold text-slate-900">Category Breakdown</h3>
-          <div class="flex items-center gap-2">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Category Breakdown</h3>
+            <p class="text-sm text-slate-500 mt-1">Detailed spending across all categories</p>
+          </div>
+          <div v-if="Object.keys(summary.overall_totals).length > 1" class="flex items-center gap-2">
             <button
               v-for="currency in Object.keys(summary.overall_totals)"
               :key="`filter-${currency}`"
@@ -133,7 +178,7 @@
               :class="[
                 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
                 selectedCurrency === currency
-                  ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
+                  ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               ]"
             >
@@ -143,21 +188,16 @@
         </div>
 
         <!-- Category Items -->
-        <div class="space-y-4">
+        <div class="space-y-3">
           <div
             v-for="category in filteredCategories"
             :key="category.category_id"
-            :class="[
-              'group p-4 rounded-xl transition-all duration-300',
-              category.budget?.is_over_budget
-                ? 'bg-red-50/50 hover:bg-red-100/50 border border-red-200/50'
-                : 'bg-slate-50/50 hover:bg-slate-100/50'
-            ]"
+            class="group p-4 rounded-2xl bg-slate-50/50 hover:bg-slate-100/50 transition-all duration-200"
           >
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
                 <div
-                  class="w-10 h-10 rounded-lg flex items-center justify-center"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                   :style="{ backgroundColor: getCategoryColor(category.category_id) + '20' }"
                 >
                   <component
@@ -170,56 +210,56 @@
                 </div>
                 <div>
                   <h4 class="font-semibold text-slate-900">{{ category.category_name }}</h4>
-                  <p class="text-xs text-slate-500">{{ category.expense_count }} expense{{ category.expense_count !== 1 ? 's' : '' }}</p>
+                  <p class="text-xs text-slate-500">{{ category.expense_count }} item{{ category.expense_count !== 1 ? 's' : '' }}</p>
                 </div>
               </div>
               <div class="text-right">
                 <p class="font-bold text-slate-900">{{ formatCurrency(category.total_amount, category.currency) }}</p>
                 <p v-if="category.budget" class="text-xs text-slate-500">
-                  of {{ formatCurrency(category.budget.budgeted_amount, category.budget.currency) }}
+                  / {{ formatCurrency(category.budget.budgeted_amount, category.budget.currency) }}
                 </p>
-                <p v-else class="text-xs text-amber-600">No budget set</p>
               </div>
             </div>
 
             <!-- Progress Bar (only if budget exists) -->
-            <template v-if="category.budget">
+            <div v-if="category.budget" class="space-y-2">
               <div class="relative h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
                   :class="[
                     'absolute inset-y-0 left-0 rounded-full transition-all duration-500',
                     category.budget.is_over_budget
-                      ? 'bg-gradient-to-r from-red-500 to-red-600'
-                      : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                      ? 'bg-gradient-to-r from-red-400 to-red-600'
+                      : 'bg-gradient-to-r from-emerald-400 to-emerald-600'
                   ]"
                   :style="{ width: Math.min(category.budget.percentage_used, 100) + '%' }"
                 ></div>
               </div>
 
-              <div class="flex items-center justify-between mt-2">
-                <div class="flex items-center gap-1">
-                  <AlertTriangle v-if="category.budget.is_over_budget" class="w-3 h-3 text-red-600" />
-                  <span
-                    :class="[
-                      'text-xs font-medium',
-                      category.budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'
-                    ]"
-                  >
-                    {{ category.budget.percentage_used.toFixed(1) }}% used
-                  </span>
-                </div>
+              <div class="flex items-center justify-between">
                 <span
                   :class="[
-                    'text-xs font-medium',
+                    'text-xs font-medium inline-flex items-center gap-1',
                     category.budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'
                   ]"
                 >
-                  {{ category.budget.is_over_budget ? 'Over by ' : '' }}
+                  <AlertTriangle v-if="category.budget.is_over_budget" class="w-3 h-3" />
+                  {{ category.budget.percentage_used.toFixed(0) }}% used
+                </span>
+                <span
+                  :class="[
+                    'text-xs font-medium',
+                    category.budget.is_over_budget ? 'text-red-600' : 'text-slate-500'
+                  ]"
+                >
                   {{ formatCurrency(Math.abs(category.budget.remaining_amount), category.budget.currency) }}
-                  {{ category.budget.is_over_budget ? '' : ' remaining' }}
+                  {{ category.budget.is_over_budget ? ' over' : ' left' }}
                 </span>
               </div>
-            </template>
+            </div>
+            <!-- No Budget Indicator -->
+            <div v-else class="pt-2">
+              <p class="text-xs text-amber-600 font-medium">No budget set</p>
+            </div>
           </div>
         </div>
 
@@ -233,57 +273,66 @@
         </div>
       </div>
 
-      <!-- Recent Expenses -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-bold text-slate-900">Top Expenses</h3>
+      <!-- Top Expenses -->
+      <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+        <div class="mb-6">
+          <h3 class="text-lg font-bold text-slate-900">Top Spending Categories</h3>
+          <p class="text-sm text-slate-500 mt-1">Your highest expense categories across all currencies</p>
         </div>
 
         <!-- Expense List (Show top 5 expenses) -->
-        <div class="space-y-3">
+        <div class="space-y-2">
           <div
-            v-for="category in topExpenseCategories"
+            v-for="(category, index) in topExpenseCategories"
             :key="`top-${category.category_id}`"
-            class="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-100/50 rounded-xl transition-all duration-300"
+            class="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-100/50 rounded-2xl transition-all duration-200"
           >
-            <div
-              class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-              :style="{ backgroundColor: getCategoryColor(category.category_id) + '20' }"
-            >
-              <component
-                v-if="getCategoryIcon(category.category_id)"
-                :is="getCategoryIcon(category.category_id)"
-                class="w-5 h-5"
-                :style="{ color: getCategoryColor(category.category_id) }"
-              />
-              <Folder v-else class="w-5 h-5" :style="{ color: getCategoryColor(category.category_id) }" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-slate-900 truncate">{{ category.category_name }}</h4>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="text-xs text-slate-500">{{ category.expense_count }} expense{{ category.expense_count !== 1 ? 's' : '' }}</span>
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                :style="{ backgroundColor: getCategoryColor(category.category_id) + '20' }"
+              >
+                <component
+                  v-if="getCategoryIcon(category.category_id)"
+                  :is="getCategoryIcon(category.category_id)"
+                  class="w-5 h-5"
+                  :style="{ color: getCategoryColor(category.category_id) }"
+                />
+                <Folder v-else class="w-5 h-5" :style="{ color: getCategoryColor(category.category_id) }" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-slate-400">#{{ index + 1 }}</span>
+                  <h4 class="font-semibold text-slate-900 truncate">{{ category.category_name }}</h4>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">{{ category.expense_count }} item{{ category.expense_count !== 1 ? 's' : '' }}</p>
               </div>
             </div>
             <div class="text-right flex-shrink-0">
               <p class="font-bold text-slate-900">{{ formatCurrency(category.total_amount, category.currency) }}</p>
+              <p class="text-xs text-slate-500">{{ category.currency }}</p>
             </div>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-if="summary.categories.length === 0" class="text-center py-8">
-          <p class="text-sm text-slate-500">No expenses recorded yet</p>
+        <div v-if="summary.categories.length === 0" class="text-center py-12">
+          <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <BarChart3 class="w-8 h-8 text-slate-400" />
+          </div>
+          <h4 class="font-semibold text-slate-600 mb-2">No expenses yet</h4>
+          <p class="text-sm text-slate-400">Start recording expenses to see insights</p>
         </div>
       </div>
     </template>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-12">
+    <div v-else class="rounded-3xl border border-white/70 bg-white p-12 shadow-lg shadow-slate-200/60 text-center">
       <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <BarChart3 class="w-8 h-8 text-slate-400" />
       </div>
-      <h4 class="font-semibold text-slate-600 mb-2">No Data Available</h4>
-      <p class="text-sm text-slate-400">Start by creating budgets and recording expenses</p>
+      <h4 class="font-semibold text-slate-900 mb-2">No Budget Data Available</h4>
+      <p class="text-sm text-slate-500">Create budgets and record expenses to see your financial overview</p>
     </div>
   </div>
 </template>
@@ -291,25 +340,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
-  Wallet,
   TrendingUp,
   AlertCircle,
-  DollarSign,
-  Building2,
-  UtensilsCrossed,
-  Palette,
-  Camera,
   AlertTriangle,
   Folder,
-  BarChart3,
-  Music,
-  Gift
+  BarChart3
 } from 'lucide-vue-next'
 import {
   expensesService,
-  expenseBudgetsService,
-  type ExpenseRecord,
-  type ExpenseBudget
+  expenseBudgetsService
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 
