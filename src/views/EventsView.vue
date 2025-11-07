@@ -673,6 +673,87 @@ const scrollCategory = (categoryId: string | number, direction: 'left' | 'right'
   })
 }
 
+// Client-side filter helper function for My Events and Registered tabs
+const applyClientSideFilters = (events: Event[], filterValues: EventFiltersType): Event[] => {
+  let filteredEvents = [...events]
+
+  // Apply search filter
+  if (filterValues.search) {
+    const searchTerm = filterValues.search.toLowerCase()
+    filteredEvents = filteredEvents.filter(event =>
+      event.title?.toLowerCase().includes(searchTerm) ||
+      event.description?.toLowerCase().includes(searchTerm) ||
+      event.location?.toLowerCase().includes(searchTerm) ||
+      event.category_name?.toLowerCase().includes(searchTerm) ||
+      event.organizer_name?.toLowerCase().includes(searchTerm) ||
+      event.short_description?.toLowerCase().includes(searchTerm)
+    )
+  }
+
+  // Apply category filter
+  if (filterValues.category) {
+    filteredEvents = filteredEvents.filter(event => {
+      // Category can be filtered by ID (number) or name (string)
+      if (typeof filterValues.category === 'number') {
+        return event.category === filterValues.category
+      } else {
+        return event.category_name === filterValues.category
+      }
+    })
+  }
+
+  // Apply date range filters
+  if (filterValues.start_date_after) {
+    const afterDate = new Date(filterValues.start_date_after)
+    filteredEvents = filteredEvents.filter(event => {
+      if (!event.start_date) return false
+      const eventDate = new Date(event.start_date)
+      return eventDate >= afterDate
+    })
+  }
+
+  if (filterValues.start_date_before) {
+    const beforeDate = new Date(filterValues.start_date_before)
+    filteredEvents = filteredEvents.filter(event => {
+      if (!event.start_date) return false
+      const eventDate = new Date(event.start_date)
+      return eventDate < beforeDate
+    })
+  }
+
+  // Apply virtual/in-person filter
+  if (filterValues.is_virtual !== undefined) {
+    filteredEvents = filteredEvents.filter(event => event.is_virtual === filterValues.is_virtual)
+  }
+
+  // Apply sorting
+  if (filterValues.ordering) {
+    const ordering = filterValues.ordering
+    filteredEvents.sort((a, b) => {
+      let comparison = 0
+
+      if (ordering === 'start_date' || ordering === '-start_date') {
+        const dateA = new Date(a.start_date || 0).getTime()
+        const dateB = new Date(b.start_date || 0).getTime()
+        comparison = dateA - dateB
+      } else if (ordering === 'title' || ordering === '-title') {
+        comparison = (a.title || '').localeCompare(b.title || '')
+      } else if (ordering === 'created_at' || ordering === '-created_at') {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        comparison = dateA - dateB
+      } else if (ordering === 'registrations_count' || ordering === '-registrations_count') {
+        comparison = (a.registrations_count || 0) - (b.registrations_count || 0)
+      }
+
+      // Reverse if ordering starts with '-'
+      return ordering.startsWith('-') ? -comparison : comparison
+    })
+  }
+
+  return filteredEvents
+}
+
 const loadEvents = async (append = false) => {
   // Don't load events if user is not authenticated and trying to view 'my' or 'registered' tabs
   if (!authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
@@ -716,18 +797,8 @@ const loadEvents = async (append = false) => {
         })
         let allMyEvents = Array.from(eventMap.values())
 
-        // Apply client-side search filtering if search is present
-        if (filters.value.search) {
-          const searchTerm = filters.value.search.toLowerCase()
-          allMyEvents = allMyEvents.filter(event =>
-            event.title?.toLowerCase().includes(searchTerm) ||
-            event.description?.toLowerCase().includes(searchTerm) ||
-            event.location?.toLowerCase().includes(searchTerm) ||
-            event.category_name?.toLowerCase().includes(searchTerm) ||
-            event.organizer_name?.toLowerCase().includes(searchTerm) ||
-            event.short_description?.toLowerCase().includes(searchTerm)
-          )
-        }
+        // Apply client-side filtering for all filters
+        allMyEvents = applyClientSideFilters(allMyEvents, filters.value)
 
         // Create a mock response to match expected structure
         response = {
@@ -750,18 +821,8 @@ const loadEvents = async (append = false) => {
         // The API returns an array directly, not a paginated response
         let registeredEvents = registeredResponse.data || []
 
-        // Apply client-side search filtering if search is present
-        if (filters.value.search) {
-          const searchTerm = filters.value.search.toLowerCase()
-          registeredEvents = registeredEvents.filter(event =>
-            event.title?.toLowerCase().includes(searchTerm) ||
-            event.description?.toLowerCase().includes(searchTerm) ||
-            event.location?.toLowerCase().includes(searchTerm) ||
-            event.category_name?.toLowerCase().includes(searchTerm) ||
-            event.organizer_name?.toLowerCase().includes(searchTerm) ||
-            event.short_description?.toLowerCase().includes(searchTerm)
-          )
-        }
+        // Apply client-side filtering for all filters
+        registeredEvents = applyClientSideFilters(registeredEvents, filters.value)
 
         // Create a mock response to match expected structure
         response = {
