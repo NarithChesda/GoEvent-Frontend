@@ -180,7 +180,7 @@
     <CreateGroupModal
       :show="showCreateGroupModal"
       :is-creating="isCreatingGroup"
-      @close="showCreateGroupModal = false"
+      @close="handleCloseCreateGroupModal"
       @create="handleCreateGroup"
     />
 
@@ -595,6 +595,17 @@ const handleCreateGroupFromAddGuest = () => {
   showAddGuestModal.value = false
   isCreatingGroupFromAddGuest.value = true
   showCreateGroupModal.value = true
+}
+
+const handleCloseCreateGroupModal = () => {
+  showCreateGroupModal.value = false
+
+  // If user was creating a group from Add Guest modal and cancelled,
+  // reopen the Add Guest modal
+  if (isCreatingGroupFromAddGuest.value) {
+    showAddGuestModal.value = true
+    isCreatingGroupFromAddGuest.value = false
+  }
 }
 
 const openEditGroupModal = (group: GuestGroup) => {
