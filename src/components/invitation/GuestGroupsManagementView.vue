@@ -205,7 +205,7 @@
                         <div
                           v-if="showColorPicker"
                           ref="colorPickerRef"
-                          class="absolute z-10 w-40 right-full mr-2 bottom-0 bg-white border border-slate-300 rounded-lg shadow-xl p-2"
+                          class="absolute z-10 w-40 sm:right-full sm:mr-2 sm:bottom-0 bottom-full mb-2 sm:mb-0 left-0 sm:left-auto bg-white border border-slate-300 rounded-lg shadow-xl p-2"
                         >
                           <div class="grid grid-cols-4 gap-1 mb-2">
                             <button
@@ -520,6 +520,21 @@ defineExpose({
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateX(0.5rem);
+}
+
+/* Mobile: slide up from bottom */
+@media (max-width: 639px) {
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: translateY(0.5rem);
+  }
+}
+
+/* Desktop: slide from right */
+@media (min-width: 640px) {
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: translateX(0.5rem);
+  }
 }
 </style>

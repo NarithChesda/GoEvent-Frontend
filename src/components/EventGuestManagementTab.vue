@@ -190,6 +190,7 @@
       @file-drop="handleFileDrop"
       @drag-over="handleDragOver"
       @drag-leave="handleDragLeave"
+      @create-group="handleCreateGroupFromAddGuest"
     />
 
     <!-- Edit Guest Modal -->
@@ -551,6 +552,11 @@ const handleBulkImport = async (groupId: number) => {
 const handleCloseAddGuestModal = () => {
   showAddGuestModal.value = false
   resetImportState()
+}
+
+const handleCreateGroupFromAddGuest = () => {
+  // Open the create group modal from GuestGroupsManagementView
+  guestGroupsManagementViewRef.value?.openAddGroupModal()
 }
 
 const openEditGroupModal = (group: GuestGroup) => {

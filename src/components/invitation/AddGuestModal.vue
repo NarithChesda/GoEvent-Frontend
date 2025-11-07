@@ -66,9 +66,18 @@
               <div v-if="localMode === 'single'" class="space-y-5">
                 <!-- Group Selection -->
                 <div>
-                  <label for="guestGroup" class="block text-sm font-medium text-slate-700 mb-2">
-                    Select Group <span class="text-red-500">*</span>
-                  </label>
+                  <div class="flex items-center justify-between mb-2">
+                    <label for="guestGroup" class="block text-sm font-medium text-slate-700">
+                      Select Group <span class="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      @click="$emit('create-group')"
+                      class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
+                    >
+                      + Create Group
+                    </button>
+                  </div>
                   <div class="relative">
                     <select
                       id="guestGroup"
@@ -133,9 +142,18 @@
               <div v-else class="space-y-5">
                 <!-- Group Selection -->
                 <div>
-                  <label for="importGroup" class="block text-sm font-medium text-slate-700 mb-2">
-                    Select Group <span class="text-red-500">*</span>
-                  </label>
+                  <div class="flex items-center justify-between mb-2">
+                    <label for="importGroup" class="block text-sm font-medium text-slate-700">
+                      Select Group <span class="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      @click="$emit('create-group')"
+                      class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
+                    >
+                      + Create Group
+                    </button>
+                  </div>
                   <div class="relative">
                     <select
                       id="importGroup"
@@ -263,6 +281,7 @@ const emit = defineEmits<{
   'file-drop': [event: DragEvent]
   'drag-over': [event: DragEvent]
   'drag-leave': []
+  'create-group': []
 }>()
 
 // Local state
