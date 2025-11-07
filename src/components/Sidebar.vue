@@ -7,6 +7,16 @@
         isCollapsed ? 'w-24' : 'w-64'
       ]"
     >
+      <!-- SVG Gradient Definition (hidden) -->
+      <svg width="0" height="0" style="position: absolute; pointer-events: none;">
+        <defs>
+          <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#2ecc71" />
+            <stop offset="100%" stop-color="#1e90ff" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       <!-- Logo Section -->
       <div class="flex items-center h-20 relative"
            :class="isCollapsed ? 'justify-center px-2' : 'justify-between px-4'">
@@ -54,9 +64,9 @@
           <button
             v-if="item.path === '/home'"
             @click="handleHomeClick"
-            class="w-full flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
+            class="w-full flex items-center px-3 py-3 rounded-xl text-slate-700 transition-all duration-200 group"
             :class="[
-              $route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF] font-semibold' : '',
+              ($route.path === item.path && !isPricingSectionVisible) ? 'font-semibold gradient-text' : 'hover:gradient-text',
               isCollapsed ? 'flex-col space-y-1' : 'space-x-3'
             ]"
           >
@@ -64,7 +74,7 @@
               :is="item.icon"
               class="flex-shrink-0"
               :class="[
-                $route.path === item.path ? 'text-[#1e90ff]' : 'text-slate-500 group-hover:text-[#1e90ff]',
+                ($route.path === item.path && !isPricingSectionVisible) ? 'gradient-text' : 'text-slate-500 group-hover:gradient-text',
                 isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
               ]"
             />
@@ -80,9 +90,9 @@
           <RouterLink
             v-else
             :to="item.path"
-            class="flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
+            class="flex items-center px-3 py-3 rounded-xl text-slate-700 transition-all duration-200 group"
             :class="[
-              $route.path === item.path ? 'text-[#1e90ff] bg-[#E6F4FF] font-semibold' : '',
+              $route.path === item.path ? 'font-semibold gradient-text' : 'hover:gradient-text',
               isCollapsed ? 'flex-col space-y-1' : 'space-x-3'
             ]"
           >
@@ -90,7 +100,7 @@
               :is="item.icon"
               class="flex-shrink-0"
               :class="[
-                $route.path === item.path ? 'text-[#1e90ff]' : 'text-slate-500 group-hover:text-[#1e90ff]',
+                $route.path === item.path ? 'gradient-text' : 'text-slate-500 group-hover:gradient-text',
                 isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
               ]"
             />
@@ -106,12 +116,18 @@
         <!-- Pricing Button -->
         <button
           @click="scrollToPricing"
-          class="w-full flex items-center px-3 py-3 rounded-xl text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200 group"
-          :class="isCollapsed ? 'flex-col space-y-1' : 'space-x-3'"
+          class="w-full flex items-center px-3 py-3 rounded-xl text-slate-700 transition-all duration-200 group"
+          :class="[
+            isPricingSectionVisible ? 'font-semibold gradient-text' : 'hover:gradient-text',
+            isCollapsed ? 'flex-col space-y-1' : 'space-x-3'
+          ]"
         >
-          <DollarSign
-            class="flex-shrink-0 text-slate-500 group-hover:text-[#1e90ff]"
-            :class="isCollapsed ? 'w-6 h-6' : 'w-5 h-5'"
+          <BadgeDollarSign
+            class="flex-shrink-0"
+            :class="[
+              isPricingSectionVisible ? 'gradient-text' : 'text-slate-500 group-hover:gradient-text',
+              isCollapsed ? 'w-6 h-6' : 'w-5 h-5'
+            ]"
           />
           <span
             class="font-medium"
@@ -129,7 +145,7 @@
           <div ref="userMenuRef" class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
-              class="w-full flex items-center p-3 rounded-xl hover:bg-[#E6F4FF] transition-all duration-200"
+              class="w-full flex items-center p-3 rounded-xl transition-all duration-200"
               :class="isCollapsed ? 'flex-col space-y-2 justify-center' : 'space-x-3'"
             >
               <div class="rounded-full overflow-hidden ring-2 ring-slate-200 flex-shrink-0"
@@ -175,26 +191,26 @@
                 <RouterLink
                   to="/settings"
                   @click="userMenuOpen = false"
-                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
+                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
                 >
-                  <User class="w-5 h-5" />
+                  <User class="w-5 h-5 group-hover:gradient-text" />
                   <span class="font-medium">Profile</span>
                 </RouterLink>
                 <RouterLink
                   to="/security"
                   @click="userMenuOpen = false"
-                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
+                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
                 >
-                  <Lock class="w-5 h-5" />
+                  <Lock class="w-5 h-5 group-hover:gradient-text" />
                   <span class="font-medium">Security</span>
                 </RouterLink>
                 <RouterLink
                   v-if="authStore.user?.is_partner"
                   to="/commission"
                   @click="userMenuOpen = false"
-                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff] transition-all duration-200"
+                  class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
                 >
-                  <Wallet class="w-5 h-5" />
+                  <Wallet class="w-5 h-5 group-hover:gradient-text" />
                   <span class="font-medium">Commission</span>
                 </RouterLink>
                 <div class="border-t border-slate-200"></div>
@@ -214,10 +230,10 @@
         <template v-else>
           <RouterLink
             :to="signinLink"
-            class="flex items-center justify-center w-full px-3 py-3 text-center rounded-xl font-semibold text-slate-700 hover:text-[#1e90ff] hover:bg-[#E6F4FF] transition-all duration-200"
+            class="flex items-center justify-center w-full px-3 py-3 text-center rounded-xl font-semibold text-slate-700 hover:gradient-text transition-all duration-200 group"
             :class="isCollapsed ? 'flex-col space-y-1' : 'space-x-2'"
           >
-            <User class="flex-shrink-0" :class="isCollapsed ? 'w-6 h-6' : 'w-5 h-5'" />
+            <User class="flex-shrink-0 group-hover:gradient-text" :class="isCollapsed ? 'w-6 h-6' : 'w-5 h-5'" />
             <span :class="isCollapsed ? 'text-xs' : 'text-sm'">Sign In</span>
           </RouterLink>
         </template>
@@ -230,10 +246,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
-  Home,
-  Info,
-  Calendar,
-  DollarSign,
+  House,
+  CircleHelp,
+  CalendarDays,
+  BadgeDollarSign,
   User,
   Lock,
   Wallet,
@@ -256,6 +272,7 @@ const { isCollapsed, toggleCollapse } = useSidebar()
 const userMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement>()
 const { navigateHome, scrollToPricing } = useLandingNavigation()
+const isPricingSectionVisible = ref(false)
 
 // Close menu when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
@@ -264,9 +281,50 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
+// Track pricing section visibility using IntersectionObserver
+const setupPricingObserver = () => {
+  if (route.path !== '/home') {
+    isPricingSectionVisible.value = false
+    return
+  }
+
+  const pricingSection = document.getElementById('pricing')
+  if (!pricingSection) return
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        // Consider section visible if at least 30% is in view
+        isPricingSectionVisible.value = entry.isIntersecting && entry.intersectionRatio > 0.3
+      })
+    },
+    {
+      threshold: [0, 0.3, 0.5, 1],
+      rootMargin: '-100px 0px -100px 0px'
+    }
+  )
+
+  observer.observe(pricingSection)
+
+  return observer
+}
+
 // Add and remove click listener
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+
+  // Setup pricing section observer
+  const observer = setupPricingObserver()
+
+  // Re-setup observer when route changes
+  const unwatch = router.afterEach(() => {
+    setupPricingObserver()
+  })
+
+  onUnmounted(() => {
+    observer?.disconnect()
+    unwatch()
+  })
 })
 
 onUnmounted(() => {
@@ -275,9 +333,9 @@ onUnmounted(() => {
 
 // Navigation items configuration
 const navigationItems = [
-  { path: '/home', label: 'Home', icon: Home },
-  { path: '/about', label: 'About', icon: Info },
-  { path: '/events', label: 'Events', icon: Calendar }
+  { path: '/home', label: 'Home', icon: House },
+  { path: '/about', label: 'About', icon: CircleHelp },
+  { path: '/events', label: 'Events', icon: CalendarDays }
 ]
 
 // Computed property for signin link with redirect
@@ -341,6 +399,28 @@ const handleLogout = async () => {
 }
 
 /* Custom gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #2ecc71 0%, #1e90ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* For SVG icons - use blend color from gradient that matches visually */
+.gradient-text :deep(svg) {
+  color: #26ae88;
+  stroke: currentColor;
+}
+
+/* Ensure lucide icons keep their structure intact */
+.gradient-text :deep(svg) {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .bg-clip-text {
   background-clip: text;
   -webkit-background-clip: text;
