@@ -24,7 +24,7 @@
       <!-- Filter Header with Quick Filter Pills -->
       <div class="px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 md:py-4">
         <!-- Quick Filter Pills (Always Visible) -->
-        <div class="flex flex-wrap items-center gap-2 mb-3">
+        <div class="flex flex-wrap items-center gap-2">
           <!-- Clear All Filters Button (shows when filters are active) -->
           <button
             v-if="hasActiveFilters"
