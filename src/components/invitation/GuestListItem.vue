@@ -26,24 +26,27 @@
       </div>
 
       <!-- Guest Info (grows to fill space) -->
-      <div class="flex-1 min-w-0 flex items-center gap-3">
-        <!-- Name with status badge -->
-        <div class="flex-1 min-w-0 flex items-center gap-2">
-          <div class="font-semibold text-slate-900">{{ guest.name }}</div>
+      <div class="flex-1 min-w-0">
+        <!-- Guest Name (full width) -->
+        <div class="font-semibold text-slate-900 truncate">{{ guest.name }}</div>
+
+        <!-- Badges under name -->
+        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
           <!-- Sent status badge -->
           <div
             v-if="guest.invitation_status === 'sent' || guest.invitation_status === 'viewed'"
-            class="flex items-center gap-1 text-blue-600"
+            class="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md text-xs font-medium border border-blue-200"
             title="Invitation sent"
           >
-            <CheckCheck class="w-4 h-4" />
+            <CheckCheck class="w-3 h-3" />
+            <span>Sent</span>
           </div>
-        </div>
 
-        <!-- Cash Gift -->
-        <div v-if="guest.cash_gift_amount" class="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-200 flex-shrink-0">
-          <Coins class="w-3 h-3" />
-          <span>{{ formatCurrency(guest.cash_gift_amount, guest.cash_gift_currency) }}</span>
+          <!-- Cash Gift badge -->
+          <div v-if="guest.cash_gift_amount" class="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-200">
+            <Coins class="w-3 h-3" />
+            <span>{{ formatCurrency(guest.cash_gift_amount, guest.cash_gift_currency) }}</span>
+          </div>
         </div>
       </div>
 

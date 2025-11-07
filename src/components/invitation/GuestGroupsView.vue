@@ -69,17 +69,17 @@
       class="space-y-4"
     >
       <!-- Filter and Actions Bar - Always Visible -->
-      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 py-4 px-6 bg-white border border-slate-200 rounded-xl relative z-10">
+      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 lg:gap-4 py-3 lg:py-4 px-4 lg:px-6 bg-white border border-slate-200 rounded-xl relative z-10">
         <!-- Left: Filter Dropdown, Select All & Selection Count -->
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 w-full lg:w-auto">
             <!-- Filter Dropdown -->
-            <div class="relative z-[100]" ref="tabsContainer">
+            <div class="relative z-[100] w-full sm:w-auto" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 min-w-[180px]"
+                class="w-full sm:w-auto flex items-center gap-2 px-3 lg:px-4 py-2 lg:py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 min-w-0 sm:min-w-[180px]"
               >
-                <Filter class="w-4 h-4 text-white" />
-                <span class="flex-1 text-left text-white truncate">
+                <Filter class="w-4 h-4 text-white flex-shrink-0" />
+                <span class="flex-1 text-left text-white truncate text-sm lg:text-base">
                   {{ activeFilterLabel }}
                 </span>
                 <ChevronDown class="w-4 h-4 text-white transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
@@ -140,71 +140,76 @@
               ></div>
             </div>
 
-            <!-- Select All Checkbox -->
-            <label class="flex items-center gap-2.5 cursor-pointer group">
-              <input
-                type="checkbox"
-                :checked="isAllCurrentPageSelected"
-                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
-                @change="handleToggleSelectAll"
-                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-              />
-              <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Select All</span>
-            </label>
+            <!-- Select All Checkbox & Actions Row -->
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <!-- Select All Checkbox -->
+              <label class="flex items-center gap-2.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  :checked="isAllCurrentPageSelected"
+                  :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
+                  @change="handleToggleSelectAll"
+                  class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                />
+                <span class="text-xs sm:text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Select All</span>
+              </label>
 
-            <!-- Selection actions (shown when guests are selected) -->
-            <div v-if="totalSelectedCount > 0" class="flex items-center gap-2">
-              <span class="text-sm text-slate-600 font-medium px-2">{{ totalSelectedCount }} selected</span>
-              <div class="flex items-center gap-1">
-                <button
-                  @click="handleBulkMarkSent"
-                  title="Mark all selected as sent"
-                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                >
-                  <Send class="w-4 h-4" />
-                </button>
-                <button
-                  @click="handleBulkDelete"
-                  title="Delete all selected"
-                  class="p-2 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
-                >
-                  <Trash2 class="w-4 h-4" />
-                </button>
+              <!-- Selection actions (shown when guests are selected) -->
+              <div v-if="totalSelectedCount > 0" class="flex items-center gap-2">
+                <span class="text-xs sm:text-sm text-slate-600 font-medium px-2">{{ totalSelectedCount }} selected</span>
+                <div class="flex items-center gap-1">
+                  <button
+                    @click="handleBulkMarkSent"
+                    title="Mark all selected as sent"
+                    class="p-1.5 sm:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  >
+                    <Send class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </button>
+                  <button
+                    @click="handleBulkDelete"
+                    title="Delete all selected"
+                    class="p-1.5 sm:p-2 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
+                  >
+                    <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <!-- Guest count info (shown when no selections) -->
-            <div v-else class="text-sm text-slate-600">
-              Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
+              <!-- Guest count info (shown when no selections) -->
+              <div v-else class="text-xs sm:text-sm text-slate-600">
+                Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
+              </div>
             </div>
           </div>
 
           <!-- Right: Pagination controls -->
-          <div v-if="showPagination" class="flex items-center gap-1 bg-slate-50 rounded-xl px-2 py-1">
+          <div v-if="showPagination" class="flex items-center justify-center sm:justify-start gap-1 bg-slate-50 rounded-xl px-2 py-1 w-full sm:w-auto">
             <button
               @click="handlePreviousPage"
               :disabled="currentPageNumber === 1 || isAnyGroupLoading"
-              class="p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              class="p-1.5 sm:p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               :title="currentPageNumber === 1 ? 'First page' : 'Previous page'"
+              aria-label="Previous page"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
 
-            <div class="flex items-center gap-1 px-3 min-w-[60px] justify-center">
-              <span class="text-sm font-semibold text-slate-900">{{ currentPageNumber }}</span>
-              <span class="text-sm text-slate-400">/</span>
-              <span class="text-sm text-slate-600">{{ totalPagesCount }}</span>
+            <div class="flex items-center gap-1 px-2 sm:px-3 min-w-[50px] sm:min-w-[60px] justify-center">
+              <span class="text-xs sm:text-sm font-semibold text-slate-900">{{ currentPageNumber }}</span>
+              <span class="text-xs sm:text-sm text-slate-400">/</span>
+              <span class="text-xs sm:text-sm text-slate-600">{{ totalPagesCount }}</span>
             </div>
 
             <button
               @click="handleNextPage"
               :disabled="currentPageNumber >= totalPagesCount || isAnyGroupLoading"
-              class="p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              class="p-1.5 sm:p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               :title="currentPageNumber >= totalPagesCount ? 'Last page' : 'Next page'"
+              aria-label="Next page"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
