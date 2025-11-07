@@ -92,13 +92,13 @@
     </Transition>
 
     <div class="bg-white/95 backdrop-blur-sm border-t border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10">
-      <div class="flex items-center justify-around px-2 py-2">
+      <div class="flex items-center justify-around px-2 py-1">
         <template v-for="item in navigationItems" :key="item.path">
           <!-- Special handling for home to ensure scroll to hero -->
           <button
             v-if="item.path === '/home'"
             @click="handleHomeClick"
-            class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
+            class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
             :class="($route.path === item.path && !isPricingSectionVisible) ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
             :aria-current="($route.path === item.path && !isPricingSectionVisible) ? 'page' : undefined"
             aria-label="Navigate to home"
@@ -115,7 +115,7 @@
           <RouterLink
             v-else
             :to="item.path"
-            class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
+            class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
             :class="$route.path === item.path ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
             :aria-current="$route.path === item.path ? 'page' : undefined"
           >
@@ -132,7 +132,7 @@
         <!-- Pricing Button -->
         <button
           @click="handlePricingClick"
-          class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
+          class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
           :class="isPricingSectionVisible ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
           :aria-current="isPricingSectionVisible ? 'page' : undefined"
           aria-label="Navigate to pricing"
@@ -146,11 +146,11 @@
         </button>
 
         <!-- Profile Tab -->
-        <div class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1">
+        <div class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1">
           <template v-if="!authStore.isAuthenticated">
             <RouterLink
               to="/signin"
-              class="flex flex-col items-center space-y-1 text-slate-600 hover:gradient-text w-full rounded-xl p-1 group"
+              class="flex flex-col items-center space-y-0.5 text-slate-600 hover:gradient-text w-full rounded-xl p-1 group"
               aria-label="Sign in to your account"
             >
               <User class="w-5 h-5 flex-shrink-0 group-hover:gradient-text" aria-hidden="true" />
@@ -160,7 +160,7 @@
           <template v-else>
             <button
               @click.stop="userMenuOpen = !userMenuOpen"
-              class="flex flex-col items-center space-y-1 w-full rounded-xl p-1 group"
+              class="flex flex-col items-center space-y-0.5 w-full rounded-xl p-1 group"
               :class="userMenuOpen ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
               :aria-expanded="userMenuOpen"
               aria-label="User menu"
