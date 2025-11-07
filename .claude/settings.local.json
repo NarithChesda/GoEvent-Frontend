@@ -179,7 +179,8 @@
       "Read(//c/Users/narit/OneDrive/Desktop/GoEvent/**)",
       "Bash(timeout 60 bash:*)",
       "Bash(mkdir:*)",
-      "Bash(timeout 120 npm run build-skip-typecheck:*)"
+      "Bash(timeout 120 npm run build-skip-typecheck:*)",
+      "Bash(timeout 30 npx vue-tsc:*)"
     ],
     "deny": [],
     "additionalDirectories": [
