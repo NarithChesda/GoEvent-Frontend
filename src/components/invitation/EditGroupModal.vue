@@ -47,62 +47,40 @@
                 <p v-if="fieldErrors.name" class="mt-1 text-xs text-red-600">{{ fieldErrors.name }}</p>
               </div>
 
-              <!-- Description -->
+              <!-- Group Description (Optional) -->
               <div>
                 <label for="editGroupDescription" class="block text-sm font-medium text-slate-700 mb-2">
-                  Description
+                  Description (Optional)
                 </label>
-                <textarea
+                <input
                   id="editGroupDescription"
                   v-model="formData.description"
-                  rows="3"
-                  placeholder="Optional description for this group"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+                  type="text"
+                  placeholder="e.g., Close family members"
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                   :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.description }"
-                ></textarea>
+                />
                 <p v-if="fieldErrors.description" class="mt-1 text-xs text-red-600">{{ fieldErrors.description }}</p>
               </div>
 
-              <!-- Color Picker -->
+              <!-- Group Color -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  Group Color <span class="text-red-500">*</span>
+                <label for="editGroupColor" class="block text-sm font-medium text-slate-700 mb-2">
+                  Group Color
                 </label>
-                <div class="grid grid-cols-5 gap-3">
-                  <button
-                    v-for="color in colorOptions"
-                    :key="color.value"
-                    type="button"
-                    @click="formData.color = color.value"
-                    :title="color.name"
-                    class="w-full aspect-square rounded-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                    :class="{
-                      'ring-2 ring-offset-2 ring-slate-900 scale-110': formData.color === color.value,
-                    }"
-                    :style="{ backgroundColor: color.value }"
-                  >
-                    <span v-if="formData.color === color.value" class="flex items-center justify-center">
-                      <Check class="w-4 h-4 text-white drop-shadow-md" />
-                    </span>
-                  </button>
-                </div>
-                <p v-if="fieldErrors.color" class="mt-1 text-xs text-red-600">{{ fieldErrors.color }}</p>
-              </div>
-
-              <!-- Preview -->
-              <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                <p class="text-xs font-medium text-slate-700 mb-2">Preview</p>
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md"
-                    :style="{ backgroundColor: formData.color }"
-                  >
-                    {{ group?.guest_count || 0 }}
-                  </div>
-                  <div>
-                    <h4 class="text-sm font-semibold text-slate-900">{{ formData.name || 'Group Name' }}</h4>
-                    <p v-if="formData.description" class="text-xs text-slate-500">{{ formData.description }}</p>
-                  </div>
+                  <input
+                    id="editGroupColor"
+                    v-model="formData.color"
+                    type="color"
+                    class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+                  />
+                  <input
+                    v-model="formData.color"
+                    type="text"
+                    placeholder="#3498db"
+                    class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                  />
                 </div>
               </div>
 
@@ -143,7 +121,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { Users, X, Check } from 'lucide-vue-next'
+import { Users, X } from 'lucide-vue-next'
 import type { GuestGroup } from '../../services/api'
 
 // Props
@@ -159,24 +137,6 @@ const emit = defineEmits<{
   'update-group': [groupId: number, data: any]
 }>()
 
-// Color options
-const colorOptions = [
-  { name: 'Blue', value: '#3498db' },
-  { name: 'Green', value: '#2ecc71' },
-  { name: 'Purple', value: '#9b59b6' },
-  { name: 'Orange', value: '#e67e22' },
-  { name: 'Red', value: '#e74c3c' },
-  { name: 'Teal', value: '#1abc9c' },
-  { name: 'Pink', value: '#e91e63' },
-  { name: 'Indigo', value: '#3f51b5' },
-  { name: 'Amber', value: '#ff9800' },
-  { name: 'Cyan', value: '#00bcd4' },
-  { name: 'Lime', value: '#cddc39' },
-  { name: 'Deep Purple', value: '#673ab7' },
-  { name: 'Brown', value: '#795548' },
-  { name: 'Blue Grey', value: '#607d8b' },
-  { name: 'Deep Orange', value: '#ff5722' },
-]
 
 // Form data
 interface FormData {
