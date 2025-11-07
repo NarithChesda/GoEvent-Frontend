@@ -175,42 +175,63 @@
                   />
                 </div>
 
-                <!-- Description -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
-                  <textarea
-                    v-model="formData.description"
-                    rows="3"
-                    placeholder="Describe this group of guests..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-                  ></textarea>
-                </div>
-
-                <!-- Color Picker -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Color</label>
-                  <div class="grid grid-cols-8 gap-2">
-                    <button
-                      v-for="color in colorOptions"
-                      :key="color"
-                      type="button"
-                      @click="formData.color = color"
-                      :class="[
-                        'w-10 h-10 rounded-lg transition-all',
-                        formData.color === color ? 'ring-2 ring-sky-500 ring-offset-2 scale-110' : 'hover:scale-105'
-                      ]"
-                      :style="{ backgroundColor: color }"
-                    ></button>
+                <!-- Description & Color (Same Row) -->
+                <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
+                  <!-- Description -->
+                  <div class="flex flex-col">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                    <textarea
+                      v-model="formData.description"
+                      placeholder="Describe this group of guests..."
+                      class="flex-1 w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                    ></textarea>
                   </div>
-                  <div class="flex items-center gap-2 mt-3">
-                    <input
-                      type="text"
-                      v-model="formData.color"
-                      placeholder="#3498db"
-                      pattern="^#[0-9A-Fa-f]{6}$"
-                      class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    />
-                    <div class="w-10 h-10 rounded-lg border-2 border-slate-200" :style="{ backgroundColor: formData.color }"></div>
+
+                  <!-- Color Picker -->
+                  <div class="relative flex flex-col">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Color</label>
+                    <div class="relative flex-1">
+                      <button
+                        type="button"
+                        @click="showColorPicker = !showColorPicker"
+                        class="w-full h-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 flex items-center gap-2 hover:bg-slate-50 transition-colors"
+                      >
+                        <div class="w-6 h-6 rounded border-2 border-slate-200 flex-shrink-0" :style="{ backgroundColor: formData.color }"></div>
+                        <span class="text-xs text-slate-600 flex-1 text-left truncate">{{ formData.color }}</span>
+                      </button>
+
+                      <!-- Color Dropdown -->
+                      <Transition name="dropdown">
+                        <div
+                          v-if="showColorPicker"
+                          ref="colorPickerRef"
+                          class="absolute z-10 w-40 right-full mr-2 bottom-0 bg-white border border-slate-300 rounded-lg shadow-xl p-2"
+                        >
+                          <div class="grid grid-cols-4 gap-1 mb-2">
+                            <button
+                              v-for="color in colorOptions"
+                              :key="color"
+                              type="button"
+                              @click="formData.color = color; showColorPicker = false"
+                              :class="[
+                                'w-full aspect-square rounded transition-all',
+                                formData.color === color ? 'ring-2 ring-sky-500 scale-105' : 'hover:scale-105'
+                              ]"
+                              :style="{ backgroundColor: color }"
+                              :title="color"
+                            ></button>
+                          </div>
+                          <input
+                            type="text"
+                            v-model="formData.color"
+                            placeholder="#3498db"
+                            pattern="^#[0-9A-Fa-f]{6}$"
+                            class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-sky-200 focus:border-sky-400"
+                            @click.stop
+                          />
+                        </div>
+                      </Transition>
+                    </div>
                   </div>
                 </div>
 
@@ -285,6 +306,7 @@ import {
 } from 'lucide-vue-next'
 import type { GuestGroup } from '@/services/api'
 import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
+import { onClickOutside } from '@vueuse/core'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 
 interface Props {
@@ -305,6 +327,7 @@ const emit = defineEmits<Emits>()
 const error = ref<string | null>(null)
 const showAddGroupModal = ref(false)
 const showSuccessToast = ref(false)
+const showColorPicker = ref(false)
 const successMessage = ref('')
 const submitting = ref(false)
 const editingGroup = ref<GuestGroup | null>(null)
@@ -316,6 +339,12 @@ const addModalRef = ref<HTMLElement>()
 const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
   immediate: false,
   escapeDeactivates: true
+})
+
+// Color picker click outside handler
+const colorPickerRef = ref<HTMLElement>()
+onClickOutside(colorPickerRef, () => {
+  showColorPicker.value = false
 })
 
 const formData = ref({
@@ -350,6 +379,7 @@ watch(showAddGroupModal, async (isOpen) => {
     activateAddModal()
   } else {
     deactivateAddModal()
+    showColorPicker.value = false
   }
 })
 
@@ -480,5 +510,16 @@ defineExpose({
 .toast-leave-to {
   opacity: 0;
   transform: translateY(1rem);
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateX(0.5rem);
 }
 </style>
