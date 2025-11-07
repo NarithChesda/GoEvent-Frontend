@@ -182,6 +182,7 @@
       :is-importing="isImporting"
       :selected-file="selectedFile"
       :is-dragging="isDragging"
+      :pending-group-id="pendingGuestGroupSelection"
       @close="handleCloseAddGuestModal"
       @add-guest="handleAddGuest"
       @import="handleBulkImport"
@@ -420,6 +421,8 @@ const showAddGuestModal = ref(false)
 const showCreateGroupModal = ref(false)
 const isAddingGuest = ref(false)
 const isCreatingGroup = ref(false)
+const isCreatingGroupFromAddGuest = ref(false)
+const pendingGuestGroupSelection = ref<number | null>(null)
 const groupCardRefs = new Map<number, any>()
 
 // Sub-tabs configuration
@@ -493,6 +496,13 @@ const handleCreateGroup = async (data: { name: string; description?: string; col
   if (response.success && response.data) {
     showMessage('success', `Group "${response.data.name}" created`)
     showCreateGroupModal.value = false
+
+    // If group was created from Add Guest modal, reopen it and select the new group
+    if (isCreatingGroupFromAddGuest.value) {
+      pendingGuestGroupSelection.value = response.data.id
+      showAddGuestModal.value = true
+      isCreatingGroupFromAddGuest.value = false
+    }
   } else {
     showMessage('error', response.message || 'Failed to create group')
   }
@@ -508,7 +518,16 @@ const handleAddGuest = async (name: string, groupId: number) => {
   if (response.success && response.data) {
     showMessage('success', `${response.data.name} added to guest list`)
     showAddGuestModal.value = false
-    // Counts are now updated reactively via callbacks - no need for loadGuestStats() or loadGroups()
+
+    // Refresh the specific group's guest list to show the new guest
+    const pagination = getGroupPagination(groupId)
+    await loadGuestsForGroup(groupId, pagination.currentPage)
+
+    // Also refresh "All Guests" view only if it has been loaded before
+    const allGuestsPagination = getAllGuestsPagination()
+    if (allGuestsPagination.hasLoaded) {
+      await loadAllGuests(allGuestsPagination.currentPage, true)
+    }
   } else {
     showMessage('error', response.message || 'Failed to add guest')
   }
@@ -552,11 +571,14 @@ const handleBulkImport = async (groupId: number) => {
 const handleCloseAddGuestModal = () => {
   showAddGuestModal.value = false
   resetImportState()
+  pendingGuestGroupSelection.value = null
 }
 
 const handleCreateGroupFromAddGuest = () => {
-  // Open the create group modal from GuestGroupsManagementView
-  guestGroupsManagementViewRef.value?.openAddGroupModal()
+  // Close Add Guest modal temporarily and open Create Group modal
+  showAddGuestModal.value = false
+  isCreatingGroupFromAddGuest.value = true
+  showCreateGroupModal.value = true
 }
 
 const openEditGroupModal = (group: GuestGroup) => {

@@ -269,6 +269,7 @@ const props = defineProps<{
   isImporting: boolean
   selectedFile: File | null
   isDragging: boolean
+  pendingGroupId?: number | null
 }>()
 
 // Emits
@@ -298,6 +299,10 @@ watch(() => props.show, (newShow) => {
     localGuestName.value = ''
     localSelectedGroup.value = null
     localSelectedGroupForImport.value = null
+  } else if (newShow && props.pendingGroupId) {
+    // Auto-select the pending group when modal opens
+    localSelectedGroup.value = props.pendingGroupId
+    localSelectedGroupForImport.value = props.pendingGroupId
   }
 })
 
