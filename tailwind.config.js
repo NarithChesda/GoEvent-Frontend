@@ -14,6 +14,10 @@ export default {
           green: '#2ecc71',
           blue: '#1e90ff',
         },
+        'brand': {
+          primary: '#2ecc71',
+          secondary: '#1e90ff',
+        },
         'blue': {
           50: '#eff6ff',
           100: '#dbeafe',

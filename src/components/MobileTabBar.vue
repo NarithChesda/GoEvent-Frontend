@@ -1,36 +1,45 @@
 <template>
   <!-- Mobile Tab Bar (fixed at bottom) -->
-  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+  <div
+    class="lg:hidden fixed bottom-0 left-0 right-0 z-50"
+    role="navigation"
+    aria-label="Mobile navigation"
+  >
     <!-- Mobile User Menu (positioned above tab bar) -->
     <Transition name="slideUp">
       <div
         v-if="userMenuOpen && authStore.isAuthenticated"
+        ref="userMenuRef"
         class="absolute bottom-full left-0 right-0 border-t border-[#B0E0E6]/50 bg-white/95 backdrop-blur-sm shadow-lg"
+        role="menu"
+        aria-orientation="vertical"
       >
         <div class="px-4 py-4 space-y-3">
           <!-- User Info -->
           <div class="flex items-center space-x-3 px-3 py-2 bg-[#E6F4FF] rounded-xl">
             <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
               <img
-                v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
-                :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
-                :alt="authStore.user.first_name || authStore.user.username"
+                v-if="profilePictureUrl"
+                :src="profilePictureUrl"
+                :alt="sanitizedUserName"
                 class="w-full h-full object-cover"
                 loading="lazy"
                 decoding="async"
+                @error="handleProfilePictureError"
               />
               <div
                 v-else
                 class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
+                :aria-label="`${sanitizedUserName} avatar`"
               >
                 {{ authStore.userInitials }}
               </div>
             </div>
             <div>
               <div class="font-semibold text-slate-900 text-sm">
-                {{ authStore.user?.first_name || authStore.user?.username }}
+                {{ sanitizedUserName }}
               </div>
-              <div class="text-xs text-slate-500">{{ authStore.user?.email }}</div>
+              <div class="text-xs text-slate-500">{{ sanitizedUserEmail }}</div>
             </div>
           </div>
 
@@ -40,8 +49,9 @@
               to="/settings"
               @click="userMenuOpen = false"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:gradient-text rounded-xl transition-all duration-200 group"
+              role="menuitem"
             >
-              <User class="w-4 h-4 group-hover:gradient-text" />
+              <User class="w-4 h-4 group-hover:gradient-text" aria-hidden="true" />
               <span class="text-sm font-medium">Profile</span>
             </RouterLink>
 
@@ -49,26 +59,30 @@
               to="/security"
               @click="userMenuOpen = false"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:gradient-text rounded-xl transition-all duration-200 group"
+              role="menuitem"
             >
-              <Lock class="w-4 h-4 group-hover:gradient-text" />
+              <Lock class="w-4 h-4 group-hover:gradient-text" aria-hidden="true" />
               <span class="text-sm font-medium">Security</span>
             </RouterLink>
 
             <RouterLink
+              v-if="authStore.user?.is_partner"
               to="/commission"
               @click="userMenuOpen = false"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:gradient-text rounded-xl transition-all duration-200 group"
+              role="menuitem"
             >
-              <Wallet class="w-4 h-4 group-hover:gradient-text" />
+              <Wallet class="w-4 h-4 group-hover:gradient-text" aria-hidden="true" />
               <span class="text-sm font-medium">Commission</span>
             </RouterLink>
 
             <div class="border-t border-slate-200 pt-2">
               <button
-                @click="authStore.logout(); userMenuOpen = false"
+                @click="handleLogout"
                 class="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 w-full"
+                role="menuitem"
               >
-                <LogOut class="w-4 h-4" />
+                <LogOut class="w-4 h-4" aria-hidden="true" />
                 <span class="text-sm font-medium">Logout</span>
               </button>
             </div>
@@ -84,13 +98,16 @@
           <button
             v-if="item.path === '/home'"
             @click="handleHomeClick"
-            class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
+            class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
             :class="($route.path === item.path && !isPricingSectionVisible) ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
+            :aria-current="($route.path === item.path && !isPricingSectionVisible) ? 'page' : undefined"
+            aria-label="Navigate to home"
           >
             <component
               :is="item.icon"
               class="w-5 h-5 flex-shrink-0"
               :class="($route.path === item.path && !isPricingSectionVisible) ? 'gradient-text' : 'group-hover:gradient-text'"
+              aria-hidden="true"
             />
             <span class="text-xs font-medium truncate">{{ item.label }}</span>
           </button>
@@ -98,13 +115,15 @@
           <RouterLink
             v-else
             :to="item.path"
-            class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
+            class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
             :class="$route.path === item.path ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
+            :aria-current="$route.path === item.path ? 'page' : undefined"
           >
             <component
               :is="item.icon"
               class="w-5 h-5 flex-shrink-0"
               :class="$route.path === item.path ? 'gradient-text' : 'group-hover:gradient-text'"
+              aria-hidden="true"
             />
             <span class="text-xs font-medium truncate">{{ item.label }}</span>
           </RouterLink>
@@ -113,45 +132,53 @@
         <!-- Pricing Button -->
         <button
           @click="handlePricingClick"
-          class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
+          class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
           :class="isPricingSectionVisible ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
+          :aria-current="isPricingSectionVisible ? 'page' : undefined"
+          aria-label="Navigate to pricing"
         >
           <BadgeDollarSign
             class="w-5 h-5 flex-shrink-0"
             :class="isPricingSectionVisible ? 'gradient-text' : 'group-hover:gradient-text'"
+            aria-hidden="true"
           />
           <span class="text-xs font-medium truncate">Pricing</span>
         </button>
 
         <!-- Profile Tab -->
-        <div class="flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-300 min-w-0 flex-1">
+        <div class="flex flex-col items-center space-y-1 p-4 rounded-xl transition-all duration-300 min-w-0 flex-1">
           <template v-if="!authStore.isAuthenticated">
             <RouterLink
               to="/signin"
               class="flex flex-col items-center space-y-1 text-slate-600 hover:gradient-text w-full rounded-xl p-1 group"
+              aria-label="Sign in to your account"
             >
-              <User class="w-5 h-5 flex-shrink-0 group-hover:gradient-text" />
+              <User class="w-5 h-5 flex-shrink-0 group-hover:gradient-text" aria-hidden="true" />
               <span class="text-xs font-medium truncate">Sign In</span>
             </RouterLink>
           </template>
           <template v-else>
             <button
-              @click="userMenuOpen = !userMenuOpen"
+              @click.stop="userMenuOpen = !userMenuOpen"
               class="flex flex-col items-center space-y-1 w-full rounded-xl p-1 group"
               :class="userMenuOpen ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
+              :aria-expanded="userMenuOpen"
+              aria-label="User menu"
             >
               <div class="w-5 h-5 rounded-full overflow-hidden ring-1 ring-slate-300 flex-shrink-0">
                 <img
-                  v-if="authStore.user?.profile_picture && apiService.getProfilePictureUrl(authStore.user.profile_picture)"
-                  :src="apiService.getProfilePictureUrl(authStore.user.profile_picture) || ''"
-                  :alt="authStore.user.first_name || authStore.user.username"
+                  v-if="profilePictureUrl"
+                  :src="profilePictureUrl"
+                  :alt="sanitizedUserName"
                   class="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"
+                  @error="handleProfilePictureError"
                 />
                 <div
                   v-else
                   class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-xs"
+                  :aria-label="`${sanitizedUserName} avatar`"
                 >
                   {{ authStore.userInitials }}
                 </div>
@@ -166,17 +193,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Lock, Wallet, LogOut, House, CircleHelp, CalendarDays, BadgeDollarSign, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
+import { useLandingNavigation } from '../composables/useLandingNavigation'
+import { usePricingObserver } from '../composables/usePricingObserver'
+import { sanitizePlainText } from '@/utils/sanitize'
 
 const userMenuOpen = ref(false)
+const userMenuRef = ref<HTMLElement>()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
-const isPricingSectionVisible = ref(false)
+
+// Use composables for navigation and pricing observer
+const { navigateHome, scrollToPricing } = useLandingNavigation()
+const { isPricingSectionVisible, initialize: initializePricingObserver } = usePricingObserver()
 
 // Navigation items configuration (same as Sidebar)
 const navigationItems = [
@@ -185,83 +219,78 @@ const navigationItems = [
   { path: '/events', label: 'Events', icon: CalendarDays }
 ]
 
-// Handle home click to scroll to hero section
-const handleHomeClick = async () => {
-  // If already on home page, scroll to hero
-  if (route.path === '/home') {
-    const heroElement = document.getElementById('hero')
-    if (heroElement) {
-      heroElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  } else {
-    // Navigate to home page first
-    await router.push('/home')
-    // Wait a bit for the page to render, then scroll to hero
-    setTimeout(() => {
-      const heroElement = document.getElementById('hero')
-      if (heroElement) {
-        heroElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }
-    }, 100)
-  }
+// Profile picture computed property
+const profilePictureUrl = computed(() => {
+  if (!authStore.user?.profile_picture) return null
+  return apiService.getProfilePictureUrl(authStore.user.profile_picture)
+})
+
+const handleProfilePictureError = () => {
+  console.warn('Failed to load profile picture')
 }
 
-// Handle pricing click to scroll to pricing section on home page
-const handlePricingClick = async () => {
-  // Navigate to home if not already there
-  if (route.path !== '/home') {
-    await router.push('/home')
-  }
+// Sanitized user data to prevent XSS
+const sanitizedUserName = computed(() => {
+  const name = authStore.user?.first_name || authStore.user?.username || 'User'
+  return sanitizePlainText(name, 100)
+})
 
-  // Wait a bit for the page to render, then scroll to pricing
-  setTimeout(() => {
-    const pricingElement = document.getElementById('pricing')
-    if (pricingElement) {
-      pricingElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, 100)
+const sanitizedUserEmail = computed(() => {
+  const email = authStore.user?.email || ''
+  return sanitizePlainText(email, 100)
+})
+
+// Handle home click using composable
+const handleHomeClick = () => {
+  navigateHome()
 }
 
-// Track pricing section visibility using IntersectionObserver
-const setupPricingObserver = () => {
-  if (route.path !== '/home') {
-    isPricingSectionVisible.value = false
+// Handle pricing click using composable
+const handlePricingClick = () => {
+  scrollToPricing()
+}
+
+// Close menu when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+  if (!event.target || !(event.target instanceof Node)) {
     return
   }
 
-  const pricingSection = document.getElementById('pricing')
-  if (!pricingSection) return
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        isPricingSectionVisible.value = entry.isIntersecting && entry.intersectionRatio > 0.3
-      })
-    },
-    {
-      threshold: [0, 0.3, 0.5, 1],
-      rootMargin: '-100px 0px -100px 0px'
-    }
-  )
-
-  observer.observe(pricingSection)
-  return observer
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
+    userMenuOpen.value = false
+  }
 }
 
-onMounted(() => {
-  const observer = setupPricingObserver()
-  const unwatch = router.afterEach(() => {
-    setupPricingObserver()
-  })
+// Close menu when pressing Escape key
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && userMenuOpen.value) {
+    userMenuOpen.value = false
+  }
+}
 
-  onUnmounted(() => {
-    observer?.disconnect()
-    unwatch()
-  })
+// Handle logout with error handling
+const handleLogout = async () => {
+  try {
+    await authStore.logout()
+    userMenuOpen.value = false
+    router.push('/home')
+  } catch (error) {
+    console.error('Logout failed:', error)
+    userMenuOpen.value = false
+    alert('Logout failed. Please try again or contact support if the issue persists.')
+  }
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeyDown)
+  initializePricingObserver()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 

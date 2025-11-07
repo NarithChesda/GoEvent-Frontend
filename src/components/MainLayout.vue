@@ -4,7 +4,7 @@
     <div class="fixed inset-0 bg-gradient-to-br from-emerald-50 via-white to-sky-50 -z-10"></div>
 
     <!-- Desktop Sidebar -->
-    <Sidebar />
+    <AppSidebar />
 
     <!-- Mobile Tab Bar -->
     <MobileTabBar />
@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from './Sidebar.vue'
+import AppSidebar from './AppSidebar.vue'
 import MobileTabBar from './MobileTabBar.vue'
 import { useSidebar } from '../composables/useSidebar'
 
