@@ -466,17 +466,23 @@ const handleBulkMarkSent = () => {
   // Get selected IDs as array
   const selectedIds = Array.from(selectedGuestIds.value)
 
-  // Emit event for each group that has selected guests
-  filteredGroups.value.forEach(group => {
-    const groupGuests = props.getGroupGuests(group.id)
-    const groupSelectedIds = selectedIds.filter(id =>
-      groupGuests.some(g => g.id === id)
-    )
+  if (activeFilter.value === 'all') {
+    // For "All Groups" view, emit once with a special groupId (0 or -1) and all selected IDs
+    // The parent will handle the bulk operation directly without needing group context
+    emit('bulk-mark-sent', 0, selectedIds)
+  } else {
+    // For specific group filter, emit event for each group that has selected guests
+    filteredGroups.value.forEach(group => {
+      const groupGuests = props.getGroupGuests(group.id)
+      const groupSelectedIds = selectedIds.filter(id =>
+        groupGuests.some(g => g.id === id)
+      )
 
-    if (groupSelectedIds.length > 0) {
-      emit('bulk-mark-sent', group.id, groupSelectedIds)
-    }
-  })
+      if (groupSelectedIds.length > 0) {
+        emit('bulk-mark-sent', group.id, groupSelectedIds)
+      }
+    })
+  }
 
   // Clear selection after emitting
   selectedGuestIds.value.clear()
@@ -486,17 +492,23 @@ const handleBulkDelete = () => {
   // Get selected IDs as array
   const selectedIds = Array.from(selectedGuestIds.value)
 
-  // Emit event for each group that has selected guests
-  filteredGroups.value.forEach(group => {
-    const groupGuests = props.getGroupGuests(group.id)
-    const groupSelectedIds = selectedIds.filter(id =>
-      groupGuests.some(g => g.id === id)
-    )
+  if (activeFilter.value === 'all') {
+    // For "All Groups" view, emit once with a special groupId (0 or -1) and all selected IDs
+    // The parent will handle the bulk operation directly without needing group context
+    emit('bulk-delete', 0, selectedIds)
+  } else {
+    // For specific group filter, emit event for each group that has selected guests
+    filteredGroups.value.forEach(group => {
+      const groupGuests = props.getGroupGuests(group.id)
+      const groupSelectedIds = selectedIds.filter(id =>
+        groupGuests.some(g => g.id === id)
+      )
 
-    if (groupSelectedIds.length > 0) {
-      emit('bulk-delete', group.id, groupSelectedIds)
-    }
-  })
+      if (groupSelectedIds.length > 0) {
+        emit('bulk-delete', group.id, groupSelectedIds)
+      }
+    })
+  }
 
   // Clear selection after emitting
   selectedGuestIds.value.clear()

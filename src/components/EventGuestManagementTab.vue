@@ -166,6 +166,16 @@
       @cancel="cancelDeleteGroup"
     />
 
+    <!-- Bulk Delete Guests Modal -->
+    <DeleteConfirmModal
+      :show="showBulkDeleteModal"
+      title="Delete Multiple Guests"
+      :message="`Are you sure you want to delete ${bulkDeleteGuestIds.length} guest(s)?`"
+      :loading="bulkDeletingGuests"
+      @confirm="confirmBulkDelete"
+      @cancel="cancelBulkDelete"
+    />
+
     <!-- Create Group Modal -->
     <CreateGroupModal
       :show="showCreateGroupModal"
@@ -454,6 +464,12 @@ const deleteTargetGuest = ref<EventGuest | null>(null)
 const showDeleteGroupModal = ref(false)
 const deleteTargetGroup = ref<GuestGroup | null>(null)
 const deletingGroup = ref(false)
+
+// Bulk delete modal state
+const showBulkDeleteModal = ref(false)
+const bulkDeletingGuests = ref(false)
+const bulkDeleteGuestIds = ref<number[]>([])
+const bulkDeleteGroupId = ref<number>(0)
 
 // Computed properties
 const hasTemplatePayment = computed(() => {
@@ -791,31 +807,60 @@ const handleBulkMarkSent = async (groupId: number, selectedIds: number[]) => {
 
     showMessage('success', `Marked ${count} guest(s) as sent`)
 
-    // Refresh lists
-    const pagination = getGroupPagination(groupId)
-    await loadGuestsForGroup(groupId, pagination.currentPage)
+    // Refresh lists based on context
+    if (groupId === 0) {
+      // For "All Groups" view, only refresh the all guests list
+      const allGuestsPagination = getAllGuestsPagination()
+      if (allGuestsPagination.hasLoaded) {
+        await loadAllGuests(allGuestsPagination.currentPage, true)
+      }
+    } else {
+      // For specific group, refresh both that group and all guests list
+      const pagination = getGroupPagination(groupId)
+      await loadGuestsForGroup(groupId, pagination.currentPage)
 
-    const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.hasLoaded) {
-      await loadAllGuests(allGuestsPagination.currentPage, true)
+      const allGuestsPagination = getAllGuestsPagination()
+      if (allGuestsPagination.hasLoaded) {
+        await loadAllGuests(allGuestsPagination.currentPage, true)
+      }
     }
   } else {
     showMessage('error', response.message || 'Failed to mark guests as sent')
   }
 }
 
-const handleBulkDelete = async (groupId: number, selectedIds: number[]) => {
+const handleBulkDelete = (groupId: number, selectedIds: number[]) => {
   if (selectedIds.length === 0) {
     showMessage('error', 'No guests selected')
     return
   }
 
-  const confirmDelete = confirm(`Delete ${selectedIds.length} guest(s)?`)
-  if (!confirmDelete) return
+  // Store the data for confirmation
+  bulkDeleteGuestIds.value = selectedIds
+  bulkDeleteGroupId.value = groupId
+
+  // Show the modal
+  showBulkDeleteModal.value = true
+}
+
+const confirmBulkDelete = async () => {
+  const groupId = bulkDeleteGroupId.value
+  const selectedIds = bulkDeleteGuestIds.value
+
+  bulkDeletingGuests.value = true
 
   // Get guest statuses BEFORE deletion for accurate stats tracking
-  const pagination = getGroupPagination(groupId)
-  const guestsToDelete = pagination.guests.filter(g => selectedIds.includes(g.id))
+  let guestsToDelete: any[] = []
+
+  if (groupId === 0) {
+    // For "All Groups" view, get guests from allGroupsPagination
+    const allGuestsPagination = getAllGuestsPagination()
+    guestsToDelete = allGuestsPagination.guests.filter(g => selectedIds.includes(g.id))
+  } else {
+    // For specific group, get guests from that group's pagination
+    const pagination = getGroupPagination(groupId)
+    guestsToDelete = pagination.guests.filter(g => selectedIds.includes(g.id))
+  }
 
   // Count guests by status before deletion
   const statusCounts = {
@@ -838,8 +883,10 @@ const handleBulkDelete = async (groupId: number, selectedIds: number[]) => {
   if (response.success && response.data) {
     const count = response.data.count
 
-    // Update group count
-    handleGroupCountChange(groupId, -count)
+    // Update group count only if not "All Groups" view
+    if (groupId !== 0) {
+      handleGroupCountChange(groupId, -count)
+    }
 
     // Update stats based on actual guest statuses
     for (let i = 0; i < statusCounts.not_sent; i++) {
@@ -854,17 +901,40 @@ const handleBulkDelete = async (groupId: number, selectedIds: number[]) => {
 
     showMessage('success', `Deleted ${count} guest(s)`)
 
-    // Refresh lists
-    const pagination = getGroupPagination(groupId)
-    await loadGuestsForGroup(groupId, pagination.currentPage)
+    // Refresh lists based on context
+    if (groupId === 0) {
+      // For "All Groups" view, only refresh the all guests list
+      const allGuestsPagination = getAllGuestsPagination()
+      if (allGuestsPagination.hasLoaded) {
+        await loadAllGuests(allGuestsPagination.currentPage, true)
+      }
+      // Also reload groups to update counts
+      await loadGroups()
+    } else {
+      // For specific group, refresh both that group and all guests list
+      const pagination = getGroupPagination(groupId)
+      await loadGuestsForGroup(groupId, pagination.currentPage)
 
-    const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.hasLoaded) {
-      await loadAllGuests(allGuestsPagination.currentPage, true)
+      const allGuestsPagination = getAllGuestsPagination()
+      if (allGuestsPagination.hasLoaded) {
+        await loadAllGuests(allGuestsPagination.currentPage, true)
+      }
     }
   } else {
     showMessage('error', response.message || 'Failed to delete guests')
   }
+
+  bulkDeletingGuests.value = false
+  showBulkDeleteModal.value = false
+  bulkDeleteGuestIds.value = []
+  bulkDeleteGroupId.value = 0
+}
+
+const cancelBulkDelete = () => {
+  if (bulkDeletingGuests.value) return
+  showBulkDeleteModal.value = false
+  bulkDeleteGuestIds.value = []
+  bulkDeleteGroupId.value = 0
 }
 
 const handleCreateGroupFromManagement = async (data: { name: string; description?: string; color: string }) => {
