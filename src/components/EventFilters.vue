@@ -11,6 +11,7 @@
           @input="debouncedEmitFilters"
           type="text"
           placeholder="Search events..."
+          maxlength="200"
           class="w-full pl-9 sm:pl-11 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl transition-all duration-200 bg-white text-slate-700 placeholder-slate-500 focus:outline-none focus:text-slate-900 focus:placeholder-slate-400 outline-none border-none"
           style="outline: none !important; border: none !important; box-shadow: none !important;"
         />
@@ -28,11 +29,12 @@
           <button
             v-if="hasActiveFilters"
             @click="clearFilters"
-            class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 hover:bg-red-600 text-white transition-all duration-200 shadow-sm hover:shadow-md hover:scale-110"
+            class="inline-flex items-center justify-center px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
             aria-label="Clear all filters"
             title="Clear all filters"
           >
-            <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <X class="w-3 h-3 mr-1" />
+            <span class="text-[10px] sm:text-xs font-medium">Clear</span>
           </button>
 
           <!-- Category Pill Dropdown -->
@@ -52,10 +54,10 @@
               }"
               :class="
                 localFilters.category
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                  : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md'
+                  : 'bg-white/70 hover:bg-[#E6F4FF]'
               "
-              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer"
+              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer text-slate-900"
               aria-label="Filter by category"
             >
               <option value="">All Categories</option>
@@ -64,7 +66,7 @@
               </option>
             </select>
             <div class="absolute right-2 sm:right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <ChevronDown :class="localFilters.category ? 'text-white' : 'text-slate-700'" class="w-3 h-3" />
+              <ChevronDown class="w-3 h-3 text-slate-900" />
             </div>
           </div>
 
@@ -76,10 +78,10 @@
               @change="handleSortChange"
               :class="
                 localFilters.ordering
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                  : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md'
+                  : 'bg-white/70 hover:bg-[#E6F4FF]'
               "
-              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer"
+              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer text-slate-900"
               aria-label="Sort events"
             >
               <option value="">Sort By</option>
@@ -91,7 +93,7 @@
               <option value="-registrations_count">Popular</option>
             </select>
             <div class="absolute right-2 sm:right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <ChevronDown :class="localFilters.ordering ? 'text-white' : 'text-slate-700'" class="w-3 h-3" />
+              <ChevronDown class="w-3 h-3 text-slate-900" />
             </div>
           </div>
 
@@ -191,9 +193,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref } from 'vue'
+import { reactive, computed, watch, ref, onUnmounted } from 'vue'
 import { Search, Monitor, MapPin, Calendar, ChevronDown, X, CalendarDays } from 'lucide-vue-next'
 import type { EventFilters, EventCategory } from '../services/api'
+import { sanitizePlainText } from '@/utils/sanitize'
 
 interface Props {
   modelValue: EventFilters
@@ -241,91 +244,121 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const debouncedEmitFilters = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    // Sanitize search input before emitting
+    if (localFilters.search) {
+      localFilters.search = sanitizePlainText(localFilters.search, 200)
+    }
     emitFilters()
   }, 300)
 }
+
+// Cleanup timeout on component unmount to prevent memory leaks
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
+})
 
 const emitFilters = () => {
   emit('update:modelValue', { ...localFilters })
 }
 
-const toggleFilter = (key: keyof EventFilters, value: boolean | string | number) => {
+// Type-safe toggle filter function
+const toggleFilter = <K extends keyof EventFilters>(
+  key: K,
+  value: NonNullable<EventFilters[K]>
+) => {
   if (localFilters[key] === value) {
     // If the same value is clicked, clear the filter
-    delete localFilters[key]
+    localFilters[key] = undefined as EventFilters[K]
   } else {
     // Set the new value
-    ;(localFilters as Record<keyof EventFilters, unknown>)[key] = value
+    localFilters[key] = value as EventFilters[K]
   }
   emitFilters()
 }
 
-const setDateFilter = (period: 'today' | 'this_week' | 'this_month') => {
+// Helper to create date at start of day in local timezone
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// Helper to get date range for a period
+const getDateRangeForPeriod = (period: 'today' | 'this_week' | 'this_month') => {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   switch (period) {
-    case 'today':
-      localFilters.start_date_after = today.toISOString().split('T')[0]
-      localFilters.start_date_before = new Date(today.getTime() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0]
-      break
-    case 'this_week':
-      const startOfWeek = new Date(today.getTime() - today.getDay() * 24 * 60 * 60 * 1000)
-      const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
-      localFilters.start_date_after = startOfWeek.toISOString().split('T')[0]
-      localFilters.start_date_before = endOfWeek.toISOString().split('T')[0]
-      break
-    case 'this_month':
+    case 'today': {
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return {
+        start: getLocalDateString(today),
+        end: getLocalDateString(tomorrow)
+      }
+    }
+    case 'this_week': {
+      // Week starts on Monday (1), Sunday is 0
+      const dayOfWeek = today.getDay()
+      const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+      const startOfWeek = new Date(today)
+      startOfWeek.setDate(today.getDate() + daysToMonday)
+
+      const endOfWeek = new Date(startOfWeek)
+      endOfWeek.setDate(startOfWeek.getDate() + 7)
+
+      return {
+        start: getLocalDateString(startOfWeek),
+        end: getLocalDateString(endOfWeek)
+      }
+    }
+    case 'this_month': {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      localFilters.start_date_after = startOfMonth.toISOString().split('T')[0]
-      localFilters.start_date_before = endOfMonth.toISOString().split('T')[0]
-      break
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      return {
+        start: getLocalDateString(startOfMonth),
+        end: getLocalDateString(endOfMonth)
+      }
+    }
   }
+}
+
+const setDateFilter = (period: 'today' | 'this_week' | 'this_month') => {
+  const range = getDateRangeForPeriod(period)
+  localFilters.start_date_after = range.start
+  localFilters.start_date_before = range.end
   emitFilters()
 }
 
 const isDateFilterActive = (period: 'today' | 'this_week' | 'this_month'): boolean => {
   if (!localFilters.start_date_after || !localFilters.start_date_before) return false
 
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-
-  switch (period) {
-    case 'today':
-      const todayStr = today.toISOString().split('T')[0]
-      const tomorrowStr = new Date(today.getTime() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0]
-      return (
-        localFilters.start_date_after === todayStr && localFilters.start_date_before === tomorrowStr
-      )
-    case 'this_week':
-      const startOfWeek = new Date(today.getTime() - today.getDay() * 24 * 60 * 60 * 1000)
-      const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
-      return (
-        localFilters.start_date_after === startOfWeek.toISOString().split('T')[0] &&
-        localFilters.start_date_before === endOfWeek.toISOString().split('T')[0]
-      )
-    case 'this_month':
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      return (
-        localFilters.start_date_after === startOfMonth.toISOString().split('T')[0] &&
-        localFilters.start_date_before === endOfMonth.toISOString().split('T')[0]
-      )
-    default:
-      return false
-  }
+  const range = getDateRangeForPeriod(period)
+  return (
+    localFilters.start_date_after === range.start &&
+    localFilters.start_date_before === range.end
+  )
 }
 
+// Improved reactivity tracking for hasActiveFilters computed
 const hasActiveFilters = computed(() => {
-  return Object.keys(localFilters).some((key) => {
-    const value = localFilters[key as keyof EventFilters]
-    return value !== undefined && value !== null && value !== ''
-  })
+  // Explicitly access all filter properties to ensure reactivity
+  return !!(
+    localFilters.search ||
+    localFilters.category ||
+    localFilters.organizer ||
+    localFilters.start_date_after ||
+    localFilters.start_date_before ||
+    localFilters.is_virtual !== undefined ||
+    localFilters.status ||
+    localFilters.privacy ||
+    localFilters.ordering ||
+    localFilters.is_registered !== undefined
+  )
 })
 
 const clearFilters = () => {
@@ -335,13 +368,35 @@ const clearFilters = () => {
   emitFilters()
 }
 
-// Watch for external changes to modelValue
+// Watch for external changes to modelValue with loop prevention
 watch(
   () => props.modelValue,
   (newFilters) => {
-    Object.assign(localFilters, newFilters)
+    // Check if values are actually different to prevent infinite loops
+    const currentKeys = new Set(Object.keys(localFilters))
+    const newKeys = new Set(Object.keys(newFilters))
+
+    let isDifferent = currentKeys.size !== newKeys.size
+
+    if (!isDifferent) {
+      for (const key of newKeys) {
+        if (localFilters[key as keyof EventFilters] !== newFilters[key as keyof EventFilters]) {
+          isDifferent = true
+          break
+        }
+      }
+    }
+
+    if (isDifferent) {
+      // Clear old filters first
+      Object.keys(localFilters).forEach((key) => {
+        delete localFilters[key as keyof EventFilters]
+      })
+      // Then assign new filters
+      Object.assign(localFilters, newFilters)
+    }
   },
-  { deep: true },
+  { deep: true }
 )
 </script>
 
@@ -374,6 +429,8 @@ watch(
   line-height: 1;
   vertical-align: middle;
   display: inline-block;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 /* Ensure proper height on all browsers */
@@ -381,44 +438,12 @@ watch(
   display: none;
 }
 
-/* Firefox-specific styling for pill select */
-@-moz-document url-prefix() {
-  .pill-select {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    line-height: 1;
-  }
-}
-
-/* Pill select option styling */
+/* Simple option styling - always white background with dark text */
 .pill-select option {
-  @apply bg-white text-slate-700;
+  @apply bg-white text-slate-900;
   padding: 0.5rem 1rem;
   font-weight: 500;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.pill-select option[value=""] {
-  @apply text-slate-500 font-medium;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
-
-.pill-select option:not([value=""]) {
-  @apply text-slate-700;
-  background: #ffffff;
-}
-
-.pill-select option:hover,
-.pill-select option:focus {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 50%, #dbeafe 100%);
-  @apply text-slate-800;
-}
-
-.pill-select option:checked,
-.pill-select option:selected {
-  background: linear-gradient(135deg, #10b981 0%, #1e90ff 100%);
-  @apply text-white font-semibold;
+  color: #0f172a !important;
 }
 
 /* Safari-specific adjustments */
@@ -475,7 +500,7 @@ watch(
 
 .custom-select option:checked,
 .custom-select option:selected {
-  background: linear-gradient(135deg, #10b981 0%, #1e90ff 100%);
+  background: linear-gradient(135deg, #2ecc71 0%, #1e90ff 100%);
   @apply text-white font-semibold;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -517,7 +542,7 @@ watch(
   }
 
   .custom-select option:checked {
-    background: linear-gradient(135deg, #10b981 0%, #1e90ff 100%);
+    background: linear-gradient(135deg, #2ecc71 0%, #1e90ff 100%);
     color: white;
   }
 }
