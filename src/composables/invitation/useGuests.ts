@@ -235,6 +235,11 @@ export function useGuests(
             // Don't throw - continue execution
           }
         }
+
+        // Refresh All Guests pagination only if it has been loaded before
+        if (allGroupsPagination.value.hasLoaded) {
+          await loadAllGuests(allGroupsPagination.value.currentPage, true)
+        }
       }
 
       return response
