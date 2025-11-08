@@ -3,12 +3,17 @@
     :draggable="canEdit && draggable"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
-    @dragover.prevent
-    @dragenter.prevent
+    @dragover="handleDragOver"
+    @dragenter="handleDragEnter"
+    @dragleave="handleDragLeave"
     @drop="handleDrop"
-    class="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-200"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+    class="host-card group relative bg-white/80 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-200"
     :class="[
-      isDragging ? 'opacity-75 transform rotate-1 scale-[1.01]' : '',
+      isDragging ? 'opacity-75 transform rotate-1 scale-[1.01] dragging' : '',
+      isDraggedOver && !isDragging ? 'drop-target' : '',
       canEdit && draggable ? 'hover:scale-[1.01] cursor-grab active:cursor-grabbing' : '',
     ]"
   >
@@ -160,7 +165,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
-  User,
   Mail,
   ExternalLink,
   Edit2,
@@ -193,7 +197,12 @@ const emit = defineEmits<Emits>()
 
 // Drag state
 const isDragging = ref(false)
+const isDraggedOver = ref(false)
 const expanded = ref(false)
+const touchStartY = ref(0)
+const touchStartX = ref(0)
+const touchMoveThreshold = 10 // pixels before considered a drag
+let isTouchDragging = false
 
 // Computed
 const hasSocialLinks = computed(() => {
@@ -204,11 +213,15 @@ const hasSocialLinks = computed(() => {
 
 const initials = computed(() => {
   const name = (props.host.name || '').trim()
-  if (!name) return ' ' 
+  if (!name) return ' '
   const parts = name.split(/\s+/)
   const first = parts[0]?.[0] || ''
   const second = parts[1]?.[0] || ''
   return (first + second).toUpperCase()
+})
+
+const showReadMore = computed(() => {
+  return props.host.bio && props.host.bio.length > 200
 })
 
 // Utility method to get full URL for media
@@ -230,10 +243,42 @@ const handleDragStart = (event: DragEvent) => {
   }
 }
 
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault()
+  if (!props.canEdit || !props.draggable) return
+
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+}
+
+const handleDragEnter = (event: DragEvent) => {
+  event.preventDefault()
+  if (!props.canEdit || !props.draggable || isDragging.value) return
+
+  isDraggedOver.value = true
+}
+
+const handleDragLeave = (event: DragEvent) => {
+  event.preventDefault()
+  if (!props.canEdit || !props.draggable) return
+
+  // Only reset if we're leaving the card completely (not just entering a child element)
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const x = event.clientX
+  const y = event.clientY
+
+  if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+    isDraggedOver.value = false
+  }
+}
+
 const handleDrop = (event: DragEvent) => {
   event.preventDefault()
 
   if (!props.canEdit || !props.draggable) return
+
+  isDraggedOver.value = false
 
   const draggedHostId = event.dataTransfer?.getData('text/plain')
   if (draggedHostId && parseInt(draggedHostId) !== props.host.id) {
@@ -243,12 +288,94 @@ const handleDrop = (event: DragEvent) => {
   isDragging.value = false
 }
 
-const handleDragEnd = (event: DragEvent) => {
+const handleDragEnd = () => {
   // Reset dragging state when drag operation ends
   isDragging.value = false
+  isDraggedOver.value = false
 
   // If the drop was successful, the handleDrop will have already emitted dragEnd
   // If the drop was unsuccessful (dropped outside valid target), we still need to reset
+}
+
+// Touch handlers for mobile devices
+const handleTouchStart = (event: TouchEvent) => {
+  if (!props.canEdit || !props.draggable) return
+
+  const touch = event.touches[0]
+  touchStartY.value = touch.clientY
+  touchStartX.value = touch.clientX
+  isTouchDragging = false
+}
+
+const handleTouchMove = (event: TouchEvent) => {
+  if (!props.canEdit || !props.draggable) return
+
+  const touch = event.touches[0]
+  const deltaY = Math.abs(touch.clientY - touchStartY.value)
+  const deltaX = Math.abs(touch.clientX - touchStartX.value)
+
+  // Check if movement exceeds threshold
+  if (deltaY > touchMoveThreshold || deltaX > touchMoveThreshold) {
+    if (!isTouchDragging) {
+      isTouchDragging = true
+      isDragging.value = true
+      emit('dragStart', props.host)
+    }
+
+    // Prevent default to avoid scrolling while dragging
+    event.preventDefault()
+
+    // Update drop target highlight for touch
+    const targetElement = document.elementFromPoint(touch.clientX, touch.clientY)
+    const allCards = document.querySelectorAll('.host-card')
+
+    allCards.forEach((card) => {
+      if (card !== event.currentTarget && card.contains(targetElement)) {
+        card.classList.add('touch-drop-target')
+      } else {
+        card.classList.remove('touch-drop-target')
+      }
+    })
+  }
+}
+
+const handleTouchEnd = (event: TouchEvent) => {
+  // Clean up all touch drop target highlights
+  const allCards = document.querySelectorAll('.host-card')
+  allCards.forEach((card) => {
+    card.classList.remove('touch-drop-target')
+  })
+
+  if (!props.canEdit || !props.draggable || !isTouchDragging) {
+    isTouchDragging = false
+    isDragging.value = false
+    return
+  }
+
+  event.preventDefault()
+
+  const touch = event.changedTouches[0]
+  const targetElement = document.elementFromPoint(touch.clientX, touch.clientY)
+
+  // Find the closest host card element
+  let dropTarget: HTMLElement | null = targetElement as HTMLElement
+  while (dropTarget && !dropTarget.classList.contains('host-card')) {
+    dropTarget = dropTarget.parentElement
+  }
+
+  if (dropTarget && dropTarget !== event.currentTarget) {
+    // Find the host ID from the data attribute
+    const hostId = dropTarget.closest('.host-item')?.getAttribute('data-id')
+    if (hostId) {
+      // Get the target host from parent component
+      // We need to emit the dragEnd event with the target host
+      // The parent will handle finding the actual host
+      emit('dragEnd', { id: parseInt(hostId) } as EventHost)
+    }
+  }
+
+  isDragging.value = false
+  isTouchDragging = false
 }
 </script>
 
@@ -261,9 +388,90 @@ const handleDragEnd = (event: DragEvent) => {
   cursor: grabbing;
 }
 
+/* Prevent text selection during dragging */
+.host-card.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Drop target indicator */
+.host-card.drop-target,
+.host-card.touch-drop-target {
+  position: relative;
+  border: 2px solid #1e90ff;
+  background: linear-gradient(135deg, rgba(30, 144, 255, 0.1), rgba(46, 204, 113, 0.05)) !important;
+  transform: scale(1.03) translateY(-3px);
+  box-shadow: 0 12px 32px -8px rgba(30, 144, 255, 0.5), 0 0 0 3px rgba(30, 144, 255, 0.2) !important;
+}
+
+/* Add animated border for drop target */
+.host-card.drop-target::before,
+.host-card.touch-drop-target::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 1rem;
+  padding: 3px;
+  background: linear-gradient(45deg, #1e90ff, #2ecc71, #1e90ff);
+  background-size: 200% 200%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: border-rotate 2s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes border-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Add animated top indicator */
+.host-card.drop-target::after,
+.host-card.touch-drop-target::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(to right, transparent, #1e90ff, #2ecc71, #1e90ff, transparent);
+  border-radius: 9999px;
+  animation: pulse-top 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-top {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scaleX(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
