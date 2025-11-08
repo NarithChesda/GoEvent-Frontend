@@ -570,7 +570,6 @@ import { formatPaymentMethod, PAYMENT_METHOD_OPTIONS } from '@/constants/payment
 import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/constants/currencies'
 import { getErrorMessage } from '@/utils/errorMessages'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
-import FilterMenu from '@/components/FilterMenu.vue'
 import ExpenseModal from './ExpenseModal.vue'
 
 interface Props {
