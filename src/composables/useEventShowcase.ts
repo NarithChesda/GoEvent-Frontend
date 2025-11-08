@@ -436,43 +436,20 @@ export function useEventShowcase() {
 
   const availableLanguages = computed(() => event.value?.available_languages || [])
 
-  const primaryColor = computed(() => {
-    const colors = templateProcessor.extractTemplateColors(templateColors.value)
-    return colors.primaryColor
-  })
+  // Extract all colors once and cache the result
+  const extractedColors = computed(() =>
+    templateProcessor.extractTemplateColors(templateColors.value)
+  )
 
-  const secondaryColor = computed(() => {
-    const colors = templateProcessor.extractTemplateColors(templateColors.value)
-    return colors.secondaryColor
-  })
+  const primaryColor = computed(() => extractedColors.value.primaryColor)
 
-  const accentColor = computed(() => {
-    const colors = templateProcessor.extractTemplateColors(templateColors.value)
-    return colors.accentColor
-  })
+  const secondaryColor = computed(() => extractedColors.value.secondaryColor)
 
-  const backgroundColor = computed(() => {
-    // First, try to find a color named "background"
-    if (templateColors.value) {
-      const backgroundColorObj = templateColors.value.find(
-        (color) => color.name?.toLowerCase() === 'background'
-      )
-      if (backgroundColorObj) {
-        return backgroundColorObj.hex_color_code || backgroundColorObj.hex_code
-      }
+  const accentColor = computed(() => extractedColors.value.accentColor)
 
-      // Second, try to find a color named "primary"
-      const primaryColorObj = templateColors.value.find(
-        (color) => color.name?.toLowerCase() === 'primary'
-      )
-      if (primaryColorObj) {
-        return primaryColorObj.hex_color_code || primaryColorObj.hex_code
-      }
-    }
+  const guestnameColor = computed(() => extractedColors.value.guestnameColor)
 
-    // Final fallback to the primaryColor
-    return primaryColor.value
-  })
+  const backgroundColor = computed(() => extractedColors.value.backgroundColor)
 
   const isEventPast = computed(() => {
     if (!event.value?.end_date) return false
@@ -1028,6 +1005,7 @@ export function useEventShowcase() {
     secondaryColor,
     accentColor,
     backgroundColor,
+    guestnameColor,
     currentFont: primaryFont, // Deprecated: use primaryFont instead
     primaryFont,
     secondaryFont,

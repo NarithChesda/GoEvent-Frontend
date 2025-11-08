@@ -171,6 +171,7 @@ export function useTemplateProcessor() {
 
   /**
    * Extracts template colors with proper fallbacks
+   * Combines both index-based (legacy) and name-based color extraction
    */
   const extractTemplateColors = (templateColors: TemplateColor[]) => {
     const primaryColor =
@@ -180,10 +181,42 @@ export function useTemplateProcessor() {
     const accentColor =
       templateColors?.[2]?.hex_color_code || templateColors?.[2]?.hex_code || primaryColor
 
+    // Extract guestname color by name
+    const guestnameColorObj = templateColors?.find(
+      (color) => color.name?.toLowerCase() === 'guestname'
+    )
+    const guestnameColor = guestnameColorObj?.hex_color_code || guestnameColorObj?.hex_code || null
+
+    // Extract background color by name with fallback chain
+    let backgroundColor: string | null = null
+    if (templateColors) {
+      // First, try to find a color named "background"
+      const backgroundColorObj = templateColors.find(
+        (color) => color.name?.toLowerCase() === 'background'
+      )
+      if (backgroundColorObj) {
+        backgroundColor = backgroundColorObj.hex_color_code || backgroundColorObj.hex_code || null
+      } else {
+        // Second, try to find a color named "primary"
+        const primaryColorObj = templateColors.find(
+          (color) => color.name?.toLowerCase() === 'primary'
+        )
+        if (primaryColorObj) {
+          backgroundColor = primaryColorObj.hex_color_code || primaryColorObj.hex_code || null
+        }
+      }
+    }
+    // Final fallback to primaryColor
+    if (!backgroundColor) {
+      backgroundColor = primaryColor
+    }
+
     return {
       primaryColor,
       secondaryColor,
       accentColor,
+      guestnameColor,
+      backgroundColor,
     }
   }
 

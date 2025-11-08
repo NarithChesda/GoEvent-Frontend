@@ -26,6 +26,7 @@
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
         :background-color="backgroundColor"
+        :guestname-color="guestnameColor"
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
@@ -156,6 +157,7 @@ const {
   secondaryColor,
   accentColor,
   backgroundColor,
+  guestnameColor,
   currentFont,
   primaryFont,
   secondaryFont,

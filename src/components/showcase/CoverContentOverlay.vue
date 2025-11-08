@@ -157,6 +157,7 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string
+  guestnameColor?: string | null
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -242,7 +243,7 @@ const guestNameTextStyle = computed(() => {
 
   return {
     fontFamily,
-    color: '#FFFFFF',
+    color: props.guestnameColor || '#FFFFFF',
     textShadow: 'none',
     fontWeight: isEnglishText ? '400' : 'normal',
   }
