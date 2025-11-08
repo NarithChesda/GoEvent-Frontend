@@ -122,70 +122,52 @@
             />
           </div>
 
-          <button
-            @click="toggleFilter('is_virtual', true)"
-            :class="
-              localFilters.is_virtual === true
-                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-            "
-            class="inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md"
-          >
-            <Monitor class="w-3 h-3 mr-1" />
-            Virtual
-          </button>
+          <!-- Event Type Dropdown (Virtual/In-Person) -->
+          <div class="relative inline-flex items-center">
+            <select
+              id="event-type-filter"
+              :value="getEventTypeValue()"
+              @change="handleEventTypeChange"
+              :class="
+                localFilters.is_virtual !== undefined
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md'
+                  : 'bg-white/70 hover:bg-[#E6F4FF]'
+              "
+              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer text-slate-900"
+              aria-label="Filter by event type"
+            >
+              <option value="">Event Type</option>
+              <option value="virtual">Virtual</option>
+              <option value="in-person">In-Person</option>
+            </select>
+            <div class="absolute right-2 sm:right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <ChevronDown class="w-3 h-3 text-slate-900" />
+            </div>
+          </div>
 
-          <button
-            @click="toggleFilter('is_virtual', false)"
-            :class="
-              localFilters.is_virtual === false
-                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                : 'bg-white/70 text-slate-700 hover:bg-[#E6F4FF] hover:text-[#1e90ff]'
-            "
-            class="inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md"
-          >
-            <MapPin class="w-3 h-3 mr-1" />
-            In-Person
-          </button>
-
-          <button
-            @click="setDateFilter('today')"
-            :class="
-              isDateFilterActive('today')
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
-                : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
-            "
-            class="inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md"
-          >
-            <Calendar class="w-3 h-3 mr-1" />
-            Today
-          </button>
-
-          <button
-            @click="setDateFilter('this_week')"
-            :class="
-              isDateFilterActive('this_week')
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
-                : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
-            "
-            class="inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md"
-          >
-            <Calendar class="w-3 h-3 mr-1" />
-            Week
-          </button>
-
-          <button
-            @click="setDateFilter('this_month')"
-            :class="
-              isDateFilterActive('this_month')
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
-                : 'bg-white/70 text-slate-700 hover:bg-green-50 hover:text-green-600'
-            "
-            class="inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md"
-          >
-            <Calendar class="w-3 h-3 mr-1" />
-            Month
-          </button>
+          <!-- Date Range Dropdown (Today/Week/Month) -->
+          <div class="relative inline-flex items-center">
+            <select
+              id="date-range-filter"
+              :value="getDateRangeValue()"
+              @change="handleDateRangeChange"
+              :class="
+                getDateRangeValue() !== ''
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md'
+                  : 'bg-white/70 hover:bg-[#E6F4FF]'
+              "
+              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer text-slate-900"
+              aria-label="Filter by date range"
+            >
+              <option value="">Date Range</option>
+              <option value="today">Today</option>
+              <option value="this_week">This Week</option>
+              <option value="this_month">This Month</option>
+            </select>
+            <div class="absolute right-2 sm:right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <ChevronDown class="w-3 h-3 text-slate-900" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -194,7 +176,7 @@
 
 <script setup lang="ts">
 import { reactive, computed, watch, ref, onUnmounted } from 'vue'
-import { Search, Monitor, MapPin, Calendar, ChevronDown, X, CalendarDays } from 'lucide-vue-next'
+import { Search, ChevronDown, X, CalendarDays } from 'lucide-vue-next'
 import type { EventFilters, EventCategory } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
 
@@ -264,17 +246,46 @@ const emitFilters = () => {
   emit('update:modelValue', { ...localFilters })
 }
 
-// Type-safe toggle filter function
-const toggleFilter = <K extends keyof EventFilters>(
-  key: K,
-  value: NonNullable<EventFilters[K]>
-) => {
-  if (localFilters[key] === value) {
-    // If the same value is clicked, clear the filter
-    localFilters[key] = undefined as EventFilters[K]
+// Event Type Dropdown Handlers
+const getEventTypeValue = (): string => {
+  if (localFilters.is_virtual === true) return 'virtual'
+  if (localFilters.is_virtual === false) return 'in-person'
+  return ''
+}
+
+const handleEventTypeChange = (e: Event) => {
+  const target = e.target as HTMLSelectElement
+  const selectedValue = target.value
+
+  if (selectedValue === '') {
+    localFilters.is_virtual = undefined
+  } else if (selectedValue === 'virtual') {
+    localFilters.is_virtual = true
+  } else if (selectedValue === 'in-person') {
+    localFilters.is_virtual = false
+  }
+  emitFilters()
+}
+
+// Date Range Dropdown Handlers
+const getDateRangeValue = (): string => {
+  if (!localFilters.start_date_after || !localFilters.start_date_before) return ''
+
+  if (isDateFilterActive('today')) return 'today'
+  if (isDateFilterActive('this_week')) return 'this_week'
+  if (isDateFilterActive('this_month')) return 'this_month'
+  return ''
+}
+
+const handleDateRangeChange = (e: Event) => {
+  const target = e.target as HTMLSelectElement
+  const selectedValue = target.value
+
+  if (selectedValue === '') {
+    localFilters.start_date_after = undefined
+    localFilters.start_date_before = undefined
   } else {
-    // Set the new value
-    localFilters[key] = value as EventFilters[K]
+    setDateFilter(selectedValue as 'today' | 'this_week' | 'this_month')
   }
   emitFilters()
 }
@@ -444,6 +455,7 @@ watch(
   padding: 0.5rem 1rem;
   font-weight: 500;
   color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 /* Safari-specific adjustments */
@@ -454,6 +466,20 @@ watch(
     background-position: right 0.5rem center;
     background-size: 0;
   }
+}
+
+/* Specific styling for date range dropdown options */
+#date-range-filter option {
+  background: white !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Specific styling for event type dropdown */
+#event-type-filter option {
+  background: white !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 /* Date Pill Button Styling - now simplified since we use a button */
