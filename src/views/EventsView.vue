@@ -401,7 +401,15 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 // Reactive state
-const currentView = ref<ViewType>('all')
+// Initialize currentView from URL query parameter or default to 'all'
+const initialView = (): ViewType => {
+  const viewParam = route.query.view as string | undefined
+  if (viewParam && ['all', 'my', 'registered'].includes(viewParam)) {
+    return viewParam as ViewType
+  }
+  return 'all'
+}
+const currentView = ref<ViewType>(initialView())
 const events = ref<Event[]>([])
 const categories = ref<EventCategory[]>([])
 const loading = ref(false)
@@ -542,6 +550,15 @@ const getLoginPromptMessage = () => {
 // Methods
 const handleViewChange = (view: ViewType) => {
   currentView.value = view
+
+  // Update URL query parameter to persist tab state
+  router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      view: view
+    }
+  })
 }
 
 const goToLogin = () => {
@@ -1033,6 +1050,23 @@ const handleEventCreate = async (formData: EventFormData) => {
 }
 
 // Watchers
+// Watch for URL query parameter changes (e.g., browser back/forward)
+watch(
+  () => route.query.view,
+  (newView) => {
+    const view = newView as ViewType | undefined
+    if (view && ['all', 'my', 'registered'].includes(view)) {
+      // Only update if different to avoid unnecessary reloads
+      if (currentView.value !== view) {
+        currentView.value = view
+      }
+    } else if (!view && currentView.value !== 'all') {
+      // If no view param, default to 'all'
+      currentView.value = 'all'
+    }
+  }
+)
+
 watch(
   () => route.query.createEvent,
   () => {
@@ -1153,16 +1187,11 @@ const setupInfiniteScroll = () => {
 
 // Lifecycle
 onMounted(async () => {
-  // Check if there's a view parameter in the URL (from redirect after login)
-  const viewParam = route.query.view as ViewType | undefined
-  if (viewParam && ['all', 'my', 'registered'].includes(viewParam)) {
-    currentView.value = viewParam
-  }
-
   // Load initial data
   await loadCategories()
 
   // Load events after categories
+  // The currentView is already initialized from URL query parameter
   await loadEvents()
 
   // Set up infinite scroll
