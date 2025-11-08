@@ -1,16 +1,16 @@
 <template>
-  <section id="pricing" class="py-24 lg:py-18 relative overflow-hidden scroll-animate">
+  <section id="pricing" class="py-24 lg:py-18 2xl:py-24 relative overflow-hidden scroll-animate">
     <!-- Background elements -->
     <div class="absolute inset-0">
       <div
-        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 lg:w-72 lg:h-72 bg-emerald-100/20 rounded-full blur-3xl"
+        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 lg:w-72 lg:h-72 2xl:w-96 2xl:h-96 bg-emerald-100/20 rounded-full blur-3xl"
       ></div>
-      <div class="absolute bottom-0 right-0 w-72 h-72 lg:w-54 lg:h-54 bg-sky-100/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 right-0 w-72 h-72 lg:w-54 lg:h-54 2xl:w-72 2xl:h-72 bg-sky-100/20 rounded-full blur-3xl"></div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="text-center mb-12 sm:mb-16 lg:mb-9">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-4xl font-bold text-slate-900 mb-8 sm:mb-10 lg:mb-6 leading-tight px-4">
+      <div class="text-center mb-12 sm:mb-16 lg:mb-9 2xl:mb-16">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-4xl 2xl:text-5xl font-bold text-slate-900 mb-8 sm:mb-10 lg:mb-6 2xl:mb-10 leading-tight px-4">
           Choose Your
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]">
             Perfect Plan
@@ -18,14 +18,14 @@
         </h2>
 
         <!-- Category Toggle (Personal/Business) -->
-        <div class="mb-12 lg:mb-9" v-if="Object.keys(categorizedPlans).length > 1">
+        <div class="mb-12 lg:mb-9 2xl:mb-12" v-if="Object.keys(categorizedPlans).length > 1">
           <div class="flex justify-center">
-            <div class="inline-flex bg-white rounded-full p-1 lg:p-0.5 border-2 lg:border border-slate-200">
+            <div class="inline-flex bg-white rounded-full p-1 lg:p-0.5 2xl:p-1 border-2 lg:border 2xl:border-2 border-slate-200">
               <button
                 v-for="categoryName in Object.keys(categorizedPlans)"
                 :key="categoryName"
                 @click="activeCategory = categoryName"
-                class="px-6 py-2.5 lg:px-4.5 lg:py-2 rounded-full font-medium text-sm lg:text-xs transition-all duration-300 relative overflow-hidden"
+                class="px-6 py-2.5 lg:px-4.5 lg:py-2 2xl:px-6 2xl:py-2.5 rounded-full font-medium text-sm lg:text-xs 2xl:text-sm transition-all duration-300 relative overflow-hidden"
                 :class="
                   activeCategory === categoryName
                     ? 'text-white shadow-md'
@@ -46,17 +46,17 @@
       <!-- Loading State -->
       <div v-if="loading" class="text-center">
         <div
-          class="inline-block animate-spin rounded-full h-8 w-8 lg:h-6 lg:w-6 border-b-2 border-[#1e90ff]"
+          class="inline-block animate-spin rounded-full h-8 w-8 lg:h-6 lg:w-6 2xl:h-8 2xl:w-8 border-b-2 border-[#1e90ff]"
         ></div>
-        <p class="text-slate-700 mt-4 lg:mt-3 lg:text-sm">Loading pricing plans...</p>
+        <p class="text-slate-700 mt-4 lg:mt-3 lg:text-sm 2xl:mt-4 2xl:text-base">Loading pricing plans...</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="text-center">
-        <p class="text-red-500 mb-4 lg:mb-3 lg:text-sm">{{ error }}</p>
+        <p class="text-red-500 mb-4 lg:mb-3 lg:text-sm 2xl:mb-4 2xl:text-base">{{ error }}</p>
         <button
           @click="fetchPricingPlans"
-          class="bg-[#1e90ff] hover:bg-[#1873cc] text-white px-6 py-2 lg:px-4.5 lg:py-1.5 lg:text-sm rounded-lg"
+          class="bg-[#1e90ff] hover:bg-[#1873cc] text-white px-6 py-2 lg:px-4.5 lg:py-1.5 lg:text-sm 2xl:px-6 2xl:py-2 2xl:text-base rounded-lg"
         >
           Retry
         </button>
@@ -66,49 +66,49 @@
       <div v-else class="max-w-7xl mx-auto">
         <div
           ref="plansContainer"
-          class="flex md:grid overflow-x-auto md:overflow-x-visible md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 lg:gap-6 max-w-7xl mx-auto md:justify-items-center pb-4 md:pb-0 pt-4 snap-x snap-mandatory md:snap-none scrollbar-hide"
+          class="flex md:grid overflow-x-auto md:overflow-x-visible md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 lg:gap-6 2xl:gap-8 max-w-7xl mx-auto md:justify-items-center pb-4 md:pb-0 pt-4 snap-x snap-mandatory md:snap-none scrollbar-hide"
         >
           <div
             v-for="plan in Object.keys(categorizedPlans).length === 1
               ? Object.values(categorizedPlans)[0]
               : categorizedPlans[activeCategory] || []"
             :key="plan.id"
-            class="relative group w-[85vw] md:w-full flex-shrink-0 md:flex-shrink max-w-sm lg:max-w-xs snap-center md:snap-align-none"
+            class="relative group w-[85vw] md:w-full flex-shrink-0 md:flex-shrink max-w-sm lg:max-w-xs 2xl:max-w-sm snap-center md:snap-align-none"
           >
             <!-- Best Seller Badge -->
             <div
               v-if="plan.is_best_seller"
-              class="absolute -top-3 sm:-top-4 lg:-top-2.5 left-1/2 transform -translate-x-1/2 z-20"
+              class="absolute -top-3 sm:-top-4 lg:-top-2.5 2xl:-top-4 left-1/2 transform -translate-x-1/2 z-20"
             >
               <div
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-4 py-2 lg:px-3 lg:py-1.5 rounded-full flex items-center gap-2 lg:gap-1.5"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-4 py-2 lg:px-3 lg:py-1.5 2xl:px-4 2xl:py-2 rounded-full flex items-center gap-2 lg:gap-1.5 2xl:gap-2"
               >
-                <svg class="w-4 h-4 lg:w-3 lg:h-3 fill-current" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 lg:w-3 lg:h-3 2xl:w-4 2xl:h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <span class="text-sm lg:text-xs font-bold uppercase tracking-wide">Best Seller</span>
+                <span class="text-sm lg:text-xs 2xl:text-sm font-bold uppercase tracking-wide">Best Seller</span>
               </div>
             </div>
 
             <!-- Card -->
             <div
-              class="relative backdrop-blur-sm rounded-2xl md:rounded-3xl lg:rounded-2xl h-full flex flex-col transition-all duration-300 p-6 md:p-8 lg:p-6"
+              class="relative backdrop-blur-sm rounded-2xl md:rounded-3xl lg:rounded-2xl 2xl:rounded-3xl h-full flex flex-col transition-all duration-300 p-6 md:p-8 lg:p-6 2xl:p-8"
               :class="
                 plan.is_best_seller
-                  ? 'bg-white/95 border-2 lg:border-[1.5px] border-emerald-300 group-hover:bg-white'
-                  : 'bg-white/90 border lg:border-[0.5px] border-slate-200 group-hover:bg-white/95'
+                  ? 'bg-white/95 border-2 lg:border-[1.5px] 2xl:border-2 border-emerald-300 group-hover:bg-white'
+                  : 'bg-white/90 border lg:border-[0.5px] 2xl:border border-slate-200 group-hover:bg-white/95'
               "
             >
               <!-- Plan name and price -->
-              <div class="mb-4 lg:mb-3">
-                <h4 class="text-2xl md:text-3xl lg:text-2xl font-bold text-slate-900 mb-4 lg:mb-3">
+              <div class="mb-4 lg:mb-3 2xl:mb-4">
+                <h4 class="text-2xl md:text-3xl lg:text-2xl 2xl:text-3xl font-bold text-slate-900 mb-4 lg:mb-3 2xl:mb-4">
                   {{ plan.name }}
                 </h4>
-                <div class="mb-2 lg:mb-1.5">
-                  <div class="flex items-baseline gap-1 lg:gap-0.5">
-                    <span class="text-lg lg:text-base font-normal text-slate-600">$</span>
+                <div class="mb-2 lg:mb-1.5 2xl:mb-2">
+                  <div class="flex items-baseline gap-1 lg:gap-0.5 2xl:gap-1">
+                    <span class="text-lg lg:text-base 2xl:text-lg font-normal text-slate-600">$</span>
                     <span
-                      class="text-5xl md:text-6xl lg:text-[45px] font-normal leading-none"
+                      class="text-5xl md:text-6xl lg:text-[45px] 2xl:text-6xl font-normal leading-none"
                       :class="
                         plan.is_best_seller
                           ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
@@ -122,18 +122,18 @@
               </div>
 
               <!-- CTA Button -->
-              <div class="mb-5 lg:mb-3.5">
+              <div class="mb-5 lg:mb-3.5 2xl:mb-5">
                 <a
                   href="https://t.me/goeventkh"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-full py-3 px-6 lg:py-2.5 lg:px-4.5 rounded-full font-semibold text-base lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 lg:gap-1.5"
+                  class="w-full py-3 px-6 lg:py-2.5 lg:px-4.5 2xl:py-3 2xl:px-6 rounded-full font-semibold text-base lg:text-sm 2xl:text-base transition-all duration-300 flex items-center justify-center gap-2 lg:gap-1.5 2xl:gap-2"
                   :class="
                     plan.is_best_seller
                       ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white'
                       : plan.price === '0.00'
-                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border lg:border-[0.5px] border-slate-300'
-                      : 'bg-white hover:bg-slate-50 text-slate-900 border-2 lg:border-[1.5px] border-slate-900'
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border lg:border-[0.5px] 2xl:border border-slate-300'
+                      : 'bg-white hover:bg-slate-50 text-slate-900 border-2 lg:border-[1.5px] 2xl:border-2 border-slate-900'
                   "
                 >
                   {{
@@ -143,7 +143,7 @@
                       ? 'Get Started'
                       : 'Contact Us'
                   }}
-                  <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 lg:w-4 lg:h-4 2xl:w-5 2xl:h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.008-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.122.098.155.231.171.325.016.094.036.308.02.475z"/>
                   </svg>
                 </a>
@@ -151,27 +151,27 @@
 
               <!-- Features section -->
               <div class="flex-1 flex flex-col min-h-0">
-                <div class="flex-1 overflow-y-auto pr-2 lg:pr-1.5 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
-                  <ul class="space-y-4 lg:space-y-2">
+                <div class="flex-1 overflow-y-auto pr-2 lg:pr-1.5 2xl:pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                  <ul class="space-y-4 lg:space-y-2 2xl:space-y-4">
                     <li
                       v-for="feature in plan.features"
                       :key="feature"
                       class="flex items-start text-slate-700"
                     >
-                      <div class="flex-shrink-0 mr-3 lg:mr-2 mt-0.5 lg:mt-0">
-                        <svg class="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div class="flex-shrink-0 mr-3 lg:mr-2 2xl:mr-3 mt-0.5 lg:mt-0 2xl:mt-0.5">
+                        <svg class="w-5 h-5 lg:w-4 lg:h-4 2xl:w-5 2xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
-                      <span class="text-sm leading-relaxed lg:leading-tight">{{ feature }}</span>
+                      <span class="text-sm leading-relaxed lg:leading-tight 2xl:leading-relaxed">{{ feature }}</span>
                     </li>
                   </ul>
                 </div>
               </div>
 
               <!-- Footer notes for all plans -->
-              <div class="mt-6 pt-6 lg:mt-4 lg:pt-4 border-t lg:border-t-[0.5px] border-slate-200 flex-shrink-0">
-                <p class="text-xs lg:text-[10px] text-slate-500 text-center lg:leading-tight">
+              <div class="mt-6 pt-6 lg:mt-4 lg:pt-4 2xl:mt-6 2xl:pt-6 border-t lg:border-t-[0.5px] 2xl:border-t border-slate-200 flex-shrink-0">
+                <p class="text-xs lg:text-[10px] 2xl:text-xs text-slate-500 text-center lg:leading-tight 2xl:leading-normal">
                   <template v-if="plan.price === '0.00'">
                     Perfect to get started. <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">See what's possible</a>
                   </template>
@@ -183,7 +183,7 @@
 
               <!-- Enhanced hover effect overlay -->
               <div
-                class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-2xl md:rounded-3xl lg:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-2xl md:rounded-3xl lg:rounded-2xl 2xl:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
               ></div>
             </div>
           </div>
