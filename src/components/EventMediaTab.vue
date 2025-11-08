@@ -225,7 +225,12 @@
 
       <!-- Social Media Preview Section -->
       <div v-if="activeSection === 'social-media'">
-        <SocialMediaPreview v-if="localEventData" :event-data="localEventData" />
+        <SocialMediaPreview
+          v-if="localEventData"
+          :event-data="localEventData"
+          guest-name="ភ្ញៀវកិត្តិយស"
+          language="kh"
+        />
       </div>
     </div>
 

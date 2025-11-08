@@ -189,13 +189,17 @@ import {
   Share2,
 } from 'lucide-vue-next'
 import type { Event } from '../services/api'
-import { createEventDescription, getPublicSSRMetaUrl } from '../utils/metaUtils'
+import { createEventDescription, getSSRMetaUrl } from '../utils/metaUtils'
 
 interface Props {
   eventData?: Event
+  guestName?: string
+  language?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  language: 'en',
+})
 
 // State
 const selectedPlatform = ref<string>('facebook')
@@ -212,14 +216,27 @@ const platforms = [
 // Computed properties
 const showcaseUrl = computed(() => {
   if (!props.eventData?.id) return ''
-  // Use SSR meta URL for social media sharing
-  return getPublicSSRMetaUrl(props.eventData.id, 'en')
+  // Use SSR meta URL for social media sharing with optional guest name and language
+  return getSSRMetaUrl(props.eventData.id, {
+    guestName: props.guestName,
+    language: props.language,
+  })
 })
 
 const directShowcaseUrl = computed(() => {
   if (!props.eventData?.id) return ''
   const baseUrl = window.location.origin
-  return `${baseUrl}/events/${props.eventData.id}/showcase`
+  const url = new URL(`${baseUrl}/events/${props.eventData.id}/showcase`)
+
+  // Add guest name and language parameters if provided
+  if (props.guestName) {
+    url.searchParams.append('guest_name', props.guestName)
+  }
+  if (props.language) {
+    url.searchParams.append('lang', props.language)
+  }
+
+  return url.toString()
 })
 
 const hostname = computed(() => {
@@ -286,7 +303,6 @@ const copyToClipboard = async () => {
 const shareOnPlatform = () => {
   const url = encodeURIComponent(showcaseUrl.value)
   const title = encodeURIComponent(metaTitle.value)
-  const description = encodeURIComponent(metaDescription.value)
 
   let shareUrl = ''
 
