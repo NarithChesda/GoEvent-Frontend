@@ -90,7 +90,7 @@
           <div class="guest-name-container">
             <div class="guest-name-blur-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor }">
               <h2
-                class="scaled-guest-name font-regular capitalize khmer-text-fix text-center guest-name-single-line"
+                class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
                 :style="guestNameTextStyle"
               >
                 {{ guestName }}
@@ -246,6 +246,8 @@ const guestNameTextStyle = computed(() => {
     color: props.guestnameColor || '#FFFFFF',
     textShadow: 'none',
     fontWeight: isEnglishText ? '400' : 'normal',
+    // Only capitalize English text - prevents spacing issues with Khmer/other scripts
+    textTransform: (isEnglishText ? 'capitalize' : 'none') as 'capitalize' | 'none',
   }
 })
 
@@ -371,11 +373,11 @@ const fallbackLogoStyle = computed(() => {
 /* Mobile - reduce guest name size */
 @media (max-width: 640px) {
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.5rem, 1.8vh, 0.95rem) !important;
+    font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
   }
 
   .content-row-guest .scaled-guest-name[style*="Great Vibes"] {
-    font-size: clamp(0.65rem, 2.4vh, 1.2rem) !important;
+    font-size: clamp(0.85rem, 2.6vh, 1.6rem) !important;
   }
 
   .guest-name-container {
