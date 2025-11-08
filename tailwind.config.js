@@ -77,6 +77,17 @@ export default {
         'laptop': '75rem', // 1200px - optimal content width for laptops
         'laptop-lg': '85rem', // 1360px - larger laptops
       },
+      zIndex: {
+        'dropdown': '10',
+        'sticky': '20',
+        'header': '30',
+        'overlay': '40',
+        'modal-backdrop': '49',
+        'modal': '50',
+        'modal-content': '51',
+        'toast': '200',
+        'tooltip': '300',
+      },
     },
   },
 }

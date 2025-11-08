@@ -147,7 +147,7 @@
                   </div>
                 </div>
                 <div class="text-right flex-shrink-0">
-                  <p class="text-2xl font-bold text-slate-900">{{ expense.currency === 'USD' ? '$' : '៛' }}{{ parseFloat(expense.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+                  <p class="text-2xl font-bold text-slate-900">{{ SUPPORTED_CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$' }}{{ parseFloat(expense.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
                   <p class="text-xs text-slate-500">{{ expense.currency }}</p>
                 </div>
               </div>
@@ -204,199 +204,6 @@
       </div>
     </div>
 
-    <!-- Old Hardcoded Expense Item 1 (kept for reference, can delete later) -->
-    <div v-if="false" class="space-y-3">
-      <!-- Expense Item 1 -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6 hover:shadow-xl transition-all duration-300 group">
-        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-          <!-- Category Icon -->
-          <div class="flex items-start gap-4 flex-1 min-w-0">
-            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Building2 class="w-6 h-6 text-red-600" />
-            </div>
-
-            <!-- Expense Details -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-4 mb-2">
-                <div class="flex-1 min-w-0">
-                  <h4 class="font-bold text-slate-900 mb-1">Grand Ballroom rental for wedding reception</h4>
-                  <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                    <div class="flex items-center gap-1">
-                      <Calendar class="w-3.5 h-3.5" />
-                      <span>Oct 15, 2025</span>
-                    </div>
-                    <span class="text-slate-300">•</span>
-                    <div class="flex items-center gap-1">
-                      <Building2 class="w-3.5 h-3.5" />
-                      <span>Luxury Hotel Group</span>
-                    </div>
-                    <span class="text-slate-300">•</span>
-                    <div class="flex items-center gap-1">
-                      <CreditCard class="w-3.5 h-3.5" />
-                      <span>Bank Transfer</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-right flex-shrink-0">
-                  <p class="text-2xl font-bold text-slate-900">$4,500</p>
-                  <p class="text-xs text-slate-500">USD</p>
-                </div>
-              </div>
-
-              <!-- Notes -->
-              <div class="mb-3 p-3 bg-slate-50 rounded-lg">
-                <p class="text-sm text-slate-600">Includes setup, teardown, and audio-visual equipment</p>
-              </div>
-
-              <!-- Receipt & Actions -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg">
-                    <Paperclip class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">Receipt Attached</span>
-                  </div>
-                  <button class="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                    <Eye class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">View</span>
-                  </button>
-                </div>
-
-                <div v-if="canEdit" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                    <Edit2 class="w-4 h-4" />
-                  </button>
-                  <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Expense Item 2 -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6 hover:shadow-xl transition-all duration-300 group">
-        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-          <div class="flex items-start gap-4 flex-1 min-w-0">
-            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <UtensilsCrossed class="w-6 h-6 text-blue-600" />
-            </div>
-
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-4 mb-2">
-                <div class="flex-1 min-w-0">
-                  <h4 class="font-bold text-slate-900 mb-1">Catering service for 200 guests</h4>
-                  <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                    <div class="flex items-center gap-1">
-                      <Calendar class="w-3.5 h-3.5" />
-                      <span>Oct 20, 2025</span>
-                    </div>
-                    <span class="text-slate-300">•</span>
-                    <div class="flex items-center gap-1">
-                      <Building2 class="w-3.5 h-3.5" />
-                      <span>Premium Catering Co.</span>
-                    </div>
-                    <span class="text-slate-300">•</span>
-                    <div class="flex items-center gap-1">
-                      <CreditCard class="w-3.5 h-3.5" />
-                      <span>Credit Card</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-right flex-shrink-0">
-                  <p class="text-2xl font-bold text-slate-900">$8,500</p>
-                  <p class="text-xs text-slate-500">USD</p>
-                </div>
-              </div>
-
-              <div class="mb-3 p-3 bg-slate-50 rounded-lg">
-                <p class="text-sm text-slate-600">Menu includes appetizers, main course, desserts, and beverages</p>
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg">
-                    <Paperclip class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">Receipt Attached</span>
-                  </div>
-                  <button class="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                    <Eye class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">View</span>
-                  </button>
-                </div>
-
-                <div v-if="canEdit" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                    <Edit2 class="w-4 h-4" />
-                  </button>
-                  <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Expense Item 3 (No Receipt) -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 p-6 hover:shadow-xl transition-all duration-300 group">
-        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-          <div class="flex items-start gap-4 flex-1 min-w-0">
-            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Palette class="w-6 h-6 text-purple-600" />
-            </div>
-
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-4 mb-2">
-                <div class="flex-1 min-w-0">
-                  <h4 class="font-bold text-slate-900 mb-1">Floral arrangements</h4>
-                  <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                    <div class="flex items-center gap-1">
-                      <Calendar class="w-3.5 h-3.5" />
-                      <span>Oct 22, 2025</span>
-                    </div>
-                    <span class="text-slate-300">•</span>
-                    <div class="flex items-center gap-1">
-                      <Building2 class="w-3.5 h-3.5" />
-                      <span>Blooming Creations</span>
-                    </div>
-                    <span class="text-slate-300">•</span>
-                    <div class="flex items-center gap-1">
-                      <CreditCard class="w-3.5 h-3.5" />
-                      <span>Cash</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-right flex-shrink-0">
-                  <p class="text-2xl font-bold text-slate-900">$1,200</p>
-                  <p class="text-xs text-slate-500">USD</p>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg">
-                    <AlertCircle class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">No Receipt</span>
-                  </div>
-                </div>
-
-                <div v-if="canEdit" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                    <Edit2 class="w-4 h-4" />
-                  </button>
-                  <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Add Expense Modal -->
     <Teleport to="body">
@@ -439,22 +246,31 @@
             <!-- Form -->
             <form @submit.prevent="handleAddExpense" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
               <!-- Error Message -->
-              <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                <p class="text-sm text-red-600">{{ error }}</p>
+              <div v-if="modalError" class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                <p class="text-sm text-red-600">{{ modalError }}</p>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <!-- Category -->
                 <div class="md:col-span-2">
-                  <label for="expense-category" class="block text-sm font-medium text-slate-700 mb-2">
-                    Category <span class="text-red-500">*</span>
-                  </label>
+                  <div class="flex items-center justify-between mb-2">
+                    <label for="expense-category" class="block text-sm font-medium text-slate-700">
+                      Category <span class="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      @click="openCreateCategoryModal"
+                      class="text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                    >
+                      + Create Category
+                    </button>
+                  </div>
                   <div class="relative">
                     <select
                       id="expense-category"
                       v-model="newExpense.category_id"
                       aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
                       required
                     >
                       <option value="">Select a category</option>
@@ -483,14 +299,14 @@
                     v-model="newExpense.description"
                     placeholder="E.g., Venue rental, Catering service..."
                     aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                     required
                   />
                 </div>
 
                 <!-- Amount -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label for="expense-amount" class="block text-sm font-medium text-slate-700 mb-2">
                     Amount <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
@@ -498,12 +314,14 @@
                       <DollarSign class="w-4 h-4 text-slate-400" />
                     </div>
                     <input
+                      id="expense-amount"
                       type="number"
                       v-model="newExpense.amount"
                       placeholder="0.00"
                       step="0.01"
                       min="0.01"
-                      class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                      aria-required="true"
+                      class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                       required
                     />
                   </div>
@@ -511,17 +329,24 @@
 
                 <!-- Currency -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label for="expense-currency" class="block text-sm font-medium text-slate-700 mb-2">
                     Currency <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
+                      id="expense-currency"
                       v-model="newExpense.currency"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      aria-required="true"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
                       required
                     >
-                      <option value="USD">USD - US Dollar</option>
-                      <option value="KHR">KHR - Cambodian Riel</option>
+                      <option
+                        v-for="currency in SUPPORTED_CURRENCIES"
+                        :key="currency.code"
+                        :value="currency.code"
+                      >
+                        {{ currency.name }}
+                      </option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <ChevronDown class="w-4 h-4 text-slate-500" />
@@ -531,35 +356,40 @@
 
                 <!-- Date -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label for="expense-date" class="block text-sm font-medium text-slate-700 mb-2">
                     Date <span class="text-red-500">*</span>
                   </label>
                   <input
+                    id="expense-date"
                     type="date"
                     v-model="newExpense.date"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    aria-required="true"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                     required
                   />
                 </div>
 
                 <!-- Payment Method -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                  <label for="expense-payment-method" class="block text-sm font-medium text-slate-700 mb-2">
                     Payment Method <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
+                      id="expense-payment-method"
                       v-model="newExpense.payment_method"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      aria-required="true"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
                       required
                     >
                       <option value="">Select payment method</option>
-                      <option value="cash">Cash</option>
-                      <option value="bank_transfer">Bank Transfer</option>
-                      <option value="credit_card">Credit Card</option>
-                      <option value="mobile_payment">Mobile Payment</option>
-                      <option value="check">Check</option>
-                      <option value="other">Other</option>
+                      <option
+                        v-for="method in PAYMENT_METHOD_OPTIONS"
+                        :key="method.value"
+                        :value="method.value"
+                      >
+                        {{ method.label }}
+                      </option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <ChevronDown class="w-4 h-4 text-slate-500" />
@@ -590,12 +420,13 @@
                   <div v-show="additionalDetailsOpen" id="additional-details-section" class="px-4 pb-4 space-y-3">
                     <!-- Paid To -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Paid To (Vendor/Recipient)</label>
+                      <label for="expense-paid-to" class="block text-sm font-medium text-slate-700 mb-2">Paid To (Vendor/Recipient)</label>
                       <input
+                        id="expense-paid-to"
                         type="text"
                         v-model="newExpense.paid_to"
                         placeholder="E.g., Luxury Hotel Group, Premium Catering Co."
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                       />
                     </div>
 
@@ -630,12 +461,13 @@
 
                     <!-- Notes -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                      <label for="expense-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
                       <textarea
+                        id="expense-notes"
                         v-model="newExpense.notes"
                         rows="3"
                         placeholder="Add any additional notes about this expense..."
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
                       ></textarea>
                     </div>
                   </div>
@@ -686,6 +518,8 @@
       <Transition name="toast">
         <div
           v-if="showSuccessToast"
+          role="status"
+          aria-live="polite"
           class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
         >
           <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
@@ -699,7 +533,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import {
   Plus,
   Search,
@@ -728,10 +562,16 @@ import {
   type CreateExpenseRecordRequest
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
-import { formatPaymentMethod } from '@/constants/paymentMethods'
+import { useExpenseModal } from '@/composables/useExpenseModal'
+import { useSuccessToast } from '@/composables/useSuccessToast'
+import { useFileUpload } from '@/composables/useFileUpload'
+import { useOptimisticUpdate } from '@/composables/useOptimisticUpdate'
+import { formatPaymentMethod, PAYMENT_METHOD_OPTIONS } from '@/constants/paymentMethods'
+import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/constants/currencies'
 import { getErrorMessage } from '@/utils/errorMessages'
-import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
+import FilterMenu from '@/components/FilterMenu.vue'
+import ExpenseModal from './ExpenseModal.vue'
 
 interface Props {
   eventId: string
@@ -740,28 +580,26 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Emits
+const emit = defineEmits<{
+  'create-category': []
+}>()
+
 const loading = ref(false)
 const error = ref<string | null>(null)
 const expenses = ref<ExpenseRecord[]>([])
 const categories = ref<ExpenseCategory[]>([])
 const searchQuery = ref('')
 const activeFilter = ref('all')
-const showAddExpenseModal = ref(false)
-const showSuccessToast = ref(false)
-const successMessage = ref('')
-const submitting = ref(false)
 const editingExpense = ref<ExpenseRecord | null>(null)
 const deletingExpense = ref<ExpenseRecord | null>(null)
-const selectedFile = ref<File | null>(null)
-const receiptInput = ref<HTMLInputElement | null>(null)
 const additionalDetailsOpen = ref(false)
 
-// Focus trap for modals (accessibility)
-const addModalRef = ref<HTMLElement>()
-const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
-  immediate: false,
-  escapeDeactivates: true
-})
+// Use composables
+const { isModalOpen: showAddExpenseModal, modalRef: addModalRef, submitting, error: modalError, openModal, closeModal: closeExpenseModal } = useExpenseModal()
+const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
+const { selectedFile, fileInput: receiptInput, handleFileChange, clearFile } = useFileUpload()
+const { performUpdate } = useOptimisticUpdate(expenses)
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -788,7 +626,7 @@ const newExpense = ref({
   category_id: '',
   description: '',
   amount: null as number | null,
-  currency: 'USD' as 'USD' | 'KHR',
+  currency: 'USD' as CurrencyCode,
   date: new Date().toISOString().split('T')[0],
   payment_method: '' as 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other' | '',
   paid_to: '',
@@ -819,23 +657,6 @@ const filteredExpenses = computed(() => {
   return result
 })
 
-// Activate/deactivate focus trap when modals open/close
-watch(showAddExpenseModal, async (isOpen) => {
-  if (isOpen) {
-    await nextTick()
-    activateAddModal()
-  } else {
-    deactivateAddModal()
-  }
-})
-
-const showSuccess = (message: string) => {
-  successMessage.value = message
-  showSuccessToast.value = true
-  setTimeout(() => {
-    showSuccessToast.value = false
-  }, 3000)
-}
 
 const loadExpenses = async () => {
   loading.value = true
@@ -870,10 +691,10 @@ const loadCategories = async () => {
 }
 
 const closeModal = () => {
-  showAddExpenseModal.value = false
+  closeExpenseModal()
   editingExpense.value = null
   error.value = null
-  selectedFile.value = null
+  clearFile()
   newExpense.value = {
     category_id: '',
     description: '',
@@ -899,28 +720,27 @@ const editExpense = (expense: ExpenseRecord) => {
     paid_to: expense.paid_to || '',
     notes: expense.notes || ''
   }
-  showAddExpenseModal.value = true
+  openModal()
 }
 
 const confirmDeleteExpense = (expense: ExpenseRecord) => {
   deletingExpense.value = expense
 }
 
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    selectedFile.value = target.files[0]
-  }
-}
-
 const handleAddExpense = async () => {
   if (!newExpense.value.category_id || !newExpense.value.description || !newExpense.value.amount || !newExpense.value.date || !newExpense.value.payment_method) {
-    error.value = 'Please fill in all required fields'
+    modalError.value = 'Please fill in all required fields'
     return
   }
 
   const categoryId = parseInt(newExpense.value.category_id)
   const isEditing = !!editingExpense.value
+  const categoryInfo = categories.value.find(c => c.id === categoryId)
+
+  if (!categoryInfo) {
+    modalError.value = 'Invalid category selected'
+    return
+  }
 
   // API expects both 'category' and 'category_id' fields (backend requirement)
   const requestData: CreateExpenseRecordRequest = {
@@ -935,128 +755,97 @@ const handleAddExpense = async () => {
     notes: newExpense.value.notes || undefined
   }
 
-  // OPTIMISTIC UPDATE: Update UI immediately
-  const backup = [...expenses.value]
-  const categoryInfo = categories.value.find(c => c.id === categoryId)
-
+  // Prepare optimistic data
+  let optimisticData: ExpenseRecord[]
   if (isEditing && editingExpense.value) {
     // Update existing expense in the list
     const index = expenses.value.findIndex(e => e.id === editingExpense.value!.id)
-    if (index !== -1 && categoryInfo) {
-      expenses.value[index] = {
+    if (index !== -1) {
+      optimisticData = [...expenses.value]
+      optimisticData[index] = {
         ...editingExpense.value,
         ...requestData,
         category: categoryId,
         category_info: categoryInfo,
-        receipt: selectedFile.value ? URL.createObjectURL(selectedFile.value) : editingExpense.value.receipt
+        // Don't create Object URL - will be handled by server response
+        receipt: editingExpense.value.receipt
       } as ExpenseRecord
+    } else {
+      optimisticData = expenses.value
     }
-    showSuccess('Expense updated successfully!')
-  } else if (categoryInfo) {
-    // Add temporary expense with _temp flag
-    const tempExpense: ExpenseRecord & { _temp?: boolean } = {
-      id: Date.now(), // Use numeric timestamp as temporary ID
+  } else {
+    // Add temporary expense
+    const tempExpense: ExpenseRecord = {
+      id: Date.now(), // Temporary numeric ID
       ...requestData,
       category: categoryId,
       category_info: categoryInfo,
-      receipt: selectedFile.value ? URL.createObjectURL(selectedFile.value) : null,
+      receipt: null, // Will be set by server
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      _temp: true
+      updated_at: new Date().toISOString()
     }
-    expenses.value = [tempExpense, ...expenses.value]
-    showSuccess('Expense added successfully!')
+    optimisticData = [tempExpense, ...expenses.value]
   }
 
   submitting.value = true
-  error.value = null
 
-  try {
-    if (import.meta.env.DEV) {
-      console.log('Submitting expense data:', requestData, 'Receipt:', selectedFile.value)
-    }
-
-    let response
-    if (isEditing && editingExpense.value) {
-      response = await expensesService.updateExpense(
-        props.eventId,
-        editingExpense.value.id,
-        requestData,
-        selectedFile.value || undefined
-      )
-    } else {
-      response = await expensesService.createExpense(
-        props.eventId,
-        requestData,
-        selectedFile.value || undefined
-      )
-    }
-
-    if (import.meta.env.DEV) {
-      console.log('Expense API response:', response)
-    }
-
-    if (response.success) {
-      // Replace with real data from server
-      await loadExpenses()
-      closeModal() // Close modal only on success
-    } else {
-      // ROLLBACK: Restore original data on error
-      expenses.value = backup
-
-      // Display specific field errors if available
-      if (response.errors) {
-        const errorMessages = Object.entries(response.errors)
-          .map(([field, messages]: [string, string[] | string]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
-          .join('; ')
-        error.value = errorMessages || response.message || 'Failed to save expense'
-      } else {
-        error.value = response.message || 'Failed to save expense'
+  const success = await performUpdate(
+    async () => {
+      if (import.meta.env.DEV) {
+        console.log('Submitting expense data:', requestData, 'Receipt:', selectedFile.value)
       }
+
+      const response = isEditing && editingExpense.value
+        ? await expensesService.updateExpense(props.eventId, editingExpense.value.id, requestData, selectedFile.value || undefined)
+        : await expensesService.createExpense(props.eventId, requestData, selectedFile.value || undefined)
+
+      if (import.meta.env.DEV) {
+        console.log('Expense API response:', response)
+      }
+
+      return response
+    },
+    optimisticData,
+    {
+      onSuccess: async () => {
+        await loadExpenses()
+        showSuccess(isEditing ? 'Expense updated successfully!' : 'Expense added successfully!')
+        closeModal()
+      },
+      onError: (errorMsg) => {
+        modalError.value = errorMsg
+      },
+      errorContext: isEditing ? 'update expense' : 'create expense'
     }
-  } catch (err) {
-    // ROLLBACK: Restore original data on error
-    expenses.value = backup
-    error.value = getErrorMessage(err, isEditing ? 'update expense' : 'create expense')
-    console.error('Error saving expense:', err)
-  } finally {
-    submitting.value = false
-  }
+  )
+
+  submitting.value = false
 }
 
 const handleDelete = async () => {
   if (!deletingExpense.value) return
 
-  // OPTIMISTIC UPDATE: Remove from UI immediately
-  const backup = [...expenses.value]
   const deletedId = deletingExpense.value.id
-  const deletedDescription = deletingExpense.value.description
+  const optimisticData = expenses.value.filter(expense => expense.id !== deletedId)
 
-  expenses.value = expenses.value.filter(expense => expense.id !== deletedId)
   deletingExpense.value = null
-  showSuccess('Expense deleted successfully!')
-
   submitting.value = true
 
-  try {
-    const response = await expensesService.deleteExpense(
-      props.eventId,
-      deletedId
-    )
-
-    if (!response.success) {
-      // ROLLBACK: Restore on error
-      expenses.value = backup
-      error.value = response.message || `Failed to delete "${deletedDescription}"`
+  await performUpdate(
+    async () => await expensesService.deleteExpense(props.eventId, deletedId),
+    optimisticData,
+    {
+      onSuccess: () => {
+        showSuccess('Expense deleted successfully!')
+      },
+      onError: (errorMsg) => {
+        error.value = errorMsg
+      },
+      errorContext: 'delete expense'
     }
-  } catch (err) {
-    // ROLLBACK: Restore on error
-    expenses.value = backup
-    error.value = getErrorMessage(err, 'delete expense')
-    console.error('Error deleting expense:', err)
-  } finally {
-    submitting.value = false
-  }
+  )
+
+  submitting.value = false
 }
 
 onMounted(async () => {
@@ -1064,18 +853,23 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Clean up modals and toasts to prevent memory leaks
-  showAddExpenseModal.value = false
+  // Clean up state to prevent memory leaks
   deletingExpense.value = null
-  showSuccessToast.value = false
   editingExpense.value = null
-  selectedFile.value = null
 })
+
+// Open create category modal (emit to parent)
+const openCreateCategoryModal = () => {
+  emit('create-category')
+}
 
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openAddExpenseModal: () => {
-    showAddExpenseModal.value = true
+    openModal()
+  },
+  reloadCategories: () => {
+    loadCategories()
   }
 })
 </script>

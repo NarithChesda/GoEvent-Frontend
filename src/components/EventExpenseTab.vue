@@ -49,6 +49,7 @@
         ref="budgetsViewRef"
         :event-id="eventId"
         :can-edit="canEdit"
+        @create-category="handleCreateCategory"
       />
 
       <!-- Expenses View -->
@@ -57,12 +58,14 @@
         ref="expensesViewRef"
         :event-id="eventId"
         :can-edit="canEdit"
+        @create-category="handleCreateCategory"
       />
 
       <!-- Categories View -->
       <ExpenseCategoriesView
         v-if="activeSubTab === 'categories'"
         ref="categoriesViewRef"
+        @category-updated="handleCategoryUpdated"
       />
     </div>
   </div>
@@ -96,6 +99,17 @@ const subTabs = [
 const budgetsViewRef = ref<InstanceType<typeof ExpenseBudgetsView> | null>(null)
 const expensesViewRef = ref<InstanceType<typeof ExpenseRecordsView> | null>(null)
 const categoriesViewRef = ref<InstanceType<typeof ExpenseCategoriesView> | null>(null)
+
+// Handle create category from expense modal
+const handleCreateCategory = () => {
+  categoriesViewRef.value?.openAddCategoryModal()
+}
+
+// Handle category updated event - reload categories in expenses and budgets views
+const handleCategoryUpdated = () => {
+  expensesViewRef.value?.reloadCategories()
+  budgetsViewRef.value?.reloadCategories()
+}
 
 // Expose methods for parent component (Smart FAB) and sub-tab tracking
 defineExpose({

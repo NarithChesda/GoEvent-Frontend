@@ -120,156 +120,105 @@
     </div>
 
     <!-- Add/Edit Category Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showAddCategoryModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
-          @click.self="closeModal"
-        >
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <ExpenseModal
+      :show="showAddCategoryModal"
+      :title="editingCategory ? 'Edit Category' : 'Create Category'"
+      :icon="Palette"
+      icon-bg-class="bg-purple-50 text-purple-600"
+      icon-size-class="w-5 h-5"
+      aria-label-id="add-category-modal-title"
+      :error="modalError"
+      :submitting="submitting"
+      :submit-text="editingCategory ? 'Update Category' : 'Create Category'"
+      z-index-class="z-[60]"
+      @close="closeModal"
+      @submit="handleSubmit"
+    >
+      <!-- Category Name -->
+      <div>
+        <label for="category-name" class="block text-sm font-medium text-slate-700 mb-2">
+          Category Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="category-name"
+          type="text"
+          v-model="formData.name"
+          placeholder="E.g., Venue, Catering, Photography..."
+          maxlength="100"
+          aria-required="true"
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+          required
+        />
+      </div>
 
-          <div class="flex min-h-full items-center justify-center p-4">
-            <div
-              ref="addModalRef"
-              role="dialog"
-              aria-labelledby="add-category-modal-title"
-              aria-modal="true"
-              class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-              @click.stop
+      <!-- Description -->
+      <div>
+        <label for="category-description" class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+        <textarea
+          id="category-description"
+          v-model="formData.description"
+          rows="3"
+          placeholder="Describe what expenses this category covers..."
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Color and Icon Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Category Color -->
+        <div>
+          <label for="categoryColor" class="block text-sm font-medium text-slate-700 mb-2">
+            Category Color
+          </label>
+          <div class="flex items-center gap-3">
+            <input
+              id="categoryColor"
+              v-model="formData.color"
+              type="color"
+              class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+            />
+            <input
+              id="categoryColorHex"
+              v-model="formData.color"
+              type="text"
+              placeholder="#3498db"
+              aria-label="Color hex value"
+              class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+            />
+          </div>
+        </div>
+
+        <!-- Icon Selection -->
+        <div>
+          <label for="category-icon" class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
+          <div class="relative">
+            <select
+              id="category-icon"
+              v-model="formData.icon"
+              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
             >
-              <!-- Header -->
-              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                      <Palette class="w-5 h-5" />
-                    </div>
-                    <h2 id="add-category-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">
-                      {{ editingCategory ? 'Edit Category' : 'Create Category' }}
-                    </h2>
-                  </div>
-                  <button
-                    @click="closeModal"
-                    aria-label="Close dialog"
-                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  >
-                    <X class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Form -->
-              <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
-                <!-- Error Message -->
-                <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <p class="text-sm text-red-600">{{ error }}</p>
-                </div>
-
-                <!-- Category Name -->
-                <div>
-                  <label for="category-name" class="block text-sm font-medium text-slate-700 mb-2">
-                    Category Name <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="category-name"
-                    type="text"
-                    v-model="formData.name"
-                    placeholder="E.g., Venue, Catering, Photography..."
-                    maxlength="100"
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                    required
-                  />
-                </div>
-
-                <!-- Description -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
-                  <textarea
-                    v-model="formData.description"
-                    rows="3"
-                    placeholder="Describe what expenses this category covers..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
-                  ></textarea>
-                </div>
-
-                <!-- Color and Icon Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <!-- Category Color -->
-                  <div>
-                    <label for="categoryColor" class="block text-sm font-medium text-slate-700 mb-2">
-                      Category Color
-                    </label>
-                    <div class="flex items-center gap-3">
-                      <input
-                        id="categoryColor"
-                        v-model="formData.color"
-                        type="color"
-                        class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
-                      />
-                      <input
-                        v-model="formData.color"
-                        type="text"
-                        placeholder="#3498db"
-                        class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Icon Selection -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
-                    <div class="relative">
-                      <select
-                        v-model="formData.icon"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
-                      >
-                        <option value="">Select an icon</option>
-                        <option value="fa-building">Building (fa-building)</option>
-                        <option value="fa-utensils">Utensils (fa-utensils)</option>
-                        <option value="fa-palette">Palette (fa-palette)</option>
-                        <option value="fa-camera">Camera (fa-camera)</option>
-                        <option value="fa-music">Music (fa-music)</option>
-                        <option value="fa-gift">Gift (fa-gift)</option>
-                        <option value="fa-car">Car (fa-car)</option>
-                        <option value="fa-hotel">Hotel (fa-hotel)</option>
-                      </select>
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <ChevronDown class="w-4 h-4 text-slate-500" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                  <button
-                    type="button"
-                    @click="closeModal"
-                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                    :disabled="submitting"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    :disabled="submitting"
-                  >
-                    <span
-                      v-if="submitting"
-                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                    ></span>
-                    {{ submitting ? 'Saving...' : (editingCategory ? 'Create Category' : 'Update Category') }}
-                  </button>
-                </div>
-              </form>
+              <option value="">Select an icon</option>
+              <option value="fa-building">Building</option>
+              <option value="fa-utensils">Food & Catering</option>
+              <option value="fa-palette">Decoration</option>
+              <option value="fa-camera">Photography</option>
+              <option value="fa-music">Entertainment</option>
+              <option value="fa-gift">Gifts & Favors</option>
+              <option value="fa-car">Transportation</option>
+              <option value="fa-hotel">Venue & Lodging</option>
+              <option value="fa-shirt">Attire & Costumes</option>
+              <option value="fa-lightbulb">Lighting & AV</option>
+              <option value="fa-clipboard">Planning & Coordination</option>
+              <option value="fa-megaphone">Marketing & Promotion</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <ChevronDown class="w-4 h-4 text-slate-500" />
             </div>
           </div>
         </div>
-      </Transition>
-    </Teleport>
+      </div>
+    </ExpenseModal>
+
 
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
@@ -287,6 +236,8 @@
       <Transition name="toast">
         <div
           v-if="showSuccessToast"
+          role="status"
+          aria-live="polite"
           class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
         >
           <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
@@ -300,7 +251,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import {
   Plus,
   Edit2,
@@ -315,26 +266,28 @@ import {
 } from 'lucide-vue-next'
 import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
+import { useExpenseModal } from '@/composables/useExpenseModal'
+import { useSuccessToast } from '@/composables/useSuccessToast'
+import { useOptimisticUpdate } from '@/composables/useOptimisticUpdate'
 import { getErrorMessage } from '@/utils/errorMessages'
-import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
+import ExpenseModal from './ExpenseModal.vue'
+
+// Emits
+const emit = defineEmits<{
+  'category-updated': []
+}>()
 
 const loading = ref(false)
 const error = ref<string | null>(null)
 const categories = ref<ExpenseCategory[]>([])
-const showAddCategoryModal = ref(false)
-const showSuccessToast = ref(false)
-const successMessage = ref('')
-const submitting = ref(false)
 const editingCategory = ref<ExpenseCategory | null>(null)
 const deletingCategory = ref<ExpenseCategory | null>(null)
 
-// Focus trap for modals (accessibility)
-const addModalRef = ref<HTMLElement>()
-const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
-  immediate: false,
-  escapeDeactivates: true
-})
+// Use composables
+const { isModalOpen: showAddCategoryModal, modalRef: addModalRef, submitting, error: modalError, openModal, closeModal: closeCategoryModal } = useExpenseModal()
+const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
+const { performUpdate } = useOptimisticUpdate(categories)
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -346,34 +299,6 @@ const formData = ref({
   color: '#3498db'
 })
 
-const colorOptions = [
-  '#e74c3c', // Red
-  '#3498db', // Blue
-  '#9b59b6', // Purple
-  '#f1c40f', // Yellow
-  '#e67e22', // Orange
-  '#1abc9c', // Turquoise
-  '#2ecc71', // Green
-  '#95a5a6', // Gray
-  '#34495e', // Dark Blue
-  '#e91e63', // Pink
-  '#00bcd4', // Cyan
-  '#ff9800', // Amber
-  '#8bc34a', // Light Green
-  '#ff5722', // Deep Orange
-  '#607d8b', // Blue Gray
-  '#673ab7', // Deep Purple
-]
-
-// Activate/deactivate focus trap when modals open/close
-watch(showAddCategoryModal, async (isOpen) => {
-  if (isOpen) {
-    await nextTick()
-    activateAddModal()
-  } else {
-    deactivateAddModal()
-  }
-})
 
 const loadCategories = async () => {
   loading.value = true
@@ -395,16 +320,8 @@ const loadCategories = async () => {
   }
 }
 
-const showSuccess = (message: string) => {
-  successMessage.value = message
-  showSuccessToast.value = true
-  setTimeout(() => {
-    showSuccessToast.value = false
-  }, 3000)
-}
-
 const closeModal = () => {
-  showAddCategoryModal.value = false
+  closeCategoryModal()
   editingCategory.value = null
   formData.value = {
     name: '',
@@ -422,7 +339,7 @@ const editCategory = (category: ExpenseCategory) => {
     icon: category.icon || '',
     color: category.color
   }
-  showAddCategoryModal.value = true
+  openModal()
 }
 
 const handleSubmit = async () => {
@@ -477,6 +394,7 @@ const handleSubmit = async () => {
     if (response.success) {
       // Replace with real data from server
       await loadCategories()
+      emit('category-updated') // Notify parent that categories have changed
       closeModal() // Close modal only on success
     } else {
       // ROLLBACK: Restore original data on error
@@ -534,17 +452,15 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // Clean up modals and toasts to prevent memory leaks
-  showAddCategoryModal.value = false
+  // Clean up state to prevent memory leaks
   deletingCategory.value = null
-  showSuccessToast.value = false
   editingCategory.value = null
 })
 
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openAddCategoryModal: () => {
-    showAddCategoryModal.value = true
+    openModal()
   }
 })
 </script>

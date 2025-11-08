@@ -99,7 +99,7 @@
           <!-- Budget Amount -->
           <div class="flex items-center justify-between">
             <span class="text-sm text-slate-500">Budgeted</span>
-            <span class="text-lg font-bold text-slate-900">{{ budget.currency === 'USD' ? '$' : '៛' }}{{ parseFloat(budget.budgeted_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            <span class="text-lg font-bold text-slate-900">{{ SUPPORTED_CURRENCIES.find(c => c.code === budget.currency)?.symbol || '$' }}{{ parseFloat(budget.budgeted_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
           </div>
 
           <!-- Spent Amount -->
@@ -109,7 +109,7 @@
               class="text-lg font-bold"
               :class="budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'"
             >
-              {{ budget.currency === 'USD' ? '$' : '៛' }}{{ parseFloat(budget.spent_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+              {{ SUPPORTED_CURRENCIES.find(c => c.code === budget.currency)?.symbol || '$' }}{{ parseFloat(budget.spent_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
             </span>
           </div>
 
@@ -123,7 +123,7 @@
               class="text-lg font-bold"
               :class="budget.is_over_budget ? 'text-red-600' : 'text-blue-600'"
             >
-              {{ budget.currency === 'USD' ? '$' : '៛' }}{{ Math.abs(parseFloat(budget.remaining_amount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+              {{ SUPPORTED_CURRENCIES.find(c => c.code === budget.currency)?.symbol || '$' }}{{ Math.abs(parseFloat(budget.remaining_amount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
             </span>
           </div>
 
@@ -183,160 +183,117 @@
     </div>
 
     <!-- Add Budget Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showAddBudgetModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
-          @click.self="closeModal"
-        >
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-
-          <div class="flex min-h-full items-center justify-center p-4">
-            <div
-              ref="addModalRef"
-              role="dialog"
-              aria-labelledby="add-budget-modal-title"
-              aria-modal="true"
-              class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-              @click.stop
+    <ExpenseModal
+      :show="showAddBudgetModal"
+      :title="editingBudget ? 'Edit Budget' : 'Add Budget'"
+      :icon="DollarSign"
+      icon-bg-class="bg-emerald-50 text-emerald-600"
+      aria-label-id="add-budget-modal-title"
+      :error="modalError"
+      :submitting="submitting"
+      :submit-text="editingBudget ? 'Update Budget' : 'Add Budget'"
+      @close="closeModal"
+      @submit="handleAddBudget"
+    >
+      <!-- Category Selection -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label for="budget-category" class="block text-sm font-medium text-slate-700">
+            Category <span class="text-red-500">*</span>
+          </label>
+          <button
+            type="button"
+            @click="openCreateCategoryModal"
+            class="text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors"
+          >
+            + Create Category
+          </button>
+        </div>
+        <div class="relative">
+          <select
+            id="budget-category"
+            v-model="newBudget.category_id"
+            aria-required="true"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
+            required
+          >
+            <option value="">Select a category</option>
+            <option
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
             >
-              <!-- Header -->
-              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <DollarSign class="w-4.5 h-4.5" />
-                    </div>
-                    <h2 id="add-budget-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">
-                      {{ editingBudget ? 'Edit Budget' : 'Add Budget' }}
-                    </h2>
-                  </div>
-                  <button
-                    @click="closeModal"
-                    aria-label="Close dialog"
-                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  >
-                    <X class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Form -->
-              <form @submit.prevent="handleAddBudget" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
-                <!-- Error Message -->
-                <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <p class="text-sm text-red-600">{{ error }}</p>
-                </div>
-
-                <!-- Category Selection -->
-                <div>
-                  <label for="budget-category" class="block text-sm font-medium text-slate-700 mb-2">
-                    Category <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <select
-                      id="budget-category"
-                      v-model="newBudget.category_id"
-                      aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
-                      required
-                    >
-                      <option value="">Select a category</option>
-                      <option
-                        v-for="category in categories"
-                        :key="category.id"
-                        :value="category.id"
-                      >
-                        {{ category.name }}
-                      </option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Budget Amount -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Budget Amount <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign class="w-4 h-4 text-slate-400" />
-                    </div>
-                    <input
-                      type="number"
-                      v-model="newBudget.budgeted_amount"
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
-                      class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <!-- Currency -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Currency <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <select
-                      v-model="newBudget.currency"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
-                      required
-                    >
-                      <option value="USD">USD - US Dollar</option>
-                      <option value="KHR">KHR - Cambodian Riel</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Notes -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-                  <textarea
-                    v-model="newBudget.notes"
-                    rows="3"
-                    placeholder="Add any notes about this budget..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-                  ></textarea>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                  <button
-                    type="button"
-                    @click="closeModal"
-                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                    :disabled="submitting"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    :disabled="submitting"
-                  >
-                    <span
-                      v-if="submitting"
-                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                    ></span>
-                    {{ submitting ? 'Saving...' : (editingBudget ? 'Update Budget' : 'Add Budget') }}
-                  </button>
-                </div>
-              </form>
-            </div>
+              {{ category.name }}
+            </option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <ChevronDown class="w-4 h-4 text-slate-500" />
           </div>
         </div>
-      </Transition>
-    </Teleport>
+      </div>
+
+      <!-- Budget Amount -->
+      <div>
+        <label for="budget-amount" class="block text-sm font-medium text-slate-700 mb-2">
+          Budget Amount <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <DollarSign class="w-4 h-4 text-slate-400" />
+          </div>
+          <input
+            id="budget-amount"
+            type="number"
+            v-model="newBudget.budgeted_amount"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            aria-required="true"
+            class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Currency -->
+      <div>
+        <label for="budget-currency" class="block text-sm font-medium text-slate-700 mb-2">
+          Currency <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <select
+            id="budget-currency"
+            v-model="newBudget.currency"
+            aria-required="true"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
+            required
+          >
+            <option
+              v-for="currency in SUPPORTED_CURRENCIES"
+              :key="currency.code"
+              :value="currency.code"
+            >
+              {{ currency.name }}
+            </option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <ChevronDown class="w-4 h-4 text-slate-500" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label for="budget-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+        <textarea
+          id="budget-notes"
+          v-model="newBudget.notes"
+          rows="3"
+          placeholder="Add any notes about this budget..."
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+        ></textarea>
+      </div>
+    </ExpenseModal>
 
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
@@ -354,6 +311,8 @@
       <Transition name="toast">
         <div
           v-if="showSuccessToast"
+          role="status"
+          aria-live="polite"
           class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
         >
           <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
@@ -367,7 +326,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import {
   Plus,
   Edit2,
@@ -390,9 +349,13 @@ import {
   type CreateExpenseBudgetRequest
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
+import { useExpenseModal } from '@/composables/useExpenseModal'
+import { useSuccessToast } from '@/composables/useSuccessToast'
+import { useOptimisticUpdate } from '@/composables/useOptimisticUpdate'
+import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/constants/currencies'
 import { getErrorMessage } from '@/utils/errorMessages'
-import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
+import ExpenseModal from './ExpenseModal.vue'
 
 interface Props {
   eventId: string
@@ -401,23 +364,22 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Emits
+const emit = defineEmits<{
+  'create-category': []
+}>()
+
 const loading = ref(false)
 const error = ref<string | null>(null)
 const budgets = ref<ExpenseBudget[]>([])
 const categories = ref<ExpenseCategory[]>([])
-const showAddBudgetModal = ref(false)
-const showSuccessToast = ref(false)
-const successMessage = ref('')
-const submitting = ref(false)
 const editingBudget = ref<ExpenseBudget | null>(null)
 const deletingBudget = ref<ExpenseBudget | null>(null)
 
-// Focus trap for modals (accessibility)
-const addModalRef = ref<HTMLElement>()
-const { activate: activateAddModal, deactivate: deactivateAddModal } = useFocusTrap(addModalRef, {
-  immediate: false,
-  escapeDeactivates: true
-})
+// Use composables
+const { isModalOpen: showAddBudgetModal, modalRef: addModalRef, submitting, error: modalError, openModal, closeModal: closeBudgetModal } = useExpenseModal()
+const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
+const { performUpdate } = useOptimisticUpdate(budgets)
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -425,27 +387,9 @@ const { getIconComponent } = useExpenseIcons()
 const newBudget = ref({
   category_id: '',
   budgeted_amount: null as number | null,
-  currency: 'USD' as 'USD' | 'KHR',
+  currency: 'USD' as CurrencyCode,
   notes: ''
 })
-
-// Activate/deactivate focus trap when modals open/close
-watch(showAddBudgetModal, async (isOpen) => {
-  if (isOpen) {
-    await nextTick()
-    activateAddModal()
-  } else {
-    deactivateAddModal()
-  }
-})
-
-const showSuccess = (message: string) => {
-  successMessage.value = message
-  showSuccessToast.value = true
-  setTimeout(() => {
-    showSuccessToast.value = false
-  }, 3000)
-}
 
 const loadBudgets = async () => {
   loading.value = true
@@ -480,9 +424,8 @@ const loadCategories = async () => {
 }
 
 const closeModal = () => {
-  showAddBudgetModal.value = false
+  closeBudgetModal() // This already clears modalError via composable
   editingBudget.value = null
-  error.value = null
   newBudget.value = {
     category_id: '',
     budgeted_amount: null,
@@ -493,14 +436,13 @@ const closeModal = () => {
 
 const editBudget = (budget: ExpenseBudget) => {
   editingBudget.value = budget
-  error.value = null
   newBudget.value = {
     category_id: budget.category.toString(),
     budgeted_amount: parseFloat(budget.budgeted_amount),
     currency: budget.currency,
     notes: budget.notes || ''
   }
-  showAddBudgetModal.value = true
+  openModal()
 }
 
 const confirmDeleteBudget = (budget: ExpenseBudget) => {
@@ -650,17 +592,23 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Clean up modals and toasts to prevent memory leaks
-  showAddBudgetModal.value = false
+  // Clean up state to prevent memory leaks
   deletingBudget.value = null
-  showSuccessToast.value = false
   editingBudget.value = null
 })
+
+// Open create category modal (emit to parent)
+const openCreateCategoryModal = () => {
+  emit('create-category')
+}
 
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openAddBudgetModal: () => {
-    showAddBudgetModal.value = true
+    openModal()
+  },
+  reloadCategories: () => {
+    loadCategories()
   }
 })
 </script>
