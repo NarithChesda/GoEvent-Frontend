@@ -77,7 +77,7 @@
             >
               <RouterLink
                 to="/events"
-                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-sm sm:text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center flex-1 sm:flex-none"
+                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-full shadow-lg shadow-emerald-500/25 text-sm sm:text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center flex-1 sm:flex-none"
               >
                 <span class="hidden sm:inline">Explore Our Events</span><span class="sm:hidden">Explore Events</span>
                 <ArrowRight
@@ -86,7 +86,7 @@
               </RouterLink>
               <RouterLink
                 to="/"
-                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg border-2 border-[#87CEEB] text-sm sm:text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group flex-1 sm:flex-none"
+                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-full border-2 border-[#87CEEB] text-sm sm:text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group flex-1 sm:flex-none"
               >
                 <Heart
                   class="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
@@ -742,7 +742,7 @@
                 href="https://t.me/goevent_careers"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/10 flex items-center justify-center"
+                class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/10 flex items-center justify-center"
               >
                 View Open Positions
                 <Users
@@ -751,7 +751,7 @@
               </a>
               <RouterLink
                 to="/"
-                class="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+                class="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-bold px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
               >
                 Back to Home
               </RouterLink>

@@ -31,8 +31,8 @@
       >
 
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
-          <div class="lg:col-span-7 space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 xl:gap-12 items-center">
+          <div class="space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
             <div class="space-y-4 sm:space-y-6">
               <div
                 class="inline-flex items-center bg-gradient-to-r from-emerald-500/20 to-sky-500/20 backdrop-blur-sm border border-white/30 text-[#1873cc] text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 sm:py-3 rounded-full animate-fade-in animation-delay-100 shadow-lg shadow-[#87CEEB]/30"
@@ -55,7 +55,7 @@
             >
               <button
                 @click="handleStartCreatingEvents"
-                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg shadow-lg shadow-emerald-500/25 text-sm sm:text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center flex-1 sm:flex-none"
+                class="group bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-full shadow-lg shadow-emerald-500/25 text-sm sm:text-base transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md text-center flex-1 sm:flex-none"
               >
                 <span class="hidden sm:inline">Start Creating Events</span><span class="sm:hidden">Create Events</span>
                 <ArrowRight
@@ -64,7 +64,7 @@
               </button>
               <button
                 @click="scrollToDemo"
-                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-lg border-2 border-[#87CEEB] text-sm sm:text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group flex-1 sm:flex-none"
+                class="flex items-center justify-center bg-white text-[#1e90ff] font-semibold px-4 py-3 sm:px-8 sm:py-4 rounded-full border-2 border-[#87CEEB] text-sm sm:text-base shadow-sm transition-all duration-200 hover:bg-[#E6F4FF] hover:border-[#5eb3f6] hover:shadow-md hover:scale-[1.02] active:bg-[#B0E0E6] active:scale-[0.98] group flex-1 sm:flex-none"
               >
                 <Play
                   class="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2 group-hover:scale-110 transition-transform duration-300"
@@ -96,106 +96,15 @@
             </div>
           </div>
 
-          <div class="hidden lg:block lg:col-span-5 relative animate-slide-in-right animation-delay-200">
-            <div class="relative max-w-lg lg:max-w-full mx-auto">
-              <!-- Main Dashboard Card -->
-              <div
-                class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-[#1e90ff]/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
-              >
-                <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
-                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">
-                    Event Dashboard
-                  </h3>
-                  <div class="flex items-center space-x-2">
-                    <div
-                      class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"
-                    ></div>
-                    <span class="text-xs sm:text-sm text-gray-600 font-medium">Live</span>
-                  </div>
-                </div>
-
-                <div
-                  class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-4 xl:gap-6 mb-4 sm:mb-6 lg:mb-6 xl:mb-8"
-                >
-                  <div
-                    class="bg-gradient-to-br from-[#E6F4FF] to-[#B0E0E6] rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-[#87CEEB]/50"
-                  >
-                    <div
-                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-[#1e90ff] mb-1 sm:mb-2"
-                    >
-                      1,247
-                    </div>
-                    <div class="text-xs sm:text-sm text-[#1873cc] font-medium">Total Attendees</div>
-                    <div class="text-xs text-green-600 font-medium mt-1">↗ +23% this week</div>
-                  </div>
-                  <div
-                    class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-4 xl:p-6 border border-emerald-200/50"
-                  >
-                    <div
-                      class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-emerald-600 mb-1 sm:mb-2"
-                    >
-                      98.5%
-                    </div>
-                    <div class="text-xs sm:text-sm text-emerald-700 font-medium">Satisfaction</div>
-                    <div class="text-xs text-green-600 font-medium mt-1">↗ +5.2% this month</div>
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700">Event Progress</span>
-                    <span class="text-sm font-bold text-gray-900">87%</span>
-                  </div>
-                  <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-3 rounded-full transition-all duration-1000"
-                      style="width: 87%"
-                    ></div>
-                  </div>
-
-                  <div class="flex justify-between items-center pt-4">
-                    <span class="text-xs text-gray-500">Next milestone in 3 days</span>
-                    <div class="flex space-x-1">
-                      <div class="w-2 h-2 bg-[#4fa3d9] rounded-full"></div>
-                      <div class="w-2 h-2 bg-[#5eb3f6] rounded-full"></div>
-                      <div class="w-2 h-2 bg-gray-200 rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Floating Cards -->
-              <div
-                class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-purple-100/50 p-3 sm:p-4 border border-purple-100/50 transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block"
-              >
-                <div class="flex items-center space-x-2">
-                  <div
-                    class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center"
-                  >
-                    <Bell class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <div class="text-xs font-medium text-gray-900">New RSVP</div>
-                    <div class="text-xs text-gray-500">Sarah joined your event</div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-orange-100/50 p-3 sm:p-4 border border-orange-100/50 transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block"
-              >
-                <div class="flex items-center space-x-2">
-                  <div
-                    class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center"
-                  >
-                    <Calendar class="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
-                  </div>
-                  <div>
-                    <div class="text-xs font-medium text-gray-900">Event Starting</div>
-                    <div class="text-xs text-gray-500">In 2 hours</div>
-                  </div>
-                </div>
-              </div>
+          <div class="hidden lg:block relative animate-slide-in-right animation-delay-200">
+            <div class="relative w-full lg:scale-125 lg:origin-center lg:translate-y-8">
+              <!-- Hero Image - Phone and Laptop -->
+              <img
+                :src="HeroDevicesImg"
+                alt="GoEvent platform on laptop and mobile devices showing guest management and analytics"
+                class="w-full h-auto drop-shadow-2xl hover:drop-shadow-3xl transition-all duration-300"
+                loading="eager"
+              />
             </div>
           </div>
         </div>
@@ -515,168 +424,6 @@
       :class="{ 'animate-fade-in-up': isVisible.pricing }"
     />
 
-    <!-- CTA Section -->
-    <section class="py-12 sm:py-16 md:py-20 bg-white relative overflow-hidden">
-      <!-- Background decoration -->
-      <div class="absolute inset-0 pointer-events-none">
-        <!-- Subtle gradient orbs -->
-        <div
-          class="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
-        ></div>
-        <div
-          class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
-        ></div>
-      </div>
-
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <!-- Floating Box Container -->
-        <div
-          class="bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-10 xl:p-12 shadow-2xl shadow-[#1e90ff]/20 backdrop-blur-sm border border-white/10"
-        >
-          <div class="grid lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-16 items-center">
-            <!-- Left side - Content -->
-            <div class="text-left">
-              <div
-                class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-4 sm:mb-5 md:mb-6"
-              >
-                <Sparkles class="h-3 w-3 sm:h-4 sm:w-4" />
-                Start Your Journey Today
-              </div>
-
-              <h2
-                class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 md:mb-5 leading-tight tracking-tight"
-              >
-                Ready to Transform Your
-                <span
-                  class="text-white bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400"
-
-                >
-                  Event Management?</span
-                >
-              </h2>
-
-              <p class="text-base sm:text-lg md:text-xl text-white/95 mb-5 sm:mb-6 md:mb-8 leading-relaxed">
-                Join thousands of event organizers who trust GoEvent to deliver exceptional
-                experiences. Start your free trial today and see the difference.
-              </p>
-
-              <!-- Stats -->
-              <div class="grid grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-6 sm:mb-7 md:mb-8">
-                <div class="text-center lg:text-left">
-                  <div
-                    class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1"
-                  >
-                    10K+
-                  </div>
-                  <div class="text-xs sm:text-sm md:text-base text-white/90">Events Created</div>
-                </div>
-                <div class="text-center lg:text-left">
-                  <div
-                    class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1"
-                  >
-                    99.9%
-                  </div>
-                  <div class="text-xs sm:text-sm md:text-base text-white/90">Uptime</div>
-                </div>
-                <div class="text-center lg:text-left">
-                  <div
-                    class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1"
-                  >
-                    24/7
-                  </div>
-                  <div class="text-xs sm:text-sm md:text-base text-white/90">Support</div>
-                </div>
-              </div>
-
-              <!-- Buttons -->
-              <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <RouterLink
-                  to="/signup"
-                  class="group bg-white hover:bg-[#E6F4FF] text-[#1e90ff] hover:text-[#1873cc] font-semibold px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-black/10 flex items-center justify-center"
-                >
-                  Start Your Free Trial
-                  <ArrowRight
-                    class="h-4 w-4 sm:h-5 sm:w-5 ml-1.5 sm:ml-2 group-hover:translate-x-1 transition-transform duration-300"
-                  />
-                </RouterLink>
-                <RouterLink
-                  to="/contact"
-                  class="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-semibold px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-200 hover:scale-[1.02] flex items-center justify-center"
-                >
-                  Talk to Sales
-                </RouterLink>
-              </div>
-            </div>
-
-            <!-- Right side - Visual Element -->
-            <div class="relative lg:pl-8 hidden lg:block">
-              <div class="relative">
-                <!-- Main feature card -->
-                <div
-                  class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-6 xl:p-8 shadow-2xl border border-white/50 transform hover:scale-105 transition-all duration-500"
-                >
-                  <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">
-                      GoEvent Dashboard
-                    </h3>
-                    <div class="flex items-center space-x-2">
-                      <div
-                        class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"
-                      ></div>
-                      <span class="text-xs sm:text-sm text-slate-600 font-medium">Live</span>
-                    </div>
-                  </div>
-
-                  <!-- Mock analytics -->
-                  <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                      <span class="text-sm sm:text-base text-slate-600">Active Events</span>
-                      <span class="text-sm sm:text-base font-bold text-slate-900">47</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-sm sm:text-base text-slate-600">Total Attendees</span>
-                      <span class="text-sm sm:text-base font-bold text-slate-900">2,847</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-sm sm:text-base text-slate-600">Success Rate</span>
-                      <span class="text-sm sm:text-base font-bold text-green-600">98.5%</span>
-                    </div>
-
-                    <!-- Progress bar -->
-                    <div class="mt-6">
-                      <div class="flex justify-between text-xs sm:text-sm mb-2">
-                        <span class="text-slate-600">Monthly Goal</span>
-                        <span class="text-slate-900 font-medium">87%</span>
-                      </div>
-                      <div class="w-full bg-slate-200 rounded-full h-2.5 sm:h-3">
-                        <div
-                          class="bg-gradient-to-r from-[#1e90ff] to-cyan-400 h-2.5 sm:h-3 rounded-full transition-all duration-1000"
-                          style="width: 87%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Floating elements -->
-                <div
-                  class="absolute -top-4 sm:-top-6 -right-4 sm:-right-6 bg-gradient-to-br from-[#1e90ff] to-cyan-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform rotate-3 hover:rotate-6 transition-transform duration-300 hidden xl:block"
-                >
-                  <Star class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                </div>
-
-                <div
-                  class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-gradient-to-br from-emerald-500 to-sky-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg transform -rotate-3 hover:-rotate-6 transition-transform duration-300 hidden xl:block"
-                >
-                  <Bell class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <Footer />
 
     <!-- Scroll to Top Button -->
@@ -695,12 +442,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
 import LogoPng from '@/assets/logo.png'
+import HeroDevicesImg from '@/assets/hero-devices.webp'
 import {
   Calendar,
   Users,
@@ -708,7 +456,6 @@ import {
   MessageSquare,
   MapPin,
   Camera,
-  Bell,
   Check,
   Star,
   Sparkles,

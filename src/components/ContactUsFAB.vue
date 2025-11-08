@@ -5,16 +5,21 @@
     target="_blank"
     rel="noopener noreferrer"
     :class="fabPositionClass"
-    class="fixed right-6 z-[60] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
+    class="fixed right-6 z-[60] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
     aria-label="Contact support"
   >
-    <MessageCircleQuestion class="w-6 h-6" />
+    <Send class="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" />
+    <div
+      class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+    >
+      Contact Us
+    </div>
   </a>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MessageCircleQuestion } from 'lucide-vue-next'
+import { Send } from 'lucide-vue-next'
 
 interface Props {
   smartFabVisible: boolean

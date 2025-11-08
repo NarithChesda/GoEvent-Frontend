@@ -17,44 +17,44 @@
 
         <!-- View Toggle -->
         <div class="flex justify-center mb-6 sm:mb-8 md:mb-10">
-          <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 w-full max-w-xl sm:max-w-2xl md:max-w-3xl px-4 sm:px-6">
+          <div class="inline-flex bg-white rounded-full p-1 border-2 border-slate-200 shadow-sm">
             <button
               @click="handleViewChange('my')"
-              :class="[
-                'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
-                currentView === 'my'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
-                  : 'bg-white/80 hover:bg-white shadow-emerald-500/20 tab-inactive'
-              ]"
+              class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
+              :class="currentView === 'my' ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
             >
-              <User class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0" />
-              <span>My Events</span>
+              <span
+                v-if="currentView === 'my'"
+                class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
+              ></span>
+              <User class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
+              <span class="relative z-10">My Events</span>
             </button>
 
             <button
               @click="handleViewChange('all')"
-              :class="[
-                'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
-                currentView === 'all'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
-                  : 'bg-white/80 hover:bg-white shadow-emerald-500/20 tab-inactive'
-              ]"
+              class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
+              :class="currentView === 'all' ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
             >
-              <Globe class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0" />
-              <span>Public Events</span>
+              <span
+                v-if="currentView === 'all'"
+                class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
+              ></span>
+              <Globe class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
+              <span class="relative z-10">Public Events</span>
             </button>
 
             <button
               @click="handleViewChange('registered')"
-              :class="[
-                'flex items-center justify-center px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium transition-all duration-300 backdrop-blur-sm border shadow-sm hover:shadow-lg',
-                currentView === 'registered'
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg border-transparent'
-                  : 'bg-white/80 hover:bg-white shadow-emerald-500/20 tab-inactive'
-              ]"
+              class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
+              :class="currentView === 'registered' ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
             >
-              <CheckCircle class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0" />
-              <span>Registered</span>
+              <span
+                v-if="currentView === 'registered'"
+                class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
+              ></span>
+              <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
+              <span class="relative z-10">Registered</span>
             </button>
           </div>
         </div>
