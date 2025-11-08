@@ -330,10 +330,10 @@
       <button
         v-if="authStore.isAuthenticated"
         @click="createEvent"
-        class="fixed bottom-28 lg:bottom-8 right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
+        class="fixed bottom-28 lg:bottom-8 right-6 w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
         aria-label="Create Event"
       >
-        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+        <Plus class="w-5 h-5 lg:w-6 lg:h-6 transition-transform duration-300 group-hover:rotate-90" />
         <div
           class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
         >
@@ -341,6 +341,9 @@
         </div>
       </button>
     </Transition>
+
+    <!-- Contact Us FAB (Telegram) -->
+    <ContactUsFAB :smart-fab-visible="authStore.isAuthenticated" />
 
     <!-- Event Create Modal -->
     <EventCreateModal
@@ -381,6 +384,7 @@ import EventCard from '../components/EventCard.vue'
 import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
+import ContactUsFAB from '../components/ContactUsFAB.vue'
 import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
@@ -541,7 +545,15 @@ const handleViewChange = (view: ViewType) => {
 }
 
 const goToLogin = () => {
-  router.push('/signin')
+  // Store the current view in the redirect URL so user returns to the same tab after login
+  const currentPath = route.path
+  const viewParam = currentView.value !== 'all' ? `?view=${currentView.value}` : ''
+  const redirectUrl = `${currentPath}${viewParam}`
+
+  router.push({
+    path: '/signin',
+    query: { redirect: redirectUrl }
+  })
 }
 
 // Category scroll management
@@ -1141,6 +1153,12 @@ const setupInfiniteScroll = () => {
 
 // Lifecycle
 onMounted(async () => {
+  // Check if there's a view parameter in the URL (from redirect after login)
+  const viewParam = route.query.view as ViewType | undefined
+  if (viewParam && ['all', 'my', 'registered'].includes(viewParam)) {
+    currentView.value = viewParam
+  }
+
   // Load initial data
   await loadCategories()
 

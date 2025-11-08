@@ -314,6 +314,9 @@
         @edit="handleEditEvent"
         @delete="handleDeleteEvent"
       />
+
+      <!-- Contact Us FAB (Telegram) -->
+      <ContactUsFAB v-if="event" :smart-fab-visible="smartFabVisible" />
     </div>
 
     <!-- Error State -->
@@ -393,6 +396,7 @@ import EventExpenseTab from '../components/EventExpenseTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import SmartFloatingActionButton from '../components/SmartFloatingActionButton.vue'
+import ContactUsFAB from '../components/ContactUsFAB.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
 const route = useRoute()
@@ -506,6 +510,20 @@ const canDeleteEvent = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
   // Only the organizer (event creator) can delete the event
   return event.value.organizer === authStore.user?.id
+})
+
+// Determine if smart FAB is visible (for positioning Contact Us FAB)
+const smartFabVisible = computed(() => {
+  if (!event.value || !(event.value.can_edit || false)) return false
+
+  // Check if we're on expenses summary tab (smart FAB is hidden)
+  if (activeTab.value === 'expenses' && expenseTrackingSubTab.value === 'summary') {
+    return false
+  }
+
+  // Check if we're on a valid tab that shows the smart FAB
+  const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
+  return validTabs.includes(activeTab.value)
 })
 
 // Mobile context header computed properties

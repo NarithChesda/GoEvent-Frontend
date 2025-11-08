@@ -4,11 +4,11 @@
     <!-- Main FAB Button -->
     <button
       @click="handleFabClick"
-      class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110"
+      class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center h-12 w-12 lg:h-14 lg:w-14 hover:scale-110"
       :class="{ 'ring-4 ring-[#87CEEB]': showActionMenu }"
       :aria-label="fabAriaLabel"
     >
-      <component :is="fabIcon" class="w-6 h-6" />
+      <component :is="fabIcon" class="w-5 h-5 lg:w-6 lg:h-6" />
     </button>
 
     <!-- Event Action Menu (Only for About Tab) -->
