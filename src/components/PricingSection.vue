@@ -9,22 +9,38 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="text-center mb-12 sm:mb-16 md:mb-20">
-        <div
-          class="inline-flex items-center bg-[#B0E0E6] text-[#1873cc] text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6"
-        >
-          <Star class="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-          Simple & Transparent
-        </div>
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight px-4">
+      <div class="text-center mb-12 sm:mb-16">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-8 sm:mb-10 leading-tight px-4">
           Choose Your
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
-            >Perfect Plan</span
-          >
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]">
+            Perfect Plan
+          </span>
         </h2>
-        <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto px-4">
-          Start free, upgrade when you need more. No hidden fees, cancel anytime.
-        </p>
+
+        <!-- Category Toggle (Personal/Business) -->
+        <div class="mb-12" v-if="Object.keys(categorizedPlans).length > 1">
+          <div class="flex justify-center">
+            <div class="inline-flex bg-white rounded-full p-1 border-2 border-slate-200">
+              <button
+                v-for="categoryName in Object.keys(categorizedPlans)"
+                :key="categoryName"
+                @click="activeCategory = categoryName"
+                class="px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 relative overflow-hidden"
+                :class="
+                  activeCategory === categoryName
+                    ? 'text-white shadow-md'
+                    : 'text-slate-700 hover:bg-slate-50'
+                "
+              >
+                <span
+                  v-if="activeCategory === categoryName"
+                  class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
+                ></span>
+                <span class="relative z-10">{{ categoryName }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -46,57 +62,18 @@
         </button>
       </div>
 
-      <!-- Pricing Plans with Tabs -->
+      <!-- Pricing Plans Grid -->
       <div v-else class="max-w-7xl mx-auto">
-        <!-- Category Tabs (only show if more than one category) -->
-        <div class="mb-12" v-if="Object.keys(categorizedPlans).length > 1">
-          <div class="flex justify-center">
-            <div class="max-w-full overflow-x-auto scrollbar-hide">
-              <div
-                class="inline-flex bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-1 shadow-lg min-w-min"
-              >
-                <button
-                  v-for="categoryName in Object.keys(categorizedPlans)"
-                  :key="categoryName"
-                  @click="activeCategory = categoryName"
-                  class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-300"
-                  :class="
-                    activeCategory === categoryName
-                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
-                      : 'text-slate-700 hover:text-[#1e90ff] hover:bg-white/50'
-                  "
-                >
-                  {{ categoryName }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Swipe Indicator (Mobile Only) -->
-        <div class="md:hidden text-center mb-4 px-4">
-          <div class="inline-flex items-center gap-2 text-slate-600 text-sm animate-pulse">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-            </svg>
-            <span>Swipe to explore plans</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </div>
-        </div>
-
-        <!-- Plans Grid -->
         <div
           ref="plansContainer"
-          class="md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto justify-items-center overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide flex md:flex-none -mx-4 px-4 md:mx-0 md:px-0 py-6 md:py-2"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto justify-items-center"
         >
           <div
             v-for="plan in Object.keys(categorizedPlans).length === 1
               ? Object.values(categorizedPlans)[0]
               : categorizedPlans[activeCategory] || []"
             :key="plan.id"
-            class="relative group w-[70vw] md:w-full max-w-sm flex-shrink-0 md:flex-shrink snap-center mb-4 md:mb-8"
+            class="relative group w-full max-w-sm"
           >
             <!-- Best Seller Badge -->
             <div
@@ -104,79 +81,105 @@
               class="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-20"
             >
               <div
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 shadow-lg"
+                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg"
               >
-                <Star class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 fill-current" />
-                <span class="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wide">Best Seller</span>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-sm font-bold uppercase tracking-wide">Best Seller</span>
               </div>
             </div>
 
             <!-- Card -->
             <div
-              class="relative backdrop-blur-sm rounded-2xl md:rounded-3xl h-[420px] sm:h-[480px] md:h-[540px] flex flex-col transition-all duration-300"
+              class="relative backdrop-blur-sm rounded-2xl md:rounded-3xl h-full flex flex-col transition-all duration-300 p-6 md:p-8"
               :class="
                 plan.is_best_seller
                   ? 'bg-white/95 border-2 border-emerald-300 shadow-2xl shadow-emerald-500/20 group-hover:bg-white'
                   : 'bg-white/90 border border-slate-200 shadow-xl group-hover:bg-white/95'
               "
             >
-              <!-- Plan header - Responsive sizing -->
-              <div class="text-center p-4 sm:p-6 md:p-8 pb-3 sm:pb-4 md:pb-6">
-                <h4 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-2 sm:mb-3 md:mb-4 tracking-tight">
+              <!-- Plan name and price -->
+              <div class="mb-4">
+                <h4 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
                   {{ plan.name }}
                 </h4>
-                <div class="mb-2 sm:mb-3 md:mb-4">
-                  <div class="flex items-baseline justify-center gap-1">
-                    <span class="text-base sm:text-lg md:text-xl font-bold text-slate-600">$</span>
+                <div class="mb-2">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-lg font-normal text-slate-600">$</span>
                     <span
-                      class="text-3xl sm:text-4xl md:text-5xl font-bold leading-none"
+                      class="text-5xl md:text-6xl font-normal leading-none"
                       :class="
                         plan.is_best_seller
                           ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
                           : 'text-slate-900'
                       "
-                      >{{ parseFloat(plan.price).toFixed(0) }}</span
                     >
+                      {{ parseFloat(plan.price).toFixed(0) }}
+                    </span>
                   </div>
                 </div>
-                <p class="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed">{{ plan.description }}</p>
               </div>
 
-              <!-- Divider -->
-              <div
-                class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-4 sm:mx-6 md:mx-8 mb-3 sm:mb-4 md:mb-6"
-              ></div>
+              <!-- CTA Button -->
+              <div class="mb-5">
+                <a
+                  href="https://t.me/goeventkh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full py-3 px-6 rounded-full font-semibold text-base transition-all duration-300 flex items-center justify-center gap-2"
+                  :class="
+                    plan.is_best_seller
+                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white shadow-lg'
+                      : plan.price === '0.00'
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'
+                      : 'bg-white hover:bg-slate-50 text-slate-900 border-2 border-slate-900'
+                  "
+                >
+                  {{
+                    plan.price === '0.00'
+                      ? 'Get Started Free'
+                      : plan.is_best_seller
+                      ? 'Get Started'
+                      : 'Contact Us'
+                  }}
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.008-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.122.098.155.231.171.325.016.094.036.308.02.475z"/>
+                  </svg>
+                </a>
+              </div>
 
-              <!-- Features section - Consistent flex-1 with scroll -->
-              <div class="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8 flex-1 flex flex-col min-h-0">
-                <h5
-                  class="text-slate-700 font-medium text-xs sm:text-sm uppercase tracking-wider mb-2 sm:mb-3 md:mb-4 flex items-center flex-shrink-0"
-                >
-                  <div
-                    class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full mr-1.5 sm:mr-2"
-                  ></div>
-                  What's Included
-                </h5>
-                <div
-                  class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent pr-1 sm:pr-2"
-                >
-                  <ul class="space-y-2 sm:space-y-2.5 md:space-y-3">
+              <!-- Features section -->
+              <div class="flex-1 flex flex-col min-h-0">
+                <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                  <ul class="space-y-4">
                     <li
                       v-for="feature in plan.features"
                       :key="feature"
                       class="flex items-start text-slate-700"
                     >
-                      <div
-                        class="flex-shrink-0 w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center mr-2 sm:mr-2.5 md:mr-3 mt-0.5 shadow-lg shadow-emerald-500/25"
-                      >
-                        <Check class="w-2.5 h-2.5 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 text-white stroke-2" />
+                      <div class="flex-shrink-0 mr-3 mt-0.5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
                       </div>
-                      <span class="text-xs sm:text-sm leading-relaxed font-medium">{{ feature }}</span>
+                      <span class="text-sm leading-relaxed">{{ feature }}</span>
                     </li>
                   </ul>
                 </div>
               </div>
 
+              <!-- Footer notes for all plans -->
+              <div class="mt-6 pt-6 border-t border-slate-200 flex-shrink-0">
+                <p class="text-xs text-slate-500 text-center">
+                  <template v-if="plan.price === '0.00'">
+                    Perfect to get started. <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">See what's possible</a>
+                  </template>
+                  <template v-else>
+                    Want to see it in action? <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">Try our demo</a>
+                  </template>
+                </p>
+              </div>
 
               <!-- Enhanced hover effect overlay -->
               <div
@@ -186,28 +189,12 @@
           </div>
         </div>
       </div>
-
-      <!-- Bottom guarantee -->
-      <div class="text-center mt-12 sm:mt-14 md:mt-16">
-        <div
-          class="inline-flex flex-col sm:flex-row items-center bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-8 py-3 sm:py-4 shadow-lg gap-2 sm:gap-0 max-w-[90vw] sm:max-w-none"
-        >
-          <div class="flex items-center">
-            <Shield class="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 mr-2 sm:mr-3 flex-shrink-0" />
-            <span class="text-slate-700 font-medium text-sm sm:text-base md:text-lg whitespace-nowrap">30-day money-back guarantee</span>
-          </div>
-          <div class="hidden sm:block w-px h-6 bg-slate-200 mx-4 md:mx-6"></div>
-          <span class="text-slate-500 text-xs sm:text-sm md:text-base whitespace-nowrap">No setup fees • Cancel anytime</span>
-        </div>
-      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import { Star, Check, Shield } from 'lucide-vue-next'
+import { ref, onMounted, computed, watch } from 'vue'
 
 interface Category {
   id: number
@@ -230,16 +217,15 @@ interface PricingPlan {
   features: string[]
   is_active: boolean
   is_best_seller: boolean
-  category: Category | number // Can be either object or number for backward compatibility
+  category: Category | number
   created_at: string
   updated_at: string
 }
 
-const route = useRoute()
 const loading = ref(false)
 const error = ref<string | null>(null)
 const pricingPlans = ref<PricingPlan[]>([])
-const activeCategory = ref<string>('')
+const activeCategory = ref<string>('Wedding')
 const plansContainer = ref<HTMLElement | null>(null)
 
 const categorizedPlans = computed(() => {
@@ -248,12 +234,10 @@ const categorizedPlans = computed(() => {
   pricingPlans.value
     .filter((plan) => plan.is_active)
     .forEach((plan) => {
-      // Use category name from API if available, otherwise fallback to category ID
       let categoryName: string
       if (typeof plan.category === 'object' && plan.category !== null && plan.category.name) {
         categoryName = plan.category.name
       } else {
-        // Fallback for backward compatibility
         categoryName = `Category ${plan.category}`
       }
 
@@ -268,86 +252,60 @@ const categorizedPlans = computed(() => {
     categories[category].sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
   })
 
-  return categories
+  // Sort categories to ensure Wedding comes before Birthday
+  const sortedCategories: Record<string, PricingPlan[]> = {}
+  const categoryOrder = ['Wedding', 'Birthday']
+
+  // Add categories in preferred order first
+  categoryOrder.forEach(cat => {
+    if (categories[cat]) {
+      sortedCategories[cat] = categories[cat]
+    }
+  })
+
+  // Add any remaining categories
+  Object.keys(categories).forEach(cat => {
+    if (!categoryOrder.includes(cat)) {
+      sortedCategories[cat] = categories[cat]
+    }
+  })
+
+  return sortedCategories
 })
 
-// Scroll to best seller card on mobile (only when navigating to pricing intentionally)
-const scrollToBestSeller = async (force = false) => {
-  await nextTick()
-
-  if (!plansContainer.value) return
-
-  // Only scroll on mobile (below 768px)
-  if (window.innerWidth >= 768) return
-
-  // Only auto-scroll if explicitly forced (when user navigates to #pricing)
-  // Don't auto-scroll on initial mount or page refresh
-  if (!force) return
-
-  const currentPlans = Object.keys(categorizedPlans.value).length === 1
-    ? Object.values(categorizedPlans.value)[0]
-    : categorizedPlans.value[activeCategory.value] || []
-
-  const bestSellerIndex = currentPlans.findIndex((plan: PricingPlan) => plan.is_best_seller)
-
-  if (bestSellerIndex !== -1) {
-    const cards = plansContainer.value.children
-    const bestSellerCard = cards[bestSellerIndex] as HTMLElement
-
-    if (bestSellerCard) {
-      bestSellerCard.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      })
-    }
-  }
-}
-
-// Watch for changes in categorized plans and set active category
 watch(
   categorizedPlans,
   (newCategories) => {
     const categories = Object.keys(newCategories)
-    if (categories.length > 0 && !activeCategory.value) {
-      activeCategory.value = categories[0]
+    if (categories.length > 0) {
+      // Only set if current category doesn't exist in the new categories
+      if (!categories.includes(activeCategory.value)) {
+        activeCategory.value = categories[0]
+      }
     }
-    // Don't auto-scroll on initial data load
   },
   { immediate: true },
 )
-
-// Watch for category changes - only scroll if user is already on pricing section
-watch(activeCategory, () => {
-  // Only scroll to best seller if user is currently viewing pricing section (has hash)
-  if (route.hash === '#pricing') {
-    scrollToBestSeller(true)
-  }
-})
 
 const fetchPricingPlans = async () => {
   loading.value = true
   error.value = null
 
   try {
-    // Try to fetch from API, but handle authentication errors gracefully
     const response = await fetch(
       `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/core-data/pricing-plans/`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Don't include auth headers for public pricing data
         },
       },
     )
 
     if (response.ok) {
       const data = await response.json()
-      // Handle both paginated and direct array responses
       pricingPlans.value = 'results' in data ? data.results : (data as unknown as PricingPlan[])
     } else if (response.status === 401) {
-      // Authentication required - use fallback data
       console.log('Pricing endpoint requires authentication, using fallback data')
       throw new Error('Authentication required')
     } else {
@@ -355,30 +313,28 @@ const fetchPricingPlans = async () => {
     }
   } catch (err) {
     console.error('Error fetching pricing plans:', err)
-    // Don't show error to user, just use fallback data
     error.value = null
 
-    // Fallback to static data
+    // Fallback to static data matching the screenshot
     pricingPlans.value = [
       {
         id: 1,
-        name: 'Basic',
-        description: 'Perfect for small events and beginners',
-        price: '100.00',
-        commission: '10.00',
+        name: 'Free',
+        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
+        price: '0.00',
+        commission: '0.00',
         features: [
-          'Up to 100 guests',
-          'Basic event planning tools',
-          'Email invitations',
-          'RSVP tracking',
-          'Basic analytics',
+          'Get simple explanations',
+          'Have short chats for common questions',
+          'Try out image generation',
+          'Save limited memory and context',
         ],
         category: {
-          id: 5,
-          name: 'Wedding',
-          description: 'Wedding events',
-          color: '#9b59b6',
-          icon: 'fas fa-palette',
+          id: 1,
+          name: 'Personal',
+          description: 'Personal plans',
+          color: '#6366f1',
+          icon: 'user',
           is_active: true,
           created_by: 1,
           created_by_name: 'admin',
@@ -391,24 +347,24 @@ const fetchPricingPlans = async () => {
       },
       {
         id: 2,
-        name: 'Standard',
-        description: 'Most popular choice for regular organizers',
-        price: '300.00',
-        commission: '30.00',
+        name: 'Go',
+        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
+        price: '5.00',
+        commission: '0.00',
         features: [
-          'Up to 500 guests',
-          'Advanced planning tools',
-          'Custom branding',
-          'Multiple event types',
-          'Advanced analytics',
-          'Priority support',
+          'Go deep on harder questions',
+          'Chat longer and upload more content',
+          'Make realistic images for your projects',
+          'Store more context for smarter replies',
+          'Get help with planning and tasks',
+          'Explore projects, tasks, and custom GPTs',
         ],
         category: {
-          id: 5,
-          name: 'Wedding',
-          description: 'Wedding events',
-          color: '#9b59b6',
-          icon: 'fas fa-palette',
+          id: 1,
+          name: 'Personal',
+          description: 'Personal plans',
+          color: '#6366f1',
+          icon: 'user',
           is_active: true,
           created_by: 1,
           created_by_name: 'admin',
@@ -421,24 +377,59 @@ const fetchPricingPlans = async () => {
       },
       {
         id: 3,
-        name: 'Premium',
-        description: 'For large organizations and agencies',
-        price: '600.00',
-        commission: '60.00',
+        name: 'Plus',
+        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
+        price: '20.00',
+        commission: '0.00',
         features: [
-          'Unlimited guests',
-          'White-label solution',
-          'API access',
-          'Custom integrations',
-          'Dedicated account manager',
-          '24/7 phone support',
+          'Solve complex problems',
+          'Have long chats over multiple sessions',
+          'Create more images, faster',
+          'Remember goals and past conversations',
+          'Plan travel and tasks with agent mode',
+          'Organize projects and customize GPTs',
+          'Produce and share videos on Sora',
+          'Write code and build apps with Codex',
         ],
         category: {
-          id: 5,
-          name: 'Wedding',
-          description: 'Wedding events',
-          color: '#9b59b6',
-          icon: 'fas fa-palette',
+          id: 1,
+          name: 'Personal',
+          description: 'Personal plans',
+          color: '#6366f1',
+          icon: 'user',
+          is_active: true,
+          created_by: 1,
+          created_by_name: 'admin',
+          created_at: new Date().toISOString(),
+        },
+        is_best_seller: false,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 4,
+        name: 'Pro',
+        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
+        price: '200.00',
+        commission: '0.00',
+        features: [
+          'Master advanced tasks and topics',
+          'Tackle big projects with unlimited messages',
+          'Create high-quality images at any scale',
+          'Keep full context with maximum memory',
+          'Run research and plan tasks with agents',
+          'Scale your projects and automate workflows',
+          'Expand your limits with Sora video creation',
+          'Deploy code faster with Codex',
+          'Get early access to experimental features',
+        ],
+        category: {
+          id: 1,
+          name: 'Personal',
+          description: 'Personal plans',
+          color: '#6366f1',
+          icon: 'user',
           is_active: true,
           created_by: 1,
           created_by_name: 'admin',
@@ -457,14 +448,14 @@ const fetchPricingPlans = async () => {
 
 onMounted(async () => {
   await fetchPricingPlans()
-  // Set the first category as active by default
   const categories = Object.keys(categorizedPlans.value)
   if (categories.length > 0) {
-    activeCategory.value = categories[0]
-  }
-  // Only scroll to best seller if user intentionally navigated to pricing (has #pricing hash)
-  if (route.hash === '#pricing') {
-    scrollToBestSeller(true)
+    // Set to Wedding if it exists, otherwise use first category
+    if (categories.includes('Wedding')) {
+      activeCategory.value = 'Wedding'
+    } else {
+      activeCategory.value = categories[0]
+    }
   }
 })
 </script>
@@ -472,77 +463,10 @@ onMounted(async () => {
 <style scoped>
 /* Hide scrollbar but keep scroll functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
-}
-
-/* Custom scrollbar for features section */
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Line clamp utility */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Enhanced scrollbar styles */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 8px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.15));
-  border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.25));
-}
-
-/* Responsive grid improvements */
-@media (max-width: 768px) {
-  .grid-cols-1 {
-    gap: 1.5rem;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1024px) {
-  .md\:grid-cols-2 > div {
-    max-width: none;
-  }
-}
-
-/* Animation for best seller badge */
-@keyframes gentle-pulse {
-  0%,
-  100% {
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
-    transform: translateX(-50%) scale(1.05);
-  }
+  display: none;
 }
 </style>
