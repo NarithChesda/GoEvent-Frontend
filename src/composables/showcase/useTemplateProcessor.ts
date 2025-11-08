@@ -171,15 +171,41 @@ export function useTemplateProcessor() {
 
   /**
    * Extracts template colors with proper fallbacks
-   * Combines both index-based (legacy) and name-based color extraction
+   * Uses name-based extraction for all colors to prevent index conflicts
    */
   const extractTemplateColors = (templateColors: TemplateColor[]) => {
+    // Extract primary color by name first, fallback to index 0
+    const primaryColorObj = templateColors?.find(
+      (color) => color.name?.toLowerCase() === 'primary'
+    )
     const primaryColor =
-      templateColors?.[0]?.hex_color_code || templateColors?.[0]?.hex_code || '#3B82F6'
+      primaryColorObj?.hex_color_code ||
+      primaryColorObj?.hex_code ||
+      templateColors?.[0]?.hex_color_code ||
+      templateColors?.[0]?.hex_code ||
+      '#3B82F6'
+
+    // Extract secondary color by name first, fallback to index 1
+    const secondaryColorObj = templateColors?.find(
+      (color) => color.name?.toLowerCase() === 'secondary'
+    )
     const secondaryColor =
-      templateColors?.[1]?.hex_color_code || templateColors?.[1]?.hex_code || null
+      secondaryColorObj?.hex_color_code ||
+      secondaryColorObj?.hex_code ||
+      templateColors?.[1]?.hex_color_code ||
+      templateColors?.[1]?.hex_code ||
+      null
+
+    // Extract accent color by name first, fallback to index 2, then primary
+    const accentColorObj = templateColors?.find(
+      (color) => color.name?.toLowerCase() === 'accent'
+    )
     const accentColor =
-      templateColors?.[2]?.hex_color_code || templateColors?.[2]?.hex_code || primaryColor
+      accentColorObj?.hex_color_code ||
+      accentColorObj?.hex_code ||
+      templateColors?.[2]?.hex_color_code ||
+      templateColors?.[2]?.hex_code ||
+      primaryColor
 
     // Extract guestname color by name
     const guestnameColorObj = templateColors?.find(
