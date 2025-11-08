@@ -437,7 +437,8 @@ const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && safeE
 // Helper function to group events by category (DRY principle)
 const groupEventsByCategory = (
   events: Event[],
-  sortByField: 'start_date' | 'created_at' = 'start_date'
+  sortByField: 'start_date' | 'created_at' = 'start_date',
+  sortCategoriesByTimestamp = false
 ): Array<{ category: EventCategory | null; events: Event[] }> => {
   // Create a map to group events by category
   const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
@@ -460,7 +461,7 @@ const groupEventsByCategory = (
     categoryMap.get(categoryId)!.events.push(event)
   })
 
-  // Convert map to array, sort categories alphabetically, and sort events within each category
+  // Convert map to array, sort categories, and sort events within each category
   return Array.from(categoryMap.values())
     .map(categoryGroup => {
       // Sort events within each category by the specified field (newest first)
@@ -476,12 +477,24 @@ const groupEventsByCategory = (
       }
     })
     .sort((a, b) => {
-      const nameA = a.category?.name || 'Uncategorized'
-      const nameB = b.category?.name || 'Uncategorized'
-      // Put uncategorized at the end
-      if (nameA === 'Uncategorized') return 1
-      if (nameB === 'Uncategorized') return -1
-      return nameA.localeCompare(nameB)
+      if (sortCategoriesByTimestamp) {
+        // Sort categories by the latest event timestamp (newest first)
+        const latestA = a.events.length > 0
+          ? new Date((sortByField === 'start_date' ? a.events[0].start_date : a.events[0].created_at) || 0).getTime()
+          : 0
+        const latestB = b.events.length > 0
+          ? new Date((sortByField === 'start_date' ? b.events[0].start_date : b.events[0].created_at) || 0).getTime()
+          : 0
+        return latestB - latestA // Descending order (newest first)
+      } else {
+        // Sort categories alphabetically
+        const nameA = a.category?.name || 'Uncategorized'
+        const nameB = b.category?.name || 'Uncategorized'
+        // Put uncategorized at the end
+        if (nameA === 'Uncategorized') return 1
+        if (nameB === 'Uncategorized') return -1
+        return nameA.localeCompare(nameB)
+      }
     })
 }
 
@@ -494,7 +507,7 @@ const eventsByCategory = computed(() => {
 // Group events by category for my events view
 const myEventsByCategory = computed(() => {
   if (currentView.value !== 'my') return []
-  return groupEventsByCategory(safeEvents.value, 'created_at')
+  return groupEventsByCategory(safeEvents.value, 'created_at', true)
 })
 
 // Group events by category for registered events view
