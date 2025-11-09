@@ -19,42 +19,18 @@
         <div class="flex justify-center mb-6 sm:mb-8 md:mb-10">
           <div class="inline-flex bg-white rounded-full p-1 border-2 border-slate-200 shadow-sm">
             <button
-              @click="handleViewChange('my')"
+              v-for="option in VIEW_OPTIONS"
+              :key="option.type"
+              @click="handleViewChange(option.type)"
               class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
-              :class="currentView === 'my' ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
+              :class="currentView === option.type ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
             >
               <span
-                v-if="currentView === 'my'"
+                v-if="currentView === option.type"
                 class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
               ></span>
-              <User class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
-              <span class="relative z-10">My Events</span>
-            </button>
-
-            <button
-              @click="handleViewChange('all')"
-              class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
-              :class="currentView === 'all' ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
-            >
-              <span
-                v-if="currentView === 'all'"
-                class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
-              ></span>
-              <Globe class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
-              <span class="relative z-10">Public Events</span>
-            </button>
-
-            <button
-              @click="handleViewChange('registered')"
-              class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
-              :class="currentView === 'registered' ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
-            >
-              <span
-                v-if="currentView === 'registered'"
-                class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
-              ></span>
-              <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
-              <span class="relative z-10">Registered</span>
+              <component :is="option.icon" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
+              <span class="relative z-10">{{ option.label }}</span>
             </button>
           </div>
         </div>
@@ -107,155 +83,19 @@
 
         <!-- Events Grid -->
         <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
-          <!-- For Public Events: Show by Category -->
-          <template v-if="currentView === 'all'">
-            <div v-for="categoryGroup in eventsByCategory" :key="categoryGroup.category?.id || 'uncategorized'" class="space-y-4 sm:space-y-6">
-              <!-- Category Header -->
-              <div class="flex items-center justify-between px-4 sm:px-0">
-                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
-                  {{ categoryGroup.category?.name || 'Uncategorized' }}
-                </h2>
-                <div class="flex items-center gap-3 sm:gap-4">
-                  <span class="text-xs sm:text-sm text-slate-500">
-                    {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
-                  </span>
-                  <!-- Navigation Arrows - Only show if content overflows (hidden on mobile) -->
-                  <div v-if="categoryHasOverflow(categoryGroup.category?.id || 'uncategorized')" class="hidden md:flex items-center gap-2">
-                    <button
-                      @click="scrollCategory(categoryGroup.category?.id || 'uncategorized', 'left')"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                      aria-label="Scroll left"
-                    >
-                      <ChevronLeft class="w-4 h-4 text-slate-600" />
-                    </button>
-                    <button
-                      @click="scrollCategory(categoryGroup.category?.id || 'uncategorized', 'right')"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                      aria-label="Scroll right"
-                    >
-                      <ChevronRight class="w-4 h-4 text-slate-600" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Horizontal scrolling container for all screen sizes -->
-              <div
-                :ref="el => setCategoryScrollRef(categoryGroup.category?.id || 'uncategorized', el)"
-                class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
-              >
-                <EventCard
-                  v-for="event in categoryGroup.events"
-                  :key="event.id"
-                  :event="event"
-                  @click="viewEvent(event)"
-                  @edit="editEvent"
-                  @delete="deleteEvent"
-                  class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
-                />
-              </div>
-            </div>
-          </template>
-
-          <!-- For My Events: Show by Category (like Public Events) -->
-          <template v-else-if="currentView === 'my'">
-            <div v-for="categoryGroup in myEventsByCategory" :key="categoryGroup.category?.id || 'uncategorized'" class="space-y-4 sm:space-y-6">
-              <!-- Category Header -->
-              <div class="flex items-center justify-between px-4 sm:px-0">
-                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
-                  {{ categoryGroup.category?.name || 'Uncategorized' }}
-                </h2>
-                <div class="flex items-center gap-3 sm:gap-4">
-                  <span class="text-xs sm:text-sm text-slate-500">
-                    {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
-                  </span>
-                  <!-- Navigation Arrows - Only show if content overflows (hidden on mobile) -->
-                  <div v-if="categoryHasOverflow('my-' + (categoryGroup.category?.id || 'uncategorized'))" class="hidden md:flex items-center gap-2">
-                    <button
-                      @click="scrollCategory('my-' + (categoryGroup.category?.id || 'uncategorized'), 'left')"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                      aria-label="Scroll left"
-                    >
-                      <ChevronLeft class="w-4 h-4 text-slate-600" />
-                    </button>
-                    <button
-                      @click="scrollCategory('my-' + (categoryGroup.category?.id || 'uncategorized'), 'right')"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                      aria-label="Scroll right"
-                    >
-                      <ChevronRight class="w-4 h-4 text-slate-600" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Horizontal scrolling container for all screen sizes -->
-              <div
-                :ref="el => setCategoryScrollRef('my-' + (categoryGroup.category?.id || 'uncategorized'), el)"
-                class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
-              >
-                <EventCard
-                  v-for="event in categoryGroup.events"
-                  :key="event.id"
-                  :event="event"
-                  @click="viewEvent(event)"
-                  @edit="editEvent"
-                  @delete="deleteEvent"
-                  class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
-                />
-              </div>
-            </div>
-          </template>
-
-          <!-- For Registered: Show by Category (like Public Events) -->
-          <template v-else>
-            <div v-for="categoryGroup in registeredEventsByCategory" :key="categoryGroup.category?.id || 'uncategorized'" class="space-y-4 sm:space-y-6">
-              <!-- Category Header -->
-              <div class="flex items-center justify-between px-4 sm:px-0">
-                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
-                  {{ categoryGroup.category?.name || 'Uncategorized' }}
-                </h2>
-                <div class="flex items-center gap-3 sm:gap-4">
-                  <span class="text-xs sm:text-sm text-slate-500">
-                    {{ categoryGroup.events.length }} {{ categoryGroup.events.length === 1 ? 'event' : 'events' }}
-                  </span>
-                  <!-- Navigation Arrows - Only show if content overflows (hidden on mobile) -->
-                  <div v-if="categoryHasOverflow('registered-' + (categoryGroup.category?.id || 'uncategorized'))" class="hidden md:flex items-center gap-2">
-                    <button
-                      @click="scrollCategory('registered-' + (categoryGroup.category?.id || 'uncategorized'), 'left')"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                      aria-label="Scroll left"
-                    >
-                      <ChevronLeft class="w-4 h-4 text-slate-600" />
-                    </button>
-                    <button
-                      @click="scrollCategory('registered-' + (categoryGroup.category?.id || 'uncategorized'), 'right')"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                      aria-label="Scroll right"
-                    >
-                      <ChevronRight class="w-4 h-4 text-slate-600" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Horizontal scrolling container for all screen sizes -->
-              <div
-                :ref="el => setCategoryScrollRef('registered-' + (categoryGroup.category?.id || 'uncategorized'), el)"
-                class="flex overflow-x-auto gap-4 sm:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
-              >
-                <EventCard
-                  v-for="event in categoryGroup.events"
-                  :key="event.id"
-                  :event="event"
-                  @click="viewEvent(event)"
-                  @edit="editEvent"
-                  @delete="deleteEvent"
-                  class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
-                />
-              </div>
-            </div>
-          </template>
+          <EventCategorySection
+            v-for="categoryGroup in categorizedEvents"
+            :key="getViewPrefix + (categoryGroup.category?.id || 'uncategorized')"
+            :category-group="categoryGroup"
+            :view-prefix="getViewPrefix"
+            :has-overflow="categoryHasOverflow(getViewPrefix + (categoryGroup.category?.id || 'uncategorized'))"
+            @view-event="viewEvent"
+            @edit-event="editEvent"
+            @delete-event="deleteEvent"
+            @scroll-left="scrollCategory($event, 'left')"
+            @scroll-right="scrollCategory($event, 'right')"
+            @set-scroll-ref="setCategoryScrollRef"
+          />
         </div>
 
         <!-- Infinite Scroll Loading Indicator -->
@@ -284,7 +124,7 @@
             Sign In Required
           </h3>
           <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
-            {{ getLoginPromptMessage() }}
+            {{ loginPromptMessage }}
           </p>
           <button
             @click="goToLogin"
@@ -302,10 +142,10 @@
             <Calendar class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
           </div>
           <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
-            {{ getEmptyStateTitle() }}
+            {{ emptyStateTitle }}
           </h3>
           <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
-            {{ getEmptyStateMessage() }}
+            {{ emptyStateMessage }}
           </p>
         </div>
       </div>
@@ -367,20 +207,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   Calendar,
   Plus,
-  ChevronLeft,
-  ChevronRight,
   CheckCircle,
   AlertCircle,
   User,
-  Globe,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
-import EventCard from '../components/EventCard.vue'
+import EventCategorySection from '../components/EventCategorySection.vue'
 import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
@@ -392,18 +229,21 @@ import {
   type Event,
   type EventCategory,
   type EventFilters as EventFiltersType,
-  type ApiResponse,
-  type PaginatedResponse,
 } from '../services/api'
-
-type ViewType = 'all' | 'my' | 'registered'
+import { useEventsData, type ViewType } from '../composables/useEventsData'
+import { useCategoryScroll } from '../composables/useCategoryScroll'
+import { useCategoryGrouping } from '../composables/useCategoryGrouping'
+import {
+  VIEW_OPTIONS,
+  EMPTY_STATE_CONFIG,
+  LOGIN_PROMPT_CONFIG,
+} from '../constants/eventsViewConfig'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// Reactive state
-// Initialize currentView from URL query parameter or default to 'all'
+// Initialize current view from URL query parameter or default to 'all'
 const initialView = (): ViewType => {
   const viewParam = route.query.view as string | undefined
   if (viewParam && ['all', 'my', 'registered'].includes(viewParam)) {
@@ -411,156 +251,49 @@ const initialView = (): ViewType => {
   }
   return 'all'
 }
+
 const currentView = ref<ViewType>(initialView())
-const events = ref<Event[]>([])
 const categories = ref<EventCategory[]>([])
-const loading = ref(false)
 const filters = ref<EventFiltersType>({})
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const eventToDelete = ref<Event | null>(null)
-
-// Infinite scroll state
-const currentPage = ref(1)
-const hasMore = ref(true)
-const isLoadingMore = ref(false)
 const loadMoreTrigger = ref<HTMLElement | null>(null)
 
-// Computed
-const safeEvents = computed(() => events.value || [])
-const hasEvents = computed(() => safeEvents.value.length > 0)
+// Use composables
+const {
+  events,
+  loading,
+  hasMore,
+  isLoadingMore,
+  loadEvents,
+  loadMoreEvents,
+} = useEventsData(computed(() => authStore.isAuthenticated))
+
+const {
+  setCategoryScrollRef,
+  categoryHasOverflow,
+  scrollCategory,
+  recheckAllOverflows,
+} = useCategoryScroll()
+
+const {
+  categorizedEvents,
+  getViewPrefix,
+} = useCategoryGrouping(currentView, events, categories)
+
+// Computed properties
+const hasEvents = computed(() => events.value.length > 0)
 const showLoginPrompt = computed(() => {
   return !loading.value && !authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')
 })
-const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && safeEvents.value.length === 0)
+const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && events.value.length === 0)
 
-// Helper function to group events by category (DRY principle)
-const groupEventsByCategory = (
-  events: Event[],
-  sortByField: 'start_date' | 'created_at' = 'start_date',
-  sortCategoriesByTimestamp = false
-): Array<{ category: EventCategory | null; events: Event[] }> => {
-  // Create a map to group events by category
-  const categoryMap = new Map<number | string, { category: EventCategory | null; events: Event[] }>()
-
-  events.forEach(event => {
-    const categoryId = event.category || 'uncategorized'
-
-    if (!categoryMap.has(categoryId)) {
-      // Find the full category details from the categories list
-      const categoryDetails = event.category
-        ? categories.value.find(cat => cat.id === event.category)
-        : null
-
-      categoryMap.set(categoryId, {
-        category: categoryDetails || null,
-        events: []
-      })
-    }
-
-    categoryMap.get(categoryId)!.events.push(event)
-  })
-
-  // Convert map to array, sort categories, and sort events within each category
-  return Array.from(categoryMap.values())
-    .map(categoryGroup => {
-      // Sort events within each category by the specified field (newest first)
-      const sortedEvents = [...categoryGroup.events].sort((a, b) => {
-        const dateA = new Date((sortByField === 'start_date' ? a.start_date : a.created_at) || 0).getTime()
-        const dateB = new Date((sortByField === 'start_date' ? b.start_date : b.created_at) || 0).getTime()
-        return dateB - dateA // Descending order (newest first)
-      })
-
-      return {
-        category: categoryGroup.category,
-        events: sortedEvents
-      }
-    })
-    .sort((a, b) => {
-      if (sortCategoriesByTimestamp) {
-        // Sort categories by the latest event timestamp (newest first)
-        const latestA = a.events.length > 0
-          ? new Date((sortByField === 'start_date' ? a.events[0].start_date : a.events[0].created_at) || 0).getTime()
-          : 0
-        const latestB = b.events.length > 0
-          ? new Date((sortByField === 'start_date' ? b.events[0].start_date : b.events[0].created_at) || 0).getTime()
-          : 0
-        return latestB - latestA // Descending order (newest first)
-      } else {
-        // Sort categories alphabetically
-        const nameA = a.category?.name || 'Uncategorized'
-        const nameB = b.category?.name || 'Uncategorized'
-        // Put uncategorized at the end
-        if (nameA === 'Uncategorized') return 1
-        if (nameB === 'Uncategorized') return -1
-        return nameA.localeCompare(nameB)
-      }
-    })
-}
-
-// Group events by category for public events view
-const eventsByCategory = computed(() => {
-  if (currentView.value !== 'all') return []
-  return groupEventsByCategory(safeEvents.value, 'start_date')
-})
-
-// Group events by category for my events view
-const myEventsByCategory = computed(() => {
-  if (currentView.value !== 'my') return []
-  return groupEventsByCategory(safeEvents.value, 'created_at', true)
-})
-
-// Group events by category for registered events view
-const registeredEventsByCategory = computed(() => {
-  if (currentView.value !== 'registered') return []
-  return groupEventsByCategory(safeEvents.value, 'created_at')
-})
-
-const getEmptyStateTitle = () => {
-  switch (currentView.value) {
-    case 'my':
-      return "You haven't created any events yet"
-    case 'registered':
-      return "You haven't registered for any events yet"
-    default:
-      return 'No events found'
-  }
-}
-
-const getEmptyStateMessage = () => {
-  switch (currentView.value) {
-    case 'my':
-      return 'Start organizing amazing events and bring people together for memorable experiences.'
-    case 'registered':
-      return 'Explore public events and register for ones that interest you.'
-    default:
-      return 'Try adjusting your filters or check back later for new events.'
-  }
-}
-
-const getSectionLabel = () => {
-  switch (currentView.value) {
-    case 'my':
-      return 'My Events'
-    case 'registered':
-      return 'Events I\'m Attending'
-    default:
-      return 'Public Events'
-  }
-}
-
-const getLoginPromptMessage = () => {
-  switch (currentView.value) {
-    case 'my':
-      return 'Please sign in to view and manage your events.'
-    case 'registered':
-      return 'Please sign in to see the events you have registered for.'
-    default:
-      return 'Please sign in to continue.'
-  }
-}
+const emptyStateTitle = computed(() => EMPTY_STATE_CONFIG[currentView.value].title)
+const emptyStateMessage = computed(() => EMPTY_STATE_CONFIG[currentView.value].message)
+const loginPromptMessage = computed(() => LOGIN_PROMPT_CONFIG[currentView.value])
 
 // Methods
 const handleViewChange = (view: ViewType) => {
@@ -588,296 +321,20 @@ const goToLogin = () => {
   })
 }
 
-// Category scroll management
-const categoryScrollRefs = ref<Record<string | number, HTMLElement>>({})
-const categoryOverflowState = ref<Record<string | number, boolean>>({})
-
-const setCategoryScrollRef = (categoryId: string | number, el: unknown) => {
-  if (el && el instanceof HTMLElement) {
-    categoryScrollRefs.value[categoryId] = el
-    // Check if content overflows after a short delay to allow rendering
-    setTimeout(() => {
-      checkCategoryOverflow(categoryId)
-    }, 100)
-  }
-}
-
-const checkCategoryOverflow = (categoryId: string | number) => {
-  try {
-    const container = categoryScrollRefs.value[categoryId]
-    if (!container) return
-
-    // Check if scrollWidth is greater than clientWidth (content overflows)
-    categoryOverflowState.value[categoryId] = container.scrollWidth > container.clientWidth
-  } catch (error) {
-    // Silently handle errors to prevent UI disruption
-    console.warn(`Failed to check overflow for category ${categoryId}:`, error)
-  }
-}
-
-const categoryHasOverflow = (categoryId: string | number): boolean => {
-  return categoryOverflowState.value[categoryId] || false
-}
-
-const scrollCategory = (categoryId: string | number, direction: 'left' | 'right') => {
-  const container = categoryScrollRefs.value[categoryId]
-  if (!container) return
-
-  const scrollAmount = container.clientWidth * 0.8 // Scroll 80% of container width
-  const currentScroll = container.scrollLeft
-  const targetScroll = direction === 'left'
-    ? currentScroll - scrollAmount
-    : currentScroll + scrollAmount
-
-  container.scrollTo({
-    left: targetScroll,
-    behavior: 'smooth'
-  })
-}
-
-// Client-side filter helper function for My Events and Registered tabs
-const applyClientSideFilters = (events: Event[], filterValues: EventFiltersType): Event[] => {
-  let filteredEvents = [...events]
-
-  // Apply search filter
-  if (filterValues.search) {
-    const searchTerm = filterValues.search.toLowerCase()
-    filteredEvents = filteredEvents.filter(event =>
-      event.title?.toLowerCase().includes(searchTerm) ||
-      event.description?.toLowerCase().includes(searchTerm) ||
-      event.location?.toLowerCase().includes(searchTerm) ||
-      event.category_name?.toLowerCase().includes(searchTerm) ||
-      event.organizer_name?.toLowerCase().includes(searchTerm) ||
-      event.short_description?.toLowerCase().includes(searchTerm)
-    )
-  }
-
-  // Apply category filter
-  if (filterValues.category) {
-    filteredEvents = filteredEvents.filter(event => {
-      // Category can be filtered by ID (number) or name (string)
-      if (typeof filterValues.category === 'number') {
-        return event.category === filterValues.category
-      } else {
-        return event.category_name === filterValues.category
-      }
-    })
-  }
-
-  // Apply date range filters
-  if (filterValues.start_date_after) {
-    const afterDate = new Date(filterValues.start_date_after)
-    filteredEvents = filteredEvents.filter(event => {
-      if (!event.start_date) return false
-      const eventDate = new Date(event.start_date)
-      return eventDate >= afterDate
-    })
-  }
-
-  if (filterValues.start_date_before) {
-    const beforeDate = new Date(filterValues.start_date_before)
-    filteredEvents = filteredEvents.filter(event => {
-      if (!event.start_date) return false
-      const eventDate = new Date(event.start_date)
-      return eventDate < beforeDate
-    })
-  }
-
-  // Apply virtual/in-person filter
-  if (filterValues.is_virtual !== undefined) {
-    filteredEvents = filteredEvents.filter(event => event.is_virtual === filterValues.is_virtual)
-  }
-
-  // Apply sorting
-  if (filterValues.ordering) {
-    const ordering = filterValues.ordering
-    filteredEvents.sort((a, b) => {
-      let comparison = 0
-
-      if (ordering === 'start_date' || ordering === '-start_date') {
-        const dateA = new Date(a.start_date || 0).getTime()
-        const dateB = new Date(b.start_date || 0).getTime()
-        comparison = dateA - dateB
-      } else if (ordering === 'title' || ordering === '-title') {
-        comparison = (a.title || '').localeCompare(b.title || '')
-      } else if (ordering === 'created_at' || ordering === '-created_at') {
-        const dateA = new Date(a.created_at || 0).getTime()
-        const dateB = new Date(b.created_at || 0).getTime()
-        comparison = dateA - dateB
-      } else if (ordering === 'registrations_count' || ordering === '-registrations_count') {
-        comparison = (a.registrations_count || 0) - (b.registrations_count || 0)
-      }
-
-      // Reverse if ordering starts with '-'
-      return ordering.startsWith('-') ? -comparison : comparison
-    })
-  }
-
-  return filteredEvents
-}
-
-const loadEvents = async (append = false) => {
-  // Don't load events if user is not authenticated and trying to view 'my' or 'registered' tabs
-  if (!authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')) {
-    events.value = []
-    loading.value = false
-    return
-  }
-
-  // Set loading state based on whether we're appending or replacing
-  if (append) {
-    isLoadingMore.value = true
-  } else {
-    loading.value = true
-    // Reset pagination when loading fresh
-    currentPage.value = 1
-    hasMore.value = true
-  }
-
-  try {
-    let response: ApiResponse<PaginatedResponse<Event>> | ApiResponse<{ organized: Event[]; collaborated: Event[] }> | null = null
-
-    const requestParams = {
-      ...filters.value,
-    }
-
-    if (currentView.value === 'my') {
-      // Use dedicated /api/events/my/ endpoint for user's events
-      // Note: This endpoint returns { organized: [...], collaborated: [...] }
-      const myEventsResponse = await eventsService.getMyEvents(requestParams)
-      if (myEventsResponse.success && myEventsResponse.data) {
-        const organized = myEventsResponse.data.organized || []
-        const collaborated = myEventsResponse.data.collaborated || []
-
-        // Deduplicate events (user might be both organizer and collaborator)
-        const eventMap = new Map<string, Event>()
-        organized.forEach(event => eventMap.set(event.id, event))
-        collaborated.forEach(event => {
-          if (!eventMap.has(event.id)) {
-            eventMap.set(event.id, event)
-          }
-        })
-        let allMyEvents = Array.from(eventMap.values())
-
-        // Apply client-side filtering for all filters
-        allMyEvents = applyClientSideFilters(allMyEvents, filters.value)
-
-        // Create a mock response to match expected structure
-        response = {
-          success: true,
-          data: {
-            results: allMyEvents,
-            next: null, // No pagination for my events
-          },
-        }
-      } else {
-        response = {
-          success: false,
-          message: myEventsResponse.message || 'Failed to load events',
-        }
-      }
-    } else if (currentView.value === 'registered') {
-      // Use dedicated /api/events/my-registered/ endpoint for events user has registered for
-      const registeredResponse = await eventsService.getMyRegisteredEvents(requestParams)
-      if (registeredResponse.success && registeredResponse.data) {
-        // The API returns an array directly, not a paginated response
-        let registeredEvents = registeredResponse.data || []
-
-        // Apply client-side filtering for all filters
-        registeredEvents = applyClientSideFilters(registeredEvents, filters.value)
-
-        // Create a mock response to match expected structure
-        response = {
-          success: true,
-          data: {
-            results: registeredEvents,
-            next: null, // No pagination for registered events
-          },
-        }
-      } else {
-        response = {
-          success: false,
-          message: registeredResponse.message || 'Failed to load registered events',
-        }
-      }
-    } else {
-      // For all public events - use pagination
-      const publicEventParams = {
-        ...requestParams,
-        page: append ? currentPage.value : 1,
-        // Only set defaults if user hasn't specified these filters
-        privacy: requestParams.privacy || 'public',
-        status: requestParams.status || 'published',
-        // Order by category name first (alphabetically), then by start_date (newest first)
-        ordering: requestParams.ordering || 'category__name,-start_date',
-      }
-      response = await eventsService.getEvents(publicEventParams)
-    }
-
-    if (response.success && response.data) {
-      const newEvents = response.data.results || []
-
-      if (append) {
-        // Append new events to existing ones
-        events.value = [...events.value, ...newEvents]
-      } else {
-        // Replace events
-        events.value = newEvents
-      }
-
-      // Check if there are more pages
-      hasMore.value = !!response.data.next
-
-      // Re-check category overflow after DOM updates
-      nextTick(() => {
-        Object.keys(categoryScrollRefs.value).forEach(categoryId => {
-          checkCategoryOverflow(categoryId)
-        })
-      })
-    } else {
-      if (!append) {
-        events.value = []
-      }
-      showMessage('error', response.message || 'Failed to load events')
-    }
-  } catch (error) {
-    console.error('Error loading events:', error)
-    if (!append) {
-      events.value = []
-    }
-    showMessage('error', 'An error occurred while loading events')
-  } finally {
-    loading.value = false
-    isLoadingMore.value = false
-  }
-}
-
-const loadMoreEvents = async () => {
-  // Only load more if we're not already loading and there are more pages
-  if (isLoadingMore.value || !hasMore.value || loading.value) {
-    return
-  }
-
-  // Only apply infinite scroll to public events view
-  if (currentView.value !== 'all') {
-    return
-  }
-
-  // Increment page and load more events
-  currentPage.value++
-  await loadEvents(true)
-}
-
 const loadCategories = async () => {
   try {
     const response = await eventCategoriesService.getCategories()
     if (response.success && response.data) {
       categories.value = response.data.results || []
     } else {
-      console.error('Failed to load categories:', response.message)
+      if (import.meta.env.DEV) {
+        console.error('Failed to load categories:', response.message)
+      }
     }
   } catch (error) {
-    console.error('Failed to load categories:', error)
+    if (import.meta.env.DEV) {
+      console.error('Failed to load categories:', error)
+    }
   }
 }
 
@@ -890,7 +347,6 @@ const createEvent = () => {
 }
 
 const editEvent = (event: Event) => {
-  // Navigate to event edit page (we'll create this later)
   router.push(`/events/${event.id}/edit`)
 }
 
@@ -909,13 +365,15 @@ const handleDeleteConfirm = async () => {
       showMessage('success', 'Event deleted successfully')
       closeDeleteModal()
       // Reload events
-      loadEvents()
+      await loadEvents(currentView.value, filters.value)
     } else {
       showMessage('error', response.message || 'Failed to delete event')
       isDeleting.value = false
     }
   } catch (error) {
-    console.error('Error deleting event:', error)
+    if (import.meta.env.DEV) {
+      console.error('Error deleting event:', error)
+    }
     showMessage('error', 'An error occurred while deleting the event')
     isDeleting.value = false
   }
@@ -966,7 +424,6 @@ const maybeOpenCreateModalFromRoute = () => {
   clearCreateEventQuery()
 }
 
-
 interface EventFormData {
   title: string
   description: string
@@ -974,7 +431,6 @@ interface EventFormData {
   end_date: string
   location: string
   privacy: 'public' | 'private'
-  // Extended with defaults added by modal
   short_description?: string
   is_virtual?: boolean
   virtual_link?: string
@@ -1006,7 +462,7 @@ const handleEventCreate = async (formData: EventFormData) => {
       end_date: formData.end_date,
       location: formData.location || '',
       is_virtual: formData.is_virtual || false,
-      virtual_link: formData.virtual_link || '', // API expects empty string, not null
+      virtual_link: formData.virtual_link || '',
       privacy: formData.privacy,
       status:
         (formData.status as 'draft' | 'published' | 'cancelled' | 'completed') ||
@@ -1036,16 +492,16 @@ const handleEventCreate = async (formData: EventFormData) => {
       currentView.value = targetView
 
       // Reload events to show the newly created event
-      // (The watcher won't trigger if we're already on 'my' tab)
-      await loadEvents()
+      await loadEvents(currentView.value, filters.value)
 
       // Verify we're still on the correct view after loading completes
-      // This handles the edge case where user switches tabs during loading
       if (currentView.value !== targetView && import.meta.env.DEV) {
         console.log('View changed during event creation, skipping reload')
       }
     } else {
-      console.error('Create event failed:', response)
+      if (import.meta.env.DEV) {
+        console.error('Create event failed:', response)
+      }
       let errorMessage = response.message || 'Failed to create event'
 
       // If there are validation errors, show them
@@ -1062,103 +518,14 @@ const handleEventCreate = async (formData: EventFormData) => {
       showMessage('error', errorMessage)
     }
   } catch (error) {
-    console.error('Error creating event:', error)
+    if (import.meta.env.DEV) {
+      console.error('Error creating event:', error)
+    }
     showMessage(
       'error',
       'Network error: Failed to create event. Please check your connection and try again.',
     )
   }
-}
-
-// Watchers
-// Watch for URL query parameter changes (e.g., browser back/forward)
-watch(
-  () => route.query.view,
-  (newView) => {
-    const view = newView as ViewType | undefined
-    if (view && ['all', 'my', 'registered'].includes(view)) {
-      // Only update if different to avoid unnecessary reloads
-      if (currentView.value !== view) {
-        currentView.value = view
-      }
-    } else if (!view && currentView.value !== 'all') {
-      // If no view param, default to 'all'
-      currentView.value = 'all'
-    }
-  }
-)
-
-watch(
-  () => route.query.createEvent,
-  () => {
-    maybeOpenCreateModalFromRoute()
-  },
-  { immediate: true },
-)
-
-watch(
-  [() => currentView.value, filters],
-  async () => {
-    await loadEvents()
-    // Re-setup infinite scroll after events are loaded and DOM is updated
-    await nextTick()
-    setupInfiniteScroll()
-  },
-  { deep: true },
-)
-
-// Watch authentication state changes
-watch(
-  () => authStore.isAuthenticated,
-  (isAuthenticated) => {
-    if (isAuthenticated) {
-      maybeOpenCreateModalFromRoute()
-      // Reload events when user logs in
-      loadEvents()
-    } else {
-      // User logged out - if they're on 'my' or 'registered' tabs, clear events to show login prompt
-      if (currentView.value === 'my' || currentView.value === 'registered') {
-        events.value = []
-      }
-    }
-  },
-)
-
-// Optimized: Single watcher for category overflow checking based on current view
-// This prevents unnecessary watchers from firing on irrelevant view changes
-watch(
-  [() => currentView.value, () => events.value.length],
-  () => {
-    // Wait for DOM to update, then check category overflows for the current view only
-    nextTick(() => {
-      let categoriesToCheck: Array<{ category: EventCategory | null; events: Event[] }> = []
-      let prefix = ''
-
-      if (currentView.value === 'all') {
-        categoriesToCheck = eventsByCategory.value
-        prefix = ''
-      } else if (currentView.value === 'my') {
-        categoriesToCheck = myEventsByCategory.value
-        prefix = 'my-'
-      } else if (currentView.value === 'registered') {
-        categoriesToCheck = registeredEventsByCategory.value
-        prefix = 'registered-'
-      }
-
-      categoriesToCheck.forEach(categoryGroup => {
-        const categoryId = prefix + (categoryGroup.category?.id || 'uncategorized')
-        checkCategoryOverflow(categoryId)
-      })
-    })
-  }
-)
-
-// Handle window resize to recalculate overflow
-const handleResize = () => {
-  // Recalculate overflow for all categories
-  Object.keys(categoryScrollRefs.value).forEach(categoryId => {
-    checkCategoryOverflow(categoryId)
-  })
 }
 
 // Intersection Observer for infinite scroll
@@ -1189,13 +556,13 @@ const setupInfiniteScroll = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && hasMore.value && !isLoadingMore.value) {
-            loadMoreEvents()
+            loadMoreEvents(currentView.value, filters.value)
           }
         })
       },
       {
         root: null,
-        rootMargin: '200px', // Trigger 200px before reaching the element
+        rootMargin: '200px',
         threshold: 0,
       }
     )
@@ -1206,30 +573,84 @@ const setupInfiniteScroll = () => {
   checkTrigger()
 }
 
+// Watchers
+watch(
+  () => route.query.view,
+  (newView) => {
+    const view = newView as ViewType | undefined
+    if (view && ['all', 'my', 'registered'].includes(view)) {
+      if (currentView.value !== view) {
+        currentView.value = view
+      }
+    } else if (!view && currentView.value !== 'all') {
+      currentView.value = 'all'
+    }
+  }
+)
+
+watch(
+  () => route.query.createEvent,
+  () => {
+    maybeOpenCreateModalFromRoute()
+  },
+  { immediate: true },
+)
+
+watch(
+  [() => currentView.value, filters],
+  async () => {
+    const result = await loadEvents(currentView.value, filters.value)
+    if (!result.success && result.message) {
+      showMessage('error', result.message)
+    }
+    // Re-setup infinite scroll after events are loaded and DOM is updated
+    await nextTick()
+    setupInfiniteScroll()
+  },
+  { deep: true },
+)
+
+// Watch authentication state changes
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      maybeOpenCreateModalFromRoute()
+      // Reload events when user logs in
+      loadEvents(currentView.value, filters.value)
+    } else {
+      // User logged out - if they're on 'my' or 'registered' tabs, clear events to show login prompt
+      if (currentView.value === 'my' || currentView.value === 'registered') {
+        events.value = []
+      }
+    }
+  },
+)
+
+// Watch for category overflow checking based on current view
+watch(
+  [() => currentView.value, () => events.value.length],
+  () => {
+    // Wait for DOM to update, then check category overflows
+    nextTick(() => {
+      recheckAllOverflows()
+    })
+  }
+)
+
 // Lifecycle
 onMounted(async () => {
   // Load initial data
   await loadCategories()
 
   // Load events after categories
-  // The currentView is already initialized from URL query parameter
-  await loadEvents()
+  const result = await loadEvents(currentView.value, filters.value)
+  if (!result.success && result.message) {
+    showMessage('error', result.message)
+  }
 
   // Set up infinite scroll
   setupInfiniteScroll()
-
-  // Add resize listener
-  window.addEventListener('resize', handleResize)
-})
-
-onUnmounted(() => {
-  // Clean up resize listener
-  window.removeEventListener('resize', handleResize)
-
-  // Clean up intersection observer
-  if (observer) {
-    observer.disconnect()
-  }
 })
 </script>
 
@@ -1302,33 +723,5 @@ onUnmounted(() => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
-}
-
-/* Add subtle shadow indicators for scrollability */
-@media (max-width: 767px) {
-  .overflow-x-auto {
-    position: relative;
-  }
-
-  /* Make edit/delete buttons visible on mobile cards */
-  .mobile-card :deep(.group) .absolute.top-3.right-3 {
-    opacity: 1 !important;
-  }
-
-  /* Adjust mobile card styling */
-  .mobile-card {
-    transform-origin: center;
-    transition: transform 0.2s ease;
-  }
-
-  .mobile-card:active {
-    transform: scale(0.98);
-  }
-
-  /* Improve touch targets on mobile */
-  .mobile-card :deep(button) {
-    min-width: 36px;
-    min-height: 36px;
-  }
 }
 </style>
