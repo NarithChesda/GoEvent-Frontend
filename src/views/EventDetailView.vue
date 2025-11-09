@@ -974,7 +974,7 @@ watch(
     }
 
     if (activeTab.value === 'guest-management' && guestManagementTabRef.value) {
-      // Poll for subtab changes
+      // Poll for subtab changes at a reasonable interval (1 second instead of 100ms)
       guestManagementPollInterval.value = setInterval(() => {
         if (!guestManagementTabRef.value || activeTab.value !== 'guest-management') {
           if (guestManagementPollInterval.value !== null) {
@@ -987,7 +987,7 @@ watch(
         if (currentSubTab && currentSubTab !== guestManagementSubTab.value) {
           guestManagementSubTab.value = currentSubTab
         }
-      }, 100) as unknown as number
+      }, 1000) as unknown as number
     }
   },
   { immediate: true }
@@ -1004,7 +1004,7 @@ watch(
     }
 
     if (activeTab.value === 'expenses' && expenseTabRef.value) {
-      // Poll for subtab changes
+      // Poll for subtab changes at a reasonable interval (1 second instead of 100ms)
       expenseTrackingPollInterval.value = setInterval(() => {
         if (!expenseTabRef.value || activeTab.value !== 'expenses') {
           if (expenseTrackingPollInterval.value !== null) {
@@ -1017,7 +1017,7 @@ watch(
         if (currentSubTab && currentSubTab !== expenseTrackingSubTab.value) {
           expenseTrackingSubTab.value = currentSubTab
         }
-      }, 100) as unknown as number
+      }, 1000) as unknown as number
     }
   },
   { immediate: true }

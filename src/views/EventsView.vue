@@ -392,6 +392,8 @@ import {
   type Event,
   type EventCategory,
   type EventFilters as EventFiltersType,
+  type ApiResponse,
+  type PaginatedResponse,
 } from '../services/api'
 
 type ViewType = 'all' | 'my' | 'registered'
@@ -733,7 +735,7 @@ const loadEvents = async (append = false) => {
   }
 
   try {
-    let response: any = null
+    let response: ApiResponse<PaginatedResponse<Event>> | ApiResponse<{ organized: Event[]; collaborated: Event[] }> | null = null
 
     const requestParams = {
       ...filters.value,
@@ -989,7 +991,9 @@ interface EventFormData {
 
 const handleEventCreate = async (formData: EventFormData) => {
   try {
-    console.log('Creating event with data:', formData)
+    if (import.meta.env.DEV) {
+      console.log('Creating event with data:', formData)
+    }
 
     // Prepare event data for API
     const eventData = {
@@ -1014,9 +1018,13 @@ const handleEventCreate = async (formData: EventFormData) => {
       timezone: formData.timezone || 'UTC',
     }
 
-    console.log('Sending event data to API:', eventData)
+    if (import.meta.env.DEV) {
+      console.log('Sending event data to API:', eventData)
+    }
     const response = await eventsService.createEvent(eventData)
-    console.log('API response:', response)
+    if (import.meta.env.DEV) {
+      console.log('API response:', response)
+    }
 
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
@@ -1033,7 +1041,7 @@ const handleEventCreate = async (formData: EventFormData) => {
 
       // Verify we're still on the correct view after loading completes
       // This handles the edge case where user switches tabs during loading
-      if (currentView.value !== targetView) {
+      if (currentView.value !== targetView && import.meta.env.DEV) {
         console.log('View changed during event creation, skipping reload')
       }
     } else {

@@ -162,6 +162,7 @@ import { Plus, X, Loader, Calendar, FileText, Clock } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
+import { sanitizeRichContent } from '@/utils/sanitize'
 
 // Types
 interface EventFormData {
@@ -232,13 +233,15 @@ const loadCategories = async () => {
 // Handle description input from contenteditable div
 const handleDescriptionInput = (event: Event) => {
   const target = event.target as HTMLElement
-  form.description = target.innerHTML
+  // Sanitize innerHTML to prevent XSS attacks
+  form.description = sanitizeRichContent(target.innerHTML, 10000)
 }
 
 // Handle description blur to ensure content is saved
 const handleDescriptionBlur = (event: Event) => {
   const target = event.target as HTMLElement
-  form.description = target.innerHTML
+  // Sanitize innerHTML to prevent XSS attacks
+  form.description = sanitizeRichContent(target.innerHTML, 10000)
 }
 
 // Update the description editor content when form.description changes

@@ -425,7 +425,7 @@ const handleSubmit = async () => {
 
   try {
     // Build update data object with proper type handling
-    const updateData: any = {
+    const updateData: Partial<Event> & { category?: number | null; location?: string; virtual_link?: string } = {
       title: form.title.trim(),
       short_description: form.short_description ? form.short_description.trim() : '',
       description: form.description.trim(),
@@ -455,8 +455,10 @@ const handleSubmit = async () => {
       updateData.virtual_link = ''
     }
 
-    console.log('Sending update data:', updateData) // Debug log
-    console.log('Original form data:', { ...form }) // Debug log
+    if (import.meta.env.DEV) {
+      console.log('Sending update data:', updateData)
+      console.log('Original form data:', { ...form })
+    }
 
     const response = await eventsService.patchEvent(event.value.id, updateData)
 
