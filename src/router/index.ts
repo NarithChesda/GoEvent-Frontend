@@ -156,7 +156,7 @@ router.beforeEach(async (to, from, next) => {
     // TokenManager has internal caching, so this won't cause excessive server calls
     const sensitiveRoutes = ['settings', 'security', 'commission', 'event-edit']
     if (sensitiveRoutes.includes(to.name as string)) {
-      console.debug(`[Router] Validating token for sensitive route: ${to.name}`)
+      console.debug(`[Router] Validating token for sensitive route: ${String(to.name)}`)
 
       try {
         const isTokenValid = await authService.ensureValidToken()

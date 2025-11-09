@@ -31,7 +31,7 @@
         <button
           @click="liveUpdates = !liveUpdates"
           class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl px-2.5 py-2 hover:bg-white/90 transition-all duration-200 shadow-lg flex items-center gap-1.5 text-slate-700 text-sm"
-          :aria-pressed="liveUpdates.toString()"
+          :aria-pressed="liveUpdates"
           title="Toggle live updates"
         >
           <span

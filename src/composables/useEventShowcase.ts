@@ -557,7 +557,7 @@ export function useEventShowcase() {
     const requestKey = `showcase-${eventId}-${language}-${guest}`
 
     try {
-      const data = await deduplicateRequest(requestKey, async () => {
+      const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
         loading.value = true
         error.value = null
 
@@ -584,7 +584,7 @@ export function useEventShowcase() {
           throw new Error(showcaseResponse.message || 'Failed to load event invitation')
         }
 
-        return showcaseResponse.data
+        return showcaseResponse.data as ShowcaseData
       })
 
       showcaseData.value = data
@@ -677,14 +677,14 @@ export function useEventShowcase() {
         params.guest_name = guestName.value as string
       }
 
-      const data = await deduplicateRequest(requestKey, async () => {
+      const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
         const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
 
         if (!showcaseResponse.success || !showcaseResponse.data) {
           throw new Error(showcaseResponse.message || 'Failed to load event content')
         }
 
-        return showcaseResponse.data
+        return showcaseResponse.data as ShowcaseData
       })
 
       // Update only the content-related parts of showcaseData

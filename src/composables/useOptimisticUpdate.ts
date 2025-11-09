@@ -44,9 +44,10 @@ export function useOptimisticUpdate<T>(dataRef: Ref<T[]>) {
         let errorMessage = response.message || 'Operation failed'
         if (response.errors) {
           const errorMessages = Object.entries(response.errors)
-            .map(([field, messages]: [string, string[] | string]) =>
-              `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
-            )
+            .map(([field, messages]) => {
+              const msg = messages as string[] | string
+              return `${field}: ${Array.isArray(msg) ? msg.join(', ') : msg}`
+            })
             .join('; ')
           errorMessage = errorMessages || errorMessage
         }

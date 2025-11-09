@@ -391,7 +391,8 @@ watch(
 
     if (!isDifferent) {
       for (const key of newKeys) {
-        if (localFilters[key as keyof EventFilters] !== newFilters[key as keyof EventFilters]) {
+        const typedKey = key as keyof EventFilters
+        if (localFilters[typedKey] !== newFilters[typedKey]) {
           isDifferent = true
           break
         }

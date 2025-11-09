@@ -82,8 +82,8 @@
           :loading="index < 4 ? 'eager' : 'lazy'"
           :decoding="index < 3 ? 'sync' : 'async'"
           :fetchpriority="index < 2 ? 'high' : 'auto'"
-          @load="handleImageLoad(photo.id)"
-          @error="handleImageError(photo.id)"
+          @load="handleImageLoad(String(photo.id))"
+          @error="handleImageError(String(photo.id))"
         />
       </div>
     </div>

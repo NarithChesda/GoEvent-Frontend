@@ -4,7 +4,7 @@ import {
   isNavigationFailure,
   useRouter,
 } from 'vue-router'
-import type { Router } from 'vue-router'
+import type { Router, NavigationFailure } from 'vue-router'
 
 const wait = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -31,8 +31,7 @@ const ensureNavigation = async (router: Router, hash?: string) => {
       await router.push({ name: 'home', hash: targetHash || undefined })
     } catch (error) {
       if (
-        !isNavigationFailure(error) ||
-        error.type !== NavigationFailureType.duplicated
+        !isNavigationFailure(error, NavigationFailureType.duplicated)
       ) {
         throw error
       }
@@ -63,8 +62,7 @@ export const useLandingNavigation = () => {
         await router.push('/home')
       } catch (error) {
         if (
-          !isNavigationFailure(error) ||
-          error.type !== NavigationFailureType.duplicated
+          !isNavigationFailure(error, NavigationFailureType.duplicated)
         ) {
           throw error
         }

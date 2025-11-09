@@ -499,7 +499,7 @@ const categoryFilters = computed(() => {
     filters.push({
       id: category.id.toString(),
       label: category.name,
-      icon: getIconComponent(category.icon)
+      icon: getIconComponent(category.icon) as typeof Filter
     })
   })
 

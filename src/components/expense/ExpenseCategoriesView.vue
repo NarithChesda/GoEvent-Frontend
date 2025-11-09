@@ -259,6 +259,7 @@ import ExpenseModal from './ExpenseModal.vue'
 // Emits
 const emit = defineEmits<{
   'category-updated': []
+  'create-category': []
 }>()
 
 const loading = ref(false)

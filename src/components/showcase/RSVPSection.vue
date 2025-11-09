@@ -405,11 +405,11 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
       currentRegistration.value = registrationData
 
       // If response doesn't have confirmation code but we had one before, preserve it
-      if (!currentRegistration.value.confirmation_code && existingConfirmationCode) {
+      if (currentRegistration.value && !currentRegistration.value.confirmation_code && existingConfirmationCode) {
         currentRegistration.value = {
           ...currentRegistration.value,
           confirmation_code: existingConfirmationCode
-        }
+        } as EventRegistration
       }
 
       rsvpStatus.value = status
@@ -514,11 +514,11 @@ const updateGuestCountInAPI = async () => {
       currentRegistration.value = registrationData
 
       // If response doesn't have confirmation code but we had one before, preserve it
-      if (!currentRegistration.value.confirmation_code && existingConfirmationCode) {
+      if (currentRegistration.value && !currentRegistration.value.confirmation_code && existingConfirmationCode) {
         currentRegistration.value = {
           ...currentRegistration.value,
           confirmation_code: existingConfirmationCode
-        }
+        } as EventRegistration
       }
 
       // Mark as saved
