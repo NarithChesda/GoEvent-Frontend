@@ -55,7 +55,7 @@
             :style="fallbackLogoStyle"
           >
             <div
-              class="scaled-logo mx-auto fallback-logo"
+              class="fallback-logo"
               v-html="fallbackLogoSvgContent"
             />
           </div>
@@ -514,7 +514,7 @@ const fallbackLogoStyle = computed(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 0;
+  padding: 0.5rem;
 }
 
 .fallback-logo {
@@ -522,10 +522,10 @@ const fallbackLogoStyle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 90%;
-  max-height: 100%;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .fallback-logo:hover {
@@ -536,8 +536,9 @@ const fallbackLogoStyle = computed(() => {
   display: block;
   width: auto !important;
   height: 100% !important;
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 90% !important;
+  max-height: 100% !important;
   object-fit: contain;
+  margin: 0 auto;
 }
 </style>
