@@ -101,7 +101,7 @@
         :is-group-loading="isGroupLoading"
         :is-group-expanded="isGroupExpanded"
         :get-group-pagination="getGroupPagination"
-        :get-all-guests-pagination="getAllGuestsPagination"
+        :all-guests-pagination="getAllGuestsPagination()"
         :is-all-guests-loading="isAllGuestsLoading"
         :load-all-guests="loadAllGuests"
         @add-guest="showAddGuestModal = true"

@@ -266,6 +266,15 @@ import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown } from 'l
 import GuestListItem from './GuestListItem.vue'
 import type { GuestGroup, EventGuest } from '../../services/api'
 
+interface GroupPaginationData {
+  currentPage: number
+  totalCount: number
+  guests: EventGuest[]
+  loading: boolean
+  searchTerm: string
+  hasLoaded: boolean
+}
+
 interface Props {
   groups: GuestGroup[]
   loadingGroups: boolean
@@ -278,14 +287,8 @@ interface Props {
     totalCount: number
     searchTerm: string
   }
-  // All Groups pagination
-  getAllGuestsPagination: () => {
-    currentPage: number
-    totalCount: number
-    guests: EventGuest[]
-    loading: boolean
-    searchTerm: string
-  }
+  // All Groups pagination - now accepts the data directly instead of a getter function
+  allGuestsPagination: GroupPaginationData
   isAllGuestsLoading: () => boolean
   loadAllGuests: (page: number, silent: boolean) => Promise<any>
 }
@@ -340,7 +343,7 @@ watch(activeFilter, (newFilter) => {
   selectedGuestIds.value.clear()
   // Sync the search input with the actual search term from the composable
   if (newFilter === 'all') {
-    groupSearchQuery.value = props.getAllGuestsPagination().searchTerm
+    groupSearchQuery.value = props.allGuestsPagination.searchTerm
   } else {
     const groupId = parseInt(newFilter)
     const pagination = props.getGroupPagination(groupId)
@@ -362,7 +365,7 @@ onMounted(() => {
   if (props.groups.length > 0) {
     // Sync search input with current search state
     if (activeFilter.value === 'all') {
-      groupSearchQuery.value = props.getAllGuestsPagination().searchTerm
+      groupSearchQuery.value = props.allGuestsPagination.searchTerm
     } else {
       const groupId = parseInt(activeFilter.value)
       const pagination = props.getGroupPagination(groupId)
@@ -387,7 +390,8 @@ const filteredGroups = computed(() => {
 const allFilteredGuests = computed(() => {
   if (activeFilter.value === 'all') {
     // Return guests from allGroupsPagination
-    return props.getAllGuestsPagination().guests
+    // Now properly reactive since it's a prop, not a function call
+    return props.allGuestsPagination.guests
   }
 
   // For specific group filter, return guests from that group
@@ -428,7 +432,7 @@ const activeFilterLabel = computed(() => {
 // Pagination computed properties
 const activePagination = computed(() => {
   if (activeFilter.value === 'all') {
-    return props.getAllGuestsPagination()
+    return props.allGuestsPagination
   }
   // For specific group filter
   if (filteredGroups.value.length === 0) return null
@@ -498,12 +502,12 @@ const isAllCurrentPageSelected = computed(() => {
 const handleToggleSelectAll = () => {
   if (isAllCurrentPageSelected.value) {
     // Deselect all on current page
-    allFilteredGuests.value.forEach(guest => {
+    allFilteredGuests.value.forEach((guest: EventGuest) => {
       selectedGuestIds.value.delete(guest.id)
     })
   } else {
     // Select all on current page
-    allFilteredGuests.value.forEach(guest => {
+    allFilteredGuests.value.forEach((guest: EventGuest) => {
       selectedGuestIds.value.add(guest.id)
     })
   }
