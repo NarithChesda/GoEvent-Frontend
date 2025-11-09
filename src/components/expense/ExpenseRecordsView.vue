@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <!-- Header with Add Expense Button -->
+    <!-- Header with Search -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h3 class="text-lg font-bold text-slate-900">Expense Records</h3>
@@ -21,10 +21,11 @@
             class="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
           />
         </div>
+        <!-- Add Expense Button -->
         <button
           v-if="canEdit"
-          @click="showAddExpenseModal = true"
-          class="hidden sm:flex flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 whitespace-nowrap"
+          @click="$emit('create-expense')"
+          class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:-translate-y-0.5"
         >
           <Plus class="w-4 h-4" />
           <span class="hidden sm:inline">Add Expense</span>
@@ -59,7 +60,7 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error && !showAddExpenseModal" class="bg-red-50/50 border border-red-200/50 rounded-2xl p-6">
+    <div v-else-if="error" class="bg-red-50/50 border border-red-200/50 rounded-2xl p-6">
       <div class="flex items-start gap-3">
         <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
           <AlertCircle class="w-5 h-5 text-red-600" />
@@ -74,18 +75,17 @@
       </div>
     </div>
 
-    <!-- Empty State - Add Expense Card -->
+    <!-- Empty State - No Expenses -->
     <div
       v-else-if="filteredExpenses.length === 0 && canEdit"
-      @click="showAddExpenseModal = true"
-      class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group"
+      class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12"
     >
       <div class="flex flex-col items-center justify-center">
-        <div class="w-16 h-16 bg-slate-200 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300">
-          <Plus class="w-8 h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+        <div class="w-16 h-16 bg-slate-200 rounded-2xl flex items-center justify-center mb-4">
+          <AlertCircle class="w-8 h-8 text-slate-400" />
         </div>
-        <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Add New Expense</h4>
-        <p class="text-sm text-slate-400 mt-1">{{ searchQuery || activeFilter !== 'all' ? 'No expenses match your filters. Click to add one.' : 'Start tracking expenses for your event' }}</p>
+        <h4 class="font-semibold text-slate-600">No Expenses Found</h4>
+        <p class="text-sm text-slate-400 mt-1">{{ searchQuery || activeFilter !== 'all' ? 'Try adjusting your filters or use Quick Add to create a new expense' : 'Use Quick Add button to start tracking expenses' }}</p>
       </div>
     </div>
 
@@ -204,402 +204,179 @@
       </div>
     </div>
 
-
-    <!-- Add Expense Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showAddExpenseModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
-          @click.self="closeModal"
-        >
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm pointer-events-none"></div>
-
-          <div class="flex min-h-full items-center justify-center p-4" @click.self="closeModal">
-            <div
-              ref="addModalRef"
-              role="dialog"
-              aria-labelledby="add-expense-modal-title"
-              aria-modal="true"
-              class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-              @click.stop
-            >
-              <!-- Header -->
-              <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <DollarSign class="w-4.5 h-4.5" />
-                    </div>
-                    <h2 id="add-expense-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">{{ editingExpense ? 'Edit Expense' : 'Add Expense' }}</h2>
-                  </div>
-                  <button
-                    @click="closeModal"
-                    aria-label="Close dialog"
-                    class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  >
-                    <X class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-            <!-- Form -->
-            <form @submit.prevent="handleAddExpense" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <!-- Error Message -->
-              <div v-if="modalError" class="p-4 bg-red-50 border border-red-200 rounded-xl">
-                <p class="text-sm text-red-600">{{ modalError }}</p>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                <!-- Category -->
-                <div class="md:col-span-2">
-                  <div class="flex items-center justify-between mb-2">
-                    <label for="expense-category" class="block text-sm font-medium text-slate-700">
-                      Category <span class="text-red-500">*</span>
-                    </label>
-                    <button
-                      type="button"
-                      @click="openCreateCategoryModal"
-                      class="text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors"
-                    >
-                      + Create Category
-                    </button>
-                  </div>
-                  <div class="relative">
-                    <select
-                      id="expense-category"
-                      v-model="newExpense.category_id"
-                      aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
-                      required
-                    >
-                      <option value="">Select a category</option>
-                      <option
-                        v-for="category in categories"
-                        :key="category.id"
-                        :value="category.id"
-                      >
-                        {{ category.name }}
-                      </option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Description -->
-                <div class="md:col-span-2">
-                  <label for="expense-description" class="block text-sm font-medium text-slate-700 mb-2">
-                    Description <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="expense-description"
-                    type="text"
-                    v-model="newExpense.description"
-                    placeholder="E.g., Venue rental, Catering service..."
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                    required
-                  />
-                </div>
-
-                <!-- Amount -->
-                <div>
-                  <label for="expense-amount" class="block text-sm font-medium text-slate-700 mb-2">
-                    Amount <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign class="w-4 h-4 text-slate-400" />
-                    </div>
-                    <input
-                      id="expense-amount"
-                      type="number"
-                      v-model="newExpense.amount"
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0.01"
-                      aria-required="true"
-                      class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <!-- Currency -->
-                <div>
-                  <label for="expense-currency" class="block text-sm font-medium text-slate-700 mb-2">
-                    Currency <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <select
-                      id="expense-currency"
-                      v-model="newExpense.currency"
-                      aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
-                      required
-                    >
-                      <option
-                        v-for="currency in SUPPORTED_CURRENCIES"
-                        :key="currency.code"
-                        :value="currency.code"
-                      >
-                        {{ currency.name }}
-                      </option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Date -->
-                <div>
-                  <label for="expense-date" class="block text-sm font-medium text-slate-700 mb-2">
-                    Date <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="expense-date"
-                    type="date"
-                    v-model="newExpense.date"
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                    required
-                  />
-                </div>
-
-                <!-- Payment Method -->
-                <div>
-                  <label for="expense-payment-method" class="block text-sm font-medium text-slate-700 mb-2">
-                    Payment Method <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <select
-                      id="expense-payment-method"
-                      v-model="newExpense.payment_method"
-                      aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
-                      required
-                    >
-                      <option value="">Select payment method</option>
-                      <option
-                        v-for="method in PAYMENT_METHOD_OPTIONS"
-                        :key="method.value"
-                        :value="method.value"
-                      >
-                        {{ method.label }}
-                      </option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown class="w-4 h-4 text-slate-500" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Additional Details (collapsible) -->
-              <div class="rounded-xl border border-slate-200 bg-white/70">
-                <button
-                  type="button"
-                  class="w-full flex items-center justify-between px-4 py-3"
-                  @click="additionalDetailsOpen = !additionalDetailsOpen"
-                  :aria-expanded="additionalDetailsOpen ? 'true' : 'false'"
-                  aria-controls="additional-details-section"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-slate-700">Additional Details</span>
-                    <span class="hidden sm:inline text-xs text-slate-500">Vendor, receipt, and notes</span>
-                  </div>
-                  <ChevronDown
-                    class="w-4 h-4 text-slate-500 transition-transform"
-                    :class="additionalDetailsOpen ? 'rotate-180' : ''"
-                  />
-                </button>
-                <Transition name="collapse">
-                  <div v-show="additionalDetailsOpen" id="additional-details-section" class="px-4 pb-4 space-y-3">
-                    <!-- Paid To -->
-                    <div>
-                      <label for="expense-paid-to" class="block text-sm font-medium text-slate-700 mb-2">Paid To (Vendor/Recipient)</label>
-                      <input
-                        id="expense-paid-to"
-                        type="text"
-                        v-model="newExpense.paid_to"
-                        placeholder="E.g., Luxury Hotel Group, Premium Catering Co."
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                      />
-                    </div>
-
-                    <!-- Receipt Upload -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Receipt/Invoice</label>
-                      <div class="relative">
-                        <input
-                          type="file"
-                          ref="receiptInput"
-                          @change="handleFileChange"
-                          accept="image/*,.pdf"
-                          class="hidden"
-                        />
-                        <button
-                          type="button"
-                          @click="receiptInput?.click()"
-                          class="w-full px-4 py-6 border-2 border-slate-200 border-dashed rounded-lg hover:bg-slate-50 hover:border-sky-300 transition-all group"
-                        >
-                          <div class="flex flex-col items-center">
-                            <div class="w-10 h-10 bg-slate-100 group-hover:bg-sky-100 rounded-lg flex items-center justify-center mb-2 transition-all">
-                              <Upload class="w-5 h-5 text-slate-400 group-hover:text-sky-600 transition-colors" />
-                            </div>
-                            <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
-                              {{ selectedFile ? selectedFile.name : 'Click to upload receipt' }}
-                            </p>
-                            <p class="text-xs text-slate-400 mt-1">PDF, PNG, JPG (max 5MB)</p>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Notes -->
-                    <div>
-                      <label for="expense-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-                      <textarea
-                        id="expense-notes"
-                        v-model="newExpense.notes"
-                        rows="3"
-                        placeholder="Add any additional notes about this expense..."
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
-                      ></textarea>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                  :disabled="submitting"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  :disabled="submitting"
-                >
-                  <span
-                    v-if="submitting"
-                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                  ></span>
-                  {{ submitting ? 'Saving...' : (editingExpense ? 'Update Expense' : 'Add Expense') }}
-                </button>
-              </div>
-            </form>
+    <!-- Edit Expense Modal -->
+    <ExpenseModal
+      :show="showEditModal"
+      title="Edit Expense"
+      :icon="Receipt"
+      icon-bg-class="bg-emerald-50 text-emerald-600"
+      :error="modalError"
+      :submitting="submitting"
+      submit-text="Update Expense"
+      @close="closeEditModal"
+      @submit="handleUpdateExpense"
+    >
+      <!-- Category -->
+      <div>
+        <label for="edit-expense-category" class="block text-sm font-medium text-slate-700 mb-2">
+          Category <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <select
+            id="edit-expense-category"
+            v-model="editForm.category_id"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90 appearance-none pr-10"
+            required
+          >
+            <option value="">Select a category</option>
+            <option v-for="category in categories" :key="category.id" :value="category.id.toString()">
+              {{ category.name }}
+            </option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <ChevronDown class="w-4 h-4 text-slate-500" />
           </div>
         </div>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <!-- Create Category Modal (Nested) -->
-    <ExpenseModal
-      :show="showCategoryModal"
-      title="Create Category"
-      :icon="Palette"
-      icon-bg-class="bg-purple-50 text-purple-600"
-      icon-size-class="w-5 h-5"
-      aria-label-id="create-category-modal-title"
-      :error="categoryError"
-      :submitting="categorySubmitting"
-      submit-text="Create Category"
-      z-index-class="z-[70]"
-      @close="closeCategoryModal"
-      @submit="handleCreateCategory"
-    >
-      <!-- Category Name -->
-      <div>
-        <label for="new-category-name-expense" class="block text-sm font-medium text-slate-700 mb-2">
-          Category Name <span class="text-red-500">*</span>
-        </label>
-        <input
-          id="new-category-name-expense"
-          type="text"
-          v-model="categoryFormData.name"
-          placeholder="E.g., Venue, Catering, Photography..."
-          maxlength="100"
-          aria-required="true"
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-          required
-        />
       </div>
 
       <!-- Description -->
       <div>
-        <label for="new-category-description-expense" class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+        <label for="edit-expense-description" class="block text-sm font-medium text-slate-700 mb-2">
+          Description <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="edit-expense-description"
+          type="text"
+          v-model="editForm.description"
+          placeholder="E.g., Venue deposit, Catering services..."
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90"
+          required
+        />
+      </div>
+
+      <!-- Amount & Currency -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="edit-expense-amount" class="block text-sm font-medium text-slate-700 mb-2">
+            Amount <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <DollarSign class="w-4 h-4 text-slate-400" />
+            </div>
+            <input
+              id="edit-expense-amount"
+              type="number"
+              v-model="editForm.amount"
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <label for="edit-expense-currency" class="block text-sm font-medium text-slate-700 mb-2">Currency</label>
+          <select
+            id="edit-expense-currency"
+            v-model="editForm.currency"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90"
+          >
+            <option v-for="curr in SUPPORTED_CURRENCIES" :key="curr.code" :value="curr.code">
+              {{ curr.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Date & Payment Method -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="edit-expense-date" class="block text-sm font-medium text-slate-700 mb-2">
+            Date <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="edit-expense-date"
+            type="date"
+            v-model="editForm.date"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90"
+            required
+          />
+        </div>
+        <div>
+          <label for="edit-expense-payment" class="block text-sm font-medium text-slate-700 mb-2">
+            Payment Method <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="edit-expense-payment"
+            v-model="editForm.payment_method"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90"
+            required
+          >
+            <option value="">Select payment method</option>
+            <option v-for="method in PAYMENT_METHOD_OPTIONS" :key="method.value" :value="method.value">
+              {{ method.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Paid To -->
+      <div>
+        <label for="edit-expense-paid-to" class="block text-sm font-medium text-slate-700 mb-2">Paid To</label>
+        <input
+          id="edit-expense-paid-to"
+          type="text"
+          v-model="editForm.paid_to"
+          placeholder="Vendor or recipient name..."
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90"
+        />
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label for="edit-expense-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
         <textarea
-          id="new-category-description-expense"
-          v-model="categoryFormData.description"
+          id="edit-expense-notes"
+          v-model="editForm.notes"
           rows="3"
-          placeholder="Describe what expenses this category covers..."
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+          placeholder="Additional notes about this expense..."
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white/90 resize-none"
         ></textarea>
       </div>
 
-      <!-- Color and Icon Row -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Category Color -->
-        <div>
-          <label for="new-category-color-expense" class="block text-sm font-medium text-slate-700 mb-2">
-            Category Color
+      <!-- Receipt Upload -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Receipt</label>
+        <div class="flex items-center gap-3">
+          <label
+            for="edit-expense-receipt"
+            class="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+          >
+            <Upload class="w-4 h-4 text-slate-500" />
+            <span class="text-sm text-slate-600">{{ selectedFile ? selectedFile.name : 'Choose file' }}</span>
           </label>
-          <div class="flex items-center gap-3">
-            <input
-              id="new-category-color-expense"
-              v-model="categoryFormData.color"
-              type="color"
-              class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
-            />
-            <input
-              id="new-category-color-hex-expense"
-              v-model="categoryFormData.color"
-              type="text"
-              placeholder="#3498db"
-              aria-label="Color hex value"
-              class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-            />
-          </div>
+          <input
+            id="edit-expense-receipt"
+            ref="receiptInput"
+            type="file"
+            accept="image/*,application/pdf"
+            @change="handleFileChange"
+            class="hidden"
+          />
+          <button
+            v-if="selectedFile"
+            type="button"
+            @click="clearFile"
+            class="text-sm text-red-600 hover:text-red-700"
+          >
+            Remove
+          </button>
         </div>
-
-        <!-- Icon Selection -->
-        <div>
-          <label for="new-category-icon-expense" class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
-          <div class="relative">
-            <select
-              id="new-category-icon-expense"
-              v-model="categoryFormData.icon"
-              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
-            >
-              <option value="">Select an icon</option>
-              <option value="fa-building">Building</option>
-              <option value="fa-utensils">Food & Catering</option>
-              <option value="fa-palette">Decoration</option>
-              <option value="fa-camera">Photography</option>
-              <option value="fa-music">Entertainment</option>
-              <option value="fa-gift">Gifts & Favors</option>
-              <option value="fa-car">Transportation</option>
-              <option value="fa-hotel">Venue & Lodging</option>
-              <option value="fa-shirt">Attire & Costumes</option>
-              <option value="fa-lightbulb">Lighting & AV</option>
-              <option value="fa-clipboard">Planning & Coordination</option>
-              <option value="fa-megaphone">Marketing & Promotion</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <ChevronDown class="w-4 h-4 text-slate-500" />
-            </div>
-          </div>
-        </div>
+        <p v-if="editingExpense?.receipt" class="text-xs text-slate-500 mt-1">
+          Current: <a :href="editingExpense.receipt" target="_blank" class="text-blue-600 hover:underline">View receipt</a>
+        </p>
       </div>
     </ExpenseModal>
 
@@ -635,37 +412,31 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import {
-  Plus,
   Search,
   Calendar,
   CreditCard,
   Building2,
-  UtensilsCrossed,
-  Palette,
   Paperclip,
   Eye,
   Edit2,
   Trash2,
-  X,
-  DollarSign,
-  Upload,
   AlertCircle,
   Filter,
   Check,
-  ChevronDown
+  DollarSign,
+  Upload,
+  ChevronDown,
+  Receipt,
+  Plus
 } from 'lucide-vue-next'
 import {
   expensesService,
   expenseCategoriesService,
   type ExpenseRecord,
-  type ExpenseCategory,
-  type CreateExpenseRecordRequest
+  type ExpenseCategory
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
-import { useExpenseModal } from '@/composables/useExpenseModal'
 import { useSuccessToast } from '@/composables/useSuccessToast'
-import { useFileUpload } from '@/composables/useFileUpload'
-import { useOptimisticUpdate } from '@/composables/useOptimisticUpdate'
 import { formatPaymentMethod, PAYMENT_METHOD_OPTIONS } from '@/constants/paymentMethods'
 import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/constants/currencies'
 import { getErrorMessage } from '@/utils/errorMessages'
@@ -682,6 +453,7 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   'create-category': []
+  'create-expense': []
 }>()
 
 const loading = ref(false)
@@ -690,28 +462,28 @@ const expenses = ref<ExpenseRecord[]>([])
 const categories = ref<ExpenseCategory[]>([])
 const searchQuery = ref('')
 const activeFilter = ref('all')
-const editingExpense = ref<ExpenseRecord | null>(null)
 const deletingExpense = ref<ExpenseRecord | null>(null)
-const additionalDetailsOpen = ref(false)
+const editingExpense = ref<ExpenseRecord | null>(null)
+const showEditModal = ref(false)
+const modalError = ref<string | null>(null)
+const submitting = ref(false)
+const selectedFile = ref<File | null>(null)
+const receiptInput = ref<HTMLInputElement | null>(null)
 
-// Category modal state
-const showCategoryModal = ref(false)
-const categoryFormData = ref({
-  name: '',
+// Edit form data
+const editForm = ref({
+  category_id: '',
   description: '',
-  icon: '',
-  color: '#3498db'
+  amount: null as number | null,
+  currency: 'USD' as CurrencyCode,
+  date: '',
+  payment_method: '' as 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other' | '',
+  paid_to: '',
+  notes: ''
 })
-const categorySubmitting = ref(false)
-const categoryError = ref<string | null>(null)
-const isCreatingCategoryFromExpense = ref(false)
-const pendingCategorySelection = ref<number | null>(null)
 
 // Use composables
-const { isModalOpen: showAddExpenseModal, modalRef: addModalRef, submitting, error: modalError, openModal, closeModal: closeExpenseModal } = useExpenseModal()
 const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
-const { selectedFile, fileInput: receiptInput, handleFileChange, clearFile } = useFileUpload()
-const { performUpdate } = useOptimisticUpdate(expenses)
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -732,17 +504,6 @@ const categoryFilters = computed(() => {
   })
 
   return filters
-})
-
-const newExpense = ref({
-  category_id: '',
-  description: '',
-  amount: null as number | null,
-  currency: 'USD' as CurrencyCode,
-  date: new Date().toISOString().split('T')[0],
-  payment_method: '' as 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other' | '',
-  paid_to: '',
-  notes: ''
 })
 
 // Computed filtered expenses
@@ -802,162 +563,147 @@ const loadCategories = async () => {
   }
 }
 
-const closeModal = () => {
-  closeExpenseModal()
+const confirmDeleteExpense = (expense: ExpenseRecord) => {
+  deletingExpense.value = expense
+}
+
+const handleDelete = async () => {
+  if (!deletingExpense.value) return
+
+  submitting.value = true
+  const deletedId = deletingExpense.value.id
+
+  try {
+    const response = await expensesService.deleteExpense(props.eventId, deletedId)
+
+    if (response.success) {
+      // Remove from local list
+      expenses.value = expenses.value.filter(expense => expense.id !== deletedId)
+      showSuccess('Expense deleted successfully!')
+      deletingExpense.value = null
+    } else {
+      error.value = response.message || 'Failed to delete expense'
+    }
+  } catch (err) {
+    error.value = getErrorMessage(err, 'delete expense')
+    console.error('Error deleting expense:', err)
+  } finally {
+    submitting.value = false
+  }
+}
+
+// Edit expense functions
+const editExpense = (expense: ExpenseRecord) => {
+  editingExpense.value = expense
+  editForm.value = {
+    category_id: expense.category.toString(),
+    description: expense.description,
+    amount: parseFloat(expense.amount),
+    currency: expense.currency as CurrencyCode,
+    date: expense.date,
+    payment_method: expense.payment_method,
+    paid_to: expense.paid_to || '',
+    notes: expense.notes || ''
+  }
+  selectedFile.value = null
+  showEditModal.value = true
+}
+
+const closeEditModal = () => {
+  showEditModal.value = false
+  modalError.value = null
   editingExpense.value = null
-  error.value = null
-  clearFile()
-  newExpense.value = {
+  selectedFile.value = null
+  editForm.value = {
     category_id: '',
     description: '',
     amount: null,
     currency: 'USD',
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     payment_method: '',
     paid_to: '',
     notes: ''
   }
 }
 
-const editExpense = (expense: ExpenseRecord) => {
-  editingExpense.value = expense
-  error.value = null
-  newExpense.value = {
-    category_id: expense.category.toString(),
-    description: expense.description,
-    amount: parseFloat(expense.amount),
-    currency: expense.currency,
-    date: expense.date,
-    payment_method: expense.payment_method,
-    paid_to: expense.paid_to || '',
-    notes: expense.notes || ''
-  }
-  openModal()
-}
+const handleUpdateExpense = async () => {
+  if (!editingExpense.value) return
 
-const confirmDeleteExpense = (expense: ExpenseRecord) => {
-  deletingExpense.value = expense
-}
-
-const handleAddExpense = async () => {
-  if (!newExpense.value.category_id || !newExpense.value.description || !newExpense.value.amount || !newExpense.value.date || !newExpense.value.payment_method) {
+  // Validation
+  if (!editForm.value.category_id || !editForm.value.description || !editForm.value.amount || !editForm.value.date) {
     modalError.value = 'Please fill in all required fields'
     return
   }
 
-  const categoryId = parseInt(newExpense.value.category_id)
-  const isEditing = !!editingExpense.value
-  const categoryInfo = categories.value.find(c => c.id === categoryId)
-
-  if (!categoryInfo) {
-    modalError.value = 'Invalid category selected'
-    return
-  }
-
-  // API expects both 'category' and 'category_id' fields (backend requirement)
-  const requestData: CreateExpenseRecordRequest = {
-    category: categoryId,
-    category_id: categoryId,
-    description: newExpense.value.description,
-    amount: newExpense.value.amount!,
-    currency: newExpense.value.currency,
-    date: newExpense.value.date,
-    payment_method: newExpense.value.payment_method,
-    paid_to: newExpense.value.paid_to || undefined,
-    notes: newExpense.value.notes || undefined
-  }
-
-  // Prepare optimistic data
-  let optimisticData: ExpenseRecord[]
-  if (isEditing && editingExpense.value) {
-    // Update existing expense in the list
-    const index = expenses.value.findIndex(e => e.id === editingExpense.value!.id)
-    if (index !== -1) {
-      optimisticData = [...expenses.value]
-      optimisticData[index] = {
-        ...editingExpense.value,
-        ...requestData,
-        category: categoryId,
-        category_info: categoryInfo,
-        // Don't create Object URL - will be handled by server response
-        receipt: editingExpense.value.receipt
-      } as ExpenseRecord
-    } else {
-      optimisticData = expenses.value
-    }
-  } else {
-    // Add temporary expense
-    const tempExpense: ExpenseRecord = {
-      id: Date.now(), // Temporary numeric ID
-      ...requestData,
-      category: categoryId,
-      category_info: categoryInfo,
-      receipt: null, // Will be set by server
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-    optimisticData = [tempExpense, ...expenses.value]
-  }
-
   submitting.value = true
+  modalError.value = null
 
-  const success = await performUpdate(
-    async () => {
-      if (import.meta.env.DEV) {
-        console.log('Submitting expense data:', requestData, 'Receipt:', selectedFile.value)
-      }
-
-      const response = isEditing && editingExpense.value
-        ? await expensesService.updateExpense(props.eventId, editingExpense.value.id, requestData, selectedFile.value || undefined)
-        : await expensesService.createExpense(props.eventId, requestData, selectedFile.value || undefined)
-
-      if (import.meta.env.DEV) {
-        console.log('Expense API response:', response)
-      }
-
-      return response
-    },
-    optimisticData,
-    {
-      onSuccess: async () => {
-        await loadExpenses()
-        showSuccess(isEditing ? 'Expense updated successfully!' : 'Expense added successfully!')
-        closeModal()
-      },
-      onError: (errorMsg) => {
-        modalError.value = errorMsg
-      },
-      errorContext: isEditing ? 'update expense' : 'create expense'
+  try {
+    const requestData = {
+      category: parseInt(editForm.value.category_id),
+      category_id: parseInt(editForm.value.category_id),
+      description: editForm.value.description,
+      amount: editForm.value.amount,
+      currency: editForm.value.currency,
+      date: editForm.value.date,
+      payment_method: editForm.value.payment_method || undefined,
+      paid_to: editForm.value.paid_to || undefined,
+      notes: editForm.value.notes || undefined,
     }
-  )
 
-  submitting.value = false
+    const response = await expensesService.updateExpense(
+      props.eventId,
+      editingExpense.value.id,
+      requestData,
+      selectedFile.value || undefined
+    )
+
+    if (response.success) {
+      // Reload expenses from server
+      await loadExpenses()
+      showSuccess('Expense updated successfully!')
+      closeEditModal()
+    } else {
+      modalError.value = response.message || 'Failed to update expense'
+    }
+  } catch (err) {
+    modalError.value = getErrorMessage(err, 'update expense')
+    console.error('Error updating expense:', err)
+  } finally {
+    submitting.value = false
+  }
 }
 
-const handleDelete = async () => {
-  if (!deletingExpense.value) return
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
 
-  const deletedId = deletingExpense.value.id
-  const optimisticData = expenses.value.filter(expense => expense.id !== deletedId)
-
-  deletingExpense.value = null
-  submitting.value = true
-
-  await performUpdate(
-    async () => await expensesService.deleteExpense(props.eventId, deletedId),
-    optimisticData,
-    {
-      onSuccess: () => {
-        showSuccess('Expense deleted successfully!')
-      },
-      onError: (errorMsg) => {
-        error.value = errorMsg
-      },
-      errorContext: 'delete expense'
+  if (file) {
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      modalError.value = 'File size must be less than 5MB'
+      target.value = ''
+      return
     }
-  )
 
-  submitting.value = false
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf']
+    if (!allowedTypes.includes(file.type)) {
+      modalError.value = 'File must be an image (JPEG, PNG, GIF) or PDF'
+      target.value = ''
+      return
+    }
+
+    selectedFile.value = file
+    modalError.value = null
+  }
+}
+
+const clearFile = () => {
+  selectedFile.value = null
+  if (receiptInput.value) {
+    receiptInput.value.value = ''
+  }
 }
 
 onMounted(async () => {
@@ -967,104 +713,10 @@ onMounted(async () => {
 onUnmounted(() => {
   // Clean up state to prevent memory leaks
   deletingExpense.value = null
-  editingExpense.value = null
 })
 
-// Open create category modal (nested modal)
-const openCreateCategoryModal = () => {
-  // Close expense modal first to avoid focus trap conflicts
-  closeExpenseModal()
-  isCreatingCategoryFromExpense.value = true
-  showCategoryModal.value = true
-}
-
-// Close category modal
-const closeCategoryModal = () => {
-  showCategoryModal.value = false
-  categoryError.value = null
-  categoryFormData.value = {
-    name: '',
-    description: '',
-    icon: '',
-    color: '#3498db'
-  }
-
-  // If user was creating a category from expense modal and cancelled,
-  // reopen the expense modal
-  if (isCreatingCategoryFromExpense.value) {
-    openModal()
-    isCreatingCategoryFromExpense.value = false
-  }
-}
-
-// Handle category creation
-const handleCreateCategory = async () => {
-  if (!categoryFormData.value.name) {
-    categoryError.value = 'Category name is required'
-    return
-  }
-
-  const requestData = {
-    name: categoryFormData.value.name,
-    description: categoryFormData.value.description || undefined,
-    icon: categoryFormData.value.icon || undefined,
-    color: categoryFormData.value.color,
-    is_active: true
-  }
-
-  categorySubmitting.value = true
-  categoryError.value = null
-
-  try {
-    const response = await expenseCategoriesService.createCategory(requestData)
-
-    if (response.success && response.data) {
-      // Add the new category to the list
-      await loadCategories()
-
-      // Auto-select the newly created category
-      newExpense.value.category_id = response.data.id.toString()
-
-      // Show success message
-      showSuccess('Category created successfully!')
-
-      // Close the category modal (this will NOT reopen expense modal yet)
-      showCategoryModal.value = false
-      categoryError.value = null
-      categoryFormData.value = {
-        name: '',
-        description: '',
-        icon: '',
-        color: '#3498db'
-      }
-
-      // If category was created from expense modal, reopen it with the new category selected
-      if (isCreatingCategoryFromExpense.value) {
-        pendingCategorySelection.value = response.data.id
-        openModal()
-        isCreatingCategoryFromExpense.value = false
-
-        // Reset pending selection after a short delay (to allow the modal to open)
-        setTimeout(() => {
-          pendingCategorySelection.value = null
-        }, 100)
-      }
-    } else {
-      categoryError.value = response.message || 'Failed to create category'
-    }
-  } catch (err) {
-    categoryError.value = getErrorMessage(err, 'create category')
-    console.error('Error creating category:', err)
-  } finally {
-    categorySubmitting.value = false
-  }
-}
-
-// Expose methods for parent component (Smart FAB)
+// Expose methods for parent component
 defineExpose({
-  openAddExpenseModal: () => {
-    openModal()
-  },
   reloadCategories: () => {
     loadCategories()
   }

@@ -38,9 +38,7 @@ import {
   CreditCard,
   Users,
   Palette,
-  Wallet,
-  Receipt,
-  FolderOpen,
+  Zap,
   Camera,
 } from 'lucide-vue-next'
 import EventActionMenu from './EventActionMenu.vue'
@@ -68,9 +66,7 @@ const emit = defineEmits<{
   'browse-template': []
   'add-guest': []
   'add-group': []
-  'add-budget': []
-  'add-expense': []
-  'add-category': []
+  'quick-add': []
   'edit': [eventId: string]
   'delete': [eventId: string]
 }>()
@@ -83,12 +79,7 @@ const shouldShowFab = computed(() => {
   // Only show if user can edit
   if (!props.canEdit) return false
 
-  // Hide FAB on expenses tab summary subtab (read-only view)
-  if (props.activeTab === 'expenses' && props.expenseTrackingSubTab === 'summary') {
-    return false
-  }
-
-  // Show for these tabs
+  // Show for these tabs (including expenses summary)
   const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
   return validTabs.includes(props.activeTab)
 })
@@ -119,18 +110,9 @@ const fabIcon = computed(() => {
     }
   }
 
-  // Handle expenses tab with sub-tabs
+  // Handle expenses tab with sub-tabs - use Zap for Quick Add consistency
   if (props.activeTab === 'expenses') {
-    switch (props.expenseTrackingSubTab) {
-      case 'budgets':
-        return Wallet
-      case 'expenses':
-        return Receipt
-      case 'categories':
-        return FolderOpen
-      default:
-        return Wallet // Default to budgets
-    }
+    return Zap
   }
 
   // Handle other tabs
@@ -181,18 +163,9 @@ const fabAriaLabel = computed(() => {
     }
   }
 
-  // Handle expenses tab with sub-tabs
+  // Handle expenses tab with sub-tabs - use Quick Add for consistency
   if (props.activeTab === 'expenses') {
-    switch (props.expenseTrackingSubTab) {
-      case 'budgets':
-        return 'Add budget'
-      case 'expenses':
-        return 'Add expense'
-      case 'categories':
-        return 'Add category'
-      default:
-        return 'Add budget'
-    }
+    return 'Quick Add'
   }
 
   // Handle other tabs
@@ -252,22 +225,9 @@ const handleFabClick = () => {
     return
   }
 
-  // Handle expenses tab with sub-tabs
+  // Handle expenses tab - use Quick Add for all sub-tabs
   if (props.activeTab === 'expenses') {
-    switch (props.expenseTrackingSubTab) {
-      case 'budgets':
-        emit('add-budget')
-        break
-      case 'expenses':
-        emit('add-expense')
-        break
-      case 'categories':
-        emit('add-category')
-        break
-      default:
-        emit('add-budget')
-        break
-    }
+    emit('quick-add')
     return
   }
 

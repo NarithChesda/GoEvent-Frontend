@@ -1,17 +1,17 @@
 <template>
   <div class="space-y-6">
-    <!-- Header with Add Category Button -->
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h3 class="text-lg font-bold text-slate-900">Expense Categories</h3>
         <p class="text-sm text-slate-500 mt-1">Create and manage reusable expense categories</p>
       </div>
       <button
-        @click="showAddCategoryModal = true"
-        class="hidden sm:flex flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 whitespace-nowrap"
+        @click="$emit('create-category')"
+        class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:-translate-y-0.5"
       >
         <Plus class="w-4 h-4" />
-        <span>Create Category</span>
+        <span class="hidden sm:inline">Add Category</span>
       </button>
     </div>
 
@@ -103,33 +103,19 @@
           <span class="text-xs text-slate-500">{{ category.icon || 'No icon' }}</span>
         </div>
       </div>
-
-      <!-- Add Category Placeholder -->
-      <div
-        @click="showAddCategoryModal = true"
-        class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-6 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group min-h-[180px] flex items-center justify-center"
-      >
-        <div class="text-center">
-          <div class="w-12 h-12 bg-slate-200 group-hover:bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-3 transition-all">
-            <Plus class="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
-          </div>
-          <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Create Category</h4>
-          <p class="text-sm text-slate-400 mt-1">Add a new expense category</p>
-        </div>
-      </div>
     </div>
 
-    <!-- Add/Edit Category Modal -->
+    <!-- Edit Category Modal -->
     <ExpenseModal
-      :show="showAddCategoryModal"
-      :title="editingCategory ? 'Edit Category' : 'Create Category'"
+      :show="showEditCategoryModal"
+      title="Edit Category"
       :icon="Palette"
       icon-bg-class="bg-purple-50 text-purple-600"
       icon-size-class="w-5 h-5"
-      aria-label-id="add-category-modal-title"
+      aria-label-id="edit-category-modal-title"
       :error="modalError"
       :submitting="submitting"
-      :submit-text="editingCategory ? 'Update Category' : 'Create Category'"
+      submit-text="Update Category"
       z-index-class="z-[60]"
       @close="closeModal"
       @submit="handleSubmit"
@@ -253,22 +239,19 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
-  Plus,
   Edit2,
   Trash2,
   Building2,
   Palette,
-  X,
   Info,
   AlertCircle,
   Check,
-  ChevronDown
+  ChevronDown,
+  Plus
 } from 'lucide-vue-next'
 import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
-import { useExpenseModal } from '@/composables/useExpenseModal'
 import { useSuccessToast } from '@/composables/useSuccessToast'
-import { useOptimisticUpdate } from '@/composables/useOptimisticUpdate'
 import { getErrorMessage } from '@/utils/errorMessages'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import ExpenseModal from './ExpenseModal.vue'
@@ -283,11 +266,12 @@ const error = ref<string | null>(null)
 const categories = ref<ExpenseCategory[]>([])
 const editingCategory = ref<ExpenseCategory | null>(null)
 const deletingCategory = ref<ExpenseCategory | null>(null)
+const showEditCategoryModal = ref(false)
+const submitting = ref(false)
+const modalError = ref<string | null>(null)
 
 // Use composables
-const { isModalOpen: showAddCategoryModal, modalRef: addModalRef, submitting, error: modalError, openModal, closeModal: closeCategoryModal } = useExpenseModal()
 const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
-const { performUpdate } = useOptimisticUpdate(categories)
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -321,7 +305,8 @@ const loadCategories = async () => {
 }
 
 const closeModal = () => {
-  closeCategoryModal()
+  showEditCategoryModal.value = false
+  modalError.value = null
   editingCategory.value = null
   formData.value = {
     name: '',
@@ -339,11 +324,11 @@ const editCategory = (category: ExpenseCategory) => {
     icon: category.icon || '',
     color: category.color
   }
-  openModal()
+  showEditCategoryModal.value = true
 }
 
 const handleSubmit = async () => {
-  const isEditing = !!editingCategory.value
+  if (!editingCategory.value) return
 
   const requestData = {
     name: formData.value.name,
@@ -353,59 +338,24 @@ const handleSubmit = async () => {
     is_active: true
   }
 
-  // OPTIMISTIC UPDATE: Update UI immediately
-  const backup = [...categories.value]
-
-  if (isEditing && editingCategory.value) {
-    // Update existing category in the list
-    const index = categories.value.findIndex(c => c.id === editingCategory.value!.id)
-    if (index !== -1) {
-      categories.value[index] = {
-        ...editingCategory.value,
-        ...requestData
-      } as ExpenseCategory
-    }
-    showSuccess('Category updated successfully!')
-  } else {
-    // Add temporary category
-    const tempCategory: ExpenseCategory = {
-      id: Date.now(), // Use timestamp as temporary numeric ID
-      ...requestData,
-      description: requestData.description || '',
-      icon: requestData.icon || '',
-      created_by: 0, // Temporary value, will be replaced by server response
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-    categories.value = [tempCategory, ...categories.value]
-    showSuccess('Category created successfully!')
-  }
-
   submitting.value = true
+  modalError.value = null
 
   try {
-    let response
-    if (isEditing && editingCategory.value) {
-      response = await expenseCategoriesService.patchCategory(editingCategory.value.id, requestData)
-    } else {
-      response = await expenseCategoriesService.createCategory(requestData)
-    }
+    const response = await expenseCategoriesService.patchCategory(editingCategory.value.id, requestData)
 
     if (response.success) {
-      // Replace with real data from server
+      // Reload categories from server
       await loadCategories()
       emit('category-updated') // Notify parent that categories have changed
-      closeModal() // Close modal only on success
+      showSuccess('Category updated successfully!')
+      closeModal()
     } else {
-      // ROLLBACK: Restore original data on error
-      categories.value = backup
-      error.value = response.message || 'Failed to save category'
+      modalError.value = response.message || 'Failed to update category'
     }
   } catch (err) {
-    // ROLLBACK: Restore original data on error
-    categories.value = backup
-    error.value = getErrorMessage(err, isEditing ? 'update category' : 'create category')
-    console.error('Error saving category:', err)
+    modalError.value = getErrorMessage(err, 'update category')
+    console.error('Error updating category:', err)
   } finally {
     submitting.value = false
   }
@@ -418,28 +368,22 @@ const confirmDeleteCategory = (category: ExpenseCategory) => {
 const handleDelete = async () => {
   if (!deletingCategory.value) return
 
-  // OPTIMISTIC UPDATE: Remove from UI immediately
-  const backup = [...categories.value]
-  const deletedId = deletingCategory.value.id
-  const deletedName = deletingCategory.value.name
-
-  categories.value = categories.value.filter(category => category.id !== deletedId)
-  deletingCategory.value = null
-  showSuccess('Category deleted successfully!')
-
   submitting.value = true
+  const deletedId = deletingCategory.value.id
 
   try {
     const response = await expenseCategoriesService.deleteCategory(deletedId)
 
-    if (!response.success) {
-      // ROLLBACK: Restore on error
-      categories.value = backup
-      error.value = response.message || `Failed to delete "${deletedName}"`
+    if (response.success) {
+      // Remove from local list
+      categories.value = categories.value.filter(category => category.id !== deletedId)
+      showSuccess('Category deleted successfully!')
+      deletingCategory.value = null
+      emit('category-updated') // Notify parent that categories have changed
+    } else {
+      error.value = response.message || 'Failed to delete category'
     }
   } catch (err) {
-    // ROLLBACK: Restore on error
-    categories.value = backup
     error.value = getErrorMessage(err, 'delete category')
     console.error('Error deleting category:', err)
   } finally {
@@ -457,11 +401,9 @@ onUnmounted(() => {
   editingCategory.value = null
 })
 
-// Expose methods for parent component (Smart FAB)
+// Expose methods for parent component
 defineExpose({
-  openAddCategoryModal: () => {
-    openModal()
-  }
+  loadCategories
 })
 </script>
 

@@ -308,9 +308,7 @@
         @browse-template="handleBrowseTemplate"
         @add-guest="handleAddGuest"
         @add-group="handleAddGroup"
-        @add-budget="handleAddBudget"
-        @add-expense="handleAddExpense"
-        @add-category="handleAddCategory"
+        @quick-add="handleQuickAdd"
         @edit="handleEditEvent"
         @delete="handleDeleteEvent"
       />
@@ -516,12 +514,7 @@ const canDeleteEvent = computed(() => {
 const smartFabVisible = computed(() => {
   if (!event.value || !(event.value.can_edit || false)) return false
 
-  // Check if we're on expenses summary tab (smart FAB is hidden)
-  if (activeTab.value === 'expenses' && expenseTrackingSubTab.value === 'summary') {
-    return false
-  }
-
-  // Check if we're on a valid tab that shows the smart FAB
+  // Check if we're on a valid tab that shows the smart FAB (including expenses summary)
   const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
   return validTabs.includes(activeTab.value)
 })
@@ -684,19 +677,9 @@ const handleAddGroup = () => {
   guestManagementTabRef.value?.openAddGroupModal()
 }
 
-const handleAddBudget = () => {
-  // Open add budget modal in EventExpenseTab
-  expenseTabRef.value?.openAddBudgetModal()
-}
-
-const handleAddExpense = () => {
-  // Open add expense modal in EventExpenseTab
-  expenseTabRef.value?.openAddExpenseModal()
-}
-
-const handleAddCategory = () => {
-  // Open add category modal in EventExpenseTab
-  expenseTabRef.value?.openAddCategoryModal()
+const handleQuickAdd = () => {
+  // Open Quick Add modal in EventExpenseTab (context-aware based on active sub-tab)
+  expenseTabRef.value?.openQuickAdd()
 }
 
 const joinVirtualEvent = () => {
