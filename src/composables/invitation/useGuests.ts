@@ -1,3 +1,21 @@
+/**
+ * Guest Management Composable
+ *
+ * IMPORTANT: This composable handles ALL data refreshes internally.
+ * Components should NOT manually refresh after calling these actions:
+ * - createGuest()
+ * - updateGuest()
+ * - deleteGuest()
+ * - markGuestAsSent()
+ *
+ * All refresh logic is handled automatically with silent mode
+ * to prevent loading flicker.
+ *
+ * @example
+ * const { createGuest, loadGuestsForGroup } = useGuests(eventId, onGroupCountChange, onStatsChange)
+ * await createGuest('John Doe', groupId) // Automatically refreshes lists
+ */
+
 import { ref } from 'vue'
 import {
   guestService,
@@ -177,10 +195,9 @@ export function useGuests(
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
         }
-        // Refresh All Guests pagination only if it has been loaded before
-        if (allGroupsPagination.value.hasLoaded) {
-          await loadAllGuests(allGroupsPagination.value.currentPage, true)
-        }
+        // Always refresh All Guests pagination to ensure new guests appear immediately
+        // This ensures the first guest shows up even when "All Groups" hasn't been viewed yet
+        await loadAllGuests(allGroupsPagination.value.currentPage, true)
 
         // 2. THEN update counts via callbacks (with error handling)
         try {
@@ -236,10 +253,8 @@ export function useGuests(
           }
         }
 
-        // Refresh All Guests pagination only if it has been loaded before
-        if (allGroupsPagination.value.hasLoaded) {
-          await loadAllGuests(allGroupsPagination.value.currentPage, true)
-        }
+        // Always refresh All Guests pagination to keep data in sync
+        await loadAllGuests(allGroupsPagination.value.currentPage, true)
       }
 
       return response
@@ -268,10 +283,8 @@ export function useGuests(
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage)
         }
-        // Refresh All Guests pagination only if it has been loaded before
-        if (allGroupsPagination.value.hasLoaded) {
-          await loadAllGuests(allGroupsPagination.value.currentPage, true)
-        }
+        // Always refresh All Guests pagination to keep data in sync
+        await loadAllGuests(allGroupsPagination.value.currentPage, true)
 
         // 2. THEN update counts with actual status (with error handling)
         try {
@@ -308,10 +321,8 @@ export function useGuests(
           const currentPage = getGroupPagination(groupId).currentPage
           await loadGuestsForGroup(groupId, currentPage, true)
         }
-        // Refresh All Guests pagination only if it has been loaded before
-        if (allGroupsPagination.value.hasLoaded) {
-          await loadAllGuests(allGroupsPagination.value.currentPage, true)
-        }
+        // Always refresh All Guests pagination to keep data in sync
+        await loadAllGuests(allGroupsPagination.value.currentPage, true)
 
         // 2. THEN update stats reactively (with error handling)
         // Guest moved from 'not_sent' to 'sent'

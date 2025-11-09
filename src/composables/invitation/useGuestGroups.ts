@@ -43,8 +43,7 @@ export function useGuestGroups(eventId: string) {
       if (response.success && response.data) {
         groups.value.push(response.data)
         groups.value.sort((a, b) => a.order - b.order)
-        // Auto-expand the new group (collapse all others first)
-        expandedGroups.value.clear()
+        // Auto-expand the new group (keep other groups open for better UX)
         expandedGroups.value.add(response.data.id)
       }
 
@@ -105,8 +104,7 @@ export function useGuestGroups(eventId: string) {
       expandedGroups.value.delete(groupId)
       return false
     } else {
-      // Clear all expanded groups first, then expand only this one
-      expandedGroups.value.clear()
+      // Allow multiple groups to be expanded (better UX for comparing groups)
       expandedGroups.value.add(groupId)
       return true
     }

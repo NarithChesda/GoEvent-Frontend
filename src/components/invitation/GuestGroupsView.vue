@@ -360,19 +360,20 @@ watch(() => props.groups, (newGroups, oldGroups) => {
   }
 }, { immediate: false })
 
-// On mount, trigger expansion if groups are already loaded and sync search input
+// On mount, trigger expansion and sync search input
 onMounted(() => {
-  if (props.groups.length > 0) {
-    // Sync search input with current search state
-    if (activeFilter.value === 'all') {
-      groupSearchQuery.value = props.allGuestsPagination.searchTerm
-    } else {
-      const groupId = parseInt(activeFilter.value)
-      const pagination = props.getGroupPagination(groupId)
-      groupSearchQuery.value = pagination.searchTerm
-    }
-    triggerGroupExpansion()
+  // Sync search input with current search state
+  if (activeFilter.value === 'all') {
+    groupSearchQuery.value = props.allGuestsPagination.searchTerm
+  } else if (props.groups.length > 0) {
+    const groupId = parseInt(activeFilter.value)
+    const pagination = props.getGroupPagination(groupId)
+    groupSearchQuery.value = pagination.searchTerm
   }
+
+  // Always trigger expansion on mount to ensure initial data load
+  // This handles both cases: when there are groups and when starting fresh
+  triggerGroupExpansion()
 })
 
 // Computed properties

@@ -308,40 +308,6 @@ const handleGroupCountChange = (groupId: number, delta: number) => {
 }
 
 /**
- * Process items in batches to avoid overwhelming the server with too many concurrent requests.
- * Makes parallel requests within each batch, then processes batches sequentially.
- *
- * @param items - Items to process
- * @param processor - Async function to process each item
- * @param batchSize - Number of items to process concurrently per batch (default: 20)
- * @returns Array of results from Promise.allSettled for all items
- *
- * @example
- * const results = await processBatch(
- *   guestIds,
- *   id => guestService.markInvitationSent(eventId, id),
- *   20
- * )
- */
-const processBatch = async <T, R>(
-  items: T[],
-  processor: (item: T) => Promise<R>,
-  batchSize: number = 20
-): Promise<Array<PromiseSettledResult<R>>> => {
-  const allResults: Array<PromiseSettledResult<R>> = []
-
-  // Split items into batches and process each batch
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize)
-    const promises = batch.map(processor)
-    const results = await Promise.allSettled(promises)
-    allResults.push(...results)
-  }
-
-  return allResults
-}
-
-/**
  * Handles changes to overall guest statistics without making API calls.
  * This provides immediate UI feedback when guests are added/removed/updated.
  */
@@ -534,16 +500,7 @@ const handleAddGuest = async (name: string, groupId: number) => {
   if (response.success && response.data) {
     showMessage('success', `${response.data.name} added to guest list`)
     showAddGuestModal.value = false
-
-    // Refresh the specific group's guest list to show the new guest
-    const pagination = getGroupPagination(groupId)
-    await loadGuestsForGroup(groupId, pagination.currentPage)
-
-    // Also refresh "All Guests" view only if it has been loaded before
-    const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.hasLoaded) {
-      await loadAllGuests(allGuestsPagination.currentPage, true)
-    }
+    // Note: createGuest() already handles refreshing both group and all guests lists
   } else {
     showMessage('error', response.message || 'Failed to add guest')
   }
@@ -557,16 +514,8 @@ const handleBulkImport = async (groupId: number) => {
   if (response.success && response.data) {
     const { created, skipped, skipped_guests } = response.data
 
-    // Counts are now updated reactively via callbacks in useBulkImport
-    // Just refresh the specific group's guest list to show the new guests
-    const pagination = getGroupPagination(groupId)
-    await loadGuestsForGroup(groupId, pagination.currentPage)
-
-    // Also refresh "All Guests" view only if it has been loaded before
-    const allGuestsPagination = getAllGuestsPagination()
-    if (allGuestsPagination.hasLoaded) {
-      await loadAllGuests(allGuestsPagination.currentPage, true)
-    }
+    // Note: importGuests() already handles refreshing both group and all guests lists
+    // and updating counts reactively via callbacks
 
     // Show results
     if (skipped > 0) {
