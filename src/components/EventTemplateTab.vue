@@ -421,10 +421,7 @@ const handleTemplateSelected = async (template: EventTemplate): Promise<void> =>
     setTemplateDetails(template)
     emit('template-updated', template)
     await refreshPayments()
-    showMessage(
-      'success',
-      'Template selected successfully! You can now proceed with payment when ready.',
-    )
+    // Note: Success notification already shown by BrowseTemplateModal
   } catch (error) {
     console.error('Error handling template selection:', error)
     showMessage('error', 'Failed to process template selection. Please try again.')
