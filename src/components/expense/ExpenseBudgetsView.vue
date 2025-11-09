@@ -295,6 +295,106 @@
       </div>
     </ExpenseModal>
 
+    <!-- Create Category Modal (Nested) -->
+    <ExpenseModal
+      :show="showCategoryModal"
+      title="Create Category"
+      :icon="Palette"
+      icon-bg-class="bg-purple-50 text-purple-600"
+      icon-size-class="w-5 h-5"
+      aria-label-id="create-category-modal-title"
+      :error="categoryError"
+      :submitting="categorySubmitting"
+      submit-text="Create Category"
+      z-index-class="z-[70]"
+      @close="closeCategoryModal"
+      @submit="handleCreateCategory"
+    >
+      <!-- Category Name -->
+      <div>
+        <label for="new-category-name" class="block text-sm font-medium text-slate-700 mb-2">
+          Category Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="new-category-name"
+          type="text"
+          v-model="categoryFormData.name"
+          placeholder="E.g., Venue, Catering, Photography..."
+          maxlength="100"
+          aria-required="true"
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+          required
+        />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="new-category-description" class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+        <textarea
+          id="new-category-description"
+          v-model="categoryFormData.description"
+          rows="3"
+          placeholder="Describe what expenses this category covers..."
+          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Color and Icon Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Category Color -->
+        <div>
+          <label for="new-category-color" class="block text-sm font-medium text-slate-700 mb-2">
+            Category Color
+          </label>
+          <div class="flex items-center gap-3">
+            <input
+              id="new-category-color"
+              v-model="categoryFormData.color"
+              type="color"
+              class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+            />
+            <input
+              id="new-category-color-hex"
+              v-model="categoryFormData.color"
+              type="text"
+              placeholder="#3498db"
+              aria-label="Color hex value"
+              class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+            />
+          </div>
+        </div>
+
+        <!-- Icon Selection -->
+        <div>
+          <label for="new-category-icon" class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
+          <div class="relative">
+            <select
+              id="new-category-icon"
+              v-model="categoryFormData.icon"
+              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
+            >
+              <option value="">Select an icon</option>
+              <option value="fa-building">Building</option>
+              <option value="fa-utensils">Food & Catering</option>
+              <option value="fa-palette">Decoration</option>
+              <option value="fa-camera">Photography</option>
+              <option value="fa-music">Entertainment</option>
+              <option value="fa-gift">Gifts & Favors</option>
+              <option value="fa-car">Transportation</option>
+              <option value="fa-hotel">Venue & Lodging</option>
+              <option value="fa-shirt">Attire & Costumes</option>
+              <option value="fa-lightbulb">Lighting & AV</option>
+              <option value="fa-clipboard">Planning & Coordination</option>
+              <option value="fa-megaphone">Marketing & Promotion</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <ChevronDown class="w-4 h-4 text-slate-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </ExpenseModal>
+
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :show="!!deletingBudget"
@@ -375,6 +475,19 @@ const budgets = ref<ExpenseBudget[]>([])
 const categories = ref<ExpenseCategory[]>([])
 const editingBudget = ref<ExpenseBudget | null>(null)
 const deletingBudget = ref<ExpenseBudget | null>(null)
+
+// Category modal state
+const showCategoryModal = ref(false)
+const categoryFormData = ref({
+  name: '',
+  description: '',
+  icon: '',
+  color: '#3498db'
+})
+const categorySubmitting = ref(false)
+const categoryError = ref<string | null>(null)
+const isCreatingCategoryFromBudget = ref(false)
+const pendingCategorySelection = ref<number | null>(null)
 
 // Use composables
 const { isModalOpen: showAddBudgetModal, modalRef: addModalRef, submitting, error: modalError, openModal, closeModal: closeBudgetModal } = useExpenseModal()
@@ -597,9 +710,94 @@ onUnmounted(() => {
   editingBudget.value = null
 })
 
-// Open create category modal (emit to parent)
+// Open create category modal (nested modal)
 const openCreateCategoryModal = () => {
-  emit('create-category')
+  // Close budget modal first to avoid focus trap conflicts
+  closeBudgetModal()
+  isCreatingCategoryFromBudget.value = true
+  showCategoryModal.value = true
+}
+
+// Close category modal
+const closeCategoryModal = () => {
+  showCategoryModal.value = false
+  categoryError.value = null
+  categoryFormData.value = {
+    name: '',
+    description: '',
+    icon: '',
+    color: '#3498db'
+  }
+
+  // If user was creating a category from budget modal and cancelled,
+  // reopen the budget modal
+  if (isCreatingCategoryFromBudget.value) {
+    openModal()
+    isCreatingCategoryFromBudget.value = false
+  }
+}
+
+// Handle category creation
+const handleCreateCategory = async () => {
+  if (!categoryFormData.value.name) {
+    categoryError.value = 'Category name is required'
+    return
+  }
+
+  const requestData = {
+    name: categoryFormData.value.name,
+    description: categoryFormData.value.description || undefined,
+    icon: categoryFormData.value.icon || undefined,
+    color: categoryFormData.value.color,
+    is_active: true
+  }
+
+  categorySubmitting.value = true
+  categoryError.value = null
+
+  try {
+    const response = await expenseCategoriesService.createCategory(requestData)
+
+    if (response.success && response.data) {
+      // Add the new category to the list
+      await loadCategories()
+
+      // Auto-select the newly created category
+      newBudget.value.category_id = response.data.id.toString()
+
+      // Show success message
+      showSuccess('Category created successfully!')
+
+      // Close the category modal (this will NOT reopen budget modal yet)
+      showCategoryModal.value = false
+      categoryError.value = null
+      categoryFormData.value = {
+        name: '',
+        description: '',
+        icon: '',
+        color: '#3498db'
+      }
+
+      // If category was created from budget modal, reopen it with the new category selected
+      if (isCreatingCategoryFromBudget.value) {
+        pendingCategorySelection.value = response.data.id
+        openModal()
+        isCreatingCategoryFromBudget.value = false
+
+        // Reset pending selection after a short delay (to allow the modal to open)
+        setTimeout(() => {
+          pendingCategorySelection.value = null
+        }, 100)
+      }
+    } else {
+      categoryError.value = response.message || 'Failed to create category'
+    }
+  } catch (err) {
+    categoryError.value = getErrorMessage(err, 'create category')
+    console.error('Error creating category:', err)
+  } finally {
+    categorySubmitting.value = false
+  }
 }
 
 // Expose methods for parent component (Smart FAB)

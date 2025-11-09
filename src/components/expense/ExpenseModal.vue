@@ -7,9 +7,9 @@
         :class="zIndexClass"
         @click.self="handleBackdropClick"
       >
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm pointer-events-none"></div>
 
-        <div class="flex min-h-full items-center justify-center p-4">
+        <div class="flex min-h-full items-center justify-center p-4" @click.self="handleBackdropClick">
           <div
             :ref="setModalRef"
             role="dialog"

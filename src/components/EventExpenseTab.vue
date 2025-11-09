@@ -102,7 +102,8 @@ const categoriesViewRef = ref<InstanceType<typeof ExpenseCategoriesView> | null>
 
 // Handle create category from expense modal
 const handleCreateCategory = () => {
-  categoriesViewRef.value?.openAddCategoryModal()
+  // This is now handled within each view component (budgets/expenses)
+  // to support nested modals
 }
 
 // Handle category updated event - reload categories in expenses and budgets views
