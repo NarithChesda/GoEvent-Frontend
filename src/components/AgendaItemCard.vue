@@ -1,31 +1,27 @@
 <template>
   <div
-    :draggable="canEdit && draggable"
+    :draggable="canEdit && isDesktop"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
     @dragover="handleDragOver"
     @dragenter="handleDragEnter"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
-    @touchstart="handleTouchStart"
-    @touchmove="handleTouchMove"
-    @touchend="handleTouchEnd"
     class="agenda-card group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
     :class="[
       item.is_featured ? 'ring-1 ring-[#87CEEB] bg-[#E6F4FF]/30' : '',
-      isDragging ? 'opacity-60 transform rotate-1 scale-105 shadow-xl dragging' : '',
-      isDraggedOver && !isDragging ? 'drop-target' : '',
-      canEdit && draggable ? 'hover:scale-[1.01] hover:-translate-y-0.5' : '',
+      isDragging ? 'opacity-60 scale-105 shadow-xl' : '',
+      isDraggedOver && !isDragging ? 'border-blue-400 bg-blue-50/50' : '',
     ]"
     :style="cardStyles"
     role="group"
   >
-    <!-- Drag Handle (Visible on mobile for touch, hover on desktop) -->
+    <!-- Drag Handle (Desktop only - hidden on mobile) -->
     <div
-      v-if="canEdit"
-      class="absolute top-2 right-2 z-20 sm:opacity-0 sm:group-hover:opacity-100 opacity-40 transition-all duration-200 cursor-grab active:cursor-grabbing p-1.5 rounded-lg bg-white/90 hover:bg-white shadow-sm touch-none"
+      v-if="canEdit && isDesktop"
+      class="hidden sm:block absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-1.5 rounded-lg bg-white/90 hover:bg-white shadow-sm"
     >
-      <GripVertical class="w-3 h-3 sm:w-3 sm:h-3 text-slate-400" />
+      <GripVertical class="w-3.5 h-3.5 text-slate-400" />
     </div>
 
     <!-- Modern Minimalist Horizontal Layout -->
@@ -126,18 +122,18 @@
       <!-- Action Buttons -->
       <div
         v-if="canEdit"
-        class="flex-shrink-0 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+        class="flex-shrink-0 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity relative z-30"
       >
         <button
           @click.stop="$emit('edit', item)"
-          class="p-1 sm:p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors"
+          class="p-1 sm:p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors touch-manipulation"
           title="Edit"
         >
           <Edit2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
         <button
           @click.stop="$emit('delete', item)"
-          class="p-1 sm:p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          class="p-1 sm:p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors touch-manipulation"
           title="Delete"
         >
           <Trash2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -148,23 +144,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   Clock,
   MapPin,
   Monitor,
   Edit2,
   Trash2,
-  GripVertical,
   Languages,
   Star,
+  GripVertical,
 } from 'lucide-vue-next'
 import type { EventAgendaItem } from '../services/api'
 
 interface Props {
   item: EventAgendaItem
   canEdit: boolean
-  draggable?: boolean
 }
 
 interface Emits {
@@ -174,19 +169,29 @@ interface Emits {
   dragEnd: [item: EventAgendaItem | null]
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  draggable: true,
-})
+const props = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
+
+// Desktop detection - only enable drag on screens >= 640px (sm breakpoint)
+const isDesktop = ref(false)
+
+const checkIsDesktop = () => {
+  isDesktop.value = window.matchMedia('(min-width: 640px)').matches
+}
+
+onMounted(() => {
+  checkIsDesktop()
+  window.addEventListener('resize', checkIsDesktop)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkIsDesktop)
+})
 
 // Drag state
 const isDragging = ref(false)
 const isDraggedOver = ref(false)
-const touchStartY = ref(0)
-const touchStartX = ref(0)
-const touchMoveThreshold = 10 // pixels before considered a drag
-let isTouchDragging = false
 
 const normalizeHex = (color: string): string | null => {
   if (!color || !color.startsWith('#')) return null
@@ -239,9 +244,9 @@ const getInitials = (name: string): string => {
     .toUpperCase()
 }
 
-// Drag handlers
+// Drag handlers (desktop only)
 const handleDragStart = (event: DragEvent) => {
-  if (!props.canEdit || !props.draggable) return
+  if (!props.canEdit || !isDesktop.value) return
 
   isDragging.value = true
   emit('dragStart', props.item)
@@ -255,7 +260,7 @@ const handleDragStart = (event: DragEvent) => {
 
 const handleDragOver = (event: DragEvent) => {
   event.preventDefault()
-  if (!props.canEdit || !props.draggable) return
+  if (!props.canEdit || !isDesktop.value) return
 
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = 'move'
@@ -264,16 +269,16 @@ const handleDragOver = (event: DragEvent) => {
 
 const handleDragEnter = (event: DragEvent) => {
   event.preventDefault()
-  if (!props.canEdit || !props.draggable || isDragging.value) return
+  if (!props.canEdit || !isDesktop.value || isDragging.value) return
 
   isDraggedOver.value = true
 }
 
 const handleDragLeave = (event: DragEvent) => {
   event.preventDefault()
-  if (!props.canEdit || !props.draggable) return
+  if (!props.canEdit || !isDesktop.value) return
 
-  // Only reset if we're leaving the card completely (not just entering a child element)
+  // Only reset if we're leaving the card completely
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
   const x = event.clientX
   const y = event.clientY
@@ -286,7 +291,7 @@ const handleDragLeave = (event: DragEvent) => {
 const handleDrop = (event: DragEvent) => {
   event.preventDefault()
 
-  if (!props.canEdit || !props.draggable) return
+  if (!props.canEdit || !isDesktop.value) return
 
   isDraggedOver.value = false
 
@@ -302,94 +307,11 @@ const handleDragEnd = () => {
   // Reset dragging state when drag operation ends
   isDragging.value = false
   isDraggedOver.value = false
-
-  // If the drop was successful, the handleDrop will have already emitted dragEnd
-  // If the drop was unsuccessful (dropped outside valid target), we still need to reset
-}
-
-// Touch handlers for mobile devices
-const handleTouchStart = (event: TouchEvent) => {
-  if (!props.canEdit || !props.draggable) return
-
-  const touch = event.touches[0]
-  touchStartY.value = touch.clientY
-  touchStartX.value = touch.clientX
-  isTouchDragging = false
-}
-
-const handleTouchMove = (event: TouchEvent) => {
-  if (!props.canEdit || !props.draggable) return
-
-  const touch = event.touches[0]
-  const deltaY = Math.abs(touch.clientY - touchStartY.value)
-  const deltaX = Math.abs(touch.clientX - touchStartX.value)
-
-  // Check if movement exceeds threshold
-  if (deltaY > touchMoveThreshold || deltaX > touchMoveThreshold) {
-    if (!isTouchDragging) {
-      isTouchDragging = true
-      isDragging.value = true
-      emit('dragStart', props.item)
-    }
-
-    // Prevent default to avoid scrolling while dragging
-    event.preventDefault()
-
-    // Update drop target highlight for touch
-    const targetElement = document.elementFromPoint(touch.clientX, touch.clientY)
-    const allCards = document.querySelectorAll('.agenda-card')
-
-    allCards.forEach((card) => {
-      if (card !== event.currentTarget && card.contains(targetElement)) {
-        card.classList.add('touch-drop-target')
-      } else {
-        card.classList.remove('touch-drop-target')
-      }
-    })
-  }
-}
-
-const handleTouchEnd = (event: TouchEvent) => {
-  // Clean up all touch drop target highlights
-  const allCards = document.querySelectorAll('.agenda-card')
-  allCards.forEach((card) => {
-    card.classList.remove('touch-drop-target')
-  })
-
-  if (!props.canEdit || !props.draggable || !isTouchDragging) {
-    isTouchDragging = false
-    isDragging.value = false
-    return
-  }
-
-  event.preventDefault()
-
-  const touch = event.changedTouches[0]
-  const targetElement = document.elementFromPoint(touch.clientX, touch.clientY)
-
-  // Find the closest agenda card element
-  let dropTarget: HTMLElement | null = targetElement as HTMLElement
-  while (dropTarget && !dropTarget.classList.contains('agenda-card')) {
-    dropTarget = dropTarget.parentElement
-  }
-
-  if (dropTarget && dropTarget !== event.currentTarget) {
-    // Find the item ID from the data attribute
-    const itemId = dropTarget.closest('.agenda-item')?.getAttribute('data-id')
-    if (itemId) {
-      // Get the target item from parent component
-      // We need to emit the dragEnd event with the target item
-      // The parent will handle finding the actual item
-      emit('dragEnd', { id: parseInt(itemId) } as EventAgendaItem)
-    }
-  }
-
-  isDragging.value = false
-  isTouchDragging = false
 }
 </script>
 
 <style scoped>
+/* Drag cursor styles */
 .cursor-grab {
   cursor: grab;
 }
@@ -398,54 +320,7 @@ const handleTouchEnd = (event: TouchEvent) => {
   cursor: grabbing;
 }
 
-/* Prevent text selection during dragging */
-.agenda-card.dragging {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-/* Touch-friendly styles */
-.touch-none {
-  touch-action: none;
-}
-
-/* Drop target indicator */
-.agenda-card.drop-target,
-.agenda-card.touch-drop-target {
-  position: relative;
-  border-color: #1e90ff !important;
-  background: linear-gradient(to right, rgba(30, 144, 255, 0.08), rgba(30, 144, 255, 0.02)) !important;
-  transform: scale(1.02) translateY(-2px);
-  box-shadow: 0 8px 24px -6px rgba(30, 144, 255, 0.4), 0 0 0 2px rgba(30, 144, 255, 0.2) !important;
-}
-
-/* Add animated indicator line for drop target */
-.agenda-card.drop-target::after,
-.agenda-card.touch-drop-target::after {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(to right, #1e90ff, #2ecc71);
-  border-radius: 9999px;
-  animation: pulse-line 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-line {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scaleX(0.95);
-  }
-  50% {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
+/* Left accent bar */
 .agenda-card::before {
   content: '';
   position: absolute;
@@ -465,26 +340,14 @@ const handleTouchEnd = (event: TouchEvent) => {
   opacity: 1;
 }
 
-.agenda-card:is(.dragging)::before {
-  opacity: 0.9;
-}
-
-/* Enhanced left accent bar for drop target */
-.agenda-card.drop-target::before,
-.agenda-card.touch-drop-target::before {
-  background: linear-gradient(to bottom, #1e90ff, #2ecc71);
-  transform: scaleY(1.1);
-  opacity: 1;
-  width: 5px;
-  animation: pulse-accent 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-accent {
-  0%, 100% {
-    transform: scaleY(1.05);
+/* Dragging state - desktop only */
+@media (min-width: 640px) {
+  .agenda-card[draggable="true"] {
+    cursor: grab;
   }
-  50% {
-    transform: scaleY(1.15);
+
+  .agenda-card[draggable="true"]:active {
+    cursor: grabbing;
   }
 }
 
