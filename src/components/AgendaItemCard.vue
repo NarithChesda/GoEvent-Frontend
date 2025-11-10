@@ -16,14 +16,6 @@
     :style="cardStyles"
     role="group"
   >
-    <!-- Drag Handle (Desktop only - hidden on mobile) -->
-    <div
-      v-if="canEdit && isDesktop"
-      class="hidden sm:block absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-1.5 rounded-lg bg-white/90 hover:bg-white shadow-sm"
-    >
-      <GripVertical class="w-3.5 h-3.5 text-slate-400" />
-    </div>
-
     <!-- Modern Minimalist Horizontal Layout -->
     <div class="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 pl-4 sm:pl-5">
       <!-- Icon Section (Hidden on mobile) -->
@@ -153,7 +145,6 @@ import {
   Trash2,
   Languages,
   Star,
-  GripVertical,
 } from 'lucide-vue-next'
 import type { EventAgendaItem } from '../services/api'
 
