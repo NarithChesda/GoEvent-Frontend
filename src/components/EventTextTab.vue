@@ -179,7 +179,7 @@
     </div>
 
     <!-- Create Modal -->
-    <CreateEventTextModal
+    <EventTextModal
       v-if="showCreateModal"
       :event-id="eventId"
       @close="showCreateModal = false"
@@ -187,7 +187,7 @@
     />
 
     <!-- Edit Modal -->
-    <EditEventTextModal
+    <EventTextModal
       v-if="showEditModal && selectedText"
       :event-id="eventId"
       :text="selectedText"
@@ -227,8 +227,7 @@ import {
 } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EventTextCard from './EventTextCard.vue'
-import CreateEventTextModal from './CreateEventTextModal.vue'
-import EditEventTextModal from './EditEventTextModal.vue'
+import EventTextModal from './EventTextModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {

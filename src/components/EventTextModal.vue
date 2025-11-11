@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="true" class="fixed inset-0 z-50 overflow-y-auto">
@@ -14,9 +14,12 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <FileEdit class="w-4.5 h-4.5" />
+                    <FileEdit v-if="isEditMode" class="w-4.5 h-4.5" />
+                    <FileText v-else class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Edit Text Content</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
+                    {{ isEditMode ? 'Edit Text Content' : 'Add Text Content' }}
+                  </h2>
                 </div>
                 <button
                   @click="$emit('close')"
@@ -29,7 +32,7 @@
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="updateText" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form @submit.prevent="submitText" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
               <!-- Text Type and Language -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <!-- Text Type -->
@@ -98,7 +101,7 @@
                   v-model="formData.title"
                   type="text"
                   class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                  placeholder="Enter an optional title"
+                  :placeholder="isEditMode ? 'Enter an optional title' : 'Enter title for this text content'"
                 />
               </div>
 
@@ -137,7 +140,7 @@
                     v-if="loading"
                     class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
-                  {{ loading ? 'Updating...' : 'Update Text Content' }}
+                  {{ loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Text Content' : 'Create Text Content') }}
                 </button>
               </div>
             </form>
@@ -149,35 +152,81 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { X, FileEdit, ChevronDown } from 'lucide-vue-next'
-import { eventTextsService, type EventText } from '../services/api'
+import { ref, reactive, computed } from 'vue'
+import { X, FileText, FileEdit, ChevronDown } from 'lucide-vue-next'
+import { eventTextsService, type EventText, type CreateEventTextRequest } from '../services/api'
 
 interface Props {
   eventId: string
-  text: EventText
+  text?: EventText  // Make optional for create mode
 }
 
 interface Emits {
   close: []
   updated: [text: EventText]
+  created: [text: EventText]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Computed: Check if we're in edit mode (has text prop) or create mode (no text prop)
+const isEditMode = computed(() => !!props.text)
+
 // State
 const loading = ref(false)
 
-// Form data - initialize with text data (minimal)
-const formData = reactive({
-  text_type: props.text.text_type,
-  language: props.text.language,
-  title: props.text.title || '',
-  content: props.text.content || '',
+// Form data - initialize with text data (edit mode) or empty values (create mode)
+const formData = reactive<CreateEventTextRequest>({
+  text_type: props.text?.text_type || '',
+  language: props.text?.language || '',
+  title: props.text?.title || '',
+  content: props.text?.content || '',
 })
 
-// Methods
+// Unified submit handler - delegates to create or update based on mode
+const submitText = async () => {
+  if (isEditMode.value) {
+    await updateText()
+  } else {
+    await createText()
+  }
+}
+
+// Create new text content
+const createText = async () => {
+  loading.value = true
+
+  try {
+    // Minimalist payload; keep status active
+    const requestData: CreateEventTextRequest = {
+      text_type: formData.text_type,
+      language: formData.language,
+      title: formData.title,
+      content: formData.content,
+      is_active: true,
+    }
+
+    // Clean up empty title
+    if (!requestData.title?.trim()) {
+      requestData.title = ''
+    }
+
+    const response = await eventTextsService.createEventText(props.eventId, requestData)
+    if (response.success && response.data) {
+      emit('created', response.data)
+    } else {
+      alert(response.message || 'Failed to create text content')
+    }
+  } catch (error) {
+    alert('Network error while creating text content')
+    console.error('Error creating text content:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Update existing text content
 const updateText = async () => {
   loading.value = true
 
@@ -198,7 +247,7 @@ const updateText = async () => {
 
     const response = await eventTextsService.updateEventText(
       props.eventId,
-      props.text.id,
+      props.text!.id,
       requestData,
     )
     if (response.success && response.data) {
@@ -208,6 +257,7 @@ const updateText = async () => {
     }
   } catch (error) {
     alert('Network error while updating text content')
+    console.error('Error updating text content:', error)
   } finally {
     loading.value = false
   }
