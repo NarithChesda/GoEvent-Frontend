@@ -88,15 +88,14 @@
       </div>
     </div>
 
-    <!-- Create Modal -->
-    <CreateHostModal
+    <!-- Unified Create/Edit Modal -->
+    <EditHostModal
       v-if="showCreateModal"
       :event-id="eventId"
       @close="showCreateModal = false"
       @created="handleHostCreated"
     />
 
-    <!-- Edit Modal -->
     <EditHostModal
       v-if="showEditModal && selectedHost"
       :event-id="eventId"
@@ -122,7 +121,6 @@ import { ref, onMounted, nextTick } from 'vue'
 import { Plus, Users, AlertCircle, Trash2 } from 'lucide-vue-next'
 import { hostsService, type EventHost } from '../services/api'
 import HostCard from './HostCard.vue'
-import CreateHostModal from './CreateHostModal.vue'
 import EditHostModal from './EditHostModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 

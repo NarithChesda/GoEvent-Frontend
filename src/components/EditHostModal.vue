@@ -14,9 +14,12 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <UserPen class="w-4.5 h-4.5" />
+                    <UserPen v-if="isEditMode" class="w-4.5 h-4.5" />
+                    <UserPlus v-else class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Edit Host</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
+                    {{ isEditMode ? 'Edit Host' : 'Add Host' }}
+                  </h2>
                 </div>
                 <button
                   @click="$emit('close')"
@@ -29,7 +32,22 @@
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="updateHost" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form @submit.prevent="submitHost" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <!-- General error banner -->
+              <div v-if="generalError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <AlertCircle class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-red-700">{{ generalError }}</p>
+                  <button
+                    type="button"
+                    @click="generalError = ''"
+                    class="text-xs text-red-600 hover:text-red-700 underline mt-1"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+
               <!-- Profile Picture Section (Always Visible) -->
               <div class="flex flex-col items-center space-y-4 py-4">
                 <h4 class="text-sm font-semibold text-slate-900 self-start">Profile Picture</h4>
@@ -110,11 +128,18 @@
                 </div>
 
                 <!-- Language Tab Headers -->
-                <div class="flex overflow-x-auto border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
+                <div role="tablist" aria-label="Host information languages" class="flex overflow-x-auto border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
                   <!-- English Tab (Always first) -->
                   <button
                     type="button"
+                    role="tab"
+                    :id="'tab-en'"
+                    :aria-selected="activeTab === 'en'"
+                    :aria-controls="'tabpanel-en'"
+                    :tabindex="activeTab === 'en' ? 0 : -1"
                     @click="activeTab = 'en'"
+                    @keydown.right="focusNextTab"
+                    @keydown.left="focusPreviousTab"
                     :class="[
                       'flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors relative',
                       activeTab === 'en'
@@ -133,7 +158,14 @@
                     v-for="(translation, index) in formData.translations"
                     :key="translation.id || index"
                     type="button"
+                    role="tab"
+                    :id="'tab-' + translation.language"
+                    :aria-selected="activeTab === translation.language"
+                    :aria-controls="'tabpanel-' + translation.language"
+                    :tabindex="activeTab === translation.language ? 0 : -1"
                     @click="activeTab = translation.language"
+                    @keydown.right="focusNextTab"
+                    @keydown.left="focusPreviousTab"
                     :class="[
                       'flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors relative group',
                       activeTab === translation.language
@@ -146,6 +178,7 @@
                       <button
                         type="button"
                         @click.stop="removeTranslation(index)"
+                        :aria-label="'Remove ' + getLanguageName(translation.language) + ' translation'"
                         class="opacity-0 group-hover:opacity-100 transition-opacity"
                         :class="activeTab === translation.language ? 'opacity-100' : ''"
                       >
@@ -220,7 +253,14 @@
 
               <div class="space-y-5">
                 <!-- English Content (Default Language) -->
-                <div v-if="activeTab === 'en'" class="space-y-5">
+                <div
+                  v-if="activeTab === 'en'"
+                  role="tabpanel"
+                  :id="'tabpanel-en'"
+                  :aria-labelledby="'tab-en'"
+                  tabindex="0"
+                  class="space-y-5"
+                >
                   <div class="space-y-3">
                     <!-- Title and Name -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -244,9 +284,22 @@
                           v-model="formData.name"
                           type="text"
                           required
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          :aria-invalid="fieldErrors.name ? 'true' : 'false'"
+                          :aria-describedby="fieldErrors.name ? 'name-error' : undefined"
+                          :class="[
+                            'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2',
+                            fieldErrors.name
+                              ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
+                              : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400',
+                            'bg-white/90'
+                          ]"
                           placeholder="Enter host name"
                         />
+                        <div v-if="fieldErrors.name" id="name-error" role="alert" class="mt-1">
+                          <p v-for="error in fieldErrors.name" :key="error" class="text-xs text-red-600">
+                            {{ error }}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -318,6 +371,10 @@
                   v-for="(translation, index) in formData.translations"
                   :key="translation.id || index"
                   v-show="activeTab === translation.language"
+                  role="tabpanel"
+                  :id="'tabpanel-' + translation.language"
+                  :aria-labelledby="'tab-' + translation.language"
+                  tabindex="0"
                   class="space-y-5"
                 >
                   <div class="space-y-3">
@@ -447,9 +504,21 @@
                         <input
                           v-model="formData.email"
                           type="email"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          @blur="validateEmail"
+                          :aria-invalid="emailError ? 'true' : 'false'"
+                          :aria-describedby="emailError ? 'email-error' : undefined"
+                          :class="[
+                            'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2',
+                            emailError
+                              ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
+                              : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400',
+                            'bg-white/90'
+                          ]"
                           placeholder="email@example.com"
                         />
+                        <div v-if="emailError" id="email-error" role="alert" class="mt-1">
+                          <p class="text-xs text-red-600">{{ emailError }}</p>
+                        </div>
                       </div>
 
                       <!-- LinkedIn -->
@@ -513,7 +582,7 @@
                     v-if="loading"
                     class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
-                  {{ loading ? 'Updating...' : 'Update Host' }}
+                  {{ loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Host' : 'Create Host') }}
                 </button>
               </div>
             </form>
@@ -525,22 +594,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { X, UserPen, User, Mail, Languages, Plus, Loader, Upload } from 'lucide-vue-next'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { X, UserPen, UserPlus, User, Languages, Plus, Upload, AlertCircle } from 'lucide-vue-next'
 import { hostsService, type EventHost, type HostTranslation, type CreateHostRequest } from '../services/api'
+import { sanitizePlainText, sanitizeRichContent } from '@/utils/sanitize'
+import { inputValidator } from '@/utils/inputValidation'
+
+// Constants
+const MAX_PROFILE_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
+const MAX_NAME_LENGTH = 100
+const MAX_TITLE_LENGTH = 150
+const MAX_BIO_LENGTH = 1000
 
 interface Props {
   eventId: string
-  host: EventHost
+  host?: EventHost  // Make optional for create mode
 }
 
 interface Emits {
   close: []
   updated: [host: EventHost]
+  created: [host: EventHost]  // Add created event
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// Computed: Check if we're in edit mode (has host prop) or create mode (no host prop)
+const isEditMode = computed(() => !!props.host)
 
 // State
 const loading = ref(false)
@@ -552,6 +633,12 @@ const profilePicturePreview = ref<string | null>(null)
 const profilePictureUploading = ref(false)
 const selectedProfileImageFile = ref<File | null>(null)
 const activeTab = ref<string>('en') // Default to English tab
+const imageRemoved = ref(false) // Explicit tracking for image removal
+
+// Error states
+const fieldErrors = ref<Record<string, string[]>>({})
+const generalError = ref<string>('')
+const emailError = ref<string>('')
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -565,20 +652,20 @@ const availableLanguages = [
   { code: 'vn', name: 'Vietnamese' },
 ]
 
-// Form data - initialize with host data
+// Form data - initialize with host data (edit mode) or empty values (create mode)
 const formData = reactive({
-  name: props.host.name,
-  parent_a_name: props.host.parent_a_name,
-  parent_b_name: props.host.parent_b_name,
-  title: props.host.title,
-  bio: props.host.bio,
-  profile_image: props.host.profile_image,
-  email: props.host.email,
-  linkedin_url: props.host.linkedin_url,
-  twitter_url: props.host.twitter_url,
-  website_url: props.host.website_url,
-  order: props.host.order,
-  translations: [...props.host.translations], // Create a copy
+  name: props.host?.name || '',
+  parent_a_name: props.host?.parent_a_name || '',
+  parent_b_name: props.host?.parent_b_name || '',
+  title: props.host?.title || '',
+  bio: props.host?.bio || '',
+  profile_image: props.host?.profile_image || '',
+  email: props.host?.email || '',
+  linkedin_url: props.host?.linkedin_url || '',
+  twitter_url: props.host?.twitter_url || '',
+  website_url: props.host?.website_url || '',
+  order: props.host?.order || 0,
+  translations: props.host ? [...props.host.translations] : [], // Create a copy if editing
 })
 
 // New translation
@@ -596,7 +683,7 @@ const newTranslation = reactive<Omit<HostTranslation, 'id' | 'host' | 'created_a
 // Computed
 const availableLanguagesForAdd = computed(() => {
   return availableLanguages.filter(
-    (lang) => !formData.translations.some((t) => t.language === lang.code),
+    (lang) => lang.code !== 'en' && !formData.translations.some((t) => t.language === lang.code),
   )
 })
 
@@ -611,6 +698,33 @@ const contactSummary = computed(() => {
   const count = items.filter((v) => v && String(v).trim() !== '').length
   return count > 0 ? `${count} ${count === 1 ? 'link' : 'links'}` : 'No links'
 })
+
+// Validation functions
+const isValidHttpUrl = (urlString: string): boolean => {
+  if (!urlString || urlString.trim() === '') return true // Optional field
+
+  try {
+    const url = new URL(urlString)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+const validateEmail = (): boolean => {
+  emailError.value = ''
+
+  if (formData.email && formData.email.trim() !== '') {
+    const result = inputValidator.validateEmail(formData.email)
+    if (!result.isValid) {
+      emailError.value = result.errors[0] || 'Invalid email address'
+      return false
+    } else {
+      formData.email = result.sanitizedValue || formData.email
+    }
+  }
+  return true
+}
 
 // Methods
 const getLanguageName = (code: string) => {
@@ -655,6 +769,21 @@ const removeTranslation = (index: number) => {
   }
 }
 
+// Keyboard navigation for tabs
+const focusNextTab = () => {
+  const tabs = ['en', ...formData.translations.map(t => t.language)]
+  const currentIndex = tabs.indexOf(activeTab.value)
+  const nextIndex = (currentIndex + 1) % tabs.length
+  activeTab.value = tabs[nextIndex]
+}
+
+const focusPreviousTab = () => {
+  const tabs = ['en', ...formData.translations.map(t => t.language)]
+  const currentIndex = tabs.indexOf(activeTab.value)
+  const previousIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1
+  activeTab.value = tabs[previousIndex]
+}
+
 // Profile picture methods
 const triggerProfilePictureUpload = () => {
   profilePictureInput.value?.click()
@@ -672,14 +801,14 @@ const handleProfilePictureSelect = async (event: Event) => {
     return
   }
 
-  if (file.size > 3 * 1024 * 1024) {
-    // 3MB limit
+  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
     alert('File size must be less than 3MB')
     return
   }
 
   // Store the file for later upload
   selectedProfileImageFile.value = file
+  imageRemoved.value = false // Reset removal flag when new image is selected
 
   // Create preview
   const reader = new FileReader()
@@ -696,70 +825,242 @@ const removeProfilePicture = () => {
   formData.profile_image = ''
   profilePicturePreview.value = null
   selectedProfileImageFile.value = null
+  imageRemoved.value = true // Explicit tracking
 }
 
-const updateHost = async () => {
+// Unified submit handler - delegates to create or update based on mode
+const submitHost = async () => {
+  if (isEditMode.value) {
+    await updateHost()
+  } else {
+    await createHost()
+  }
+}
+
+// Create new host
+const createHost = async () => {
   loading.value = true
+  fieldErrors.value = {}
+  generalError.value = ''
 
   try {
-    // Clean the translations data - remove server-generated fields
-    const cleanedTranslations = formData.translations.map((translation) => ({
-      language: translation.language,
-      name: translation.name || '',
-      parent_a_name: translation.parent_a_name || '',
-      parent_b_name: translation.parent_b_name || '',
-      title: translation.title || '',
-      bio: translation.bio || '',
-      // Note: Exclude server-generated fields like id, host, created_at, updated_at
-    }))
+    // Validate email
+    if (!validateEmail()) {
+      loading.value = false
+      return
+    }
 
-    // Build request data
-    const requestData: Partial<CreateHostRequest> = {
-      name: formData.name,
-      parent_a_name: formData.parent_a_name || '',
-      parent_b_name: formData.parent_b_name || '',
-      title: formData.title || '',
-      bio: formData.bio || '',
+    // Validate URLs
+    const urls = [
+      { field: 'LinkedIn', value: formData.linkedin_url },
+      { field: 'Twitter', value: formData.twitter_url },
+      { field: 'Website', value: formData.website_url },
+    ]
+
+    for (const { field, value } of urls) {
+      if (value && !isValidHttpUrl(value)) {
+        generalError.value = `Invalid ${field} URL. Please use http:// or https:// URLs only.`
+        loading.value = false
+        return
+      }
+    }
+
+    // Validate file at submission time
+    if (selectedProfileImageFile.value) {
+      const file = selectedProfileImageFile.value
+
+      if (!file.type.startsWith('image/')) {
+        generalError.value = 'Invalid file type. Please select an image file.'
+        selectedProfileImageFile.value = null
+        profilePicturePreview.value = null
+        loading.value = false
+        return
+      }
+
+      if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+        generalError.value = 'File size exceeds 3MB limit. Please select a smaller image.'
+        selectedProfileImageFile.value = null
+        profilePicturePreview.value = null
+        loading.value = false
+        return
+      }
+    }
+
+    // Sanitize all text inputs
+    const requestData: CreateHostRequest = {
+      name: sanitizePlainText(formData.name, MAX_NAME_LENGTH),
+      parent_a_name: sanitizePlainText(formData.parent_a_name || '', MAX_NAME_LENGTH),
+      parent_b_name: sanitizePlainText(formData.parent_b_name || '', MAX_NAME_LENGTH),
+      title: sanitizePlainText(formData.title || '', MAX_TITLE_LENGTH),
+      bio: sanitizeRichContent(formData.bio || '', MAX_BIO_LENGTH),
       email: formData.email || '',
       linkedin_url: formData.linkedin_url || '',
       twitter_url: formData.twitter_url || '',
       website_url: formData.website_url || '',
       order: formData.order || 0,
-      translations: cleanedTranslations.filter((t) => t.language && t.language.trim() !== ''),
     }
 
-    // Determine if user is removing the image
-    const isRemovingImage = !selectedProfileImageFile.value &&
-                           formData.profile_image === '' &&
-                           props.host.profile_image
+    // Sanitize translations
+    const cleanedTranslations = formData.translations.map((translation) => ({
+      language: translation.language,
+      name: sanitizePlainText(translation.name || '', MAX_NAME_LENGTH),
+      parent_a_name: sanitizePlainText(translation.parent_a_name || '', MAX_NAME_LENGTH),
+      parent_b_name: sanitizePlainText(translation.parent_b_name || '', MAX_NAME_LENGTH),
+      title: sanitizePlainText(translation.title || '', MAX_TITLE_LENGTH),
+      bio: sanitizeRichContent(translation.bio || '', MAX_BIO_LENGTH),
+    }))
+
+    requestData.translations = cleanedTranslations.filter(t => t.language && t.language.trim() !== '')
 
     let response
 
-    if (selectedProfileImageFile.value || isRemovingImage) {
-      // Use FormData for both uploading new file and removing image
-      // When removing, we'll pass undefined as the file which should clear it
+    if (selectedProfileImageFile.value) {
+      // Use FormData for file upload
+      response = await hostsService.createHostWithFile(
+        props.eventId,
+        requestData,
+        selectedProfileImageFile.value,
+      )
+    } else {
+      // No file, use JSON
+      response = await hostsService.createHost(props.eventId, requestData)
+    }
+
+    if (response.success && response.data) {
+      emit('created', response.data)
+    } else {
+      // Handle field-specific errors from API
+      if (response.errors && typeof response.errors === 'object') {
+        fieldErrors.value = response.errors as Record<string, string[]>
+      }
+      generalError.value = response.message || 'Failed to create host'
+    }
+  } catch (error) {
+    console.error('Error creating host:', error)
+    generalError.value = 'Network error. Please check your connection and try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
+// Update existing host
+const updateHost = async () => {
+  loading.value = true
+  fieldErrors.value = {}
+  generalError.value = ''
+
+  try {
+    // Validate email
+    if (!validateEmail()) {
+      loading.value = false
+      return
+    }
+
+    // Validate URLs
+    const urls = [
+      { field: 'LinkedIn', value: formData.linkedin_url },
+      { field: 'Twitter', value: formData.twitter_url },
+      { field: 'Website', value: formData.website_url },
+    ]
+
+    for (const { field, value } of urls) {
+      if (value && !isValidHttpUrl(value)) {
+        generalError.value = `Invalid ${field} URL. Please use http:// or https:// URLs only.`
+        loading.value = false
+        return
+      }
+    }
+
+    // Validate file at submission time
+    if (selectedProfileImageFile.value) {
+      const file = selectedProfileImageFile.value
+
+      if (!file.type.startsWith('image/')) {
+        generalError.value = 'Invalid file type. Please select an image file.'
+        selectedProfileImageFile.value = null
+        profilePicturePreview.value = null
+        loading.value = false
+        return
+      }
+
+      if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+        generalError.value = 'File size exceeds 3MB limit. Please select a smaller image.'
+        selectedProfileImageFile.value = null
+        profilePicturePreview.value = null
+        loading.value = false
+        return
+      }
+    }
+
+    // Sanitize all text inputs
+    const requestData: Partial<CreateHostRequest> = {
+      name: sanitizePlainText(formData.name, MAX_NAME_LENGTH),
+      parent_a_name: sanitizePlainText(formData.parent_a_name || '', MAX_NAME_LENGTH),
+      parent_b_name: sanitizePlainText(formData.parent_b_name || '', MAX_NAME_LENGTH),
+      title: sanitizePlainText(formData.title || '', MAX_TITLE_LENGTH),
+      bio: sanitizeRichContent(formData.bio || '', MAX_BIO_LENGTH),
+      email: formData.email || '',
+      linkedin_url: formData.linkedin_url || '',
+      twitter_url: formData.twitter_url || '',
+      website_url: formData.website_url || '',
+      order: formData.order || 0,
+    }
+
+    // Sanitize translations
+    const cleanedTranslations = formData.translations.map((translation) => ({
+      language: translation.language,
+      name: sanitizePlainText(translation.name || '', MAX_NAME_LENGTH),
+      parent_a_name: sanitizePlainText(translation.parent_a_name || '', MAX_NAME_LENGTH),
+      parent_b_name: sanitizePlainText(translation.parent_b_name || '', MAX_NAME_LENGTH),
+      title: sanitizePlainText(translation.title || '', MAX_TITLE_LENGTH),
+      bio: sanitizeRichContent(translation.bio || '', MAX_BIO_LENGTH),
+    }))
+
+    requestData.translations = cleanedTranslations.filter((t) => t.language && t.language.trim() !== '')
+
+    // Clearer image change detection
+    const hasNewImage = !!selectedProfileImageFile.value
+    const isRemovingImage = imageRemoved.value && !!props.host?.profile_image
+    const imageChanged = hasNewImage || isRemovingImage
+
+    let response
+
+    if (imageChanged) {
+      // Use FormData for image changes
       response = await hostsService.updateHostWithFile(
         props.eventId,
-        props.host.id,
+        props.host!.id,
         requestData,
         selectedProfileImageFile.value || undefined,
       )
     } else {
-      // No image changes, use PATCH for other fields
-      response = await hostsService.patchHost(props.eventId, props.host.id, requestData)
+      // No image changes, use PATCH
+      response = await hostsService.patchHost(props.eventId, props.host!.id, requestData)
     }
 
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
-      alert(response.message || 'Failed to update host')
+      // Handle field-specific errors from API
+      if (response.errors && typeof response.errors === 'object') {
+        fieldErrors.value = response.errors as Record<string, string[]>
+      }
+      generalError.value = response.message || 'Failed to update host'
     }
-  } catch {
-    alert('Network error while updating host')
+  } catch (error) {
+    console.error('Error updating host:', error)
+    generalError.value = 'Network error. Please check your connection and try again.'
   } finally {
     loading.value = false
   }
 }
+
+// Reset error states when modal opens
+onMounted(() => {
+  fieldErrors.value = {}
+  generalError.value = ''
+  emailError.value = ''
+})
 </script>
 
 <style scoped>

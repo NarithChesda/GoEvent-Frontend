@@ -164,8 +164,8 @@
       </button>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <CreateHostModal
+    <!-- Unified Create/Edit Modal -->
+    <EditHostModal
       v-if="showCreateModal"
       :event-id="eventId"
       @close="showCreateModal = false"
@@ -212,7 +212,6 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Users, UserPlus, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
-import CreateHostModal from './CreateHostModal.vue'
 import EditHostModal from './EditHostModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
