@@ -71,7 +71,7 @@
 
     <!-- Organizer Card -->
     <div
-      v-if="organizerDetails"
+      v-if="sanitizedOrganizerDetails"
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6"
     >
       <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
@@ -83,21 +83,21 @@
           class="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center"
         >
           <img
-            v-if="organizerDetails.profile_picture"
-            :src="getMediaUrl(organizerDetails.profile_picture)"
-            :alt="organizerDetails.first_name + ' ' + organizerDetails.last_name"
+            v-if="sanitizedOrganizerDetails.profile_picture"
+            :src="apiClient.getProfilePictureUrl(sanitizedOrganizerDetails.profile_picture)"
+            :alt="sanitizedOrganizerDetails.first_name + ' ' + sanitizedOrganizerDetails.last_name"
             class="w-full h-full object-cover"
           />
           <span v-else class="text-white text-base sm:text-lg font-bold">
-            {{ getInitials(organizerDetails.first_name, organizerDetails.last_name) }}
+            {{ getInitials(sanitizedOrganizerDetails.first_name, sanitizedOrganizerDetails.last_name) }}
           </span>
         </div>
         <div class="flex-1">
           <h4 class="text-base sm:text-lg font-semibold text-slate-800">
-            {{ organizerDetails.first_name }} {{ organizerDetails.last_name }}
+            {{ sanitizedOrganizerDetails.first_name }} {{ sanitizedOrganizerDetails.last_name }}
           </h4>
-          <p class="text-xs sm:text-sm text-slate-600">@{{ organizerDetails.username }}</p>
-          <p class="text-xs sm:text-sm text-slate-500">{{ organizerDetails.email }}</p>
+          <p class="text-xs sm:text-sm text-slate-600">@{{ sanitizedOrganizerDetails.username }}</p>
+          <p class="text-xs sm:text-sm text-slate-500">{{ sanitizedOrganizerDetails.email }}</p>
           <span
             class="inline-block mt-1 px-2 py-0.5 sm:px-3 sm:py-1 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full"
           >
@@ -118,9 +118,25 @@
       </div>
     </div>
 
+    <!-- Error State -->
+    <div
+      v-else-if="loadError"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8 text-center"
+    >
+      <AlertCircle class="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Failed to Load Collaborators</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">{{ loadError }}</p>
+      <button
+        @click="retryLoadCollaborators"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm sm:text-base"
+      >
+        Try Again
+      </button>
+    </div>
+
     <!-- Collaborators List -->
     <div
-      v-else-if="collaborators.length > 0"
+      v-else-if="enrichedCollaborators.length > 0"
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6"
     >
       <div class="flex items-center justify-between mb-3 sm:mb-4">
@@ -132,7 +148,7 @@
       </div>
       <div class="space-y-3 sm:space-y-4">
         <div
-          v-for="collaborator in collaborators"
+          v-for="collaborator in enrichedCollaborators"
           :key="collaborator.id"
           class="flex items-center justify-between p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl hover:bg-slate-100/50 transition-colors duration-200"
         >
@@ -141,39 +157,36 @@
               class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center flex-shrink-0"
             >
               <img
-                v-if="collaborator.user_details?.profile_picture"
-                :src="getMediaUrl(collaborator.user_details.profile_picture)"
+                v-if="collaborator.profileImageUrl"
+                :src="collaborator.profileImageUrl"
                 :alt="
-                  collaborator.user_details.first_name + ' ' + collaborator.user_details.last_name
+                  collaborator.sanitizedUserDetails
+                    ? collaborator.sanitizedUserDetails.first_name + ' ' + collaborator.sanitizedUserDetails.last_name
+                    : collaborator.sanitizedEmail
                 "
                 class="w-full h-full object-cover"
               />
               <span v-else class="text-white text-xs sm:text-sm font-bold">
-                {{
-                  getInitials(
-                    collaborator.user_details?.first_name || '',
-                    collaborator.user_details?.last_name || collaborator.email.charAt(0),
-                  )
-                }}
+                {{ collaborator.initials }}
               </span>
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="text-sm sm:text-base font-semibold text-slate-800 truncate">
-                <span v-if="collaborator.user_details">
-                  {{ collaborator.user_details.first_name }}
-                  {{ collaborator.user_details.last_name }}
+                <span v-if="collaborator.sanitizedUserDetails">
+                  {{ collaborator.sanitizedUserDetails.first_name }}
+                  {{ collaborator.sanitizedUserDetails.last_name }}
                 </span>
-                <span v-else class="text-slate-500">{{ collaborator.email }}</span>
+                <span v-else class="text-slate-500">{{ collaborator.sanitizedEmail }}</span>
               </h4>
               <p class="text-xs sm:text-sm text-slate-600 truncate">
-                <span v-if="collaborator.user_details">
-                  @{{ collaborator.user_details.username }}
+                <span v-if="collaborator.sanitizedUserDetails">
+                  @{{ collaborator.sanitizedUserDetails.username }}
                 </span>
-                <span v-else>{{ collaborator.email }}</span>
+                <span v-else>{{ collaborator.sanitizedEmail }}</span>
               </p>
               <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 truncate">
                 Invited by {{ collaborator.invited_by_name }} â€¢
-                {{ formatDate(collaborator.invited_at) }}
+                {{ collaborator.formattedInviteDate }}
               </p>
             </div>
           </div>
@@ -203,7 +216,7 @@
                   v-if="canUpdateRole"
                   @click="startRoleEdit(collaborator)"
                   class="inline-block px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full hover:ring-2 hover:ring-[#5eb3f6] transition-all duration-200"
-                  :class="getRoleColor(collaborator.role)"
+                  :class="collaborator.roleColorClass"
                   title="Click to change role"
                 >
                   {{ collaborator.role }}
@@ -211,7 +224,7 @@
                 <span
                   v-else
                   class="inline-block px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full"
-                  :class="getRoleColor(collaborator.role)"
+                  :class="collaborator.roleColorClass"
                 >
                   {{ collaborator.role }}
                 </span>
@@ -357,9 +370,21 @@
                       v-model="inviteForm.email"
                       type="email"
                       required
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      @blur="validateEmailField"
+                      :aria-invalid="!!emailError"
+                      :aria-describedby="emailError ? 'email-error' : undefined"
+                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border rounded-xl focus:ring-2 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      :class="emailError ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-200 focus:ring-[#1e90ff] focus:border-[#1e90ff]'"
                       placeholder="collaborator@example.com"
                     />
+                    <p
+                      v-if="emailError"
+                      id="email-error"
+                      class="mt-1.5 text-xs text-red-600 flex items-center"
+                    >
+                      <AlertCircle class="w-3 h-3 mr-1" />
+                      {{ emailError }}
+                    </p>
                   </div>
 
                   <div>
@@ -418,8 +443,8 @@
       :item-name="
         collaboratorToRemove
           ? collaboratorToRemove.user_details
-            ? `${collaboratorToRemove.user_details.first_name} ${collaboratorToRemove.user_details.last_name}`
-            : collaboratorToRemove.email
+            ? sanitizePlainText(`${collaboratorToRemove.user_details.first_name} ${collaboratorToRemove.user_details.last_name}`, 100)
+            : sanitizePlainText(collaboratorToRemove.email, 254)
           : ''
       "
       message="They will lose access to manage this event."
@@ -444,7 +469,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   Users,
   UserPlus,
@@ -457,7 +482,11 @@ import {
   Trash2,
 } from 'lucide-vue-next'
 import { eventsService, type EventCollaborator } from '../services/api'
+import { apiClient } from '../services/api'
 import { useAuthStore } from '../stores/auth'
+import { inputValidator } from '@/utils/inputValidation'
+import { sanitizePlainText } from '@/utils/sanitize'
+import { useCollaboratorRole } from '@/composables/useCollaboratorRole'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {
@@ -479,16 +508,15 @@ const authStore = useAuthStore()
 // State
 const collaborators = ref<EventCollaborator[]>([])
 const loading = ref(false)
+const loadError = ref<string | null>(null)
 const showInviteModal = ref(false)
 const showRemoveModal = ref(false)
 const isInviting = ref(false)
 const isRemoving = ref(false)
-const isUpdatingRole = ref(false)
-const editingRole = ref<number | null>(null)
-const tempRole = ref<'admin' | 'editor' | 'viewer'>('editor')
 const collaboratorToRemove = ref<EventCollaborator | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-// All CRUD endpoints are now working - no need to track availability
+const messageTimer = ref<number | null>(null)
+const emailError = ref<string | null>(null)
 
 const inviteForm = ref({
   email: '',
@@ -496,59 +524,239 @@ const inviteForm = ref({
   message: '',
 })
 
+/**
+ * Show a temporary message to the user
+ * Properly manages timeout to prevent memory leaks
+ *
+ * @param type - Message type (success or error)
+ * @param text - Message text to display
+ */
+const showMessage = (type: 'success' | 'error', text: string): void => {
+  // Clear existing timer if any
+  if (messageTimer.value !== null) {
+    clearTimeout(messageTimer.value)
+    messageTimer.value = null
+  }
+
+  message.value = { type, text }
+
+  // Set new timer
+  messageTimer.value = window.setTimeout(() => {
+    message.value = null
+    messageTimer.value = null
+  }, 5000)
+}
+
+// Use the role management composable
+const {
+  editingRole,
+  tempRole,
+  isUpdatingRole,
+  startRoleEdit,
+  cancelRoleEdit,
+  saveRoleUpdate,
+} = useCollaboratorRole({
+  eventId: props.eventId,
+  onMessage: showMessage,
+  onRoleUpdated: (updatedCollaborator) => {
+    const index = collaborators.value.findIndex((c) => c.id === updatedCollaborator.id)
+    if (index !== -1) {
+      collaborators.value[index] = updatedCollaborator
+    }
+  },
+})
+
 // Computed
+
+/**
+ * Determine the current user's role in this event
+ * Returns 'organizer' if user is the event organizer, or their collaborator role if they are a collaborator
+ */
+const userCollaboratorRole = computed<'organizer' | 'admin' | 'editor' | 'viewer' | null>(() => {
+  // Check if user is the organizer
+  if (props.organizerDetails && authStore.user?.id === props.organizerDetails.id) {
+    return 'organizer'
+  }
+
+  // Check if user is a collaborator
+  const userCollaborator = collaborators.value.find(
+    (c) => c.user_details?.id === authStore.user?.id
+  )
+  return userCollaborator?.role || null
+})
+
+/**
+ * Only organizers and admin collaborators can invite new collaborators
+ */
 const canInvite = computed(() => {
-  // Organizers and admin collaborators can invite
-  return (
-    props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
-  )
+  const role = userCollaboratorRole.value
+  return role === 'organizer' || role === 'admin'
 })
 
+/**
+ * Only organizers and admin collaborators can remove collaborators
+ */
 const canRemoveCollaborator = computed(() => {
-  // Organizers and admin collaborators can remove collaborators
-  return (
-    props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
-  )
+  const role = userCollaboratorRole.value
+  return role === 'organizer' || role === 'admin'
 })
 
+/**
+ * Only organizers and admin collaborators can update roles
+ */
 const canUpdateRole = computed(() => {
-  // Organizers and admin collaborators can update roles
-  return (
-    props.canEdit || (props.organizerDetails && authStore.user?.id === props.organizerDetails.id)
-  )
+  const role = userCollaboratorRole.value
+  return role === 'organizer' || role === 'admin'
 })
 
 const acceptedCount = computed(() => collaborators.value.filter((c) => c.is_accepted).length)
 
 const pendingCount = computed(() => collaborators.value.filter((c) => !c.is_accepted).length)
 
+/**
+ * Sanitized organizer details for safe display
+ * Prevents XSS attacks from user-provided content
+ */
+const sanitizedOrganizerDetails = computed(() => {
+  if (!props.organizerDetails) return null
+
+  return {
+    ...props.organizerDetails,
+    first_name: sanitizePlainText(props.organizerDetails.first_name, 50),
+    last_name: sanitizePlainText(props.organizerDetails.last_name, 50),
+    username: sanitizePlainText(props.organizerDetails.username, 30),
+    email: sanitizePlainText(props.organizerDetails.email, 254),
+  }
+})
+
+/**
+ * Enriched collaborators with pre-computed display values
+ * Improves performance by avoiding recalculation in v-for loop
+ */
+const enrichedCollaborators = computed(() => {
+  return collaborators.value.map((collaborator) => {
+    // Sanitize user details
+    const sanitizedUserDetails = collaborator.user_details
+      ? {
+          ...collaborator.user_details,
+          first_name: sanitizePlainText(collaborator.user_details.first_name, 50),
+          last_name: sanitizePlainText(collaborator.user_details.last_name, 50),
+          username: sanitizePlainText(collaborator.user_details.username, 30),
+          email: sanitizePlainText(collaborator.user_details.email, 254),
+        }
+      : null
+
+    // Pre-compute profile image URL
+    const profileImageUrl = collaborator.user_details?.profile_picture
+      ? apiClient.getProfilePictureUrl(collaborator.user_details.profile_picture)
+      : null
+
+    // Pre-compute initials
+    const initials = getInitials(
+      collaborator.user_details?.first_name || '',
+      collaborator.user_details?.last_name || collaborator.email.charAt(0)
+    )
+
+    // Pre-compute formatted invite date
+    const formattedInviteDate = formatDate(collaborator.invited_at)
+
+    // Pre-compute role color class
+    const roleColorClass = getRoleColor(collaborator.role)
+
+    // Sanitize email (fallback for non-registered users)
+    const sanitizedEmail = sanitizePlainText(collaborator.email, 254)
+
+    return {
+      ...collaborator,
+      sanitizedUserDetails,
+      sanitizedEmail,
+      profileImageUrl,
+      initials,
+      formattedInviteDate,
+      roleColorClass,
+    }
+  })
+})
+
 // Methods
-const loadCollaborators = async () => {
+
+/**
+ * Load collaborators from the API
+ * Includes error handling and sets appropriate error state
+ */
+const loadCollaborators = async (): Promise<void> => {
   loading.value = true
+  loadError.value = null
+
   try {
     const response = await eventsService.getCollaborators(props.eventId)
     if (response.success && response.data) {
       collaborators.value = response.data
+      loadError.value = null
     } else {
-      showMessage('error', response.message || 'Failed to load collaborators')
+      loadError.value = response.message || 'Failed to load collaborators'
+      showMessage('error', loadError.value)
     }
   } catch (error) {
     console.error('Error loading collaborators:', error)
-    showMessage('error', 'An error occurred while loading collaborators')
+    loadError.value = 'An error occurred while loading collaborators. Please check your connection.'
+    showMessage('error', loadError.value)
   } finally {
     loading.value = false
   }
 }
 
-const inviteCollaborator = async () => {
-  if (!inviteForm.value.email) return
+/**
+ * Retry loading collaborators after a failed attempt
+ */
+const retryLoadCollaborators = async (): Promise<void> => {
+  await loadCollaborators()
+}
+
+/**
+ * Validate email field in real-time
+ * Provides immediate feedback to the user
+ */
+const validateEmailField = (): void => {
+  if (!inviteForm.value.email) {
+    emailError.value = null
+    return
+  }
+
+  const validation = inputValidator.validateEmail(inviteForm.value.email)
+  emailError.value = validation.isValid ? null : validation.errors[0]
+}
+
+/**
+ * Invite a new collaborator with input validation and sanitization
+ * Validates email and sanitizes message before sending to API
+ */
+const inviteCollaborator = async (): Promise<void> => {
+  // Validate email
+  const emailValidation = inputValidator.validateEmail(inviteForm.value.email)
+  if (!emailValidation.isValid) {
+    emailError.value = emailValidation.errors[0]
+    showMessage('error', emailValidation.errors[0])
+    return
+  }
+
+  // Sanitize message if provided
+  const sanitizedMessage = inviteForm.value.message
+    ? sanitizePlainText(inviteForm.value.message, 500)
+    : ''
+
+  // Check message length after sanitization
+  if (sanitizedMessage.length > 500) {
+    showMessage('error', 'Message must be no more than 500 characters')
+    return
+  }
 
   isInviting.value = true
   try {
     const response = await eventsService.inviteCollaborator(props.eventId, {
-      email: inviteForm.value.email,
+      email: emailValidation.sanitizedValue!,
       role: inviteForm.value.role,
-      message: inviteForm.value.message || undefined,
+      message: sanitizedMessage || undefined,
     })
 
     if (response.success && response.data) {
@@ -566,8 +774,12 @@ const inviteCollaborator = async () => {
   }
 }
 
-const closeInviteModal = () => {
+/**
+ * Close the invite modal and reset form state
+ */
+const closeInviteModal = (): void => {
   showInviteModal.value = false
+  emailError.value = null
   inviteForm.value = {
     email: '',
     role: 'editor',
@@ -585,16 +797,15 @@ const closeRemoveModal = () => {
   collaboratorToRemove.value = null
 }
 
-const removeCollaborator = async () => {
+/**
+ * Remove a collaborator from the event
+ * Removes sensitive data logging for security
+ */
+const removeCollaborator = async (): Promise<void> => {
   if (!collaboratorToRemove.value) return
 
   isRemoving.value = true
   try {
-    console.log('Attempting to remove collaborator:', {
-      eventId: props.eventId,
-      collaboratorId: collaboratorToRemove.value.id,
-    })
-
     const response = await eventsService.removeCollaborator(
       props.eventId,
       collaboratorToRemove.value.id,
@@ -608,7 +819,6 @@ const removeCollaborator = async () => {
       )
       closeRemoveModal()
     } else {
-      console.error('Remove collaborator API response:', response)
       showMessage('error', response.message || 'Failed to remove collaborator')
     }
   } catch (error) {
@@ -619,53 +829,7 @@ const removeCollaborator = async () => {
   }
 }
 
-const startRoleEdit = (collaborator: EventCollaborator) => {
-  editingRole.value = collaborator.id
-  tempRole.value = collaborator.role
-}
-
-const cancelRoleEdit = () => {
-  editingRole.value = null
-  tempRole.value = 'editor'
-}
-
-const saveRoleUpdate = async (collaborator: EventCollaborator) => {
-  if (tempRole.value === collaborator.role) {
-    cancelRoleEdit()
-    return
-  }
-
-  isUpdatingRole.value = true
-  try {
-    console.log('Attempting to update collaborator:', {
-      eventId: props.eventId,
-      collaboratorId: collaborator.id,
-      newRole: tempRole.value,
-    })
-
-    const response = await eventsService.updateCollaborator(props.eventId, collaborator.id, {
-      role: tempRole.value,
-    })
-
-    if (response.success && response.data) {
-      showMessage('success', `Role updated to ${tempRole.value}`)
-      // Update the collaborator in the local list
-      const index = collaborators.value.findIndex((c) => c.id === collaborator.id)
-      if (index !== -1) {
-        collaborators.value[index] = response.data
-      }
-      cancelRoleEdit()
-    } else {
-      console.error('Update collaborator API response:', response)
-      showMessage('error', response.message || 'Failed to update collaborator role')
-    }
-  } catch (error) {
-    console.error('Error updating collaborator role:', error)
-    showMessage('error', 'Failed to update collaborator role. Please try again.')
-  } finally {
-    isUpdatingRole.value = false
-  }
-}
+// Role management methods are now handled by the useCollaboratorRole composable
 
 const getRoleColor = (role: string) => {
   switch (role) {
@@ -680,23 +844,12 @@ const getRoleColor = (role: string) => {
   }
 }
 
+/**
+ * Get initials from first and last name
+ * Used for avatar placeholder when profile picture is not available
+ */
 const getInitials = (firstName: string, lastName: string): string => {
   return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
-}
-
-const getMediaUrl = (mediaUrl: string | null): string | undefined => {
-  if (!mediaUrl) return undefined
-
-  if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
-    return mediaUrl
-  }
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (mediaUrl.startsWith('/')) {
-    return `${API_BASE_URL}${mediaUrl}`
-  }
-
-  return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
 const formatDate = (dateString: string): string => {
@@ -708,23 +861,29 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
-}
-
 // Lifecycle
-onMounted(() => {
-  loadCollaborators()
+onMounted(async () => {
+  try {
+    await loadCollaborators()
+  } catch (error) {
+    console.error('Failed to initialize collaborators:', error)
+  }
+})
+
+onUnmounted(() => {
+  // Clean up message timer to prevent memory leaks
+  if (messageTimer.value !== null) {
+    clearTimeout(messageTimer.value)
+    messageTimer.value = null
+  }
 })
 
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openInviteModal: () => {
     showInviteModal.value = true
-  }
+  },
+  retryLoadCollaborators,
 })
 </script>
 
