@@ -9,7 +9,7 @@
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
-            <!-- Header (neutral to match CreateAgendaModal) -->
+            <!-- Header (neutral style) -->
             <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">

@@ -143,20 +143,14 @@
       </div>
     </div>
 
-    <!-- Create Modal -->
-    <CreateAgendaModal
-      v-if="showCreateModal"
-      :event-id="eventId"
-      @close="showCreateModal = false"
-      @created="handleAgendaItemCreated"
-    />
-
-    <!-- Edit Modal -->
+    <!-- Unified Agenda Modal (for both create and edit) -->
     <EditAgendaModal
-      v-if="showEditModal && selectedItem"
+      v-if="showCreateModal || (showEditModal && selectedItem)"
       :event-id="eventId"
-      :item="selectedItem"
-      @close="showEditModal = false"
+      :item="selectedItem || undefined"
+      :existing-agenda-items="agendaItems"
+      @close="closeModal"
+      @created="handleAgendaItemCreated"
       @updated="handleAgendaItemUpdated"
     />
 
@@ -177,7 +171,6 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { Plus, Calendar, AlertCircle, ChevronDown } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
-import CreateAgendaModal from './CreateAgendaModal.vue'
 import EditAgendaModal from './EditAgendaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -355,6 +348,12 @@ const handleAgendaItemUpdated = (updatedItem: EventAgendaItem) => {
   } else {
     agendaItems.value = [updatedItem]
   }
+  showEditModal.value = false
+  selectedItem.value = null
+}
+
+const closeModal = () => {
+  showCreateModal.value = false
   showEditModal.value = false
   selectedItem.value = null
 }

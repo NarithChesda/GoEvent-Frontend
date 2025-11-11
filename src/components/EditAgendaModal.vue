@@ -14,9 +14,12 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <Edit2 class="w-4.5 h-4.5" />
+                    <Edit2 v-if="isEditMode" class="w-4.5 h-4.5" />
+                    <Calendar v-else class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Edit Agenda Item</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
+                    {{ isEditMode ? 'Edit Agenda Item' : 'Create Agenda Item' }}
+                  </h2>
                 </div>
                 <button
                   @click="$emit('close')"
@@ -29,7 +32,7 @@
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="updateAgendaItem" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form @submit.prevent="submitAgendaItem" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
               <!-- Language Tabs Section -->
               <div class="space-y-4">
                 <div class="flex items-center justify-between">
@@ -680,7 +683,7 @@
                     v-if="loading"
                     class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
-                  {{ loading ? 'Updating...' : 'Update Agenda Item' }}
+                  {{ loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Agenda Item' : 'Create Agenda Item') }}
                 </button>
               </div>
             </form>
@@ -703,6 +706,7 @@ import {
   Sparkles,
   ChevronDown,
   Edit2,
+  Calendar,
 } from 'lucide-vue-next'
 import {
   agendaService,
@@ -714,16 +718,52 @@ import {
 
 interface Props {
   eventId: string
-  item: EventAgendaItem
+  item?: EventAgendaItem  // Make optional for create mode
+  existingAgendaItems?: EventAgendaItem[]  // For auto-filling in create mode
 }
 
 interface Emits {
   close: []
   updated: [item: EventAgendaItem]
+  created: [item: EventAgendaItem]  // Add created event
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// Computed: Check if we're in edit mode (has item prop) or create mode (no item prop)
+const isEditMode = computed(() => !!props.item)
+
+// Helper function to get the latest agenda item (most recent by order or date)
+const getLatestAgendaItem = (): EventAgendaItem | null => {
+  if (!props.existingAgendaItems || props.existingAgendaItems.length === 0) {
+    return null
+  }
+
+  // Sort by order descending to get the last item
+  const sorted = [...props.existingAgendaItems].sort((a, b) => b.order - a.order)
+  return sorted[0]
+}
+
+// Helper function to get unique languages from existing agenda items
+const getExistingLanguages = (): Set<string> => {
+  const languages = new Set<string>()
+
+  if (!props.existingAgendaItems || props.existingAgendaItems.length === 0) {
+    return languages
+  }
+
+  // Collect all unique languages from all agenda items
+  props.existingAgendaItems.forEach(item => {
+    item.translations.forEach(translation => {
+      if (translation.language && translation.language.trim() !== '') {
+        languages.add(translation.language)
+      }
+    })
+  })
+
+  return languages
+}
 
 // State
 const loading = ref(false)
@@ -748,23 +788,26 @@ const availableLanguages = [
   { code: 'vn', name: 'Vietnamese' },
 ]
 
-// Form data - initialize with item data
+// Get auto-fill data from latest agenda item in create mode
+const latestAgendaItem = !isEditMode.value ? getLatestAgendaItem() : null
+
+// Form data - initialize with item data (edit mode) or auto-filled values from latest agenda (create mode)
 const formData = reactive({
-  title: props.item.title,
-  description: props.item.description,
-  agenda_type: props.item.agenda_type,
-  date: props.item.date,
-  date_text: props.item.date_text,
-  start_time_text: props.item.start_time_text,
-  end_time_text: props.item.end_time_text,
-  speaker: props.item.speaker,
-  location: props.item.location,
-  virtual_link: props.item.virtual_link,
-  order: props.item.order,
-  is_featured: props.item.is_featured,
-  color: props.item.color,
-  icon_id: props.item.icon?.id || null,
-  translations: [...props.item.translations], // Create a copy
+  title: props.item?.title || '',
+  description: props.item?.description || '',
+  agenda_type: props.item?.agenda_type || 'session',
+  date: props.item?.date || latestAgendaItem?.date || '',
+  date_text: props.item?.date_text || latestAgendaItem?.date_text || '',
+  start_time_text: props.item?.start_time_text || '',
+  end_time_text: props.item?.end_time_text || '',
+  speaker: props.item?.speaker || '',
+  location: props.item?.location || '',
+  virtual_link: props.item?.virtual_link || '',
+  order: props.item?.order || 0,
+  is_featured: props.item?.is_featured || false,
+  color: props.item?.color || '#3498db',
+  icon_id: props.item?.icon?.id || null,
+  translations: props.item ? [...props.item.translations] : [], // Create a copy if editing, will be populated in onMounted for create mode
 })
 
 // New translation
@@ -886,6 +929,54 @@ const removeTranslation = (index: number) => {
   }
 }
 
+// Unified submit handler - delegates to create or update based on mode
+const submitAgendaItem = async () => {
+  if (isEditMode.value) {
+    await updateAgendaItem()
+  } else {
+    await createAgendaItem()
+  }
+}
+
+// Create new agenda item
+const createAgendaItem = async () => {
+  loading.value = true
+
+  try {
+    // Clean the translations data - remove server-generated fields
+    const cleanedTranslations = formData.translations.map((translation) => ({
+      language: translation.language,
+      title: translation.title || '',
+      description: translation.description || '',
+      date_text: translation.date_text || '',
+      start_time_text: translation.start_time_text || '',
+      end_time_text: translation.end_time_text || '',
+      speaker: translation.speaker || '',
+    }))
+
+    // Build request data
+    const requestData = { ...formData }
+
+    const validTranslations = cleanedTranslations.filter(
+      (t) => t.language && t.language.trim() !== '',
+    )
+
+    requestData.translations = validTranslations
+
+    const response = await agendaService.createAgendaItem(props.eventId, requestData)
+    if (response.success && response.data) {
+      emit('created', response.data)
+    } else {
+      alert(response.message || 'Failed to create agenda item')
+    }
+  } catch (error) {
+    alert('Network error while creating agenda item')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Update existing agenda item
 const updateAgendaItem = async () => {
   loading.value = true
 
@@ -913,7 +1004,7 @@ const updateAgendaItem = async () => {
     // Always set translations array (even if empty) to ensure server sync
     requestData.translations = validTranslations
 
-    const response = await agendaService.updateAgendaItem(props.eventId, props.item.id, requestData)
+    const response = await agendaService.updateAgendaItem(props.eventId, props.item!.id, requestData)
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
@@ -930,6 +1021,27 @@ const updateAgendaItem = async () => {
 onMounted(() => {
   // Fetch available icons
   fetchIcons()
+
+  // In create mode, auto-populate translation tabs based on existing agenda items
+  if (!isEditMode.value && props.existingAgendaItems && props.existingAgendaItems.length > 0) {
+    const existingLanguages = getExistingLanguages()
+
+    // Create empty translation objects for each existing language
+    existingLanguages.forEach(langCode => {
+      // Skip English as it's the default
+      if (langCode !== 'en' && !formData.translations.some(t => t.language === langCode)) {
+        formData.translations.push({
+          language: langCode,
+          title: '',
+          description: '',
+          date_text: '',
+          start_time_text: '',
+          end_time_text: '',
+          speaker: '',
+        })
+      }
+    })
+  }
 })
 </script>
 

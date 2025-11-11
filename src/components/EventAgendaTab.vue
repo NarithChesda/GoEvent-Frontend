@@ -142,19 +142,14 @@
       </ul>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <CreateAgendaModal
-      v-if="showCreateModal"
-      :event-id="eventId"
-      @close="showCreateModal = false"
-      @created="handleAgendaCreated"
-    />
-
+    <!-- Unified Agenda Modal (for both create and edit) -->
     <EditAgendaModal
-      v-if="showEditModal && selectedItem"
-      :item="selectedItem"
+      v-if="showCreateModal || (showEditModal && selectedItem)"
       :event-id="eventId"
-      @close="closeEditModal"
+      :item="selectedItem || undefined"
+      :existing-agenda-items="agendaItems"
+      @close="closeAgendaModal"
+      @created="handleAgendaCreated"
       @updated="handleAgendaUpdated"
     />
 
@@ -190,7 +185,6 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
-import CreateAgendaModal from './CreateAgendaModal.vue'
 import EditAgendaModal from './EditAgendaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -411,6 +405,12 @@ const editAgendaItem = (item: EventAgendaItem) => {
 }
 
 const closeEditModal = () => {
+  showEditModal.value = false
+  selectedItem.value = null
+}
+
+const closeAgendaModal = () => {
+  showCreateModal.value = false
   showEditModal.value = false
   selectedItem.value = null
 }
