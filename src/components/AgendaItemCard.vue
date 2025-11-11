@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="cardElement"
     :draggable="canEdit && isDesktop"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
@@ -10,8 +11,8 @@
     class="agenda-card group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
     :class="[
       item.is_featured ? 'ring-1 ring-[#87CEEB] bg-[#E6F4FF]/30' : '',
-      isDragging ? 'opacity-60 scale-105 shadow-xl' : '',
-      isDraggedOver && !isDragging ? 'border-blue-400 bg-blue-50/50' : '',
+      isDragging ? 'is-dragging' : '',
+      isDraggedOver && !isDragging ? 'is-drag-over' : '',
     ]"
     :style="cardStyles"
     role="group"
@@ -24,7 +25,7 @@
           v-if="item.icon"
           class="w-10 h-10 rounded-lg flex items-center justify-center"
           :style="{ backgroundColor: iconBackgroundColor }"
-          v-html="item.icon.svg_code"
+          v-html="sanitizedIconSvg"
         ></div>
         <div v-else class="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100">
           <Clock class="w-5 h-5 text-slate-500" />
@@ -147,6 +148,7 @@ import {
   Star,
 } from 'lucide-vue-next'
 import type { EventAgendaItem } from '../services/api'
+import { sanitizeSvg } from '@/utils/sanitize'
 
 interface Props {
   item: EventAgendaItem
@@ -178,11 +180,19 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkIsDesktop)
+
+  // Cleanup drag preview if component is unmounted during drag
+  if (dragPreviewElement.value && document.body.contains(dragPreviewElement.value)) {
+    document.body.removeChild(dragPreviewElement.value)
+    dragPreviewElement.value = null
+  }
 })
 
 // Drag state
 const isDragging = ref(false)
 const isDraggedOver = ref(false)
+const cardElement = ref<HTMLElement | null>(null)
+const dragPreviewElement = ref<HTMLElement | null>(null)
 
 const normalizeHex = (color: string): string | null => {
   if (!color || !color.startsWith('#')) return null
@@ -212,6 +222,17 @@ const cardStyles = computed(() => ({
   boxShadow: props.item.is_featured ? `0 18px 32px -18px ${withAlpha(accentColor.value, '4D')}` : undefined,
 }))
 
+/**
+ * Sanitized SVG code for icon rendering
+ * Prevents XSS attacks from malicious SVG content
+ */
+const sanitizedIconSvg = computed(() => {
+  if (!props.item.icon || !props.item.icon.svg_code) {
+    return ''
+  }
+  return sanitizeSvg(props.item.icon.svg_code)
+})
+
 // Helper functions
 const getAgendaTypeLabel = (type: string): string => {
   const labels: Record<string, string> = {
@@ -235,6 +256,82 @@ const getInitials = (name: string): string => {
     .toUpperCase()
 }
 
+/**
+ * Creates a custom drag preview element with polished styling
+ * Shows icon, title, and time in a compact format
+ */
+const createDragPreview = (): HTMLElement => {
+  const preview = document.createElement('div')
+  preview.className = 'drag-preview'
+  preview.style.cssText = `
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 12px 16px;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid ${accentColor.value};
+    z-index: 10000;
+    pointer-events: none;
+  `
+
+  // Icon section
+  if (props.item.icon?.svg_code) {
+    const iconDiv = document.createElement('div')
+    iconDiv.style.cssText = `
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background-color: ${iconBackgroundColor.value};
+    `
+    iconDiv.innerHTML = sanitizedIconSvg.value
+    preview.appendChild(iconDiv)
+  }
+
+  // Content section
+  const content = document.createElement('div')
+  content.style.cssText = 'flex: 1; min-width: 0;'
+
+  // Title
+  const title = document.createElement('div')
+  title.style.cssText = `
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+  `
+  title.textContent = props.item.title
+  content.appendChild(title)
+
+  // Time
+  const time = document.createElement('div')
+  time.style.cssText = `
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  `
+  time.textContent = props.item.start_time_text || 'TBD'
+  content.appendChild(time)
+
+  preview.appendChild(content)
+
+  return preview
+}
+
 // Drag handlers (desktop only)
 const handleDragStart = (event: DragEvent) => {
   if (!props.canEdit || !isDesktop.value) return
@@ -246,6 +343,26 @@ const handleDragStart = (event: DragEvent) => {
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('text/plain', props.item.id.toString())
+
+    // Create and set custom drag preview
+    try {
+      const preview = createDragPreview()
+      document.body.appendChild(preview)
+      dragPreviewElement.value = preview
+
+      // Set the custom preview image
+      event.dataTransfer.setDragImage(preview, preview.offsetWidth / 2, preview.offsetHeight / 2)
+
+      // Remove the preview element after a short delay (after browser has captured it)
+      setTimeout(() => {
+        if (dragPreviewElement.value && document.body.contains(dragPreviewElement.value)) {
+          document.body.removeChild(dragPreviewElement.value)
+          dragPreviewElement.value = null
+        }
+      }, 0)
+    } catch (error) {
+      console.warn('Failed to create custom drag preview:', error)
+    }
   }
 }
 
@@ -298,6 +415,12 @@ const handleDragEnd = () => {
   // Reset dragging state when drag operation ends
   isDragging.value = false
   isDraggedOver.value = false
+
+  // Cleanup drag preview element if it still exists
+  if (dragPreviewElement.value && document.body.contains(dragPreviewElement.value)) {
+    document.body.removeChild(dragPreviewElement.value)
+    dragPreviewElement.value = null
+  }
 }
 </script>
 
@@ -335,10 +458,63 @@ const handleDragEnd = () => {
 @media (min-width: 640px) {
   .agenda-card[draggable="true"] {
     cursor: grab;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .agenda-card[draggable="true"]:active {
     cursor: grabbing;
+  }
+
+  /* Being dragged - ghost effect on original */
+  .agenda-card.is-dragging {
+    opacity: 0.3;
+    transform: scale(0.95) rotate(-1deg);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Drop target highlight */
+  .agenda-card.is-drag-over {
+    border: 2px solid #3b82f6;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 16px -4px rgba(59, 130, 246, 0.25),
+      0 4px 8px -2px rgba(59, 130, 246, 0.15),
+      inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .agenda-card.is-drag-over::before {
+    opacity: 1;
+    transform: scaleY(1.1);
+    background: #3b82f6;
+  }
+
+  /* Insertion indicator - add a subtle top border highlight */
+  .agenda-card.is-drag-over::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+    animation: pulse-border 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scaleX(0.98);
+    }
   }
 }
 

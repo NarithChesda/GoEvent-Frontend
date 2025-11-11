@@ -326,3 +326,208 @@ export function createSanitizationValidator(
     return null
   }
 }
+
+/**
+ * Sanitizes SVG code for safe rendering
+ * This function uses a strict allow-list of SVG elements and attributes
+ * to prevent XSS attacks while maintaining SVG functionality
+ *
+ * @param svgCode - The SVG code to sanitize
+ * @returns Sanitized SVG code safe for rendering with v-html
+ */
+export function sanitizeSvg(svgCode: string): string {
+  if (typeof svgCode !== 'string') {
+    console.warn('sanitizeSvg: Input is not a string')
+    return ''
+  }
+
+  // Early return for empty input
+  if (!svgCode || svgCode.trim().length === 0) {
+    return ''
+  }
+
+  // Quick check for obviously malicious content before sanitization
+  if (containsSuspiciousContent(svgCode)) {
+    console.warn('sanitizeSvg: SVG contains suspicious content patterns')
+    // Still attempt to sanitize - DOMPurify will remove the dangerous parts
+  }
+
+  try {
+    // Configure DOMPurify with strict SVG-specific rules
+    const config = {
+      USE_PROFILES: { svg: true, svgFilters: true },
+      // Allow only safe SVG elements
+      ALLOWED_TAGS: [
+        'svg',
+        'path',
+        'rect',
+        'circle',
+        'ellipse',
+        'line',
+        'polyline',
+        'polygon',
+        'g',
+        'defs',
+        'linearGradient',
+        'radialGradient',
+        'stop',
+        'clipPath',
+        'mask',
+        'pattern',
+        'use',
+        'symbol',
+        'title',
+        'desc',
+      ],
+      // Allow only safe SVG attributes
+      ALLOWED_ATTR: [
+        'xmlns',
+        'viewBox',
+        'width',
+        'height',
+        'x',
+        'y',
+        'x1',
+        'y1',
+        'x2',
+        'y2',
+        'cx',
+        'cy',
+        'r',
+        'rx',
+        'ry',
+        'd',
+        'fill',
+        'stroke',
+        'stroke-width',
+        'stroke-linecap',
+        'stroke-linejoin',
+        'stroke-miterlimit',
+        'stroke-dasharray',
+        'stroke-dashoffset',
+        'fill-opacity',
+        'stroke-opacity',
+        'opacity',
+        'transform',
+        'id',
+        'class',
+        'style',
+        'points',
+        'offset',
+        'stop-color',
+        'stop-opacity',
+        'gradientUnits',
+        'gradientTransform',
+        'clip-path',
+        'mask',
+        'href',
+        'xlink:href',
+      ],
+      // Additional security settings
+      FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'foreignObject', 'animate', 'animateMotion', 'animateTransform', 'set'],
+      FORBID_ATTR: ['onload', 'onerror', 'onclick', 'onmouseover', 'onmouseout', 'onfocus', 'onblur'],
+      ALLOW_DATA_ATTR: false,
+      ALLOW_UNKNOWN_PROTOCOLS: false,
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+      KEEP_CONTENT: true,
+      RETURN_DOM: false,
+      RETURN_DOM_FRAGMENT: false,
+      FORCE_BODY: false,
+      SANITIZE_DOM: true,
+      IN_PLACE: false,
+    }
+
+    // Sanitize the SVG
+    let sanitized = DOMPurify.sanitize(svgCode, config) as unknown as string
+
+    // Ensure we have a string
+    if (typeof sanitized !== 'string') {
+      sanitized = String(sanitized)
+    }
+
+    // Additional validation: ensure it's actually SVG-like
+    if (sanitized && !sanitized.trim().startsWith('<svg')) {
+      // If it doesn't start with <svg, wrap it or reject it
+      if (sanitized.includes('<path') || sanitized.includes('<circle') || sanitized.includes('<rect')) {
+        // It has SVG content but missing wrapper - this might be fragment
+        console.warn('sanitizeSvg: SVG content missing <svg> wrapper')
+        // Still return it as DOMPurify has already sanitized it
+      }
+    }
+
+    return sanitized.trim()
+  } catch (error) {
+    console.error('sanitizeSvg: Error during SVG sanitization:', error)
+    // Return empty string on error to prevent potential XSS
+    return ''
+  }
+}
+
+/**
+ * Validates and sanitizes a URL to ensure it's safe
+ * Only allows http:// and https:// protocols
+ *
+ * @param url - The URL to validate and sanitize
+ * @returns Object with validation result and sanitized URL
+ */
+export function validateUrl(url: string): ValidationResult {
+  const errors: string[] = []
+
+  // Type check
+  if (typeof url !== 'string') {
+    url = String(url)
+  }
+
+  // Empty URL is valid (optional field)
+  if (!url || url.trim().length === 0) {
+    return {
+      isValid: true,
+      sanitized: '',
+      errors: [],
+    }
+  }
+
+  // Trim whitespace
+  url = url.trim()
+
+  // Check for suspicious content
+  if (containsSuspiciousContent(url)) {
+    errors.push('URL contains potentially malicious content')
+  }
+
+  // Validate protocol
+  const protocolPattern = /^(https?):\/\//i
+  if (!protocolPattern.test(url)) {
+    errors.push('URL must start with http:// or https://')
+  }
+
+  // Additional checks for common XSS patterns in URLs
+  const dangerousPatterns = [
+    /javascript:/gi,
+    /data:/gi,
+    /vbscript:/gi,
+    /file:/gi,
+    /about:/gi,
+  ]
+
+  if (dangerousPatterns.some((pattern) => pattern.test(url))) {
+    errors.push('URL protocol is not allowed')
+  }
+
+  // Sanitize the URL (remove any HTML tags that might have been injected)
+  const sanitized = sanitizePlainText(url, 2000)
+
+  // Basic URL format validation (optional, more lenient)
+  try {
+    // Try to parse as URL to ensure it's well-formed
+    new URL(sanitized)
+  } catch {
+    errors.push('URL format is invalid')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    sanitized,
+    errors,
+  }
+}

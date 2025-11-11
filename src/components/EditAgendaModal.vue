@@ -33,6 +33,26 @@
 
             <!-- Form -->
             <form @submit.prevent="submitAgendaItem" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <!-- Error Banner -->
+              <Transition name="slide-down">
+                <div v-if="showError" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                  <div class="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-red-800">{{ showError }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    @click="showError = null"
+                    class="flex-shrink-0 text-red-400 hover:text-red-600"
+                  >
+                    <X class="w-4 h-4" />
+                  </button>
+                </div>
+              </Transition>
               <!-- Language Tabs Section -->
               <div class="space-y-4">
                 <div class="flex items-center justify-between">
@@ -518,9 +538,17 @@
                           <input
                             v-model="formData.virtual_link"
                             type="url"
-                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            :class="[
+                              'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white/90',
+                              errors.virtual_link || urlValidationError
+                                ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
+                                : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400'
+                            ]"
                             placeholder="https://zoom.us/j/..."
                           />
+                          <p v-if="errors.virtual_link || urlValidationError" class="mt-1 text-xs text-red-600">
+                            {{ errors.virtual_link || urlValidationError }}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -584,7 +612,7 @@
                               <div
                                 v-if="getSelectedIcon()"
                                 class="w-7 h-7 flex items-center justify-center"
-                                v-html="getSelectedIcon()?.svg_code"
+                                v-html="getSanitizedIconSvg(getSelectedIcon())"
                               ></div>
                               <Sparkles v-else class="w-5 h-5 text-slate-400" />
                               <span class="text-slate-700">{{
@@ -655,7 +683,7 @@
                             "
                             :title="icon.name"
                           >
-                            <div class="w-6 h-6 mx-auto" v-html="icon.svg_code"></div>
+                            <div class="w-6 h-6 mx-auto" v-html="getSanitizedIconSvg(icon)"></div>
                             <p class="text-xs mt-1 text-slate-600 truncate">{{ icon.name }}</p>
                           </button>
                         </div>
@@ -715,6 +743,7 @@ import {
   type AgendaTranslation,
   type AgendaIcon,
 } from '../services/api'
+import { sanitizeSvg, sanitizePlainText, validateUrl } from '@/utils/sanitize'
 
 interface Props {
   eventId: string
@@ -775,6 +804,9 @@ const displayOpen = ref(false)
 const descriptionOpen = ref(false)
 const speakerOpen = ref(false)
 const activeTab = ref<string>('en') // Default to English tab
+const errors = ref<Record<string, string>>({})
+const showError = ref<string | null>(null)
+const urlValidationError = ref<string | null>(null)
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -868,7 +900,10 @@ const addTranslation = () => {
 
   // Check if translation for this language already exists
   if (formData.translations.some((t) => t.language === newTranslation.language)) {
-    alert('Translation for this language already exists')
+    showError.value = 'Translation for this language already exists'
+    setTimeout(() => {
+      showError.value = null
+    }, 3000)
     return
   }
 
@@ -905,6 +940,17 @@ const getSelectedIcon = () => {
   return availableIcons.value.find((icon) => icon.id === formData.icon_id)
 }
 
+/**
+ * Sanitizes icon SVG code before rendering
+ * Prevents XSS attacks from malicious SVG content
+ */
+const getSanitizedIconSvg = (icon: AgendaIcon | null | undefined): string => {
+  if (!icon || !icon.svg_code) {
+    return ''
+  }
+  return sanitizeSvg(icon.svg_code)
+}
+
 const selectIcon = (iconId: number | null) => {
   formData.icon_id = iconId
   showIconPicker.value = false
@@ -929,6 +975,80 @@ const removeTranslation = (index: number) => {
   }
 }
 
+/**
+ * Sanitizes all user input fields before submission
+ * Returns sanitized data object ready for API submission
+ */
+const sanitizeFormData = () => {
+  // Clear previous errors
+  errors.value = {}
+  urlValidationError.value = null
+
+  // Validate and sanitize virtual_link if provided
+  if (formData.virtual_link && formData.virtual_link.trim() !== '') {
+    const urlValidation = validateUrl(formData.virtual_link)
+    if (!urlValidation.isValid) {
+      urlValidationError.value = urlValidation.errors[0] || 'Invalid URL'
+      errors.value.virtual_link = urlValidation.errors[0] || 'Invalid URL'
+      return null
+    }
+    formData.virtual_link = urlValidation.sanitized
+  }
+
+  // Sanitize text fields with appropriate length limits
+  const sanitizedData = {
+    title: sanitizePlainText(formData.title, 200),
+    description: sanitizePlainText(formData.description, 2000),
+    speaker: sanitizePlainText(formData.speaker, 200),
+    location: sanitizePlainText(formData.location, 200),
+    start_time_text: sanitizePlainText(formData.start_time_text, 50),
+    end_time_text: sanitizePlainText(formData.end_time_text, 50),
+    date_text: sanitizePlainText(formData.date_text, 100),
+    virtual_link: formData.virtual_link,
+    date: formData.date,
+    agenda_type: formData.agenda_type,
+    order: formData.order,
+    is_featured: formData.is_featured,
+    color: formData.color,
+    icon_id: formData.icon_id,
+  }
+
+  // Sanitize translation fields
+  const sanitizedTranslations = formData.translations.map((translation) => ({
+    language: translation.language,
+    title: sanitizePlainText(translation.title || '', 200),
+    description: sanitizePlainText(translation.description || '', 2000),
+    date_text: sanitizePlainText(translation.date_text || '', 100),
+    start_time_text: sanitizePlainText(translation.start_time_text || '', 50),
+    end_time_text: sanitizePlainText(translation.end_time_text || '', 50),
+    speaker: sanitizePlainText(translation.speaker || '', 200),
+  }))
+
+  return {
+    ...sanitizedData,
+    translations: sanitizedTranslations.filter((t) => t.language && t.language.trim() !== ''),
+  }
+}
+
+/**
+ * Displays error message to user
+ */
+const displayError = (message: string, fieldErrors?: Record<string, string[]>) => {
+  showError.value = message
+
+  // Process field-specific errors
+  if (fieldErrors) {
+    Object.entries(fieldErrors).forEach(([field, messages]) => {
+      errors.value[field] = messages[0] || 'Invalid input'
+    })
+  }
+
+  // Auto-hide general error after 5 seconds
+  setTimeout(() => {
+    showError.value = null
+  }, 5000)
+}
+
 // Unified submit handler - delegates to create or update based on mode
 const submitAgendaItem = async () => {
   if (isEditMode.value) {
@@ -943,34 +1063,23 @@ const createAgendaItem = async () => {
   loading.value = true
 
   try {
-    // Clean the translations data - remove server-generated fields
-    const cleanedTranslations = formData.translations.map((translation) => ({
-      language: translation.language,
-      title: translation.title || '',
-      description: translation.description || '',
-      date_text: translation.date_text || '',
-      start_time_text: translation.start_time_text || '',
-      end_time_text: translation.end_time_text || '',
-      speaker: translation.speaker || '',
-    }))
+    // Sanitize and validate all form data
+    const sanitizedData = sanitizeFormData()
+    if (!sanitizedData) {
+      // Validation failed, errors are already set
+      loading.value = false
+      return
+    }
 
-    // Build request data
-    const requestData = { ...formData }
-
-    const validTranslations = cleanedTranslations.filter(
-      (t) => t.language && t.language.trim() !== '',
-    )
-
-    requestData.translations = validTranslations
-
-    const response = await agendaService.createAgendaItem(props.eventId, requestData)
+    const response = await agendaService.createAgendaItem(props.eventId, sanitizedData)
     if (response.success && response.data) {
       emit('created', response.data)
     } else {
-      alert(response.message || 'Failed to create agenda item')
+      displayError(response.message || 'Failed to create agenda item', response.errors)
     }
   } catch (error) {
-    alert('Network error while creating agenda item')
+    displayError('Network error while creating agenda item')
+    console.error('Error creating agenda item:', error)
   } finally {
     loading.value = false
   }
@@ -981,37 +1090,23 @@ const updateAgendaItem = async () => {
   loading.value = true
 
   try {
-    // Clean the translations data - remove server-generated fields
-    const cleanedTranslations = formData.translations.map((translation) => ({
-      language: translation.language,
-      title: translation.title || '',
-      description: translation.description || '',
-      date_text: translation.date_text || '',
-      start_time_text: translation.start_time_text || '',
-      end_time_text: translation.end_time_text || '',
-      speaker: translation.speaker || '',
-      // Note: 'agenda' field is now excluded from serializer, no need to include it
-    }))
+    // Sanitize and validate all form data
+    const sanitizedData = sanitizeFormData()
+    if (!sanitizedData) {
+      // Validation failed, errors are already set
+      loading.value = false
+      return
+    }
 
-    // Build request data - always include translations array to ensure deletions are handled
-    // The API replaces ALL existing translations when translations array is provided
-    const requestData = { ...formData }
-
-    const validTranslations = cleanedTranslations.filter(
-      (t) => t.language && t.language.trim() !== '',
-    )
-
-    // Always set translations array (even if empty) to ensure server sync
-    requestData.translations = validTranslations
-
-    const response = await agendaService.updateAgendaItem(props.eventId, props.item!.id, requestData)
+    const response = await agendaService.updateAgendaItem(props.eventId, props.item!.id, sanitizedData)
     if (response.success && response.data) {
       emit('updated', response.data)
     } else {
-      alert(response.message || 'Failed to update agenda item')
+      displayError(response.message || 'Failed to update agenda item', response.errors)
     }
   } catch (error) {
-    alert('Network error while updating agenda item')
+    displayError('Network error while updating agenda item')
+    console.error('Error updating agenda item:', error)
   } finally {
     loading.value = false
   }
@@ -1108,5 +1203,20 @@ onMounted(() => {
 .collapse-leave-from {
   max-height: 1000px;
   opacity: 1;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

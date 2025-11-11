@@ -16,6 +16,26 @@
       </button>
     </div>
 
+    <!-- Reordering Overlay -->
+    <Transition name="fade">
+      <div
+        v-if="isReordering"
+        class="fixed inset-0 bg-black/10 z-40 flex items-center justify-center pointer-events-none"
+      >
+        <div
+          class="bg-white rounded-xl shadow-2xl p-5 flex items-center space-x-3 border-2 border-blue-400"
+        >
+          <div
+            class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
+          ></div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-900">Reordering agenda...</span>
+            <span class="text-xs text-slate-600">Please wait</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Loading State -->
     <div
       v-if="loading"
@@ -207,6 +227,7 @@ const itemToDelete = ref<EventAgendaItem | null>(null)
 const expandedDays = ref<string[]>([])
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const draggedItem = ref<EventAgendaItem | null>(null)
+const isReordering = ref(false) // Lock to prevent concurrent reorder operations
 
 interface LegendItem {
   type: string
@@ -474,6 +495,13 @@ const handleDragStart = (item: EventAgendaItem) => {
 }
 
 const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
+  // Prevent concurrent reorder operations
+  if (isReordering.value) {
+    console.warn('Reorder operation already in progress')
+    draggedItem.value = null
+    return
+  }
+
   if (!draggedItem.value || !targetItem || draggedItem.value.id === targetItem.id) {
     draggedItem.value = null
     return
@@ -491,54 +519,63 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
     return
   }
 
-  // Find both items in the current array
-  const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
-  const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
+  // Acquire lock
+  isReordering.value = true
 
-  if (draggedIndex === -1 || targetIndex === -1) {
-    draggedItem.value = null
-    return
-  }
-
-  // Create new array with reordered items
-  const newItems = [...agendaItems.value]
-  const [draggedItemData] = newItems.splice(draggedIndex, 1)
-  newItems.splice(targetIndex, 0, draggedItemData)
-
-  // Update the order values for all items (and update the actual items' order property)
-  newItems.forEach((item, index) => {
-    item.order = index
-  })
-
-  const updates = newItems.map((item, index) => ({
-    id: item.id,
-    order: index,
-  }))
-
-  // Optimistic update - force reactivity by creating new array reference
-  agendaItems.value = [...newItems]
-
-  // Force Vue to update the computed property
-  await nextTick()
+  // Store original order for rollback
+  const originalItems = [...agendaItems.value]
 
   try {
+    // Find both items in the current array
+    const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
+    const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      return
+    }
+
+    // Create new array with reordered items
+    const newItems = [...agendaItems.value]
+    const [draggedItemData] = newItems.splice(draggedIndex, 1)
+    newItems.splice(targetIndex, 0, draggedItemData)
+
+    // Update the order values for all items
+    newItems.forEach((item, index) => {
+      item.order = index
+    })
+
+    const updates = newItems.map((item, index) => ({
+      id: item.id,
+      order: index,
+    }))
+
+    // Optimistic update - force reactivity by creating new array reference
+    agendaItems.value = [...newItems]
+
+    // Force Vue to update the computed property
+    await nextTick()
+
+    // Send update to server
     const response = await agendaService.bulkReorderAgendaItems(props.eventId, { updates })
+
     if (!response.success) {
-      // Rollback on failure
-      await loadAgenda()
+      // Rollback on failure - restore original order
+      agendaItems.value = originalItems
+      await nextTick()
       showMessage('error', response.message || 'Failed to reorder agenda items')
     } else {
+      // On success, trust the optimistic update and show success message
       showMessage('success', 'Agenda items reordered successfully')
-      // Force a refresh from server to ensure UI is in sync
-      setTimeout(async () => {
-        await loadAgenda()
-      }, 100)
     }
   } catch (err) {
-    // Rollback on failure
-    await loadAgenda()
-    showMessage('error', 'Failed to reorder agenda items')
+    // Rollback on network error - restore original order
+    agendaItems.value = originalItems
+    await nextTick()
+    showMessage('error', 'Network error while reordering agenda items')
+    console.error('Error reordering agenda items:', err)
   } finally {
+    // Release lock and clear dragged item
+    isReordering.value = false
     draggedItem.value = null
   }
 }
@@ -624,5 +661,16 @@ defineExpose({
 .collapse-enter-from,
 .collapse-leave-to {
   height: 0;
+}
+
+/* Fade transition for reordering overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

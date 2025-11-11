@@ -66,6 +66,26 @@
       </div>
     </div>
 
+    <!-- Reordering Overlay -->
+    <Transition name="fade">
+      <div
+        v-if="isReordering"
+        class="fixed inset-0 bg-black/10 z-40 flex items-center justify-center pointer-events-none"
+      >
+        <div
+          class="bg-white rounded-xl shadow-2xl p-5 flex items-center space-x-3 border-2 border-blue-400"
+        >
+          <div
+            class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
+          ></div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-900">Reordering agenda...</span>
+            <span class="text-xs text-slate-600">Please wait</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Agenda Items -->
     <div v-else class="space-y-4">
       <!-- Grouped by Date Cards -->
@@ -194,6 +214,7 @@ const deleting = ref(false)
 
 // Drag and drop state
 const draggedItem = ref<EventAgendaItem | null>(null)
+const isReordering = ref(false) // Lock to prevent concurrent reorder operations
 
 // Expanded dates state
 const expandedDates = ref<Set<string>>(new Set())
@@ -364,6 +385,13 @@ const handleDragStart = (item: EventAgendaItem) => {
 }
 
 const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
+  // Prevent concurrent reorder operations
+  if (isReordering.value) {
+    console.warn('Reorder operation already in progress')
+    draggedItem.value = null
+    return
+  }
+
   if (!draggedItem.value || !targetItem || draggedItem.value.id === targetItem.id) {
     draggedItem.value = null
     return
@@ -381,53 +409,61 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
     return
   }
 
-  // Find both items in the current array
-  const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
-  const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
+  // Acquire lock
+  isReordering.value = true
 
-  if (draggedIndex === -1 || targetIndex === -1) {
-    draggedItem.value = null
-    return
-  }
-
-  // Create new array with reordered items
-  const newItems = [...agendaItems.value]
-  const [draggedItemData] = newItems.splice(draggedIndex, 1)
-  newItems.splice(targetIndex, 0, draggedItemData)
-
-  // Update the order values for all items (and update the actual items' order property)
-  newItems.forEach((item, index) => {
-    item.order = index
-  })
-
-  const updates = newItems.map((item, index) => ({
-    id: item.id,
-    order: index,
-  }))
-
-  // Optimistic update - force reactivity by creating new array reference
-  agendaItems.value = [...newItems]
-
-  // Force Vue to update the computed property
-  await nextTick()
+  // Store original order for rollback
+  const originalItems = [...agendaItems.value]
 
   try {
-    const response = await agendaService.bulkReorderAgendaItems(props.eventId, { updates })
-    if (!response.success) {
-      // Rollback on failure
-      await fetchAgendaItems()
-      error.value = response.message || 'Failed to reorder agenda items'
-    } else {
-      // Force a refresh from server to ensure UI is in sync
-      setTimeout(async () => {
-        await fetchAgendaItems()
-      }, 100)
+    // Find both items in the current array
+    const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
+    const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      return
     }
-  } catch {
-    // Rollback on failure
-    await fetchAgendaItems()
+
+    // Create new array with reordered items
+    const newItems = [...agendaItems.value]
+    const [draggedItemData] = newItems.splice(draggedIndex, 1)
+    newItems.splice(targetIndex, 0, draggedItemData)
+
+    // Update the order values for all items
+    newItems.forEach((item, index) => {
+      item.order = index
+    })
+
+    const updates = newItems.map((item, index) => ({
+      id: item.id,
+      order: index,
+    }))
+
+    // Optimistic update - force reactivity by creating new array reference
+    agendaItems.value = [...newItems]
+
+    // Force Vue to update the computed property
+    await nextTick()
+
+    // Send update to server
+    const response = await agendaService.bulkReorderAgendaItems(props.eventId, { updates })
+
+    if (!response.success) {
+      // Rollback on failure - restore original order
+      agendaItems.value = originalItems
+      await nextTick()
+      error.value = response.message || 'Failed to reorder agenda items'
+    }
+    // On success, trust the optimistic update (no need to refetch)
+  } catch (err) {
+    // Rollback on network error - restore original order
+    agendaItems.value = originalItems
+    await nextTick()
     error.value = 'Network error while reordering agenda items'
+    console.error('Error reordering agenda items:', err)
   } finally {
+    // Release lock and clear dragged item
+    isReordering.value = false
     draggedItem.value = null
   }
 }
@@ -459,7 +495,7 @@ const onLeave = (el: Element) => {
   element.style.height = element.scrollHeight + 'px'
   element.style.overflow = 'hidden'
   // Force reflow
-  element.offsetHeight
+  void element.offsetHeight
   element.style.height = '0'
 }
 
@@ -511,5 +547,16 @@ onMounted(async () => {
 .collapse-enter-from,
 .collapse-leave-to {
   height: 0;
+}
+
+/* Fade transition for reordering overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
