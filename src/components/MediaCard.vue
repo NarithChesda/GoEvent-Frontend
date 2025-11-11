@@ -39,16 +39,25 @@
         <GripVertical class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
       </div>
 
-      <!-- Actions Overlay -->
+      <!-- Loading State for Broken Images -->
+      <div v-if="imageError" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
+        <div class="text-center">
+          <ImageIcon class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto mb-1 sm:mb-2" />
+          <p class="text-[10px] sm:text-xs text-gray-500">Failed to load image</p>
+        </div>
+      </div>
+
+      <!-- Actions Overlay - Rendered after error overlay to ensure it's on top -->
       <div
         v-if="canEdit"
-        class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+        class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none"
+        :class="imageError ? 'bg-black/30' : 'bg-black/40'"
       >
-        <div class="flex items-center space-x-1.5 sm:space-x-2">
+        <div class="flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto">
           <!-- Featured Toggle Button -->
           <button
             @click="$emit('set-featured', media)"
-            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
             :class="
               media.is_featured
                 ? 'text-yellow-500 hover:text-yellow-600'
@@ -62,19 +71,11 @@
           <!-- Delete Button -->
           <button
             @click="$emit('delete', media)"
-            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white text-slate-400 hover:text-red-600 rounded-lg transition-colors duration-200"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white text-slate-400 hover:text-red-600 rounded-lg transition-colors duration-200 shadow-lg"
             title="Delete media"
           >
             <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
-        </div>
-      </div>
-
-      <!-- Loading State for Broken Images -->
-      <div v-if="imageError" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
-        <div class="text-center">
-          <ImageIcon class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto mb-1 sm:mb-2" />
-          <p class="text-[10px] sm:text-xs text-gray-500">Failed to load image</p>
         </div>
       </div>
     </div>
