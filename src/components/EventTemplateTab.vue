@@ -319,7 +319,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'template-updated': [template: EventTemplate]
-  'tab-change': [tab: string]
+  'tab-change': [tab: string, options?: { openPaymentModal?: boolean }]
 }>()
 
 // Composables
@@ -429,7 +429,8 @@ const handleTemplateSelected = async (template: EventTemplate): Promise<void> =>
 }
 
 const navigateToPayment = (): void => {
-  emit('tab-change', 'payment')
+  // Emit with a flag to indicate we want to open the payment modal
+  emit('tab-change', 'payment', { openPaymentModal: true })
 }
 
 const openYoutubePreview = (url: string): void => {

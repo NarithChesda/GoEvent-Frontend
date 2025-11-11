@@ -274,7 +274,7 @@
                 :event="event"
                 :can-edit="event.can_edit || false"
                 @template-updated="handleTemplateUpdated"
-                @tab-change="activeTab = $event"
+                @tab-change="handleTabChange"
               />
             </div>
           </div>
@@ -654,6 +654,18 @@ const handleOpenPayment = () => {
   } else if (activeTab.value === 'payment') {
     // In Payment main tab: Open payment modal (for making payment)
     paymentTabRef.value?.openPaymentModal()
+  }
+}
+
+const handleTabChange = (tab: string, options?: { openPaymentModal?: boolean }) => {
+  activeTab.value = tab
+
+  // If switching to payment tab and openPaymentModal flag is set, open the payment modal
+  if (tab === 'payment' && options?.openPaymentModal) {
+    // Use nextTick to ensure the payment tab component is mounted before calling the method
+    nextTick(() => {
+      paymentTabRef.value?.openPaymentModal()
+    })
   }
 }
 
