@@ -7,6 +7,13 @@
         <p class="text-lg text-slate-600 mt-1 leading-relaxed">
           Manage your event schedule and agenda items
         </p>
+        <!-- Drag and Drop Hint (Desktop Only) -->
+        <div v-if="canEdit && agendaItems.length > 0" class="hidden sm:flex items-center gap-1.5 mt-2 text-sm text-slate-500">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+          <span>Drag items to reorder or move between dates</span>
+        </div>
       </div>
       <button
         v-if="canEdit"
@@ -384,7 +391,7 @@ const handleDragStart = (item: EventAgendaItem) => {
   draggedItem.value = item
 }
 
-const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
+const handleDragEnd = async (targetItem: EventAgendaItem | null, targetDate?: string | null) => {
   // Prevent concurrent reorder operations
   if (isReordering.value) {
     console.warn('Reorder operation already in progress')
@@ -403,12 +410,6 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
     return
   }
 
-  // Check if items are in the same date group (only allow reordering within same date)
-  if (draggedItem.value.date !== targetItem.date) {
-    draggedItem.value = null
-    return
-  }
-
   // Acquire lock
   isReordering.value = true
 
@@ -416,6 +417,9 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
   const originalItems = [...agendaItems.value]
 
   try {
+    // Check if we're moving to a different date group
+    const isChangingDate = draggedItem.value.date !== targetItem.date
+
     // Find both items in the current array
     const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
     const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
@@ -427,16 +431,38 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
     // Create new array with reordered items
     const newItems = [...agendaItems.value]
     const [draggedItemData] = newItems.splice(draggedIndex, 1)
+
+    // If changing date, update the dragged item's date
+    if (isChangingDate && targetDate !== undefined) {
+      draggedItemData.date = targetDate
+    }
+
     newItems.splice(targetIndex, 0, draggedItemData)
 
-    // Update the order values for all items
-    newItems.forEach((item, index) => {
-      item.order = index
+    // Update the order values - organize by date groups
+    const itemsByDate = new Map<string | null, EventAgendaItem[]>()
+
+    newItems.forEach((item) => {
+      const dateKey = item.date
+      if (!itemsByDate.has(dateKey)) {
+        itemsByDate.set(dateKey, [])
+      }
+      itemsByDate.get(dateKey)!.push(item)
     })
 
-    const updates = newItems.map((item, index) => ({
+    // Assign order values within each date group
+    const updatedItems: EventAgendaItem[] = []
+    itemsByDate.forEach((items) => {
+      items.forEach((item, index) => {
+        item.order = index
+        updatedItems.push(item)
+      })
+    })
+
+    const updates = updatedItems.map((item) => ({
       id: item.id,
-      order: index,
+      order: item.order,
+      date: item.date,
     }))
 
     // Optimistic update - force reactivity by creating new array reference
@@ -453,6 +479,9 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null) => {
       agendaItems.value = originalItems
       await nextTick()
       error.value = response.message || 'Failed to reorder agenda items'
+    } else if (isChangingDate) {
+      // Show success message for date change
+      console.log('Agenda item moved to new date successfully')
     }
     // On success, trust the optimistic update (no need to refetch)
   } catch (err) {

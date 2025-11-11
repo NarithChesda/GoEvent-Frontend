@@ -159,7 +159,7 @@ interface Emits {
   edit: [item: EventAgendaItem]
   delete: [item: EventAgendaItem]
   dragStart: [item: EventAgendaItem]
-  dragEnd: [item: EventAgendaItem | null]
+  dragEnd: [item: EventAgendaItem | null, targetDate?: string | null]
 }
 
 const props = defineProps<Props>()
@@ -343,6 +343,10 @@ const handleDragStart = (event: DragEvent) => {
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('text/plain', props.item.id.toString())
+    event.dataTransfer.setData('application/json', JSON.stringify({
+      id: props.item.id,
+      date: props.item.date
+    }))
 
     // Create and set custom drag preview
     try {
@@ -405,7 +409,8 @@ const handleDrop = (event: DragEvent) => {
 
   const draggedItemId = event.dataTransfer?.getData('text/plain')
   if (draggedItemId && parseInt(draggedItemId) !== props.item.id) {
-    emit('dragEnd', props.item)
+    // Pass the target item and the target date (this card's date)
+    emit('dragEnd', props.item, props.item.date)
   }
 
   isDragging.value = false
@@ -476,13 +481,13 @@ const handleDragEnd = () => {
 
   /* Drop target highlight */
   .agenda-card.is-drag-over {
-    border: 2px solid #3b82f6;
+    border: 2px dashed #3b82f6;
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
     box-shadow:
-      0 8px 16px -4px rgba(59, 130, 246, 0.25),
-      0 4px 8px -2px rgba(59, 130, 246, 0.15),
-      inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+      0 8px 16px -4px rgba(59, 130, 246, 0.35),
+      0 4px 8px -2px rgba(59, 130, 246, 0.25),
+      inset 0 0 0 1px rgba(59, 130, 246, 0.2);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -494,26 +499,32 @@ const handleDragEnd = () => {
 
   /* Insertion indicator - add a subtle top border highlight */
   .agenda-card.is-drag-over::after {
-    content: '';
+    content: 'Drop here';
     position: absolute;
-    top: -4px;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
-    border-radius: 2px;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
-    animation: pulse-border 1.5s ease-in-out infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #3b82f6;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    animation: pulse-indicator 1.5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
   }
 
-  @keyframes pulse-border {
+  @keyframes pulse-indicator {
     0%, 100% {
       opacity: 1;
-      transform: scaleX(1);
+      transform: translate(-50%, -50%) scale(1);
     }
     50% {
-      opacity: 0.7;
-      transform: scaleX(0.98);
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(1.05);
     }
   }
 }
