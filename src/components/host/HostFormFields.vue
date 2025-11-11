@@ -54,7 +54,7 @@
           @input="$emit('update:parent-a-name', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `First parent's name in ${languageName}` : 'First parent\\'s name'"
+          :placeholder="languageName ? `First parent's name in ${languageName}` : `First parent's name`"
         />
       </div>
 
@@ -67,7 +67,7 @@
           @input="$emit('update:parent-b-name', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `Second parent's name in ${languageName}` : 'Second parent\\'s name'"
+          :placeholder="languageName ? `Second parent's name in ${languageName}` : `Second parent's name`"
         />
       </div>
     </div>
