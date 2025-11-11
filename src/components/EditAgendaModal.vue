@@ -30,29 +30,402 @@
 
             <!-- Form -->
             <form @submit.prevent="updateAgendaItem" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div class="space-y-5">
-                <!-- Basic Information -->
-                <div class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <Calendar class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    Basic Information
+              <!-- Language Tabs Section -->
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-semibold text-slate-900 flex items-center">
+                    <Languages class="w-4 h-4 mr-2" />
+                    Language
                   </h4>
+                  <button
+                    type="button"
+                    @click="showAddTranslation = true"
+                    class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center space-x-1"
+                  >
+                    <Plus class="w-4 h-4" />
+                    <span>Add Language</span>
+                  </button>
+                </div>
 
-                  <!-- Title -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      Title <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      v-model="formData.title"
-                      type="text"
-                      required
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      placeholder="Enter agenda item title"
-                    />
+                <!-- Language Tab Headers -->
+                <div role="tablist" aria-label="Agenda item languages" class="flex overflow-x-auto border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
+                  <!-- English Tab (Always first) -->
+                  <button
+                    type="button"
+                    role="tab"
+                    :id="'tab-en'"
+                    :aria-selected="activeTab === 'en'"
+                    :aria-controls="'tabpanel-en'"
+                    :tabindex="activeTab === 'en' ? 0 : -1"
+                    @click="activeTab = 'en'"
+                    @keydown.right="focusNextTab"
+                    @keydown.left="focusPreviousTab"
+                    :class="[
+                      'flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors relative',
+                      activeTab === 'en'
+                        ? 'text-sky-600 bg-white border-b-2 border-sky-600'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    ]"
+                  >
+                    <span class="flex items-center gap-2">
+                      <span>English</span>
+                      <span class="text-xs text-slate-500">(Default)</span>
+                    </span>
+                  </button>
+
+                  <!-- Other Language Tabs -->
+                  <button
+                    v-for="(translation, index) in formData.translations"
+                    :key="translation.id || index"
+                    type="button"
+                    role="tab"
+                    :id="'tab-' + translation.language"
+                    :aria-selected="activeTab === translation.language"
+                    :aria-controls="'tabpanel-' + translation.language"
+                    :tabindex="activeTab === translation.language ? 0 : -1"
+                    @click="activeTab = translation.language"
+                    @keydown.right="focusNextTab"
+                    @keydown.left="focusPreviousTab"
+                    :class="[
+                      'flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors relative group',
+                      activeTab === translation.language
+                        ? 'text-sky-600 bg-white border-b-2 border-sky-600'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    ]"
+                  >
+                    <span class="flex items-center gap-2">
+                      <span>{{ getLanguageName(translation.language) }}</span>
+                      <button
+                        type="button"
+                        @click.stop="removeTranslation(index)"
+                        :aria-label="'Remove ' + getLanguageName(translation.language) + ' translation'"
+                        class="opacity-0 group-hover:opacity-100 transition-opacity"
+                        :class="activeTab === translation.language ? 'opacity-100' : ''"
+                      >
+                        <X class="w-3.5 h-3.5 text-red-500 hover:text-red-700" />
+                      </button>
+                      <span
+                        v-if="translation.id"
+                        class="text-xs text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full font-medium"
+                      >
+                        Saved
+                      </span>
+                    </span>
+                  </button>
+                </div>
+
+                <!-- Add Translation Modal -->
+                <div
+                  v-if="showAddTranslation"
+                  class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <h5 class="font-medium text-slate-900">Add Language</h5>
+                    <button
+                      type="button"
+                      @click="closeAddTranslation"
+                      class="text-gray-400 hover:text-gray-600"
+                    >
+                      <X class="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Select Language
+                      </label>
+                      <select
+                        v-model="newTranslation.language"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
+                      >
+                        <option value="">Choose a language...</option>
+                        <option
+                          v-for="lang in availableLanguagesForAdd"
+                          :key="lang.code"
+                          :value="lang.code"
+                        >
+                          {{ lang.name }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="flex space-x-2">
+                      <button
+                        type="button"
+                        @click="addTranslation"
+                        :disabled="!newTranslation.language"
+                        class="px-4 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      >
+                        Add Language
+                      </button>
+                      <button
+                        type="button"
+                        @click="closeAddTranslation"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-5">
+                <!-- English Content (Default Language) -->
+                <div
+                  v-if="activeTab === 'en'"
+                  role="tabpanel"
+                  :id="'tabpanel-en'"
+                  :aria-labelledby="'tab-en'"
+                  tabindex="0"
+                  class="space-y-5"
+                >
+                  <div class="space-y-3">
+                    <!-- Title -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Title <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        v-model="formData.title"
+                        type="text"
+                        required
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                        placeholder="Enter agenda item title"
+                      />
+                    </div>
+
+                    <!-- Start Time and End Time -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          Start Time
+                        </label>
+                        <input
+                          v-model="formData.start_time_text"
+                          type="text"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          placeholder="e.g., 9:00 AM"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          End Time
+                        </label>
+                        <input
+                          v-model="formData.end_time_text"
+                          type="text"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          placeholder="e.g., 10:00 AM"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Description (collapsible) -->
+                    <div class="rounded-xl border border-slate-200 bg-white/70">
+                      <button
+                        type="button"
+                        class="w-full flex items-center justify-between px-4 py-3"
+                        @click="descriptionOpen = !descriptionOpen"
+                        :aria-expanded="descriptionOpen ? 'true' : 'false'"
+                        aria-controls="description-section"
+                      >
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-slate-700">Description</span>
+                          <span class="hidden sm:inline text-xs text-slate-500">{{ descriptionSummary }}</span>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-slate-500 transition-transform"
+                          :class="descriptionOpen ? 'rotate-180' : ''"
+                          viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                      <Transition name="collapse">
+                        <div v-show="descriptionOpen" id="description-section" class="px-4 pb-4">
+                          <textarea
+                            v-model="formData.description"
+                            rows="3"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                            placeholder="Describe this agenda item"
+                          ></textarea>
+                        </div>
+                      </Transition>
+                    </div>
+
+                    <!-- Speaker (collapsible) -->
+                    <div class="rounded-xl border border-slate-200 bg-white/70">
+                      <button
+                        type="button"
+                        class="w-full flex items-center justify-between px-4 py-3"
+                        @click="speakerOpen = !speakerOpen"
+                        :aria-expanded="speakerOpen ? 'true' : 'false'"
+                        aria-controls="speaker-section"
+                      >
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-slate-700">Speaker(s)</span>
+                          <span class="hidden sm:inline text-xs text-slate-500">{{ speakerSummary }}</span>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-slate-500 transition-transform"
+                          :class="speakerOpen ? 'rotate-180' : ''"
+                          viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                      <Transition name="collapse">
+                        <div v-show="speakerOpen" id="speaker-section" class="px-4 pb-4">
+                          <input
+                            v-model="formData.speaker"
+                            type="text"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            placeholder="e.g., Dr. Jane Smith, CEO of TechCorp"
+                          />
+                        </div>
+                      </Transition>
+                    </div>
                   </div>
                 </div>
 
+                <!-- Other Language Tabs Content -->
+                <div
+                  v-for="(translation, index) in formData.translations"
+                  :key="translation.id || index"
+                  v-show="activeTab === translation.language"
+                  role="tabpanel"
+                  :id="'tabpanel-' + translation.language"
+                  :aria-labelledby="'tab-' + translation.language"
+                  tabindex="0"
+                  class="space-y-5"
+                >
+                  <div class="space-y-3">
+                    <!-- Title -->
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Title
+                      </label>
+                      <input
+                        v-model="translation.title"
+                        type="text"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                        :placeholder="`Enter title in ${getLanguageName(translation.language)}`"
+                      />
+                    </div>
+
+                    <!-- Start Time and End Time -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          Start Time
+                        </label>
+                        <input
+                          v-model="translation.start_time_text"
+                          type="text"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          :placeholder="`Translated start time in ${getLanguageName(translation.language)}`"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          End Time
+                        </label>
+                        <input
+                          v-model="translation.end_time_text"
+                          type="text"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          :placeholder="`Translated end time in ${getLanguageName(translation.language)}`"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Description (collapsible) -->
+                    <div class="rounded-xl border border-slate-200 bg-white/70">
+                      <button
+                        type="button"
+                        class="w-full flex items-center justify-between px-4 py-3"
+                        @click="descriptionOpen = !descriptionOpen"
+                        :aria-expanded="descriptionOpen ? 'true' : 'false'"
+                        :aria-controls="`description-section-${translation.language}`"
+                      >
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-slate-700">Description</span>
+                          <span class="hidden sm:inline text-xs text-slate-500">
+                            {{ translation.description && translation.description.trim()
+                              ? (translation.description.length > 60 ? translation.description.slice(0, 60) + '…' : translation.description)
+                              : 'No description' }}
+                          </span>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-slate-500 transition-transform"
+                          :class="descriptionOpen ? 'rotate-180' : ''"
+                          viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                      <Transition name="collapse">
+                        <div v-show="descriptionOpen" :id="`description-section-${translation.language}`" class="px-4 pb-4">
+                          <textarea
+                            v-model="translation.description"
+                            rows="3"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                            :placeholder="`Translated description in ${getLanguageName(translation.language)}`"
+                          ></textarea>
+                        </div>
+                      </Transition>
+                    </div>
+
+                    <!-- Speaker (collapsible) -->
+                    <div class="rounded-xl border border-slate-200 bg-white/70">
+                      <button
+                        type="button"
+                        class="w-full flex items-center justify-between px-4 py-3"
+                        @click="speakerOpen = !speakerOpen"
+                        :aria-expanded="speakerOpen ? 'true' : 'false'"
+                        :aria-controls="`speaker-section-${translation.language}`"
+                      >
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-slate-700">Speaker(s)</span>
+                          <span class="hidden sm:inline text-xs text-slate-500">
+                            {{ translation.speaker && translation.speaker.trim()
+                              ? (translation.speaker.length > 60 ? translation.speaker.slice(0, 60) + '…' : translation.speaker)
+                              : 'No speaker' }}
+                          </span>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-slate-500 transition-transform"
+                          :class="speakerOpen ? 'rotate-180' : ''"
+                          viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                      <Transition name="collapse">
+                        <div v-show="speakerOpen" :id="`speaker-section-${translation.language}`" class="px-4 pb-4">
+                          <input
+                            v-model="translation.speaker"
+                            type="text"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                            :placeholder="`Translated speaker name(s) in ${getLanguageName(translation.language)}`"
+                          />
+                        </div>
+                      </Transition>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Non-translatable fields -->
+              <div class="space-y-5">
                 <!-- Schedule Information -->
                 <div class="space-y-3 sm:space-y-4">
                   <h4 class="text-sm font-semibold text-slate-900 flex items-center">
@@ -71,119 +444,15 @@
                       />
                     </div>
 
-                    <!-- Start Time -->
+                    <!-- Agenda Type -->
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Start Time
+                        Type
                       </label>
-                      <input
-                        v-model="formData.start_time_text"
-                        type="text"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                        placeholder="e.g., 9:00 AM"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- More schedule options (collapsible) -->
-                  <div class="rounded-xl border border-slate-200 bg-white/70">
-                    <button
-                      type="button"
-                      class="w-full flex items-center justify-between px-4 py-3"
-                      @click="scheduleMoreOpen = !scheduleMoreOpen"
-                      :aria-expanded="scheduleMoreOpen ? 'true' : 'false'"
-                      aria-controls="schedule-more-section"
-                    >
-                      <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-slate-700">More Schedule Options</span>
-                        <span class="hidden sm:inline text-xs text-slate-500">End time and date text</span>
-                      </div>
-                      <svg
-                        class="h-4 w-4 text-slate-500 transition-transform"
-                        :class="scheduleMoreOpen ? 'rotate-180' : ''"
-                        viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </button>
-                    <Transition name="collapse">
-                      <div v-show="scheduleMoreOpen" id="schedule-more-section" class="px-4 pb-4 space-y-3">
-                        <!-- End Time -->
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-2">
-                            End Time
-                          </label>
-                          <input
-                            v-model="formData.end_time_text"
-                            type="text"
-                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                            placeholder="e.g., 10:00 AM"
-                          />
-                        </div>
-
-                        <!-- Date Text -->
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-2">
-                            Date Display Text
-                          </label>
-                          <input
-                            v-model="formData.date_text"
-                            type="text"
-                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                            placeholder="e.g., Day 1 - Monday"
-                          />
-                        </div>
-                      </div>
-                    </Transition>
-                  </div>
-                </div>
-
-                <!-- Additional Details (collapsible) -->
-                <div class="rounded-xl border border-slate-200 bg-white/70">
-                  <button
-                    type="button"
-                    class="w-full flex items-center justify-between px-4 py-3"
-                    @click="detailsOpen = !detailsOpen"
-                    :aria-expanded="detailsOpen ? 'true' : 'false'"
-                    aria-controls="details-section"
-                  >
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm font-medium text-slate-700">Additional Details</span>
-                      <span class="hidden sm:inline text-xs text-slate-500">Description and type</span>
-                    </div>
-                    <svg
-                      class="h-4 w-4 text-slate-500 transition-transform"
-                      :class="detailsOpen ? 'rotate-180' : ''"
-                      viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-                  <Transition name="collapse">
-                    <div v-show="detailsOpen" id="details-section" class="px-4 pb-4 space-y-3">
-                      <!-- Description -->
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          Description
-                        </label>
-                        <textarea
-                          v-model="formData.description"
-                          rows="3"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-                          placeholder="Describe this agenda item"
-                        ></textarea>
-                      </div>
-
-                      <!-- Agenda Type -->
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          Type
-                        </label>
+                      <div class="relative">
                         <select
                           v-model="formData.agenda_type"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                         >
                           <option value="session">Session</option>
                           <option value="keynote">Keynote</option>
@@ -193,12 +462,13 @@
                           <option value="networking">Networking</option>
                           <option value="other">Other</option>
                         </select>
+                        <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                     </div>
-                  </Transition>
+                  </div>
                 </div>
 
-                <!-- Location & Speaker (collapsible) -->
+                <!-- Location (collapsible) -->
                 <div class="rounded-xl border border-slate-200 bg-white/70">
                   <button
                     type="button"
@@ -209,8 +479,8 @@
                   >
                     <div class="flex items-center gap-2">
                       <MapPin class="w-3.5 h-3.5 mr-1.5" />
-                      <span class="text-sm font-medium text-slate-700">Location & Speaker</span>
-                      <span class="hidden sm:inline text-xs text-slate-500">Optional</span>
+                      <span class="text-sm font-medium text-slate-700">Location</span>
+                      <span class="hidden sm:inline text-xs text-slate-500">{{ locationSummary }}</span>
                     </div>
                     <svg
                       class="h-4 w-4 text-slate-500 transition-transform"
@@ -249,19 +519,6 @@
                             placeholder="https://zoom.us/j/..."
                           />
                         </div>
-                      </div>
-
-                      <!-- Speaker -->
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          Speaker(s)
-                        </label>
-                        <input
-                          v-model="formData.speaker"
-                          type="text"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                          placeholder="e.g., Dr. Jane Smith, CEO of TechCorp"
-                        />
                       </div>
                     </div>
                   </Transition>
@@ -403,192 +660,6 @@
                     </div>
                   </Transition>
                 </div>
-
-                <!-- Translations Section -->
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-semibold text-slate-900 flex items-center">
-                      <Languages class="w-4 h-4 mr-2" />
-                      Translations
-                    </h4>
-                    <button
-                      type="button"
-                      @click="showAddTranslation = true"
-                      class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center space-x-1"
-                    >
-                      <Plus class="w-4 h-4" />
-                      <span>Add Translation</span>
-                    </button>
-                  </div>
-
-                  <!-- Translation List -->
-                  <div
-                    v-if="formData.translations && formData.translations.length > 0"
-                    class="space-y-3"
-                  >
-                    <div
-                      v-for="(translation, index) in formData.translations"
-                      :key="translation.id || index"
-                      class="rounded-xl border border-slate-200 bg-white/70"
-                    >
-                      <!-- Translation Header -->
-                      <div class="flex items-center justify-between px-4 py-3">
-                        <button
-                          type="button"
-                          class="flex-1 flex items-center justify-between"
-                          @click="toggleTranslation(index)"
-                          :aria-expanded="translationExpandStates[index] ? 'true' : 'false'"
-                        >
-                          <div class="flex items-center gap-3">
-                            <Languages class="w-4 h-4 text-slate-600" />
-                            <span class="text-sm font-medium text-slate-700">
-                              {{ getLanguageName(translation.language) }}
-                            </span>
-                            <span
-                              v-if="translation.id"
-                              class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full"
-                            >
-                              Saved
-                            </span>
-                          </div>
-                          <svg
-                            class="h-4 w-4 text-slate-500 transition-transform"
-                            :class="translationExpandStates[index] ? 'rotate-180' : ''"
-                            viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          @click="removeTranslation(index)"
-                          class="ml-3 text-gray-400 hover:text-red-500 transition-colors duration-200"
-                        >
-                          <X class="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <!-- Translation Fields (Collapsible) -->
-                      <Transition name="collapse">
-                        <div v-show="translationExpandStates[index]" class="px-4 pb-4 space-y-3">
-                          <!-- Title and Start Time -->
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
-                                Title
-                              </label>
-                              <input
-                                v-model="translation.title"
-                                type="text"
-                                placeholder="Translated title"
-                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                              />
-                            </div>
-                            <div>
-                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
-                                Start Time
-                              </label>
-                              <input
-                                v-model="translation.start_time_text"
-                                type="text"
-                                placeholder="Translated start time"
-                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                              />
-                            </div>
-                          </div>
-
-                          <!-- End Time and Date Text -->
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
-                                End Time
-                              </label>
-                              <input
-                                v-model="translation.end_time_text"
-                                type="text"
-                                placeholder="Translated end time"
-                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                              />
-                            </div>
-                            <div>
-                              <label class="block text-xs font-medium text-slate-700 mb-1.5">
-                                Date Display Text
-                              </label>
-                              <input
-                                v-model="translation.date_text"
-                                type="text"
-                                placeholder="Translated date text"
-                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                              />
-                            </div>
-                          </div>
-
-                          <!-- Description -->
-                          <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1.5">
-                              Description
-                            </label>
-                            <textarea
-                              v-model="translation.description"
-                              rows="2"
-                              placeholder="Translated description"
-                              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
-                            ></textarea>
-                          </div>
-
-                          <!-- Speaker -->
-                          <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1.5">
-                              Speaker(s)
-                            </label>
-                            <input
-                              v-model="translation.speaker"
-                              type="text"
-                              placeholder="Translated speaker name(s)"
-                              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                            />
-                          </div>
-                        </div>
-                      </Transition>
-                    </div>
-                  </div>
-
-                  <!-- Add Translation Dropdown -->
-                  <div
-                    v-if="showAddTranslation"
-                    class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
-                  >
-                    <div class="flex items-center justify-between mb-3">
-                      <h5 class="font-medium text-slate-900">Select Language</h5>
-                      <button
-                        type="button"
-                        @click="closeAddTranslation"
-                        class="text-gray-400 hover:text-gray-600"
-                      >
-                        <X class="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div class="relative">
-                      <select
-                        v-model="newTranslation.language"
-                        @change="onLanguageSelect"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
-                      >
-                        <option value="">Select language</option>
-                        <option
-                          v-for="lang in availableLanguagesForAdd"
-                          :key="lang.code"
-                          :value="lang.code"
-                        >
-                          {{ lang.name }}
-                        </option>
-                      </select>
-                      <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <!-- Action Buttons -->
@@ -621,10 +692,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import {
   X,
-  Calendar,
   Clock,
   MapPin,
   Palette,
@@ -660,11 +730,11 @@ const loading = ref(false)
 const showAddTranslation = ref(false)
 const availableIcons = ref<AgendaIcon[]>([])
 const showIconPicker = ref(false)
-const detailsOpen = ref(false)
 const locationOpen = ref(false)
 const displayOpen = ref(false)
-const scheduleMoreOpen = ref(false)
-const translationExpandStates = ref<Record<number, boolean>>({})
+const descriptionOpen = ref(false)
+const speakerOpen = ref(false)
+const activeTab = ref<string>('en') // Default to English tab
 
 // Available languages (matching API documentation)
 const availableLanguages = [
@@ -711,11 +781,72 @@ const newTranslation = reactive<
 })
 
 // Computed
-const availableLanguagesForAdd = ref(
-  availableLanguages.filter((lang) => !formData.translations.some((t) => t.language === lang.code)),
-)
+const availableLanguagesForAdd = computed(() => {
+  return availableLanguages.filter(
+    (lang) => lang.code !== 'en' && !formData.translations.some((t) => t.language === lang.code),
+  )
+})
+
+const descriptionSummary = computed(() => {
+  const text = (formData.description || '').trim()
+  if (!text) return 'No description'
+  return text.length > 60 ? text.slice(0, 60) + '…' : text
+})
+
+const speakerSummary = computed(() => {
+  const text = (formData.speaker || '').trim()
+  if (!text) return 'No speaker'
+  return text.length > 60 ? text.slice(0, 60) + '…' : text
+})
+
+const locationSummary = computed(() => {
+  const items = [formData.location, formData.virtual_link]
+  const count = items.filter((v) => v && String(v).trim() !== '').length
+  return count > 0 ? `${count} ${count === 1 ? 'location' : 'locations'}` : 'No locations'
+})
 
 // Methods
+const focusNextTab = () => {
+  const tabs = ['en', ...formData.translations.map(t => t.language)]
+  const currentIndex = tabs.indexOf(activeTab.value)
+  const nextIndex = (currentIndex + 1) % tabs.length
+  activeTab.value = tabs[nextIndex]
+}
+
+const focusPreviousTab = () => {
+  const tabs = ['en', ...formData.translations.map(t => t.language)]
+  const currentIndex = tabs.indexOf(activeTab.value)
+  const previousIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1
+  activeTab.value = tabs[previousIndex]
+}
+
+const addTranslation = () => {
+  if (!newTranslation.language) return
+
+  // Check if translation for this language already exists
+  if (formData.translations.some((t) => t.language === newTranslation.language)) {
+    alert('Translation for this language already exists')
+    return
+  }
+
+  const languageCode = newTranslation.language
+  formData.translations.push({ ...newTranslation })
+
+  // Switch to the newly added language tab
+  activeTab.value = languageCode
+
+  // Reset form
+  Object.assign(newTranslation, {
+    language: '',
+    title: '',
+    description: '',
+    start_time_text: '',
+    end_time_text: '',
+    speaker: '',
+  })
+
+  showAddTranslation.value = false
+}
 const fetchIcons = async () => {
   try {
     const response = await coreDataService.getIcons()
@@ -740,72 +871,19 @@ const getLanguageName = (code: string) => {
   return availableLanguages.find((lang) => lang.code === code)?.name || code
 }
 
-const toggleTranslation = (index: number) => {
-  translationExpandStates.value[index] = !translationExpandStates.value[index]
-}
-
-const onLanguageSelect = () => {
-  if (!newTranslation.language) return
-
-  // Check if translation for this language already exists
-  if (formData.translations.some((t) => t.language === newTranslation.language)) {
-    alert('Translation for this language already exists')
-    newTranslation.language = ''
-    return
-  }
-
-  // Add the translation
-  const translationIndex = formData.translations.length
-  formData.translations.push({ ...newTranslation })
-
-  // Reset form
-  Object.assign(newTranslation, {
-    language: '',
-    title: '',
-    description: '',
-    date_text: '',
-    start_time_text: '',
-    end_time_text: '',
-    speaker: '',
-  })
-
-  // Update available languages
-  availableLanguagesForAdd.value = availableLanguages.filter(
-    (lang) => !formData.translations.some((t) => t.language === lang.code),
-  )
-
-  showAddTranslation.value = false
-
-  // Auto-expand the newly added translation
-  translationExpandStates.value[translationIndex] = true
-}
-
 const closeAddTranslation = () => {
   newTranslation.language = ''
   showAddTranslation.value = false
 }
 
 const removeTranslation = (index: number) => {
+  const removedLanguage = formData.translations[index].language
   formData.translations.splice(index, 1)
 
-  // Update available languages
-  availableLanguagesForAdd.value = availableLanguages.filter(
-    (lang) => !formData.translations.some((t) => t.language === lang.code),
-  )
-
-  // Remove the expand state for this index
-  delete translationExpandStates.value[index]
-  // Reindex the remaining expand states
-  const newStates: Record<number, boolean> = {}
-  Object.keys(translationExpandStates.value).forEach((key) => {
-    const numKey = Number(key)
-    if (numKey > index) {
-      newStates[numKey - 1] = translationExpandStates.value[numKey]
-    } else if (numKey < index) {
-      newStates[numKey] = translationExpandStates.value[numKey]
-    }
-  })
-  translationExpandStates.value = newStates
+  // If we're removing the currently active tab, switch to English
+  if (activeTab.value === removedLanguage) {
+    activeTab.value = 'en'
+  }
 }
 
 const updateAgendaItem = async () => {
@@ -850,11 +928,6 @@ const updateAgendaItem = async () => {
 
 // Lifecycle
 onMounted(() => {
-  // Update available languages on mount
-  availableLanguagesForAdd.value = availableLanguages.filter(
-    (lang) => !formData.translations.some((t) => t.language === lang.code),
-  )
-
   // Fetch available icons
   fetchIcons()
 })
@@ -887,6 +960,24 @@ onMounted(() => {
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Custom scrollbar for tab headers */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
