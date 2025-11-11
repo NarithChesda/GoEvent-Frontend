@@ -24,7 +24,7 @@
 
     <!-- Upload Controls -->
     <input
-      :ref="(el) => $emit('update:profilePictureInput', el)"
+      ref="fileInput"
       type="file"
       accept="image/*"
       @change="$emit('select-image', $event)"
@@ -56,6 +56,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { User, Upload } from 'lucide-vue-next'
 
 interface Props {
@@ -73,5 +74,14 @@ interface Emits {
 }
 
 defineProps<Props>()
-defineEmits<Emits>()
+const emit = defineEmits<Emits>()
+
+const fileInput = ref<HTMLInputElement>()
+
+// Expose the file input ref to the parent
+onMounted(() => {
+  if (fileInput.value) {
+    emit('update:profilePictureInput', fileInput.value)
+  }
+})
 </script>

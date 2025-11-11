@@ -57,6 +57,7 @@
                 @trigger-upload="triggerProfilePictureUpload"
                 @select-image="handleProfilePictureSelect"
                 @remove-image="removeProfilePicture(toRef(formData, 'profile_image'))"
+                @update:profile-picture-input="profilePictureInput = $event"
               />
 
               <!-- Language Tabs Section -->
