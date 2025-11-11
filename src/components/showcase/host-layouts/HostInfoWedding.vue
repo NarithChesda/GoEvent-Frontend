@@ -411,7 +411,7 @@ const fallbackLogoStyle = computed(() => {
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 1.5rem 0;
+  padding: 1.5rem 1rem;
   box-sizing: border-box;
 }
 
@@ -420,7 +420,9 @@ const fallbackLogoStyle = computed(() => {
   justify-content: center;
   align-items: center;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Column alignments */
@@ -473,7 +475,7 @@ const fallbackLogoStyle = computed(() => {
   height: auto;
   max-height: 180px; /* Match CoverStage mobile size */
   width: auto;
-  max-width: 330px; /* Match CoverStage mobile size */
+  max-width: min(330px, 95%); /* Responsive width with 95% viewport constraint */
   object-fit: contain;
   transition: transform 0.3s ease;
 }
@@ -506,7 +508,9 @@ const fallbackLogoStyle = computed(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 100%;
   height: auto;
+  overflow: hidden;
 }
 
 .fallback-logo-svg {
@@ -514,7 +518,7 @@ const fallbackLogoStyle = computed(() => {
   display: block;
   width: auto;
   height: auto;
-  max-width: 330px; /* Match mobile size */
+  max-width: min(330px, 95%); /* Responsive width with 95% viewport constraint */
   max-height: 180px; /* Match mobile size */
 }
 
@@ -526,43 +530,43 @@ const fallbackLogoStyle = computed(() => {
   display: block;
   width: auto !important;
   height: auto !important;
-  max-width: 330px;
+  max-width: min(330px, 95vw);
   max-height: 180px;
 }
 
 /* Responsive sizing for fallback SVG - match .host-logo-showcase */
 @media (min-width: 640px) {
   .fallback-logo-svg {
-    max-width: 350px;
+    max-width: min(350px, 95%);
     max-height: 140px;
   }
 
   .fallback-logo-svg :deep(svg) {
-    max-width: 350px;
+    max-width: min(350px, 95vw);
     max-height: 140px;
   }
 }
 
 @media (min-width: 768px) {
   .fallback-logo-svg {
-    max-width: 375px;
+    max-width: min(375px, 95%);
     max-height: 150px;
   }
 
   .fallback-logo-svg :deep(svg) {
-    max-width: 375px;
+    max-width: min(375px, 95vw);
     max-height: 150px;
   }
 }
 
 @media (min-width: 1920px) {
   .fallback-logo-svg {
-    max-width: 450px;
+    max-width: min(450px, 95%);
     max-height: 180px;
   }
 
   .fallback-logo-svg :deep(svg) {
-    max-width: 450px;
+    max-width: min(450px, 95vw);
     max-height: 180px;
   }
 }
@@ -658,7 +662,7 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 140px; /* Match CoverStage 640px+ */
-    max-width: 350px; /* Match CoverStage 640px+ */
+    max-width: min(350px, 95%); /* Responsive width with 95% viewport constraint */
   }
 
   .logo-fallback {
@@ -695,7 +699,7 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 150px; /* Match CoverStage 768px+ */
-    max-width: 375px; /* Match CoverStage 768px+ */
+    max-width: min(375px, 95%); /* Responsive width with 95% viewport constraint */
   }
 
   .logo-fallback {
@@ -715,7 +719,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .logo-row {
-    padding: 1rem 0; /* Reduced from 1.5rem */
+    padding: 1rem 1rem; /* Add horizontal padding */
   }
 
   .name-row {
@@ -742,7 +746,7 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 180px; /* Match mobile */
-    max-width: 330px; /* Match mobile */
+    max-width: min(330px, 95%); /* Responsive width with 95% viewport constraint */
   }
 
   .logo-fallback {
@@ -774,7 +778,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .logo-row {
-    padding: 1rem 0; /* Reduced from 1.5rem */
+    padding: 1rem 1rem; /* Add horizontal padding */
   }
 
   .name-row {
@@ -803,7 +807,7 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 180px; /* Match mobile */
-    max-width: 330px; /* Match mobile */
+    max-width: min(330px, 95%); /* Responsive width with 95% viewport constraint */
   }
 
   .logo-fallback {
@@ -835,7 +839,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .logo-row {
-    padding: 1rem 0; /* Reduced from 1.5rem */
+    padding: 1rem 1rem; /* Add horizontal padding */
   }
 
   .name-row {
@@ -864,7 +868,7 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 180px; /* Match mobile */
-    max-width: 330px; /* Match mobile */
+    max-width: min(330px, 95%); /* Responsive width with 95% viewport constraint */
   }
 
   .logo-fallback {
@@ -926,7 +930,11 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 180px; /* Desktop size */
-    max-width: 450px; /* Desktop size */
+    max-width: min(450px, 95%); /* Responsive width with 95% viewport constraint */
+  }
+
+  .logo-row {
+    padding: 1.5rem 1rem; /* Maintain horizontal padding on desktop */
   }
 
   .logo-fallback {
@@ -964,7 +972,11 @@ const fallbackLogoStyle = computed(() => {
 
   .host-logo-showcase {
     max-height: 100px;
-    max-width: 240px;
+    max-width: min(240px, 90%); /* Tighter constraint for very small screens */
+  }
+
+  .logo-row {
+    padding: 1.5rem 0.5rem; /* Reduce horizontal padding on very small screens */
   }
 
   .logo-fallback {
