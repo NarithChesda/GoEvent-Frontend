@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col items-center space-y-4 py-4">
-    <h4 class="text-sm font-semibold text-slate-900 self-start">Profile Picture</h4>
+    <h4 class="font-semibold text-slate-900 self-start">Profile Picture</h4>
 
     <!-- Circular Avatar Preview -->
     <div class="relative">
