@@ -309,6 +309,7 @@
         @add-guest="handleAddGuest"
         @add-group="handleAddGroup"
         @quick-add="handleQuickAdd"
+        @add-dress-code="handleAddDressCode"
         @edit="handleEditEvent"
         @delete="handleDeleteEvent"
       />
@@ -655,6 +656,11 @@ const handleOpenPayment = () => {
     // In Payment main tab: Open payment modal (for making payment)
     paymentTabRef.value?.openPaymentModal()
   }
+}
+
+const handleAddDressCode = () => {
+  // Open dress code modal in EventMediaTab
+  mediaTabRef.value?.openDressCodeModal()
 }
 
 const handleTabChange = (tab: string, options?: { openPaymentModal?: boolean }) => {

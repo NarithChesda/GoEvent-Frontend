@@ -10,7 +10,7 @@
         <button
           v-if="canEdit"
           @click="openAddModal"
-          class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+          class="hidden sm:flex flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-lg transition-all"
         >
           <Plus class="w-4 h-4" />
           Add Dress Code

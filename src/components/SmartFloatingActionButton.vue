@@ -40,6 +40,7 @@ import {
   Palette,
   Zap,
   Camera,
+  Shirt,
 } from 'lucide-vue-next'
 import EventActionMenu from './EventActionMenu.vue'
 
@@ -67,6 +68,7 @@ const emit = defineEmits<{
   'add-guest': []
   'add-group': []
   'quick-add': []
+  'add-dress-code': []
   'edit': [eventId: string]
   'delete': [eventId: string]
 }>()
@@ -93,6 +95,8 @@ const fabIcon = computed(() => {
         return ImageIcon
       case 'payment':
         return CreditCard
+      case 'dress-code':
+        return Shirt
       default:
         return ImageIcon // Default to photo gallery
     }
@@ -146,6 +150,8 @@ const fabAriaLabel = computed(() => {
         return 'Add photo'
       case 'payment':
         return 'Add payment method'
+      case 'dress-code':
+        return 'Add dress code'
       default:
         return 'Add photo'
     }
@@ -201,6 +207,9 @@ const handleFabClick = () => {
         break
       case 'payment':
         emit('open-payment')
+        break
+      case 'dress-code':
+        emit('add-dress-code')
         break
       default:
         emit('add-photo')

@@ -53,39 +53,41 @@
                 </div>
               </Transition>
 
-              <!-- Dress Code Type -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  Dress Code Type <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                  <select
-                    v-model="formData.dress_code_type"
-                    required
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
-                  >
-                    <option value="">Select dress code type</option>
-                    <option v-for="(label, value) in DRESS_CODE_TYPE_LABELS" :key="value" :value="value">
-                      {{ label }}
-                    </option>
-                  </select>
-                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <!-- Dress Code Type and Custom Title in a row -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Dress Code Type -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Dress Code Type <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <select
+                      v-model="formData.dress_code_type"
+                      required
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                    >
+                      <option value="">Select dress code type</option>
+                      <option v-for="(label, value) in DRESS_CODE_TYPE_LABELS" :key="value" :value="value">
+                        {{ label }}
+                      </option>
+                    </select>
+                    <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
-              </div>
 
-              <!-- Title (Optional) -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  Custom Title <span class="text-xs text-slate-500">(Optional)</span>
-                </label>
-                <input
-                  v-model="formData.title"
-                  type="text"
-                  maxlength="100"
-                  placeholder="e.g., Ceremony Attire, Reception Dress Code"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                />
-                <p class="text-xs text-slate-500 mt-1.5">Leave empty to use the dress code type name</p>
+                <!-- Custom Title (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Custom Title <span class="text-xs text-slate-500">(Optional)</span>
+                  </label>
+                  <input
+                    v-model="formData.title"
+                    type="text"
+                    maxlength="100"
+                    placeholder="e.g., Ceremony Attire"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  />
+                </div>
               </div>
 
               <!-- Time Period and Gender in a row -->
@@ -166,28 +168,18 @@
                 </Transition>
               </div>
 
-              <!-- Display Options (collapsible) -->
+              <!-- Display Options -->
               <div class="rounded-xl border border-slate-200 bg-white/70">
-                <button
-                  type="button"
-                  class="w-full flex items-center justify-between px-4 py-3"
-                  @click="displayOpen = !displayOpen"
-                >
+                <div class="px-4 py-3 border-b border-slate-100">
                   <div class="flex items-center gap-2">
                     <Palette class="w-3.5 h-3.5 mr-1.5" />
                     <span class="text-sm font-medium text-slate-700">Display Options</span>
                   </div>
-                  <svg
-                    class="h-4 w-4 text-slate-500 transition-transform"
-                    :class="displayOpen ? 'rotate-180' : ''"
-                    viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </button>
-                <Transition name="collapse">
-                  <div v-show="displayOpen" class="px-4 pb-4 space-y-3">
-                    <!-- Color -->
+                </div>
+                <div class="px-4 pb-4 pt-3">
+                  <!-- Theme Color and Active Status in a row -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Theme Color -->
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
                         Theme Color
@@ -202,39 +194,37 @@
                           v-model="formData.color"
                           type="text"
                           placeholder="#3498db"
+                          pattern="^#[0-9A-Fa-f]{6}$"
                           maxlength="7"
-                          class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                          class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 font-mono"
+                          title="Enter a hex color (e.g., #3498db)"
                         />
                       </div>
-                      <p class="text-xs text-slate-500 mt-1.5">Color will be used for visual indicators</p>
+                      <p class="text-xs text-slate-500 mt-1.5">Color for visual indicators</p>
                     </div>
 
                     <!-- Active Status -->
-                    <div class="flex items-center justify-between py-2">
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700">Active Status</label>
-                        <p class="text-xs text-slate-500 mt-0.5">Inactive dress codes won't be shown to guests</p>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">Active Status</label>
+                      <div class="flex items-center justify-between h-10">
+                        <p class="text-xs text-slate-500">Inactive dress codes won't be shown to guests</p>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                          <input
+                            v-model="formData.is_active"
+                            type="checkbox"
+                            class="sr-only peer"
+                          />
+                          <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+                        </label>
                       </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input
-                          v-model="formData.is_active"
-                          type="checkbox"
-                          class="sr-only peer"
-                        />
-                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
-                      </label>
                     </div>
                   </div>
-                </Transition>
+                </div>
               </div>
 
-              <!-- Image Upload (collapsible) -->
+              <!-- Reference Image -->
               <div class="rounded-xl border border-slate-200 bg-white/70">
-                <button
-                  type="button"
-                  class="w-full flex items-center justify-between px-4 py-3"
-                  @click="imageOpen = !imageOpen"
-                >
+                <div class="px-4 py-3 border-b border-slate-100">
                   <div class="flex items-center gap-2">
                     <ImageIcon class="w-3.5 h-3.5 mr-1.5" />
                     <span class="text-sm font-medium text-slate-700">Reference Image</span>
@@ -242,74 +232,65 @@
                       {{ (isEditing && dressCode?.image && !shouldRemoveImage) || imagePreview ? 'Image attached' : 'Optional' }}
                     </span>
                   </div>
-                  <svg
-                    class="h-4 w-4 text-slate-500 transition-transform"
-                    :class="imageOpen ? 'rotate-180' : ''"
-                    viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </button>
-                <Transition name="collapse">
-                  <div v-show="imageOpen" class="px-4 pb-4 space-y-3">
-                    <!-- Current Image Preview (for editing) -->
-                    <div v-if="isEditing && dressCode?.image && !imagePreview && !shouldRemoveImage">
-                      <div class="relative inline-block">
-                        <img
-                          :src="dressCode.image"
-                          alt="Current dress code image"
-                          class="h-24 w-auto rounded-lg border border-slate-200"
-                        />
-                        <button
-                          type="button"
-                          @click="removeCurrentImage"
-                          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                        >
-                          <X class="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <p class="text-xs text-slate-500 mt-1.5">Current image (click X to remove)</p>
+                </div>
+                <div class="px-4 pb-4 pt-3 space-y-3">
+                  <!-- Current Image Preview (for editing) -->
+                  <div v-if="isEditing && dressCode?.image && !imagePreview && !shouldRemoveImage">
+                    <div class="relative inline-block">
+                      <img
+                        :src="dressCode.image"
+                        alt="Current dress code image"
+                        class="h-24 w-auto rounded-lg border border-slate-200"
+                      />
+                      <button
+                        type="button"
+                        @click="removeCurrentImage"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X class="w-3.5 h-3.5" />
+                      </button>
                     </div>
-
-                    <!-- New Image Preview -->
-                    <div v-if="imagePreview">
-                      <div class="relative inline-block">
-                        <img
-                          :src="imagePreview"
-                          alt="Preview"
-                          class="h-24 w-auto rounded-lg border border-slate-200"
-                        />
-                        <button
-                          type="button"
-                          @click="removeImage"
-                          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                        >
-                          <X class="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <p class="text-xs text-slate-500 mt-1.5">New image preview</p>
-                    </div>
-
-                    <!-- Upload Button -->
-                    <div
-                      @click="triggerFileInput"
-                      class="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-sky-400 hover:bg-sky-50/50 transition-all group"
-                    >
-                      <Upload class="w-6 h-6 text-slate-400 group-hover:text-sky-600 mx-auto mb-2" />
-                      <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
-                        Click to upload image
-                      </p>
-                      <p class="text-xs text-slate-400 mt-1">JPG, PNG, GIF, WebP (Max 5MB)</p>
-                    </div>
-                    <input
-                      ref="fileInput"
-                      type="file"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      class="hidden"
-                      @change="handleFileChange"
-                    />
+                    <p class="text-xs text-slate-500 mt-1.5">Current image (click X to remove)</p>
                   </div>
-                </Transition>
+
+                  <!-- New Image Preview -->
+                  <div v-if="imagePreview">
+                    <div class="relative inline-block">
+                      <img
+                        :src="imagePreview"
+                        alt="Preview"
+                        class="h-24 w-auto rounded-lg border border-slate-200"
+                      />
+                      <button
+                        type="button"
+                        @click="removeImage"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X class="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1.5">New image preview</p>
+                  </div>
+
+                  <!-- Upload Button -->
+                  <div
+                    @click="triggerFileInput"
+                    class="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-sky-400 hover:bg-sky-50/50 transition-all group"
+                  >
+                    <Upload class="w-6 h-6 text-slate-400 group-hover:text-sky-600 mx-auto mb-2" />
+                    <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
+                      Click to upload image
+                    </p>
+                    <p class="text-xs text-slate-400 mt-1">JPG, PNG, GIF, WebP (Max 5MB)</p>
+                  </div>
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    class="hidden"
+                    @change="handleFileChange"
+                  />
+                </div>
               </div>
 
               <!-- Action Buttons -->
@@ -400,8 +381,6 @@ const shouldRemoveImage = ref(false)
 
 // Collapsible sections state
 const descriptionOpen = ref(false)
-const displayOpen = ref(false)
-const imageOpen = ref(false)
 
 // Helper function to reset form (must be defined before watches)
 const resetForm = () => {
@@ -418,8 +397,6 @@ const resetForm = () => {
   error.value = null
   shouldRemoveImage.value = false
   descriptionOpen.value = false
-  displayOpen.value = false
-  imageOpen.value = false
 }
 
 // Watch for prop changes to populate form
@@ -504,6 +481,38 @@ const removeCurrentImage = () => {
   imagePreview.value = null
 }
 
+// Ensure color is always in hex format
+const normalizeColor = (color: string): string => {
+  // Remove whitespace
+  color = color.trim()
+
+  // If it's already a valid hex, return it
+  if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+    return color.toLowerCase()
+  }
+
+  // If it's hex without #, add it
+  if (/^[0-9A-Fa-f]{6}$/.test(color)) {
+    return `#${color.toLowerCase()}`
+  }
+
+  // Default fallback
+  return '#3498db'
+}
+
+// Watch color changes and normalize to hex
+watch(
+  () => formData.value.color,
+  (newColor) => {
+    if (newColor) {
+      const normalized = normalizeColor(newColor)
+      if (normalized !== newColor) {
+        formData.value.color = normalized
+      }
+    }
+  },
+)
+
 const handleClose = () => {
   if (!loading.value) {
     emit('close')
@@ -522,29 +531,50 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const requestData: CreateDressCodeRequest = {
-      dress_code_type: formData.value.dress_code_type as DressCodeType,
-      time_period: formData.value.time_period as TimePeriod,
-      gender: formData.value.gender as Gender,
-      title: formData.value.title || undefined,
-      description: formData.value.description || undefined,
-      color: formData.value.color || undefined,
-      is_active: formData.value.is_active,
-      image: formData.value.image,
-    }
-
     let response
 
     if (isEditing.value && props.dressCode) {
       // Update existing dress code
-      // If user clicked remove on current image, send null to remove it
-      if (shouldRemoveImage.value && !formData.value.image) {
-        (requestData as any).image = null
+      // For updates, we need to handle empty strings explicitly to clear fields
+      const updateData: any = {
+        dress_code_type: formData.value.dress_code_type as DressCodeType,
+        time_period: formData.value.time_period as TimePeriod,
+        gender: formData.value.gender as Gender,
+        is_active: formData.value.is_active,
       }
-      response = await dressCodeService.updateDressCode(props.eventId, props.dressCode.id, requestData as any)
+
+      // Handle optional text fields - send empty string to clear, omit if unchanged
+      const titleTrimmed = formData.value.title.trim()
+      const descriptionTrimmed = formData.value.description.trim()
+      const colorTrimmed = formData.value.color.trim()
+
+      // Always include these fields in updates to allow clearing them
+      updateData.title = titleTrimmed || ''
+      updateData.description = descriptionTrimmed || ''
+      updateData.color = colorTrimmed || ''
+
+      // Handle image updates
+      if (shouldRemoveImage.value && !formData.value.image) {
+        updateData.image = null // Explicitly remove image
+      } else if (formData.value.image) {
+        updateData.image = formData.value.image // Upload new image
+      }
+      // If neither, don't include image field (keep existing)
+
+      response = await dressCodeService.updateDressCode(props.eventId, props.dressCode.id, updateData)
     } else {
       // Create new dress code
-      response = await dressCodeService.createDressCode(props.eventId, requestData)
+      const createData: CreateDressCodeRequest = {
+        dress_code_type: formData.value.dress_code_type as DressCodeType,
+        time_period: formData.value.time_period as TimePeriod,
+        gender: formData.value.gender as Gender,
+        title: formData.value.title.trim() || undefined,
+        description: formData.value.description.trim() || undefined,
+        color: formData.value.color.trim() || undefined,
+        is_active: formData.value.is_active,
+        image: formData.value.image,
+      }
+      response = await dressCodeService.createDressCode(props.eventId, createData)
     }
 
     if (response.success && response.data) {
