@@ -144,6 +144,7 @@
 
                 <!-- Agenda Section -->
                 <div
+                  v-if="agendaItems.length > 0"
                   id="agenda-section"
                   ref="agendaSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
