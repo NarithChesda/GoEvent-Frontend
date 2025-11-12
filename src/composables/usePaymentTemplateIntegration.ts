@@ -110,14 +110,12 @@ export function usePaymentTemplateIntegration(event: Event) {
 
         payments.value = Object.freeze(paymentData)
         lastUpdated.value = new Date()
-
-        // console.log(`Loaded ${payments.value.length} payments for event ${event.id}`)
       } else {
         throw new Error(response.message || 'Failed to load payments')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load payment data'
-      console.error('Error loading payments:', err)
+      console.error('[PaymentTemplateIntegration] Error loading payments:', err)
       error.value = errorMessage
       payments.value = []
     } finally {

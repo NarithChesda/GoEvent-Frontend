@@ -56,8 +56,9 @@
       />
     </div>
 
-    <!-- Event Video -->
+    <!-- Event Video (only shown for Standard template when active) -->
     <MediaUploadCard
+      v-if="shouldShowVideoSection"
       title="Event Video"
       description="Upload a promotional or highlight video (Max 10MB)"
       :media-url="getMediaUrl(eventData?.event_video)"
@@ -113,12 +114,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRef, watch } from 'vue'
+import { ref, toRef, watch, computed, reactive } from 'vue'
 import { AlertCircle } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
 import { useDropdownManager } from '@/composables/useDropdownManager'
 import { useMediaUrl } from '@/composables/useMediaUrl'
+import { usePaymentTemplateIntegration } from '@/composables/usePaymentTemplateIntegration'
 import MediaUploadCard from './MediaUploadCard.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -139,6 +141,50 @@ const eventDataRef = toRef(props, 'eventData')
 const mediaUpload = useMediaUpload(eventDataRef, (event) => emit('updated', event))
 const dropdownManager = useDropdownManager(['banner', 'logoOne', 'logoTwo', 'video', 'music'])
 const { getMediaUrl } = useMediaUrl()
+
+// Create a reactive proxy for the event data to use with payment integration
+// This is needed because usePaymentTemplateIntegration expects a plain object
+const reactiveEventData = reactive({
+  id: '',
+  event_template: null as number | null,
+  event_template_details: null as Event['event_template_details']
+})
+
+// Sync reactive event data with props
+watch(
+  () => props.eventData,
+  (newData) => {
+    if (newData) {
+      reactiveEventData.id = newData.id
+      reactiveEventData.event_template = newData.event_template ?? null
+      reactiveEventData.event_template_details = newData.event_template_details ?? null
+    }
+  },
+  { immediate: true }
+)
+
+// Initialize payment template integration
+const paymentIntegration = usePaymentTemplateIntegration(reactiveEventData as Event)
+
+// Check if video section should be shown
+// Video section is only shown for Standard template when it's active
+const shouldShowVideoSection = computed(() => {
+  if (!props.eventData?.event_template_details || !props.eventData.event_template) {
+    return false
+  }
+
+  // Check if template package plan name contains "standard" (case-insensitive)
+  // The template type is identified by package_plan.name, not template.name
+  const packagePlanName = props.eventData.event_template_details.package_plan?.name?.toLowerCase() || ''
+  const isStandardTemplate = packagePlanName.includes('standard')
+
+  if (!isStandardTemplate) {
+    return false
+  }
+
+  // Check if template is activated via payment (confirmed payment exists)
+  return paymentIntegration.isTemplateActivated.value
+})
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -199,4 +245,15 @@ const handleDeleteConfirm = async () => {
 watch(() => props.eventData, () => {
   mediaUpload.clearError()
 })
+
+// Load payments when event data is available
+watch(
+  () => props.eventData?.id,
+  (eventId) => {
+    if (eventId && props.eventData?.event_template) {
+      paymentIntegration.loadPayments()
+    }
+  },
+  { immediate: true }
+)
 </script>
