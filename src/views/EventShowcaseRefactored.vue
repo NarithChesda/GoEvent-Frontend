@@ -227,9 +227,12 @@ const openEnvelopeWithVideoSync = async () => {
   // Pass the required parameters for music to work
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
 
-  // Then trigger the video playback in standard mode
-  // In basic mode, this will be a no-op as the video phase will be 'background'
-  if (coverStageRef.value) {
+  // Determine display mode: basic mode has basic_decoration_photo, standard mode doesn't
+  const isBasicMode = Boolean(templateAssets.value?.basic_decoration_photo)
+
+  // Then trigger the video playback ONLY in standard mode
+  // In basic mode, skip directly to main content without playing any videos
+  if (!isBasicMode && coverStageRef.value && eventVideoUrl.value) {
     coverStageRef.value.startEventVideo()
   }
 }
