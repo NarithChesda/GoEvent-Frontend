@@ -9,7 +9,7 @@ const MAX_PROFILE_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
 
 export function useProfilePictureUpload(initialImageUrl?: string) {
   // State
-  const profilePictureInput = ref<HTMLInputElement>()
+  const profilePictureInput = ref<HTMLInputElement | null>(null)
   const profilePicturePreview = ref<string | null>(null)
   const profilePictureUploading = ref(false)
   const selectedProfileImageFile = ref<File | null>(null)

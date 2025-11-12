@@ -70,6 +70,7 @@
                 :get-language-name="getLanguageName"
                 @update:active-tab="activeTab = $event"
                 @update:show-add-translation="showAddTranslation = $event"
+                @update:new-translation="Object.assign(newTranslation, $event)"
                 @add-translation="addTranslation"
                 @remove-translation="removeTranslation"
                 @focus-next-tab="focusNextTab"
