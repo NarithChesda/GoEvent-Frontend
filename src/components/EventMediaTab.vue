@@ -219,7 +219,9 @@
           v-if="localEventData?.id"
           ref="paymentMethodsSectionRef"
           :event-id="localEventData.id"
+          :event="localEventData"
           :can-edit="canEdit"
+          @event-updated="handleEventUpdated"
         />
       </div>
 

@@ -68,6 +68,7 @@ export interface Event {
   can_edit?: boolean
   can_delete?: boolean
   is_registered?: boolean
+  payment_lock?: boolean
   created_at: string
   updated_at: string
   // Additional fields from detailed event response
