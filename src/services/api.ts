@@ -110,6 +110,24 @@ export type {
   UserDetails,
 } from './api/types/core-data.types'
 
+// Dress code types
+export type {
+  EventDressCode,
+  CreateDressCodeRequest,
+  UpdateDressCodeRequest,
+  BulkReorderDressCodesRequest,
+  DressCodeFilters,
+  DressCodeType,
+  TimePeriod,
+  Gender,
+} from './api/types/dress-code.types'
+
+export {
+  DRESS_CODE_TYPE_LABELS,
+  TIME_PERIOD_LABELS,
+  GENDER_LABELS,
+} from './api/types/dress-code.types'
+
 // ============================================================================
 // SERVICE EXPORTS - All services from original api.ts
 // ============================================================================
@@ -157,6 +175,9 @@ export {
   expenseBudgetsService,
   expensesService,
 } from './api/modules/expenses.service'
+
+// Dress code service
+export { dressCodeService } from './api/modules/dress-code.service'
 
 // ============================================================================
 // NOTES FOR DEVELOPERS

@@ -78,6 +78,18 @@
             <Share2 class="w-4 h-4" />
             <span>Social Media</span>
           </button>
+          <button
+            @click="activeSection = 'dress-code'"
+            :class="[
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
+              activeSection === 'dress-code'
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+            ]"
+          >
+            <Shirt class="w-4 h-4" />
+            <span>Dress Code</span>
+          </button>
         </div>
       </div>
     </div>
@@ -234,6 +246,16 @@
           language="kh"
         />
       </div>
+
+      <!-- Dress Code Section -->
+      <div v-if="activeSection === 'dress-code'">
+        <DressCodeSection
+          v-if="props.eventId"
+          ref="dressCodeSectionRef"
+          :event-id="props.eventId"
+          :can-edit="canEdit"
+        />
+      </div>
     </div>
 
     <!-- Upload Modal -->
@@ -272,7 +294,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, nextTick } from 'vue'
-import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle, CreditCard, Share2 } from 'lucide-vue-next'
+import { Upload, ImageIcon, AlertCircle, Star, Video, Layout, CheckCircle, CreditCard, Share2, Shirt } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
@@ -281,6 +303,7 @@ import BasicMediaSection from './BasicMediaSection.vue'
 import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
 import SocialMediaPreview from './SocialMediaPreview.vue'
+import DressCodeSection from './DressCodeSection.vue'
 
 interface Props {
   eventId?: string
@@ -305,7 +328,7 @@ const emit = defineEmits<{
 const media = ref<EventPhoto[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment' | 'social-media'>('basic')
+const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment' | 'social-media' | 'dress-code'>('basic')
 const showUploadModal = ref(false)
 const showDeleteModal = ref(false)
 const mediaToDelete = ref<EventPhoto | null>(null)
@@ -318,8 +341,9 @@ const localEventData = ref<Event | undefined>(props.eventData ? { ...props.event
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)
 
-// Template ref for PaymentMethodsSection
+// Template refs for sections
 const paymentMethodsSectionRef = ref<InstanceType<typeof PaymentMethodsSection> | null>(null)
+const dressCodeSectionRef = ref<InstanceType<typeof DressCodeSection> | null>(null)
 
 // Computed properties
 const totalPhotos = computed(() => {
@@ -609,6 +633,14 @@ defineExpose({
     // Use nextTick to ensure the PaymentMethodsSection is rendered before calling its method
     await nextTick()
     paymentMethodsSectionRef.value?.openAddModal()
+  },
+  // Method to trigger dress code addition
+  openDressCodeModal: async () => {
+    // Switch to dress code section and open the add modal
+    activeSection.value = 'dress-code'
+    // Use nextTick to ensure the DressCodeSection is rendered before calling its method
+    await nextTick()
+    dressCodeSectionRef.value?.openAddModal()
   }
 })
 </script>
