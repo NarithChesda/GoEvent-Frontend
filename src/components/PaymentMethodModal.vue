@@ -9,17 +9,12 @@
             class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
             @click.stop
           >
-            <!-- Header (neutral style) -->
-            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-200">
               <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <CreditCard class="w-5 h-5" />
-                  </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
-                    {{ isEditing ? 'Edit Payment Method' : 'Add Payment Method' }}
-                  </h2>
-                </div>
+                <h2 class="text-lg font-semibold text-slate-900">
+                  {{ isEditing ? 'Edit Payment' : 'Add Payment' }}
+                </h2>
                 <button
                   @click="$emit('close')"
                   class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
@@ -35,22 +30,17 @@
               <div class="space-y-5">
                 <!-- Basic Information -->
                 <div class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <Info class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    Basic Information
-                  </h4>
-
                   <!-- Name -->
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
-                      Payment Method Name <span class="text-red-500">*</span>
+                      Name <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="formData.name"
                       type="text"
                       required
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      placeholder="e.g., Wedding Gift Fund, ABA Bank Account"
+                      placeholder="e.g., Wedding Gift Fund, ABA Bank"
                     />
                   </div>
 
@@ -58,102 +48,148 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Payment Type <span class="text-red-500">*</span>
+                        Type <span class="text-red-500">*</span>
                       </label>
-                      <select
-                        v-model="formData.payment_type"
-                        required
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      >
-                        <option value="">Select payment type</option>
-                        <option value="donation">Donation</option>
-                        <option value="gift">Gift</option>
-                        <option value="sponsorship">Sponsorship</option>
-                      </select>
+                      <div class="relative">
+                        <select
+                          v-model="formData.payment_type"
+                          required
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                        >
+                          <option value="">Select type</option>
+                          <option value="donation">Donation</option>
+                          <option value="gift">Gift</option>
+                          <option value="sponsorship">Sponsorship</option>
+                        </select>
+                        <svg
+                          class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none"
+                          viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </div>
                     </div>
 
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Payment Method <span class="text-red-500">*</span>
+                        Method <span class="text-red-500">*</span>
                       </label>
-                      <select
-                        v-model="formData.payment_method"
-                        required
-                        @change="handlePaymentMethodChange"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      >
-                        <option value="">Select payment method</option>
-                        <option value="bank_transfer">Bank Transfer</option>
-                        <option value="qr_code">QR Code</option>
-                        <option value="payment_url">Payment URL</option>
-                      </select>
+                      <div class="relative">
+                        <select
+                          v-model="formData.payment_method"
+                          required
+                          @change="handlePaymentMethodChange"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                        >
+                          <option value="">Select method</option>
+                          <option value="bank_transfer">Bank Transfer</option>
+                          <option value="qr_code">QR Code</option>
+                          <option value="payment_url">Payment URL</option>
+                        </select>
+                        <svg
+                          class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none"
+                          viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <!-- Currency and Status -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Currency
-                      </label>
-                      <select
-                        v-model="formData.currency"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                      >
-                        <option value="USD">USD - US Dollar</option>
-                        <option value="KHR">KHR - Cambodian Riel</option>
-                        <option value="EUR">EUR - Euro</option>
-                        <option value="GBP">GBP - British Pound</option>
-                        <option value="JPY">JPY - Japanese Yen</option>
-                        <option value="THB">THB - Thai Baht</option>
-                        <option value="VND">VND - Vietnamese Dong</option>
-                      </select>
+                <!-- Currency, Status & Description - Collapsible -->
+                <div class="rounded-xl border border-slate-200 bg-white/70">
+                  <button
+                    type="button"
+                    class="w-full flex items-center justify-between px-4 py-3"
+                    @click="optionsOpen = !optionsOpen"
+                    :aria-expanded="optionsOpen ? 'true' : 'false'"
+                  >
+                    <span class="text-sm font-medium text-slate-700">Additional Options</span>
+                    <svg
+                      class="h-4 w-4 text-slate-500 transition-transform"
+                      :class="optionsOpen ? 'rotate-180' : ''"
+                      viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  <Transition name="collapse">
+                    <div v-show="optionsOpen" class="px-4 pb-4">
+                      <div class="space-y-3 sm:space-y-4">
+                        <!-- Currency and Status -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                              Currency
+                            </label>
+                            <div class="relative">
+                              <select
+                                v-model="formData.currency"
+                                class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                              >
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="KHR">KHR - Cambodian Riel</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="JPY">JPY - Japanese Yen</option>
+                                <option value="THB">THB - Thai Baht</option>
+                                <option value="VND">VND - Vietnamese Dong</option>
+                              </select>
+                              <svg
+                                class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none"
+                                viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                              >
+                                <path d="m6 9 6 6 6-6" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          <div class="flex items-center pt-6 sm:pt-8">
+                            <label class="flex items-center">
+                              <input
+                                v-model="formData.is_active"
+                                type="checkbox"
+                                class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
+                              />
+                              <span class="ml-2 text-sm font-medium text-slate-700">Active</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Description
+                          </label>
+                          <textarea
+                            v-model="formData.description"
+                            rows="2"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                            placeholder="Optional instructions"
+                          ></textarea>
+                        </div>
+                      </div>
                     </div>
-
-                    <div class="flex items-center space-x-3 sm:space-x-4 pt-6 sm:pt-8">
-                      <label class="flex items-center">
-                        <input
-                          v-model="formData.is_active"
-                          type="checkbox"
-                          class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
-                        />
-                        <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium text-slate-700">Active</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Description -->
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      v-model="formData.description"
-                      rows="3"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                      placeholder="Optional description or instructions for this payment method"
-                    ></textarea>
-                  </div>
+                  </Transition>
                 </div>
 
                 <!-- Bank Transfer Details - Always show for bank transfer -->
                 <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <Building2 class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    Bank Transfer Details
-                  </h4>
+                  <h4 class="text-sm font-semibold text-slate-900">Bank Details</h4>
 
-                  <div class="grid grid-cols-1 gap-3 sm:gap-4">
+                  <!-- Row 1: Bank and Account Name -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Bank Name <span class="text-red-500">*</span>
+                        Bank <span class="text-red-500">*</span>
                       </label>
                       <input
                         v-model="formData.bank_name"
                         type="text"
                         required
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                        placeholder="e.g., ABA Bank, ACLEDA Bank"
+                        placeholder="e.g., ABA Bank, ACLEDA"
                       />
                     </div>
 
@@ -166,10 +202,13 @@
                         type="text"
                         required
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                        placeholder="Account holder's name"
+                        placeholder="Account holder name"
                       />
                     </div>
+                  </div>
 
+                  <!-- Row 2: Account Number and Payment Link -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
                         Account Number <span class="text-red-500">*</span>
@@ -179,35 +218,33 @@
                         type="text"
                         required
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                        placeholder="Bank account number"
+                        placeholder="Account number"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Payment Link
+                      </label>
+                      <input
+                        v-model="formData.payment_url"
+                        type="text"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                        placeholder="https://... or payway://..."
                       />
                     </div>
                   </div>
                 </div>
 
-                <!-- Payment Access Methods - Show all together for bank transfer -->
+                <!-- QR Code Section - Show for bank transfer -->
                 <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <CreditCard class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    Payment Access Methods
-                  </h4>
-                  <p class="text-sm text-slate-600 mb-3">
-                    Add multiple ways for users to access this bank account
-                  </p>
+                  <h4 class="text-sm font-semibold text-slate-900">QR Code</h4>
 
-                  <!-- QR Code Section -->
-                  <div class="border border-slate-200 rounded-lg p-3">
-                    <h5 class="text-sm font-medium text-slate-800 flex items-center mb-2">
-                      <QrCode class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                      QR Code for Bank Transfer
-                    </h5>
-
-                    <div class="space-y-3 sm:space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Upload Section -->
+                    <div class="space-y-3">
                       <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          QR Code Image (Optional)
-                        </label>
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                        <div class="flex flex-col gap-2">
                           <input
                             ref="qrCodeInput"
                             type="file"
@@ -218,7 +255,7 @@
                           <button
                             type="button"
                             @click="($refs.qrCodeInput as HTMLInputElement)?.click()"
-                            class="px-3.5 py-2.5 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors flex items-center space-x-2"
+                            class="px-3.5 py-2.5 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center space-x-2"
                           >
                             <Upload class="w-4 h-4" />
                             <span>{{ qrCodeFile ? 'Change QR Code' : 'Upload QR Code' }}</span>
@@ -228,66 +265,115 @@
                           </span>
                         </div>
                         <p class="text-xs text-slate-500 mt-1">
-                          Upload a bank QR code for easy scanning (JPG, PNG, or GIF). Max size: 10MB
+                          Optional. Max 10MB
                         </p>
                       </div>
 
-                      <!-- Preview -->
+                      <!-- Uploaded Preview -->
                       <div
                         v-if="qrCodePreview || (isEditing && existingPaymentMethod?.qr_code_image)"
-                        class="mt-3"
                       >
-                        <label class="block text-sm font-medium text-slate-700 mb-2"
-                          >QR Code Preview:</label
-                        >
-                        <img
-                          :src="qrCodePreview || getMediaUrl(existingPaymentMethod?.qr_code_image)"
-                          alt="QR Code Preview"
-                          class="w-48 h-48 object-contain border border-slate-200 rounded-lg bg-white"
-                        />
+                        <p class="text-xs font-medium text-slate-700 mb-2">Your QR Code:</p>
+                        <div class="relative">
+                          <img
+                            :src="qrCodePreview || getMediaUrl(existingPaymentMethod?.qr_code_image)"
+                            alt="Your QR Code"
+                            class="w-full h-48 object-contain border border-slate-200 rounded-lg bg-white"
+                          />
+                          <button
+                            v-if="qrCodeFile"
+                            type="button"
+                            @click="openCropper"
+                            class="mt-2 w-full px-3 py-1.5 text-xs bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center gap-1"
+                          >
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                            <span>Crop QR Code</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Payment URL Section -->
-                  <div class="border border-slate-200 rounded-lg p-3">
-                    <h5 class="text-sm font-medium text-slate-800 flex items-center mb-2">
-                      <Link class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                      Online Payment Link
-                    </h5>
-
-                    <div class="space-y-3">
-                      <div>
-                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                          Payment URL (Optional)
-                        </label>
-                        <input
-                          v-model="formData.payment_url"
-                          type="text"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                          placeholder="https://example.com/payment or payway://... or bakong://..."
+                    <!-- Reference Image Section -->
+                    <div class="space-y-2">
+                      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p class="text-xs font-semibold text-blue-900 mb-2">Reference Example:</p>
+                        <img
+                          src="/images/qr-code-reference.png"
+                          alt="QR Code Example"
+                          class="w-full h-48 object-contain border-2 border-blue-300 rounded-lg bg-white mb-2"
                         />
-                        <p class="text-[10px] sm:text-xs text-slate-500 mt-1">
-                          Web link (https://...) or deep link (payway://, bakong://, etc.) for mobile apps
-                        </p>
-                      </div>
-
-                      <!-- Deep Link Info Box -->
-                      <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
-                        <p class="text-[10px] sm:text-xs text-blue-800 leading-relaxed">
-                          <strong>💡 Tip for PayWay/Bakong:</strong> Use deep links (e.g., <code class="bg-blue-100 px-1 rounded">payway://...</code>) to open the banking app directly. Web links (https://...) will only show a QR code page.
+                        <p class="text-xs text-blue-800 leading-relaxed">
+                          <strong>Important:</strong> Upload only the QR code part (the square pattern). Crop out any text, logos, or surrounding content.
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
+                <!-- Image Cropper Modal -->
+                <Teleport to="body">
+                  <Transition name="modal">
+                    <div v-if="showCropper" class="fixed inset-0 z-[60] overflow-y-auto">
+                      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+
+                      <div class="flex min-h-full items-center justify-center p-4">
+                        <div class="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+                          <!-- Cropper Header -->
+                          <div class="px-6 py-4 border-b border-slate-200 bg-white">
+                            <div class="flex items-center justify-between">
+                              <h3 class="text-lg font-semibold text-slate-900">Crop QR Code</h3>
+                              <button
+                                @click="closeCropper"
+                                class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+                                aria-label="Close cropper"
+                              >
+                                <X class="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Cropper Content -->
+                          <div class="p-6">
+                            <div class="bg-slate-100 rounded-lg overflow-hidden" style="height: 400px;">
+                              <Cropper
+                                ref="cropper"
+                                :src="cropperImage"
+                                :stencil-props="{ aspectRatio: 1 }"
+                                class="h-full"
+                              />
+                            </div>
+                          </div>
+
+                          <!-- Cropper Actions -->
+                          <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                            <button
+                              type="button"
+                              @click="closeCropper"
+                              class="px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-white font-medium transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              @click="applyCrop"
+                              class="px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg"
+                            >
+                              Apply Crop
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Transition>
+                </Teleport>
+
                 <!-- Simplified options for other payment methods -->
                 <div v-if="formData.payment_method === 'qr_code'" class="space-y-3 sm:space-y-4">
                   <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
                     <p class="text-amber-800 text-sm">
-                      <strong>Note:</strong> For bank transfer QR codes, please select "Bank
-                      Transfer" as the payment method above.
+                      For bank QR codes, use "Bank Transfer" method instead.
                     </p>
                   </div>
                 </div>
@@ -295,8 +381,7 @@
                 <div v-if="formData.payment_method === 'payment_url'" class="space-y-3 sm:space-y-4">
                   <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
                     <p class="text-amber-800 text-sm">
-                      <strong>Note:</strong> For online banking links, please select "Bank Transfer"
-                      as the payment method above.
+                      For banking links, use "Bank Transfer" method instead.
                     </p>
                   </div>
                 </div>
@@ -328,15 +413,7 @@
                     v-if="loading"
                     class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
-                  {{
-                    loading
-                      ? isEditing
-                        ? 'Updating...'
-                        : 'Creating...'
-                      : isEditing
-                        ? 'Update Payment Method'
-                        : 'Create Payment Method'
-                  }}
+                  {{ loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update' : 'Create') }}
                 </button>
               </div>
             </form>
@@ -349,7 +426,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { X, CreditCard, Info, Building2, QrCode, Link, Upload, AlertCircle } from 'lucide-vue-next'
+import { X, Upload, AlertCircle } from 'lucide-vue-next'
+import { Cropper } from 'vue-advanced-cropper'
+import 'vue-advanced-cropper/dist/style.css'
 import {
   paymentMethodsService,
   type EventPaymentMethod,
@@ -374,6 +453,10 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const qrCodeFile = ref<File | null>(null)
 const qrCodePreview = ref<string | null>(null)
+const optionsOpen = ref(false)
+const showCropper = ref(false)
+const cropperImage = ref<string | null>(null)
+const cropper = ref<any>(null)
 
 // Computed
 const isEditing = computed(() => !!props.existingPaymentMethod)
@@ -504,12 +587,52 @@ const handleQrCodeUpload = (event: Event) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       qrCodePreview.value = e.target?.result as string
+      cropperImage.value = e.target?.result as string
     }
     reader.readAsDataURL(file)
   }
 
   // Reset input
   target.value = ''
+}
+
+const openCropper = () => {
+  if (qrCodePreview.value) {
+    cropperImage.value = qrCodePreview.value
+    showCropper.value = true
+  }
+}
+
+const closeCropper = () => {
+  showCropper.value = false
+}
+
+const applyCrop = () => {
+  if (cropper.value) {
+    const { canvas } = cropper.value.getResult()
+    if (canvas) {
+      // Convert canvas to blob
+      canvas.toBlob((blob: Blob | null) => {
+        if (blob) {
+          // Create a new File from the blob
+          const croppedFile = new File([blob], qrCodeFile.value?.name || 'cropped-qr.png', {
+            type: 'image/png',
+          })
+          qrCodeFile.value = croppedFile
+
+          // Update preview
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            qrCodePreview.value = e.target?.result as string
+          }
+          reader.readAsDataURL(croppedFile)
+
+          // Close cropper
+          showCropper.value = false
+        }
+      }, 'image/png')
+    }
+  }
 }
 
 const savePaymentMethod = async () => {
@@ -648,6 +771,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.2s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  max-height: 1000px;
+  opacity: 1;
+}
+
 .modal-enter-active,
 .modal-leave-active {
   transition: all 0.3s ease;
