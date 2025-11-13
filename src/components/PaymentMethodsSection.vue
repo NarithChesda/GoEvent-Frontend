@@ -16,33 +16,46 @@
           </div>
           <p class="text-sm text-slate-600">Add payment options for gifts, donations, and sponsorships</p>
           <p v-if="isPaymentLocked" class="text-xs text-amber-700 mt-1">
-            Payment methods are locked. Only administrators can unlock to make changes.
+            Payment methods are currently locked. Only administrators can unlock to make changes.
           </p>
         </div>
 
-        <!-- Lock/Unlock Button -->
-        <button
-          v-if="canEdit"
-          @click="togglePaymentLock"
-          :disabled="isToggling"
-          :class="[
-            'flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200',
-            'border-2 focus:outline-none focus:ring-2 focus:ring-offset-2',
-            isPaymentLocked
-              ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 focus:ring-amber-500'
-              : 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500',
-            isToggling ? 'opacity-50 cursor-not-allowed' : ''
-          ]"
-        >
-          <component
-            :is="isToggling ? 'div' : (isPaymentLocked ? Lock : Unlock)"
+        <!-- Lock/Unlock Button & Info Button -->
+        <div class="flex items-center gap-2">
+          <!-- Info Button -->
+          <button
+            v-if="canEdit"
+            @click="showLockHelpModal = true"
+            class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            title="Learn about the lock feature"
+          >
+            <Info class="w-4 h-4" />
+          </button>
+
+          <!-- Lock/Unlock Button -->
+          <button
+            v-if="canEdit"
+            @click="showLockConfirmModal = true"
+            :disabled="isToggling"
             :class="[
-              'w-4 h-4',
-              isToggling ? 'animate-spin rounded-full border-2 border-current border-t-transparent' : ''
+              'flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200',
+              'border-2 focus:outline-none focus:ring-2 focus:ring-offset-2',
+              isPaymentLocked
+                ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 focus:ring-amber-500'
+                : 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500',
+              isToggling ? 'opacity-50 cursor-not-allowed' : ''
             ]"
-          />
-          <span>{{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}</span>
-        </button>
+          >
+            <component
+              :is="isToggling ? 'div' : (isPaymentLocked ? Lock : Unlock)"
+              :class="[
+                'w-4 h-4',
+                isToggling ? 'animate-spin rounded-full border-2 border-current border-t-transparent' : ''
+              ]"
+            />
+            <span>{{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -383,6 +396,195 @@
       @confirm="handleDeleteConfirm"
       @cancel="showDeleteModal = false"
     />
+
+    <!-- Lock Feature Help Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showLockHelpModal"
+          class="fixed inset-0 z-50 overflow-y-auto"
+          @click="showLockHelpModal = false"
+        >
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <Lock class="w-5 h-5 text-blue-600" />
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-900">About the Lock Feature</h3>
+                </div>
+                <button
+                  @click="showLockHelpModal = false"
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <X class="w-5 h-5" />
+                </button>
+              </div>
+
+              <!-- Content -->
+              <div class="space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p class="text-sm text-blue-900 mb-3">
+                    Use the lock feature to prevent accidental changes to payment methods and maintain control over sensitive financial information.
+                  </p>
+
+                  <div class="space-y-3">
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2">When Locked:</h4>
+                      <ul class="space-y-1.5 text-sm text-blue-800">
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Collaborators cannot add, edit, or delete payment methods</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Payment methods remain visible to all with access</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Editing controls are disabled for non-administrators</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Only event administrators can unlock to make changes</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div class="pt-3 border-t border-blue-200">
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Best Practices:</span>
+                      </h4>
+                      <ul class="space-y-1.5 text-sm text-blue-800">
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Lock payment methods before sharing event access with collaborators</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Review and finalize payment details before locking</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span>Keep locked during event to prevent unwanted modifications</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Close Button -->
+                <div class="flex justify-end pt-2">
+                  <button
+                    @click="showLockHelpModal = false"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Lock/Unlock Confirmation Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showLockConfirmModal"
+          class="fixed inset-0 z-50 overflow-y-auto"
+          @click="showLockConfirmModal = false"
+        >
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full" @click.stop>
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    :class="[
+                      'w-10 h-10 rounded-xl flex items-center justify-center',
+                      isPaymentLocked ? 'bg-amber-100' : 'bg-slate-100'
+                    ]"
+                  >
+                    <component
+                      :is="isPaymentLocked ? Unlock : Lock"
+                      :class="[
+                        'w-5 h-5',
+                        isPaymentLocked ? 'text-amber-600' : 'text-slate-600'
+                      ]"
+                    />
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-900">
+                    {{ isPaymentLocked ? 'Unlock Payment Methods?' : 'Lock Payment Methods?' }}
+                  </h3>
+                </div>
+                <button
+                  @click="showLockConfirmModal = false"
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <X class="w-5 h-5" />
+                </button>
+              </div>
+
+              <!-- Content -->
+              <div class="mb-6">
+                <p class="text-sm text-slate-600 mb-3">
+                  {{ isPaymentLocked
+                    ? 'Are you sure you want to unlock payment methods? This will allow collaborators to make changes.'
+                    : 'Are you sure you want to lock payment methods? This will prevent collaborators from making changes.'
+                  }}
+                </p>
+                <div
+                  :class="[
+                    'p-3 rounded-xl border',
+                    isPaymentLocked
+                      ? 'bg-amber-50 border-amber-200'
+                      : 'bg-slate-50 border-slate-200'
+                  ]"
+                >
+                  <p class="text-xs text-slate-700">
+                    {{ isPaymentLocked
+                      ? 'Once unlocked, any collaborator with edit access can add, modify, or delete payment methods.'
+                      : 'Once locked, only administrators will be able to unlock and make changes to payment methods.'
+                    }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-3 justify-end">
+                <button
+                  @click="showLockConfirmModal = false"
+                  class="px-4 py-2 border-2 border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="handleLockConfirm"
+                  :disabled="isToggling"
+                  :class="[
+                    'px-4 py-2 rounded-xl font-medium transition-colors duration-200',
+                    isPaymentLocked
+                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                      : 'bg-slate-600 hover:bg-slate-700 text-white',
+                    isToggling ? 'opacity-50 cursor-not-allowed' : ''
+                  ]"
+                >
+                  {{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -402,6 +604,7 @@ import {
   X,
   Lock,
   Unlock,
+  Info,
 } from 'lucide-vue-next'
 import { paymentMethodsService, eventsService, type EventPaymentMethod, type Event } from '../services/api'
 import PaymentMethodModal from './PaymentMethodModal.vue'
@@ -435,6 +638,8 @@ const previewingPaymentMethod = ref<EventPaymentMethod | undefined>(undefined)
 const showDeleteModal = ref(false)
 const deletingPaymentMethod = ref<EventPaymentMethod | null>(null)
 const deleting = ref(false)
+const showLockHelpModal = ref(false)
+const showLockConfirmModal = ref(false)
 
 // Drag and drop state
 const isDragging = ref(false)
@@ -556,8 +761,8 @@ const loadPaymentMethods = async () => {
   }
 }
 
-// Lock/Unlock toggle function
-const togglePaymentLock = async () => {
+// Lock/Unlock confirmation handler
+const handleLockConfirm = async () => {
   if (!props.eventId) return
 
   isToggling.value = true
@@ -580,6 +785,9 @@ const togglePaymentLock = async () => {
 
       // Clear any previous errors
       lockError.value = null
+
+      // Close the confirmation modal
+      showLockConfirmModal.value = false
     } else {
       // Handle specific unlock permission error
       const errorMessage = response.message || `Failed to ${newLockState ? 'lock' : 'unlock'} payment methods`
@@ -609,10 +817,14 @@ const togglePaymentLock = async () => {
       } else {
         error.value = errorMessage
       }
+
+      // Close the confirmation modal even on error
+      showLockConfirmModal.value = false
     }
   } catch (err) {
     console.error('Error toggling payment lock:', err)
     error.value = 'Network error while updating payment lock'
+    showLockConfirmModal.value = false
   } finally {
     isToggling.value = false
   }
