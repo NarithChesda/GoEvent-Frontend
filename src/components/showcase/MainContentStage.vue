@@ -863,8 +863,6 @@ const eventType = computed(() => {
 // Computed property to control liquid glass background visibility
 const showLiquidGlass = computed(() => {
   const value = props.templateAssets?.display_liquid_glass_background
-  console.log('MainContentStage - display_liquid_glass_background:', value)
-  console.log('MainContentStage - templateAssets:', props.templateAssets)
   // Show liquid glass by default (true or undefined), hide only when explicitly false
   return value !== false
 })

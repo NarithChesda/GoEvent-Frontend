@@ -60,9 +60,6 @@ const props = defineProps<Props>()
 const layoutComponent = computed(() => {
   const eventType = props.eventType?.toLowerCase() || 'default'
 
-  // Debug: Log the event type being detected
-  console.log('[AgendaSection] Event type detected:', props.eventType, '→ normalized:', eventType)
-
   // Map event types to layout components
   const layoutMap: Record<string, typeof AgendaDefault | typeof AgendaWedding | typeof AgendaBirthday> = {
     // Wedding events - Elegant timeline layout
@@ -84,7 +81,6 @@ const layoutComponent = computed(() => {
   }
 
   const selectedLayout = layoutMap[eventType] || AgendaDefault
-  console.log('[AgendaSection] Selected layout:', selectedLayout.name || selectedLayout)
 
   // Return specific layout or default fallback
   return selectedLayout

@@ -334,11 +334,9 @@ const loadCurrentRegistration = async () => {
 
   try {
     const response = await eventsService.getMyRegistration(props.eventId)
-    console.log('RSVP Load Registration Response:', response)
 
     if (response.success && response.data) {
       currentRegistration.value = response.data
-      console.log('Registration found:', response.data)
 
       // Update UI state based on registration status
       // Map backend status to UI state
@@ -347,18 +345,15 @@ const loadCurrentRegistration = async () => {
         rsvpStatus.value = 'not_coming'
         additionalGuests.value = 0
         savedGuestCount.value = 0
-        console.log('Set status to: not_coming')
       } else {
         // Any other status (confirmed, coming, pending, etc.) means they're attending
         rsvpStatus.value = 'coming'
         additionalGuests.value = response.data.guest_count || 0
         savedGuestCount.value = response.data.guest_count || 0
-        console.log('Set status to: coming')
       }
       hasUnsavedGuestChanges.value = false
     } else {
       // User has no registration record - default to "not attending" state
-      console.log('No registration found - defaulting to not_coming')
       currentRegistration.value = null
       rsvpStatus.value = 'not_coming'
       additionalGuests.value = 0
@@ -367,7 +362,6 @@ const loadCurrentRegistration = async () => {
     }
   } catch (error) {
     // Error loading registration - treat as not attending
-    console.log('Error loading registration:', error)
     currentRegistration.value = null
     rsvpStatus.value = 'not_coming'
     additionalGuests.value = 0
@@ -446,7 +440,6 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
       }
     }
   } catch (error) {
-    console.error('RSVP Error:', error)
     errorMessage.value = 'An unexpected error occurred. Please try again.'
     // Revert to previous state on error
     if (currentRegistration.value) {

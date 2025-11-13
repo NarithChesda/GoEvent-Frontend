@@ -103,7 +103,6 @@ class AuthService {
             this.setTokens(normalizedResponse.tokens.access, normalizedResponse.tokens.refresh)
             this.setUser(normalizedResponse.user)
           } else {
-            console.error('Unexpected login response structure:', response.data)
             return {
               success: false,
               message: 'Invalid response format from server',
@@ -111,7 +110,6 @@ class AuthService {
           }
         }
       } catch (processingError) {
-        console.error('Error processing login response:', processingError)
         return {
           success: false,
           message: 'Failed to process login response',
@@ -124,8 +122,6 @@ class AuthService {
 
   async logout(): Promise<ApiResponse<{ message: string }>> {
     try {
-      console.info('[AuthService] Starting logout process')
-
       // Capture tokens before clearing
       const accessToken = this.getAccessToken()
       const refreshToken = this.getRefreshToken()
@@ -142,7 +138,7 @@ class AuthService {
           },
           body: JSON.stringify({ refresh: refreshToken }),
         }).catch((error) => {
-          console.warn('[AuthService] Logout API call failed (non-critical):', error)
+          // Silent error handling
         })
       }
 
@@ -150,13 +146,11 @@ class AuthService {
       this.clearTokens()
       this.clearUser()
 
-      console.info('[AuthService] Logout completed')
       return {
         success: true,
         data: { message: 'Successfully logged out' },
       }
     } catch (error) {
-      console.error('[AuthService] Logout error:', error)
       // Even on error, clear local data
       this.clearTokens()
       this.clearUser()
@@ -182,7 +176,6 @@ class AuthService {
             this.setTokens(normalizedResponse.tokens.access, normalizedResponse.tokens.refresh)
             this.setUser(normalizedResponse.user)
           } else {
-            console.error('Unexpected Google login response structure:', response.data)
             return {
               success: false,
               message: 'Invalid response format from server',
@@ -190,7 +183,6 @@ class AuthService {
           }
         }
       } catch (processingError) {
-        console.error('Error processing Google login response:', processingError)
         return {
           success: false,
           message: 'Failed to process Google login response',
@@ -216,7 +208,6 @@ class AuthService {
             this.setTokens(normalizedResponse.tokens.access, normalizedResponse.tokens.refresh)
             this.setUser(normalizedResponse.user)
           } else {
-            console.error('Unexpected Telegram login response structure:', response.data)
             return {
               success: false,
               message: 'Invalid response format from server',
@@ -224,7 +215,6 @@ class AuthService {
           }
         }
       } catch (processingError) {
-        console.error('Error processing Telegram login response:', processingError)
         return {
           success: false,
           message: 'Failed to process Telegram login response',
@@ -257,7 +247,6 @@ class AuthService {
   // Token management - simplified to use tokenManager
   private setTokens(accessToken: string, refreshToken: string): void {
     tokenManager.setTokens(accessToken, refreshToken)
-    console.info('[AuthService] Tokens stored via tokenManager')
   }
 
   setUser(user: User): void {
@@ -266,7 +255,7 @@ class AuthService {
       const sanitizedUser = this.sanitizeUserData(user)
       secureStorage.setItem('user', JSON.stringify(sanitizedUser))
     } catch (error) {
-      console.error('Failed to store user data:', error)
+      // Silent error handling
     }
   }
 
@@ -318,20 +307,12 @@ class AuthService {
 
       // Basic validation of user object
       if (!user || typeof user !== 'object' || !user.id || !user.email) {
-        console.warn('Invalid user data in storage:', {
-          hasUser: !!user,
-          type: typeof user,
-          hasId: !!user?.id,
-          hasEmail: !!user?.email,
-          userData: user,
-        })
         this.clearUser()
         return null
       }
 
       return user
     } catch (error) {
-      console.error('Failed to parse user data:', error)
       this.clearUser()
       return null
     }
@@ -339,12 +320,10 @@ class AuthService {
 
   clearTokens(): void {
     tokenManager.clearTokens()
-    console.info('[AuthService] Tokens cleared via tokenManager')
   }
 
   clearUser(): void {
     secureStorage.removeItem('user')
-    console.info('[AuthService] User data cleared')
   }
 
   isAuthenticated(): boolean {
@@ -385,7 +364,6 @@ class AuthService {
         }
       )
     } catch (error) {
-      console.error('[AuthService] Error in ensureValidToken:', error)
       return false
     }
   }
@@ -418,7 +396,6 @@ class AuthService {
 
     // Case 1: Direct token fields (legacy format)
     if (data.access && data.refresh && data.user) {
-      console.debug('Normalizing legacy login response format')
       return {
         tokens: {
           access: data.access,
@@ -430,7 +407,6 @@ class AuthService {
 
     // Case 2: Token object at root level (alternative format)
     if (data.token && data.user) {
-      console.debug('Normalizing token object login response format')
       return {
         tokens: {
           access: data.token.access || data.token,
@@ -442,7 +418,6 @@ class AuthService {
 
     // Case 3: Different nested structure
     if (data.authentication && data.user) {
-      console.debug('Normalizing authentication object login response format')
       const auth = data.authentication
       return {
         tokens: {
@@ -452,17 +427,6 @@ class AuthService {
         user: data.user,
       }
     }
-
-    console.warn('Unable to normalize login response format:', {
-      keys: Object.keys(data),
-      structure: {
-        hasTokens: !!data.tokens,
-        hasUser: !!data.user,
-        hasAccess: !!data.access,
-        hasRefresh: !!data.refresh,
-        hasToken: !!data.token,
-      },
-    })
 
     return null
   }

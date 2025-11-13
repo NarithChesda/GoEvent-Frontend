@@ -10,27 +10,24 @@ export class SecureLogger {
    * Log debug information (only in development mode)
    */
   static debug(context: string, data: Record<string, unknown>): void {
-    if (!IS_DEV_MODE) return
-
-    // Sanitize sensitive fields
-    const sanitized = this.sanitizeLogData(data)
-    console.debug(`[API Debug] ${context}:`, sanitized)
+    // Debug logging disabled
+    return
   }
 
   /**
    * Log errors with context
    */
   static error(context: string, error: unknown, data?: Record<string, unknown>): void {
-    const sanitized = data ? this.sanitizeLogData(data) : {}
-    console.error(`[API Error] ${context}:`, error, sanitized)
+    // Error logging disabled
+    return
   }
 
   /**
    * Log warnings
    */
   static warn(context: string, message: string, data?: Record<string, unknown>): void {
-    const sanitized = data ? this.sanitizeLogData(data) : {}
-    console.warn(`[API Warning] ${context}:`, message, sanitized)
+    // Warning logging disabled
+    return
   }
 
   /**

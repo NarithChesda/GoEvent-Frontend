@@ -54,14 +54,12 @@ class TokenManager {
       const token = secureStorage.getItem('access_token')
 
       if (token && !secureStorage.isValidTokenFormat(token)) {
-        console.warn('[TokenManager] Invalid access token format, clearing tokens')
         this.clearTokens()
         return null
       }
 
       return token
     } catch (error) {
-      console.error('[TokenManager] Error retrieving access token:', error)
       return null
     }
   }
@@ -74,14 +72,12 @@ class TokenManager {
       const token = secureStorage.getItem('refresh_token')
 
       if (token && !secureStorage.isValidTokenFormat(token)) {
-        console.warn('[TokenManager] Invalid refresh token format, clearing tokens')
         this.clearTokens()
         return null
       }
 
       return token
     } catch (error) {
-      console.error('[TokenManager] Error retrieving refresh token:', error)
       return null
     }
   }
@@ -94,7 +90,6 @@ class TokenManager {
       !secureStorage.isValidTokenFormat(accessToken) ||
       !secureStorage.isValidTokenFormat(refreshToken)
     ) {
-      console.warn('[TokenManager] Invalid token format detected, not storing')
       return
     }
 
@@ -103,8 +98,6 @@ class TokenManager {
 
     // Clear validation cache when new tokens are set
     this.clearValidationCache()
-
-    console.info('[TokenManager] Tokens stored successfully')
   }
 
   /**
@@ -114,7 +107,6 @@ class TokenManager {
     secureStorage.removeItem('access_token')
     secureStorage.removeItem('refresh_token')
     this.clearValidationCache()
-    console.info('[TokenManager] Tokens cleared')
   }
 
   /**
@@ -157,7 +149,6 @@ class TokenManager {
       const willExpireSoon = jwtUtils.willExpireSoon(accessToken, minutesBeforeExpiry)
       return willExpireSoon
     } catch (error) {
-      console.warn('[TokenManager] Error checking token expiration:', error)
       return true // Assume refresh needed on error
     }
   }
@@ -175,20 +166,17 @@ class TokenManager {
   ): Promise<boolean> {
     // If already refreshing, queue this request
     if (refreshState.isRefreshing && refreshState.refreshPromise) {
-      console.debug('[TokenManager] Refresh in progress, queueing request')
       return new Promise<boolean>((resolve, reject) => {
         refreshState.pendingRequests.push({ resolve, reject })
       })
     }
 
     // Start a new refresh
-    console.info('[TokenManager] Starting token refresh')
     refreshState.isRefreshing = true
     refreshState.refreshPromise = (async () => {
       try {
         const refreshToken = this.getRefreshToken()
         if (!refreshToken) {
-          console.warn('[TokenManager] No refresh token available')
           this.clearTokens()
           this.rejectPendingRequests(new Error('No refresh token available'))
           return false
@@ -197,7 +185,6 @@ class TokenManager {
         const response = await refreshCallback(refreshToken)
 
         if (response && response.access && response.refresh) {
-          console.info('[TokenManager] Token refresh successful')
           this.setTokens(response.access, response.refresh)
 
           // Resolve all pending requests
@@ -205,12 +192,10 @@ class TokenManager {
           return true
         }
 
-        console.warn('[TokenManager] Token refresh failed: Invalid response')
         this.clearTokens()
         this.rejectPendingRequests(new Error('Invalid refresh response'))
         return false
       } catch (error) {
-        console.error('[TokenManager] Token refresh error:', error)
         this.clearTokens()
         this.rejectPendingRequests(error as Error)
         return false
@@ -233,10 +218,6 @@ class TokenManager {
     pending.forEach(({ resolve }) => {
       resolve(value)
     })
-
-    if (pending.length > 0) {
-      console.info(`[TokenManager] Resolved ${pending.length} pending requests after refresh`)
-    }
   }
 
   /**
@@ -249,10 +230,6 @@ class TokenManager {
     pending.forEach(({ reject }) => {
       reject(error)
     })
-
-    if (pending.length > 0) {
-      console.warn(`[TokenManager] Rejected ${pending.length} pending requests after refresh failure`)
-    }
   }
 
   /**
@@ -272,7 +249,6 @@ class TokenManager {
       const accessToken = this.getAccessToken()
 
       if (!accessToken) {
-        console.debug('[TokenManager] No access token found')
         return false
       }
 
@@ -280,7 +256,6 @@ class TokenManager {
       const now = Date.now()
       const cacheAge = now - lastValidationTime
       if (cacheAge < VALIDATION_CACHE_DURATION && lastValidationResult) {
-        console.debug(`[TokenManager] Using cached validation (age: ${Math.round(cacheAge / 1000)}s)`)
         return true
       }
 
@@ -288,7 +263,6 @@ class TokenManager {
       const isExpired = jwtUtils.isTokenExpired(accessToken)
 
       if (isExpired === true) {
-        console.info('[TokenManager] Access token expired, attempting refresh')
         const refreshSuccess = await this.attemptTokenRefresh(refreshCallback)
 
         lastValidationTime = now
@@ -298,8 +272,6 @@ class TokenManager {
 
       // Check if token will expire soon (proactive refresh)
       if (this.shouldRefreshToken(5)) {
-        console.info('[TokenManager] Token expiring soon, proactive refresh')
-
         const refreshSuccess = await this.attemptTokenRefresh(refreshCallback)
         if (refreshSuccess) {
           lastValidationTime = now
@@ -308,14 +280,12 @@ class TokenManager {
         }
 
         // Proactive refresh failed, verify current token is still usable
-        console.warn('[TokenManager] Proactive refresh failed, verifying current token')
         try {
           const isStillValid = await verifyCallback(accessToken)
           lastValidationTime = now
           lastValidationResult = isStillValid
           return isStillValid
         } catch (verifyError) {
-          console.error('[TokenManager] Token verification failed:', verifyError)
           lastValidationTime = now
           lastValidationResult = false
           return false
@@ -327,7 +297,6 @@ class TokenManager {
       lastValidationResult = true
       return true
     } catch (error) {
-      console.error('[TokenManager] Error in ensureValidToken:', error)
       lastValidationTime = Date.now()
       lastValidationResult = false
       return false

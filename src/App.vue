@@ -16,18 +16,13 @@ const authStore = useAuthStore()
  */
 onMounted(async () => {
   try {
-    console.info('[App] Starting app initialization')
-
     // Migrate legacy storage explicitly on app startup
     // This only happens once, ensuring clean migration from v2 encrypted format
     secureStorage.migrateFromLegacyStorage(['access_token', 'refresh_token', 'user'])
 
     // Initialize authentication
     await authStore.initializeAuth()
-
-    console.info('[App] App initialization completed')
   } catch (error) {
-    console.error('[App] Failed to initialize app:', error)
     // Don't let initialization failures prevent the app from loading
   }
 })

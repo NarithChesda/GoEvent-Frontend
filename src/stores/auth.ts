@@ -50,33 +50,19 @@ export const useAuthStore = defineStore('auth', () => {
       setLoading(true)
       clearError()
 
-      console.debug('Auth Store: Starting login process', { email: credentials.email })
       const response = await authService.login(credentials)
-      console.debug('Auth Store: Login response received', {
-        success: response.success,
-        hasData: !!response.data,
-      })
 
       if (response.success && response.data) {
         // Response now has nested tokens object: { tokens: { access, refresh }, user }
         setUser(response.data.user)
-        console.debug('Auth Store: User set successfully', {
-          userId: response.data.user.id,
-          email: response.data.user.email,
-        })
         return { success: true }
       } else {
         const errorMsg = response.message || 'Login failed'
-        console.error('Auth Store: Login failed', { error: errorMsg, response })
         setError(errorMsg)
         return { success: false, error: errorMsg }
       }
     } catch (err) {
       const errorMsg = 'Network error during login'
-      console.error('Auth Store: Login exception caught', {
-        error: err,
-        message: (err as Error).message,
-      })
       setError(errorMsg)
       return { success: false, error: errorMsg }
     } finally {
@@ -124,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
       setLoading(true)
       await authService.logout()
     } catch (err) {
-      console.error('Logout error:', err)
+      // Silent error handling
     } finally {
       setUser(null)
       setLoading(false)
@@ -199,10 +185,8 @@ export const useAuthStore = defineStore('auth', () => {
         storedUser = authService.getUser()
         hasValidAuth = authService.isAuthenticated()
       } catch (storageError) {
-        console.warn('Storage error during auth initialization:', storageError)
         // In development, we can continue without stored auth
         if (isDevelopment) {
-          console.info('Continuing in development mode despite storage error')
           return
         }
         // In production, clear potentially corrupted storage and continue
@@ -210,7 +194,7 @@ export const useAuthStore = defineStore('auth', () => {
           authService.clearTokens()
           authService.clearUser()
         } catch (clearError) {
-          console.error('Failed to clear corrupted storage:', clearError)
+          // Silent error handling
         }
         return
       }
@@ -224,36 +208,25 @@ export const useAuthStore = defineStore('auth', () => {
           const isValid = await authService.ensureValidToken()
 
           if (isValid) {
-            console.info('Auth initialization successful, token is valid')
             // Optionally try to fetch fresh profile data in the background
             // Don't await this to speed up app initialization
             fetchProfile().catch((profileError) => {
-              console.debug('Background profile fetch failed:', profileError)
               // Silently continue with cached user data
             })
           } else {
             // Token is definitively invalid (not just a network error)
-            console.warn('Token validation failed definitively, clearing auth state')
             await logout()
           }
         } catch (networkError) {
           // Network error during validation - don't logout
           // The user can continue with cached data
-          console.info('Network error during auth init, continuing with cached data:', networkError)
-
           // In production, we're more lenient with network errors
           // Users can still use the app with cached data if they just lost connection temporarily
-          console.info('Continuing with cached auth data despite network error')
         }
-      } else {
-        console.debug('No valid auth data found during initialization')
       }
     } catch (err) {
-      console.error('Critical error during auth initialization:', err)
-
       // Don't logout on unexpected errors - this could be a transient issue
       // Let the user continue with cached data if available
-      console.warn('Not clearing auth state due to initialization error - allowing cached data')
     }
   }
 

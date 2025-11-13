@@ -38,9 +38,6 @@ const props = defineProps<Props>()
 const layoutComponent = computed(() => {
   const eventType = props.eventType?.toLowerCase() || 'default'
 
-  // Debug: Log the event type being detected
-  console.log('[HostInfo] Event type detected:', props.eventType, '→ normalized:', eventType)
-
   // Map event types to layout components
   const layoutMap: Record<string, any> = {
     // Wedding events
@@ -62,7 +59,6 @@ const layoutComponent = computed(() => {
   }
 
   const selectedLayout = layoutMap[eventType] || HostInfoDefault
-  console.log('[HostInfo] Selected layout:', selectedLayout.name || selectedLayout)
 
   // Return specific layout or default fallback
   return selectedLayout
