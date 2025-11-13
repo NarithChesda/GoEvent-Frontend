@@ -27,8 +27,7 @@
 
     <!-- Time Period Tabs -->
     <div
-      v-if="timePeriodGroups.length > 1"
-      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 laptop-sm:mb-4 laptop-md:mb-4 desktop:mb-4 flex-wrap"
+      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-4 laptop-sm:mb-4 laptop-md:mb-4 desktop:mb-4 flex-wrap"
     >
       <button
         v-for="(timePeriod, index) in timePeriodGroups"
@@ -518,7 +517,6 @@ const getGenderTabStyle = (index: number) => {
 
   /* Time period tabs - scaled to 77.625% from mobile */
   .time-period-tabs {
-    margin-bottom: 1.164375rem !important; /* 1.5rem * 0.77625 - increased by 15% */
     gap: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
   }
 
@@ -576,7 +574,6 @@ const getGenderTabStyle = (index: number) => {
 
   /* Time period tabs - scaled to 86.25% from mobile */
   .time-period-tabs {
-    margin-bottom: 1.29375rem !important; /* 1.5rem * 0.8625 - increased by 15% */
     gap: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
   }
 

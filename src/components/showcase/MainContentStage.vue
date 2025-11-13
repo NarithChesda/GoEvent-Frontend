@@ -71,7 +71,7 @@
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
                     :hosts="hosts"
-                    :logo-url="event.logo_one ? getMediaUrl(event.logo_one) : undefined"
+                    :logo-url="logoUrl"
                     :event-initial="event.title?.charAt(0) || 'E'"
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor"
@@ -867,6 +867,27 @@ const showLiquidGlass = computed(() => {
   console.log('MainContentStage - templateAssets:', props.templateAssets)
   // Show liquid glass by default (true or undefined), hide only when explicitly false
   return value !== false
+})
+
+// Computed property for language-aware logo selection
+const logoUrl = computed(() => {
+  // For Khmer language (kh), use primary logo (logo_one)
+  if (props.currentLanguage === 'kh') {
+    return props.event.logo_one ? props.getMediaUrl(props.event.logo_one) : undefined
+  }
+
+  // For all other languages, use secondary logo (logo_two) with fallback to primary logo
+  if (props.event.logo_two) {
+    return props.getMediaUrl(props.event.logo_two)
+  }
+
+  // Fallback to primary logo if secondary logo doesn't exist
+  if (props.event.logo_one) {
+    return props.getMediaUrl(props.event.logo_one)
+  }
+
+  // No logo available, will show fallback SVG
+  return undefined
 })
 
 // Computed properties for dynamic styling and components
