@@ -81,6 +81,13 @@ const shouldShowFab = computed(() => {
   // Only show if user can edit
   if (!props.canEdit) return false
 
+  // Hide FAB on media tab's video & map (embeds) and social media sub-tabs
+  if (props.activeTab === 'media') {
+    if (props.activeSubTab === 'embeds' || props.activeSubTab === 'social-media') {
+      return false
+    }
+  }
+
   // Show for these tabs (including expenses summary)
   const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
   return validTabs.includes(props.activeTab)

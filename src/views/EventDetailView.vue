@@ -515,6 +515,13 @@ const canDeleteEvent = computed(() => {
 const smartFabVisible = computed(() => {
   if (!event.value || !(event.value.can_edit || false)) return false
 
+  // Hide on media tab's video & map (embeds) and social media sub-tabs
+  if (activeTab.value === 'media') {
+    if (activeSubTab.value === 'embeds' || activeSubTab.value === 'social-media') {
+      return false
+    }
+  }
+
   // Check if we're on a valid tab that shows the smart FAB (including expenses summary)
   const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
   return validTabs.includes(activeTab.value)
