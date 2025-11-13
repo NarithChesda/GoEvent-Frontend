@@ -1,13 +1,13 @@
 <template>
   <div class="dress-code-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Section Header -->
-    <div class="section-header text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+    <div class="section-header text-center mb-6 sm:mb-8 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         :style="{
           color: primaryColor,
           fontFamily: primaryFont || currentFont,
         }"
-        class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize dress-code-header"
+        class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 capitalize dress-code-header"
         :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
         {{ sectionTitle }}
@@ -45,134 +45,135 @@
       </button>
     </div>
 
-    <!-- Gender Cards - Vertical Stack -->
+    <!-- Main Content -->
     <transition name="fade" mode="out-in">
-      <div :key="activeTimePeriod" class="gender-cards-container">
-        <div class="cards-vertical-stack">
-          <div
-            v-for="genderGroup in currentTimePeriodGenders"
-            :key="genderGroup.gender"
-            class="gender-card-wrapper"
-          >
-            <!-- Gender Card -->
-            <div
-              class="gender-card rounded-3xl overflow-hidden backdrop-blur-sm shadow-lg"
-              :style="getGenderCardStyle(genderGroup)"
-            >
-              <!-- Gender Header -->
-              <div class="gender-header py-2 sm:py-2.5 px-6 text-center" :style="getGenderHeaderStyle(genderGroup)">
-                <h3
-                  :style="{
-                    fontFamily: primaryFont || currentFont,
-                  }"
-                  class="text-sm sm:text-base font-regular text-white gender-header-text"
-                  :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-                >
-                  {{ translateGender(genderGroup.gender) }}
-                </h3>
-              </div>
-
-              <!-- Card Content -->
-              <div class="card-body p-6 sm:p-8">
-                <transition name="fade-scale" mode="out-in">
-                  <div :key="genderGroup.activeIndex" class="dress-code-content">
-                    <!-- Image or Color Display -->
-                    <div class="image-wrapper mb-6 flex justify-center">
-                      <div
-                        v-if="getCurrentDressCode(genderGroup).image"
-                        class="image-container w-full aspect-[3/4] max-w-xs rounded-2xl overflow-hidden shadow-md"
-                        :style="{ backgroundColor: `${getCurrentDressCode(genderGroup).color}20` }"
-                      >
-                        <img
-                          :src="getMediaUrl(getCurrentDressCode(genderGroup).image)"
-                          :alt="getCurrentDressCode(genderGroup).dress_code_type_display"
-                          class="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      <!-- Color Display (if no image) -->
-                      <div
-                        v-else
-                        class="color-display w-full aspect-[3/4] max-w-xs rounded-2xl flex items-center justify-center shadow-md"
-                        :style="{ backgroundColor: getCurrentDressCode(genderGroup).color }"
-                      >
-                        <svg
-                          class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="1.5"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-
-                    <!-- Dress Code Info -->
-                    <div
-                      class="dress-code-info text-center"
-                      :class="{ 'mb-6': genderGroup.codes.length > 1 }"
-                    >
-                      <h4
-                        :style="{
-                          color: primaryColor,
-                          fontFamily: primaryFont || currentFont,
-                        }"
-                        class="text-sm sm:text-base font-regular mb-3 dress-code-title"
-                        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-                      >
-                        {{ getCurrentDressCode(genderGroup).title || translateDressCodeType(getCurrentDressCode(genderGroup).dress_code_type) }}
-                      </h4>
-
-                      <p
-                        v-if="getCurrentDressCode(genderGroup).description"
-                        :style="{
-                          color: accentColor,
-                          fontFamily: secondaryFont || currentFont,
-                        }"
-                        class="text-xs sm:text-sm opacity-80 leading-relaxed dress-code-description"
-                        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-                      >
-                        {{ getCurrentDressCode(genderGroup).description }}
-                      </p>
-                    </div>
-
-                    <!-- Color Circle Navigation -->
-                    <div v-if="genderGroup.codes.length > 1" class="color-navigation flex justify-center gap-3">
-                      <button
-                        v-for="(code, index) in genderGroup.codes"
-                        :key="code.id"
-                        @click="selectDressCode(genderGroup, index)"
-                        :class="[
-                          'color-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300',
-                          'border-2 shadow-md hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2',
-                          genderGroup.activeIndex === index ? 'ring-2 ring-offset-2 scale-110' : 'opacity-60 hover:opacity-100',
-                        ]"
-                        :style="{
-                          backgroundColor: code.color,
-                          borderColor: genderGroup.activeIndex === index ? code.color : 'transparent',
-                          ringColor: code.color,
-                        }"
-                        :aria-label="`View ${code.dress_code_type_display}`"
-                      >
-                        <!-- Active indicator -->
-                        <span
-                          v-if="genderGroup.activeIndex === index"
-                          class="inline-block w-3 h-3 bg-white rounded-full"
-                        ></span>
-                      </button>
-                    </div>
+      <div :key="activeTimePeriod" class="dress-code-content w-full">
+        <!-- Row 1: Image and Gender Tabs -->
+        <div class="flex flex-col sm:flex-row mb-1">
+          <!-- Left Side: Image -->
+          <div class="image-section flex-shrink-0 w-full sm:w-1/2 p-1 sm:p-2">
+            <transition name="fade-scale" mode="out-in">
+              <div :key="activeGender" class="dress-code-image">
+                <div class="image-wrapper flex justify-center">
+                  <div
+                    v-if="getCurrentDressCodeForActiveGender().image"
+                    class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
+                    :style="{ backgroundColor: `${getCurrentDressCodeForActiveGender().color}20` }"
+                  >
+                    <img
+                      :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"
+                      :alt="getCurrentDressCodeForActiveGender().dress_code_type_display"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
-                </transition>
+
+                  <!-- Color Display (if no image) -->
+                  <div
+                    v-else
+                    class="color-display w-full aspect-square max-w-xs rounded-2xl flex items-center justify-center shadow-md"
+                    :style="{ backgroundColor: getCurrentDressCodeForActiveGender().color }"
+                  >
+                    <svg
+                      class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
+            </transition>
+          </div>
+
+          <!-- Right Side: Gender Tabs -->
+          <div class="gender-tabs-section flex-1 p-1 sm:p-2 flex items-center justify-center mt-2 sm:mt-0">
+            <div class="gender-tabs flex sm:flex-col gap-2 flex-nowrap justify-center">
+              <button
+                v-for="(genderGroup, index) in currentTimePeriodGenders"
+                :key="genderGroup.gender"
+                @click="activeGender = index"
+                :class="[
+                  'gender-tab px-5 py-2.5 rounded-full transition-all duration-300',
+                  'text-sm sm:text-base font-semibold text-center flex-shrink-0 sm:w-auto',
+                  activeGender === index ? 'tab-active' : 'tab-inactive',
+                ]"
+                :style="getGenderTabStyle(index)"
+              >
+                {{ translateGender(genderGroup.gender) }}
+              </button>
             </div>
           </div>
         </div>
+
+        <!-- Row 2: Title and Description -->
+        <transition name="fade-scale" mode="out-in">
+          <div :key="`${activeGender}-${getActiveGenderGroup().activeIndex}`" class="dress-code-info-section px-4 sm:px-6 py-1 text-center">
+            <h4
+              :style="{
+                color: primaryColor,
+                fontFamily: primaryFont || currentFont,
+              }"
+              class="text-lg sm:text-xl font-regular mb-1 dress-code-title"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+            >
+              {{ getCurrentDressCodeForActiveGender().title || translateDressCodeType(getCurrentDressCodeForActiveGender().dress_code_type) }}
+            </h4>
+
+            <p
+              v-if="getCurrentDressCodeForActiveGender().description"
+              :style="{
+                color: accentColor,
+                fontFamily: secondaryFont || currentFont,
+              }"
+              class="text-sm sm:text-base opacity-80 leading-relaxed dress-code-description mb-0"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+            >
+              {{ getCurrentDressCodeForActiveGender().description }}
+            </p>
+          </div>
+        </transition>
+
+        <!-- Row 3: Color Circle Navigation -->
+        <transition name="fade-scale" mode="out-in">
+          <div
+            v-if="getActiveGenderGroup().codes.length > 0"
+            :key="`colors-${activeGender}`"
+            class="color-navigation-section px-4 sm:px-6 py-1 pb-2 flex justify-center"
+          >
+            <div class="color-navigation flex gap-3">
+              <button
+                v-for="(code, index) in getActiveGenderGroup().codes"
+                :key="code.id"
+                @click="selectDressCode(getActiveGenderGroup(), index)"
+                :class="[
+                  'color-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300',
+                  'border-2 shadow-md hover:scale-110 focus:outline-none',
+                  getActiveGenderGroup().activeIndex === index ? 'scale-110' : 'opacity-60 hover:opacity-100',
+                ]"
+                :style="{
+                  backgroundColor: code.color,
+                  borderColor: getActiveGenderGroup().activeIndex === index ? primaryColor : 'transparent',
+                }"
+                :aria-label="`View ${code.dress_code_type_display}`"
+              >
+                <!-- Active indicator -->
+                <span
+                  v-if="getActiveGenderGroup().activeIndex === index"
+                  class="inline-block w-3 h-3 rounded-full"
+                  :style="{ backgroundColor: primaryColor }"
+                ></span>
+              </button>
+            </div>
+          </div>
+        </transition>
       </div>
     </transition>
   </div>
@@ -213,6 +214,7 @@ interface TimePeriodGroup {
 }
 
 const activeTimePeriod = ref(0)
+const activeGender = ref(0)
 
 // Get section title from event texts or use default
 const sectionTitle = computed(() => {
@@ -321,8 +323,22 @@ const currentTimePeriodGenders = computed(() => {
   return timePeriodGroups.value[activeTimePeriod.value]?.genderGroups || []
 })
 
-// Get current active dress code for a gender group
-const getCurrentDressCode = (genderGroup: GenderGroup): DressCode => {
+// Get active gender group
+const getActiveGenderGroup = (): GenderGroup => {
+  if (currentTimePeriodGenders.value.length === 0) {
+    return {
+      gender: 'all',
+      gender_display: 'All',
+      codes: [],
+      activeIndex: 0,
+    }
+  }
+  return currentTimePeriodGenders.value[activeGender.value] || currentTimePeriodGenders.value[0]
+}
+
+// Get current dress code for active gender
+const getCurrentDressCodeForActiveGender = (): DressCode => {
+  const genderGroup = getActiveGenderGroup()
   return genderGroup.codes[genderGroup.activeIndex] || genderGroup.codes[0]
 }
 
@@ -343,18 +359,14 @@ const getTimePeriodTabStyle = (index: number) => {
   }
 }
 
-const getGenderCardStyle = (genderGroup: GenderGroup) => {
-  const currentCode = getCurrentDressCode(genderGroup)
+const getGenderTabStyle = (index: number) => {
+  const isActive = activeGender.value === index
   return {
-    backgroundColor: `${currentCode.color}05`,
-    border: `2px solid ${currentCode.color}20`,
-  }
-}
-
-const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
-  const currentCode = getCurrentDressCode(genderGroup)
-  return {
-    backgroundColor: currentCode.color,
+    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
+    color: isActive ? '#ffffff' : props.primaryColor,
+    fontFamily: props.primaryFont || props.currentFont,
+    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
   }
 }
 </script>
@@ -379,6 +391,15 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
   -webkit-hyphens: none !important;
 }
 
+/* Reduce extra spacing for Khmer in gender header */
+.gender-header .khmer-text-fix {
+  line-height: 1.4 !important;
+  padding-top: 0.1em !important;
+  padding-bottom: 0.1em !important;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .time-tab {
   cursor: pointer;
   border: none;
@@ -395,40 +416,33 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
   outline-offset: 2px;
 }
 
-/* Vertical Stack Layout - Same for Mobile and Desktop */
-.gender-cards-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.cards-vertical-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  width: 100%;
-  max-width: 500px;
-}
-
-.gender-card-wrapper {
-  width: 100%;
-}
-
-.gender-card {
+/* Main Content Layout */
+.dress-code-content {
   transition: all 0.4s ease;
 }
 
-.gender-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+/* Gender Tabs */
+.gender-tab {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+}
+
+.gender-tab:hover {
+  transform: scale(1.05) !important;
+}
+
+.gender-tab:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .image-container img {
   transition: transform 0.4s ease;
 }
 
-.gender-card:hover .image-container img {
+.image-container:hover img {
   transform: scale(1.05);
 }
 
@@ -436,7 +450,7 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
   transition: transform 0.4s ease;
 }
 
-.gender-card:hover .color-display {
+.color-display:hover {
   transform: scale(1.02);
 }
 
@@ -613,25 +627,24 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
     padding: 0.625rem 1.25rem;
   }
 
-  .cards-vertical-stack {
-    gap: 1.5rem;
-    max-width: 400px;
+  .gender-tabs {
+    flex-direction: row !important;
   }
 
-  .gender-header {
-    padding: 1rem 1.5rem;
+  .gender-tab {
+    font-size: 0.875rem;
   }
 
-  .card-body {
-    padding: 1.5rem;
+  .dress-code-content {
+    width: 100%;
   }
 
-  .image-wrapper {
-    margin-bottom: 1.5rem;
+  .image-section {
+    width: 100%;
   }
 
-  .dress-code-info.mb-6 {
-    margin-bottom: 1.5rem;
+  .gender-tabs-section {
+    width: 100%;
   }
 
   .color-navigation {
@@ -644,18 +657,11 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
   }
 }
 
-/* Desktop - slightly larger max-width */
-@media (min-width: 641px) {
-  .cards-vertical-stack {
-    gap: 2.5rem;
-    max-width: 550px;
-  }
-}
-
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .gender-card,
+  .dress-code-content,
   .time-tab,
+  .gender-tab,
   .image-container img,
   .color-display,
   .color-circle,
@@ -666,16 +672,13 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
     transition: none;
   }
 
-  .gender-card:hover {
-    transform: none;
-  }
-
-  .time-tab:hover {
+  .time-tab:hover,
+  .gender-tab:hover {
     transform: none !important;
   }
 
-  .gender-card:hover .image-container img,
-  .gender-card:hover .color-display {
+  .image-container:hover img,
+  .color-display:hover {
     transform: none;
   }
 }
