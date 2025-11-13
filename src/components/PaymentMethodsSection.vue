@@ -449,7 +449,7 @@
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Only event administrators can unlock to make changes</span>
+                          <span>Only Platform administrators can unlock to make changes</span>
                         </li>
                       </ul>
                     </div>
