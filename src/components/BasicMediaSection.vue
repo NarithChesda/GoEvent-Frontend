@@ -29,13 +29,55 @@
         :show-dropdown="dropdownManager.isOpen('logoOne')"
         accept-types="image/*"
         content-type="image"
-        image-class="h-32 object-contain bg-slate-50 p-4"
+        image-class="h-[100px] object-contain bg-slate-50 p-4"
         empty-state-text="No logo uploaded"
+        empty-state-padding="p-6"
         @upload="(file) => handleUpload('logo_one', file, 'image')"
         @remove="confirmRemove('logo_one', 'Delete Primary Logo', 'Primary Logo')"
         @toggle-dropdown="dropdownManager.toggleDropdown('logoOne')"
         @close-dropdown="dropdownManager.closeAllDropdowns()"
-      />
+      >
+        <template #content="{ mediaUrl }">
+          <div class="relative group">
+            <img
+              :src="mediaUrl"
+              :alt="eventData?.title + ' primary logo'"
+              class="w-full h-48 object-contain bg-slate-50 rounded-2xl p-4"
+            />
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
+              <p class="text-white font-medium">Primary Logo</p>
+            </div>
+          </div>
+        </template>
+        <template #empty-state>
+          <div class="flex flex-col items-center justify-center min-h-[192px]">
+            <div
+              :class="[
+                'w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300',
+                canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+              ]"
+            >
+              <Plus
+                v-if="canEdit"
+                :class="[
+                  'w-6 h-6 transition-colors',
+                  'text-slate-400 group-hover:text-emerald-600'
+                ]"
+              />
+              <ImageIcon v-else class="w-6 h-6 text-slate-400" />
+            </div>
+            <p
+              :class="[
+                'text-sm font-semibold transition-colors',
+                canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+              ]"
+            >
+              No logo uploaded
+            </p>
+            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+          </div>
+        </template>
+      </MediaUploadCard>
 
       <!-- Secondary Logo -->
       <MediaUploadCard
@@ -47,13 +89,55 @@
         :show-dropdown="dropdownManager.isOpen('logoTwo')"
         accept-types="image/*"
         content-type="image"
-        image-class="h-32 object-contain bg-slate-50 p-4"
+        image-class="h-[100px] object-contain bg-slate-50 p-4"
         empty-state-text="No logo uploaded"
+        empty-state-padding="p-6"
         @upload="(file) => handleUpload('logo_two', file, 'image')"
         @remove="confirmRemove('logo_two', 'Delete Secondary Logo', 'Secondary Logo')"
         @toggle-dropdown="dropdownManager.toggleDropdown('logoTwo')"
         @close-dropdown="dropdownManager.closeAllDropdowns()"
-      />
+      >
+        <template #content="{ mediaUrl }">
+          <div class="relative group">
+            <img
+              :src="mediaUrl"
+              :alt="eventData?.title + ' secondary logo'"
+              class="w-full h-48 object-contain bg-slate-50 rounded-2xl p-4"
+            />
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
+              <p class="text-white font-medium">Secondary Logo</p>
+            </div>
+          </div>
+        </template>
+        <template #empty-state>
+          <div class="flex flex-col items-center justify-center min-h-[192px]">
+            <div
+              :class="[
+                'w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300',
+                canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+              ]"
+            >
+              <Plus
+                v-if="canEdit"
+                :class="[
+                  'w-6 h-6 transition-colors',
+                  'text-slate-400 group-hover:text-emerald-600'
+                ]"
+              />
+              <ImageIcon v-else class="w-6 h-6 text-slate-400" />
+            </div>
+            <p
+              :class="[
+                'text-sm font-semibold transition-colors',
+                canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+              ]"
+            >
+              No logo uploaded
+            </p>
+            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+          </div>
+        </template>
+      </MediaUploadCard>
     </div>
 
     <!-- Event Video (only shown for Standard template when active) -->
@@ -115,7 +199,7 @@
 
 <script setup lang="ts">
 import { ref, toRef, watch, computed, reactive } from 'vue'
-import { AlertCircle } from 'lucide-vue-next'
+import { AlertCircle, Plus, ImageIcon } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
 import { useDropdownManager } from '@/composables/useDropdownManager'

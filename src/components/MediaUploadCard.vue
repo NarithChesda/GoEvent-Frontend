@@ -98,7 +98,8 @@
       v-else
       @click="canEdit ? triggerFileInput() : null"
       :class="[
-        'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+        'border-2 border-dashed rounded-2xl transition-all duration-300 text-center',
+        emptyStatePadding,
         canEdit
           ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
           : 'border-slate-300 bg-slate-50'
@@ -159,6 +160,7 @@ interface Props {
   emptyStateText: string
   emptyStateSubtext?: string
   imageClass?: string
+  emptyStatePadding?: string
 }
 
 interface Emits {
@@ -171,7 +173,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   isUploading: false,
   showDropdown: false,
-  imageClass: 'h-48 object-cover'
+  imageClass: 'h-48 object-cover',
+  emptyStatePadding: 'p-8'
 })
 
 const emit = defineEmits<Emits>()
