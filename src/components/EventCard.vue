@@ -39,8 +39,8 @@
       </div>
     </div>
 
-    <!-- Banner Image -->
-    <div class="relative h-32 sm:h-40 md:h-44 overflow-hidden">
+    <!-- Banner Image - 1.9:1 aspect ratio (1200x630) -->
+    <div class="relative w-full aspect-[1.9/1] overflow-hidden">
       <img
         v-if="event.banner_image"
         :src="getBannerImageUrl(event.banner_image)"
@@ -102,8 +102,25 @@
         ></div>
       </div>
 
-      <!-- Status Badge -->
-      <div class="absolute bottom-3 left-3">
+      <!-- Category Badge (Top Right) -->
+      <div v-if="event.category_name" class="absolute top-3 right-3">
+        <span
+          class="inline-flex items-center text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg backdrop-blur-sm shadow-md"
+          :style="{
+            backgroundColor: `${event.category_color || '#3B82F6'}E6`,
+            color: '#FFFFFF',
+          }"
+        >
+          <div
+            class="w-1.5 h-1.5 rounded-full mr-1 sm:mr-1.5 bg-white"
+          ></div>
+          {{ event.category_name }}
+        </span>
+      </div>
+
+      <!-- Badges (Bottom Right) -->
+      <div class="absolute bottom-3 right-3 flex space-x-1 sm:space-x-1.5">
+        <!-- Status Badge -->
         <span
           v-if="event.is_ongoing"
           class="inline-flex items-center bg-green-600 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md"
@@ -123,10 +140,8 @@
         >
           Past
         </span>
-      </div>
 
-      <!-- Type Badges -->
-      <div class="absolute bottom-3 right-3 flex space-x-1 sm:space-x-1.5">
+        <!-- Type Badges -->
         <span
           v-if="event.privacy === 'private'"
           class="inline-flex items-center bg-white/90 backdrop-blur-sm text-purple-700 text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border border-purple-200/50 shadow-sm"
@@ -146,23 +161,6 @@
 
     <!-- Content -->
     <div class="p-4 sm:p-5 md:p-6 flex flex-col flex-1">
-      <!-- Category -->
-      <div v-if="event.category_name" class="mb-3 sm:mb-4">
-        <span
-          class="inline-flex items-center text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg"
-          :style="{
-            backgroundColor: `${event.category_color || '#3B82F6'}15`,
-            color: event.category_color || '#3B82F6',
-          }"
-        >
-          <div
-            class="w-1.5 h-1.5 rounded-full mr-1 sm:mr-1.5"
-            :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-          ></div>
-          {{ event.category_name }}
-        </span>
-      </div>
-
       <!-- Title -->
       <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-2.5 line-clamp-2 leading-tight">
         {{ event.title }}
