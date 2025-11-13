@@ -434,6 +434,15 @@ export function useEventShowcase() {
       .sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
+  const dressCodes = computed(() => {
+    const codes = event.value?.dress_codes || []
+    if (codes.length === 0) return []
+
+    return codes
+      .filter((code) => code.is_active)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+  })
+
   const availableLanguages = computed(() => event.value?.available_languages || [])
 
   // Extract all colors once and cache the result
@@ -1001,6 +1010,7 @@ export function useEventShowcase() {
     agendaItems,
     eventPhotos,
     paymentMethods,
+    dressCodes,
     primaryColor,
     secondaryColor,
     accentColor,

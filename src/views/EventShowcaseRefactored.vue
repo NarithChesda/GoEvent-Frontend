@@ -53,6 +53,7 @@
             :agenda-items="agendaItems"
             :event-photos="eventPhotos"
             :payment-methods="paymentMethods"
+            :dress-codes="dressCodes"
             :primary-color="primaryColor"
             :secondary-color="secondaryColor"
             :accent-color="accentColor"
@@ -153,6 +154,7 @@ const {
   agendaItems,
   eventPhotos,
   paymentMethods,
+  dressCodes,
   primaryColor,
   secondaryColor,
   accentColor,

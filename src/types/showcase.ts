@@ -118,6 +118,25 @@ export interface EventPaymentMethod {
   payment_method_display?: string
 }
 
+export interface DressCode {
+  id: number
+  event: string
+  dress_code_type: string
+  dress_code_type_display: string
+  time_period: string
+  time_period_display: string
+  gender: string
+  gender_display: string
+  title: string
+  description: string
+  color: string
+  image: string | null
+  order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface UserDetails {
   id: number
   email: string
@@ -179,6 +198,7 @@ export interface EventData {
   event_photos?: EventPhoto[]
   photos?: EventPhoto[]
   payment_methods?: EventPaymentMethod[]
+  dress_codes?: DressCode[]
   available_languages?: Array<{ id: number; language: string; language_display: string }>
 }
 

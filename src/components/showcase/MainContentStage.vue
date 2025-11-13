@@ -142,6 +142,31 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <!-- Dress Code Section -->
+                <div
+                  v-if="dressCodes.length > 0"
+                  id="dress-code-section"
+                  ref="dressCodeSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
+                  <DressCodeSection
+                    :dress-codes="dressCodes"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :background-color="backgroundColor"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :get-media-url="getMediaUrl"
+                  />
+
+                  <!-- Dress Code Section Divider -->
+                  <WeddingSectionDivider :primary-color="primaryColor" />
+                </div>
+
                 <!-- Agenda Section -->
                 <div
                   v-if="agendaItems.length > 0"
@@ -772,7 +797,7 @@ import type {
   AgendaItem,
   EventPhoto,
 } from '../../composables/useEventShowcase'
-import type { EventComment } from '../../types/showcase'
+import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import type { SupportedLanguage } from '../../utils/translations'
 import { useRevealAnimations, ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
@@ -784,6 +809,7 @@ import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
+import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
 import CommentSection from './CommentSection.vue'
@@ -808,6 +834,7 @@ interface Props {
   agendaItems: AgendaItem[]
   eventPhotos: EventPhoto[]
   paymentMethods: EventPaymentMethod[]
+  dressCodes: DressCode[]
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -922,6 +949,7 @@ const sectionRefs = {
   hostInfo: ref<HTMLElement>(),
   eventInfo: ref<HTMLElement>(),
   rsvpSection: ref<HTMLElement>(),
+  dressCodeSection: ref<HTMLElement>(),
   agendaSection: ref<HTMLElement>(),
   videoSection: ref<HTMLElement>(),
   gallerySection: ref<HTMLElement>(),
@@ -936,6 +964,7 @@ const {
   hostInfo: hostInfoRef,
   eventInfo: eventInfoRef,
   rsvpSection: rsvpSectionRef,
+  dressCodeSection: dressCodeSectionRef,
   agendaSection: agendaSectionRef,
   videoSection: videoSectionRef,
   gallerySection: gallerySectionRef,
@@ -954,6 +983,7 @@ const initializeRevealAnimations = () => {
     [hostInfoRef, 'host-info'],
     [eventInfoRef, 'event-info'],
     [rsvpSectionRef, 'rsvp-section'],
+    [dressCodeSectionRef, 'dress-code-section'],
     [agendaSectionRef, 'agenda-section'],
     [videoSectionRef, 'video-section'],
     [gallerySectionRef, 'gallery-section'],
