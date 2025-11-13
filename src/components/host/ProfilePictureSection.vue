@@ -44,6 +44,15 @@
         <button
           v-if="profilePicturePreview || (profileImage && profileImage !== '')"
           type="button"
+          @click="$emit('crop-image')"
+          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          <Crop class="w-4 h-4" />
+          <span>Crop</span>
+        </button>
+        <button
+          v-if="profilePicturePreview || (profileImage && profileImage !== '')"
+          type="button"
           @click="$emit('remove-image')"
           class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
         >
@@ -57,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { User, Upload } from 'lucide-vue-next'
+import { User, Upload, Crop } from 'lucide-vue-next'
 
 interface Props {
   profilePicturePreview: string | null
@@ -69,6 +78,7 @@ interface Props {
 interface Emits {
   'trigger-upload': []
   'select-image': [event: Event]
+  'crop-image': []
   'remove-image': []
   'update:profilePictureInput': [el: HTMLInputElement | null]
 }

@@ -56,6 +56,7 @@
                 :profile-picture-input="profilePictureInput"
                 @trigger-upload="triggerProfilePictureUpload"
                 @select-image="handleProfilePictureSelect"
+                @crop-image="handleCropExistingImage"
                 @remove-image="removeProfilePicture(toRef(formData, 'profile_image'))"
                 @update:profile-picture-input="profilePictureInput = $event"
               />
@@ -162,6 +163,19 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Image Cropper Modal -->
+    <ImageCropperModal
+      v-if="showCropper"
+      :show="showCropper"
+      :image-source="cropperImage || ''"
+      title="Crop Avatar"
+      :aspect-ratio="1"
+      help-text="Adjust the crop area to frame your avatar image"
+      @close="closeCropper"
+      @apply="handleCropApply"
+      @update:cropper-ref="setCropperRef"
+    />
   </Teleport>
 </template>
 
@@ -169,6 +183,7 @@
 import { ref, onMounted, toRef } from 'vue'
 import { X, UserPen, UserPlus, AlertCircle } from 'lucide-vue-next'
 import type { EventHost, HostTranslation } from '@/services/api'
+import { apiService } from '@/services/api'
 
 // Composables
 import { useHostForm } from '@/composables/useHostForm'
@@ -180,6 +195,7 @@ import ProfilePictureSection from './host/ProfilePictureSection.vue'
 import LanguageTabs from './host/LanguageTabs.vue'
 import HostFormFields from './host/HostFormFields.vue'
 import ContactSection from './host/ContactSection.vue'
+import ImageCropperModal from './common/ImageCropperModal.vue'
 
 interface Props {
   eventId: string
@@ -236,17 +252,46 @@ const {
   profilePictureUploading,
   selectedProfileImageFile,
   imageRemoved,
+  showCropper,
+  cropperImage,
+  closeCropper,
+  setCropperRef,
   triggerProfilePictureUpload,
   handleProfilePictureSelect,
   removeProfilePicture,
-} = useProfilePictureUpload(props.host?.profile_image || undefined)
+  handleCropApply,
+  validateFileSize,
+  openCropperWithExistingImage,
+} = useProfilePictureUpload(props.host?.profile_image || undefined, true) // Enable cropping
 
 // Local UI state
 const bioOpen = ref(false)
 const contactOpen = ref(false)
 
+// Handle cropping existing image
+const handleCropExistingImage = () => {
+  // Determine which image to crop: preview (if new image uploaded) or existing profile_image
+  let imageUrl = profilePicturePreview.value
+
+  // If no preview, use the existing profile_image with full URL
+  if (!imageUrl && formData.profile_image) {
+    imageUrl = apiService.getProfilePictureUrl(formData.profile_image)
+  }
+
+  if (imageUrl && openCropperWithExistingImage) {
+    openCropperWithExistingImage(imageUrl)
+  }
+}
+
 // Unified submit handler
 const handleSubmit = async () => {
+  // Validate file size before submission
+  const fileSizeValidation = validateFileSize()
+  if (!fileSizeValidation.valid) {
+    generalError.value = fileSizeValidation.error || 'Image file size is too large'
+    return
+  }
+
   const result = isEditMode.value
     ? await updateHost(selectedProfileImageFile.value, imageRemoved.value)
     : await createHost(selectedProfileImageFile.value)

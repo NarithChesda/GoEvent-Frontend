@@ -7,9 +7,9 @@
     @dragenter="handleDragEnter"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
-    @touchstart="handleTouchStart"
+    @touchstart.passive="handleTouchStart"
     @touchmove="handleTouchMove"
-    @touchend="handleTouchEnd"
+    @touchend.passive="handleTouchEnd"
     class="host-card group relative bg-white/80 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-200"
     :class="[
       isDragging ? 'opacity-75 transform rotate-1 scale-[1.01] dragging' : '',
