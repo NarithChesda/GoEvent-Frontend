@@ -111,6 +111,7 @@ export const rsvpTranslations: Record<
     floating_menu_location: string
     floating_menu_video: string
     floating_menu_gallery: string
+    floating_menu_dress_code: string
     floating_menu_gift: string
     floating_menu_comment: string
     floating_menu_logout: string
@@ -123,6 +124,40 @@ export const rsvpTranslations: Record<
     countdown_header: string
     countdown_day: string
     countdown_hour: string
+
+    // Dress code section
+    dress_code_header: string
+    dress_code_description: string
+
+    // Dress code types
+    dress_code_white_tie: string
+    dress_code_black_tie: string
+    dress_code_black_tie_optional: string
+    dress_code_formal: string
+    dress_code_cocktail: string
+    dress_code_semi_formal: string
+    dress_code_business_formal: string
+    dress_code_business_casual: string
+    dress_code_smart_casual: string
+    dress_code_casual: string
+    dress_code_beach_formal: string
+    dress_code_beach_casual: string
+    dress_code_festive: string
+    dress_code_traditional: string
+    dress_code_themed: string
+    dress_code_custom: string
+
+    // Time periods
+    time_period_all_day: string
+    time_period_morning: string
+    time_period_afternoon: string
+    time_period_evening: string
+    time_period_night: string
+
+    // Gender
+    gender_all: string
+    gender_male: string
+    gender_female: string
   }
 > = {
   en: {
@@ -232,6 +267,7 @@ export const rsvpTranslations: Record<
     floating_menu_location: 'Location',
     floating_menu_video: 'Video',
     floating_menu_gallery: 'Gallery',
+    floating_menu_dress_code: 'Dress Code',
     floating_menu_gift: 'Gift',
     floating_menu_comment: 'Comment',
     floating_menu_logout: 'Logout',
@@ -244,6 +280,40 @@ export const rsvpTranslations: Record<
     countdown_header: 'Countdown',
     countdown_day: 'Day',
     countdown_hour: 'Hour',
+
+    // Dress code section
+    dress_code_header: 'Dress Code Guide',
+    dress_code_description: 'Please dress according to the guidelines below',
+
+    // Dress code types
+    dress_code_white_tie: 'White Tie',
+    dress_code_black_tie: 'Black Tie',
+    dress_code_black_tie_optional: 'Black Tie Optional',
+    dress_code_formal: 'Formal / Evening Wear',
+    dress_code_cocktail: 'Cocktail Attire',
+    dress_code_semi_formal: 'Semi-Formal',
+    dress_code_business_formal: 'Business Formal',
+    dress_code_business_casual: 'Business Casual',
+    dress_code_smart_casual: 'Smart Casual',
+    dress_code_casual: 'Casual',
+    dress_code_beach_formal: 'Beach Formal',
+    dress_code_beach_casual: 'Beach Casual',
+    dress_code_festive: 'Festive Attire',
+    dress_code_traditional: 'Traditional Attire',
+    dress_code_themed: 'Themed / Costume',
+    dress_code_custom: 'Custom',
+
+    // Time periods
+    time_period_all_day: 'All Day',
+    time_period_morning: 'Morning',
+    time_period_afternoon: 'Afternoon',
+    time_period_evening: 'Evening',
+    time_period_night: 'Night',
+
+    // Gender
+    gender_all: 'All Genders',
+    gender_male: 'Male',
+    gender_female: 'Female',
   },
 
   kh: {
@@ -353,6 +423,7 @@ export const rsvpTranslations: Record<
     floating_menu_location: 'ទីតាំង',
     floating_menu_video: 'វីដេអូ',
     floating_menu_gallery: 'រូបថត',
+    floating_menu_dress_code: 'ការស្លៀកពាក់',
     floating_menu_gift: 'ចំណងដៃ',
     floating_menu_comment: 'ជូនពរ',
     floating_menu_logout: 'ចាកចេញ',
@@ -365,6 +436,40 @@ export const rsvpTranslations: Record<
     countdown_header: 'រាប់ថយក្រោយ',
     countdown_day: 'ថ្ងៃ',
     countdown_hour: 'ម៉ោង',
+
+    // Dress code section
+    dress_code_header: 'ការស្លៀកពាក់',
+    dress_code_description: 'សូមស្លៀកពាក់តាមគោលការណ៍ខាងក្រោម',
+
+    // Dress code types
+    dress_code_white_tie: 'ពាក់ក្រវ៉ាត់ពណ៌ស',
+    dress_code_black_tie: 'ពាក់ក្រវ៉ាត់ពណ៌ខ្មៅ',
+    dress_code_black_tie_optional: 'ពាក់ក្រវ៉ាត់ខ្មៅ (ជម្រើស)',
+    dress_code_formal: 'ផ្លូវការ / សម្លៀកបំពាក់ពេលល្ងាច',
+    dress_code_cocktail: 'សម្លៀកបំពាក់ស្រាក',
+    dress_code_semi_formal: 'ពាក់កណ្តាលផ្លូវការ',
+    dress_code_business_formal: 'ពាក់ផ្លូវការអាជីវកម្ម',
+    dress_code_business_casual: 'ពាក់សាមញ្ញអាជីវកម្ម',
+    dress_code_smart_casual: 'ពាក់សាមញ្ញស្អាត',
+    dress_code_casual: 'ពាក់សាមញ្ញ',
+    dress_code_beach_formal: 'ពាក់ផ្លូវការនៅឆ្នេរ',
+    dress_code_beach_casual: 'ពាក់សាមញ្ញនៅឆ្នេរ',
+    dress_code_festive: 'សម្លៀកបំពាក់បុណ្យ',
+    dress_code_traditional: 'សម្លៀកបំពាក់ប្រពៃណី',
+    dress_code_themed: 'សម្លៀកបំពាក់តាមប្រធានបទ',
+    dress_code_custom: 'ផ្សេងៗ',
+
+    // Time periods
+    time_period_all_day: 'ពេញមួយថ្ងៃ',
+    time_period_morning: 'ពេលព្រឹក',
+    time_period_afternoon: 'ពេលរសៀល',
+    time_period_evening: 'ពេលល្ងាច',
+    time_period_night: 'ពេលយប់',
+
+    // Gender
+    gender_all: 'ភេទទាំងអស់',
+    gender_male: 'ប្រុស',
+    gender_female: 'ស្រី',
   },
 
   'zh-cn': {
@@ -474,6 +579,7 @@ export const rsvpTranslations: Record<
     floating_menu_location: '位置',
     floating_menu_video: '视频',
     floating_menu_gallery: '照片库',
+    floating_menu_dress_code: '着装要求',
     floating_menu_gift: '礼物',
     floating_menu_comment: '评论',
     floating_menu_logout: '退出',
@@ -486,6 +592,40 @@ export const rsvpTranslations: Record<
     countdown_header: '倒计时',
     countdown_day: '天',
     countdown_hour: '小时',
+
+    // Dress code section
+    dress_code_header: '着装要求',
+    dress_code_description: '请按照以下着装要求',
+
+    // Dress code types
+    dress_code_white_tie: '白领结',
+    dress_code_black_tie: '黑领结',
+    dress_code_black_tie_optional: '黑领结 (可选)',
+    dress_code_formal: '正式 / 晚礼服',
+    dress_code_cocktail: '鸡尾酒礼服',
+    dress_code_semi_formal: '半正式',
+    dress_code_business_formal: '正式商务',
+    dress_code_business_casual: '商务休闲',
+    dress_code_smart_casual: '时尚休闲',
+    dress_code_casual: '休闲',
+    dress_code_beach_formal: '海滩正式',
+    dress_code_beach_casual: '海滩休闲',
+    dress_code_festive: '节日礼服',
+    dress_code_traditional: '传统服装',
+    dress_code_themed: '主题装扮',
+    dress_code_custom: '自定义',
+
+    // Time periods
+    time_period_all_day: '全天',
+    time_period_morning: '上午',
+    time_period_afternoon: '下午',
+    time_period_evening: '傍晚',
+    time_period_night: '晚上',
+
+    // Gender
+    gender_all: '所有性别',
+    gender_male: '男性',
+    gender_female: '女性',
   },
 }
 

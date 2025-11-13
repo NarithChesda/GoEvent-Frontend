@@ -1,13 +1,14 @@
 <template>
-  <div class="dress-code-section">
+  <div class="dress-code-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Section Header -->
-    <div class="section-header mb-8 sm:mb-10 text-center">
+    <div class="section-header text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         :style="{
           color: primaryColor,
           fontFamily: primaryFont || currentFont,
         }"
-        class="text-2xl sm:text-3xl laptop-sm:text-3xl laptop-md:text-4xl font-bold mb-2"
+        class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize dress-code-header"
+        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
         {{ sectionTitle }}
       </h2>
@@ -18,6 +19,7 @@
           fontFamily: secondaryFont || currentFont,
         }"
         class="text-sm sm:text-base opacity-80"
+        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
         {{ sectionDescription }}
       </p>
@@ -26,7 +28,7 @@
     <!-- Time Period Tabs -->
     <div
       v-if="timePeriodGroups.length > 1"
-      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-8 sm:mb-10 flex-wrap"
+      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 flex-wrap"
     >
       <button
         v-for="(timePeriod, index) in timePeriodGroups"
@@ -39,7 +41,7 @@
         ]"
         :style="getTimePeriodTabStyle(index)"
       >
-        {{ timePeriod.time_period_display }}
+        {{ translateTimePeriod(timePeriod.time_period) }}
       </button>
     </div>
 
@@ -58,14 +60,15 @@
               :style="getGenderCardStyle(genderGroup)"
             >
               <!-- Gender Header -->
-              <div class="gender-header py-4 sm:py-5 px-6 text-center" :style="getGenderHeaderStyle(genderGroup)">
+              <div class="gender-header py-2 sm:py-2.5 px-6 text-center" :style="getGenderHeaderStyle(genderGroup)">
                 <h3
                   :style="{
                     fontFamily: primaryFont || currentFont,
                   }"
-                  class="text-xl sm:text-2xl font-bold text-white"
+                  class="text-sm sm:text-base font-regular text-white gender-header-text"
+                  :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
                 >
-                  {{ genderGroup.gender_display }}
+                  {{ translateGender(genderGroup.gender) }}
                 </h3>
               </div>
 
@@ -111,15 +114,19 @@
                     </div>
 
                     <!-- Dress Code Info -->
-                    <div class="dress-code-info text-center mb-6">
+                    <div
+                      class="dress-code-info text-center"
+                      :class="{ 'mb-6': genderGroup.codes.length > 1 }"
+                    >
                       <h4
                         :style="{
                           color: primaryColor,
                           fontFamily: primaryFont || currentFont,
                         }"
-                        class="text-lg sm:text-xl font-bold mb-3"
+                        class="text-sm sm:text-base font-regular mb-3 dress-code-title"
+                        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
                       >
-                        {{ getCurrentDressCode(genderGroup).title || getCurrentDressCode(genderGroup).dress_code_type_display }}
+                        {{ getCurrentDressCode(genderGroup).title || translateDressCodeType(getCurrentDressCode(genderGroup).dress_code_type) }}
                       </h4>
 
                       <p
@@ -128,7 +135,8 @@
                           color: accentColor,
                           fontFamily: secondaryFont || currentFont,
                         }"
-                        class="text-sm sm:text-base opacity-80 leading-relaxed"
+                        class="text-xs sm:text-sm opacity-80 leading-relaxed dress-code-description"
+                        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
                       >
                         {{ getCurrentDressCode(genderGroup).description }}
                       </p>
@@ -173,6 +181,7 @@
 <script setup lang="ts">
 import { computed, ref, reactive } from 'vue'
 import type { DressCode } from '../../types/showcase'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface Props {
   dressCodes: DressCode[]
@@ -210,7 +219,7 @@ const sectionTitle = computed(() => {
   const titleText = props.eventTexts?.find(
     (t) => t.text_type === 'dress_code_header' && t.language === props.currentLanguage,
   )
-  return titleText?.content || 'Dress Code Guide'
+  return titleText?.content || translateRSVP('dress_code_header', props.currentLanguage as SupportedLanguage)
 })
 
 // Get section description from event texts
@@ -218,8 +227,56 @@ const sectionDescription = computed(() => {
   const descText = props.eventTexts?.find(
     (t) => t.text_type === 'dress_code_description' && t.language === props.currentLanguage,
   )
-  return descText?.content || ''
+  return descText?.content || translateRSVP('dress_code_description', props.currentLanguage as SupportedLanguage)
 })
+
+// Helper function to translate dress code type
+const translateDressCodeType = (dressCodeType: string): string => {
+  const typeMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    white_tie: 'dress_code_white_tie',
+    black_tie: 'dress_code_black_tie',
+    black_tie_optional: 'dress_code_black_tie_optional',
+    formal: 'dress_code_formal',
+    cocktail: 'dress_code_cocktail',
+    semi_formal: 'dress_code_semi_formal',
+    business_formal: 'dress_code_business_formal',
+    business_casual: 'dress_code_business_casual',
+    smart_casual: 'dress_code_smart_casual',
+    casual: 'dress_code_casual',
+    beach_formal: 'dress_code_beach_formal',
+    beach_casual: 'dress_code_beach_casual',
+    festive: 'dress_code_festive',
+    traditional: 'dress_code_traditional',
+    themed: 'dress_code_themed',
+    custom: 'dress_code_custom',
+  }
+  const key = typeMap[dressCodeType]
+  return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : dressCodeType
+}
+
+// Helper function to translate time period
+const translateTimePeriod = (timePeriod: string): string => {
+  const periodMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    all_day: 'time_period_all_day',
+    morning: 'time_period_morning',
+    afternoon: 'time_period_afternoon',
+    evening: 'time_period_evening',
+    night: 'time_period_night',
+  }
+  const key = periodMap[timePeriod]
+  return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : timePeriod
+}
+
+// Helper function to translate gender
+const translateGender = (gender: string): string => {
+  const genderMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
+    all: 'gender_all',
+    male: 'gender_male',
+    female: 'gender_female',
+  }
+  const key = genderMap[gender]
+  return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : gender
+}
 
 // Group dress codes by time period, then by gender
 const timePeriodGroups = computed<TimePeriodGroup[]>(() => {
@@ -306,6 +363,20 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
 .dress-code-section {
   width: 100%;
   max-width: 100%;
+}
+
+/* Enhanced Khmer font rendering */
+.khmer-text-fix {
+  line-height: 1.8 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  /* Safari-specific: Prevent breaking Khmer characters */
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
 }
 
 .time-tab {
@@ -408,6 +479,129 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
   transform: scale(1.05);
 }
 
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 77.625% (67.5% * 1.15) */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Header text - scaled to 77.625% from mobile md:text-3xl (1.875rem) */
+  .dress-code-header {
+    font-size: 1.45546875rem !important; /* 1.875rem * 0.77625 - increased by 15% */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
+    padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
+    margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 from md:mb-6 - reduced by 50% */
+  }
+
+  /* Time period tabs - scaled to 77.625% from mobile */
+  .time-period-tabs {
+    margin-bottom: 1.164375rem !important; /* 1.5rem * 0.77625 - increased by 15% */
+    gap: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
+  }
+
+  .time-tab {
+    padding: 0.48515625rem 0.97031250rem !important; /* 0.625rem * 0.77625, 1.25rem * 0.77625 - increased by 15% */
+    border-radius: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
+    font-size: 0.67968750rem !important; /* 0.875rem * 0.77625 - increased by 15% */
+  }
+
+  /* Gender header text - scaled to 77.625% from mobile sm:text-base (1rem) */
+  .gender-header-text {
+    font-size: 0.77625rem !important; /* 1rem * 0.77625 */
+  }
+
+  /* Gender header padding - scaled to 77.625% */
+  .gender-header {
+    padding-top: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
+    padding-bottom: 0.48515625rem !important; /* 0.625rem * 0.77625 (py-2.5) */
+    padding-left: 1.164375rem !important; /* 1.5rem * 0.77625 (px-6) */
+    padding-right: 1.164375rem !important; /* 1.5rem * 0.77625 (px-6) */
+  }
+
+  /* Card body padding - scaled to 77.625% */
+  .card-body {
+    padding: 1.164375rem !important; /* 1.5rem * 0.77625 (p-6) */
+  }
+
+  /* Dress code title - scaled to 77.625% from mobile sm:text-base (1rem) */
+  .dress-code-title {
+    font-size: 0.77625rem !important; /* 1rem * 0.77625 */
+    margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 (mb-3) */
+  }
+
+  /* Dress code description - scaled to 77.625% from mobile sm:text-sm (0.875rem) */
+  .dress-code-description {
+    font-size: 0.67921875rem !important; /* 0.875rem * 0.77625 */
+  }
+
+  /* Dress code info margin - scaled to 77.625% - only when color navigation exists */
+  .dress-code-info.mb-6 {
+    margin-bottom: 1.164375rem !important; /* 1.5rem * 0.77625 (mb-6) */
+  }
+}
+
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 86.25% (75% * 1.15) */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Header text - scaled to 86.25% from mobile md:text-3xl (1.875rem) */
+  .dress-code-header {
+    font-size: 1.61718750rem !important; /* 1.875rem * 0.8625 - increased by 15% */
+    line-height: 1.25 !important; /* Match mobile leading-tight */
+    padding-top: 0rem !important; /* Removed top padding to reduce space */
+    padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
+    margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 from md:mb-6 - reduced by 50% */
+  }
+
+  /* Time period tabs - scaled to 86.25% from mobile */
+  .time-period-tabs {
+    margin-bottom: 1.29375rem !important; /* 1.5rem * 0.8625 - increased by 15% */
+    gap: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
+  }
+
+  .time-tab {
+    padding: 0.53906250rem 1.07812500rem !important; /* 0.625rem * 0.8625, 1.25rem * 0.8625 - increased by 15% */
+    border-radius: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
+    font-size: 0.75468750rem !important; /* 0.875rem * 0.8625 - increased by 15% */
+  }
+
+  /* Gender header text - scaled to 86.25% from mobile sm:text-base (1rem) */
+  .gender-header-text {
+    font-size: 0.8625rem !important; /* 1rem * 0.8625 */
+  }
+
+  /* Gender header padding - scaled to 86.25% */
+  .gender-header {
+    padding-top: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
+    padding-bottom: 0.53906250rem !important; /* 0.625rem * 0.8625 (py-2.5) */
+    padding-left: 1.29375rem !important; /* 1.5rem * 0.8625 (px-6) */
+    padding-right: 1.29375rem !important; /* 1.5rem * 0.8625 (px-6) */
+  }
+
+  /* Card body padding - scaled to 86.25% */
+  .card-body {
+    padding: 1.29375rem !important; /* 1.5rem * 0.8625 (p-6) */
+  }
+
+  /* Dress code title - scaled to 86.25% from mobile sm:text-base (1rem) */
+  .dress-code-title {
+    font-size: 0.8625rem !important; /* 1rem * 0.8625 */
+    margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 (mb-3) */
+  }
+
+  /* Dress code description - scaled to 86.25% from mobile sm:text-sm (0.875rem) */
+  .dress-code-description {
+    font-size: 0.75468750rem !important; /* 0.875rem * 0.8625 */
+  }
+
+  /* Dress code info margin - scaled to 86.25% - only when color navigation exists */
+  .dress-code-info.mb-6 {
+    margin-bottom: 1.29375rem !important; /* 1.5rem * 0.8625 (mb-6) */
+  }
+}
+
+/* Desktop (1536px+) - Simple, clean desktop styles */
+@media (min-width: 1536px) {
+  .dress-code-header {
+    font-size: 1.875rem !important; /* 30px - text-3xl */
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .time-period-tabs {
@@ -436,7 +630,7 @@ const getGenderHeaderStyle = (genderGroup: GenderGroup) => {
     margin-bottom: 1.5rem;
   }
 
-  .dress-code-info {
+  .dress-code-info.mb-6 {
     margin-bottom: 1.5rem;
   }
 
