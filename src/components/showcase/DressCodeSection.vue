@@ -18,7 +18,7 @@
           color: accentColor,
           fontFamily: secondaryFont || currentFont,
         }"
-        class="text-sm sm:text-base opacity-80"
+        class="text-sm sm:text-base md:text-lg opacity-80"
         :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
         {{ sectionDescription }}
@@ -277,6 +277,18 @@ const translateGender = (gender: string): string => {
   return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : gender
 }
 
+// Helper function to get time period sort order
+const getTimePeriodOrder = (timePeriod: string): number => {
+  const order: Record<string, number> = {
+    all_day: 0,
+    morning: 1,
+    afternoon: 2,
+    evening: 3,
+    night: 4,
+  }
+  return order[timePeriod] ?? 999
+}
+
 // Group dress codes by time period, then by gender
 const timePeriodGroups = computed<TimePeriodGroup[]>(() => {
   const timePeriodMap = new Map<string, TimePeriodGroup>()
@@ -311,7 +323,10 @@ const timePeriodGroups = computed<TimePeriodGroup[]>(() => {
       genderGroup.codes.push(dc)
     })
 
-  return Array.from(timePeriodMap.values())
+  // Sort time periods by chronological order
+  return Array.from(timePeriodMap.values()).sort(
+    (a, b) => getTimePeriodOrder(a.time_period) - getTimePeriodOrder(b.time_period)
+  )
 })
 
 // Get gender groups for the current active time period

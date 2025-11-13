@@ -4,10 +4,10 @@
     class="agenda-wedding mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
   >
     <!-- Header -->
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8">
+    <div class="text-center mb-4 sm:mb-5 laptop-sm:mb-4 laptop-md:mb-5 laptop-lg:mb-6 desktop:mb-5">
       <h2
         :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
+          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
@@ -17,6 +17,18 @@
       >
         {{ agendaHeaderText }}
       </h2>
+      <p
+        :class="[
+          'text-sm sm:text-base md:text-lg opacity-80',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
+        :style="{
+          color: accentColor,
+          fontFamily: secondaryFont || currentFont,
+        }"
+      >
+        {{ agendaDescriptionText }}
+      </p>
     </div>
 
     <!-- Unified Tab Container -->
@@ -29,11 +41,7 @@
             :key="date"
             class="tab-button"
             :class="{ active: activeTab === date }"
-            :style="{
-              backgroundColor: 'transparent',
-              color: primaryColor,
-              borderColor: activeTab === date ? primaryColor : 'transparent',
-            }"
+            :style="getTabStyle(date)"
             @click="selectTab(date)"
           >
             <span
@@ -158,6 +166,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
   > = {
     agenda_header: 'agenda_header',
     agenda_header_wedding: 'agenda_header_wedding',
+    agenda_description_wedding: 'agenda_description_wedding',
     agenda_activity: 'agenda_activity',
     agenda_activities: 'agenda_activities',
   }
@@ -201,6 +210,10 @@ const agendaTabs = computed(() => {
 
 const agendaHeaderText = computed(() => getTextContent('agenda_header_wedding', 'Wedding Schedule'))
 
+const agendaDescriptionText = computed(() =>
+  getTextContent('agenda_description_wedding', 'A timeline of our celebration'),
+)
+
 const selectTab = (date: string) => {
   activeTab.value = date
 }
@@ -229,6 +242,18 @@ const firstAgendaDescriptions = computed(() => {
 const getFirstAgendaDescription = (date: string): string => {
   const description = firstAgendaDescriptions.value[date] || ''
   return description ? description.charAt(0).toUpperCase() + description.slice(1) : ''
+}
+
+// Style helper for tabs matching DressCodeSection time period tabs
+const getTabStyle = (date: string) => {
+  const isActive = activeTab.value === date
+  return {
+    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
+    color: isActive ? '#ffffff' : props.primaryColor,
+    fontFamily: props.primaryFont || props.currentFont,
+    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
+  }
 }
 
 onMounted(() => {
@@ -260,35 +285,58 @@ onMounted(() => {
 
 .tab-bar {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-width: min-content;
   justify-content: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
-/* Tab Buttons */
+@media (min-width: 640px) {
+  .tab-bar {
+    gap: 0.75rem;
+  }
+}
+
+/* Tab Buttons - Matching DressCodeSection time period tabs */
 .tab-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+  border-radius: 9999px;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
   cursor: pointer;
-  background: transparent;
-  position: relative;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .tab-button {
+    padding: 0.75rem 1.75rem;
+  }
 }
 
 .tab-button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.05) !important;
+}
+
+.tab-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .tab-date {
   font-size: 0.875rem;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .tab-date {
+    font-size: 1rem;
+  }
 }
 
 /* Khmer language tab date - reduce padding */
@@ -358,6 +406,11 @@ onMounted(() => {
     padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 
+  /* Description text - scaled to 67.5% from mobile md:text-lg (1.125rem) */
+  p {
+    font-size: 0.759375rem !important; /* 1.125rem * 0.675 */
+  }
+
   /* Tab bar compact sizing */
   .tab-button {
     padding: 0.625rem 1.25rem !important;
@@ -376,6 +429,11 @@ onMounted(() => {
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  }
+
+  /* Description text - scaled to 75% from mobile md:text-lg (1.125rem) */
+  p {
+    font-size: 0.84375rem !important; /* 1.125rem * 0.75 */
   }
 }
 

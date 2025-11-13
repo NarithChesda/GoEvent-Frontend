@@ -68,6 +68,7 @@ export const rsvpTranslations: Record<
     agenda_header: string
     agenda_header_wedding: string
     agenda_header_birthday: string
+    agenda_description_wedding: string
     agenda_activity: string
     agenda_activities: string
 
@@ -224,6 +225,7 @@ export const rsvpTranslations: Record<
     agenda_header: 'Event Schedule',
     agenda_header_wedding: 'Wedding Schedule',
     agenda_header_birthday: 'Party Schedule',
+    agenda_description_wedding: 'A timeline of our celebration',
     agenda_activity: 'activity',
     agenda_activities: 'activities',
 
@@ -380,6 +382,7 @@ export const rsvpTranslations: Record<
     agenda_header: 'កម្មវិធី',
     agenda_header_wedding: 'កម្មវិធីសិរីមង្គល',
     agenda_header_birthday: 'លំហូរកម្មវិធី',
+    agenda_description_wedding: 'កាលវិភាគនៃពិធីអបអរសាទររបស់យើង',
     agenda_activity: 'សកម្មភាព',
     agenda_activities: 'សកម្មភាព',
 
@@ -536,6 +539,7 @@ export const rsvpTranslations: Record<
     agenda_header: '活动日程',
     agenda_header_wedding: '婚礼日程',
     agenda_header_birthday: '派对日程',
+    agenda_description_wedding: '我们庆典的时间表',
     agenda_activity: '活动',
     agenda_activities: '活动',
 
