@@ -1,13 +1,13 @@
 <template>
   <div class="dress-code-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
     <!-- Section Header -->
-    <div class="section-header text-center mb-6 sm:mb-8 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+    <div class="section-header text-center mb-6 sm:mb-8 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-4 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         :style="{
           color: primaryColor,
           fontFamily: primaryFont || currentFont,
         }"
-        class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 capitalize dress-code-header"
+        class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize dress-code-header"
         :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
         {{ sectionTitle }}
@@ -28,7 +28,7 @@
     <!-- Time Period Tabs -->
     <div
       v-if="timePeriodGroups.length > 1"
-      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 flex-wrap"
+      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 laptop-sm:mb-4 laptop-md:mb-4 desktop:mb-4 flex-wrap"
     >
       <button
         v-for="(timePeriod, index) in timePeriodGroups"
@@ -48,72 +48,69 @@
     <!-- Main Content -->
     <transition name="fade" mode="out-in">
       <div :key="activeTimePeriod" class="dress-code-content w-full">
-        <!-- Row 1: Image and Gender Tabs -->
-        <div class="flex flex-col sm:flex-row mb-1">
-          <!-- Left Side: Image -->
-          <div class="image-section flex-shrink-0 w-full sm:w-1/2 p-1 sm:p-2">
-            <transition name="fade-scale" mode="out-in">
-              <div :key="activeGender" class="dress-code-image">
-                <div class="image-wrapper flex justify-center">
-                  <div
-                    v-if="getCurrentDressCodeForActiveGender().image"
-                    class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
-                    :style="{ backgroundColor: `${getCurrentDressCodeForActiveGender().color}20` }"
-                  >
-                    <img
-                      :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"
-                      :alt="getCurrentDressCodeForActiveGender().dress_code_type_display"
-                      class="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+        <!-- Row 1: Image Preview (Full Width) -->
+        <div class="image-section w-full p-1 sm:p-2 mb-4">
+          <transition name="fade-scale" mode="out-in">
+            <div :key="activeGender" class="dress-code-image">
+              <div class="image-wrapper flex justify-center">
+                <div
+                  v-if="getCurrentDressCodeForActiveGender().image"
+                  class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
+                  :style="{ backgroundColor: `${getCurrentDressCodeForActiveGender().color}20` }"
+                >
+                  <img
+                    :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"
+                    :alt="getCurrentDressCodeForActiveGender().dress_code_type_display"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
 
-                  <!-- Color Display (if no image) -->
-                  <div
-                    v-else
-                    class="color-display w-full aspect-square max-w-xs rounded-2xl flex items-center justify-center shadow-md"
-                    :style="{ backgroundColor: getCurrentDressCodeForActiveGender().color }"
+                <!-- Color Display (if no image) -->
+                <div
+                  v-else
+                  class="color-display w-full aspect-square max-w-xs rounded-2xl flex items-center justify-center shadow-md"
+                  :style="{ backgroundColor: getCurrentDressCodeForActiveGender().color }"
+                >
+                  <svg
+                    class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
                 </div>
               </div>
-            </transition>
-          </div>
-
-          <!-- Right Side: Gender Tabs -->
-          <div class="gender-tabs-section flex-1 p-1 sm:p-2 flex items-center justify-center mt-2 sm:mt-0">
-            <div class="gender-tabs flex sm:flex-col gap-2 flex-nowrap justify-center">
-              <button
-                v-for="(genderGroup, index) in currentTimePeriodGenders"
-                :key="genderGroup.gender"
-                @click="activeGender = index"
-                :class="[
-                  'gender-tab px-5 py-2.5 rounded-full transition-all duration-300',
-                  'text-sm sm:text-base font-semibold text-center flex-shrink-0 sm:w-auto',
-                  activeGender === index ? 'tab-active' : 'tab-inactive',
-                ]"
-                :style="getGenderTabStyle(index)"
-              >
-                {{ translateGender(genderGroup.gender) }}
-              </button>
             </div>
+          </transition>
+        </div>
+
+        <!-- Row 2: Gender Tabs -->
+        <div class="gender-tabs-section w-full p-1 sm:p-2 flex items-center justify-center mb-4 laptop-sm:mb-1 laptop-md:mb-1 desktop:mb-1">
+          <div class="gender-tabs flex gap-2 flex-nowrap justify-center">
+            <button
+              v-for="(genderGroup, index) in currentTimePeriodGenders"
+              :key="genderGroup.gender"
+              @click="activeGender = index"
+              :class="[
+                'gender-tab px-5 py-2.5 rounded-full transition-all duration-300',
+                'text-sm sm:text-base font-semibold text-center flex-shrink-0',
+                activeGender === index ? 'tab-active' : 'tab-inactive',
+              ]"
+              :style="getGenderTabStyle(index)"
+            >
+              {{ translateGender(genderGroup.gender) }}
+            </button>
           </div>
         </div>
 
-        <!-- Row 2: Title and Description -->
+        <!-- Row 3: Title and Description -->
         <transition name="fade-scale" mode="out-in">
           <div :key="`${activeGender}-${getActiveGenderGroup().activeIndex}`" class="dress-code-info-section px-4 sm:px-6 py-1 text-center">
             <h4
@@ -141,7 +138,7 @@
           </div>
         </transition>
 
-        <!-- Row 3: Color Circle Navigation -->
+        <!-- Row 4: Color Circle Navigation -->
         <transition name="fade-scale" mode="out-in">
           <div
             v-if="getActiveGenderGroup().codes.length > 0"
@@ -627,24 +624,8 @@ const getGenderTabStyle = (index: number) => {
     padding: 0.625rem 1.25rem;
   }
 
-  .gender-tabs {
-    flex-direction: row !important;
-  }
-
   .gender-tab {
     font-size: 0.875rem;
-  }
-
-  .dress-code-content {
-    width: 100%;
-  }
-
-  .image-section {
-    width: 100%;
-  }
-
-  .gender-tabs-section {
-    width: 100%;
   }
 
   .color-navigation {
