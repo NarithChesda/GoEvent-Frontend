@@ -3,26 +3,24 @@
     <!-- YouTube Embed -->
     <div class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
       <div class="mb-3 sm:mb-4">
-        <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">YouTube Video</h5>
-        <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">Embed a YouTube video for your event</p>
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">YouTube Video</h5>
+            <p class="text-xs sm:text-sm text-slate-600">Embed a YouTube video for your event</p>
+          </div>
+
+          <!-- Help Button -->
+          <button
+            @click="showYouTubeHelpModal = true"
+            class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            title="Learn how to get YouTube embed link"
+          >
+            <Info class="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div class="space-y-3 sm:space-y-4">
-        <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">YouTube Embed URL</label>
-          <input
-            v-model="formData.youtube_embed_link"
-            type="url"
-            :disabled="!canEdit"
-            placeholder="https://www.youtube.com/embed/VIDEO_ID"
-            @paste="handleYouTubePaste"
-            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
-          />
-          <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-            Paste the full iframe code or just the src URL from YouTube → Share → Embed
-          </p>
-        </div>
-
         <!-- YouTube Preview -->
         <div v-if="formData.youtube_embed_link" class="relative">
           <iframe
@@ -44,32 +42,41 @@
           <Youtube class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2" />
           <p class="text-xs sm:text-sm text-slate-600">No YouTube video embedded</p>
         </div>
+
+        <div>
+          <input
+            v-model="formData.youtube_embed_link"
+            type="url"
+            :disabled="!canEdit"
+            placeholder="Paste YouTube embed code or URL here"
+            @paste="handleYouTubePaste"
+            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+          />
+        </div>
       </div>
     </div>
 
     <!-- Google Maps Embed -->
     <div class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
       <div class="mb-3 sm:mb-4">
-        <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">Event Location</h5>
-        <p class="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">Embed Google Maps to show your event location</p>
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">Event Location</h5>
+            <p class="text-xs sm:text-sm text-slate-600">Embed Google Maps to show your event location</p>
+          </div>
+
+          <!-- Help Button -->
+          <button
+            @click="showMapsHelpModal = true"
+            class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            title="Learn how to get Google Maps embed link"
+          >
+            <Info class="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div class="space-y-3 sm:space-y-4">
-        <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">Google Maps Embed URL</label>
-          <input
-            v-model="formData.google_map_embed_link"
-            type="url"
-            :disabled="!canEdit"
-            placeholder="https://www.google.com/maps/embed?pb=..."
-            @paste="handleMapsPaste"
-            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
-          />
-          <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-            Paste the full iframe code or just the src URL from Google Maps → Share → Embed a map
-          </p>
-        </div>
-
         <!-- Maps Preview -->
         <div v-if="formData.google_map_embed_link" class="relative">
           <iframe
@@ -91,6 +98,17 @@
         <div v-else class="border-2 border-dashed border-slate-300 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
           <MapPin class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2" />
           <p class="text-xs sm:text-sm text-slate-600">No location map embedded</p>
+        </div>
+
+        <div>
+          <input
+            v-model="formData.google_map_embed_link"
+            type="url"
+            :disabled="!canEdit"
+            placeholder="Paste Google Maps embed code or URL here"
+            @paste="handleMapsPaste"
+            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+          />
         </div>
       </div>
     </div>
@@ -136,12 +154,240 @@
       @confirm="handleDeleteConfirm"
       @cancel="showDeleteModal = false"
     />
+
+    <!-- YouTube Help Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showYouTubeHelpModal"
+          class="fixed inset-0 z-50 overflow-y-auto"
+          @click="showYouTubeHelpModal = false"
+        >
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                    <Youtube class="w-5 h-5 text-red-600" />
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-900">How to Get YouTube Embed Link</h3>
+                </div>
+                <button
+                  @click="showYouTubeHelpModal = false"
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <X class="w-5 h-5" />
+                </button>
+              </div>
+
+              <!-- Content -->
+              <div class="space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p class="text-sm text-blue-900 mb-3 font-medium">
+                    Follow these simple steps to embed a YouTube video:
+                  </p>
+
+                  <div class="space-y-3">
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">1</span>
+                        Go to Your YouTube Video
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Open the YouTube video you want to embed in your browser.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">2</span>
+                        Click the Share Button
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Under the video player, click the "Share" button.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">3</span>
+                        Select Embed
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        In the share dialog, click the "Embed" option.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">4</span>
+                        Copy the Embed Code
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Copy the entire <code class="bg-blue-100 px-1 rounded">&lt;iframe&gt;</code> code that appears, or just copy the URL from the <code class="bg-blue-100 px-1 rounded">src=""</code> attribute.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">5</span>
+                        Paste Here
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Paste either the full iframe code or just the URL into the input field above. Our system will automatically extract the correct embed URL.
+                      </p>
+                    </div>
+
+                    <div class="pt-3 border-t border-blue-200">
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Example:</span>
+                      </h4>
+                      <p class="text-xs text-blue-800 mb-2">The embed URL should look like:</p>
+                      <code class="block text-xs bg-blue-100 p-2 rounded text-blue-900 break-all">
+                        https://www.youtube.com/embed/VIDEO_ID
+                      </code>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Close Button -->
+                <div class="flex justify-end pt-2">
+                  <button
+                    @click="showYouTubeHelpModal = false"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Google Maps Help Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showMapsHelpModal"
+          class="fixed inset-0 z-50 overflow-y-auto"
+          @click="showMapsHelpModal = false"
+        >
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                    <MapPin class="w-5 h-5 text-green-600" />
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-900">How to Get Google Maps Embed Link</h3>
+                </div>
+                <button
+                  @click="showMapsHelpModal = false"
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <X class="w-5 h-5" />
+                </button>
+              </div>
+
+              <!-- Content -->
+              <div class="space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p class="text-sm text-blue-900 mb-3 font-medium">
+                    Follow these steps to embed a Google Maps location:
+                  </p>
+
+                  <div class="space-y-3">
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">1</span>
+                        Open Google Maps
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Go to <a href="https://maps.google.com" target="_blank" class="text-blue-600 hover:underline">maps.google.com</a> and search for your event location.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">2</span>
+                        Click the Share Button
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        In the location's info panel on the left, click the "Share" button.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">3</span>
+                        Select "Embed a map"
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        In the share dialog, click the "Embed a map" tab at the top.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">4</span>
+                        Copy the HTML Code
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Click "COPY HTML" to copy the entire <code class="bg-blue-100 px-1 rounded">&lt;iframe&gt;</code> code, or just copy the URL from the <code class="bg-blue-100 px-1 rounded">src=""</code> attribute.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">5</span>
+                        Paste Here
+                      </h4>
+                      <p class="text-sm text-blue-800 ml-7">
+                        Paste either the full iframe code or just the URL into the input field above. Our system will automatically extract the correct embed URL.
+                      </p>
+                    </div>
+
+                    <div class="pt-3 border-t border-blue-200">
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Example:</span>
+                      </h4>
+                      <p class="text-xs text-blue-800 mb-2">The embed URL should look like:</p>
+                      <code class="block text-xs bg-blue-100 p-2 rounded text-blue-900 break-all">
+                        https://www.google.com/maps/embed?pb=...
+                      </code>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Close Button -->
+                <div class="flex justify-end pt-2">
+                  <button
+                    @click="showMapsHelpModal = false"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Youtube, MapPin, X, Save, CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { Youtube, MapPin, X, Save, CheckCircle, AlertCircle, Info } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import {
@@ -178,6 +424,8 @@ const deleteModalData = ref({
   itemName: '',
   fieldToDelete: '',
 })
+const showYouTubeHelpModal = ref(false)
+const showMapsHelpModal = ref(false)
 
 // Computed
 const hasChanges = computed(() => {
@@ -365,3 +613,16 @@ watch(
   },
 )
 </script>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+</style>
