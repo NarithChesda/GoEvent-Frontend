@@ -56,13 +56,15 @@
     <slot v-if="hasContent" name="content" :media-url="mediaUrl">
       <!-- Default content display based on content type -->
       <div v-if="contentType === 'image'" class="relative group">
-        <img
-          :src="mediaUrl"
-          :alt="title"
-          :class="['w-full rounded-2xl', imageClass]"
-        />
-        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
-          <p class="text-white font-medium">{{ title }}</p>
+        <div class="w-full relative rounded-2xl overflow-hidden" style="padding-bottom: 52.36%;">
+          <img
+            :src="mediaUrl"
+            :alt="title"
+            :class="['absolute inset-0 w-full h-full object-cover', imageClass]"
+          />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+            <p class="text-white font-medium">{{ title }}</p>
+          </div>
         </div>
       </div>
 
@@ -87,9 +89,6 @@
         >
           Your browser does not support the audio tag.
         </audio>
-        <div class="mt-2 text-center">
-          <p class="text-sm text-slate-600">{{ title }}</p>
-        </div>
       </div>
     </slot>
 
@@ -106,38 +105,37 @@
       ]"
     >
       <slot name="empty-state">
-        <div class="flex flex-col items-center justify-center min-h-[120px]">
+        <div class="flex items-center justify-center gap-2.5 py-2">
           <div
             :class="[
-              'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
+              'w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0',
               canEdit ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
             ]"
           >
             <Plus
               v-if="canEdit"
               :class="[
-                'w-8 h-8 transition-colors',
+                'w-3.5 h-3.5 transition-colors',
                 'text-slate-400 group-hover:text-emerald-600'
               ]"
             />
             <component
               v-else
               :is="emptyIcon"
-              class="w-8 h-8 text-slate-400"
+              class="w-3.5 h-3.5 text-slate-400"
             />
           </div>
-          <p
-            :class="[
-              'font-semibold transition-colors',
-              canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
-            ]"
-          >
-            {{ emptyStateText }}
-          </p>
-          <p v-if="emptyStateSubtext" class="text-sm text-slate-500 mt-1">
-            {{ emptyStateSubtext }}
-          </p>
-          <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+          <div class="text-left">
+            <p
+              :class="[
+                'text-sm font-semibold transition-colors leading-none',
+                canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+              ]"
+            >
+              {{ emptyStateText }}
+            </p>
+            <p v-if="canEdit" class="text-xs text-slate-400 leading-none mt-0.5">Click to upload</p>
+          </div>
         </div>
       </slot>
     </div>

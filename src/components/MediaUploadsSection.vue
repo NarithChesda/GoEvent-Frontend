@@ -3,7 +3,7 @@
     <!-- Banner Image -->
     <MediaUploadCard
       title="Event Banner"
-      description="Main hero image for your event (1200x800px recommended)"
+      description="Main hero image for your event (1200x630px recommended - Facebook ratio)"
       :media-url="getMediaUrl(eventData?.banner_image)"
       :can-edit="canEdit"
       :is-uploading="mediaUpload.isUploading.value('banner_image')"
