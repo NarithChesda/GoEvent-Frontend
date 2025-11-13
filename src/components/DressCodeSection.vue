@@ -2,20 +2,8 @@
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
     <div class="mb-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h5 class="font-semibold text-slate-900">Dress Code Guidelines</h5>
-          <p class="text-sm text-slate-600">Manage dress code requirements for your event</p>
-        </div>
-        <button
-          v-if="canEdit"
-          @click="openAddModal"
-          class="hidden sm:flex flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-lg transition-all"
-        >
-          <Plus class="w-4 h-4" />
-          Add Dress Code
-        </button>
-      </div>
+      <h5 class="font-semibold text-slate-900">Dress Code Guidelines</h5>
+      <p class="text-sm text-slate-600">Manage dress code requirements for your event</p>
     </div>
 
     <!-- Loading State -->
@@ -92,6 +80,19 @@
           @drag-end="handleDragEnd"
           class="dress-code-item"
         />
+
+        <!-- Add Dress Code Card -->
+        <div
+          v-if="canEdit"
+          @click="openAddModal"
+          class="border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer group border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 flex flex-col items-center justify-center p-6 min-h-[160px]"
+        >
+          <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
+            <Shirt class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+          </div>
+          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">Add dress code</p>
+          <p class="text-xs text-slate-400 mt-1">{{ dressCodes.length }} dress code{{ dressCodes.length !== 1 ? 's' : '' }}</p>
+        </div>
       </div>
     </div>
 
@@ -131,7 +132,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Plus, Shirt, AlertCircle, CheckCircle } from 'lucide-vue-next'
+import { Shirt, AlertCircle, CheckCircle } from 'lucide-vue-next'
 import { dressCodeService, type EventDressCode } from '../services/api'
 import DressCodeCard from './DressCodeCard.vue'
 import DressCodeModal from './DressCodeModal.vue'
