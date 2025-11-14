@@ -289,7 +289,7 @@
                           <button
                             v-if="qrCodeFile"
                             type="button"
-                            @click="openCropper"
+                            @click="handleOpenCropper"
                             class="mt-2 w-full px-3 py-1.5 text-xs bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center gap-1"
                           >
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,61 +319,16 @@
                 </div>
 
                 <!-- Image Cropper Modal -->
-                <Teleport to="body">
-                  <Transition name="modal">
-                    <div v-if="showCropper" class="fixed inset-0 z-[60] overflow-y-auto">
-                      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
-
-                      <div class="flex min-h-full items-center justify-center p-4">
-                        <div class="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-                          <!-- Cropper Header -->
-                          <div class="px-6 py-4 border-b border-slate-200 bg-white">
-                            <div class="flex items-center justify-between">
-                              <h3 class="text-lg font-semibold text-slate-900">Crop QR Code</h3>
-                              <button
-                                @click="closeCropper"
-                                class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                                aria-label="Close cropper"
-                              >
-                                <X class="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          <!-- Cropper Content -->
-                          <div class="p-6">
-                            <div class="bg-slate-100 rounded-lg overflow-hidden" style="height: 400px;">
-                              <Cropper
-                                ref="cropper"
-                                :src="cropperImage"
-                                :stencil-props="{ aspectRatio: 1 }"
-                                class="h-full"
-                              />
-                            </div>
-                          </div>
-
-                          <!-- Cropper Actions -->
-                          <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-                            <button
-                              type="button"
-                              @click="closeCropper"
-                              class="px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-white font-medium transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              @click="applyCrop"
-                              class="px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg"
-                            >
-                              Apply Crop
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Transition>
-                </Teleport>
+                <ImageCropperModal
+                  :show="showCropper"
+                  :image-source="cropperImage || ''"
+                  title="Crop QR Code"
+                  :aspect-ratio="1"
+                  help-text="Crop to include only the QR code pattern"
+                  @close="closeCropper"
+                  @apply="applyCrop"
+                  @update:cropper-ref="setCropperRef"
+                />
 
                 <!-- Simplified options for other payment methods -->
                 <div v-if="formData.payment_method === 'qr_code'" class="space-y-3 sm:space-y-4">
@@ -433,13 +388,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { X, Upload, AlertCircle, CreditCard, Plus } from 'lucide-vue-next'
-import { Cropper } from 'vue-advanced-cropper'
-import 'vue-advanced-cropper/dist/style.css'
 import {
   paymentMethodsService,
   type EventPaymentMethod,
   type CreatePaymentMethodRequest,
 } from '../services/api'
+import ImageCropperModal from './common/ImageCropperModal.vue'
+import { useImageCropper } from '@/composables/useImageCropper'
 
 interface Props {
   eventId: string
@@ -460,9 +415,9 @@ const error = ref<string | null>(null)
 const qrCodeFile = ref<File | null>(null)
 const qrCodePreview = ref<string | null>(null)
 const optionsOpen = ref(false)
-const showCropper = ref(false)
-const cropperImage = ref<string | null>(null)
-const cropper = ref<any>(null)
+
+// Image cropper composable
+const { showCropper, cropperImage, openCropper, closeCropper, applyCrop: applyCropFn, setCropperRef } = useImageCropper()
 
 // Computed
 const isEditing = computed(() => !!props.existingPaymentMethod)
@@ -593,7 +548,6 @@ const handleQrCodeUpload = (event: Event) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       qrCodePreview.value = e.target?.result as string
-      cropperImage.value = e.target?.result as string
     }
     reader.readAsDataURL(file)
   }
@@ -602,42 +556,27 @@ const handleQrCodeUpload = (event: Event) => {
   target.value = ''
 }
 
-const openCropper = () => {
+const handleOpenCropper = () => {
   if (qrCodePreview.value) {
-    cropperImage.value = qrCodePreview.value
-    showCropper.value = true
+    openCropper(qrCodePreview.value, qrCodeFile.value)
   }
 }
 
-const closeCropper = () => {
-  showCropper.value = false
-}
+const applyCrop = async () => {
+  // For QR codes, limit to max 800x800 PNG
+  // This keeps them sharp while reducing file size significantly
+  const result = await applyCropFn({
+    outputFileName: qrCodeFile.value?.name || 'cropped-qr.png',
+    outputFormat: 'image/png',
+    outputQuality: 0.95,
+    aspectRatio: 1,
+    maxWidth: 800,
+    maxHeight: 800,
+  })
 
-const applyCrop = () => {
-  if (cropper.value) {
-    const { canvas } = cropper.value.getResult()
-    if (canvas) {
-      // Convert canvas to blob
-      canvas.toBlob((blob: Blob | null) => {
-        if (blob) {
-          // Create a new File from the blob
-          const croppedFile = new File([blob], qrCodeFile.value?.name || 'cropped-qr.png', {
-            type: 'image/png',
-          })
-          qrCodeFile.value = croppedFile
-
-          // Update preview
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            qrCodePreview.value = e.target?.result as string
-          }
-          reader.readAsDataURL(croppedFile)
-
-          // Close cropper
-          showCropper.value = false
-        }
-      }, 'image/png')
-    }
+  if (result) {
+    qrCodeFile.value = result.file
+    qrCodePreview.value = result.preview
   }
 }
 
