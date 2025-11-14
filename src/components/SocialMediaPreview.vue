@@ -245,8 +245,8 @@ const hostname = computed(() => {
 
 // Match the exact title we set in meta tags
 const metaTitle = computed(() => {
-  if (!props.eventData?.title) return 'Event Invitation'
-  return `${props.eventData.title} - Event Invitation`
+  if (!props.eventData?.title) return 'សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស'
+  return `${props.eventData.title} - សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស`
 })
 
 // Use the same description logic as meta tags

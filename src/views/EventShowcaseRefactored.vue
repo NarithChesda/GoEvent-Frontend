@@ -341,7 +341,7 @@ const updateEventMetaTags = (eventData: any) => {
 
     // Update meta tags with event information
     updateMetaTags({
-      title: `${eventData.title} - Event Invitation`,
+      title: `${eventData.title} - សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស`,
       description: eventDescription,
       image: absoluteImageUrl,
       url: currentUrl,

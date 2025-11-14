@@ -285,7 +285,7 @@ export const rsvpTranslations: Record<
 
     // Dress code section
     dress_code_header: 'Dress Code Guide',
-    dress_code_description: 'Please dress according to the guidelines below',
+    dress_code_description: 'Dress code suggestions below',
 
     // Dress code types
     dress_code_white_tie: 'White Tie',
@@ -441,8 +441,8 @@ export const rsvpTranslations: Record<
     countdown_hour: 'ម៉ោង',
 
     // Dress code section
-    dress_code_header: 'ការស្លៀកពាក់',
-    dress_code_description: 'សូមស្លៀកពាក់តាមគោលការណ៍ខាងក្រោម',
+    dress_code_header: 'សម្លៀកបំពាក់',
+    dress_code_description: 'ការផ្តល់យោបល់សម្រាប់កូដសំលៀកបំពាក់',
 
     // Dress code types
     dress_code_white_tie: 'ពាក់ក្រវ៉ាត់ពណ៌ស',
@@ -599,7 +599,7 @@ export const rsvpTranslations: Record<
 
     // Dress code section
     dress_code_header: '着装要求',
-    dress_code_description: '请按照以下着装要求',
+    dress_code_description: '以下是着装建议',
 
     // Dress code types
     dress_code_white_tie: '白领结',
