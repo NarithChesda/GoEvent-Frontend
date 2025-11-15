@@ -232,8 +232,8 @@ const { getMediaUrl } = useMediaUrl()
 // This is needed because usePaymentTemplateIntegration expects a plain object
 const reactiveEventData = reactive({
   id: '',
-  event_template: null as number | null,
-  event_template_details: null as Event['event_template_details']
+  event_template: null as number | null | undefined,
+  event_template_details: undefined as Event['event_template_details']
 })
 
 // Sync reactive event data with props
@@ -242,8 +242,8 @@ watch(
   (newData) => {
     if (newData) {
       reactiveEventData.id = newData.id
-      reactiveEventData.event_template = newData.event_template ?? null
-      reactiveEventData.event_template_details = newData.event_template_details ?? null
+      reactiveEventData.event_template = newData.event_template ?? undefined
+      reactiveEventData.event_template_details = newData.event_template_details ?? undefined
     }
   },
   { immediate: true }
