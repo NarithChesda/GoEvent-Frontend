@@ -667,7 +667,7 @@ const enrichedCollaborators = computed(() => {
     // Pre-compute initials
     const initials = getInitials(
       collaborator.user_details?.first_name || '',
-      collaborator.user_details?.last_name || collaborator.email.charAt(0)
+      collaborator.user_details?.last_name || (collaborator.email ? collaborator.email.charAt(0) : '')
     )
 
     // Pre-compute formatted invite date
@@ -677,7 +677,7 @@ const enrichedCollaborators = computed(() => {
     const roleColorClass = getRoleColor(collaborator.role)
 
     // Sanitize email (fallback for non-registered users)
-    const sanitizedEmail = sanitizePlainText(collaborator.email, 254)
+    const sanitizedEmail = collaborator.email ? sanitizePlainText(collaborator.email, 254) : ''
 
     return {
       ...collaborator,
