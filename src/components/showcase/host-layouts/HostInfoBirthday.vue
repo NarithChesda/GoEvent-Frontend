@@ -336,7 +336,211 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
   }
 }
 
-/* Desktop adjustments */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Using mobile view styles */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .host-info-birthday {
+    padding: 1rem 0; /* Reduce vertical padding */
+  }
+
+  /* Reduce margin for welcome message */
+  .text-center.mb-6 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  /* Override Tailwind's lg:text-4xl to keep mobile size for welcome message */
+  .text-center h2 {
+    font-size: 1.5rem !important; /* Match mobile text-2xl */
+    line-height: 1.25 !important;
+  }
+
+  /* Reduce spacing in parent row */
+  .parent-row {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .parent-name-text {
+    font-size: 1rem !important; /* Match mobile: text-base 16px */
+  }
+
+  /* Reduce profile picture margin */
+  .flex.justify-center.mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .profile-picture-large {
+    width: 200px; /* Match mobile */
+    height: 200px;
+    padding: 4px;
+  }
+
+  /* Reduce spacing in host info section */
+  .text-center.space-y-1 {
+    row-gap: 0.125rem !important;
+  }
+
+  /* Reduce title size */
+  .text-center p.text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  /* Reduce host name size - override lg:text-4xl */
+  .text-center h3 {
+    font-size: 1.5rem !important; /* Match mobile text-2xl */
+    line-height: 1.25 !important;
+  }
+
+  .birthday-logo {
+    max-height: 150px; /* Match mobile */
+    max-width: 300px;
+  }
+
+  .logo-fallback {
+    width: 120px; /* Match mobile */
+    height: 120px;
+  }
+
+  .logo-initial {
+    font-size: 3rem; /* Match mobile */
+  }
+}
+
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Using mobile view styles */
+@media (min-width: 1366px) {
+  .host-info-birthday {
+    padding: 1rem 0; /* Reduce vertical padding */
+  }
+
+  /* Reduce margin for welcome message */
+  .text-center.mb-6 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  /* Override Tailwind's lg:text-4xl to keep mobile size for welcome message */
+  .text-center h2 {
+    font-size: 1.5rem !important; /* Match mobile text-2xl */
+    line-height: 1.25 !important;
+  }
+
+  /* Reduce spacing in parent row */
+  .parent-row {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .parent-name-text {
+    font-size: 1rem !important; /* Match mobile: text-base 16px */
+  }
+
+  /* Reduce profile picture margin */
+  .flex.justify-center.mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .profile-picture-large {
+    width: 200px; /* Match mobile */
+    height: 200px;
+    padding: 4px;
+  }
+
+  /* Reduce spacing in host info section */
+  .text-center.space-y-1 {
+    row-gap: 0.125rem !important;
+  }
+
+  /* Reduce title size */
+  .text-center p.text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  /* Reduce host name size - override lg:text-4xl */
+  .text-center h3 {
+    font-size: 1.5rem !important; /* Match mobile text-2xl */
+    line-height: 1.25 !important;
+  }
+
+  .birthday-logo {
+    max-height: 150px; /* Match mobile */
+    max-width: 300px;
+  }
+
+  .logo-fallback {
+    width: 120px; /* Match mobile */
+    height: 120px;
+  }
+
+  .logo-initial {
+    font-size: 3rem; /* Match mobile */
+  }
+}
+
+/* Large laptops 16+ inch (laptop-lg: 1536px) - Using mobile view styles */
+@media (min-width: 1536px) {
+  .host-info-birthday {
+    padding: 1rem 0; /* Reduce vertical padding */
+  }
+
+  /* Reduce margin for welcome message */
+  .text-center.mb-6 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  /* Override Tailwind's lg:text-4xl to keep mobile size for welcome message */
+  .text-center h2 {
+    font-size: 1.5rem !important; /* Match mobile text-2xl */
+    line-height: 1.25 !important;
+  }
+
+  /* Reduce spacing in parent row */
+  .parent-row {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .parent-name-text {
+    font-size: 1rem !important; /* Match mobile: text-base 16px */
+  }
+
+  /* Reduce profile picture margin */
+  .flex.justify-center.mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .profile-picture-large {
+    width: 200px; /* Match mobile */
+    height: 200px;
+    padding: 4px;
+  }
+
+  /* Reduce spacing in host info section */
+  .text-center.space-y-1 {
+    row-gap: 0.125rem !important;
+  }
+
+  /* Reduce title size */
+  .text-center p.text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  /* Reduce host name size - override lg:text-4xl */
+  .text-center h3 {
+    font-size: 1.5rem !important; /* Match mobile text-2xl */
+    line-height: 1.25 !important;
+  }
+
+  .birthday-logo {
+    max-height: 150px; /* Match mobile */
+    max-width: 300px;
+  }
+
+  .logo-fallback {
+    width: 120px; /* Match mobile */
+    height: 120px;
+  }
+
+  .logo-initial {
+    font-size: 3rem; /* Match mobile */
+  }
+}
+
+/* Desktop Full HD+ (desktop: 1920px) */
 @media (min-width: 1920px) {
   .profile-picture-large {
     width: 300px;
