@@ -775,6 +775,35 @@ const inviteCollaborator = async (): Promise<void> => {
     if (response.success && response.data) {
       showMessage('success', 'Collaborator invited successfully!')
       collaborators.value.push(response.data)
+
+      // Send Telegram notification if this is an admin help request
+      if (emailValidation.sanitizedValue === 'admin@goevent.com' && sanitizedMessage.includes('asks admin for help')) {
+        const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
+        const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
+
+        if (telegramBotToken && telegramChatId) {
+          try {
+            const telegramMessage = `🆘 Admin Help Request\n\nEvent: ${props.eventTitle}\nEvent ID: ${props.eventId}\nRequested by: ${authStore.user?.email || 'Unknown'}\n\nMessage: ${sanitizedMessage}`
+
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
+            await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                chat_id: telegramChatId,
+                text: telegramMessage,
+                parse_mode: 'HTML',
+              }),
+            })
+          } catch (telegramError) {
+            console.error('Failed to send Telegram notification:', telegramError)
+            // Don't show error to user - invitation was successful
+          }
+        }
+      }
+
       closeInviteModal()
     } else {
       showMessage('error', response.message || 'Failed to invite collaborator')
@@ -801,44 +830,13 @@ const closeInviteModal = (): void => {
 }
 
 /**
- * Ask admin for help - pre-fills form and sends message to Telegram bot
+ * Ask admin for help - pre-fills form so user can review and confirm before sending
  */
-const askAdminHelp = async (): Promise<void> => {
+const askAdminHelp = (): void => {
   // Pre-fill the form
   inviteForm.value.email = 'admin@goevent.com'
   inviteForm.value.role = 'admin'
   inviteForm.value.message = `${props.eventTitle} asks admin for help`
-
-  // Send message to Telegram bot
-  const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
-  const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
-
-  if (telegramBotToken && telegramChatId) {
-    try {
-      const message = `🆘 Admin Help Request\n\nEvent: ${props.eventTitle}\nEvent ID: ${props.eventId}\nRequested by: ${authStore.user?.email || 'Unknown'}\n\nMessage: ${props.eventTitle} asks admin for help`
-
-      const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: telegramChatId,
-          text: message,
-          parse_mode: 'HTML',
-        }),
-      })
-
-      showMessage('success', 'Admin help request sent! The form has been pre-filled.')
-    } catch (error) {
-      console.error('Failed to send Telegram message:', error)
-      showMessage('success', 'Form pre-filled with admin details.')
-    }
-  } else {
-    // Just show success message if Telegram is not configured
-    showMessage('success', 'Form pre-filled with admin details.')
-  }
 }
 
 const confirmRemoveCollaborator = (collaborator: EventCollaborator) => {
