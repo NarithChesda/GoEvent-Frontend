@@ -182,6 +182,7 @@
                 v-else-if="event?.id"
                 ref="collaboratorTabRef"
                 :event-id="event.id"
+                :event-title="event.title"
                 :can-edit="event.can_edit || false"
                 :organizer-details="event.organizer_details"
               />
