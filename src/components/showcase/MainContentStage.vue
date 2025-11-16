@@ -1,11 +1,7 @@
 <template>
   <div class="absolute inset-0 z-10">
-    <!-- Background Video or Fallback -->
-    <component
-      :is="backgroundVideoComponent"
-      v-bind="backgroundVideoProps"
-      class="absolute inset-0 w-full h-full object-cover"
-    />
+    <!-- Background handled by CoverStage - transparent div maintains z-index stacking -->
+    <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
     <!-- Decoration Images -->
     <img
@@ -109,7 +105,7 @@
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
-                    :welcome-message="welcomeMessage"
+                    :welcome-message="getWelcomeMessage()"
                     :current-language="currentLanguage"
                     :event-type="eventType"
                   />
@@ -126,11 +122,11 @@
                   ]"
                 >
                   <EventInfo
-                    :description-title="descriptionTitle"
-                    :description-text="descriptionText"
-                    :date-text="dateText"
-                    :time-text="timeText"
-                    :location-text="locationText"
+                    :description-title="getDescriptionTitle()"
+                    :description-text="getDescriptionText()"
+                    :date-text="getDateText()"
+                    :time-text="getTimeText()"
+                    :location-text="getLocationText()"
                     :has-google-map="!!event.google_map_embed_link"
                     :google-map-embed-link="event.google_map_embed_link"
                     :primary-color="primaryColor"
@@ -819,7 +815,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, nextTick, inject, type Component } from 'vue'
+import { computed, onMounted, onUnmounted, ref, nextTick, inject } from 'vue'
 import type {
   EventData,
   EventText,
@@ -830,7 +826,6 @@ import type {
 import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import type { SupportedLanguage } from '../../utils/translations'
-import { useRevealAnimations, ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
 import { translateRSVP } from '../../utils/translations'
 
@@ -855,6 +850,13 @@ interface TemplateAssets {
   standard_background_video?: string
   display_liquid_glass_background?: boolean
 }
+
+interface VideoResourceManager {
+  cleanup: () => void
+  stats: () => { managedVideos: number; totalListeners: number }
+}
+
+type SectionRef = { value?: HTMLElement }
 
 interface Props {
   templateAssets?: TemplateAssets | null
@@ -934,31 +936,20 @@ const containerClasses = computed(() => [
   'flex items-center justify-center',
 ])
 
-const existingBackgroundVideo = ref<HTMLVideoElement | null>(null)
-
 // Inject video resource manager from parent showcase using Vue's provide/inject
 // Must be called at top level of setup, not inside lifecycle hooks
-const injectedVideoResourceManager = inject<any>('videoResourceManager')
+const injectedVideoResourceManager = inject<VideoResourceManager | null>('videoResourceManager', null)
 
-const videoResourceManager = ref<{
-  cleanup: () => void
-  stats: () => { managedVideos: number; totalListeners: number }
-} | null>(null)
+const videoResourceManager = ref<VideoResourceManager | null>(null)
 
-const backgroundVideoComponent = computed((): Component | string => {
-  // Use div as the background video is handled by CoverStage
-  return 'div'
-})
-
-const backgroundVideoProps = computed(() => ({
-  class: 'bg-transparent',
-}))
-
-// Mobile detection - must be defined before onMounted
-const isMobile = window.innerWidth < 768
+// Mobile detection function - called at usage time to handle resize/rotation
+const getIsMobile = (): boolean => window.innerWidth < 768
 
 // Create IntersectionObserver ref
 const revealObserver = ref<IntersectionObserver | null>(null)
+
+// Track observed elements for proper cleanup
+const observedElements = ref<Set<Element>>(new Set())
 
 // Simplified mounting - no video management needed
 onMounted(async () => {
@@ -969,8 +960,11 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
+  // Determine if mobile at mount time
+  const isMobile = getIsMobile()
+
   // Create observer with proper configuration for mobile/desktop
-  const observerConfig = isMobile
+  const observerConfig: IntersectionObserverInit = isMobile
     ? {
         threshold: 0.05,
         rootMargin: '0px 0px -20px 0px',
@@ -989,8 +983,11 @@ onMounted(async () => {
         if (entry.isIntersecting) {
           // Add the .is-visible class to trigger CSS transition
           entry.target.classList.add('is-visible')
-          // Optionally unobserve after reveal to improve performance
-          revealObserver.value?.unobserve(entry.target)
+          // Unobserve after reveal to improve performance and track for cleanup
+          if (revealObserver.value) {
+            revealObserver.value.unobserve(entry.target)
+            observedElements.value.delete(entry.target)
+          }
         }
       })
     },
@@ -999,16 +996,30 @@ onMounted(async () => {
 
   // Initialize animations with the properly configured observer
   initializeRevealAnimations()
-  initializeScrollAnimations()
+
+  // Only initialize scroll animations if not in basic mode
+  const isBasicMode = !props.templateAssets?.standard_background_video
+  if (!isBasicMode) {
+    initializeScrollAnimations()
+  }
 
   // Emit that main content has been viewed
   emit('mainContentViewed')
 })
 
-// Cleanup observer on unmount
+// Cleanup observer on unmount - properly unobserve all elements before disconnect
 onUnmounted(() => {
-  revealObserver.value?.disconnect()
-  revealObserver.value = null
+  if (revealObserver.value) {
+    // Unobserve all tracked elements before disconnecting
+    observedElements.value.forEach((element) => {
+      revealObserver.value?.unobserve(element)
+    })
+    observedElements.value.clear()
+
+    // Disconnect and cleanup the observer
+    revealObserver.value.disconnect()
+    revealObserver.value = null
+  }
 })
 
 const emit = defineEmits<{
@@ -1062,7 +1073,7 @@ const {
  * All sections must be observed to add .is-visible class, otherwise they remain hidden
  */
 const initializeRevealAnimations = () => {
-  const animationConfig: Array<[any, string]> = [
+  const animationConfig: Array<[SectionRef, string]> = [
     [welcomeHeaderRef, 'welcome-header'],
     [hostInfoRef, 'host-info'],
     [eventInfoRef, 'event-info'],
@@ -1080,21 +1091,18 @@ const initializeRevealAnimations = () => {
     if (elementRef.value && revealObserver.value) {
       // Set the data-reveal-id attribute for CSS selectors
       elementRef.value.setAttribute('data-reveal-id', elementId)
-      // Observe the element
+      // Observe the element and track it for cleanup
       revealObserver.value.observe(elementRef.value)
+      observedElements.value.add(elementRef.value)
     }
   })
 }
 
 /**
  * Initialize scroll animations
- * Disabled in basic mode for better performance
+ * Only called when not in basic mode
  */
 const initializeScrollAnimations = () => {
-  // Skip scroll animations in basic mode to reduce GPU overhead
-  const isBasicMode = !props.templateAssets?.standard_background_video
-  if (isBasicMode) return
-
   const liquidGlassCard = document.querySelector('.liquid-glass-card')
   if (liquidGlassCard) {
     createScrollAnimation(
@@ -1186,15 +1194,15 @@ const findEventText = (textType: string): EventText | undefined => {
   return eventTextMap.value.get(textType)
 }
 
-// Computed properties for event text content
-const welcomeMessage = computed(() => findEventText('welcome_message')?.content)
-const dateText = computed(() => findEventText('date_text')?.content)
-const timeText = computed(() => findEventText('time_text')?.content)
-const locationText = computed(() => findEventText('location_text')?.content)
-const descriptionText = computed(() => findEventText('description')?.content)
-const descriptionTitle = computed(() => findEventText('description')?.title)
+// Reactive getter functions for event text content - more efficient than computed for simple lookups
+const getWelcomeMessage = (): string | undefined => findEventText('welcome_message')?.content
+const getDateText = (): string | undefined => findEventText('date_text')?.content
+const getTimeText = (): string | undefined => findEventText('time_text')?.content
+const getLocationText = (): string | undefined => findEventText('location_text')?.content
+const getDescriptionText = (): string | undefined => findEventText('description')?.content
+const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
 
-// Computed properties for translated text
+// Computed property for footer text with fallback
 const footerThankYouText = computed(() =>
   getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
 )
