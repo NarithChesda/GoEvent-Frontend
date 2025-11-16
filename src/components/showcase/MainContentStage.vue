@@ -7,6 +7,36 @@
       class="absolute inset-0 w-full h-full object-cover"
     />
 
+    <!-- Decoration Images -->
+    <img
+      v-if="topDecoration"
+      :src="getMediaUrl(topDecoration)"
+      alt="Top decoration"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      loading="lazy"
+    />
+    <img
+      v-if="bottomDecoration"
+      :src="getMediaUrl(bottomDecoration)"
+      alt="Bottom decoration"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      loading="lazy"
+    />
+    <img
+      v-if="leftDecoration"
+      :src="getMediaUrl(leftDecoration)"
+      alt="Left decoration"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25]"
+      loading="lazy"
+    />
+    <img
+      v-if="rightDecoration"
+      :src="getMediaUrl(rightDecoration)"
+      alt="Right decoration"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25]"
+      loading="lazy"
+    />
+
     <!-- Content Loading Overlay -->
     <Transition name="fade">
       <div v-if="contentLoading" class="absolute inset-0 z-40 flex items-center justify-center">
@@ -850,6 +880,10 @@ interface Props {
   isMusicPlaying?: boolean
   isAuthenticated?: boolean
   contentLoading?: boolean
+  topDecoration?: string | null
+  bottomDecoration?: string | null
+  leftDecoration?: string | null
+  rightDecoration?: string | null
 }
 
 const props = defineProps<Props>()

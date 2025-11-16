@@ -125,6 +125,10 @@ export interface TemplateAssets {
     basic_background_photo?: string
     standard_cover_video?: string
     standard_background_video?: string
+    top_decoration?: string
+    bottom_decoration?: string
+    left_decoration?: string
+    right_decoration?: string
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
@@ -204,6 +208,10 @@ export interface EventData {
   photos?: EventPhoto[]
   payment_methods?: EventPaymentMethod[]
   available_languages?: Array<{ id: number; language: string; language_display: string }>
+  top_decoration?: string | null
+  bottom_decoration?: string | null
+  left_decoration?: string | null
+  right_decoration?: string | null
 }
 
 export interface ShowcaseData {
