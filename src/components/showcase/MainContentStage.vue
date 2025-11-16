@@ -954,6 +954,9 @@ const backgroundVideoProps = computed(() => ({
   class: 'bg-transparent',
 }))
 
+// Mobile detection - must be defined before onMounted
+const isMobile = window.innerWidth < 768
+
 // Simplified mounting - no video management needed
 onMounted(async () => {
   await nextTick()
@@ -1024,7 +1027,6 @@ const emit = defineEmits<{
 
 // Animation setup
 // Mobile-optimized configuration: reduced threshold and rootMargin for better triggering on smaller viewports
-const isMobile = window.innerWidth < 768
 const REVEAL_ANIMATION_CONFIG = {
   animationType: 'slideUp' as const,
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
