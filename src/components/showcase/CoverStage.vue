@@ -43,6 +43,10 @@
       :isInteractionDisabled="isEnvelopeInteractionDisabled"
       :getMediaUrl="getMediaUrl"
       :contentTopPosition="contentTopPosition"
+      :coverTopDecoration="coverTopDecoration"
+      :coverBottomDecoration="coverBottomDecoration"
+      :coverLeftDecoration="coverLeftDecoration"
+      :coverRightDecoration="coverRightDecoration"
       @openEnvelope="handleOpenEnvelope"
     />
 
@@ -112,6 +116,10 @@ interface Props {
   videoStatePreserved?: boolean
   getMediaUrl: (url: string) => string
   contentTopPosition?: number // Vertical position in vh units (0-100)
+  coverTopDecoration?: string | null
+  coverBottomDecoration?: string | null
+  coverLeftDecoration?: string | null
+  coverRightDecoration?: string | null
 }
 
 const props = defineProps<Props>()

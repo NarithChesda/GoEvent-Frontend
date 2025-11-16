@@ -12,6 +12,36 @@
     }"
     style="z-index: 10; touch-action: none;"
   >
+    <!-- Decoration Images -->
+    <img
+      v-if="coverTopDecoration"
+      :src="getMediaUrl(coverTopDecoration)"
+      alt="Top decoration"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      loading="lazy"
+    />
+    <img
+      v-if="coverBottomDecoration"
+      :src="getMediaUrl(coverBottomDecoration)"
+      alt="Bottom decoration"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      loading="lazy"
+    />
+    <img
+      v-if="coverLeftDecoration"
+      :src="getMediaUrl(coverLeftDecoration)"
+      alt="Left decoration"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25]"
+      loading="lazy"
+    />
+    <img
+      v-if="coverRightDecoration"
+      :src="getMediaUrl(coverRightDecoration)"
+      alt="Right decoration"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25]"
+      loading="lazy"
+    />
+
     <!-- Inner Container with Dynamic Top Position -->
     <div
       class="inner-container-rows flex flex-col w-full mx-auto absolute"
@@ -167,6 +197,10 @@ interface Props {
   isInteractionDisabled?: boolean // Disables tap/swipe when true
   getMediaUrl: (url: string) => string
   contentTopPosition?: number // Vertical position in vh units (0-100)
+  coverTopDecoration?: string | null
+  coverBottomDecoration?: string | null
+  coverLeftDecoration?: string | null
+  coverRightDecoration?: string | null
 }
 
 const props = defineProps<Props>()

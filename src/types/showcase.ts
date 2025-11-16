@@ -74,6 +74,14 @@ export interface TemplateAssets {
     basic_background_photo?: string
     standard_cover_video?: string
     standard_background_video?: string
+    top_decoration?: string
+    bottom_decoration?: string
+    left_decoration?: string
+    right_decoration?: string
+    cover_top_decoration?: string
+    cover_bottom_decoration?: string
+    cover_left_decoration?: string
+    cover_right_decoration?: string
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
