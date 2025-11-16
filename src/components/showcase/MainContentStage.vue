@@ -966,46 +966,45 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // On mobile, configure observer to watch the scroll container instead of viewport
-  // This fixes the issue where nested scrolling prevents IntersectionObserver from firing
+  // Initialize observer with proper configuration for mobile/desktop
   if (isMobile) {
-    const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element
+    // On mobile, find scroll container and use it as root
+    const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null
     if (scrollContainer) {
-      // Recreate the observer with the scroll container as root
       const { observeRevealElement: mobileObserver } = useRevealAnimations({
-        ...REVEAL_ANIMATION_CONFIG,
+        animationType: 'slideUp' as const,
+        duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+        easing: ANIMATION_CONSTANTS.EASING.EXPO,
+        threshold: 0.05,
+        rootMargin: '0px 0px -20px 0px',
         root: scrollContainer,
       })
-
-      // Re-observe all elements with the mobile-optimized observer
-      const animationConfig: Array<[typeof welcomeHeaderRef, string]> = [
-        [welcomeHeaderRef, 'welcome-header'],
-        [hostInfoRef, 'host-info'],
-        [eventInfoRef, 'event-info'],
-        [rsvpSectionRef, 'rsvp-section'],
-        [dressCodeSectionRef, 'dress-code-section'],
-        [agendaSectionRef, 'agenda-section'],
-        [videoSectionRef, 'video-section'],
-        [gallerySectionRef, 'gallery-section'],
-        [paymentSectionRef, 'payment-section'],
-        [commentSectionRef, 'comment-section'],
-        [footerSectionRef, 'footer-section'],
-      ]
-
-      animationConfig.forEach(([elementRef, elementId]) => {
-        if (elementRef.value) {
-          mobileObserver(elementRef.value, elementId)
-        }
-      })
+      observeRevealElement = mobileObserver
     } else {
-      // Fallback if scroll container not found
-      initializeRevealAnimations()
+      // Fallback to viewport observer
+      const { observeRevealElement: fallbackObserver } = useRevealAnimations({
+        animationType: 'slideUp' as const,
+        duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+        easing: ANIMATION_CONSTANTS.EASING.EXPO,
+        threshold: 0.05,
+        rootMargin: '0px 0px -20px 0px',
+      })
+      observeRevealElement = fallbackObserver
     }
   } else {
-    // Desktop: use standard initialization
-    initializeRevealAnimations()
+    // Desktop: use viewport observer
+    const { observeRevealElement: desktopObserver } = useRevealAnimations({
+      animationType: 'slideUp' as const,
+      duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
+      easing: ANIMATION_CONSTANTS.EASING.EXPO,
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px',
+    })
+    observeRevealElement = desktopObserver
   }
 
+  // Initialize animations with the properly configured observer
+  initializeRevealAnimations()
   initializeScrollAnimations()
 
   // Emit that main content has been viewed
@@ -1026,17 +1025,8 @@ const emit = defineEmits<{
 }>()
 
 // Animation setup
-// Mobile-optimized configuration: reduced threshold and rootMargin for better triggering on smaller viewports
-const REVEAL_ANIMATION_CONFIG = {
-  animationType: 'slideUp' as const,
-  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-  easing: ANIMATION_CONSTANTS.EASING.EXPO,
-  threshold: isMobile ? 0.05 : 0.1, // Lower threshold on mobile for earlier trigger
-  rootMargin: isMobile ? '0px 0px -20px 0px' : '0px 0px -100px 0px', // Smaller margin on mobile
-  root: null, // Will be set to scroll container if needed
-}
-
-const { observeRevealElement } = useRevealAnimations(REVEAL_ANIMATION_CONFIG)
+// Observer will be initialized in onMounted with proper configuration for mobile/desktop
+let observeRevealElement: ReturnType<typeof useRevealAnimations>['observeRevealElement']
 const { createScrollAnimation } = useScrollDrivenAnimations()
 
 // Template refs for animated sections
