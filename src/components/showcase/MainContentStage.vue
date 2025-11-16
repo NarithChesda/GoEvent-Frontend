@@ -957,6 +957,9 @@ const backgroundVideoProps = computed(() => ({
 // Mobile detection - must be defined before onMounted
 const isMobile = window.innerWidth < 768
 
+// Create IntersectionObserver ref
+const revealObserver = ref<IntersectionObserver | null>(null)
+
 // Simplified mounting - no video management needed
 onMounted(async () => {
   await nextTick()
@@ -966,42 +969,33 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Initialize observer with proper configuration for mobile/desktop
-  if (isMobile) {
-    // On mobile, find scroll container and use it as root
-    const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null
-    if (scrollContainer) {
-      const { observeRevealElement: mobileObserver } = useRevealAnimations({
-        animationType: 'slideUp' as const,
-        duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-        easing: ANIMATION_CONSTANTS.EASING.EXPO,
+  // Create observer with proper configuration for mobile/desktop
+  const observerConfig = isMobile
+    ? {
         threshold: 0.05,
         rootMargin: '0px 0px -20px 0px',
-        root: scrollContainer,
+        root: document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null,
+      }
+    : {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px',
+        root: null,
+      }
+
+  // Create the IntersectionObserver directly
+  revealObserver.value = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Add the .is-visible class to trigger CSS transition
+          entry.target.classList.add('is-visible')
+          // Optionally unobserve after reveal to improve performance
+          revealObserver.value?.unobserve(entry.target)
+        }
       })
-      observeRevealElement = mobileObserver
-    } else {
-      // Fallback to viewport observer
-      const { observeRevealElement: fallbackObserver } = useRevealAnimations({
-        animationType: 'slideUp' as const,
-        duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-        easing: ANIMATION_CONSTANTS.EASING.EXPO,
-        threshold: 0.05,
-        rootMargin: '0px 0px -20px 0px',
-      })
-      observeRevealElement = fallbackObserver
-    }
-  } else {
-    // Desktop: use viewport observer
-    const { observeRevealElement: desktopObserver } = useRevealAnimations({
-      animationType: 'slideUp' as const,
-      duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-      easing: ANIMATION_CONSTANTS.EASING.EXPO,
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px',
-    })
-    observeRevealElement = desktopObserver
-  }
+    },
+    observerConfig,
+  )
 
   // Initialize animations with the properly configured observer
   initializeRevealAnimations()
@@ -1009,6 +1003,12 @@ onMounted(async () => {
 
   // Emit that main content has been viewed
   emit('mainContentViewed')
+})
+
+// Cleanup observer on unmount
+onUnmounted(() => {
+  revealObserver.value?.disconnect()
+  revealObserver.value = null
 })
 
 const emit = defineEmits<{
@@ -1025,8 +1025,6 @@ const emit = defineEmits<{
 }>()
 
 // Animation setup
-// Observer will be initialized in onMounted with proper configuration for mobile/desktop
-let observeRevealElement: ReturnType<typeof useRevealAnimations>['observeRevealElement']
 const { createScrollAnimation } = useScrollDrivenAnimations()
 
 // Template refs for animated sections
@@ -1079,8 +1077,11 @@ const initializeRevealAnimations = () => {
   ]
 
   animationConfig.forEach(([elementRef, elementId]) => {
-    if (elementRef.value) {
-      observeRevealElement(elementRef.value, elementId)
+    if (elementRef.value && revealObserver.value) {
+      // Set the data-reveal-id attribute for CSS selectors
+      elementRef.value.setAttribute('data-reveal-id', elementId)
+      // Observe the element
+      revealObserver.value.observe(elementRef.value)
     }
   })
 }
