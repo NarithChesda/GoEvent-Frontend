@@ -39,6 +39,7 @@ interface RevealAnimationOptions {
   easing?: string
   stagger?: boolean
   staggerDelay?: number
+  root?: Element | null
 }
 
 export function useScrollAnimations() {
@@ -111,6 +112,7 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
     easing = ANIMATION_CONSTANTS.EASING.SMOOTH,
     stagger = false,
     staggerDelay = ANIMATION_CONSTANTS.DELAY.STAGGER,
+    root = null,
   } = options
 
   const isVisible = ref<{ [key: string]: boolean }>({})
@@ -141,6 +143,7 @@ export function useRevealAnimations(options: RevealAnimationOptions = {}) {
         })
       },
       {
+        root,
         threshold,
         rootMargin,
       },

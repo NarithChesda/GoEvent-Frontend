@@ -204,6 +204,9 @@ const handlePhotoClick = (photo: EventPhoto) => {
 
 // Setup observer for lazy-loaded images
 const setupLazyImageObserver = () => {
+  // Find the scroll container - important for nested scrolling scenarios on mobile
+  const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null
+
   lazyImageObserver.value = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -220,6 +223,7 @@ const setupLazyImageObserver = () => {
       })
     },
     {
+      root: scrollContainer, // Use scroll container as root for mobile nested scrolling
       threshold: 0.01,
       rootMargin: '50px' // Start loading slightly before entering viewport
     }

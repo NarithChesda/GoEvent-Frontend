@@ -963,8 +963,46 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Initialize animations
-  initializeRevealAnimations()
+  // On mobile, configure observer to watch the scroll container instead of viewport
+  // This fixes the issue where nested scrolling prevents IntersectionObserver from firing
+  if (isMobile) {
+    const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element
+    if (scrollContainer) {
+      // Recreate the observer with the scroll container as root
+      const { observeRevealElement: mobileObserver } = useRevealAnimations({
+        ...REVEAL_ANIMATION_CONFIG,
+        root: scrollContainer,
+      })
+
+      // Re-observe all elements with the mobile-optimized observer
+      const animationConfig: Array<[typeof welcomeHeaderRef, string]> = [
+        [welcomeHeaderRef, 'welcome-header'],
+        [hostInfoRef, 'host-info'],
+        [eventInfoRef, 'event-info'],
+        [rsvpSectionRef, 'rsvp-section'],
+        [dressCodeSectionRef, 'dress-code-section'],
+        [agendaSectionRef, 'agenda-section'],
+        [videoSectionRef, 'video-section'],
+        [gallerySectionRef, 'gallery-section'],
+        [paymentSectionRef, 'payment-section'],
+        [commentSectionRef, 'comment-section'],
+        [footerSectionRef, 'footer-section'],
+      ]
+
+      animationConfig.forEach(([elementRef, elementId]) => {
+        if (elementRef.value) {
+          mobileObserver(elementRef.value, elementId)
+        }
+      })
+    } else {
+      // Fallback if scroll container not found
+      initializeRevealAnimations()
+    }
+  } else {
+    // Desktop: use standard initialization
+    initializeRevealAnimations()
+  }
+
   initializeScrollAnimations()
 
   // Emit that main content has been viewed
@@ -985,12 +1023,15 @@ const emit = defineEmits<{
 }>()
 
 // Animation setup
+// Mobile-optimized configuration: reduced threshold and rootMargin for better triggering on smaller viewports
+const isMobile = window.innerWidth < 768
 const REVEAL_ANIMATION_CONFIG = {
   animationType: 'slideUp' as const,
   duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
   easing: ANIMATION_CONSTANTS.EASING.EXPO,
-  threshold: 0.1,
-  rootMargin: '0px 0px -100px 0px',
+  threshold: isMobile ? 0.05 : 0.1, // Lower threshold on mobile for earlier trigger
+  rootMargin: isMobile ? '0px 0px -20px 0px' : '0px 0px -100px 0px', // Smaller margin on mobile
+  root: null, // Will be set to scroll container if needed
 }
 
 const { observeRevealElement } = useRevealAnimations(REVEAL_ANIMATION_CONFIG)
@@ -1482,6 +1523,25 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .animate-reveal {
     transform: translateY(20px);
+  }
+}
+
+/* Mobile fallback: Auto-reveal gallery section if JavaScript observer fails */
+@media (max-width: 768px) {
+  /* Ensure gallery section becomes visible even if IntersectionObserver doesn't fire */
+  .animate-reveal[data-reveal-id='gallery-section'] {
+    animation: mobile-gallery-reveal 0.6s cubic-bezier(0.19, 1, 0.22, 1) 1.5s forwards;
+  }
+}
+
+@keyframes mobile-gallery-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
