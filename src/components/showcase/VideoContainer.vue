@@ -67,6 +67,7 @@
         :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
         class="w-full h-full object-cover"
+        loading="eager"
       />
     </div>
 
@@ -81,6 +82,7 @@
         :src="getMediaUrl(templateAssets.basic_decoration_photo)"
         alt="Decoration"
         class="w-full h-full object-cover"
+        loading="eager"
       />
     </div>
 
@@ -118,6 +120,7 @@
         :src="getMediaUrl(templateAssets.basic_background_photo)"
         alt="Background"
         class="w-full h-full object-cover"
+        loading="eager"
       />
     </div>
   </div>

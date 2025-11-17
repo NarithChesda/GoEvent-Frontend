@@ -9,28 +9,28 @@
       :src="getMediaUrl(topDecoration)"
       alt="Top decoration"
       class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
-      loading="lazy"
+      loading="eager"
     />
     <img
       v-if="bottomDecoration"
       :src="getMediaUrl(bottomDecoration)"
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
-      loading="lazy"
+      loading="eager"
     />
     <img
       v-if="leftDecoration"
       :src="getMediaUrl(leftDecoration)"
       alt="Left decoration"
       class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25]"
-      loading="lazy"
+      loading="eager"
     />
     <img
       v-if="rightDecoration"
       :src="getMediaUrl(rightDecoration)"
       alt="Right decoration"
       class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25]"
-      loading="lazy"
+      loading="eager"
     />
 
     <!-- Content Loading Overlay -->
