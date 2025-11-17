@@ -118,13 +118,28 @@
           class="guest-content-container flex items-center justify-center px-4 w-full"
         >
           <div class="guest-name-container">
-            <div class="guest-name-blur-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor }">
-              <h2
-                class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
-                :style="guestNameTextStyle"
-              >
-                {{ guestName }}
-              </h2>
+            <div class="art-deco-box" :style="artDecoBoxStyle">
+              <!-- Top decorative line with geometric elements -->
+              <div class="deco-top-line" :style="{ backgroundColor: primaryColor }">
+                <div class="deco-corner-left" :style="{ borderColor: primaryColor }"></div>
+                <div class="deco-corner-right" :style="{ borderColor: primaryColor }"></div>
+              </div>
+
+              <!-- Guest name with blur background -->
+              <div class="guest-name-blur-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor }">
+                <h2
+                  class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
+                  :style="guestNameTextStyle"
+                >
+                  {{ guestName }}
+                </h2>
+              </div>
+
+              <!-- Bottom decorative line with geometric elements -->
+              <div class="deco-bottom-line" :style="{ backgroundColor: primaryColor }">
+                <div class="deco-corner-left" :style="{ borderColor: primaryColor }"></div>
+                <div class="deco-corner-right" :style="{ borderColor: primaryColor }"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -338,6 +353,13 @@ const fallbackLogoStyle = computed(() => {
     filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
   }
 })
+
+// Computed style for Art Deco box with primary color accents
+const artDecoBoxStyle = computed(() => {
+  return {
+    '--deco-color': props.primaryColor,
+  }
+})
 </script>
 
 <style scoped>
@@ -352,6 +374,155 @@ const fallbackLogoStyle = computed(() => {
   max-width: 95%;
 }
 
+/* Art Deco Title Box */
+.art-deco-box {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  max-width: 100%;
+}
+
+/* Top and Bottom Decorative Lines */
+.deco-top-line,
+.deco-bottom-line {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Geometric Corner Elements */
+.deco-corner-left,
+.deco-corner-right {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+/* Top Left Corner - Chevron pointing down-right */
+.deco-top-line .deco-corner-left::before,
+.deco-top-line .deco-corner-left::after {
+  content: '';
+  position: absolute;
+  background-color: var(--deco-color);
+}
+
+.deco-top-line .deco-corner-left::before {
+  width: 2px;
+  height: 16px;
+  left: 0;
+  top: 0;
+  transform: rotate(45deg);
+  transform-origin: top left;
+}
+
+.deco-top-line .deco-corner-left::after {
+  width: 16px;
+  height: 2px;
+  left: 0;
+  top: 0;
+  transform: rotate(45deg);
+  transform-origin: top left;
+}
+
+/* Top Right Corner - Chevron pointing down-left */
+.deco-top-line .deco-corner-right::before,
+.deco-top-line .deco-corner-right::after {
+  content: '';
+  position: absolute;
+  background-color: var(--deco-color);
+}
+
+.deco-top-line .deco-corner-right::before {
+  width: 2px;
+  height: 16px;
+  right: 0;
+  top: 0;
+  transform: rotate(-45deg);
+  transform-origin: top right;
+}
+
+.deco-top-line .deco-corner-right::after {
+  width: 16px;
+  height: 2px;
+  right: 0;
+  top: 0;
+  transform: rotate(-45deg);
+  transform-origin: top right;
+}
+
+/* Bottom Left Corner - Chevron pointing up-right */
+.deco-bottom-line .deco-corner-left::before,
+.deco-bottom-line .deco-corner-left::after {
+  content: '';
+  position: absolute;
+  background-color: var(--deco-color);
+}
+
+.deco-bottom-line .deco-corner-left::before {
+  width: 2px;
+  height: 16px;
+  left: 0;
+  bottom: 0;
+  transform: rotate(-45deg);
+  transform-origin: bottom left;
+}
+
+.deco-bottom-line .deco-corner-left::after {
+  width: 16px;
+  height: 2px;
+  left: 0;
+  bottom: 0;
+  transform: rotate(-45deg);
+  transform-origin: bottom left;
+}
+
+/* Bottom Right Corner - Chevron pointing up-left */
+.deco-bottom-line .deco-corner-right::before,
+.deco-bottom-line .deco-corner-right::after {
+  content: '';
+  position: absolute;
+  background-color: var(--deco-color);
+}
+
+.deco-bottom-line .deco-corner-right::before {
+  width: 2px;
+  height: 16px;
+  right: 0;
+  bottom: 0;
+  transform: rotate(45deg);
+  transform-origin: bottom right;
+}
+
+.deco-bottom-line .deco-corner-right::after {
+  width: 16px;
+  height: 2px;
+  right: 0;
+  bottom: 0;
+  transform: rotate(45deg);
+  transform-origin: bottom right;
+}
+
+/* Center decorative diamonds on the lines */
+.deco-top-line::before,
+.deco-bottom-line::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background-color: var(--deco-color);
+  box-shadow: 0 0 8px var(--deco-color);
+}
+
 .guest-name-blur-wrapper {
   /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
@@ -360,6 +531,7 @@ const fallbackLogoStyle = computed(() => {
   border-radius: 0.5rem;
   display: inline-block;
   max-width: 100%;
+  position: relative;
 }
 
 .guest-name-line {
@@ -431,6 +603,43 @@ const fallbackLogoStyle = computed(() => {
   .guest-name-line:last-child {
     height: 2px !important;
     margin-top: 0.6rem;
+  }
+
+  /* Art Deco responsive adjustments */
+  .art-deco-box {
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+  }
+
+  .deco-top-line,
+  .deco-bottom-line {
+    min-width: 160px;
+  }
+
+  .deco-corner-left,
+  .deco-corner-right {
+    width: 20px;
+    height: 20px;
+  }
+
+  .deco-top-line .deco-corner-left::before,
+  .deco-top-line .deco-corner-right::before,
+  .deco-bottom-line .deco-corner-left::before,
+  .deco-bottom-line .deco-corner-right::before {
+    height: 12px;
+  }
+
+  .deco-top-line .deco-corner-left::after,
+  .deco-top-line .deco-corner-right::after,
+  .deco-bottom-line .deco-corner-left::after,
+  .deco-bottom-line .deco-corner-right::after {
+    width: 12px;
+  }
+
+  .deco-top-line::before,
+  .deco-bottom-line::before {
+    width: 6px;
+    height: 6px;
   }
 }
 
