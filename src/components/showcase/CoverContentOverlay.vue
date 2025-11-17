@@ -118,27 +118,31 @@
           class="guest-content-container flex items-center justify-center px-4 w-full"
         >
           <div class="guest-name-container">
-            <div class="art-deco-box" :style="artDecoBoxStyle">
-              <!-- Top decorative line with geometric elements -->
-              <div class="deco-top-line" :style="{ backgroundColor: primaryColor }">
-                <div class="deco-corner-left" :style="{ borderColor: primaryColor }"></div>
-                <div class="deco-corner-right" :style="{ borderColor: primaryColor }"></div>
-              </div>
+            <div class="premium-name-frame" :style="premiumFrameStyle">
+              <!-- Guest name content with integrated decorations -->
+              <div class="guest-name-content" :style="guestNameBackdropStyle">
+                <!-- Corner Decorations - Integrated into the box -->
+                <div class="corner-decor corner-tl"></div>
+                <div class="corner-decor corner-tr"></div>
+                <div class="corner-decor corner-bl"></div>
+                <div class="corner-decor corner-br"></div>
 
-              <!-- Guest name with blur background -->
-              <div class="guest-name-blur-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor }">
+                <!-- Top Center Accent -->
+                <div class="edge-accent edge-top">
+                  <div class="accent-diamond"></div>
+                </div>
+
+                <!-- Bottom Center Accent -->
+                <div class="edge-accent edge-bottom">
+                  <div class="accent-diamond"></div>
+                </div>
+
                 <h2
                   class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
                   :style="guestNameTextStyle"
                 >
                   {{ guestName }}
                 </h2>
-              </div>
-
-              <!-- Bottom decorative line with geometric elements -->
-              <div class="deco-bottom-line" :style="{ backgroundColor: primaryColor }">
-                <div class="deco-corner-left" :style="{ borderColor: primaryColor }"></div>
-                <div class="deco-corner-right" :style="{ borderColor: primaryColor }"></div>
               </div>
             </div>
           </div>
@@ -292,8 +296,8 @@ const guestNameTextStyle = computed(() => {
 
   return {
     fontFamily,
-    color: props.guestnameColor || '#FFFFFF',
-    textShadow: 'none',
+    color: props.primaryColor, // Use primary color for text
+    textShadow: `0 2px 8px ${props.primaryColor}40`, // Subtle glow
     fontWeight: isEnglishText ? '400' : 'normal',
     // Only capitalize English text - prevents spacing issues with Khmer/other scripts
     textTransform: (isEnglishText ? 'capitalize' : 'none') as 'capitalize' | 'none',
@@ -354,10 +358,27 @@ const fallbackLogoStyle = computed(() => {
   }
 })
 
-// Computed style for Art Deco box with primary color accents
-const artDecoBoxStyle = computed(() => {
+// Computed style for premium frame with primary color accents
+const premiumFrameStyle = computed(() => {
   return {
-    '--deco-color': props.primaryColor,
+    '--primary-color': props.primaryColor,
+    '--accent-glow': `${props.primaryColor}40`,
+  }
+})
+
+// Computed style for guest name backdrop - Liquid glass effect
+const guestNameBackdropStyle = computed(() => {
+  return {
+    background: `
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.15) 100%
+      )
+    `,
+    backdropFilter: 'blur(16px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
   }
 })
 </script>
@@ -374,177 +395,148 @@ const artDecoBoxStyle = computed(() => {
   max-width: 95%;
 }
 
-/* Art Deco Title Box */
-.art-deco-box {
+/* Premium Name Frame */
+.premium-name-frame {
   position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 0;
+  justify-content: center;
   max-width: 100%;
 }
 
-/* Top and Bottom Decorative Lines */
-.deco-top-line,
-.deco-bottom-line {
+/* Guest name content with liquid glass effect */
+.guest-name-content {
+  padding: 0.875rem 2rem;
   position: relative;
-  height: 2px;
-  width: 100%;
-  min-width: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 48px var(--accent-glow);
 }
 
-/* Geometric Corner Elements */
-.deco-corner-left,
-.deco-corner-right {
-  position: relative;
+/* Corner Decorations - Wrapping around the box */
+.corner-decor {
+  position: absolute;
   width: 24px;
   height: 24px;
+  z-index: 2;
 }
 
-/* Top Left Corner - Chevron pointing down-right */
-.deco-top-line .deco-corner-left::before,
-.deco-top-line .deco-corner-left::after {
+/* Corner brackets wrapping the box edges - Sharp corners */
+.corner-decor::before,
+.corner-decor::after {
   content: '';
   position: absolute;
-  background-color: var(--deco-color);
+  background-color: var(--primary-color);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
-.deco-top-line .deco-corner-left::before {
-  width: 2px;
-  height: 16px;
+.corner-decor::before {
+  width: 2.5px;
+  height: 100%;
+}
+
+.corner-decor::after {
+  width: 100%;
+  height: 2.5px;
+}
+
+/* Top Left */
+.corner-tl {
+  top: -2px;
+  left: -2px;
+}
+
+.corner-tl::before {
   left: 0;
   top: 0;
-  transform: rotate(45deg);
-  transform-origin: top left;
 }
 
-.deco-top-line .deco-corner-left::after {
-  width: 16px;
-  height: 2px;
+.corner-tl::after {
   left: 0;
   top: 0;
-  transform: rotate(45deg);
-  transform-origin: top left;
 }
 
-/* Top Right Corner - Chevron pointing down-left */
-.deco-top-line .deco-corner-right::before,
-.deco-top-line .deco-corner-right::after {
-  content: '';
-  position: absolute;
-  background-color: var(--deco-color);
+/* Top Right */
+.corner-tr {
+  top: -2px;
+  right: -2px;
 }
 
-.deco-top-line .deco-corner-right::before {
-  width: 2px;
-  height: 16px;
+.corner-tr::before {
   right: 0;
   top: 0;
-  transform: rotate(-45deg);
-  transform-origin: top right;
 }
 
-.deco-top-line .deco-corner-right::after {
-  width: 16px;
-  height: 2px;
+.corner-tr::after {
   right: 0;
   top: 0;
-  transform: rotate(-45deg);
-  transform-origin: top right;
 }
 
-/* Bottom Left Corner - Chevron pointing up-right */
-.deco-bottom-line .deco-corner-left::before,
-.deco-bottom-line .deco-corner-left::after {
-  content: '';
-  position: absolute;
-  background-color: var(--deco-color);
+/* Bottom Left */
+.corner-bl {
+  bottom: -2px;
+  left: -2px;
 }
 
-.deco-bottom-line .deco-corner-left::before {
-  width: 2px;
-  height: 16px;
+.corner-bl::before {
   left: 0;
   bottom: 0;
-  transform: rotate(-45deg);
-  transform-origin: bottom left;
 }
 
-.deco-bottom-line .deco-corner-left::after {
-  width: 16px;
-  height: 2px;
+.corner-bl::after {
   left: 0;
   bottom: 0;
-  transform: rotate(-45deg);
-  transform-origin: bottom left;
 }
 
-/* Bottom Right Corner - Chevron pointing up-left */
-.deco-bottom-line .deco-corner-right::before,
-.deco-bottom-line .deco-corner-right::after {
-  content: '';
-  position: absolute;
-  background-color: var(--deco-color);
+/* Bottom Right */
+.corner-br {
+  bottom: -2px;
+  right: -2px;
 }
 
-.deco-bottom-line .deco-corner-right::before {
-  width: 2px;
-  height: 16px;
+.corner-br::before {
   right: 0;
   bottom: 0;
-  transform: rotate(45deg);
-  transform-origin: bottom right;
 }
 
-.deco-bottom-line .deco-corner-right::after {
-  width: 16px;
-  height: 2px;
+.corner-br::after {
   right: 0;
   bottom: 0;
-  transform: rotate(45deg);
-  transform-origin: bottom right;
 }
 
-/* Center decorative diamonds on the lines */
-.deco-top-line::before,
-.deco-bottom-line::before {
-  content: '';
+/* Edge Accents - Top and Bottom Center */
+.edge-accent {
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  width: 8px;
-  height: 8px;
-  background-color: var(--deco-color);
-  box-shadow: 0 0 8px var(--deco-color);
+  transform: translateX(-50%);
 }
 
-.guest-name-blur-wrapper {
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  display: inline-block;
-  max-width: 100%;
+.edge-top {
+  top: -6px;
+}
+
+.edge-bottom {
+  bottom: -6px;
+}
+
+/* Accent Diamond */
+.accent-diamond {
+  width: 10px;
+  height: 10px;
+  background-color: var(--primary-color);
+  transform: rotate(45deg);
+  box-shadow: 0 0 12px var(--accent-glow);
   position: relative;
 }
 
-.guest-name-line {
-  width: 100%;
-  height: 2px;
-}
-
-.guest-name-line:first-child {
-  margin-bottom: 0.75rem;
-}
-
-.guest-name-line:last-child {
-  margin-top: 0.75rem;
+.accent-diamond::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 1px;
 }
 
 .guest-name-single-line {
@@ -591,55 +583,39 @@ const artDecoBoxStyle = computed(() => {
     max-width: 90%;
   }
 
-  .guest-name-blur-wrapper {
-    padding: 0.5rem 1rem;
+  /* Premium frame mobile adjustments */
+  .guest-name-content {
+    padding: 0.75rem 1.5rem;
   }
 
-  .guest-name-line:first-child {
-    height: 2px !important;
-    margin-bottom: 0.6rem;
-  }
-
-  .guest-name-line:last-child {
-    height: 2px !important;
-    margin-top: 0.6rem;
-  }
-
-  /* Art Deco responsive adjustments */
-  .art-deco-box {
-    gap: 0.5rem;
-    padding: 0.75rem 0;
-  }
-
-  .deco-top-line,
-  .deco-bottom-line {
-    min-width: 160px;
-  }
-
-  .deco-corner-left,
-  .deco-corner-right {
+  .corner-decor {
     width: 20px;
     height: 20px;
   }
 
-  .deco-top-line .deco-corner-left::before,
-  .deco-top-line .deco-corner-right::before,
-  .deco-bottom-line .deco-corner-left::before,
-  .deco-bottom-line .deco-corner-right::before {
-    height: 12px;
+  .corner-decor::before {
+    width: 2px;
   }
 
-  .deco-top-line .deco-corner-left::after,
-  .deco-top-line .deco-corner-right::after,
-  .deco-bottom-line .deco-corner-left::after,
-  .deco-bottom-line .deco-corner-right::after {
-    width: 12px;
+  .corner-decor::after {
+    height: 2px;
   }
 
-  .deco-top-line::before,
-  .deco-bottom-line::before {
-    width: 6px;
-    height: 6px;
+  .accent-diamond {
+    width: 8px;
+    height: 8px;
+  }
+
+  .accent-diamond::before {
+    inset: 2px;
+  }
+
+  .edge-top {
+    top: -5px;
+  }
+
+  .edge-bottom {
+    bottom: -5px;
   }
 }
 
