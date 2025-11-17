@@ -468,6 +468,8 @@ export function useEventShowcase() {
 
   const backgroundColor = computed(() => extractedColors.value.backgroundColor)
 
+  const templateColor = computed(() => extractedColors.value.templateColor)
+
   const isEventPast = computed(() => {
     if (!event.value?.end_date) return false
     return new Date(event.value.end_date) < new Date()
@@ -1024,6 +1026,7 @@ export function useEventShowcase() {
     accentColor,
     backgroundColor,
     guestnameColor,
+    templateColor,
     currentFont: primaryFont, // Deprecated: use primaryFont instead
     primaryFont,
     secondaryFont,

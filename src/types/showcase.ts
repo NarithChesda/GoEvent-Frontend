@@ -237,6 +237,9 @@ export interface BaseShowcaseProps {
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
+  backgroundColor?: string
+  guestnameColor?: string | null
+  templateColor?: string | null
   currentFont?: string
   primaryFont?: string
   secondaryFont?: string

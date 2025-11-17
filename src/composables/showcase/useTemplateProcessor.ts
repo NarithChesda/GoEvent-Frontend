@@ -237,12 +237,19 @@ export function useTemplateProcessor() {
       backgroundColor = primaryColor
     }
 
+    // Extract template color by name
+    const templateColorObj = templateColors?.find(
+      (color) => color.name?.toLowerCase() === 'template'
+    )
+    const templateColor = templateColorObj?.hex_color_code || templateColorObj?.hex_code || null
+
     return {
       primaryColor,
       secondaryColor,
       accentColor,
       guestnameColor,
       backgroundColor,
+      templateColor,
     }
   }
 

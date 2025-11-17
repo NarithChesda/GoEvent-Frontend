@@ -259,6 +259,7 @@ interface Props {
   accentColor: string
   backgroundColor?: string
   guestnameColor?: string | null
+  templateColor?: string | null
   currentFont: string
   primaryFont?: string
   secondaryFont?: string

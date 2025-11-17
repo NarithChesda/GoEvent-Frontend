@@ -5,6 +5,7 @@
       ref="videoContainerRef"
       :templateAssets="templateAssets"
       :templateColors="templateColors"
+      :templateColor="templateColor"
       :eventTitle="eventTitle"
       :eventVideoUrl="eventVideoUrl"
       :backgroundVideoUrl="backgroundVideoUrl"
@@ -34,6 +35,7 @@
       :accentColor="accentColor"
       :backgroundColor="backgroundColor"
       :guestnameColor="guestnameColor"
+      :templateColor="templateColor"
       :currentFont="currentFont"
       :primaryFont="primaryFont"
       :secondaryFont="secondaryFont"
@@ -105,6 +107,7 @@ interface Props {
   accentColor: string
   backgroundColor?: string
   guestnameColor?: string | null
+  templateColor?: string | null
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -140,9 +143,9 @@ const emit = defineEmits<{
 // Template refs for video elements
 const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
 
-// Compute display mode based on whether basic_decoration_photo exists
+// Compute display mode based on whether standard_cover_video exists
 const displayMode = computed<DisplayMode>(() => {
-  return props.templateAssets?.basic_decoration_photo ? 'basic' : 'standard'
+  return props.templateAssets?.standard_cover_video ? 'standard' : 'basic'
 })
 
 // Disable envelope interaction in standard mode until event video is ready

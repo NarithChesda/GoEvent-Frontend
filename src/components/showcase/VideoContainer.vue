@@ -53,6 +53,14 @@
       :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
     />
 
+    <!-- Fallback Background - Shows when no decoration photo exists -->
+    <!-- Uses template color first, then white as final fallback -->
+    <div
+      v-if="!templateAssets?.basic_decoration_photo && !templateAssets?.standard_cover_video"
+      class="absolute inset-0"
+      :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
+    />
+
     <!-- Photo Layer - Shows decoration in cover stage, background in main content stage -->
     <!-- In cover stage (phase='none'): show basic_decoration_photo -->
     <!-- In main content stage (phase='background'): show basic_background_photo if exists, else basic_decoration_photo -->
@@ -147,6 +155,7 @@ type VideoPhase = 'none' | 'event' | 'background'
 interface Props {
   templateAssets?: TemplateAssets | null
   templateColors?: TemplateColor[] | null
+  templateColor?: string | null
   eventTitle: string
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
@@ -160,12 +169,8 @@ const props = defineProps<Props>()
 
 // Compute the background color for decoration photo
 const decorationBackgroundColor = computed(() => {
-  // Find the template color with name "background"
-  const backgroundColor = props.templateColors?.find(
-    (color) => color.name?.toLowerCase() === 'background',
-  )
-  // Return the color code or fallback to white
-  return backgroundColor?.hex_color_code || backgroundColor?.hex_code || '#ffffff'
+  // Use templateColor, then white as final fallback
+  return props.templateColor || '#ffffff'
 })
 
 const emit = defineEmits<{
