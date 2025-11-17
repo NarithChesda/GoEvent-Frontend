@@ -111,7 +111,7 @@
       <!-- Guest Name Row: 16% -->
       <div
         v-if="guestName"
-        class="content-row-guest flex items-center justify-center animate-fadeIn animation-delay-600"
+        class="content-row-guest flex items-center justify-center"
         style="height: 16%; overflow: visible;"
       >
         <div
@@ -121,20 +121,72 @@
             <div class="premium-name-frame" :style="premiumFrameStyle">
               <!-- Guest name content with integrated decorations -->
               <div class="guest-name-content" :style="guestNameBackdropStyle">
-                <!-- Corner Decorations - Integrated into the box -->
-                <div class="corner-decor corner-tl"></div>
-                <div class="corner-decor corner-tr"></div>
-                <div class="corner-decor corner-bl"></div>
-                <div class="corner-decor corner-br"></div>
-
-                <!-- Top Center Accent -->
-                <div class="edge-accent edge-top">
-                  <div class="accent-diamond"></div>
+                <!-- Corner Decorations - Classic refined borders -->
+                <div class="corner-decor corner-tl">
+                  <svg viewBox="0 0 30 30" class="corner-ornament">
+                    <!-- Double line border -->
+                    <line x1="0" y1="30" x2="0" y2="6" stroke-width="2" class="corner-line"/>
+                    <line x1="0" y1="0" x2="24" y2="0" stroke-width="2" class="corner-line"/>
+                    <line x1="2" y1="28" x2="2" y2="8" stroke-width="1" class="corner-inner-line"/>
+                    <line x1="2" y1="2" x2="22" y2="2" stroke-width="1" class="corner-inner-line"/>
+                    <!-- Elegant corner detail -->
+                    <rect x="0" y="0" width="6" height="6" class="corner-accent-square"/>
+                  </svg>
+                </div>
+                <div class="corner-decor corner-tr">
+                  <svg viewBox="0 0 30 30" class="corner-ornament">
+                    <line x1="30" y1="30" x2="30" y2="6" stroke-width="2" class="corner-line"/>
+                    <line x1="30" y1="0" x2="6" y2="0" stroke-width="2" class="corner-line"/>
+                    <line x1="28" y1="28" x2="28" y2="8" stroke-width="1" class="corner-inner-line"/>
+                    <line x1="28" y1="2" x2="8" y2="2" stroke-width="1" class="corner-inner-line"/>
+                    <rect x="24" y="0" width="6" height="6" class="corner-accent-square"/>
+                  </svg>
+                </div>
+                <div class="corner-decor corner-bl">
+                  <svg viewBox="0 0 30 30" class="corner-ornament">
+                    <line x1="0" y1="0" x2="0" y2="24" stroke-width="2" class="corner-line"/>
+                    <line x1="0" y1="30" x2="24" y2="30" stroke-width="2" class="corner-line"/>
+                    <line x1="2" y1="2" x2="2" y2="22" stroke-width="1" class="corner-inner-line"/>
+                    <line x1="2" y1="28" x2="22" y2="28" stroke-width="1" class="corner-inner-line"/>
+                    <rect x="0" y="24" width="6" height="6" class="corner-accent-square"/>
+                  </svg>
+                </div>
+                <div class="corner-decor corner-br">
+                  <svg viewBox="0 0 30 30" class="corner-ornament">
+                    <line x1="30" y1="0" x2="30" y2="24" stroke-width="2" class="corner-line"/>
+                    <line x1="30" y1="30" x2="6" y2="30" stroke-width="2" class="corner-line"/>
+                    <line x1="28" y1="2" x2="28" y2="22" stroke-width="1" class="corner-inner-line"/>
+                    <line x1="28" y1="28" x2="8" y2="28" stroke-width="1" class="corner-inner-line"/>
+                    <rect x="24" y="24" width="6" height="6" class="corner-accent-square"/>
+                  </svg>
                 </div>
 
-                <!-- Bottom Center Accent -->
+                <!-- Top Center Accent - Classic triple line with center medallion -->
+                <div class="edge-accent edge-top">
+                  <svg viewBox="0 0 60 12" class="edge-ornament">
+                    <!-- Triple lines -->
+                    <line x1="0" y1="6" x2="24" y2="6" stroke-width="1.5" class="edge-line"/>
+                    <line x1="36" y1="6" x2="60" y2="6" stroke-width="1.5" class="edge-line"/>
+                    <line x1="0" y1="9" x2="23" y2="9" stroke-width="0.5" class="edge-detail-line"/>
+                    <line x1="37" y1="9" x2="60" y2="9" stroke-width="0.5" class="edge-detail-line"/>
+                    <!-- Center medallion -->
+                    <circle cx="30" cy="6" r="5" class="edge-medallion"/>
+                    <circle cx="30" cy="6" r="3" class="edge-medallion-inner"/>
+                  </svg>
+                </div>
+
+                <!-- Bottom Center Accent - Classic triple line with center medallion -->
                 <div class="edge-accent edge-bottom">
-                  <div class="accent-diamond"></div>
+                  <svg viewBox="0 0 60 12" class="edge-ornament">
+                    <!-- Triple lines -->
+                    <line x1="0" y1="6" x2="24" y2="6" stroke-width="1.5" class="edge-line"/>
+                    <line x1="36" y1="6" x2="60" y2="6" stroke-width="1.5" class="edge-line"/>
+                    <line x1="0" y1="3" x2="23" y2="3" stroke-width="0.5" class="edge-detail-line"/>
+                    <line x1="37" y1="3" x2="60" y2="3" stroke-width="0.5" class="edge-detail-line"/>
+                    <!-- Center medallion -->
+                    <circle cx="30" cy="6" r="5" class="edge-medallion"/>
+                    <circle cx="30" cy="6" r="3" class="edge-medallion-inner"/>
+                  </svg>
                 </div>
 
                 <h2
@@ -413,130 +465,252 @@ const guestNameBackdropStyle = computed(() => {
     0 8px 32px 0 rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
     0 0 48px var(--accent-glow);
+
+  /* Elegant entrance animation */
+  animation: elegantFrameEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Corner Decorations - Wrapping around the box */
+@keyframes elegantFrameEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Corner Decorations - Classic refined borders */
 .corner-decor {
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   z-index: 2;
+  opacity: 0;
+  animation: cornerSpreadOut 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Corner brackets wrapping the box edges - Sharp corners */
-.corner-decor::before,
-.corner-decor::after {
-  content: '';
-  position: absolute;
-  background-color: var(--primary-color);
-  box-shadow: 0 0 10px var(--accent-glow);
-}
-
-.corner-decor::before {
-  width: 2.5px;
+.corner-ornament {
+  width: 100%;
   height: 100%;
 }
 
-.corner-decor::after {
-  width: 100%;
-  height: 2.5px;
+@keyframes cornerSpreadOut {
+  0% {
+    opacity: 0;
+    /* Start from center of the frame */
+    top: 50%;
+    left: 50%;
+    bottom: auto;
+    right: auto;
+    transform: translate(-50%, -50%) scale(0.3) rotate(45deg);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    /* Final position set by individual corner classes */
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
 }
 
-/* Top Left */
+.corner-line {
+  stroke: var(--primary-color);
+  stroke-linecap: square;
+  fill: none;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: drawLine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: inherit;
+}
+
+.corner-inner-line {
+  stroke: var(--primary-color);
+  stroke-linecap: square;
+  fill: none;
+  opacity: 0;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: drawLineWithOpacity 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: inherit;
+}
+
+.corner-accent-square {
+  fill: var(--primary-color);
+  stroke: none;
+  opacity: 0;
+  animation: fadeInSquare 0.5s ease-out forwards;
+  animation-delay: inherit;
+}
+
+@keyframes drawLineWithOpacity {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 30;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0.6;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeInSquare {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Corner Positions with staggered animation delays */
 .corner-tl {
-  top: -2px;
-  left: -2px;
+  top: -1px;
+  left: -1px;
+  animation-delay: 0.2s;
 }
 
-.corner-tl::before {
-  left: 0;
-  top: 0;
-}
-
-.corner-tl::after {
-  left: 0;
-  top: 0;
-}
-
-/* Top Right */
 .corner-tr {
-  top: -2px;
-  right: -2px;
+  top: -1px;
+  right: -1px;
+  animation-delay: 0.25s;
 }
 
-.corner-tr::before {
-  right: 0;
-  top: 0;
-}
-
-.corner-tr::after {
-  right: 0;
-  top: 0;
-}
-
-/* Bottom Left */
 .corner-bl {
-  bottom: -2px;
-  left: -2px;
+  bottom: -1px;
+  left: -1px;
+  animation-delay: 0.3s;
 }
 
-.corner-bl::before {
-  left: 0;
-  bottom: 0;
-}
-
-.corner-bl::after {
-  left: 0;
-  bottom: 0;
-}
-
-/* Bottom Right */
 .corner-br {
-  bottom: -2px;
-  right: -2px;
+  bottom: -1px;
+  right: -1px;
+  animation-delay: 0.35s;
 }
 
-.corner-br::before {
-  right: 0;
-  bottom: 0;
-}
-
-.corner-br::after {
-  right: 0;
-  bottom: 0;
-}
-
-/* Edge Accents - Top and Bottom Center */
+/* Edge Accents - Classic center medallions with divider lines */
 .edge-accent {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  opacity: 0;
+  animation: edgeSpreadOut 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes edgeSpreadOut {
+  0% {
+    opacity: 0;
+    /* Start from vertical center */
+    top: 50%;
+    bottom: auto;
+    transform: translateX(-50%) translateY(-50%) scale(0.2);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    /* Final position set by individual edge classes */
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 .edge-top {
   top: -6px;
+  animation-delay: 0.4s;
 }
 
 .edge-bottom {
   bottom: -6px;
+  animation-delay: 0.45s;
 }
 
-/* Accent Diamond */
-.accent-diamond {
-  width: 10px;
-  height: 10px;
-  background-color: var(--primary-color);
-  transform: rotate(45deg);
-  box-shadow: 0 0 12px var(--accent-glow);
-  position: relative;
+.edge-ornament {
+  width: 60px;
+  height: 12px;
 }
 
-.accent-diamond::before {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  background-color: rgba(255, 255, 255, 0.4);
-  border-radius: 1px;
+.edge-line {
+  stroke: var(--primary-color);
+  stroke-linecap: round;
+  fill: none;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: drawEdgeLine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: inherit;
+}
+
+.edge-detail-line {
+  stroke: var(--primary-color);
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: drawEdgeDetailLine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: inherit;
+}
+
+.edge-medallion {
+  fill: none;
+  stroke: var(--primary-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 32;
+  stroke-dashoffset: 32;
+  animation: drawCircle 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: inherit;
+}
+
+.edge-medallion-inner {
+  fill: var(--primary-color);
+  stroke: none;
+  opacity: 0;
+  transform-origin: center;
+  animation: fillMedallion 0.5s ease-out forwards;
+  animation-delay: inherit;
+}
+
+@keyframes drawEdgeLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawEdgeDetailLine {
+  to {
+    opacity: 0.5;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fillMedallion {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .guest-name-single-line {
@@ -549,6 +723,27 @@ const guestNameBackdropStyle = computed(() => {
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   margin-top: 0 !important;
+
+  /* Elegant text reveal animation - happens after decorations spread */
+  opacity: 0;
+  animation: revealGuestName 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: 1s;
+}
+
+@keyframes revealGuestName {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(12px);
+    letter-spacing: 0.3em;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    letter-spacing: normal;
+  }
 }
 
 /* Great Vibes font enhancement for better visibility */
@@ -589,25 +784,13 @@ const guestNameBackdropStyle = computed(() => {
   }
 
   .corner-decor {
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
   }
 
-  .corner-decor::before {
-    width: 2px;
-  }
-
-  .corner-decor::after {
-    height: 2px;
-  }
-
-  .accent-diamond {
-    width: 8px;
-    height: 8px;
-  }
-
-  .accent-diamond::before {
-    inset: 2px;
+  .edge-ornament {
+    width: 50px;
+    height: 10px;
   }
 
   .edge-top {

@@ -229,7 +229,7 @@
               v-if="hosts[0].profile_image"
               class="profile-picture-wrapper"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+                background: primaryColor
               }"
             >
               <img
@@ -242,7 +242,7 @@
               v-else
               class="profile-picture-fallback"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+                background: primaryColor,
               }"
             >
               <User class="profile-icon" />
@@ -260,7 +260,7 @@
               v-if="hosts[1]?.profile_image"
               class="profile-picture-wrapper"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`
+                background: primaryColor
               }"
             >
               <img
@@ -273,7 +273,7 @@
               v-else
               class="profile-picture-fallback"
               :style="{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || accentColor})`,
+                background: primaryColor,
               }"
             >
               <User class="profile-icon" />
