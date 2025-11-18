@@ -287,9 +287,8 @@
                             class="w-full h-48 object-contain border border-slate-200 rounded-lg bg-white"
                           />
                           <button
-                            v-if="qrCodeFile"
                             type="button"
-                            @click="handleOpenCropper"
+                            @click="qrCodeFile ? handleOpenCropper() : handleCropExistingImage()"
                             class="mt-2 w-full px-3 py-1.5 text-xs bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center gap-1"
                           >
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -559,6 +558,38 @@ const handleQrCodeUpload = (event: Event) => {
 const handleOpenCropper = () => {
   if (qrCodePreview.value) {
     openCropper(qrCodePreview.value, qrCodeFile.value)
+  }
+}
+
+const handleCropExistingImage = async () => {
+  // Determine which image to crop: preview (if new image uploaded) or existing qr_code_image
+  let imageUrl = qrCodePreview.value
+
+  // If no preview, use the existing qr_code_image with full URL
+  if (!imageUrl && props.existingPaymentMethod?.qr_code_image) {
+    const fullUrl = getMediaUrl(props.existingPaymentMethod.qr_code_image)
+    if (fullUrl) {
+      imageUrl = fullUrl
+    }
+  }
+
+  if (!imageUrl) return
+
+  try {
+    // Fetch the existing image as a blob
+    const response = await fetch(imageUrl)
+    const blob = await response.blob()
+
+    // Create a File object from the blob
+    const fileName = imageUrl.split('/').pop() || 'qr-code.png'
+    const file = new File([blob], fileName, { type: blob.type })
+
+    // Set the file and open cropper
+    qrCodeFile.value = file
+    openCropper(imageUrl, file)
+  } catch (error) {
+    console.error('Error loading image for cropping:', error)
+    alert('Failed to load image for cropping. Please try uploading a new image.')
   }
 }
 
