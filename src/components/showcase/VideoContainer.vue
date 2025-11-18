@@ -45,43 +45,17 @@
       @playing="handleBackgroundVideoPlaying"
     />
 
-    <!-- Background Color Layer - Always visible in basic mode -->
-    <!-- Shows template color "background" or white as fallback -->
+    <!-- COVER STAGE BACKGROUND (when decoration is visible, i.e., NOT isContentHidden) -->
+    <!-- Background Color Layer for Cover Stage - templateColor or white fallback -->
     <div
-      v-if="templateAssets?.basic_decoration_photo"
+      v-if="!isContentHidden && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
     />
 
-    <!-- Fallback Background - Shows when no decoration photo exists -->
-    <!-- Uses template color first, then white as final fallback -->
+    <!-- Decoration Photo - Shows in Cover Stage, swipes up to reveal main content -->
     <div
-      v-if="!templateAssets?.basic_decoration_photo && !templateAssets?.standard_cover_video"
-      class="absolute inset-0"
-      :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
-    />
-
-    <!-- Photo Layer - Shows decoration in cover stage, background in main content stage -->
-    <!-- In cover stage (phase='none'): show basic_decoration_photo -->
-    <!-- In main content stage (phase='background'): show basic_background_photo if exists, else basic_decoration_photo -->
-
-    <!-- Background Photo - Always visible behind decoration -->
-    <div
-      v-if="templateAssets?.basic_decoration_photo && templateAssets?.basic_background_photo"
-      class="absolute inset-0"
-      style="z-index: -1"
-    >
-      <img
-        :src="getMediaUrl(templateAssets.basic_background_photo)"
-        alt="Background"
-        class="w-full h-full object-cover"
-        loading="eager"
-      />
-    </div>
-
-    <!-- Decoration Photo - Swipes up to reveal background -->
-    <div
-      v-if="templateAssets?.basic_decoration_photo"
+      v-if="templateAssets?.basic_decoration_photo && !templateAssets?.standard_cover_video"
       class="absolute inset-0 transition-all duration-700 ease-out"
       :class="{ 'swipe-up-hidden': isContentHidden }"
       style="z-index: 0"
@@ -93,6 +67,28 @@
         loading="eager"
       />
     </div>
+
+    <!-- MAIN CONTENT STAGE BACKGROUND (when decoration is hidden, i.e., isContentHidden) -->
+    <!-- Background Photo Layer for Main Content Stage -->
+    <div
+      v-if="isContentHidden && templateAssets?.basic_background_photo && !templateAssets?.standard_cover_video"
+      class="absolute inset-0"
+      style="z-index: -1"
+    >
+      <img
+        :src="getMediaUrl(templateAssets.basic_background_photo)"
+        alt="Background"
+        class="w-full h-full object-cover"
+        loading="eager"
+      />
+    </div>
+
+    <!-- Fallback Background Color for Main Content Stage when no background photo -->
+    <div
+      v-if="isContentHidden && !templateAssets?.basic_background_photo && !templateAssets?.standard_cover_video"
+      class="absolute inset-0"
+      :style="{ backgroundColor: decorationBackgroundColor, zIndex: -1 }"
+    />
 
     <!-- Standard Cover Video Loop - Only show when not in event/background phase and no decoration photo -->
     <video
@@ -112,25 +108,6 @@
       style="z-index: -1"
       @loadeddata="$emit('coverVideoLoaded')"
     />
-
-    <!-- Fallback Background Image -->
-    <div
-      v-if="
-        templateAssets?.basic_background_photo &&
-        isCoverVideoPlaying &&
-        !templateAssets?.standard_cover_video &&
-        !templateAssets?.basic_decoration_photo
-      "
-      class="absolute inset-0"
-      style="z-index: -1"
-    >
-      <img
-        :src="getMediaUrl(templateAssets.basic_background_photo)"
-        alt="Background"
-        class="w-full h-full object-cover"
-        loading="eager"
-      />
-    </div>
   </div>
 </template>
 
