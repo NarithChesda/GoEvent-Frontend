@@ -527,12 +527,14 @@ const getGenderTabStyle = (index: number) => {
   .time-tab {
     padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
     font-size: 0.75rem !important; /* Compact font size */
+    line-height: 1.2 !important; /* Match AgendaWedding tab-date */
   }
 
   /* Gender tabs - compact mobile sizing like AgendaWedding */
   .gender-tab {
     padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
     font-size: 0.75rem !important; /* Compact font size */
+    line-height: 1.2 !important; /* Match AgendaWedding tab-date */
   }
 
   /* Gender header text - scaled to 77.625% from mobile sm:text-base (1rem) */
