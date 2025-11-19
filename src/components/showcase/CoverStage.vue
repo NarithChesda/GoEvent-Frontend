@@ -1,5 +1,9 @@
 <template>
-  <div class="absolute inset-0 z-10" :style="{ backgroundColor: primaryColor }">
+  <div
+    class="absolute inset-0 z-10 transition-opacity duration-700 ease-out"
+    :class="{ 'opacity-0': shouldSkipToMainContent }"
+    :style="{ backgroundColor: primaryColor }"
+  >
     <!-- VideoContainer - stays visible for background -->
     <VideoContainer
       ref="videoContainerRef"

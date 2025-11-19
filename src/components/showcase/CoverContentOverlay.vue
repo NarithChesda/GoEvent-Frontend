@@ -1,46 +1,54 @@
 <template>
-  <div
-    @click="handleClick"
-    @touchstart.passive="handleTouchStart"
-    @touchmove.passive="handleTouchMove"
-    @touchend="handleTouchEnd"
-    class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
-    :class="{
-      'swipe-up-hidden': isContentHidden,
-      'cursor-pointer': !isInteractionDisabled,
-      'cursor-not-allowed opacity-75': isInteractionDisabled
-    }"
-    style="z-index: 10; touch-action: none;"
-  >
-    <!-- Decoration Images -->
+  <!-- Wrapper for decorations and content -->
+  <div class="absolute inset-0">
+    <!-- Decoration Images - Animate independently from content -->
     <img
       v-if="coverTopDecoration"
       :src="getMediaUrl(coverTopDecoration)"
       alt="Top decoration"
-      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-top"
+      :class="{ 'slide-out-to-top': isContentHidden }"
       loading="lazy"
     />
     <img
       v-if="coverBottomDecoration"
       :src="getMediaUrl(coverBottomDecoration)"
       alt="Bottom decoration"
-      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-bottom"
+      :class="{ 'slide-out-to-bottom': isContentHidden }"
       loading="lazy"
     />
     <img
       v-if="coverLeftDecoration"
       :src="getMediaUrl(coverLeftDecoration)"
       alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25]"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25] cover-decoration-left"
+      :class="{ 'slide-out-to-left': isContentHidden }"
       loading="lazy"
     />
     <img
       v-if="coverRightDecoration"
       :src="getMediaUrl(coverRightDecoration)"
       alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25]"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25] cover-decoration-right"
+      :class="{ 'slide-out-to-right': isContentHidden }"
       loading="lazy"
     />
+
+    <!-- Main Content Container -->
+    <div
+      @click="handleClick"
+      @touchstart.passive="handleTouchStart"
+      @touchmove.passive="handleTouchMove"
+      @touchend="handleTouchEnd"
+      class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
+      :class="{
+        'swipe-up-hidden': isContentHidden,
+        'cursor-pointer': !isInteractionDisabled,
+        'cursor-not-allowed opacity-75': isInteractionDisabled
+      }"
+      style="z-index: 10; touch-action: none;"
+    >
 
     <!-- Inner Container with Dynamic Top Position -->
     <div
@@ -229,6 +237,7 @@
           <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -952,11 +961,43 @@ const guestNameBackdropStyle = computed(() => {
   }
 }
 
-/* Swipe Up Animation */
+/* Swipe Up Animation - fade out background and content */
 .swipe-up-hidden {
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
+}
+
+/* Decoration slide-out animations - Order: left → right → top → bottom */
+.cover-decoration-left,
+.cover-decoration-right,
+.cover-decoration-top,
+.cover-decoration-bottom {
+  transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+}
+
+.slide-out-to-left {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition-delay: 0.1s;
+}
+
+.slide-out-to-right {
+  transform: translateX(100%);
+  opacity: 0;
+  transition-delay: 0.2s;
+}
+
+.slide-out-to-top {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition-delay: 0.3s;
+}
+
+.slide-out-to-bottom {
+  transform: translateY(100%);
+  opacity: 0;
+  transition-delay: 0.4s;
 }
 
 /* Fallback Logo Styles */
