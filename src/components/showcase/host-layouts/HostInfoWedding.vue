@@ -719,21 +719,23 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .logo-row {
-    padding: 1rem 1rem; /* Add horizontal padding */
+    padding: 0.75rem 1rem; /* Slightly reduced vertical padding from 1rem to 0.75rem */
+    margin-top: -0.25rem; /* Slightly pull logo closer to parent names */
+    margin-bottom: 0.5rem; /* Add more space to host titles */
   }
 
   .name-row {
     margin-top: -0.125rem; /* Match mobile */
   }
 
-  /* Override Tailwind's lg:text-4xl to keep mobile size */
+  /* Override Tailwind's lg:text-4xl to reduce size for laptop */
   .welcome-content h2 {
-    font-size: 1.5rem !important; /* Match mobile base size */
+    font-size: 1.25rem !important; /* Reduced from 1.5rem (24px) to 1.25rem (20px) */
     line-height: 1.25 !important; /* Match mobile line height */
   }
 
   .parent-name-text {
-    font-size: 0.7906rem; /* Match mobile: 12.65px */
+    font-size: 0.55rem; /* Reduced from 0.6rem (9.6px) to 0.55rem (8.8px) */
   }
 
   .parent-row:nth-child(3) {
@@ -741,7 +743,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .host-name-text {
-    font-size: 0.85rem; /* Match mobile: 13.6px */
+    font-size: 0.7rem; /* Reduced from 0.75rem (12px) to 0.7rem (11.2px) */
   }
 
   .host-logo-showcase {
@@ -778,7 +780,9 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .logo-row {
-    padding: 1rem 1rem; /* Add horizontal padding */
+    padding: 0.75rem 1rem; /* Slightly reduced vertical padding from 1rem to 0.75rem */
+    margin-top: -0.25rem; /* Slightly pull logo closer to parent names */
+    margin-bottom: 0.5rem; /* Add more space to host titles */
   }
 
   .name-row {
@@ -789,8 +793,14 @@ const fallbackLogoStyle = computed(() => {
     margin-top: -0.75rem; /* Match mobile Khmer */
   }
 
+  /* Override Tailwind's lg:text-4xl to reduce size for laptop */
+  .welcome-content h2 {
+    font-size: 1.25rem !important; /* Reduced from 1.5rem (24px) to 1.25rem (20px) */
+    line-height: 1.25 !important;
+  }
+
   .parent-name-text {
-    font-size: 0.7906rem; /* Match mobile: 12.65px */
+    font-size: 0.55rem; /* Reduced from 0.6rem (9.6px) to 0.55rem (8.8px) */
   }
 
   .parent-row:nth-child(3) {
@@ -802,7 +812,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .host-name-text {
-    font-size: 0.85rem; /* Match mobile: 13.6px */
+    font-size: 0.7rem; /* Reduced from 0.75rem (12px) to 0.7rem (11.2px) */
   }
 
   .host-logo-showcase {
@@ -839,7 +849,9 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .logo-row {
-    padding: 1rem 1rem; /* Add horizontal padding */
+    padding: 0.75rem 1rem; /* Slightly reduced vertical padding from 1rem to 0.75rem */
+    margin-top: -0.25rem; /* Slightly pull logo closer to parent names */
+    margin-bottom: 0.5rem; /* Add more space to host titles */
   }
 
   .name-row {
@@ -851,7 +863,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .parent-name-text {
-    font-size: 0.7906rem; /* Match mobile: 12.65px */
+    font-size: 0.55rem; /* Reduced from 0.6rem (9.6px) to 0.55rem (8.8px) */
   }
 
   .parent-row:nth-child(3) {
@@ -863,7 +875,7 @@ const fallbackLogoStyle = computed(() => {
   }
 
   .host-name-text {
-    font-size: 0.85rem; /* Match mobile: 13.6px */
+    font-size: 0.7rem; /* Reduced from 0.75rem (12px) to 0.7rem (11.2px) */
   }
 
   .host-logo-showcase {
