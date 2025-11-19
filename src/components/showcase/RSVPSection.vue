@@ -1012,14 +1012,14 @@ onUnmounted(() => {
 
 /* Small laptops - Reduce all components by 20% except header text */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Toggle labels - 20% reduction from mobile base */
+  /* Toggle labels - match location text size */
   .toggle-label {
-    font-size: 0.7rem; /* 11.2px - 20% smaller than 14px */
+    font-size: 0.6rem; /* 9.6px - match location text size */
     line-height: 1rem;
   }
 
   .stepper-label {
-    font-size: 0.65rem; /* 10.4px - 20% smaller than 13px */
+    font-size: 0.6rem; /* 9.6px - match location text size */
     line-height: 1rem;
   }
 
@@ -1031,8 +1031,8 @@ onUnmounted(() => {
 
   .confirmation-text,
   .confirmation-code-text {
-    font-size: 0.6rem; /* 9.6px - 20% smaller than 12px */
-    line-height: 0.8rem;
+    font-size: 0.6rem; /* 9.6px - match location text size */
+    line-height: 1rem;
   }
 
   /* Ensure confirmation chip has even padding */
@@ -1136,14 +1136,14 @@ onUnmounted(() => {
     border-width: 1.6px; /* 20% smaller */
   }
 
-  /* Header text size - reduced by one size */
+  /* Header text size - match location text size */
   .text-sm {
-    font-size: 0.75rem !important; /* 12px - reduced from 0.875rem */
+    font-size: 0.6rem !important; /* 9.6px - match location text size */
     line-height: 1rem !important; /* adjusted for smaller text */
   }
 
   .text-base {
-    font-size: 0.875rem !important; /* 14px - reduced from 1rem */
+    font-size: 0.6rem !important; /* 9.6px - match location text size */
     line-height: 1rem !important; /* adjusted for smaller text */
   }
 

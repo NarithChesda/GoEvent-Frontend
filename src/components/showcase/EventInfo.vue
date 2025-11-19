@@ -362,16 +362,16 @@ const hourLabel = computed(() => {
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .countdown-number {
-    font-size: clamp(2.7rem, 10.8vw, 4.95rem);
+    font-size: clamp(1.89rem, 7.56vw, 3.465rem); /* Reduced by 30% from original */
   }
 
   .countdown-separator {
-    font-size: clamp(2.7rem, 10.8vw, 4.95rem);
+    font-size: clamp(1.89rem, 7.56vw, 3.465rem); /* Reduced by 30% from original */
     margin-bottom: 0.875rem;
   }
 
   .countdown-unit-label {
-    font-size: 0.75rem; /* Reduced from 0.875rem */
+    font-size: 0.6rem !important; /* Match countdown header text size */
   }
 
   .countdown-time-row {
@@ -392,20 +392,20 @@ const hourLabel = computed(() => {
     line-height: 1.125rem !important; /* normal leading */
   }
 
-  /* Details text inside card (date, time, location) - reduced by one size */
+  /* Details text inside card (date, time, location) - match description text size */
   .text-sm {
-    font-size: 0.75rem !important; /* 12px - reduced from 0.875rem */
-    line-height: 1.25rem !important; /* increased for better readability */
+    font-size: 0.6rem !important; /* 9.6px - match description text size */
+    line-height: 1.125rem !important; /* match description line-height */
   }
 
   /* Override leading-snug for date and location text */
   .leading-snug {
-    line-height: 1.25rem !important; /* adjusted for smaller text */
+    line-height: 1.125rem !important; /* match description line-height */
   }
 
-  /* Countdown header text - reduced by one size */
+  /* Countdown header text - match description text size */
   .countdown-header {
-    font-size: 0.75rem !important; /* 12px - reduced from text-sm (0.875rem) */
+    font-size: 0.6rem !important; /* 9.6px - match description text size */
   }
 
   /* Scale spacing to match mobile base - reduced for tighter layout */
@@ -455,9 +455,15 @@ const hourLabel = computed(() => {
     padding-bottom: 0.35rem !important; /* Reduced for countdown */
   }
 
-  /* Border radius - match mobile */
+  /* Border radius and stroke - reduce to match mobile more closely */
   .gradient-stroke-container {
-    border-radius: 2rem !important;
+    border-radius: 1.5rem !important; /* Reduced from 2rem */
+    padding: 1.5px !important; /* Reduced from 2px */
+  }
+
+  /* Adjust inner border radius to match new outer radius */
+  .gradient-stroke-container > div {
+    border-radius: calc(1.5rem - 1.5px) !important; /* Match new stroke size */
   }
 
   /* Map container - maintain aspect ratio */
