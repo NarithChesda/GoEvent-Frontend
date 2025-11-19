@@ -690,12 +690,12 @@
                       </div>
 
                       <!-- Social Media Buttons -->
-                      <div class="flex flex-wrap items-center justify-center gap-2.5">
+                      <div class="flex flex-wrap items-center justify-center gap-2.5 lg:gap-2 xl:gap-2.5">
                         <a
                           href="https://t.me/goeventkh"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -703,7 +703,7 @@
                           aria-label="Telegram"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
+                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -718,7 +718,7 @@
                           href="https://www.facebook.com/profile.php?id=61581851850221"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -726,7 +726,7 @@
                           aria-label="Facebook"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
+                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -741,7 +741,7 @@
                           href="https://www.instagram.com/goevent.online/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -749,7 +749,7 @@
                           aria-label="Instagram"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
+                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -764,7 +764,7 @@
                           href="https://www.tiktok.com/@goevent.online"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -772,7 +772,7 @@
                           aria-label="TikTok"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
+                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -788,7 +788,7 @@
                       <!-- Contact Info -->
                       <div class="space-y-2 lg:space-y-1">
                         <div
-                          class="inline-flex items-center justify-center text-md lg:text-sm px-2 opacity-90"
+                          class="inline-flex items-center justify-center text-md lg:text-xs xl:text-md px-2 opacity-90"
                           :class="showLiquidGlass ? 'text-white' : ''"
                           :style="{
                             fontFamily: secondaryFont || currentFont,
