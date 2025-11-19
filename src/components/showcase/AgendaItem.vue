@@ -228,17 +228,17 @@ const timeText = computed(() => {
     min-height: 2.32875rem !important; /* 3rem * 0.77625 */
   }
 
-  /* Title - scaled to 77.625% from mobile md:text-lg (1.125rem) */
+  /* Title - match tab date text */
   h3 {
-    font-size: 0.87328125rem !important; /* 1.125rem * 0.77625 - increased by 15% */
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding tab date text */
     line-height: 1.8 !important; /* Match mobile line-height */
     padding-top: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
     padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
   }
 
-  /* Time text - scaled to 77.625% from mobile text-xs (0.75rem) */
-  .text-xs {
-    font-size: 0.75684375rem !important; /* 0.75rem * 0.77625 * 1.3 - increased by 30% */
+  /* Time text - match description text */
+  .text-sm {
+    font-size: 0.75rem !important; /* 12px - match AgendaWedding description text */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
@@ -281,17 +281,17 @@ const timeText = computed(() => {
     min-height: 2.5875rem !important; /* 3rem * 0.8625 */
   }
 
-  /* Title - scaled to 86.25% from mobile md:text-lg (1.125rem) */
+  /* Title - match tab date text */
   h3 {
-    font-size: 0.97031250rem !important; /* 1.125rem * 0.8625 - increased by 15% */
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding tab date text */
     line-height: 1.8 !important; /* Match mobile line-height */
     padding-top: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
     padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
   }
 
-  /* Time text - scaled to 86.25% from mobile text-xs (0.75rem) */
-  .text-xs {
-    font-size: 0.84093750rem !important; /* 0.75rem * 0.8625 * 1.3 - increased by 30% */
+  /* Time text - match description text */
+  .text-sm {
+    font-size: 0.75rem !important; /* 12px - match AgendaWedding description text */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 

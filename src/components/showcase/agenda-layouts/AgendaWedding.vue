@@ -4,7 +4,7 @@
     class="agenda-wedding mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
   >
     <!-- Header -->
-    <div class="text-center mb-4 sm:mb-5 laptop-sm:mb-4 laptop-md:mb-5 laptop-lg:mb-6 desktop:mb-5">
+    <div class="text-center mb-4 sm:mb-5 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-6 desktop:mb-5">
       <h2
         :class="[
           'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize',
@@ -396,19 +396,19 @@ onMounted(() => {
   margin-bottom: 0.2em;
 }
 
-/* Small laptops 13-inch (1024px-1365px) - Scaled to 67.5% matching mobile exactly */
+/* Small laptops 13-inch (1024px-1365px) - Match DressCodeSection exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match DressCodeSection header */
   h2 {
-    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching CommentSection */
+    font-size: 1.25rem !important; /* 20px - match DressCodeSection header */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 
-  /* Description text - scaled to 67.5% from mobile md:text-lg (1.125rem) */
+  /* Description text - match DressCodeSection description */
   p {
-    font-size: 0.759375rem !important; /* 1.125rem * 0.675 */
+    font-size: 0.75rem !important; /* 12px - match DressCodeSection description */
   }
 
   /* Tab bar compact sizing */
@@ -417,23 +417,32 @@ onMounted(() => {
   }
 
   .tab-date {
-    font-size: 0.75rem !important;
+    font-size: 0.625rem !important; /* 10px - match DressCodeSection tab text */
   }
 }
 
-/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching mobile exactly */
+/* Medium laptops 14-15 inch (1366px-1535px) - Match DressCodeSection exactly */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match DressCodeSection header */
   h2 {
-    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching CommentSection */
+    font-size: 1.25rem !important; /* 20px - match DressCodeSection header */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
   }
 
-  /* Description text - scaled to 75% from mobile md:text-lg (1.125rem) */
+  /* Description text - match DressCodeSection description */
   p {
-    font-size: 0.84375rem !important; /* 1.125rem * 0.75 */
+    font-size: 0.75rem !important; /* 12px - match DressCodeSection description */
+  }
+
+  /* Tab bar larger gap like DressCodeSection */
+  .tab-button {
+    padding: 0.75rem 1.75rem !important; /* 640px+ sizing */
+  }
+
+  .tab-date {
+    font-size: 0.625rem !important; /* 10px - match DressCodeSection tab text */
   }
 }
 
