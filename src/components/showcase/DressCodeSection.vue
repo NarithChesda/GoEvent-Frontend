@@ -537,6 +537,21 @@ const getGenderTabStyle = (index: number) => {
     line-height: 1.2 !important; /* Match AgendaWedding tab-date */
   }
 
+  /* Color circles - reduce by 50% on laptop */
+  .color-circle {
+    width: 1.25rem !important; /* 50% of 2.5rem (w-10) */
+    height: 1.25rem !important; /* 50% of 2.5rem (h-10) */
+  }
+
+  .color-circle span {
+    width: 0.375rem !important; /* 50% of 0.75rem (w-3) */
+    height: 0.375rem !important; /* 50% of 0.75rem (h-3) */
+  }
+
+  .color-navigation {
+    gap: 0.375rem !important; /* 50% of 0.75rem (gap-3) */
+  }
+
   /* Gender header text - scaled to 77.625% from mobile sm:text-base (1rem) */
   .gender-header-text {
     font-size: 0.77625rem !important; /* 1rem * 0.77625 */
@@ -601,6 +616,21 @@ const getGenderTabStyle = (index: number) => {
   .gender-tab {
     padding: 0.625rem 1.25rem !important; /* Maintain base mobile sizing */
     font-size: 1rem !important; /* 640px+ font size */
+  }
+
+  /* Color circles - reduce by 50% on laptop */
+  .color-circle {
+    width: 1.5rem !important; /* 50% of 3rem (sm:w-12) */
+    height: 1.5rem !important; /* 50% of 3rem (sm:h-12) */
+  }
+
+  .color-circle span {
+    width: 0.375rem !important; /* 50% of 0.75rem (w-3) */
+    height: 0.375rem !important; /* 50% of 0.75rem (h-3) */
+  }
+
+  .color-navigation {
+    gap: 0.375rem !important; /* 50% of 0.75rem (gap-3) */
   }
 
   /* Gender header text - scaled to 86.25% from mobile sm:text-base (1rem) */
