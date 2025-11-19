@@ -504,37 +504,72 @@ const getGenderTabStyle = (index: number) => {
   transform: scale(1.05);
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% matching AgendaWedding exactly */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Aligned with HostInfoWedding header */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match HostInfoWedding welcome header exactly */
   .dress-code-header {
-    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching AgendaWedding */
+    font-size: 1.25rem !important; /* 20px - match HostInfoWedding header */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 
-  /* Section description - scaled to 67.5% from mobile md:text-lg (1.125rem) */
+  /* Section description - larger size for better readability */
   .section-header p {
-    font-size: 0.759375rem !important; /* 1.125rem * 0.675 */
+    font-size: 0.75rem !important; /* 12px - increased for better readability */
   }
 
   /* Time period tabs - compact mobile sizing like AgendaWedding */
   .time-period-tabs {
     gap: 0.5rem; /* Match mobile gap */
+    margin-bottom: 0.5rem !important; /* Match spacing below photo (to gender tabs) */
   }
 
   .time-tab {
     padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
-    font-size: 0.75rem !important; /* Compact font size */
+    font-size: 0.625rem !important; /* 10px - reduced for laptop */
     line-height: 1.2 !important; /* Match AgendaWedding tab-date */
   }
 
   /* Gender tabs - compact mobile sizing like AgendaWedding */
   .gender-tab {
     padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
-    font-size: 0.75rem !important; /* Compact font size */
+    font-size: 0.625rem !important; /* 10px - reduced for laptop */
     line-height: 1.2 !important; /* Match AgendaWedding tab-date */
+  }
+
+  /* Reduce spacing above and below gender tabs */
+  .gender-tabs-section {
+    margin-bottom: 0rem !important; /* Remove spacing below (to title) */
+    margin-top: 0.25rem !important; /* Small spacing above (from photo) */
+    padding-top: 0.125rem !important; /* Minimal top padding */
+    padding-bottom: 0.125rem !important; /* Minimal bottom padding */
+  }
+
+  /* Even spacing around photo/image section */
+  .image-section {
+    margin-top: 0.25rem !important; /* Match spacing from time tabs */
+    margin-bottom: 0.5rem !important; /* Small spacing below photo */
+  }
+
+  /* Reduce spacing for title and description section */
+  .dress-code-info-section {
+    padding-top: 0rem !important; /* Remove top padding */
+    padding-bottom: 0rem !important; /* Remove bottom padding */
+    margin-top: 0rem !important; /* Remove top margin */
+    margin-bottom: 0rem !important; /* Remove bottom margin */
+  }
+
+  /* Reduce spacing for title text */
+  .dress-code-title {
+    margin-bottom: 0.125rem !important; /* Minimal spacing below title */
+  }
+
+  /* Reduce spacing for color navigation section */
+  .color-navigation-section {
+    padding-top: 0rem !important; /* Remove top padding */
+    padding-bottom: 0.25rem !important; /* Minimal bottom padding */
+    margin-top: 0rem !important; /* Remove top margin */
   }
 
   /* Color circles - reduce by 50% on laptop */
@@ -587,35 +622,70 @@ const getGenderTabStyle = (index: number) => {
   }
 }
 
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% matching AgendaWedding exactly */
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Aligned with HostInfoWedding header */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match HostInfoWedding welcome header exactly */
   .dress-code-header {
-    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching AgendaWedding */
+    font-size: 1.25rem !important; /* 20px - match HostInfoWedding header */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
     padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
   }
 
-  /* Section description - scaled to 75% from mobile md:text-lg (1.125rem) */
+  /* Section description - larger size for better readability */
   .section-header p {
-    font-size: 0.84375rem !important; /* 1.125rem * 0.75 */
+    font-size: 0.75rem !important; /* 12px - increased for better readability */
   }
 
   /* Time period tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
   .time-period-tabs {
     gap: 0.75rem; /* 640px+ gap */
+    margin-bottom: 0.5rem !important; /* Match spacing below photo (to gender tabs) */
   }
 
   .time-tab {
     padding: 0.75rem 1.75rem !important; /* 640px+ sizing */
-    font-size: 1rem !important; /* 640px+ font size */
+    font-size: 0.625rem !important; /* 10px - reduced for laptop */
   }
 
   /* Gender tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
   .gender-tab {
     padding: 0.625rem 1.25rem !important; /* Maintain base mobile sizing */
-    font-size: 1rem !important; /* 640px+ font size */
+    font-size: 0.625rem !important; /* 10px - reduced for laptop */
+  }
+
+  /* Reduce spacing above and below gender tabs */
+  .gender-tabs-section {
+    margin-bottom: 0rem !important; /* Remove spacing below (to title) */
+    margin-top: 0.25rem !important; /* Small spacing above (from photo) */
+    padding-top: 0.125rem !important; /* Minimal top padding */
+    padding-bottom: 0.125rem !important; /* Minimal bottom padding */
+  }
+
+  /* Even spacing around photo/image section */
+  .image-section {
+    margin-top: 0.25rem !important; /* Match spacing from time tabs */
+    margin-bottom: 0.5rem !important; /* Small spacing below photo */
+  }
+
+  /* Reduce spacing for title and description section */
+  .dress-code-info-section {
+    padding-top: 0rem !important; /* Remove top padding */
+    padding-bottom: 0rem !important; /* Remove bottom padding */
+    margin-top: 0rem !important; /* Remove top margin */
+    margin-bottom: 0rem !important; /* Remove bottom margin */
+  }
+
+  /* Reduce spacing for title text */
+  .dress-code-title {
+    margin-bottom: 0.125rem !important; /* Minimal spacing below title */
+  }
+
+  /* Reduce spacing for color navigation section */
+  .color-navigation-section {
+    padding-top: 0rem !important; /* Remove top padding */
+    padding-bottom: 0.25rem !important; /* Minimal bottom padding */
+    margin-top: 0rem !important; /* Remove top margin */
   }
 
   /* Color circles - reduce by 50% on laptop */
