@@ -353,6 +353,13 @@ onUnmounted(() => {
   }
 }
 
+/* Laptop view - reduced vertical spacing */
+@media (min-width: 769px) and (max-width: 1536px) {
+  .photo-grid {
+    gap: 0.5rem;
+  }
+}
+
 /* Mobile optimizations for messaging app browsers */
 @media (max-width: 768px) {
   .photo-grid {
