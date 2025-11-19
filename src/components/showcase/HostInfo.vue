@@ -12,6 +12,7 @@ import type { Host } from '../../composables/useEventShowcase'
 // Import all layout variants
 import HostInfoWedding from './host-layouts/HostInfoWedding.vue'
 import HostInfoBirthday from './host-layouts/HostInfoBirthday.vue'
+import HostInfoHousewarming from './host-layouts/HostInfoHousewarming.vue'
 import HostInfoDefault from './host-layouts/HostInfoDefault.vue'
 
 interface Props {
@@ -46,6 +47,10 @@ const layoutComponent = computed(() => {
     // Birthday events
     'birthday': HostInfoBirthday,
     'birthday party': HostInfoBirthday,
+
+    // Housewarming events
+    'housewarming': HostInfoHousewarming,
+    'housewarming party': HostInfoHousewarming,
 
     // Corporate events (use default for now, can create custom later)
     'corporate': HostInfoDefault,
