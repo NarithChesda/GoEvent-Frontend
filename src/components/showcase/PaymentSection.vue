@@ -127,7 +127,7 @@
                       <img
                         :src="getMediaUrl(method.qr_code_image)"
                         :alt="`QR Code for ${method.name}`"
-                        class="w-28 h-28 sm:w-32 sm:h-32 mx-auto shadow-md transition-all duration-300"
+                        class="w-28 h-28 sm:w-32 sm:h-32 laptop-sm:w-24 laptop-sm:h-24 mx-auto shadow-md transition-all duration-300"
                         @error="onImageError"
                       />
                       <!-- Subtle scan line animation overlay -->
@@ -942,6 +942,12 @@ const capitalizeText = (text: string | undefined): string => {
 
 /* Small laptops 13-inch (1024px-1365px) - Mobile view applied */
 @media (min-width: 1024px) and (max-width: 1365px) {
+  /* Payment card container - consistent border radius matching mobile */
+  .payment-card-container {
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+  }
+
   /* Remove any left margin on QR code section */
   .xl\:ml-8 {
     margin-left: 0 !important;
@@ -957,12 +963,12 @@ const capitalizeText = (text: string | undefined): string => {
   /* QR Code - compact sizing for laptop */
   .qr-simple-container {
     padding: 0.5rem !important;
-    border-radius: 0 !important;
+    border-radius: 1.5rem !important;
   }
 
   .qr-simple-container img {
-    width: 8rem !important; /* 128px - mobile size */
-    height: 8rem !important;
+    width: 6rem !important; /* 96px - smaller for laptop */
+    height: 6rem !important;
     margin-left: auto !important;
     margin-right: auto !important;
     border-radius: 0 !important;
@@ -1009,7 +1015,7 @@ const capitalizeText = (text: string | undefined): string => {
   /* Bank info pills - compact sizing for laptop with wrapping support */
   .bank-info-pill {
     padding: 0.375rem 0.625rem !important;
-    font-size: 0.75rem !important; /* 12px */
+    font-size: 0.55rem !important; /* Smaller for laptop */
     min-height: 32px !important;
     border-radius: 0.75rem !important;
     max-width: 98% !important;
@@ -1019,11 +1025,12 @@ const capitalizeText = (text: string | undefined): string => {
 
   .bank-info-pill span {
     line-height: 1.35 !important;
+    font-size: 0.55rem !important;
   }
 
   .bank-info-pill svg.w-4 {
-    width: 1rem !important;
-    height: 1rem !important;
+    width: 0.75rem !important;
+    height: 0.75rem !important;
   }
 
   /* Payment button - mobile sizing */
@@ -1098,8 +1105,13 @@ const capitalizeText = (text: string | undefined): string => {
   }
 
   .text-xs {
-    font-size: 0.75rem !important;
+    font-size: 0.55rem !important;
     line-height: 1.5 !important;
+  }
+
+  /* Scan to pay text - smaller for laptop */
+  .qr-simple-container + p {
+    font-size: 0.55rem !important;
   }
 
   /* Header text - mobile size reduced by 15% for collapse state */
@@ -1125,13 +1137,13 @@ const capitalizeText = (text: string | undefined): string => {
 
   /* Icons - mobile sizing */
   svg.w-5 {
-    width: 1.25rem !important; /* 20px */
-    height: 1.25rem !important;
+    width: 1rem !important; /* Smaller for laptop */
+    height: 1rem !important;
   }
 
   svg.w-4 {
-    width: 1rem !important; /* 16px */
-    height: 1rem !important;
+    width: 0.75rem !important; /* Smaller for laptop */
+    height: 0.75rem !important;
   }
 
   svg.w-12,
@@ -1264,6 +1276,12 @@ const capitalizeText = (text: string | undefined): string => {
 
 /* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching AgendaSection */
 @media (min-width: 1366px) and (max-width: 1535px) {
+  /* Payment card container - consistent border radius */
+  .payment-card-container {
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+  }
+
   .payment-method-section {
     /* No padding - matches comment section */
   }
@@ -1271,6 +1289,20 @@ const capitalizeText = (text: string | undefined): string => {
   .payment-row-container {
     padding: 0.75rem;
     gap: 0.25rem;
+  }
+
+  /* QR Code - compact sizing for medium laptop */
+  .qr-simple-container {
+    padding: 0.5rem !important;
+    border-radius: 1.5rem !important;
+  }
+
+  .qr-simple-container img {
+    width: 6rem !important; /* 96px - smaller for laptop */
+    height: 6rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    border-radius: 0 !important;
   }
 
   .payment-info-simple {
@@ -1281,6 +1313,20 @@ const capitalizeText = (text: string | undefined): string => {
     padding: 1.25rem;
   }
 
+  /* Bank info pills - compact sizing for medium laptop */
+  .bank-info-pill {
+    font-size: 0.55rem !important;
+  }
+
+  .bank-info-pill span {
+    font-size: 0.55rem !important;
+  }
+
+  .bank-info-pill svg.w-4 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
   .payment-link-minimalist {
     padding: 0.75rem 1.25rem;
     min-height: 40px;
@@ -1288,6 +1334,27 @@ const capitalizeText = (text: string | undefined): string => {
 
   .glass-content-section {
     padding: 0.75rem;
+  }
+
+  /* Text sizing for medium laptop */
+  .text-xs {
+    font-size: 0.55rem !important;
+  }
+
+  /* Scan to pay text - smaller for medium laptop */
+  .qr-simple-container + p {
+    font-size: 0.55rem !important;
+  }
+
+  /* Icons - smaller for medium laptop */
+  svg.w-5 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  svg.w-4 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
   }
 
   /* Header text - scaled to 75% matching AgendaSection */
