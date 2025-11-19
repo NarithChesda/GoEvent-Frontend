@@ -8,28 +8,28 @@
       v-if="topDecoration"
       :src="getMediaUrl(topDecoration)"
       alt="Top decoration"
-      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromTop"
       loading="eager"
     />
     <img
       v-if="bottomDecoration"
       :src="getMediaUrl(bottomDecoration)"
       alt="Bottom decoration"
-      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromBottom"
       loading="eager"
     />
     <img
       v-if="leftDecoration"
       :src="getMediaUrl(leftDecoration)"
       alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25]"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25] animate-slideInFromLeft"
       loading="eager"
     />
     <img
       v-if="rightDecoration"
       :src="getMediaUrl(rightDecoration)"
       alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25]"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25] animate-slideInFromRight"
       loading="eager"
     />
 
@@ -1339,6 +1339,51 @@ onUnmounted(() => {
   }
 }
 
+/* Decoration slide-in animations */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* Liquid glass rotation animation */
 @keyframes liquid-rotate {
   0% {
@@ -1369,6 +1414,32 @@ onUnmounted(() => {
 /* Main slide animation */
 .animate-slideUp {
   animation: slideUp 0.8s ease-out forwards;
+}
+
+/* Decoration slide-in animation classes with staggered timing */
+/* Order: left → right → top → bottom */
+.animate-slideInFromLeft {
+  animation: slideInFromLeft 0.8s ease-out forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
+}
+
+.animate-slideInFromRight {
+  animation: slideInFromRight 0.8s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.animate-slideInFromTop {
+  animation: slideInFromTop 0.8s ease-out forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.animate-slideInFromBottom {
+  animation: slideInFromBottom 0.8s ease-out forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
 }
 
 /* Liquid Glass Card - Consolidated styles */
