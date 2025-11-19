@@ -29,15 +29,11 @@
             :key="date"
             class="tab-button"
             :class="{ active: activeTab === date }"
-            :style="{
-              backgroundColor: 'transparent',
-              color: primaryColor,
-              borderColor: activeTab === date ? primaryColor : 'transparent',
-            }"
+            :style="getTabStyle(date)"
             @click="selectTab(date)"
           >
             <span
-              :class="['tab-date font-regular', currentLanguage === 'kh' && 'khmer-text-fix']"
+              :class="['tab-date font-semibold', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{ fontFamily: primaryFont || currentFont }"
             >
               {{ formatAgendaDate(date) }}
@@ -251,6 +247,18 @@ const getFirstAgendaDescription = (date: string): string => {
   return description ? description.charAt(0).toUpperCase() + description.slice(1) : ''
 }
 
+// Style helper for tabs matching AgendaWedding
+const getTabStyle = (date: string) => {
+  const isActive = activeTab.value === date
+  return {
+    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
+    color: isActive ? '#ffffff' : props.primaryColor,
+    fontFamily: props.primaryFont || props.currentFont,
+    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
+  }
+}
+
 // Select the first tab by default on mount
 onMounted(() => {
   if (agendaTabs.value.length > 0) {
@@ -281,35 +289,58 @@ onMounted(() => {
 
 .tab-bar {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-width: min-content;
   justify-content: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
-/* Tab Buttons */
+@media (min-width: 640px) {
+  .tab-bar {
+    gap: 0.75rem;
+  }
+}
+
+/* Tab Buttons - Matching AgendaWedding */
 .tab-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+  border-radius: 9999px;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
   cursor: pointer;
-  background: transparent;
-  position: relative;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .tab-button {
+    padding: 0.75rem 1.75rem;
+  }
 }
 
 .tab-button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.05) !important;
+}
+
+.tab-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .tab-date {
   font-size: 0.875rem;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .tab-date {
+    font-size: 1rem;
+  }
 }
 
 /* Khmer language tab date - reduce padding */
@@ -375,65 +406,43 @@ onMounted(() => {
   -webkit-hyphens: none !important;
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 77.625% (67.5% * 1.15) */
+/* Small laptops 13-inch (1024px-1365px) - Match AgendaWedding */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - scaled to 77.625% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match AgendaWedding header */
   .agenda-header {
-    font-size: 1.45546875rem !important; /* 1.875rem * 0.77625 - increased by 15% */
+    font-size: 1.25rem !important; /* 20px - match AgendaWedding header */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
-    margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 from md:mb-6 - reduced by 50% */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
   }
 
-  /* Tab bar sizing - scaled to 77.625% from mobile */
-  .tab-bar-scroll-wrapper {
-    margin-bottom: 1.164375rem !important; /* 1.5rem * 0.77625 - increased by 15% */
-  }
-
-  .tab-bar {
-    gap: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
-  }
-
+  /* Tab bar compact sizing */
   .tab-button {
-    padding: 0.48515625rem 0.97031250rem !important; /* 0.625rem * 0.77625, 1.25rem * 0.77625 - increased by 15% */
-    border-radius: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
+    padding: 0.625rem 1.25rem !important;
   }
 
   .tab-date {
-    font-size: 0.67968750rem !important; /* 0.875rem * 0.77625 - increased by 15% */
-    line-height: 1.2; /* Match mobile line-height */
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding tab text */
   }
 }
 
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 86.25% (75% * 1.15) */
+/* Medium laptops 14-15 inch (1366px-1535px) - Match AgendaWedding */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - scaled to 86.25% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match AgendaWedding header */
   .agenda-header {
-    font-size: 1.61718750rem !important; /* 1.875rem * 0.8625 - increased by 15% */
+    font-size: 1.25rem !important; /* 20px - match AgendaWedding header */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
-    margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 from md:mb-6 - reduced by 50% */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
   }
 
-  /* Tab bar sizing - scaled to 86.25% from mobile */
-  .tab-bar-scroll-wrapper {
-    margin-bottom: 1.29375rem !important; /* 1.5rem * 0.8625 - increased by 15% */
-  }
-
-  .tab-bar {
-    gap: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
-  }
-
+  /* Tab bar larger gap like AgendaWedding */
   .tab-button {
-    padding: 0.53906250rem 1.07812500rem !important; /* 0.625rem * 0.8625, 1.25rem * 0.8625 - increased by 15% */
-    border-radius: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
+    padding: 0.75rem 1.75rem !important; /* 640px+ sizing */
   }
 
   .tab-date {
-    font-size: 0.75468750rem !important; /* 0.875rem * 0.8625 - increased by 15% */
-    line-height: 1.2; /* Match mobile line-height */
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding tab text */
   }
 }
 
@@ -441,6 +450,19 @@ onMounted(() => {
 @media (min-width: 1536px) {
   h2 {
     font-size: 1.875rem !important; /* 30px - text-3xl */
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tab-button,
+  .agenda-item-animate {
+    animation: none;
+    opacity: 1;
+  }
+
+  .tab-button:hover {
+    transform: none;
   }
 }
 </style>
