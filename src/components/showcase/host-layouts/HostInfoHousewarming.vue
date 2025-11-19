@@ -357,6 +357,11 @@ const fallbackLogoStyle = computed(() => {
   width: 0.5rem;
 }
 
+/* Parent name text styles (used for host titles) */
+.parent-name-text {
+  font-size: 0.7906rem; /* 12.65px - 15% increase from 11px (mobile) */
+}
+
 /* Host name text styles with 15% mobile reduction */
 .host-name-text {
   font-size: 0.85rem; /* 13.6px - 15% reduction from 16px (mobile) */
@@ -542,6 +547,10 @@ const fallbackLogoStyle = computed(() => {
     margin-bottom: 0.625rem;
   }
 
+  .parent-name-text {
+    font-size: 0.9344rem; /* 14.95px - 15% increase from 13px */
+  }
+
   .host-name-text {
     font-size: 0.95625rem; /* 15.3px - 15% reduction from 18px */
   }
@@ -569,6 +578,10 @@ const fallbackLogoStyle = computed(() => {
 
   .name-row {
     margin-top: -0.375rem;
+  }
+
+  .parent-name-text {
+    font-size: 1.0781rem; /* 17.25px - 15% increase from 15px */
   }
 
   .host-name-text {
@@ -608,6 +621,10 @@ const fallbackLogoStyle = computed(() => {
   .welcome-content h2 {
     font-size: 1.5rem !important; /* Match mobile base size */
     line-height: 1.25 !important; /* Match mobile line height */
+  }
+
+  .parent-name-text {
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
   }
 
   .host-name-text {
@@ -659,6 +676,10 @@ const fallbackLogoStyle = computed(() => {
     margin-top: -0.75rem; /* Match mobile Khmer */
   }
 
+  .parent-name-text {
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
+  }
+
   .host-name-text {
     font-size: 0.85rem; /* Match mobile: 13.6px */
   }
@@ -706,6 +727,10 @@ const fallbackLogoStyle = computed(() => {
 
   .khmer-text .name-row {
     margin-top: -0.75rem; /* Match mobile Khmer */
+  }
+
+  .parent-name-text {
+    font-size: 0.7906rem; /* Match mobile: 12.65px */
   }
 
   .host-name-text {
@@ -756,6 +781,10 @@ const fallbackLogoStyle = computed(() => {
   /* Reduce welcome header text size for desktop */
   .welcome-content h2 {
     font-size: 1.875rem !important; /* 30px - text-3xl instead of text-4xl */
+  }
+
+  .parent-name-text {
+    font-size: 1.0063rem; /* 16.1px - 15% increase from 14px */
   }
 
   .host-name-text {
