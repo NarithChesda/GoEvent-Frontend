@@ -378,15 +378,17 @@ const hourLabel = computed(() => {
     gap: 0.65rem;
   }
 
-  /* Title - reduced by one size from text-base to text-sm */
+  /* Title - match host name text size */
   h2 {
-    font-size: 0.875rem !important; /* 14px - reduced from 1rem */
+    font-size: 0.7rem !important; /* 11.2px - match HostInfoWedding host name text */
     line-height: 1.25rem !important; /* tight leading */
   }
 
-  /* Description text - reduced by one size from text-sm to text-xs */
-  p {
-    font-size: 0.75rem !important; /* 12px - reduced from 0.875rem */
+  /* Description text - slightly larger than host title text */
+  p,
+  p.text-sm,
+  p.sm\:text-base {
+    font-size: 0.6rem !important; /* 9.6px - slightly larger than host title (0.55rem) */
     line-height: 1.125rem !important; /* normal leading */
   }
 
@@ -517,11 +519,13 @@ const hourLabel = computed(() => {
   }
 
   h2 {
-    font-size: 1rem !important; /* Reduced from 1.25rem */
+    font-size: 1rem !important; /* Restore original size for medium laptops */
   }
 
-  p {
-    font-size: 0.875rem !important; /* Reduced from 1rem */
+  p,
+  p.text-sm,
+  p.sm\:text-base {
+    font-size: 0.875rem !important; /* Restore original size for medium laptops */
   }
 
   .text-sm {
@@ -557,11 +561,13 @@ const hourLabel = computed(() => {
   }
 
   h2 {
-    font-size: 1.25rem !important; /* Reduced from 1.5rem */
+    font-size: 1.25rem !important; /* Restore original size for large laptops/desktop */
   }
 
-  p {
-    font-size: 0.875rem !important; /* Reduced from 1rem */
+  p,
+  p.text-sm,
+  p.sm\:text-base {
+    font-size: 0.875rem !important; /* Restore original size for large laptops/desktop */
   }
 
   .text-sm {
