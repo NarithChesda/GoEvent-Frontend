@@ -365,11 +365,11 @@
                       }"
                     ></div>
 
-                    <div class="space-y-4">
+                    <div class="space-y-4 lg:space-y-2">
                       <!-- Thank You Message -->
 
                       <!-- Logo Section with Collaboration Display -->
-                      <div class="space-y-3">
+                      <div class="space-y-3 lg:space-y-1.5">
                         <!-- Show collaboration if referrer exists and is partner -->
                         <div
                           v-if="event.referrer_details?.is_partner && event.referrer_details?.logo"
@@ -383,11 +383,10 @@
                               <img
                                 :src="getMediaUrl(event.referrer_details.logo)"
                                 :alt="event.referrer_details.first_name || 'Partner'"
-                                class="w-full h-auto object-contain"
+                                class="w-full h-auto object-contain max-h-[64px] lg:max-h-[72px]"
                                 :class="showLiquidGlass ? 'brightness-110' : ''"
                                 :style="{
                                   height: 'min(5.6vh, 64px)',
-                                  maxHeight: '64px',
                                   maxWidth: '100%',
                                   filter: showLiquidGlass
                                     ? 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
@@ -417,10 +416,9 @@
                               <svg
                                 v-if="showLiquidGlass"
                                 viewBox="0 0 222.09 69.13"
-                                class="w-full h-auto"
+                                class="w-full h-auto max-h-[64px] lg:max-h-[72px]"
                                 :style="{
                                   height: 'min(5.6vh, 64px)',
-                                  maxHeight: '64px',
                                   maxWidth: '100%',
                                   filter: 'drop-shadow(0 2px 8px rgba(255,255,255,0.25))',
                                 }"
@@ -503,10 +501,9 @@
                               <svg
                                 v-else
                                 viewBox="0 0 222.09 69.13"
-                                class="w-full h-auto"
+                                class="w-full h-auto max-h-[64px] lg:max-h-[72px]"
                                 :style="{
                                   height: 'min(5.6vh, 64px)',
-                                  maxHeight: '64px',
                                   maxWidth: '100%',
                                   filter: `drop-shadow(0 2px 8px ${primaryColor}40)`,
                                 }"
@@ -597,10 +594,9 @@
                         >
                           <svg
                             viewBox="0 0 222.09 69.13"
-                            class="w-auto"
+                            class="w-auto max-h-[64px] lg:max-h-[72px]"
                             :style="{
                               height: 'min(5.6vh, 64px)',
-                              maxHeight: '64px',
                               fill: showLiquidGlass ? '#ffffff' : primaryColor,
                               filter: showLiquidGlass
                                 ? 'drop-shadow(0 2px 8px rgba(255,255,255,0.25))'
@@ -699,7 +695,7 @@
                           href="https://t.me/goeventkh"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -707,7 +703,7 @@
                           aria-label="Telegram"
                         >
                           <svg
-                            class="w-[17px] h-[17px]"
+                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -722,7 +718,7 @@
                           href="https://www.facebook.com/profile.php?id=61581851850221"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -730,7 +726,7 @@
                           aria-label="Facebook"
                         >
                           <svg
-                            class="w-[17px] h-[17px]"
+                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -745,7 +741,7 @@
                           href="https://www.instagram.com/goevent.online/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -753,7 +749,7 @@
                           aria-label="Instagram"
                         >
                           <svg
-                            class="w-[17px] h-[17px]"
+                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -768,7 +764,7 @@
                           href="https://www.tiktok.com/@goevent.online"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="w-[34px] h-[34px] lg:w-[28px] lg:h-[28px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -776,7 +772,7 @@
                           aria-label="TikTok"
                         >
                           <svg
-                            class="w-[17px] h-[17px]"
+                            class="w-[17px] h-[17px] lg:w-[14px] lg:h-[14px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -790,9 +786,9 @@
                       </div>
 
                       <!-- Contact Info -->
-                      <div class="space-y-2">
+                      <div class="space-y-2 lg:space-y-1">
                         <div
-                          class="inline-flex items-center justify-center text-md px-2 opacity-90"
+                          class="inline-flex items-center justify-center text-md lg:text-sm px-2 opacity-90"
                           :class="showLiquidGlass ? 'text-white' : ''"
                           :style="{
                             fontFamily: secondaryFont || currentFont,
