@@ -504,15 +504,19 @@ const getGenderTabStyle = (index: number) => {
   transform: scale(1.05);
 }
 
-/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 77.625% (67.5% * 1.15) */
+/* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 67.5% matching AgendaWedding exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - scaled to 77.625% from mobile md:text-3xl (1.875rem) */
+  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
   .dress-code-header {
-    font-size: 1.45546875rem !important; /* 1.875rem * 0.77625 - increased by 15% */
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching AgendaWedding */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
-    margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 from md:mb-6 - reduced by 50% */
+    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+  }
+
+  /* Section description - scaled to 67.5% from mobile md:text-lg (1.125rem) */
+  .section-header p {
+    font-size: 0.759375rem !important; /* 1.125rem * 0.675 */
   }
 
   /* Time period tabs - compact mobile sizing like AgendaWedding */
@@ -566,15 +570,19 @@ const getGenderTabStyle = (index: number) => {
   }
 }
 
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 86.25% (75% * 1.15) */
+/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 75% matching AgendaWedding exactly */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - scaled to 86.25% from mobile md:text-3xl (1.875rem) */
+  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
   .dress-code-header {
-    font-size: 1.61718750rem !important; /* 1.875rem * 0.8625 - increased by 15% */
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching AgendaWedding */
     line-height: 1.25 !important; /* Match mobile leading-tight */
     padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
-    margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 from md:mb-6 - reduced by 50% */
+    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  }
+
+  /* Section description - scaled to 75% from mobile md:text-lg (1.125rem) */
+  .section-header p {
+    font-size: 0.84375rem !important; /* 1.125rem * 0.75 */
   }
 
   /* Time period tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
