@@ -515,15 +515,20 @@ const getGenderTabStyle = (index: number) => {
     margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 from md:mb-6 - reduced by 50% */
   }
 
-  /* Time period tabs - scaled to 77.625% from mobile */
+  /* Time period tabs - compact mobile sizing like AgendaWedding */
   .time-period-tabs {
-    gap: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
+    gap: 0.5rem; /* Match mobile gap */
   }
 
   .time-tab {
-    padding: 0.48515625rem 0.97031250rem !important; /* 0.625rem * 0.77625, 1.25rem * 0.77625 - increased by 15% */
-    border-radius: 0.58218750rem; /* 0.75rem * 0.77625 - increased by 15% */
-    font-size: 0.67968750rem !important; /* 0.875rem * 0.77625 - increased by 15% */
+    padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
+    font-size: 0.75rem !important; /* Compact font size */
+  }
+
+  /* Gender tabs - compact mobile sizing like AgendaWedding */
+  .gender-tab {
+    padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
+    font-size: 0.75rem !important; /* Compact font size */
   }
 
   /* Gender header text - scaled to 77.625% from mobile sm:text-base (1rem) */
@@ -572,15 +577,20 @@ const getGenderTabStyle = (index: number) => {
     margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 from md:mb-6 - reduced by 50% */
   }
 
-  /* Time period tabs - scaled to 86.25% from mobile */
+  /* Time period tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
   .time-period-tabs {
-    gap: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
+    gap: 0.75rem; /* 640px+ gap */
   }
 
   .time-tab {
-    padding: 0.53906250rem 1.07812500rem !important; /* 0.625rem * 0.8625, 1.25rem * 0.8625 - increased by 15% */
-    border-radius: 0.64687500rem; /* 0.75rem * 0.8625 - increased by 15% */
-    font-size: 0.75468750rem !important; /* 0.875rem * 0.8625 - increased by 15% */
+    padding: 0.75rem 1.75rem !important; /* 640px+ sizing */
+    font-size: 1rem !important; /* 640px+ font size */
+  }
+
+  /* Gender tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
+  .gender-tab {
+    padding: 0.625rem 1.25rem !important; /* Maintain base mobile sizing */
+    font-size: 1rem !important; /* 640px+ font size */
   }
 
   /* Gender header text - scaled to 86.25% from mobile sm:text-base (1rem) */
