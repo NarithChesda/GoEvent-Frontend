@@ -340,16 +340,23 @@ const loadCurrentRegistration = async () => {
 
       // Update UI state based on registration status
       // Map backend status to UI state
+      // Backend uses: 'registered', 'confirmed', 'coming', 'not_coming', 'declined', 'pending'
       if (response.data.status === 'not_coming' || response.data.status === 'declined') {
-        // User has a registration but marked as not attending
+        // User explicitly marked as not attending
         rsvpStatus.value = 'not_coming'
         additionalGuests.value = 0
         savedGuestCount.value = 0
-      } else {
-        // Any other status (confirmed, coming, pending, etc.) means they're attending
+      } else if (response.data.status === 'registered' || response.data.status === 'confirmed' ||
+                 response.data.status === 'coming' || response.data.status === 'pending') {
+        // User is attending (registered, confirmed, coming, or pending)
         rsvpStatus.value = 'coming'
         additionalGuests.value = response.data.guest_count || 0
         savedGuestCount.value = response.data.guest_count || 0
+      } else {
+        // Unknown status - default to not attending for safety
+        rsvpStatus.value = 'not_coming'
+        additionalGuests.value = 0
+        savedGuestCount.value = 0
       }
       hasUnsavedGuestChanges.value = false
     } else {
@@ -380,13 +387,20 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
   successMessage.value = ''
 
   try {
-    // Always use rsvpForEvent API - it handles both creating and updating registration
-    // The backend will update the status field to either 'confirmed' or 'not_coming'
-    const response = await eventsService.rsvpForEvent(props.eventId, {
-      guest_count: status === 'coming' ? additionalGuests.value : 0,
-      notes: currentRegistration.value?.notes || '',
-      status: status === 'coming' ? 'confirmed' : 'not_coming',
-    })
+    let response
+
+    if (status === 'not_coming') {
+      // When user selects "not attending", use unregister endpoint
+      response = await eventsService.unregisterFromEvent(props.eventId)
+    } else {
+      // When user selects "attending", use RSVP endpoint
+      const requestData: { guest_count: number; notes: string; status?: string } = {
+        guest_count: additionalGuests.value,
+        notes: currentRegistration.value?.notes || '',
+        status: 'confirmed',
+      }
+      response = await eventsService.rsvpForEvent(props.eventId, requestData)
+    }
 
     if (response.success && response.data) {
       // Preserve confirmation code if it exists and isn't in the new response
@@ -406,9 +420,22 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
         } as EventRegistration
       }
 
-      rsvpStatus.value = status
+      // Update local rsvpStatus based on the actual registration data returned
+      // Use the backend's status if available, otherwise use requested status
+      const backendStatus = registrationData.status
 
-      if (status === 'coming') {
+      // Backend status values: 'registered', 'confirmed', 'coming', 'not_coming', 'declined', 'pending'
+      if (backendStatus === 'not_coming' || backendStatus === 'declined') {
+        rsvpStatus.value = 'not_coming'
+      } else if (backendStatus === 'registered' || backendStatus === 'confirmed' ||
+                 backendStatus === 'coming' || backendStatus === 'pending') {
+        rsvpStatus.value = 'coming'
+      } else {
+        // Fallback to requested status if backend status is unknown
+        rsvpStatus.value = status
+      }
+
+      if (rsvpStatus.value === 'coming') {
         const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
         const unit = getPersonUnit(registrationData.total_attendees, currentLang)
         successMessage.value = translateRSVP('rsvp_registration_success', currentLang, {
@@ -416,7 +443,7 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
           unit: unit,
         })
         savedGuestCount.value = additionalGuests.value
-      } else {
+      } else if (rsvpStatus.value === 'not_coming') {
         // Status is 'not_coming' - registration still exists but status changed
         additionalGuests.value = 0
         savedGuestCount.value = 0
