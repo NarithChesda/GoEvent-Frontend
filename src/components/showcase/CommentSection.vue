@@ -1236,8 +1236,6 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
   margin-bottom: 0.75rem;
   box-sizing: border-box;
 }
@@ -1339,8 +1337,6 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
   box-sizing: border-box;
 }
 
@@ -1558,58 +1554,66 @@ textarea::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* All laptop sizes - Common responsive styles */
-@media (min-width: 1024px) {
+/* Laptop-only responsive styles (exclude desktop 1536px+) */
+@media (min-width: 1024px) and (max-width: 1535px) {
 
   /* Remove the custom laptop sizing to match mobile */
   .comment-form-liquid {
-    border-radius: 1.5rem !important;
-    padding: 1rem !important;
-    margin-left: 0.25rem !important;
-    margin-right: 0.25rem !important;
-    margin-bottom: 0.75rem !important;
+    border-radius: 1rem !important; /* Reduced from 1.5rem for laptop */
+    padding: 0.75rem !important; /* Reduced from 1rem for laptop */
+    margin-bottom: 0.5rem !important; /* Reduced from 0.75rem for laptop */
   }
 
-  /* Text sizing - match mobile */
+  /* Text sizing - reduced for laptop */
   .text-sm {
-    font-size: 0.875rem !important; /* 14px - standard mobile text-sm */
+    font-size: 0.75rem !important; /* 12px - reduced more for laptop */
   }
 
   .text-xs {
-    font-size: 0.75rem !important; /* 12px - standard mobile text-xs */
+    font-size: 0.625rem !important; /* 10px - reduced more for laptop */
   }
 
   /* Button sizing - match mobile */
   .liquid-glass-button {
-    padding: 0.75rem 1.5rem !important;
-    border-radius: 1rem !important;
+    padding: 0.625rem 1.25rem !important; /* Reduced vertical and horizontal padding for laptop */
+    border-radius: 0.75rem !important; /* Reduced from 1rem for laptop */
+    font-size: 0.75rem !important; /* 12px - reduced button text */
   }
 
   /* Textarea sizing - match mobile */
   .liquid-glass-textarea {
-    border-radius: 1rem !important;
-    padding: 0.5rem 0.75rem !important; /* py-2 px-3 - match template exactly */
-    font-size: 0.875rem !important; /* text-sm */
+    border-radius: 0.75rem !important; /* Reduced from 1rem for laptop */
+    padding: 0.375rem 0.625rem !important; /* Reduced from 0.5rem 0.75rem for laptop */
+    font-size: 0.75rem !important; /* 12px - reduced more for laptop */
+  }
+
+  /* Comment text content */
+  .comment-card-liquid p {
+    font-size: 0.75rem !important; /* 12px - reduced comment text */
+  }
+
+  /* User name text */
+  .comment-card-liquid .text-sm.font-medium {
+    font-size: 0.75rem !important; /* 12px - reduced user name */
   }
 
   /* Comment cards - match mobile */
   .comment-card-liquid {
-    border-radius: 1.5rem !important;
-    padding: 1rem !important;
-    margin-left: 0.25rem !important;
-    margin-right: 0.25rem !important;
+    border-radius: 1rem !important; /* Reduced from 1.5rem for laptop */
+    padding: 0.75rem !important; /* Reduced from 1rem for laptop */
+    margin-bottom: 0.5rem !important; /* Reduced margin between cards for laptop */
   }
 
   /* Action buttons - match mobile */
   .liquid-glass-action-button {
-    padding: 0.375rem !important; /* p-1.5 */
-    border-radius: 0.75rem !important;
+    padding: 0.25rem !important; /* Reduced from 0.375rem for laptop */
+    border-radius: 0.5rem !important; /* Reduced from 0.75rem for laptop */
   }
 
   .liquid-glass-edit-button {
-    padding: 0.375rem 0.75rem !important; /* px-3 py-1.5 */
+    padding: 0.25rem 0.625rem !important; /* Reduced from 0.375rem 0.75rem for laptop */
     font-size: 0.75rem !important; /* text-xs */
-    border-radius: 0.75rem !important;
+    border-radius: 0.5rem !important; /* Reduced from 0.75rem for laptop */
   }
 
   /* Avatar sizing - match mobile */
@@ -1620,13 +1624,13 @@ textarea::-webkit-scrollbar-thumb:hover {
 
   /* State containers - match mobile */
   .liquid-glass-state {
-    border-radius: 1.5rem !important;
-    padding: 2rem !important; /* py-8 */
+    border-radius: 1rem !important; /* Reduced from 1.5rem for laptop */
+    padding: 1.5rem !important; /* Reduced from 2rem for laptop */
   }
 
   .liquid-glass-error {
-    border-radius: 1rem !important;
-    padding: 0.75rem !important; /* p-3 */
+    border-radius: 0.75rem !important; /* Reduced from 1rem for laptop */
+    padding: 0.625rem !important; /* Reduced from 0.75rem for laptop */
   }
 
   /* Icons sizing - preserve original mobile sizes */
