@@ -753,7 +753,7 @@ const guestNameBackdropStyle = computed(() => {
   letter-spacing: 0.02em;
 }
 
-/* Desktop - reduce guest name size */
+/* Desktop - reduce guest name size (original styles) */
 @media (min-width: 1024px) {
   .content-row-guest .scaled-guest-name {
     font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
@@ -761,6 +761,38 @@ const guestNameBackdropStyle = computed(() => {
 
   .content-row-guest .scaled-guest-name[style*="Great Vibes"] {
     font-size: clamp(0.85rem, 2.6vh, 1.6rem) !important;
+  }
+}
+
+/* Laptop only - additional optimizations */
+@media (min-width: 1024px) and (max-width: 1535px) {
+  /* Reduce guest name background box height */
+  .guest-name-content {
+    padding: 0.625rem 1.5rem;
+  }
+
+  /* Reduce title frame box size */
+  .header-content-container {
+    height: 50% !important;
+  }
+
+  /* Make decorative frame smaller like mobile */
+  .corner-decor {
+    width: 26px;
+    height: 26px;
+  }
+
+  .edge-ornament {
+    width: 50px;
+    height: 10px;
+  }
+
+  .edge-top {
+    top: -5px;
+  }
+
+  .edge-bottom {
+    bottom: -5px;
   }
 }
 
@@ -900,6 +932,23 @@ const guestNameBackdropStyle = computed(() => {
 
   .arrow-stack {
     margin-top: -36px;
+  }
+}
+
+/* Laptop only - smaller arrow icons */
+@media (min-width: 1024px) and (max-width: 1535px) {
+  .arrow-icon {
+    width: 36px;
+    height: 36px;
+    margin-top: -22px;
+  }
+
+  .arrow-icon:first-child {
+    margin-top: 0;
+  }
+
+  .arrow-stack {
+    margin-top: -26px;
   }
 }
 
