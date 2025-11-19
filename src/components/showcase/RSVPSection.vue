@@ -1109,15 +1109,15 @@ onUnmounted(() => {
     border-width: 1.6px; /* 20% smaller */
   }
 
-  /* Header text size - KEEP ORIGINAL SIZE (no reduction) */
+  /* Header text size - reduced by one size */
   .text-sm {
-    font-size: 0.875rem !important; /* 14px - UNCHANGED */
-    line-height: 1.1rem !important; /* reduced line-height for tighter spacing */
+    font-size: 0.75rem !important; /* 12px - reduced from 0.875rem */
+    line-height: 1rem !important; /* adjusted for smaller text */
   }
 
   .text-base {
-    font-size: 1rem !important; /* 16px - UNCHANGED */
-    line-height: 1.1rem !important; /* reduced line-height for tighter spacing */
+    font-size: 0.875rem !important; /* 14px - reduced from 1rem */
+    line-height: 1rem !important; /* adjusted for smaller text */
   }
 
   /* Spacing for parent container - 20% reduction */
@@ -1133,6 +1133,34 @@ onUnmounted(() => {
   /* Loader padding - 20% reduction */
   .rsvp-loader {
     padding: 0.4rem !important; /* 20% smaller than 0.5rem */
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px+) */
+@media (min-width: 1366px) {
+  /* RSVP Header text - reduced by one size */
+  .text-sm {
+    font-size: 0.875rem !important; /* 14px - reduced from 1rem */
+    line-height: 1.1rem !important;
+  }
+
+  .text-base {
+    font-size: 1rem !important; /* 16px - reduced from 1.125rem */
+    line-height: 1.1rem !important;
+  }
+}
+
+/* Large laptops 16+ inch (1536px+) */
+@media (min-width: 1536px) {
+  /* RSVP Header text - reduced by one size */
+  .text-sm {
+    font-size: 0.875rem !important; /* 14px - reduced from 1rem */
+    line-height: 1.2rem !important;
+  }
+
+  .text-base {
+    font-size: 1rem !important; /* 16px - reduced from 1.125rem */
+    line-height: 1.2rem !important;
   }
 }
 </style>

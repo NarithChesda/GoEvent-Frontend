@@ -362,52 +362,57 @@ const hourLabel = computed(() => {
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .countdown-number {
-    font-size: clamp(3rem, 12vw, 5.5rem);
+    font-size: clamp(2.7rem, 10.8vw, 4.95rem);
   }
 
   .countdown-separator {
-    font-size: clamp(3rem, 12vw, 5.5rem);
+    font-size: clamp(2.7rem, 10.8vw, 4.95rem);
     margin-bottom: 0.875rem;
   }
 
   .countdown-unit-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem; /* Reduced from 0.875rem */
   }
 
   .countdown-time-row {
     gap: 0.65rem;
   }
 
-  /* Title - match mobile base text-base (1rem = 16px) */
+  /* Title - reduced by one size from text-base to text-sm */
   h2 {
-    font-size: 1rem !important; /* 16px - same as mobile base text-base */
+    font-size: 0.875rem !important; /* 14px - reduced from 1rem */
     line-height: 1.25rem !important; /* tight leading */
   }
 
-  /* Description text - match mobile base text-sm (0.875rem = 14px) */
+  /* Description text - reduced by one size from text-sm to text-xs */
   p {
-    font-size: 0.875rem !important; /* 14px - same as mobile base text-sm */
-    line-height: 1.25rem !important; /* normal leading */
+    font-size: 0.75rem !important; /* 12px - reduced from 0.875rem */
+    line-height: 1.125rem !important; /* normal leading */
   }
 
-  /* Details text inside card - match mobile base text-sm (0.875rem = 14px) */
+  /* Details text inside card (date, time, location) - reduced by one size */
   .text-sm {
-    font-size: 0.875rem !important; /* 14px - same as mobile base text-sm */
-    line-height: 1.4rem !important; /* increased for better readability */
+    font-size: 0.75rem !important; /* 12px - reduced from 0.875rem */
+    line-height: 1.25rem !important; /* increased for better readability */
   }
 
   /* Override leading-snug for date and location text */
   .leading-snug {
-    line-height: 1.4rem !important; /* increased for better readability */
+    line-height: 1.25rem !important; /* adjusted for smaller text */
   }
 
-  /* Scale spacing to match mobile base */
+  /* Countdown header text - reduced by one size */
+  .countdown-header {
+    font-size: 0.75rem !important; /* 12px - reduced from text-sm (0.875rem) */
+  }
+
+  /* Scale spacing to match mobile base - reduced for tighter layout */
   .space-y-6 > * + * {
-    margin-top: 1.5rem !important; /* space-y-6 mobile base */
+    margin-top: 1rem !important; /* Reduced from 1.5rem */
   }
 
   .space-y-8 > * + * {
-    margin-top: 1.5rem !important; /* match space-y-6 for consistency */
+    margin-top: 1rem !important; /* Reduced from 1.5rem */
   }
 
   .space-y-4 > * + * {
@@ -415,33 +420,37 @@ const hourLabel = computed(() => {
   }
 
   .space-y-3 > * + * {
-    margin-top: 0.75rem !important; /* space-y-3 */
+    margin-top: 0.5rem !important; /* Reduced from 0.75rem */
   }
 
   .space-y-2 > * + * {
-    margin-top: 0.5rem !important; /* space-y-2 */
+    margin-top: 0.35rem !important; /* Reduced from 0.5rem */
   }
 
-  /* Padding - match mobile base sizes */
+  /* Padding - reduced for tighter layout */
   .px-4 {
-    padding-left: 1rem !important; /* 16px */
-    padding-right: 1rem !important;
+    padding-left: 0.75rem !important; /* Reduced from 1rem */
+    padding-right: 0.75rem !important;
   }
 
   .pt-3 {
-    padding-top: 0.75rem !important; /* 12px */
+    padding-top: 0.5rem !important; /* Reduced from 0.75rem */
   }
 
   .pb-4 {
-    padding-bottom: 1rem !important; /* 16px */
+    padding-bottom: 0.75rem !important; /* Reduced from 1rem */
   }
 
   .pt-2 {
-    padding-top: 0.5rem !important; /* 8px */
+    padding-top: 0.35rem !important; /* Reduced from 0.5rem */
   }
 
   .pt-4 {
-    padding-top: 1rem !important; /* 16px */
+    padding-top: 0.75rem !important; /* Reduced from 1rem */
+  }
+
+  .pb-2 {
+    padding-bottom: 0.35rem !important; /* Reduced for countdown */
   }
 
   /* Border radius - match mobile */
@@ -453,35 +462,110 @@ const hourLabel = computed(() => {
   .aspect-video {
     aspect-ratio: 16 / 9; /* Standard video aspect ratio */
   }
+
+  /* Countdown spacing adjustments */
+  .countdown-container {
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+  }
+
+  .countdown-wrapper {
+    gap: 0.1rem !important; /* Reduced from 0.2rem - space between header and numbers */
+  }
+
+  /* Reduce gap between countdown number and label */
+  .countdown-unit {
+    gap: -0.35rem !important; /* Increased negative gap to bring label even closer to number */
+  }
+
+  /* Adjust separator alignment */
+  .countdown-separator {
+    margin-bottom: 0.65rem !important; /* Reduced to align with labels */
+  }
+
+  /* Countdown divider spacing */
+  .countdown-divider {
+    padding-bottom: 0.5rem !important; /* Reduced from 0.75rem */
+  }
 }
 
 /* Medium laptops 14-15 inch (1366px+) */
 @media (min-width: 1366px) {
+  .countdown-number {
+    font-size: clamp(3.15rem, 13.5vw, 7.2rem);
+  }
+
+  .countdown-separator {
+    font-size: clamp(3.15rem, 13.5vw, 7.2rem);
+    margin-bottom: 0.7rem !important;
+  }
+
+  .countdown-unit-label {
+    font-size: 0.75rem !important; /* Reduced from 0.875rem */
+  }
+
+  .countdown-header {
+    font-size: 0.875rem !important; /* Reduced from 1rem */
+  }
+
+  .countdown-wrapper {
+    gap: 0.15rem !important; /* Reduced spacing between header and numbers */
+  }
+
+  .countdown-unit {
+    gap: -0.3rem !important; /* Bring label even closer to number */
+  }
+
   h2 {
-    font-size: 1.25rem !important; /* 20px - slightly larger */
+    font-size: 1rem !important; /* Reduced from 1.25rem */
   }
 
   p {
-    font-size: 1rem !important; /* 16px - md:text-base */
+    font-size: 0.875rem !important; /* Reduced from 1rem */
   }
 
   .text-sm {
-    font-size: 1rem !important; /* 16px */
+    font-size: 0.875rem !important; /* Reduced from 1rem */
   }
 }
 
 /* Large laptops 16+ inch (1536px+) */
 @media (min-width: 1536px) {
+  .countdown-number {
+    font-size: clamp(3.15rem, 13.5vw, 7.2rem);
+  }
+
+  .countdown-separator {
+    font-size: clamp(3.15rem, 13.5vw, 7.2rem);
+    margin-bottom: 0.75rem !important;
+  }
+
+  .countdown-unit-label {
+    font-size: 0.875rem !important; /* Reduced from 1rem */
+  }
+
+  .countdown-header {
+    font-size: 1rem !important; /* Reduced from 1.125rem */
+  }
+
+  .countdown-wrapper {
+    gap: 0.2rem !important; /* Reduced spacing between header and numbers */
+  }
+
+  .countdown-unit {
+    gap: -0.25rem !important; /* Bring label even closer to number */
+  }
+
   h2 {
-    font-size: 1.5rem !important; /* 24px - lg:text-2xl */
+    font-size: 1.25rem !important; /* Reduced from 1.5rem */
   }
 
   p {
-    font-size: 1rem !important; /* 16px */
+    font-size: 0.875rem !important; /* Reduced from 1rem */
   }
 
   .text-sm {
-    font-size: 1rem !important; /* 16px */
+    font-size: 0.875rem !important; /* Reduced from 1rem */
   }
 }
 </style>
