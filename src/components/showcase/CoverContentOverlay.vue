@@ -127,13 +127,14 @@
         >
           <div class="guest-name-container">
             <div class="premium-name-frame" :style="premiumFrameStyle">
-              <!-- Title frame - single image that scales with content -->
-              <img
-                :src="titleFrameSvg"
-                alt=""
-                class="title-frame-img"
-                aria-hidden="true"
-              />
+              <!-- 3-part split frame -->
+              <div class="split-frame-container" aria-hidden="true">
+                <img :src="leftFramePng" alt="" class="frame-left" />
+                <div class="frame-middle-wrapper">
+                  <img :src="middleFramePng" alt="" class="frame-middle" />
+                </div>
+                <img :src="rightFramePng" alt="" class="frame-right" />
+              </div>
               <!-- Guest name positioned over the frame -->
               <h2
                 class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
@@ -183,7 +184,9 @@
 import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
-import titleFrameSvg from '../../assets/title-frame.svg'
+import leftFramePng from '../../assets/left-frame.png'
+import middleFramePng from '../../assets/middle-frame.png'
+import rightFramePng from '../../assets/right-frame.png'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -388,19 +391,22 @@ const premiumFrameStyle = computed(() => {
   align-items: center;
   justify-content: center;
   max-width: 100%;
-  padding: 0.5rem 0;
+  padding: 0.5rem 2.5rem; /* Add horizontal padding for frame clearance */
 }
 
-/* Title frame image - scales with guest name */
-.title-frame-img {
+/* 3-part split frame container */
+.split-frame-container {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100% + 40px); /* Extend beyond text */
-  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% + 40px);
   min-width: 200px;
-  max-width: 400px;
+  max-width: 500px;
+  height: 75px;
   pointer-events: none;
   z-index: 0;
 
@@ -408,6 +414,41 @@ const premiumFrameStyle = computed(() => {
   opacity: 0;
   animation: frameEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 0.2s;
+}
+
+.frame-left {
+  flex-shrink: 0;
+  height: 100%;
+  width: auto;
+  display: block;
+  position: relative;
+  z-index: 2;
+  margin-right: -2px;
+}
+
+.frame-right {
+  flex-shrink: 0;
+  height: 100%;
+  width: auto;
+  display: block;
+  position: relative;
+  z-index: 2;
+  margin-left: -2px;
+}
+
+.frame-middle-wrapper {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 20px;
+  z-index: 1;
+}
+
+.frame-middle {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
 }
 
 @keyframes frameEntrance {
@@ -478,8 +519,9 @@ const premiumFrameStyle = computed(() => {
     height: 50% !important;
   }
 
-  .title-frame-img {
-    max-width: 350px;
+  .split-frame-container {
+    max-width: 400px;
+    height: 50px;
   }
 }
 
@@ -498,9 +540,14 @@ const premiumFrameStyle = computed(() => {
     max-width: 90%;
   }
 
-  .title-frame-img {
-    max-width: 300px;
-    min-width: 150px;
+  .split-frame-container {
+    max-width: 340px;
+    min-width: 180px;
+    height: 60px;
+  }
+
+  .premium-name-frame {
+    padding: 0.5rem 2rem;
   }
 }
 
