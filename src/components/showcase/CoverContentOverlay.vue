@@ -350,10 +350,21 @@ const coverHeader = computed(
 
 const inviteText = computed(() => getTextContent('invite_text', "You're Invited"))
 
-const guestNameChars = computed(() => props.guestName?.split('') || [])
+// Capitalize first letter of each word for English names
+const capitalizeWords = (str: string) => {
+  return str.replace(/\b\w/g, (char) => char.toUpperCase())
+}
 
-// Split Khmer text by words (spaces) for word-level animation
-const guestNameWords = computed(() => props.guestName?.split(/\s+/).filter(Boolean) || [])
+const formattedGuestName = computed(() => {
+  if (!props.guestName) return ''
+  const isEnglish = /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim())
+  return isEnglish ? capitalizeWords(props.guestName) : props.guestName
+})
+
+const guestNameChars = computed(() => formattedGuestName.value?.split('') || [])
+
+// Split text by words (spaces) for word-level animation
+const guestNameWords = computed(() => formattedGuestName.value?.split(/\s+/).filter(Boolean) || [])
 
 // Detect if guest name is English (for character bounce animation)
 const isEnglishGuestName = computed(() => {
