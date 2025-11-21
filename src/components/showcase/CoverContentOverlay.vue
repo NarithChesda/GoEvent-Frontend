@@ -304,7 +304,7 @@ const headerTextStyle = computed(() => ({
 const guestNameTextStyle = computed(() => {
   // Detect if guest name contains English/Latin characters
   const isEnglishText = props.guestName
-    ? /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim())
+    ? /^[a-zA-Z\s\-'.,()&]+$/.test(props.guestName.trim())
     : false
 
   // Use Great Vibes font for English text guest names
@@ -316,6 +316,8 @@ const guestNameTextStyle = computed(() => {
     fontFamily,
     color: props.primaryColor,
     fontWeight: isEnglishText ? '400' : 'normal',
+    background: 'none',
+    backgroundColor: 'transparent',
   }
 })
 
@@ -357,7 +359,7 @@ const capitalizeWords = (str: string) => {
 
 const formattedGuestName = computed(() => {
   if (!props.guestName) return ''
-  const isEnglish = /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim())
+  const isEnglish = /^[a-zA-Z\s\-'.,()&]+$/.test(props.guestName.trim())
   return isEnglish ? capitalizeWords(props.guestName) : props.guestName
 })
 
@@ -368,7 +370,7 @@ const guestNameWords = computed(() => formattedGuestName.value?.split(/\s+/).fil
 
 // Detect if guest name is English (for character bounce animation)
 const isEnglishGuestName = computed(() => {
-  return props.guestName ? /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim()) : false
+  return props.guestName ? /^[a-zA-Z\s\-'.,()&]+$/.test(props.guestName.trim()) : false
 })
 
 // Computed style for container positioning
