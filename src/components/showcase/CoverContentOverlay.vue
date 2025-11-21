@@ -127,83 +127,20 @@
         >
           <div class="guest-name-container">
             <div class="premium-name-frame" :style="premiumFrameStyle">
-              <!-- Guest name content with integrated decorations -->
-              <div class="guest-name-content" :style="guestNameBackdropStyle">
-                <!-- Corner Decorations - Classic refined borders -->
-                <div class="corner-decor corner-tl">
-                  <svg viewBox="0 0 30 30" class="corner-ornament">
-                    <!-- Double line border -->
-                    <line x1="0" y1="30" x2="0" y2="6" stroke-width="2" class="corner-line"/>
-                    <line x1="0" y1="0" x2="24" y2="0" stroke-width="2" class="corner-line"/>
-                    <line x1="2" y1="28" x2="2" y2="8" stroke-width="1" class="corner-inner-line"/>
-                    <line x1="2" y1="2" x2="22" y2="2" stroke-width="1" class="corner-inner-line"/>
-                    <!-- Elegant corner detail -->
-                    <rect x="0" y="0" width="6" height="6" class="corner-accent-square"/>
-                  </svg>
-                </div>
-                <div class="corner-decor corner-tr">
-                  <svg viewBox="0 0 30 30" class="corner-ornament">
-                    <line x1="30" y1="30" x2="30" y2="6" stroke-width="2" class="corner-line"/>
-                    <line x1="30" y1="0" x2="6" y2="0" stroke-width="2" class="corner-line"/>
-                    <line x1="28" y1="28" x2="28" y2="8" stroke-width="1" class="corner-inner-line"/>
-                    <line x1="28" y1="2" x2="8" y2="2" stroke-width="1" class="corner-inner-line"/>
-                    <rect x="24" y="0" width="6" height="6" class="corner-accent-square"/>
-                  </svg>
-                </div>
-                <div class="corner-decor corner-bl">
-                  <svg viewBox="0 0 30 30" class="corner-ornament">
-                    <line x1="0" y1="0" x2="0" y2="24" stroke-width="2" class="corner-line"/>
-                    <line x1="0" y1="30" x2="24" y2="30" stroke-width="2" class="corner-line"/>
-                    <line x1="2" y1="2" x2="2" y2="22" stroke-width="1" class="corner-inner-line"/>
-                    <line x1="2" y1="28" x2="22" y2="28" stroke-width="1" class="corner-inner-line"/>
-                    <rect x="0" y="24" width="6" height="6" class="corner-accent-square"/>
-                  </svg>
-                </div>
-                <div class="corner-decor corner-br">
-                  <svg viewBox="0 0 30 30" class="corner-ornament">
-                    <line x1="30" y1="0" x2="30" y2="24" stroke-width="2" class="corner-line"/>
-                    <line x1="30" y1="30" x2="6" y2="30" stroke-width="2" class="corner-line"/>
-                    <line x1="28" y1="2" x2="28" y2="22" stroke-width="1" class="corner-inner-line"/>
-                    <line x1="28" y1="28" x2="8" y2="28" stroke-width="1" class="corner-inner-line"/>
-                    <rect x="24" y="24" width="6" height="6" class="corner-accent-square"/>
-                  </svg>
-                </div>
-
-                <!-- Top Center Accent - Classic triple line with center medallion -->
-                <div class="edge-accent edge-top">
-                  <svg viewBox="0 0 60 12" class="edge-ornament">
-                    <!-- Triple lines -->
-                    <line x1="0" y1="6" x2="24" y2="6" stroke-width="1.5" class="edge-line"/>
-                    <line x1="36" y1="6" x2="60" y2="6" stroke-width="1.5" class="edge-line"/>
-                    <line x1="0" y1="9" x2="23" y2="9" stroke-width="0.5" class="edge-detail-line"/>
-                    <line x1="37" y1="9" x2="60" y2="9" stroke-width="0.5" class="edge-detail-line"/>
-                    <!-- Center medallion -->
-                    <circle cx="30" cy="6" r="5" class="edge-medallion"/>
-                    <circle cx="30" cy="6" r="3" class="edge-medallion-inner"/>
-                  </svg>
-                </div>
-
-                <!-- Bottom Center Accent - Classic triple line with center medallion -->
-                <div class="edge-accent edge-bottom">
-                  <svg viewBox="0 0 60 12" class="edge-ornament">
-                    <!-- Triple lines -->
-                    <line x1="0" y1="6" x2="24" y2="6" stroke-width="1.5" class="edge-line"/>
-                    <line x1="36" y1="6" x2="60" y2="6" stroke-width="1.5" class="edge-line"/>
-                    <line x1="0" y1="3" x2="23" y2="3" stroke-width="0.5" class="edge-detail-line"/>
-                    <line x1="37" y1="3" x2="60" y2="3" stroke-width="0.5" class="edge-detail-line"/>
-                    <!-- Center medallion -->
-                    <circle cx="30" cy="6" r="5" class="edge-medallion"/>
-                    <circle cx="30" cy="6" r="3" class="edge-medallion-inner"/>
-                  </svg>
-                </div>
-
-                <h2
-                  class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
-                  :style="guestNameTextStyle"
-                >
-                  {{ guestName }}
-                </h2>
-              </div>
+              <!-- Title frame - single image that scales with content -->
+              <img
+                :src="titleFrameSvg"
+                alt=""
+                class="title-frame-img"
+                aria-hidden="true"
+              />
+              <!-- Guest name positioned over the frame -->
+              <h2
+                class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
+                :style="guestNameTextStyle"
+              >
+                {{ guestName }}
+              </h2>
             </div>
           </div>
         </div>
@@ -246,6 +183,7 @@
 import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
+import titleFrameSvg from '../../assets/title-frame.svg'
 
 interface TemplateAssets {
   open_envelope_button?: string
@@ -428,21 +366,6 @@ const premiumFrameStyle = computed(() => {
   }
 })
 
-// Computed style for guest name backdrop - Liquid glass effect
-const guestNameBackdropStyle = computed(() => {
-  return {
-    background: `
-      linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.25) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.15) 100%
-      )
-    `,
-    backdropFilter: 'blur(16px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-  }
-})
 </script>
 
 <style scoped>
@@ -461,265 +384,40 @@ const guestNameBackdropStyle = computed(() => {
 .premium-name-frame {
   position: relative;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   max-width: 100%;
+  padding: 0.5rem 0;
 }
 
-/* Guest name content with liquid glass effect */
-.guest-name-content {
-  padding: 0.875rem 2rem;
-  position: relative;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  box-shadow:
-    0 8px 32px 0 rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-    0 0 48px var(--accent-glow);
-
-  /* Elegant entrance animation */
-  animation: elegantFrameEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes elegantFrameEntrance {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Corner Decorations - Classic refined borders */
-.corner-decor {
+/* Title frame image - scales with guest name */
+.title-frame-img {
   position: absolute;
-  width: 30px;
-  height: 30px;
-  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% + 40px); /* Extend beyond text */
+  height: auto;
+  min-width: 200px;
+  max-width: 400px;
+  pointer-events: none;
+  z-index: 0;
+
+  /* Entrance animation */
   opacity: 0;
-  animation: cornerSpreadOut 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.corner-ornament {
-  width: 100%;
-  height: 100%;
-}
-
-@keyframes cornerSpreadOut {
-  0% {
-    opacity: 0;
-    /* Start from center of the frame */
-    top: 50%;
-    left: 50%;
-    bottom: auto;
-    right: auto;
-    transform: translate(-50%, -50%) scale(0.3) rotate(45deg);
-  }
-  40% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    /* Final position set by individual corner classes */
-    transform: translate(0, 0) scale(1) rotate(0deg);
-  }
-}
-
-.corner-line {
-  stroke: var(--primary-color);
-  stroke-linecap: square;
-  fill: none;
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation: drawLine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: inherit;
-}
-
-.corner-inner-line {
-  stroke: var(--primary-color);
-  stroke-linecap: square;
-  fill: none;
-  opacity: 0;
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation: drawLineWithOpacity 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: inherit;
-}
-
-.corner-accent-square {
-  fill: var(--primary-color);
-  stroke: none;
-  opacity: 0;
-  animation: fadeInSquare 0.5s ease-out forwards;
-  animation-delay: inherit;
-}
-
-@keyframes drawLineWithOpacity {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 30;
-  }
-  50% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 0.6;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes drawLine {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes fadeInSquare {
-  from {
-    opacity: 0;
-    transform: scale(0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Corner Positions with staggered animation delays */
-.corner-tl {
-  top: -1px;
-  left: -1px;
+  animation: frameEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 0.2s;
 }
 
-.corner-tr {
-  top: -1px;
-  right: -1px;
-  animation-delay: 0.25s;
-}
-
-.corner-bl {
-  bottom: -1px;
-  left: -1px;
-  animation-delay: 0.3s;
-}
-
-.corner-br {
-  bottom: -1px;
-  right: -1px;
-  animation-delay: 0.35s;
-}
-
-/* Edge Accents - Classic center medallions with divider lines */
-.edge-accent {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  animation: edgeSpreadOut 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes edgeSpreadOut {
+@keyframes frameEntrance {
   0% {
     opacity: 0;
-    /* Start from vertical center */
-    top: 50%;
-    bottom: auto;
-    transform: translateX(-50%) translateY(-50%) scale(0.2);
-  }
-  40% {
-    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.85);
   }
   100% {
     opacity: 1;
-    /* Final position set by individual edge classes */
-    transform: translateX(-50%) translateY(0) scale(1);
-  }
-}
-
-.edge-top {
-  top: -6px;
-  animation-delay: 0.4s;
-}
-
-.edge-bottom {
-  bottom: -6px;
-  animation-delay: 0.45s;
-}
-
-.edge-ornament {
-  width: 60px;
-  height: 12px;
-}
-
-.edge-line {
-  stroke: var(--primary-color);
-  stroke-linecap: round;
-  fill: none;
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation: drawEdgeLine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: inherit;
-}
-
-.edge-detail-line {
-  stroke: var(--primary-color);
-  stroke-linecap: round;
-  fill: none;
-  opacity: 0;
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation: drawEdgeDetailLine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: inherit;
-}
-
-.edge-medallion {
-  fill: none;
-  stroke: var(--primary-color);
-  stroke-width: 1.5;
-  stroke-dasharray: 32;
-  stroke-dashoffset: 32;
-  animation: drawCircle 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: inherit;
-}
-
-.edge-medallion-inner {
-  fill: var(--primary-color);
-  stroke: none;
-  opacity: 0;
-  transform-origin: center;
-  animation: fillMedallion 0.5s ease-out forwards;
-  animation-delay: inherit;
-}
-
-@keyframes drawEdgeLine {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes drawEdgeDetailLine {
-  to {
-    opacity: 0.5;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes drawCircle {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes fillMedallion {
-  from {
-    opacity: 0;
-    transform: scale(0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -775,33 +473,13 @@ const guestNameBackdropStyle = computed(() => {
 
 /* Laptop only - additional optimizations */
 @media (min-width: 1024px) and (max-width: 1535px) {
-  /* Reduce guest name background box height */
-  .guest-name-content {
-    padding: 0.625rem 1.5rem;
-  }
-
   /* Reduce title frame box size */
   .header-content-container {
     height: 50% !important;
   }
 
-  /* Make decorative frame smaller like mobile */
-  .corner-decor {
-    width: 26px;
-    height: 26px;
-  }
-
-  .edge-ornament {
-    width: 50px;
-    height: 10px;
-  }
-
-  .edge-top {
-    top: -5px;
-  }
-
-  .edge-bottom {
-    bottom: -5px;
+  .title-frame-img {
+    max-width: 350px;
   }
 }
 
@@ -820,27 +498,9 @@ const guestNameBackdropStyle = computed(() => {
     max-width: 90%;
   }
 
-  /* Premium frame mobile adjustments */
-  .guest-name-content {
-    padding: 0.75rem 1.5rem;
-  }
-
-  .corner-decor {
-    width: 26px;
-    height: 26px;
-  }
-
-  .edge-ornament {
-    width: 50px;
-    height: 10px;
-  }
-
-  .edge-top {
-    top: -5px;
-  }
-
-  .edge-bottom {
-    bottom: -5px;
+  .title-frame-img {
+    max-width: 300px;
+    min-width: 150px;
   }
 }
 
