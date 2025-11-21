@@ -41,6 +41,15 @@
             <span>Replace</span>
           </button>
           <button
+            v-if="enableCropping && contentType === 'image'"
+            @click="emit('crop'); emit('close-dropdown')"
+            :disabled="isUploading"
+            class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Crop class="w-4 h-4" />
+            <span>Crop</span>
+          </button>
+          <button
             @click="emit('remove'); emit('close-dropdown')"
             :disabled="isUploading"
             class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -144,7 +153,7 @@
 
 <script setup lang="ts">
 import { ref, computed, type Component } from 'vue'
-import { Upload, X, MoreHorizontal, Plus, ImageIcon, Play, Music } from 'lucide-vue-next'
+import { Upload, X, MoreHorizontal, Plus, ImageIcon, Play, Music, Crop } from 'lucide-vue-next'
 
 interface Props {
   title: string
@@ -159,6 +168,7 @@ interface Props {
   emptyStateSubtext?: string
   imageClass?: string
   emptyStatePadding?: string
+  enableCropping?: boolean
 }
 
 interface Emits {
@@ -166,13 +176,15 @@ interface Emits {
   (e: 'remove'): void
   (e: 'toggle-dropdown'): void
   (e: 'close-dropdown'): void
+  (e: 'crop'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isUploading: false,
   showDropdown: false,
   imageClass: 'h-48 object-cover',
-  emptyStatePadding: 'p-8'
+  emptyStatePadding: 'p-8',
+  enableCropping: false
 })
 
 const emit = defineEmits<Emits>()
