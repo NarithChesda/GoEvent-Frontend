@@ -138,7 +138,6 @@
               <!-- Guest name positioned over the frame -->
               <h2
                 class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
-                :class="{ 'reveal-name': !isEnglishGuestName }"
                 :style="guestNameTextStyle"
               >
                 <template v-if="isEnglishGuestName">
@@ -150,7 +149,12 @@
                   >{{ char === ' ' ? '\u00A0' : char }}</span>
                 </template>
                 <template v-else>
-                  {{ guestName }}
+                  <span
+                    v-for="(word, index) in guestNameWords"
+                    :key="index"
+                    class="bounce-word"
+                    :style="{ animationDelay: `${1 + index * 0.15}s` }"
+                  >{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span>
                 </template>
               </h2>
             </div>
@@ -348,6 +352,9 @@ const inviteText = computed(() => getTextContent('invite_text', "You're Invited"
 
 const guestNameChars = computed(() => props.guestName?.split('') || [])
 
+// Split Khmer text by words (spaces) for word-level animation
+const guestNameWords = computed(() => props.guestName?.split(/\s+/).filter(Boolean) || [])
+
 // Detect if guest name is English (for character bounce animation)
 const isEnglishGuestName = computed(() => {
   return props.guestName ? /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim()) : false
@@ -486,7 +493,8 @@ const premiumFrameStyle = computed(() => {
   padding-right: 4px;
 }
 
-.bounce-char {
+.bounce-char,
+.bounce-word {
   display: inline-block;
   opacity: 0;
   animation: bounceInChar 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
