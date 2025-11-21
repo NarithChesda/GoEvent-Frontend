@@ -316,7 +316,7 @@
       />
 
       <!-- Contact Us FAB (Telegram) -->
-      <ContactUsFAB v-if="event" :smart-fab-visible="smartFabVisible" />
+      <ContactUsFAB v-if="event" :smart-fab-visible="smartFabVisible" :can-edit="event.can_edit" />
     </div>
 
     <!-- Error State -->
