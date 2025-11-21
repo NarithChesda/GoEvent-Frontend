@@ -615,6 +615,11 @@ const premiumFrameStyle = computed(() => {
   .guest-name-container.english-name .premium-name-frame {
     padding: 0.5rem 2rem !important;
   }
+
+  /* Reduce guest name frame height on mobile */
+  .split-frame-container {
+    height: 60px;
+  }
 }
 
 /* Swipe Up Arrow Indicator */
