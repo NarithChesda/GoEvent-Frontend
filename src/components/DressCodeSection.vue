@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="mb-6">
       <h5 class="font-semibold text-slate-900">Dress Code Guidelines</h5>
-      <p class="text-sm text-slate-600">Manage dress code requirements for your event</p>
+      <p class="text-sm text-slate-600">Manage dress code suggestions for your event</p>
     </div>
 
     <!-- Loading State -->

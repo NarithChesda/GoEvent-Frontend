@@ -22,7 +22,7 @@
       <!-- Primary Logo -->
       <MediaUploadCard
         title="Primary Logo"
-        description="Main event or organization logo"
+        description="Main event or organization logo. For best results, use a transparent image (PNG, WebP)"
         :media-url="getMediaUrl(eventData?.logo_one)"
         :can-edit="canEdit"
         :is-uploading="mediaUpload.isUploading.value('logo_one')"
@@ -83,7 +83,7 @@
       <!-- Secondary Logo -->
       <MediaUploadCard
         title="Secondary Logo"
-        description="Partner or sponsor logo"
+        description="Displayed when showcase is in other languages (English, etc.). Use transparent image (PNG, WebP)"
         :media-url="getMediaUrl(eventData?.logo_two)"
         :can-edit="canEdit"
         :is-uploading="mediaUpload.isUploading.value('logo_two')"
