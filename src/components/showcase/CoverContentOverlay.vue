@@ -431,6 +431,9 @@ const premiumFrameStyle = computed(() => {
   height: 75px;
   pointer-events: none;
   z-index: 0;
+  opacity: 0;
+  animation: frameEntrance 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 0.8s;
 }
 
 .frame-left {
@@ -471,11 +474,18 @@ const premiumFrameStyle = computed(() => {
 @keyframes frameEntrance {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.85);
+    transform: translate(-50%, -50%) scaleX(0.3) scaleY(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(1.02) scaleY(1);
+  }
+  75% {
+    transform: translate(-50%, -50%) scaleX(0.98) scaleY(1);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
   }
 }
 
