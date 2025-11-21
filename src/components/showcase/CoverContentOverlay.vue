@@ -45,9 +45,9 @@
       :class="{
         'swipe-up-hidden': isContentHidden,
         'cursor-pointer': !isInteractionDisabled,
-        'cursor-not-allowed opacity-75': isInteractionDisabled
+        'cursor-not-allowed': isInteractionDisabled
       }"
-      style="z-index: 10; touch-action: none;"
+      style="z-index: 30; touch-action: none;"
     >
 
     <!-- Inner Container with Dynamic Top Position -->
@@ -120,12 +120,12 @@
       <div
         v-if="guestName"
         class="content-row-guest flex items-center justify-center"
-        style="height: 16%; overflow: visible;"
+        style="height: 16%; overflow: visible; z-index: 100; position: relative;"
       >
         <div
           class="guest-content-container flex items-center justify-center px-4 w-full"
         >
-          <div class="guest-name-container">
+          <div class="guest-name-container" :class="{ 'english-name': isEnglishGuestName }">
             <div class="premium-name-frame" :style="premiumFrameStyle">
               <!-- 3-part split frame -->
               <div class="split-frame-container" aria-hidden="true">
@@ -138,9 +138,20 @@
               <!-- Guest name positioned over the frame -->
               <h2
                 class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
+                :class="{ 'reveal-name': !isEnglishGuestName }"
                 :style="guestNameTextStyle"
               >
-                {{ guestName }}
+                <template v-if="isEnglishGuestName">
+                  <span
+                    v-for="(char, index) in guestNameChars"
+                    :key="index"
+                    class="bounce-char"
+                    :style="{ animationDelay: `${1 + index * 0.05}s` }"
+                  >{{ char === ' ' ? '\u00A0' : char }}</span>
+                </template>
+                <template v-else>
+                  {{ guestName }}
+                </template>
               </h2>
             </div>
           </div>
@@ -299,11 +310,8 @@ const guestNameTextStyle = computed(() => {
 
   return {
     fontFamily,
-    color: props.primaryColor, // Use primary color for text
-    textShadow: `0 2px 8px ${props.primaryColor}40`, // Subtle glow
+    color: props.primaryColor,
     fontWeight: isEnglishText ? '400' : 'normal',
-    // Only capitalize English text - prevents spacing issues with Khmer/other scripts
-    textTransform: (isEnglishText ? 'capitalize' : 'none') as 'capitalize' | 'none',
   }
 })
 
@@ -338,6 +346,13 @@ const coverHeader = computed(
 
 const inviteText = computed(() => getTextContent('invite_text', "You're Invited"))
 
+const guestNameChars = computed(() => props.guestName?.split('') || [])
+
+// Detect if guest name is English (for character bounce animation)
+const isEnglishGuestName = computed(() => {
+  return props.guestName ? /^[a-zA-Z\s\-'.,]+$/.test(props.guestName.trim()) : false
+})
+
 // Computed style for container positioning
 const containerStyle = computed(() => {
   // Default to centered (23.5vh top position for 53vh content = roughly centered on 100vh screen)
@@ -365,7 +380,7 @@ const fallbackLogoStyle = computed(() => {
 const premiumFrameStyle = computed(() => {
   return {
     '--primary-color': props.primaryColor,
-    '--accent-glow': `${props.primaryColor}40`,
+    '--accent-glow': props.primaryColor,
   }
 })
 
@@ -409,11 +424,6 @@ const premiumFrameStyle = computed(() => {
   height: 75px;
   pointer-events: none;
   z-index: 0;
-
-  /* Entrance animation */
-  opacity: 0;
-  animation: frameEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  animation-delay: 0.2s;
 }
 
 .frame-left {
@@ -472,8 +482,38 @@ const premiumFrameStyle = computed(() => {
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   margin-top: 0 !important;
+  padding-left: 4px;
+  padding-right: 4px;
+}
 
-  /* Elegant text reveal animation - happens after decorations spread */
+.bounce-char {
+  display: inline-block;
+  opacity: 0;
+  animation: bounceInChar 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bounceInChar {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reveal animation for Khmer text (original style) */
+.reveal-name {
   opacity: 0;
   animation: revealGuestName 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 1s;
@@ -540,14 +580,9 @@ const premiumFrameStyle = computed(() => {
     max-width: 90%;
   }
 
-  .split-frame-container {
-    max-width: 340px;
-    min-width: 180px;
-    height: 60px;
-  }
-
-  .premium-name-frame {
-    padding: 0.5rem 2rem;
+  /* Extra padding for English names on mobile to accommodate longer text */
+  .guest-name-container.english-name .premium-name-frame {
+    padding: 0.5rem 2rem !important;
   }
 }
 
