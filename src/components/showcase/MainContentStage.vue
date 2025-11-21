@@ -276,6 +276,7 @@
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
                   <PaymentSection
+                    ref="paymentComponentRef"
                     :payment-methods="paymentMethods"
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor || undefined"
@@ -1046,6 +1047,7 @@ const sectionRefs = {
   videoSection: ref<HTMLElement>(),
   gallerySection: ref<HTMLElement>(),
   paymentSection: ref<HTMLElement>(),
+  paymentComponent: ref<InstanceType<typeof PaymentSection> | null>(null),
   commentSection: ref<HTMLElement>(),
   footerSection: ref<HTMLElement>(),
 }
@@ -1061,6 +1063,7 @@ const {
   videoSection: videoSectionRef,
   gallerySection: gallerySectionRef,
   paymentSection: paymentSectionRef,
+  paymentComponent: paymentComponentRef,
   commentSection: commentSectionRef,
   footerSection: footerSectionRef,
 } = sectionRefs
@@ -1228,7 +1231,13 @@ const handleVideoStateChange = (isPlaying: boolean) => emit('videoStateChange', 
 
 // Section navigation handlers
 const handleRSVP = () => scrollToSection('rsvp-section')
-const handleGift = () => scrollToSection('payment-section')
+const handleGift = () => {
+  scrollToSection('payment-section')
+  // Expand the first payment card after scrolling
+  nextTick(() => {
+    paymentComponentRef.value?.expandFirstCard()
+  })
+}
 const handleAgenda = () => scrollToSection('agenda-section')
 const handleLocation = () => {
   // Scroll to event info section since map is now embedded there

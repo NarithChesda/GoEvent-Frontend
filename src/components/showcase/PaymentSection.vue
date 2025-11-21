@@ -127,7 +127,7 @@
                       <img
                         :src="getMediaUrl(method.qr_code_image)"
                         :alt="`QR Code for ${method.name}`"
-                        class="w-28 h-28 sm:w-32 sm:h-32 laptop-sm:w-24 laptop-sm:h-24 mx-auto shadow-md transition-all duration-300"
+                        class="w-28 h-28 sm:w-32 sm:h-32 laptop-sm:w-24 laptop-sm:h-24 2xl:w-48 2xl:h-48 mx-auto shadow-md transition-all duration-300"
                         @error="onImageError"
                       />
                       <!-- Subtle scan line animation overlay -->
@@ -565,6 +565,16 @@ const copyToClipboard = async (text: string) => {
 const onImageError = () => {
   // QR code image failed to load - could set fallback here
 }
+
+// Expose method to expand first card
+const expandFirstCard = () => {
+  if (props.paymentMethods.length > 0) {
+    expandedCards.value.clear()
+    expandedCards.value.add(props.paymentMethods[0].id.toString())
+  }
+}
+
+defineExpose({ expandFirstCard })
 
 const capitalizeText = (text: string | undefined): string => {
   if (!text) return ''
