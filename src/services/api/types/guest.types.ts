@@ -45,7 +45,14 @@ export interface EventGuest {
   cash_gift_currency?: string
   invitation_status: 'not_sent' | 'sent' | 'viewed'
   invitation_status_display: string
+  /** Full showcase URL path (e.g., "/events/{uuid}/showcase/?guest_name=...") */
   showcase_link: string
+  /**
+   * Backend-generated shortlink path (e.g., "/g/CKZNuy")
+   * Used for social media sharing with proper meta tags and analytics
+   * Format: /g/{6-character alphanumeric code}
+   */
+  short_link: string
   group: number
   group_details?: {
     id: number

@@ -735,15 +735,44 @@ const getDirectGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'k
   return `${window.location.origin}${showcaseUrl}`
 }
 
+/**
+ * Copy personalized shortlink for guest invitation
+ *
+ * Shortlinks (/g/{code}) route through backend which:
+ * - Detects social media bots and serves SSR meta tags
+ * - Redirects real users to frontend showcase
+ * - Tracks analytics (clicks, invitation status)
+ */
 const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
-  const fullUrl = getGuestShowcaseUrl(guest, language)
+  // Validate shortlink availability
+  if (!guest.short_link) {
+    console.warn('[copyShowcaseLink] No shortlink for guest, using fallback URL:', guest.id)
+    const fallbackUrl = getGuestShowcaseUrl(guest, language)
+    navigator.clipboard.writeText(fallbackUrl)
+      .then(() => showMessage('success', `Showcase link (${language.toUpperCase()}) copied for ${guest.name}`))
+      .catch(() => showMessage('error', 'Failed to copy link'))
+    return
+  }
+
+  // Validate shortlink format
+  if (!guest.short_link.startsWith('/g/')) {
+    console.error('[copyShowcaseLink] Invalid shortlink format:', guest.short_link)
+    showMessage('error', 'Invalid invitation link format')
+    return
+  }
+
+  // Use environment-based API URL for all environments (dev, staging, production)
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  const fullShortLink = `${API_BASE_URL}/api/events${guest.short_link}/?lang=${language}`
+
   navigator.clipboard
-    .writeText(fullUrl)
+    .writeText(fullShortLink)
     .then(() => {
       showMessage('success', `Showcase link (${language.toUpperCase()}) copied for ${guest.name}`)
     })
-    .catch(() => {
-      showMessage('error', 'Failed to copy link')
+    .catch((error) => {
+      console.error('[copyShowcaseLink] Clipboard API failed:', error)
+      showMessage('error', 'Failed to copy link. Please try again.')
     })
 }
 

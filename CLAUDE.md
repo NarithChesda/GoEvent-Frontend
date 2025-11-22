@@ -145,7 +145,7 @@ Required env vars (see [.env.example](.env.example)):
 
 ### Backend Testing Cridential
 Email: admin@goevent.com
-Password: admin123
+Password: 2025Password@admin
 
 ### API Response Format
 All API responses follow this structure:
