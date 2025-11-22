@@ -1,7 +1,7 @@
 <template>
   <!-- Mobile Tab Bar (fixed at bottom) -->
   <div
-    class="lg:hidden fixed bottom-0 left-0 right-0 z-50"
+    class="lg:hidden fixed bottom-0 left-0 right-0 z-[70]"
     role="navigation"
     aria-label="Mobile navigation"
   >
@@ -10,7 +10,7 @@
       <div
         v-if="userMenuOpen && authStore.isAuthenticated"
         ref="userMenuRef"
-        class="absolute bottom-full left-0 right-0 border-t border-[#B0E0E6]/50 bg-white/95 backdrop-blur-sm shadow-lg"
+        class="absolute bottom-full left-0 right-0 border-t border-[#B0E0E6]/50 bg-white/95 backdrop-blur-sm shadow-lg z-[70]"
         role="menu"
         aria-orientation="vertical"
       >
