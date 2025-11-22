@@ -160,7 +160,7 @@
       <Transition name="modal">
         <div
           v-if="showYouTubeHelpModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
+          class="fixed inset-0 z-[70] overflow-y-auto"
           @click="showYouTubeHelpModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
@@ -274,7 +274,7 @@
       <Transition name="modal">
         <div
           v-if="showMapsHelpModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
+          class="fixed inset-0 z-[70] overflow-y-auto"
           @click="showMapsHelpModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>

@@ -3,7 +3,7 @@
     <Transition name="modal">
       <div
         v-if="show"
-        class="fixed inset-0 z-50 overflow-y-auto"
+        class="fixed inset-0 z-[70] overflow-y-auto"
         @click.self="handleClose"
       >
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm pointer-events-none"></div>

@@ -356,7 +356,7 @@
       <Transition name="modal">
         <div
           v-if="showQRModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
+          class="fixed inset-0 z-[70] overflow-y-auto"
           @click="showQRModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
@@ -402,7 +402,7 @@
       <Transition name="modal">
         <div
           v-if="showLockHelpModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
+          class="fixed inset-0 z-[70] overflow-y-auto"
           @click="showLockHelpModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>

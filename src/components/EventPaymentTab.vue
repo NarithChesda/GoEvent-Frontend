@@ -270,7 +270,7 @@
     <!-- Payment Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showPaymentModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <div v-if="showPaymentModal" class="fixed inset-0 z-[70] overflow-y-auto">
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="closePaymentModal"></div>
 
           <div class="flex min-h-full items-center justify-center p-4">
@@ -528,7 +528,7 @@
       <Transition name="modal">
         <div
           v-if="showUpdateModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           @click="cancelUpdate"
         >
           <div
