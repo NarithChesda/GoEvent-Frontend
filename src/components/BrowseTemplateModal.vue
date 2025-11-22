@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="handleModalClose">
+      <div v-if="isOpen" class="fixed inset-0 z-[100] overflow-y-auto" @click="handleModalClose">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
         <div class="flex min-h-full items-center justify-center p-2 sm:p-4">
@@ -50,7 +50,6 @@
                   :templates="filteredTemplates"
                   :selected-template-id="selectedTemplateId"
                   @select-template="handleTemplateSelection"
-                  @preview-template="openPreview"
                 />
 
                 <TemplateEmptyState
@@ -76,14 +75,6 @@
         </div>
       </div>
     </Transition>
-    <!-- Preview Modal -->
-    <TemplatePreviewModal
-      v-if="showPreview && previewingTemplate"
-      :template="previewingTemplate"
-      :show-modal="showPreview"
-      @close="closePreview"
-      @select-template="(t) => { handleTemplateSelection(t); closePreview() }"
-    />
   </Teleport>
 </template>
 
@@ -103,7 +94,6 @@ import TemplateEmptyState from './template/TemplateEmptyState.vue'
 import TemplateMessage from './template/TemplateMessage.vue'
 import TemplateModalFooter from './template/TemplateModalFooter.vue'
 import { X, LayoutTemplate } from 'lucide-vue-next'
-import TemplatePreviewModal from './template/TemplatePreview.vue'
 
 interface Props {
   isOpen: boolean
@@ -150,19 +140,6 @@ const handleModalClose = (): void => {
 
 const handleTemplateSelection = (template: EventTemplate): void => {
   selectTemplate(template)
-}
-
-// Preview modal state
-const previewingTemplate = ref<EventTemplate | null>(null)
-const showPreview = ref(false)
-
-const openPreview = (template: EventTemplate): void => {
-  previewingTemplate.value = template
-  showPreview.value = true
-}
-
-const closePreview = (): void => {
-  showPreview.value = false
 }
 
 const handleConfirmSelection = async (): Promise<void> => {

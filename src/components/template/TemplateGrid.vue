@@ -6,7 +6,6 @@
       :template="template"
       :is-selected="selectedTemplateId === template.id"
       @select="handleTemplateSelect"
-      @preview="handleTemplatePreview"
     />
   </div>
 </template>
@@ -24,14 +23,9 @@ defineProps<Props>()
 
 const emit = defineEmits<{
   selectTemplate: [template: EventTemplate]
-  previewTemplate: [template: EventTemplate]
 }>()
 
 const handleTemplateSelect = (template: EventTemplate): void => {
   emit('selectTemplate', template)
-}
-
-const handleTemplatePreview = (template: EventTemplate): void => {
-  emit('previewTemplate', template)
 }
 </script>

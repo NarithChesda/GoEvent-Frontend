@@ -60,11 +60,11 @@
       </div>
 
       <!-- Centered Preview Button when selected -->
-      <div v-if="isSelected" class="absolute inset-0 flex items-center justify-center">
+      <div v-if="isSelected && template.youtube_preview_url" class="absolute inset-0 flex items-center justify-center">
         <button
           type="button"
-          class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-xs sm:text-sm font-semibold shadow-lg opacity-90 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e90ff]"
-          @click.stop="emitPreview"
+          class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-xs sm:text-sm font-semibold shadow-lg opacity-90 hover:opacity-100 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e90ff]"
+          @click.stop="openPreview"
         >
           Preview
         </button>
@@ -88,15 +88,16 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   select: [template: EventTemplate]
-  preview: [template: EventTemplate]
 }>()
 
 const handleSelect = (): void => {
   emit('select', props.template)
 }
 
-const emitPreview = (): void => {
-  emit('preview', props.template)
+const openPreview = (): void => {
+  if (props.template.youtube_preview_url) {
+    window.open(props.template.youtube_preview_url, '_blank', 'noopener,noreferrer')
+  }
 }
 
 const packageColorClass = computed(() => {
