@@ -128,6 +128,14 @@ export {
   GENDER_LABELS,
 } from './api/types/dress-code.types'
 
+// Review types
+export type {
+  EventReview,
+  CreateReviewRequest,
+  UpdateReviewRequest,
+  ReviewFilters,
+} from './api/types/review.types'
+
 // ============================================================================
 // SERVICE EXPORTS - All services from original api.ts
 // ============================================================================
@@ -178,6 +186,9 @@ export {
 
 // Dress code service
 export { dressCodeService } from './api/modules/dress-code.service'
+
+// Reviews service
+export { reviewsService } from './api/modules/reviews.service'
 
 // ============================================================================
 // NOTES FOR DEVELOPERS

@@ -41,6 +41,7 @@
         :can-view-payment="canViewPayment"
         :can-view-guest-management="canViewGuestManagement"
         :can-view-expenses="canViewExpenses"
+        :can-view-review="canViewReview"
         @tab-change="activeTab = $event"
       />
 
@@ -60,6 +61,7 @@
             :can-view-payment="canViewPayment"
             :can-view-guest-management="canViewGuestManagement"
             :can-view-expenses="canViewExpenses"
+            :can-view-review="canViewReview"
             :can-edit="event.can_edit"
             @tab-change="activeTab = $event"
           />
@@ -278,6 +280,26 @@
                 @tab-change="handleTabChange"
               />
             </div>
+
+            <!-- Review Tab -->
+            <div v-if="activeTab === 'review'">
+              <div v-if="!canViewReview" class="text-center py-12">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer can review their hosting experience on GoEvent.
+                </p>
+              </div>
+              <EventReviewTab
+                v-else-if="event?.id"
+                :event-id="event.id"
+                :can-edit="event.can_edit || false"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -393,6 +415,7 @@ import EventTemplateTab from '../components/EventTemplateTab.vue'
 import EventPaymentTab from '../components/EventPaymentTab.vue'
 import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
 import EventExpenseTab from '../components/EventExpenseTab.vue'
+import EventReviewTab from '../components/EventReviewTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import SmartFloatingActionButton from '../components/SmartFloatingActionButton.vue'
@@ -444,6 +467,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'payment', label: 'Payment', icon: 'credit-card' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
   { id: 'expenses', label: 'Expense Tracking', icon: 'dollar-sign', mobileLabel: 'Expenses' },
+  { id: 'review', label: 'Event Review', icon: 'star', mobileLabel: 'Review' },
 ])
 
 // Computed properties
@@ -503,6 +527,10 @@ const canViewGuestManagement = computed(() => {
 })
 
 const canViewExpenses = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewReview = computed(() => {
   return canViewRestrictedTabs.value
 })
 
