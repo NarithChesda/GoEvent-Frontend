@@ -314,7 +314,7 @@ const guestNameTextStyle = computed(() => {
 
   return {
     fontFamily,
-    color: props.primaryColor,
+    color: props.guestnameColor || props.primaryColor,
     fontWeight: isEnglishText ? '400' : 'normal',
     background: 'none',
     backgroundColor: 'transparent',
