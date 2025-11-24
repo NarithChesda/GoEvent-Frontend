@@ -218,6 +218,29 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <!-- Host Message Section (Thank You / Sorry Message) -->
+                <div
+                  v-if="showHostMessage"
+                  id="host-message-section"
+                  ref="hostMessageSectionRef"
+                  class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
+                >
+                  <HostMessageSection
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    :primary-color="primaryColor"
+                    :secondary-color="secondaryColor"
+                    :accent-color="accentColor"
+                    :background-color="backgroundColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                  />
+
+                  <!-- Host Message Section Divider -->
+                  <WeddingSectionDivider :primary-color="primaryColor" />
+                </div>
+
                 <!-- YouTube Video Section -->
                 <div
                   v-if="event.youtube_embed_link"
@@ -831,6 +854,7 @@ import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
+import HostMessageSection from './HostMessageSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
@@ -1044,6 +1068,7 @@ const sectionRefs = {
   rsvpSection: ref<HTMLElement>(),
   dressCodeSection: ref<HTMLElement>(),
   agendaSection: ref<HTMLElement>(),
+  hostMessageSection: ref<HTMLElement>(),
   videoSection: ref<HTMLElement>(),
   gallerySection: ref<HTMLElement>(),
   paymentSection: ref<HTMLElement>(),
@@ -1060,6 +1085,7 @@ const {
   rsvpSection: rsvpSectionRef,
   dressCodeSection: dressCodeSectionRef,
   agendaSection: agendaSectionRef,
+  hostMessageSection: hostMessageSectionRef,
   videoSection: videoSectionRef,
   gallerySection: gallerySectionRef,
   paymentSection: paymentSectionRef,
@@ -1080,6 +1106,7 @@ const initializeRevealAnimations = () => {
     [rsvpSectionRef, 'rsvp-section'],
     [dressCodeSectionRef, 'dress-code-section'],
     [agendaSectionRef, 'agenda-section'],
+    [hostMessageSectionRef, 'host-message-section'],
     [videoSectionRef, 'video-section'],
     [gallerySectionRef, 'gallery-section'],
     [paymentSectionRef, 'payment-section'],
@@ -1206,6 +1233,24 @@ const getDescriptionTitle = (): string | undefined => findEventText('description
 const footerThankYouText = computed(() =>
   getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
 )
+
+// Computed property to check if host message section should be displayed
+const showHostMessage = computed(() => {
+  if (!props.eventTexts?.length || !props.currentLanguage) {
+    return false
+  }
+
+  // Check if thank you message or sorry message exists for current language
+  const hasThankYouMessage = props.eventTexts.some(
+    (text) => text.text_type === 'thank_you_message' && text.language === props.currentLanguage,
+  )
+
+  const hasSorryMessage = props.eventTexts.some(
+    (text) => text.text_type === 'sorry_message' && text.language === props.currentLanguage,
+  )
+
+  return hasThankYouMessage || hasSorryMessage
+})
 
 // Computed styles to avoid recalculation on every render
 const contentLoadingStyle = computed(() => ({
