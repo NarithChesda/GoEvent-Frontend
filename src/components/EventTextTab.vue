@@ -43,6 +43,7 @@
               <option value="time_text">Time Text</option>
               <option value="location_text">Location Text</option>
               <option value="thank_you_message">Thank You Message</option>
+              <option value="sorry_message">Sorry Message</option>
               <option value="custom">Custom</option>
             </select>
             <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
@@ -400,6 +401,7 @@ const getTextTypeLabel = (textType: string): string => {
     time_text: 'Time Text',
     location_text: 'Location Text',
     thank_you_message: 'Thank You Message',
+    sorry_message: 'Sorry Message',
     custom: 'Custom Content',
   }
   return labels[textType] || textType
@@ -416,6 +418,7 @@ const getTextTypeIcon = (textType: string) => {
     time_text: Clock,
     location_text: MapPin,
     thank_you_message: Heart,
+    sorry_message: MessageSquare,
     custom: FileText,
   }
   return icons[textType] || FileText

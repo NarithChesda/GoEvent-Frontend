@@ -56,6 +56,7 @@
                       <option value="time_text">Time Text</option>
                       <option value="location_text">Location Text</option>
                       <option value="thank_you_message">Thank You Message</option>
+                      <option value="sorry_message">Sorry Message</option>
                       <option value="custom">Custom Content</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
