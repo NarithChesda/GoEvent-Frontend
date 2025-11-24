@@ -122,29 +122,6 @@
             />
           </div>
 
-          <!-- Event Type Dropdown (Virtual/In-Person) -->
-          <div class="relative inline-flex items-center">
-            <select
-              id="event-type-filter"
-              :value="getEventTypeValue()"
-              @change="handleEventTypeChange"
-              :class="
-                localFilters.is_virtual !== undefined
-                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md'
-                  : 'bg-white/70 hover:bg-[#E6F4FF]'
-              "
-              class="pill-select pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-all duration-200 border border-emerald-300/60 shadow-sm hover:shadow-md appearance-none cursor-pointer text-slate-900"
-              aria-label="Filter by event type"
-            >
-              <option value="">Event Type</option>
-              <option value="virtual">Virtual</option>
-              <option value="in-person">In-Person</option>
-            </select>
-            <div class="absolute right-2 sm:right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <ChevronDown class="w-3 h-3 text-slate-900" />
-            </div>
-          </div>
-
           <!-- Date Range Dropdown (Today/Week/Month) -->
           <div class="relative inline-flex items-center">
             <select
@@ -246,27 +223,6 @@ const emitFilters = () => {
   emit('update:modelValue', { ...localFilters })
 }
 
-// Event Type Dropdown Handlers
-const getEventTypeValue = (): string => {
-  if (localFilters.is_virtual === true) return 'virtual'
-  if (localFilters.is_virtual === false) return 'in-person'
-  return ''
-}
-
-const handleEventTypeChange = (e: Event) => {
-  const target = e.target as HTMLSelectElement
-  const selectedValue = target.value
-
-  if (selectedValue === '') {
-    localFilters.is_virtual = undefined
-  } else if (selectedValue === 'virtual') {
-    localFilters.is_virtual = true
-  } else if (selectedValue === 'in-person') {
-    localFilters.is_virtual = false
-  }
-  emitFilters()
-}
-
 // Date Range Dropdown Handlers
 const getDateRangeValue = (): string => {
   if (!localFilters.start_date_after || !localFilters.start_date_before) return ''
@@ -364,7 +320,6 @@ const hasActiveFilters = computed(() => {
     localFilters.organizer ||
     localFilters.start_date_after ||
     localFilters.start_date_before ||
-    localFilters.is_virtual !== undefined ||
     localFilters.status ||
     localFilters.privacy ||
     localFilters.ordering ||
@@ -471,13 +426,6 @@ watch(
 
 /* Specific styling for date range dropdown options */
 #date-range-filter option {
-  background: white !important;
-  color: #0f172a !important;
-  -webkit-text-fill-color: #0f172a !important;
-}
-
-/* Specific styling for event type dropdown */
-#event-type-filter option {
   background: white !important;
   color: #0f172a !important;
   -webkit-text-fill-color: #0f172a !important;
