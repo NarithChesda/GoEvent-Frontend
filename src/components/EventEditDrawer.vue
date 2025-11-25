@@ -18,17 +18,17 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center px-4 py-4">
+          <div class="flex items-center px-3 py-2.5">
             <!-- Left: Close button & Title -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <button
                 @click="closeDrawer"
-                class="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
                 title="Close"
               >
-                <X class="w-5 h-5 text-white" />
+                <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-lg font-bold text-white">Edit Event</h2>
+              <h2 class="text-base font-semibold text-white">Edit Event</h2>
             </div>
           </div>
         </div>
@@ -64,11 +64,11 @@
           </div>
 
           <!-- Edit Form -->
-          <div v-else class="p-5 space-y-6 pb-24">
+          <div v-else class="p-4 space-y-5 pb-24">
             <!-- Banner Image Upload -->
-            <div class="space-y-3">
+            <div class="space-y-2">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Banner</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event Banner</h3>
                 <!-- Options button when banner exists -->
                 <div v-if="event?.banner_image" class="relative">
                   <button
@@ -124,7 +124,7 @@
               <!-- Banner Preview or Upload Area -->
               <div
                 v-if="event?.banner_image"
-                class="relative rounded-xl overflow-hidden"
+                class="relative rounded-lg overflow-hidden"
                 style="padding-bottom: 52.5%;"
               >
                 <img
@@ -137,77 +137,77 @@
                   v-if="isUploadingBanner"
                   class="absolute inset-0 bg-black/50 flex items-center justify-center"
                 >
-                  <Loader class="w-8 h-8 text-white animate-spin" />
+                  <Loader class="w-6 h-6 text-white animate-spin" />
                 </div>
               </div>
               <div
                 v-else
                 @click="triggerBannerUpload"
-                class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#2ecc71] hover:bg-slate-50 transition-all group"
+                class="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#2ecc71] hover:bg-slate-50 transition-all group"
               >
-                <div class="flex flex-col items-center gap-2">
-                  <div class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                    <ImageIcon class="w-5 h-5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                <div class="flex flex-col items-center gap-1.5">
+                  <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
+                    <ImageIcon class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">Click to upload banner</p>
-                    <p class="text-xs text-slate-400">1200x630px recommended</p>
+                    <p class="text-xs font-medium text-slate-600 group-hover:text-slate-900">Click to upload banner</p>
+                    <p class="text-[10px] text-slate-400">1200x630px recommended</p>
                   </div>
                 </div>
                 <!-- Loading state -->
-                <div v-if="isUploadingBanner" class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-xl">
-                  <Loader class="w-6 h-6 text-[#2ecc71] animate-spin" />
+                <div v-if="isUploadingBanner" class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+                  <Loader class="w-5 h-5 text-[#2ecc71] animate-spin" />
                 </div>
               </div>
             </div>
 
             <!-- Basic Information -->
-            <div class="space-y-4 border-t border-slate-100 pt-6">
-              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
+            <div class="space-y-3 border-t border-slate-100 pt-5">
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
 
               <!-- Title -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Event Title *</label>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Event Title *</label>
                 <input
                   v-model="form.title"
                   type="text"
                   required
                   placeholder="Enter event title"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                 />
               </div>
 
               <!-- Short Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Short Description</label>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Short Description</label>
                 <input
                   v-model="form.short_description"
                   type="text"
                   maxlength="300"
                   placeholder="Brief description for event cards"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                 />
-                <p class="text-xs text-slate-500 mt-1">
+                <p class="text-[10px] text-slate-500 mt-0.5">
                   {{ form.short_description?.length || 0 }}/300 characters
                 </p>
               </div>
 
               <!-- Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Full Description *</label>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Full Description *</label>
                 <RichTextEditor
                   v-model="form.description"
                   placeholder="Detailed event description"
-                  min-height="120px"
+                  min-height="100px"
                 />
               </div>
 
               <!-- Category -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Category</label>
                 <select
                   v-model="form.category"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.75rem_center] bg-no-repeat pr-10"
+                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_0.5rem_center] bg-no-repeat pr-8"
                 >
                   <option value="">Select a category</option>
                   <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -218,59 +218,59 @@
             </div>
 
             <!-- Date and Time -->
-            <div class="space-y-4 border-t border-slate-100 pt-6">
-              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
+            <div class="space-y-3 border-t border-slate-100 pt-5">
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
 
               <!-- Start Date/Time -->
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Date *</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Start Date *</label>
                   <input
                     v-model="startDate"
                     type="date"
                     required
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Time *</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Start Time *</label>
                   <input
                     v-model="startTime"
                     type="time"
                     required
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
                 </div>
               </div>
 
               <!-- End Date/Time -->
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Date *</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">End Date *</label>
                   <input
                     v-model="endDate"
                     type="date"
                     required
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Time *</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">End Time *</label>
                   <input
                     v-model="endTime"
                     type="time"
                     required
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
                 </div>
               </div>
 
               <!-- Timezone -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Timezone</label>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Timezone</label>
                 <select
                   v-model="form.timezone"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.75rem_center] bg-no-repeat pr-10"
+                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_0.5rem_center] bg-no-repeat pr-8"
                 >
                   <optgroup
                     v-for="(timezones, region) in timezonesByRegion"
@@ -290,88 +290,88 @@
             </div>
 
             <!-- Location -->
-            <div class="space-y-4 border-t border-slate-100 pt-6">
-              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
+            <div class="space-y-3 border-t border-slate-100 pt-5">
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
 
               <!-- Location Type Toggle Buttons -->
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   @click="form.is_virtual = false"
                   :class="[
-                    'flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all',
+                    'flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all',
                     !form.is_virtual
                       ? 'border-[#2ecc71] bg-white'
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   ]"
                 >
                   <div :class="[
-                    'w-6 h-6 rounded flex items-center justify-center',
+                    'w-5 h-5 rounded flex items-center justify-center',
                     !form.is_virtual ? 'bg-[#2ecc71]' : 'bg-slate-100'
                   ]">
-                    <MapPin :class="['w-3.5 h-3.5', !form.is_virtual ? 'text-white' : 'text-slate-500']" />
+                    <MapPin :class="['w-3 h-3', !form.is_virtual ? 'text-white' : 'text-slate-500']" />
                   </div>
-                  <span :class="['font-medium text-sm flex-1', !form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
+                  <span :class="['font-medium text-xs flex-1', !form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
                     In Person
                   </span>
-                  <Check v-if="!form.is_virtual" class="w-5 h-5 text-[#2ecc71]" />
+                  <Check v-if="!form.is_virtual" class="w-4 h-4 text-[#2ecc71]" />
                 </button>
 
                 <button
                   type="button"
                   @click="form.is_virtual = true"
                   :class="[
-                    'flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all',
+                    'flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all',
                     form.is_virtual
                       ? 'border-[#1e90ff] bg-white'
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   ]"
                 >
                   <div :class="[
-                    'w-6 h-6 rounded flex items-center justify-center',
+                    'w-5 h-5 rounded flex items-center justify-center',
                     form.is_virtual ? 'bg-[#1e90ff]' : 'bg-slate-100'
                   ]">
-                    <Video :class="['w-3.5 h-3.5', form.is_virtual ? 'text-white' : 'text-slate-500']" />
+                    <Video :class="['w-3 h-3', form.is_virtual ? 'text-white' : 'text-slate-500']" />
                   </div>
-                  <span :class="['font-medium text-sm flex-1', form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
+                  <span :class="['font-medium text-xs flex-1', form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
                     Virtual
                   </span>
-                  <Check v-if="form.is_virtual" class="w-5 h-5 text-[#1e90ff]" />
+                  <Check v-if="form.is_virtual" class="w-4 h-4 text-[#1e90ff]" />
                 </button>
               </div>
 
               <!-- Location Input (In Person) -->
-              <div v-if="!form.is_virtual" class="space-y-3">
+              <div v-if="!form.is_virtual" class="space-y-2">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
-                  <div class="relative">
-                    <MapPin class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Address</label>
+                  <div class="relative flex items-center">
+                    <MapPin class="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       v-model="form.location"
                       type="text"
                       placeholder="Enter location address"
-                      class="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                      class="w-full pl-9 pr-9 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                     />
                     <button
                       v-if="form.location"
                       type="button"
                       @click="form.location = ''"
-                      class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
+                      class="absolute right-3 w-4 h-4 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
                     >
-                      <X class="w-3 h-3 text-slate-500" />
+                      <X class="w-2.5 h-2.5 text-slate-500" />
                     </button>
                   </div>
                 </div>
 
                 <!-- Google Maps Embed -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Map</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Map</label>
 
                   <!-- Map Preview -->
-                  <div v-if="form.google_map_embed_link" class="relative mb-3">
+                  <div v-if="form.google_map_embed_link" class="relative mb-2">
                     <iframe
                       :src="form.google_map_embed_link"
-                      class="w-full h-40 rounded-xl border border-slate-200"
+                      class="w-full h-32 rounded-lg border border-slate-200"
                       style="border: 0"
                       allowfullscreen
                       loading="lazy"
@@ -379,23 +379,23 @@
                     <button
                       type="button"
                       @click="form.google_map_embed_link = ''"
-                      class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
+                      class="absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition-colors"
                     >
-                      <X class="w-3 h-3" />
+                      <X class="w-2.5 h-2.5" />
                     </button>
                   </div>
 
-                  <div class="relative">
-                    <Map class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <div class="relative flex items-center">
+                    <Map class="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       v-model="form.google_map_embed_link"
                       type="text"
                       placeholder="Paste Google Maps embed URL"
                       @paste="handleMapsPaste"
-                      class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white text-sm"
+                      class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                     />
                   </div>
-                  <p class="text-xs text-slate-500 mt-1.5">
+                  <p class="text-[10px] text-slate-500 mt-1 ml-0">
                     Paste Google Maps embed code or URL
                   </p>
                 </div>
@@ -403,14 +403,14 @@
 
               <!-- Virtual Link Input -->
               <div v-else>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Meeting Link</label>
-                <div class="relative">
-                  <Link2 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <label class="block text-xs font-medium text-slate-700 mb-1">Virtual Meeting Link</label>
+                <div class="relative flex items-center">
+                  <Link2 class="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
                   <input
                     v-model="form.virtual_link"
                     type="url"
                     placeholder="https://zoom.us/meeting/..."
-                    class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
                 </div>
               </div>
@@ -419,11 +419,11 @@
         </div>
 
         <!-- Footer with Save Button -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-5 py-4">
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
           <button
             @click="handleSubmit"
             :disabled="isSubmitting"
-            class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
             <Save v-else class="w-4 h-4" />
@@ -433,14 +433,14 @@
 
         <!-- Success/Error Toast -->
         <Transition name="slide-up">
-          <div v-if="message" class="absolute bottom-20 left-4 right-4 z-10">
+          <div v-if="message" class="absolute bottom-16 left-4 right-4 z-10">
             <div
               :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-              class="text-white px-4 py-3 rounded-xl shadow-lg flex items-center"
+              class="text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center"
             >
-              <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2 flex-shrink-0" />
-              <AlertCircle v-else class="w-5 h-5 mr-2 flex-shrink-0" />
-              <span class="text-sm">{{ message.text }}</span>
+              <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 mr-2 flex-shrink-0" />
+              <AlertCircle v-else class="w-4 h-4 mr-2 flex-shrink-0" />
+              <span class="text-xs">{{ message.text }}</span>
             </div>
           </div>
         </Transition>
@@ -481,6 +481,7 @@ import {
   Upload,
   Crop,
   MoreHorizontal,
+  ArrowRight,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
 import ImageCropperModal from './common/ImageCropperModal.vue'
@@ -547,6 +548,9 @@ const form = reactive({
   status: 'published' as 'draft' | 'published' | 'cancelled' | 'completed',
   category: '' as string | number | null,
 })
+
+// Original form values for dirty tracking
+const originalForm = ref<typeof form | null>(null)
 
 // Computed properties for separate date and time inputs
 const startDate = computed({
@@ -626,10 +630,13 @@ const populateForm = (eventData: Event) => {
   form.privacy = eventData.privacy
   form.status = eventData.status
   form.category = eventData.category ? eventData.category.toString() : ''
+
+  // Store original values for dirty tracking
+  originalForm.value = { ...form }
 }
 
 const handleSubmit = async () => {
-  if (!event.value) return
+  if (!event.value || !originalForm.value) return
 
   // Validation
   if (!form.title.trim()) {
@@ -652,44 +659,97 @@ const handleSubmit = async () => {
     return
   }
 
+  // Build update payload with only changed fields (dirty tracking)
+  const updateData: Record<string, unknown> = {}
+  const original = originalForm.value
+
+  // Check text fields
+  if (form.title.trim() !== original.title) {
+    updateData.title = form.title.trim()
+  }
+  if ((form.short_description?.trim() || '') !== (original.short_description || '')) {
+    updateData.short_description = form.short_description?.trim() || ''
+  }
+  if (form.description.trim() !== original.description) {
+    updateData.description = form.description.trim()
+  }
+
+  // Check date/time fields
+  if (form.start_date !== original.start_date) {
+    updateData.start_date = new Date(form.start_date).toISOString()
+  }
+  if (form.end_date !== original.end_date) {
+    updateData.end_date = new Date(form.end_date).toISOString()
+  }
+  if (form.timezone !== original.timezone) {
+    updateData.timezone = form.timezone || 'UTC'
+  }
+
+  // Check boolean/enum fields
+  if (form.is_virtual !== original.is_virtual) {
+    updateData.is_virtual = form.is_virtual
+  }
+  if (form.privacy !== original.privacy) {
+    updateData.privacy = form.privacy
+  }
+  if (form.status !== original.status) {
+    updateData.status = form.status
+  }
+
+  // Check category
+  const currentCategory = form.category && form.category !== '' ? parseInt(form.category.toString(), 10) : null
+  const originalCategory = original.category && original.category !== '' ? parseInt(original.category.toString(), 10) : null
+  if (currentCategory !== originalCategory) {
+    updateData.category = currentCategory
+  }
+
+  // Handle location fields based on is_virtual
+  // If is_virtual changed, we need to update location fields accordingly
+  if (form.is_virtual !== original.is_virtual || form.is_virtual) {
+    // Virtual event - clear physical location fields if they had values
+    if (form.is_virtual) {
+      if (original.location) {
+        updateData.location = ''
+      }
+      if (original.google_map_embed_link) {
+        updateData.google_map_embed_link = null
+      }
+      if ((form.virtual_link?.trim() || '') !== (original.virtual_link || '')) {
+        updateData.virtual_link = form.virtual_link?.trim() || ''
+      }
+    }
+  }
+
+  if (!form.is_virtual) {
+    // In-person event - check location fields
+    if ((form.location?.trim() || '') !== (original.location || '')) {
+      updateData.location = form.location?.trim() || ''
+    }
+    if ((form.google_map_embed_link?.trim() || '') !== (original.google_map_embed_link || '')) {
+      updateData.google_map_embed_link = form.google_map_embed_link?.trim() || null
+    }
+    // Clear virtual_link if it had a value
+    if (original.virtual_link) {
+      updateData.virtual_link = ''
+    }
+  }
+
+  // If nothing changed, inform user and return early
+  if (Object.keys(updateData).length === 0) {
+    showMessage('success', 'No changes to save')
+    return
+  }
+
   isSubmitting.value = true
 
   try {
-    const updateData: Partial<Event> & { category?: number | null; location?: string; virtual_link?: string } = {
-      title: form.title.trim(),
-      short_description: form.short_description ? form.short_description.trim() : '',
-      description: form.description.trim(),
-      start_date: new Date(form.start_date).toISOString(),
-      end_date: new Date(form.end_date).toISOString(),
-      timezone: form.timezone || 'UTC',
-      is_virtual: form.is_virtual,
-      privacy: form.privacy,
-      status: form.status,
-    }
-
-    // Handle category
-    if (form.category && form.category !== '') {
-      updateData.category = parseInt(form.category.toString(), 10)
-    } else {
-      updateData.category = null
-    }
-
-    // Handle location and virtual_link
-    if (form.is_virtual) {
-      updateData.location = ''
-      ;(updateData as Record<string, unknown>).google_map_embed_link = null
-      updateData.virtual_link = form.virtual_link ? form.virtual_link.trim() : ''
-    } else {
-      updateData.location = form.location ? form.location.trim() : ''
-      ;(updateData as Record<string, unknown>).google_map_embed_link = form.google_map_embed_link ? form.google_map_embed_link.trim() : null
-      updateData.virtual_link = ''
-    }
-
     const response = await eventsService.patchEvent(event.value.id, updateData)
 
     if (response.success && response.data) {
       showMessage('success', 'Event updated successfully!')
       emit('updated', response.data)
+      // Update original form to reflect saved state
+      originalForm.value = { ...form }
       setTimeout(() => {
         closeDrawer()
       }, 1000)
