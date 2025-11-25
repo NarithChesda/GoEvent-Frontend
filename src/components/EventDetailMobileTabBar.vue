@@ -65,7 +65,7 @@ import type { TabConfig } from './EventNavigationTabs.vue'
 interface Props {
   activeTab: string
   tabs: TabConfig[]
-  canViewAttendees?: boolean
+  canViewRegistration?: boolean
   canViewMedia?: boolean
   canViewCollaborators?: boolean
   canViewEventTexts?: boolean
@@ -86,7 +86,7 @@ const tabButtons = ref<HTMLElement[]>([])
 
 const visibleTabs = computed(() => {
   return props.tabs.filter((tab) => {
-    if (tab.id === 'attendees' && !props.canViewAttendees) return false
+    if (tab.id === 'registration' && !props.canViewRegistration) return false
     if (tab.id === 'media' && !props.canViewMedia) return false
     if (tab.id === 'collaborator' && !props.canViewCollaborators) return false
     if (tab.id === 'event-texts' && !props.canViewEventTexts) return false

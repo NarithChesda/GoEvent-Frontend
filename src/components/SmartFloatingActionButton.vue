@@ -89,7 +89,7 @@ const shouldShowFab = computed(() => {
   }
 
   // Show for these tabs (including expenses summary)
-  const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
+  const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'registration', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
   return validTabs.includes(props.activeTab)
 })
 
@@ -134,7 +134,7 @@ const fabIcon = computed(() => {
       return UserPlus
     case 'event-texts':
       return FileText
-    case 'attendees':
+    case 'registration':
       return Camera
     case 'payment':
       return CreditCard
@@ -189,7 +189,7 @@ const fabAriaLabel = computed(() => {
       return 'Add host'
     case 'event-texts':
       return 'Add event text'
-    case 'attendees':
+    case 'registration':
       return 'Check in attendee'
     case 'payment':
       return 'Make payment'
@@ -258,7 +258,7 @@ const handleFabClick = () => {
     case 'event-texts':
       emit('add-event-text')
       break
-    case 'attendees':
+    case 'registration':
       emit('open-checkin')
       break
     case 'payment':

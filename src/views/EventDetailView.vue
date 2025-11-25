@@ -1,9 +1,61 @@
 <template>
-  <MainLayout>
+  <MainLayout :hide-home-sidebar="true" :hide-mobile-tab-bar="true">
     <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
 
+    <!-- Top Navigation Bar -->
+    <EventDetailTopBar
+      v-if="event"
+      :event-id="event.id"
+      :event-title="event.title"
+      :event-status="computedEventStatus"
+      :can-edit="event.can_edit"
+      :organizer-name="event.organizer_details?.name || event.organizer_details?.username"
+      :organizer-avatar="getOrganizerAvatarUrl(event.organizer_details?.profile_picture)"
+      @edit="handleEditEvent(event.id)"
+    />
+
+    <!-- Desktop Sidebar Navigation -->
+    <EventNavigationTabs
+      :active-tab="activeTab"
+      :tabs="navigationTabs"
+      :can-view-registration="canViewRegistration"
+      :can-view-media="canViewMedia"
+      :can-view-collaborators="canViewCollaborators"
+      :can-view-event-texts="canViewEventTexts"
+      :can-view-template="canViewTemplate"
+      :can-view-payment="canViewPayment"
+      :can-view-guest-management="canViewGuestManagement"
+      :can-view-expenses="canViewExpenses"
+      :can-view-review="canViewReview"
+      :can-edit="event?.can_edit"
+      @tab-change="activeTab = $event"
+    />
+
+    <!-- Loading Top Bar Skeleton -->
+    <div v-if="loading" class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-lg h-[72px]">
+      <div class="flex items-center justify-between h-full px-4">
+        <div class="flex items-center gap-3 animate-pulse">
+          <div class="w-12 h-12 bg-white/20 rounded-xl"></div>
+          <div class="w-10 h-10 bg-white/20 rounded-full"></div>
+          <div>
+            <div class="h-5 w-40 bg-white/20 rounded mb-2"></div>
+            <div class="h-3 w-24 bg-white/20 rounded"></div>
+          </div>
+        </div>
+        <div class="flex gap-2 animate-pulse">
+          <div class="h-9 w-24 bg-white/20 rounded-xl hidden sm:block"></div>
+          <div class="h-9 w-20 bg-white rounded-xl"></div>
+        </div>
+      </div>
+    </div>
+    <div v-if="loading" class="h-[72px]"></div>
+
     <!-- Loading State -->
-    <div v-if="loading" class="pt-24 pb-16">
+    <div
+      v-if="loading"
+      class="pb-16 transition-all duration-300 ease-in-out"
+      :style="{ marginLeft: contentMarginLeft }"
+    >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="animate-pulse">
           <div class="h-64 bg-slate-200 rounded-3xl mb-8"></div>
@@ -15,25 +67,17 @@
     </div>
 
     <!-- Event Detail -->
-    <div v-else-if="event">
-      <!-- Hero Section -->
-      <EventHeroSection
-        :event="event"
-        :can-register="canRegister"
-        :is-registering="isRegistering"
-        @register="registerForEvent"
-        @join-virtual="joinVirtualEvent"
-        @add-to-google-calendar="addToGoogleCalendar"
-        @add-to-outlook-calendar="addToOutlookCalendar"
-        @download-ics="downloadICSFile"
-      />
-
-      <!-- Mobile Bottom Tab Bar (below hero) -->
+    <div
+      v-else-if="event"
+      class="transition-all duration-300 ease-in-out"
+      :style="{ marginLeft: contentMarginLeft }"
+    >
+      <!-- Mobile Bottom Tab Bar -->
       <EventDetailMobileTabBar
         v-if="event"
         :active-tab="activeTab"
         :tabs="navigationTabs"
-        :can-view-attendees="canViewAttendees"
+        :can-view-registration="canViewRegistration"
         :can-view-media="canViewMedia"
         :can-view-collaborators="canViewCollaborators"
         :can-view-event-texts="canViewEventTexts"
@@ -46,31 +90,13 @@
       />
 
       <!-- Main Content Section -->
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-        <div class="flex flex-col md:flex-row gap-6 lg:gap-8">
-          <!-- Navigation Tabs (Desktop Only) -->
-          <EventNavigationTabs
-            class="hidden md:block"
-            :active-tab="activeTab"
-            :tabs="navigationTabs"
-            :can-view-attendees="canViewAttendees"
-            :can-view-media="canViewMedia"
-            :can-view-collaborators="canViewCollaborators"
-            :can-view-event-texts="canViewEventTexts"
-            :can-view-template="canViewTemplate"
-            :can-view-payment="canViewPayment"
-            :can-view-guest-management="canViewGuestManagement"
-            :can-view-expenses="canViewExpenses"
-            :can-view-review="canViewReview"
-            :can-edit="event.can_edit"
-            @tab-change="activeTab = $event"
-          />
-
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div class="flex flex-col">
           <!-- Main Content Area -->
-          <div class="flex-1 min-w-0 pb-20 md:pb-0">
-            <!-- About Tab -->
+          <div class="flex-1 min-w-0 pb-20 lg:pb-0">
+            <!-- Overview Tab -->
             <EventAboutSection
-              v-if="activeTab === 'about'"
+              v-if="activeTab === 'overview'"
               :event="event"
               @join-virtual="joinVirtualEvent"
             />
@@ -119,9 +145,9 @@
               <EventTextTab v-else ref="textTabRef" :event-id="event.id" />
             </div>
 
-            <!-- Attendees Tab -->
-            <div v-if="activeTab === 'attendees'">
-              <div v-if="!canViewAttendees" class="text-center py-12">
+            <!-- Registration Tab -->
+            <div v-if="activeTab === 'registration'">
+              <div v-if="!canViewRegistration" class="text-center py-12">
                 <div
                   class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
                 >
@@ -129,12 +155,12 @@
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
                 <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view attendees.
+                  Only the event organizer and collaborators can view registrations.
                 </p>
               </div>
-              <EventAttendeesTab
+              <EventRegistrationTab
                 v-else
-                ref="attendeesTabRef"
+                ref="registrationTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :registrations="event.registrations_details"
@@ -304,11 +330,6 @@
         </div>
       </div>
 
-      <!-- Footer - Hidden on mobile -->
-      <div class="hidden md:block">
-        <Footer />
-      </div>
-
       <!-- Smart Floating Action Button -->
       <SmartFloatingActionButton
         v-if="event"
@@ -339,10 +360,21 @@
 
       <!-- Contact Us FAB (Telegram) -->
       <ContactUsFAB v-if="event" :smart-fab-visible="smartFabVisible" :can-edit="event.can_edit" />
+
+      <!-- Edit Event Drawer -->
+      <EventEditDrawer
+        v-model="showEditDrawer"
+        :event-id="event?.id || null"
+        @updated="handleEventUpdatedFromDrawer"
+      />
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="pt-24 pb-16">
+    <div
+      v-else-if="error"
+      class="pt-24 pb-16 transition-all duration-300 ease-in-out"
+      :style="{ marginLeft: contentMarginLeft }"
+    >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div
           class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl shadow-emerald-500/25 p-12"
@@ -380,8 +412,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useSidebar } from '../composables/useSidebar'
 import {
   Lock,
   Pencil,
@@ -400,9 +433,8 @@ import {
   DollarSign,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
-import Footer from '../components/Footer.vue'
-import EventHeroSection from '../components/EventHeroSection.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
+import EventDetailTopBar from '../components/EventDetailTopBar.vue'
 import EventNavigationTabs from '../components/EventNavigationTabs.vue'
 import EventDetailMobileTabBar from '../components/EventDetailMobileTabBar.vue'
 import EventAgendaTab from '../components/EventAgendaTab.vue'
@@ -410,7 +442,7 @@ import EventHostsTab from '../components/EventHostsTab.vue'
 import EventTextTab from '../components/EventTextTab.vue'
 import EventMediaTab from '../components/EventMediaTab.vue'
 import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
-import EventAttendeesTab from '../components/EventAttendeesTab.vue'
+import EventRegistrationTab from '../components/EventRegistrationTab.vue'
 import EventTemplateTab from '../components/EventTemplateTab.vue'
 import EventPaymentTab from '../components/EventPaymentTab.vue'
 import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
@@ -420,22 +452,47 @@ import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import SmartFloatingActionButton from '../components/SmartFloatingActionButton.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
+import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const { isCollapsed } = useSidebar()
+
+// Inject home sidebar state from MainLayout
+const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay')
+
+// Calculate content margin based on sidebar states (only on desktop lg+)
+const contentMarginLeft = computed(() => {
+  // Only apply margin on lg screens and above
+  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+    return '0px'
+  }
+
+  // Event detail sidebar width = 96px (w-24)
+  const eventSidebarWidth = 96
+
+  // If home sidebar is visible, add its width too
+  if (showHomeSidebarOverlay?.value) {
+    // Home sidebar width: collapsed = 96px (w-24), expanded = 256px (w-64)
+    const homeSidebarWidth = isCollapsed.value ? 96 : 256
+    return `${eventSidebarWidth + homeSidebarWidth}px`
+  }
+
+  return `${eventSidebarWidth}px`
+})
 
 // State
 const event = ref<Event | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-const isRegistering = ref(false)
-const activeTab = ref('about')
+const activeTab = ref('overview')
 const activeSubTab = ref<string>('')
 const guestManagementSubTab = ref<string>('guests')
 const expenseTrackingSubTab = ref<string>('summary')
+const showEditDrawer = ref(false)
 
 // Interval IDs for polling
 const guestManagementPollInterval = ref<number | null>(null)
@@ -446,7 +503,7 @@ const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
 const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
 const textTabRef = ref<InstanceType<typeof EventTextTab> | null>(null)
-const attendeesTabRef = ref<InstanceType<typeof EventAttendeesTab> | null>(null)
+const registrationTabRef = ref<InstanceType<typeof EventRegistrationTab> | null>(null)
 const paymentTabRef = ref<InstanceType<typeof EventPaymentTab> | null>(null)
 const collaboratorTabRef = ref<InstanceType<typeof EventCollaboratorsTab> | null>(null)
 const templateTabRef = ref<InstanceType<typeof EventTemplateTab> | null>(null)
@@ -456,10 +513,10 @@ const smartFabRef = ref<InstanceType<typeof SmartFloatingActionButton> | null>(n
 
 // Navigation tabs configuration - optimized for user flow
 const navigationTabs = ref<TabConfig[]>([
-  { id: 'about', label: 'About', icon: 'file-text' },
+  { id: 'overview', label: 'Overview', icon: 'file-text' },
   { id: 'agenda', label: 'Agenda', icon: 'calendar' },
   { id: 'hosts', label: 'Hosts & Speakers', icon: 'users', mobileLabel: 'Hosts' },
-  { id: 'attendees', label: 'Attendees', icon: 'user-plus' },
+  { id: 'registration', label: 'Registration', icon: 'user-plus' },
   { id: 'media', label: 'Media', icon: 'image' },
   { id: 'event-texts', label: 'Event Texts', icon: 'file-text', mobileLabel: 'Texts' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
@@ -471,27 +528,9 @@ const navigationTabs = ref<TabConfig[]>([
 ])
 
 // Computed properties
-const canRegister = computed(() => {
+const canViewRegistration = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
-  if (event.value.is_registered || event.value.is_past) return false
-  if (!event.value.registration_required) return false
-  if (isEventFull.value || isRegistrationClosed.value) return false
-  return true
-})
-
-const isEventFull = computed(() => {
-  if (!event.value || !event.value.max_attendees) return false
-  return event.value.registrations_count >= event.value.max_attendees
-})
-
-const isRegistrationClosed = computed(() => {
-  if (!event.value || !event.value.registration_deadline) return false
-  return new Date(event.value.registration_deadline) < new Date()
-})
-
-const canViewAttendees = computed(() => {
-  if (!event.value || !authStore.isAuthenticated) return false
-  // Only organizer or collaborators can view attendees (no public access)
+  // Only organizer or collaborators can view registration (no public access)
   return event.value.can_edit
 })
 
@@ -540,6 +579,24 @@ const canDeleteEvent = computed(() => {
   return event.value.organizer === authStore.user?.id
 })
 
+// Top bar computed properties
+const computedEventStatus = computed((): 'upcoming' | 'ongoing' | 'past' | 'draft' | null => {
+  if (!event.value) return null
+
+  // Check if event is draft (no start date or not published)
+  if (!event.value.start_date) return 'draft'
+
+  const now = new Date()
+  const startDate = new Date(event.value.start_date)
+  const endDate = event.value.end_date ? new Date(event.value.end_date) : null
+
+  if (now < startDate) return 'upcoming'
+  if (endDate && now > endDate) return 'past'
+  if (now >= startDate && (!endDate || now <= endDate)) return 'ongoing'
+
+  return null
+})
+
 // Determine if smart FAB is visible (for positioning Contact Us FAB)
 const smartFabVisible = computed(() => {
   if (!event.value || !(event.value.can_edit || false)) return false
@@ -552,7 +609,7 @@ const smartFabVisible = computed(() => {
   }
 
   // Check if we're on a valid tab that shows the smart FAB (including expenses summary)
-  const validTabs = ['about', 'agenda', 'hosts', 'media', 'event-texts', 'attendees', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
+  const validTabs = ['overview', 'agenda', 'hosts', 'media', 'event-texts', 'registration', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
   return validTabs.includes(activeTab.value)
 })
 
@@ -615,33 +672,27 @@ const loadEvent = async () => {
   }
 }
 
-const registerForEvent = async () => {
-  if (!event.value || !authStore.isAuthenticated) return
-
-  isRegistering.value = true
-
-  try {
-    const response = await eventsService.registerForEvent(event.value.id, {
-      guest_count: 0,
-      notes: '',
-    })
-
-    if (response.success) {
-      showMessage('success', 'Successfully registered for the event!')
-      // Reload event to update registration status
-      await loadEvent()
-    } else {
-      showMessage('error', response.message || 'Failed to register for event')
-    }
-  } catch (error) {
-    showMessage('error', 'An error occurred while registering')
-  } finally {
-    isRegistering.value = false
-  }
+const handleEditEvent = (_eventId: string) => {
+  showEditDrawer.value = true
 }
 
-const handleEditEvent = (eventId: string) => {
-  router.push(`/events/${eventId}/edit`)
+const handleEventUpdatedFromDrawer = (updatedEvent: Event) => {
+  if (event.value && updatedEvent) {
+    // Merge the updated event data
+    event.value = {
+      ...event.value,
+      ...updatedEvent,
+      // Preserve nested arrays that might not be in the update
+      hosts: updatedEvent.hosts || event.value.hosts || [],
+      agenda_items: updatedEvent.agenda_items || event.value.agenda_items || [],
+      photos: updatedEvent.photos || event.value.photos || [],
+      collaborators_details: updatedEvent.collaborators_details || event.value.collaborators_details || [],
+      registrations_details: updatedEvent.registrations_details || event.value.registrations_details || [],
+      organizer_details: updatedEvent.organizer_details || event.value.organizer_details,
+      category_details: updatedEvent.category_details || event.value.category_details,
+    }
+    showMessage('success', 'Event updated successfully!')
+  }
 }
 
 const handleDeleteEvent = async (eventId: string) => {
@@ -685,8 +736,8 @@ const handleAddEventText = () => {
 }
 
 const handleOpenCheckin = () => {
-  // Open check-in modal in EventAttendeesTab
-  attendeesTabRef.value?.openCheckinModal()
+  // Open check-in modal in EventRegistrationTab
+  registrationTabRef.value?.openCheckinModal()
 }
 
 const handleOpenPayment = () => {
@@ -784,6 +835,23 @@ const getMediaUrl = (mediaUrl: string | null): string | undefined => {
   return `${API_BASE_URL}/media/${mediaUrl}`
 }
 
+const getOrganizerAvatarUrl = (profilePicture: string | null | undefined): string => {
+  if (!profilePicture) return ''
+
+  // If it's already a full URL, return as is
+  if (profilePicture.startsWith('http://') || profilePicture.startsWith('https://')) {
+    return profilePicture
+  }
+
+  // If it's a relative URL, prepend the API base URL
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  if (profilePicture.startsWith('/')) {
+    return `${API_BASE_URL}${profilePicture}`
+  }
+
+  return `${API_BASE_URL}/media/${profilePicture}`
+}
+
 const handleMediaUpdated = (updatedMedia: EventPhoto[]) => {
   if (event.value) {
     event.value.photos = updatedMedia
@@ -855,126 +923,6 @@ const formatEventTime = (dateString: string): string => {
     hour: '2-digit',
     minute: '2-digit',
   })
-}
-
-// Calendar integration functions
-const addToGoogleCalendar = () => {
-  if (!event.value) return
-
-  const startDate = new Date(event.value.start_date)
-  const endDate = new Date(event.value.end_date)
-
-  const formatDateForGoogle = (date: Date) => {
-    return date.toISOString().replace(/-|:|\.\d\d\d/g, '')
-  }
-
-  // Sanitize text for Google Calendar (mobile-friendly)
-  const sanitizeText = (text: string, maxLength = 1000): string => {
-    if (!text) return ''
-
-    // Remove HTML tags
-    let cleaned = text.replace(/<[^>]*>/g, '')
-
-    // Replace problematic characters
-    cleaned = cleaned
-      .replace(/[\r\n]+/g, ' ') // Replace newlines with spaces
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '') // Remove non-printable chars
-      .trim()
-
-    // Truncate if too long (prevents URL length issues on mobile)
-    if (cleaned.length > maxLength) {
-      cleaned = cleaned.substring(0, maxLength) + '...'
-    }
-
-    return cleaned
-  }
-
-  const title = sanitizeText(event.value.title, 200)
-  const description = sanitizeText(
-    event.value.description || event.value.short_description || '',
-    500 // Shorter limit for description to prevent mobile URL issues
-  )
-
-  // Sanitize location
-  let location = ''
-  if (event.value.is_virtual) {
-    location = event.value.virtual_link || 'Virtual Event'
-  } else {
-    location = sanitizeText(event.value.location || '', 200)
-  }
-
-  // Build URL manually to ensure proper encoding for mobile
-  const baseUrl = 'https://calendar.google.com/calendar/render'
-  const params = [
-    'action=TEMPLATE',
-    `text=${encodeURIComponent(title)}`,
-    `dates=${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
-    `details=${encodeURIComponent(description)}`,
-    `location=${encodeURIComponent(location)}`,
-    'trp=false'
-  ].join('&')
-
-  window.open(`${baseUrl}?${params}`, '_blank')
-}
-
-const addToOutlookCalendar = () => {
-  if (!event.value) return
-
-  const startDate = new Date(event.value.start_date)
-  const endDate = new Date(event.value.end_date)
-
-  const params = new URLSearchParams({
-    subject: event.value.title,
-    startdt: startDate.toISOString(),
-    enddt: endDate.toISOString(),
-    body: event.value.description || event.value.short_description || '',
-    location: event.value.is_virtual
-      ? event.value.virtual_link || 'Virtual Event'
-      : event.value.location || '',
-  })
-
-  window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`, '_blank')
-}
-
-const downloadICSFile = () => {
-  if (!event.value) return
-
-  const startDate = new Date(event.value.start_date)
-  const endDate = new Date(event.value.end_date)
-
-  const formatDateForICS = (date: Date) => {
-    return date.toISOString().replace(/-|:|\.\d\d\d/g, '')
-  }
-
-  const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//GoEvent//Event Calendar//EN
-BEGIN:VEVENT
-UID:${event.value.id}@goevent.com
-DTSTAMP:${formatDateForICS(new Date())}
-DTSTART:${formatDateForICS(startDate)}
-DTEND:${formatDateForICS(endDate)}
-SUMMARY:${event.value.title}
-DESCRIPTION:${event.value.description || event.value.short_description || ''}
-LOCATION:${
-    event.value.is_virtual
-      ? event.value.virtual_link || 'Virtual Event'
-      : event.value.location || ''
-  }
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`
-
-  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${event.value.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
 }
 
 // Watch for tab changes and reset sub-tab
