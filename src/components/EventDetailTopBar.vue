@@ -191,8 +191,12 @@ const editEvent = () => {
 
 const previewShowcase = () => {
   if (props.eventId) {
-    // Open showcase in new tab
-    window.open(`/events/${props.eventId}/showcase`, '_blank')
+    // Open showcase in new tab with guest name and language params
+    const baseUrl = window.location.origin
+    const url = new URL(`${baseUrl}/events/${props.eventId}/showcase`)
+    url.searchParams.append('guest_name', 'ភ្ញៀវកិត្តិយស')
+    url.searchParams.append('lang', 'kh')
+    window.open(url.toString(), '_blank')
   }
 }
 </script>
