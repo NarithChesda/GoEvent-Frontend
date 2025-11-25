@@ -89,10 +89,21 @@ export function useBulkImport(
     isImporting.value = true
 
     try {
+      // Strip BOM from CSV files if present
+      let fileToUpload = selectedFile.value
+      if (selectedFile.value.type === 'text/csv' || selectedFile.value.name.endsWith('.csv')) {
+        const text = await selectedFile.value.text()
+        // Check for BOM (U+FEFF) and remove it
+        const cleanedText = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text
+        fileToUpload = new File([cleanedText], selectedFile.value.name, {
+          type: selectedFile.value.type,
+        })
+      }
+
       const response = await guestGroupService.bulkImportToGroup(
         eventId,
         groupId,
-        selectedFile.value,
+        fileToUpload,
       )
 
       // Update counts reactively if import was successful
