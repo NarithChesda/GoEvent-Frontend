@@ -37,7 +37,7 @@
 
         <!-- Date & Time -->
         <div class="flex items-start gap-4">
-          <div class="w-12 h-16 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
+          <div class="w-12 h-12 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
             <span class="text-[10px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(event.start_date) }}</span>
             <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
           </div>
@@ -77,16 +77,13 @@
 
         <!-- Location -->
         <div v-if="event.location || event.is_virtual" class="flex items-start gap-4">
-          <div class="w-12 h-16 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <Video v-if="event.is_virtual" class="w-5 h-5 text-slate-600" />
             <MapPin v-else class="w-5 h-5 text-slate-600" />
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-slate-900">
-              {{ event.is_virtual ? 'Virtual Event' : getLocationName(event.location) }}
-            </p>
-            <p v-if="!event.is_virtual && event.location" class="text-sm text-slate-600">
-              {{ event.location }}
+              {{ event.is_virtual ? 'Virtual Event' : (event.location || 'Location TBD') }}
             </p>
             <p v-if="event.is_virtual && event.virtual_link" class="text-sm text-slate-600 truncate">
               {{ event.virtual_link }}
@@ -111,17 +108,9 @@
         </div>
 
         <!-- About Event -->
-        <div class="border-t border-slate-100 pt-6">
+        <div v-if="event.description" class="border-t border-slate-100 pt-6">
           <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">About Event</h3>
-          <div
-            v-if="event.description"
-            class="prose prose-sm max-w-none text-slate-700"
-            v-html="sanitizedDescription"
-          />
-          <p v-else-if="event.short_description" class="text-slate-700 leading-relaxed">
-            {{ event.short_description }}
-          </p>
-          <p v-else class="text-slate-500 italic">No description provided.</p>
+          <div class="prose prose-sm max-w-none text-slate-700" v-html="sanitizedDescription" />
         </div>
 
         <!-- Agenda -->
@@ -371,12 +360,6 @@ const getTimeRange = (startStr: string, endStr: string): string => {
   }
 
   return `${formatTime(start)} - ${formatTime(end)}`
-}
-
-const getLocationName = (location: string | null): string => {
-  if (!location) return ''
-  const parts = location.split(',')
-  return parts[0].trim()
 }
 
 const getInitials = (name: string): string => {
