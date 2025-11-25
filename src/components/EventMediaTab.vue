@@ -66,18 +66,6 @@
             <CreditCard class="w-4 h-4" />
             <span>Event Payment</span>
           </button>
-          <button
-            @click="activeSection = 'social-media'"
-            :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
-              activeSection === 'social-media'
-                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
-                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
-            ]"
-          >
-            <Share2 class="w-4 h-4" />
-            <span>Social Media</span>
-          </button>
         </div>
       </div>
     </div>
@@ -226,15 +214,6 @@
         />
       </div>
 
-      <!-- Social Media Preview Section -->
-      <div v-if="activeSection === 'social-media'">
-        <SocialMediaPreview
-          v-if="localEventData"
-          :event-data="localEventData"
-          guest-name="ភ្ញៀវកិត្តិយស"
-          language="kh"
-        />
-      </div>
     </div>
 
     <!-- Upload Modal -->
@@ -273,7 +252,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, nextTick } from 'vue'
-import { Upload, ImageIcon, AlertCircle, Video, Layout, CheckCircle, CreditCard, Share2 } from 'lucide-vue-next'
+import { Upload, ImageIcon, AlertCircle, Video, Layout, CheckCircle, CreditCard } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
@@ -281,7 +260,6 @@ import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import BasicMediaSection from './BasicMediaSection.vue'
 import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
-import SocialMediaPreview from './SocialMediaPreview.vue'
 
 interface Props {
   eventId?: string
@@ -306,7 +284,7 @@ const emit = defineEmits<{
 const media = ref<EventPhoto[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment' | 'social-media'>('basic')
+const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment'>('basic')
 const showUploadModal = ref(false)
 const showDeleteModal = ref(false)
 const mediaToDelete = ref<EventPhoto | null>(null)
