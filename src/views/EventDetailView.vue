@@ -330,36 +330,8 @@
         </div>
       </div>
 
-      <!-- Smart Floating Action Button -->
-      <SmartFloatingActionButton
-        v-if="event"
-        ref="smartFabRef"
-        :active-tab="activeTab"
-        :active-sub-tab="activeSubTab"
-        :guest-management-sub-tab="guestManagementSubTab"
-        :expense-tracking-sub-tab="expenseTrackingSubTab"
-        :can-edit="event.can_edit || false"
-        :can-delete="canDeleteEvent"
-        :event-title="event.title || ''"
-        :event-id="event.id || ''"
-        @add-agenda="handleAddAgenda"
-        @add-host="handleAddHost"
-        @add-photo="handleAddPhoto"
-        @add-event-text="handleAddEventText"
-        @open-checkin="handleOpenCheckin"
-        @open-payment="handleOpenPayment"
-        @invite-collaborator="handleInviteCollaborator"
-        @browse-template="handleBrowseTemplate"
-        @add-guest="handleAddGuest"
-        @add-group="handleAddGroup"
-        @quick-add="handleQuickAdd"
-        @add-dress-code="handleAddDressCode"
-        @edit="handleEditEvent"
-        @delete="handleDeleteEvent"
-      />
-
       <!-- Contact Us FAB (Telegram) -->
-      <ContactUsFAB v-if="event" :smart-fab-visible="smartFabVisible" :can-edit="event.can_edit" />
+      <ContactUsFAB v-if="event" :can-edit="event.can_edit" />
 
       <!-- Edit Event Drawer -->
       <EventEditDrawer
@@ -450,7 +422,6 @@ import EventExpenseTab from '../components/EventExpenseTab.vue'
 import EventReviewTab from '../components/EventReviewTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
-import SmartFloatingActionButton from '../components/SmartFloatingActionButton.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
@@ -463,10 +434,27 @@ const { isCollapsed } = useSidebar()
 // Inject home sidebar state from MainLayout
 const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay')
 
+// Reactive window width for responsive margin calculation
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+const isDesktop = computed(() => windowWidth.value >= 1024)
+
+// Update window width on resize
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', updateWindowWidth)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowWidth)
+})
+
 // Calculate content margin based on sidebar states (only on desktop lg+)
 const contentMarginLeft = computed(() => {
   // Only apply margin on lg screens and above
-  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+  if (!isDesktop.value) {
     return '0px'
   }
 
@@ -498,7 +486,7 @@ const showEditDrawer = ref(false)
 const guestManagementPollInterval = ref<number | null>(null)
 const expenseTrackingPollInterval = ref<number | null>(null)
 
-// Template refs for tab components (for Smart FAB)
+// Template refs for tab components
 const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
 const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
@@ -509,7 +497,6 @@ const collaboratorTabRef = ref<InstanceType<typeof EventCollaboratorsTab> | null
 const templateTabRef = ref<InstanceType<typeof EventTemplateTab> | null>(null)
 const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> | null>(null)
 const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
-const smartFabRef = ref<InstanceType<typeof SmartFloatingActionButton> | null>(null)
 
 // Navigation tabs configuration - optimized for user flow
 const navigationTabs = ref<TabConfig[]>([
@@ -597,22 +584,6 @@ const computedEventStatus = computed((): 'upcoming' | 'ongoing' | 'past' | 'draf
   return null
 })
 
-// Determine if smart FAB is visible (for positioning Contact Us FAB)
-const smartFabVisible = computed(() => {
-  if (!event.value || !(event.value.can_edit || false)) return false
-
-  // Hide on media tab's video & map (embeds) and social media sub-tabs
-  if (activeTab.value === 'media') {
-    if (activeSubTab.value === 'embeds' || activeSubTab.value === 'social-media') {
-      return false
-    }
-  }
-
-  // Check if we're on a valid tab that shows the smart FAB (including expenses summary)
-  const validTabs = ['overview', 'agenda', 'hosts', 'media', 'event-texts', 'registration', 'payment', 'collaborator', 'template', 'guest-management', 'expenses']
-  return validTabs.includes(activeTab.value)
-})
-
 // Mobile context header computed properties
 const currentTabLabel = computed(() => {
   const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
@@ -695,67 +666,6 @@ const handleEventUpdatedFromDrawer = (updatedEvent: Event) => {
   }
 }
 
-const handleDeleteEvent = async (eventId: string) => {
-  try {
-    const response = await eventsService.deleteEvent(eventId)
-
-    if (response.success) {
-      showMessage('success', 'Event deleted successfully')
-      // Close the smart FAB action menu and reset its state
-      smartFabRef.value?.resetDeleting()
-      smartFabRef.value?.closeActionMenu()
-      // Navigate back to events list after a short delay
-      setTimeout(() => {
-        router.push('/events')
-      }, 1500)
-    } else {
-      showMessage('error', response.message || 'Failed to delete event')
-      smartFabRef.value?.resetDeleting()
-    }
-  } catch (error) {
-    showMessage('error', 'An error occurred while deleting the event')
-    smartFabRef.value?.resetDeleting()
-  }
-}
-
-// Smart FAB handlers
-const handleAddAgenda = () => {
-  agendaTabRef.value?.openAddModal()
-}
-
-const handleAddHost = () => {
-  hostsTabRef.value?.openAddModal()
-}
-
-const handleAddPhoto = () => {
-  mediaTabRef.value?.openAddModal()
-}
-
-const handleAddEventText = () => {
-  textTabRef.value?.openAddModal()
-}
-
-const handleOpenCheckin = () => {
-  // Open check-in modal in EventRegistrationTab
-  registrationTabRef.value?.openCheckinModal()
-}
-
-const handleOpenPayment = () => {
-  // Determine which payment modal to open based on context
-  if (activeTab.value === 'media' && activeSubTab.value === 'payment') {
-    // In Media tab > Payment sub-tab: Open payment method modal (for adding bank transfer, QR, etc.)
-    mediaTabRef.value?.openPaymentMethodModal()
-  } else if (activeTab.value === 'payment') {
-    // In Payment main tab: Open payment modal (for making payment)
-    paymentTabRef.value?.openPaymentModal()
-  }
-}
-
-const handleAddDressCode = () => {
-  // Open dress code modal in EventMediaTab
-  mediaTabRef.value?.openDressCodeModal()
-}
-
 const handleTabChange = (tab: string, options?: { openPaymentModal?: boolean }) => {
   activeTab.value = tab
 
@@ -766,31 +676,6 @@ const handleTabChange = (tab: string, options?: { openPaymentModal?: boolean }) 
       paymentTabRef.value?.openPaymentModal()
     })
   }
-}
-
-const handleInviteCollaborator = () => {
-  // Open invite collaborator modal in EventCollaboratorsTab
-  collaboratorTabRef.value?.openInviteModal()
-}
-
-const handleBrowseTemplate = () => {
-  // Open template selector in EventTemplateTab
-  templateTabRef.value?.openBrowseTemplates()
-}
-
-const handleAddGuest = () => {
-  // Open add guest modal in EventGuestManagementTab
-  guestManagementTabRef.value?.openAddGuestModal()
-}
-
-const handleAddGroup = () => {
-  // Open add group modal in EventGuestManagementTab
-  guestManagementTabRef.value?.openAddGroupModal()
-}
-
-const handleQuickAdd = () => {
-  // Open Quick Add modal in EventExpenseTab (context-aware based on active sub-tab)
-  expenseTabRef.value?.openQuickAdd()
 }
 
 const joinVirtualEvent = () => {

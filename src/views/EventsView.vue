@@ -183,7 +183,7 @@
     </Transition>
 
     <!-- Contact Us FAB (Telegram) -->
-    <ContactUsFAB :smart-fab-visible="authStore.isAuthenticated" />
+    <ContactUsFAB />
 
     <!-- Event Create Modal -->
     <EventCreateModal

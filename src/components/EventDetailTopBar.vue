@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, type Ref } from 'vue'
+import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { Menu, X, Pencil, Eye } from 'lucide-vue-next'
 
 interface Props {
@@ -134,10 +134,27 @@ const isHomeSidebarVisible = computed(() => {
   return showHomeSidebarOverlay?.value ?? false
 })
 
+// Reactive window width for responsive margin calculation
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+const isDesktop = computed(() => windowWidth.value >= 1024)
+
+// Update window width on resize
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', updateWindowWidth)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowWidth)
+})
+
 // Calculate header margin based on home sidebar state (only on desktop lg+)
 const headerMarginLeft = computed(() => {
   // Only apply margin on lg screens and above
-  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+  if (!isDesktop.value) {
     return '0px'
   }
 

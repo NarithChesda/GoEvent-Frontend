@@ -73,7 +73,6 @@ import { secureStorage } from '@/utils/secureStorage'
 import { useAuthStore } from '@/stores/auth'
 
 interface Props {
-  smartFabVisible: boolean
   canEdit?: boolean
 }
 
@@ -105,22 +104,14 @@ const telegramLink = computed(() => {
   return `https://t.me/goeventkh`
 })
 
-// Dynamic positioning based on smart FAB visibility
+// FAB position
 const fabPositionClass = computed(() => {
-  if (props.smartFabVisible) {
-    return 'bottom-[160px] lg:bottom-[88px]'
-  } else {
-    return 'bottom-20 lg:bottom-4'
-  }
+  return 'bottom-20 lg:bottom-4'
 })
 
 // Chat popup position (above the FAB)
 const chatPopupPositionClass = computed(() => {
-  if (props.smartFabVisible) {
-    return 'bottom-[230px] lg:bottom-[158px]'
-  } else {
-    return 'bottom-[150px] lg:bottom-[78px]'
-  }
+  return 'bottom-[150px] lg:bottom-[78px]'
 })
 
 // Check if popup should be shown (with 1-day expiry)
