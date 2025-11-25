@@ -12,11 +12,17 @@
     <!-- Event Info Card -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
       <div class="px-5 py-6 space-y-6">
-        <!-- Title & Organizer -->
+        <!-- Title & Category -->
         <div>
-          <h1 class="text-2xl font-bold text-slate-900 leading-tight mb-3">
-            {{ event.title }}
-          </h1>
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <h1 class="text-2xl font-bold text-slate-900 leading-tight">
+              {{ event.title }}
+            </h1>
+            <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full flex-shrink-0">
+              <span class="text-slate-400">#</span>
+              {{ event.category_details.name }}
+            </span>
+          </div>
 
           <!-- Organizer -->
           <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
@@ -209,13 +215,31 @@
           </div>
         </div>
 
-        <!-- Category Tag -->
-        <div v-if="event.category_details" class="border-t border-slate-100 pt-6">
-          <div class="flex flex-wrap gap-2">
-            <span class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-full">
-              <span class="text-slate-400">#</span>
-              {{ event.category_details.name }}
-            </span>
+        <!-- Social Media Preview -->
+        <div class="border-t border-slate-100 pt-6">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Social Media Preview</h3>
+          <p class="text-sm text-slate-600 mb-4">
+            Preview how your event showcase will appear when shared on social media
+          </p>
+
+          <!-- Facebook Preview Card -->
+          <div class="border border-gray-300 rounded-xl overflow-hidden bg-white">
+            <div class="aspect-[1.91/1] relative overflow-hidden bg-slate-200">
+              <img
+                v-if="previewImage"
+                :src="previewImage"
+                :alt="event.title || 'Event Preview'"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center">
+                <ImageIcon class="w-16 h-16 text-slate-400" />
+              </div>
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-gray-600 uppercase tracking-wide mb-1">{{ hostname }}</div>
+              <div class="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
+              <div class="text-sm text-gray-600 line-clamp-3">{{ metaDescription }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -232,11 +256,13 @@ import {
   ChevronDown,
   CalendarPlus,
   ExternalLink,
+  ImageIcon,
 } from 'lucide-vue-next'
 import { type Event } from '../services/api'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import type { EventAgendaItem } from '../services/api/types/event.types'
+import { createEventDescription } from '../utils/metaUtils'
 
 interface Props {
   event: Event
@@ -252,6 +278,37 @@ defineEmits<Emits>()
 // State
 const showCalendarOptions = ref(false)
 const expandedAgendaGroups = ref<Record<string, boolean>>({})
+
+const hostname = computed(() => {
+  return window.location.hostname
+})
+
+const metaTitle = computed(() => {
+  if (!props.event?.title) return 'សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស'
+  return `${props.event.title} - សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស`
+})
+
+const metaDescription = computed(() => {
+  if (!props.event) return 'Event description will appear here.'
+  return createEventDescription(props.event as unknown as Record<string, unknown>)
+})
+
+const previewImage = computed(() => {
+  if (!props.event?.banner_image) return null
+
+  const bannerImage = props.event.banner_image
+
+  if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
+    return bannerImage
+  }
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  if (bannerImage.startsWith('/')) {
+    return `${API_BASE_URL}${bannerImage}`
+  }
+
+  return `${API_BASE_URL}/media/${bannerImage}`
+})
 
 // Get organizer name
 const organizerName = computed(() => {
