@@ -5,7 +5,7 @@
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
-        @click="closeDrawer"
+        @click="!showBannerCropper && closeDrawer()"
       />
     </Transition>
 
@@ -18,7 +18,7 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center justify-between px-4 py-4">
+          <div class="flex items-center px-4 py-4">
             <!-- Left: Close button & Title -->
             <div class="flex items-center gap-3">
               <button
@@ -30,17 +30,6 @@
               </button>
               <h2 class="text-lg font-bold text-white">Edit Event</h2>
             </div>
-
-            <!-- Right: Save button -->
-            <button
-              @click="handleSubmit"
-              :disabled="isSubmitting"
-              class="flex items-center gap-2 px-4 py-2 bg-white text-[#1e90ff] font-semibold rounded-xl hover:bg-white/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-              <Check v-else class="w-4 h-4" />
-              <span>{{ isSubmitting ? 'Saving...' : 'Save' }}</span>
-            </button>
           </div>
         </div>
 
@@ -76,8 +65,104 @@
 
           <!-- Edit Form -->
           <div v-else class="p-5 space-y-6 pb-24">
+            <!-- Banner Image Upload -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Banner</h3>
+                <!-- Options button when banner exists -->
+                <div v-if="event?.banner_image" class="relative">
+                  <button
+                    @click.stop="showBannerDropdown = !showBannerDropdown"
+                    :disabled="isUploadingBanner"
+                    class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+                  >
+                    <MoreHorizontal class="w-4 h-4" />
+                  </button>
+                  <!-- Dropdown menu -->
+                  <div
+                    v-if="showBannerDropdown"
+                    @click.stop
+                    class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-20 min-w-[120px]"
+                  >
+                    <button
+                      @click="triggerBannerUpload(); showBannerDropdown = false"
+                      :disabled="isUploadingBanner"
+                      class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <Upload class="w-4 h-4" />
+                      <span>Replace</span>
+                    </button>
+                    <button
+                      @click="openBannerCropper(); showBannerDropdown = false"
+                      :disabled="isUploadingBanner"
+                      class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <Crop class="w-4 h-4" />
+                      <span>Crop</span>
+                    </button>
+                    <button
+                      @click="removeBanner"
+                      :disabled="isUploadingBanner"
+                      class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <X class="w-4 h-4" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hidden file input -->
+              <input
+                ref="bannerFileInput"
+                type="file"
+                accept="image/*"
+                @change="handleBannerFileSelect"
+                class="hidden"
+              />
+
+              <!-- Banner Preview or Upload Area -->
+              <div
+                v-if="event?.banner_image"
+                class="relative rounded-xl overflow-hidden"
+                style="padding-bottom: 52.5%;"
+              >
+                <img
+                  :src="getMediaUrl(event.banner_image)"
+                  alt="Event Banner"
+                  class="absolute inset-0 w-full h-full object-cover"
+                />
+                <!-- Loading overlay -->
+                <div
+                  v-if="isUploadingBanner"
+                  class="absolute inset-0 bg-black/50 flex items-center justify-center"
+                >
+                  <Loader class="w-8 h-8 text-white animate-spin" />
+                </div>
+              </div>
+              <div
+                v-else
+                @click="triggerBannerUpload"
+                class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#2ecc71] hover:bg-slate-50 transition-all group"
+              >
+                <div class="flex flex-col items-center gap-2">
+                  <div class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
+                    <ImageIcon class="w-5 h-5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">Click to upload banner</p>
+                    <p class="text-xs text-slate-400">1200x630px recommended</p>
+                  </div>
+                </div>
+                <!-- Loading state -->
+                <div v-if="isUploadingBanner" class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-xl">
+                  <Loader class="w-6 h-6 text-[#2ecc71] animate-spin" />
+                </div>
+              </div>
+            </div>
+
             <!-- Basic Information -->
-            <div class="space-y-4">
+            <div class="space-y-4 border-t border-slate-100 pt-6">
               <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
 
               <!-- Title -->
@@ -136,21 +221,44 @@
             <div class="space-y-4 border-t border-slate-100 pt-6">
               <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Start Date/Time -->
+              <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Date *</label>
                   <input
-                    v-model="form.start_date"
-                    type="datetime-local"
+                    v-model="startDate"
+                    type="date"
                     required
                     class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Time *</label>
                   <input
-                    v-model="form.end_date"
-                    type="datetime-local"
+                    v-model="startTime"
+                    type="time"
+                    required
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  />
+                </div>
+              </div>
+
+              <!-- End Date/Time -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Date *</label>
+                  <input
+                    v-model="endDate"
+                    type="date"
+                    required
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Time *</label>
+                  <input
+                    v-model="endTime"
+                    type="time"
                     required
                     class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
                   />
@@ -185,43 +293,147 @@
             <div class="space-y-4 border-t border-slate-100 pt-6">
               <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
 
-              <!-- Virtual Event Toggle -->
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input
-                  v-model="form.is_virtual"
-                  type="checkbox"
-                  class="w-5 h-5 text-[#1e90ff] border-slate-300 rounded focus:ring-[#1e90ff]"
-                />
-                <span class="text-sm font-medium text-slate-700">This is a virtual event</span>
-              </label>
+              <!-- Location Type Toggle Buttons -->
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  @click="form.is_virtual = false"
+                  :class="[
+                    'flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all',
+                    !form.is_virtual
+                      ? 'border-[#2ecc71] bg-white'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  ]"
+                >
+                  <div :class="[
+                    'w-6 h-6 rounded flex items-center justify-center',
+                    !form.is_virtual ? 'bg-[#2ecc71]' : 'bg-slate-100'
+                  ]">
+                    <MapPin :class="['w-3.5 h-3.5', !form.is_virtual ? 'text-white' : 'text-slate-500']" />
+                  </div>
+                  <span :class="['font-medium text-sm flex-1', !form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
+                    In Person
+                  </span>
+                  <Check v-if="!form.is_virtual" class="w-5 h-5 text-[#2ecc71]" />
+                </button>
 
-              <!-- Location or Virtual Link -->
-              <div v-if="!form.is_virtual">
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Event Location</label>
-                <textarea
-                  v-model="form.location"
-                  rows="2"
-                  placeholder="Event location address"
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white resize-none"
-                ></textarea>
+                <button
+                  type="button"
+                  @click="form.is_virtual = true"
+                  :class="[
+                    'flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all',
+                    form.is_virtual
+                      ? 'border-[#1e90ff] bg-white'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  ]"
+                >
+                  <div :class="[
+                    'w-6 h-6 rounded flex items-center justify-center',
+                    form.is_virtual ? 'bg-[#1e90ff]' : 'bg-slate-100'
+                  ]">
+                    <Video :class="['w-3.5 h-3.5', form.is_virtual ? 'text-white' : 'text-slate-500']" />
+                  </div>
+                  <span :class="['font-medium text-sm flex-1', form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
+                    Virtual
+                  </span>
+                  <Check v-if="form.is_virtual" class="w-5 h-5 text-[#1e90ff]" />
+                </button>
               </div>
 
+              <!-- Location Input (In Person) -->
+              <div v-if="!form.is_virtual" class="space-y-3">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
+                  <div class="relative">
+                    <MapPin class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      v-model="form.location"
+                      type="text"
+                      placeholder="Enter location address"
+                      class="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    />
+                    <button
+                      v-if="form.location"
+                      type="button"
+                      @click="form.location = ''"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
+                    >
+                      <X class="w-3 h-3 text-slate-500" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Google Maps Embed -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Map</label>
+
+                  <!-- Map Preview -->
+                  <div v-if="form.google_map_embed_link" class="relative mb-3">
+                    <iframe
+                      :src="form.google_map_embed_link"
+                      class="w-full h-40 rounded-xl border border-slate-200"
+                      style="border: 0"
+                      allowfullscreen
+                      loading="lazy"
+                    ></iframe>
+                    <button
+                      type="button"
+                      @click="form.google_map_embed_link = ''"
+                      class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
+                    >
+                      <X class="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  <div class="relative">
+                    <Map class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      v-model="form.google_map_embed_link"
+                      type="text"
+                      placeholder="Paste Google Maps embed URL"
+                      @paste="handleMapsPaste"
+                      class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white text-sm"
+                    />
+                  </div>
+                  <p class="text-xs text-slate-500 mt-1.5">
+                    Paste Google Maps embed code or URL
+                  </p>
+                </div>
+              </div>
+
+              <!-- Virtual Link Input -->
               <div v-else>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Meeting Link</label>
-                <input
-                  v-model="form.virtual_link"
-                  type="url"
-                  placeholder="https://zoom.us/meeting/..."
-                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
-                />
+                <div class="relative">
+                  <Link2 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    v-model="form.virtual_link"
+                    type="url"
+                    placeholder="https://zoom.us/meeting/..."
+                    class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Footer with Save Button -->
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-5 py-4">
+          <button
+            @click="handleSubmit"
+            :disabled="isSubmitting"
+            class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+            <Save v-else class="w-4 h-4" />
+            <span>{{ isSubmitting ? 'Saving...' : 'Update Event' }}</span>
+          </button>
+        </div>
+
         <!-- Success/Error Toast -->
         <Transition name="slide-up">
-          <div v-if="message" class="absolute bottom-4 left-4 right-4 z-10">
+          <div v-if="message" class="absolute bottom-20 left-4 right-4 z-10">
             <div
               :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
               class="text-white px-4 py-3 rounded-xl shadow-lg flex items-center"
@@ -234,19 +446,44 @@
         </Transition>
       </div>
     </Transition>
+
   </Teleport>
+
+  <!-- Banner Image Cropper Modal - Outside drawer's Teleport to avoid z-index issues -->
+  <ImageCropperModal
+    v-if="showBannerCropper"
+    :show="showBannerCropper"
+    :image-source="bannerCropperImage"
+    title="Crop Banner Image"
+    :aspect-ratio="BANNER_ASPECT_RATIO"
+    cropper-height="400px"
+    help-text="Adjust the crop area to frame your banner image (1200x630px ratio)"
+    @close="closeBannerCropper"
+    @apply="handleBannerCropApply"
+    @update:cropper-ref="setBannerCropperRef"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import {
   X,
   Check,
   Loader,
   AlertCircle,
   CheckCircle,
+  MapPin,
+  Video,
+  Link2,
+  Save,
+  Map,
+  ImageIcon,
+  Upload,
+  Crop,
+  MoreHorizontal,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
+import ImageCropperModal from './common/ImageCropperModal.vue'
 import {
   eventsService,
   eventCategoriesService,
@@ -254,6 +491,8 @@ import {
   type EventCategory,
 } from '../services/api'
 import { getTimezonesByRegion, getUserTimezone } from '../utils/timezones'
+import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import { useMediaUrl } from '../composables/useMediaUrl'
 
 interface Props {
   modelValue: boolean
@@ -276,6 +515,19 @@ const isSubmitting = ref(false)
 const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
+// Banner upload state
+const bannerFileInput = ref<HTMLInputElement | null>(null)
+const isUploadingBanner = ref(false)
+const showBannerDropdown = ref(false)
+const showBannerCropper = ref(false)
+const bannerCropperImage = ref<string | null>(null)
+const bannerCropperRef = ref<any>(null)
+const pendingBannerFile = ref<File | null>(null)
+const BANNER_ASPECT_RATIO = 1200 / 630
+
+// Composables
+const { getMediaUrl } = useMediaUrl()
+
 // Timezone data
 const timezonesByRegion = getTimezonesByRegion()
 
@@ -288,11 +540,45 @@ const form = reactive({
   end_date: '',
   timezone: getUserTimezone(),
   location: '',
+  google_map_embed_link: '',
   virtual_link: '',
   is_virtual: false,
   privacy: 'public' as 'public' | 'private',
   status: 'published' as 'draft' | 'published' | 'cancelled' | 'completed',
   category: '' as string | number | null,
+})
+
+// Computed properties for separate date and time inputs
+const startDate = computed({
+  get: () => form.start_date ? form.start_date.split('T')[0] : '',
+  set: (val: string) => {
+    const time = startTime.value || '00:00'
+    form.start_date = val ? `${val}T${time}` : ''
+  }
+})
+
+const startTime = computed({
+  get: () => form.start_date ? form.start_date.split('T')[1] || '' : '',
+  set: (val: string) => {
+    const date = startDate.value || new Date().toISOString().split('T')[0]
+    form.start_date = date ? `${date}T${val}` : ''
+  }
+})
+
+const endDate = computed({
+  get: () => form.end_date ? form.end_date.split('T')[0] : '',
+  set: (val: string) => {
+    const time = endTime.value || '00:00'
+    form.end_date = val ? `${val}T${time}` : ''
+  }
+})
+
+const endTime = computed({
+  get: () => form.end_date ? form.end_date.split('T')[1] || '' : '',
+  set: (val: string) => {
+    const date = endDate.value || new Date().toISOString().split('T')[0]
+    form.end_date = date ? `${date}T${val}` : ''
+  }
 })
 
 // Methods
@@ -334,6 +620,7 @@ const populateForm = (eventData: Event) => {
   form.end_date = eventData.end_date.slice(0, 16)
   form.timezone = eventData.timezone || getUserTimezone()
   form.location = eventData.location || ''
+  form.google_map_embed_link = eventData.google_map_embed_link || ''
   form.virtual_link = eventData.virtual_link || ''
   form.is_virtual = eventData.is_virtual
   form.privacy = eventData.privacy
@@ -390,9 +677,11 @@ const handleSubmit = async () => {
     // Handle location and virtual_link
     if (form.is_virtual) {
       updateData.location = ''
+      ;(updateData as Record<string, unknown>).google_map_embed_link = null
       updateData.virtual_link = form.virtual_link ? form.virtual_link.trim() : ''
     } else {
       updateData.location = form.location ? form.location.trim() : ''
+      ;(updateData as Record<string, unknown>).google_map_embed_link = form.google_map_embed_link ? form.google_map_embed_link.trim() : null
       updateData.virtual_link = ''
     }
 
@@ -424,6 +713,143 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 
 const closeDrawer = () => {
   emit('update:modelValue', false)
+}
+
+// Handle paste events for Google Maps iframe
+const handleMapsPaste = (event: ClipboardEvent) => {
+  const pastedText = event.clipboardData?.getData('text')
+  if (!pastedText) return
+
+  // Try to extract Google Maps URL from iframe code
+  const extractedUrl = extractGoogleMapsEmbedUrl(pastedText)
+
+  if (extractedUrl) {
+    event.preventDefault()
+    form.google_map_embed_link = extractedUrl
+  }
+}
+
+// Banner upload methods
+const triggerBannerUpload = () => {
+  bannerFileInput.value?.click()
+}
+
+const handleBannerFileSelect = (e: globalThis.Event) => {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  target.value = '' // Reset input
+
+  if (!file) return
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showMessage('error', 'Please select an image file')
+    return
+  }
+
+  // Store the file and open cropper
+  pendingBannerFile.value = file
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    bannerCropperImage.value = ev.target?.result as string
+    showBannerCropper.value = true
+  }
+  reader.readAsDataURL(file)
+}
+
+const openBannerCropper = () => {
+  const bannerUrl = getMediaUrl(event.value?.banner_image)
+  if (bannerUrl) {
+    bannerCropperImage.value = bannerUrl
+    showBannerCropper.value = true
+  }
+}
+
+const closeBannerCropper = () => {
+  showBannerCropper.value = false
+  bannerCropperImage.value = null
+  pendingBannerFile.value = null
+}
+
+const setBannerCropperRef = (ref: InstanceType<typeof ImageCropperModal> | null) => {
+  bannerCropperRef.value = ref
+}
+
+const handleBannerCropApply = async () => {
+  if (!bannerCropperRef.value || !event.value) return
+
+  const { canvas } = bannerCropperRef.value.getResult()
+  if (!canvas) return
+
+  // Create a new canvas with exact 1200x630 dimensions
+  const outputCanvas = document.createElement('canvas')
+  outputCanvas.width = 1200
+  outputCanvas.height = 630
+  const ctx = outputCanvas.getContext('2d')
+  if (!ctx) return
+
+  // Draw the cropped image scaled to 1200x630
+  ctx.drawImage(canvas, 0, 0, 1200, 630)
+
+  outputCanvas.toBlob(async (blob: Blob | null) => {
+    if (!blob || !event.value) return
+
+    const fileName = pendingBannerFile.value?.name?.replace(/\.[^/.]+$/, '.jpg') || 'banner.jpg'
+    const croppedFile = new File([blob], fileName, { type: 'image/jpeg' })
+
+    closeBannerCropper()
+    await uploadBanner(croppedFile)
+  }, 'image/jpeg', 0.85)
+}
+
+const uploadBanner = async (file: File) => {
+  if (!event.value) return
+
+  isUploadingBanner.value = true
+
+  try {
+    const formData = new FormData()
+    formData.append('banner_image', file)
+
+    const response = await eventsService.updateEventWithFiles(event.value.id, formData)
+
+    if (response.success && response.data) {
+      event.value = response.data
+      emit('updated', response.data)
+      showMessage('success', 'Banner uploaded successfully')
+    } else {
+      showMessage('error', response.message || 'Failed to upload banner')
+    }
+  } catch (err) {
+    console.error('Error uploading banner:', err)
+    showMessage('error', 'Failed to upload banner')
+  } finally {
+    isUploadingBanner.value = false
+  }
+}
+
+const removeBanner = async () => {
+  if (!event.value) return
+
+  isUploadingBanner.value = true
+
+  try {
+    const response = await eventsService.patchEvent(event.value.id, { banner_image: null })
+
+    if (response.success && response.data) {
+      event.value = response.data
+      emit('updated', response.data)
+      showMessage('success', 'Banner removed successfully')
+    } else {
+      showMessage('error', response.message || 'Failed to remove banner')
+    }
+  } catch (err) {
+    console.error('Error removing banner:', err)
+    showMessage('error', 'Failed to remove banner')
+  } finally {
+    isUploadingBanner.value = false
+    showBannerDropdown.value = false
+  }
 }
 
 // Calculate scrollbar width to prevent layout shift
