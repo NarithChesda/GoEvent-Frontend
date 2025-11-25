@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="fixed inset-0 z-[80] overflow-y-auto">
-        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+      <div v-if="show" class="fixed inset-0 z-[10000] overflow-y-auto" @click.stop>
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click.stop></div>
 
         <div class="flex min-h-full items-center justify-center p-4">
           <div class="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden">
