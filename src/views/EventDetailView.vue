@@ -599,6 +599,12 @@ const loadEvent = async () => {
 
     if (response.success && response.data) {
       event.value = response.data
+
+      // If user cannot edit this event, redirect to public view
+      if (!event.value.can_edit) {
+        router.replace(`/events/${eventId}`)
+        return
+      }
     } else {
       error.value = response.message || 'Event not found'
     }

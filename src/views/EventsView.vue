@@ -202,6 +202,18 @@
       @confirm="handleDeleteConfirm"
       @cancel="closeDeleteModal"
     />
+
+    <!-- Public Event Drawer -->
+    <PublicEventDrawer
+      v-model="showEventDrawer"
+      :event-id="selectedEventId"
+      :has-prev="hasDrawerPrev"
+      :has-next="hasDrawerNext"
+      @navigate-prev="handleDrawerPrev"
+      @navigate-next="handleDrawerNext"
+      @registered="handleEventRegistered"
+      @login-required="handleLoginRequired"
+    />
     </div>
   </MainLayout>
 </template>
@@ -222,6 +234,7 @@ import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
+import PublicEventDrawer from '../components/PublicEventDrawer.vue'
 import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
@@ -261,6 +274,11 @@ const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const eventToDelete = ref<Event | null>(null)
 const loadMoreTrigger = ref<HTMLElement | null>(null)
+
+// Public Event Drawer state
+const showEventDrawer = ref(false)
+const selectedEventId = ref<string | null>(null)
+const selectedEventIndex = ref<number>(-1)
 
 // Use composables
 const {
@@ -339,7 +357,54 @@ const loadCategories = async () => {
 }
 
 const viewEvent = (event: Event) => {
-  router.push(`/events/${event.id}`)
+  // Check if user owns or can edit this event:
+  // 1. User is on "My Events" tab (these are their own/collaborated events)
+  // 2. Event has can_edit flag set to true
+  // 3. User is the organizer of the event
+  const isOwnerOrCollaborator =
+    currentView.value === 'my' ||
+    event.can_edit === true ||
+    (authStore.user?.id && event.organizer === authStore.user.id)
+
+  if (isOwnerOrCollaborator) {
+    router.push(`/events/${event.id}/manage`)
+    return
+  }
+
+  // For public users viewing public events, open the drawer instead
+  selectedEventId.value = event.id
+  selectedEventIndex.value = events.value.findIndex(e => e.id === event.id)
+  showEventDrawer.value = true
+}
+
+// Drawer navigation computed properties
+const hasDrawerPrev = computed(() => selectedEventIndex.value > 0)
+const hasDrawerNext = computed(() => selectedEventIndex.value < events.value.length - 1)
+
+// Drawer navigation methods
+const handleDrawerPrev = () => {
+  if (hasDrawerPrev.value) {
+    selectedEventIndex.value--
+    selectedEventId.value = events.value[selectedEventIndex.value].id
+  }
+}
+
+const handleDrawerNext = () => {
+  if (hasDrawerNext.value) {
+    selectedEventIndex.value++
+    selectedEventId.value = events.value[selectedEventIndex.value].id
+  }
+}
+
+const handleEventRegistered = () => {
+  showMessage('success', 'Successfully registered for the event!')
+  // Reload events to update registration status
+  loadEvents(currentView.value, filters.value)
+}
+
+const handleLoginRequired = () => {
+  // The drawer will close and redirect to login
+  showEventDrawer.value = false
 }
 
 const createEvent = () => {

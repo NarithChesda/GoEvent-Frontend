@@ -218,6 +218,7 @@ const { showAuthModal, openAuthModal, onAuthModalClose, onUserAuthenticated } = 
 
 // View-specific methods
 const registerForEvent = () => {
+  // Redirect to public event page for registration
   router.push(`/events/${event.value.id}`)
 }
 

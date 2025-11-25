@@ -71,8 +71,14 @@ const router = createRouter({
     {
       path: '/events/:id',
       name: 'event-detail',
-      component: () => import('../views/EventDetailView.vue'),
+      component: () => import('../views/PublicEventView.vue'),
       meta: { title: 'Event Details - GoEvent' },
+    },
+    {
+      path: '/events/:id/manage',
+      name: 'event-manage',
+      component: () => import('../views/EventDetailView.vue'),
+      meta: { requiresAuth: true, title: 'Manage Event - GoEvent' },
     },
     {
       path: '/events/:id/edit',

@@ -442,7 +442,7 @@ const handleSubmit = async () => {
     if (response.success) {
       showMessage('success', 'Event updated successfully!')
       setTimeout(() => {
-        router.push(`/events/${event.value!.id}`)
+        router.push(`/events/${event.value!.id}/manage`)
       }, 1500)
     } else {
       console.error('API Error Response:', response)
