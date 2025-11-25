@@ -7,10 +7,10 @@
  * @module constants/eventsViewConfig
  */
 
-import { User, Globe, CheckCircle, type LucideIcon } from 'lucide-vue-next'
+import { Ticket, Globe } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
-export type ViewType = 'all' | 'my' | 'registered'
+export type ViewType = 'all' | 'my'
 
 /**
  * View option configuration
@@ -30,18 +30,13 @@ export interface ViewOption {
 export const VIEW_OPTIONS: ViewOption[] = [
   {
     type: 'my',
-    label: 'My Events',
-    icon: User,
+    label: 'Events',
+    icon: Ticket,
   },
   {
     type: 'all',
-    label: 'Public Events',
+    label: 'Explore',
     icon: Globe,
-  },
-  {
-    type: 'registered',
-    label: 'Registered',
-    icon: CheckCircle,
   },
 ]
 
@@ -52,10 +47,6 @@ export const EMPTY_STATE_CONFIG: Record<ViewType, { title: string; message: stri
   my: {
     title: "You haven't created any events yet",
     message: 'Start organizing amazing events and bring people together for memorable experiences.',
-  },
-  registered: {
-    title: "You haven't registered for any events yet",
-    message: 'Explore public events and register for ones that interest you.',
   },
   all: {
     title: 'No events found',
@@ -68,7 +59,6 @@ export const EMPTY_STATE_CONFIG: Record<ViewType, { title: string; message: stri
  */
 export const LOGIN_PROMPT_CONFIG: Record<ViewType, string> = {
   my: 'Please sign in to view and manage your events.',
-  registered: 'Please sign in to see the events you have registered for.',
   all: 'Please sign in to continue.',
 }
 
@@ -76,7 +66,6 @@ export const LOGIN_PROMPT_CONFIG: Record<ViewType, string> = {
  * Section labels for each view type
  */
 export const SECTION_LABEL_CONFIG: Record<ViewType, string> = {
-  my: 'My Events',
-  registered: "Events I'm Attending",
-  all: 'Public Events',
+  my: 'Events',
+  all: 'Explore',
 }

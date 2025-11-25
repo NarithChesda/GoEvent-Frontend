@@ -259,7 +259,7 @@ const authStore = useAuthStore()
 // Initialize current view from URL query parameter or default to 'all'
 const initialView = (): ViewType => {
   const viewParam = route.query.view as string | undefined
-  if (viewParam && ['all', 'my', 'registered'].includes(viewParam)) {
+  if (viewParam && ['all', 'my'].includes(viewParam)) {
     return viewParam as ViewType
   }
   return 'all'
@@ -305,7 +305,7 @@ const {
 // Computed properties
 const hasEvents = computed(() => events.value.length > 0)
 const showLoginPrompt = computed(() => {
-  return !loading.value && !authStore.isAuthenticated && (currentView.value === 'my' || currentView.value === 'registered')
+  return !loading.value && !authStore.isAuthenticated && currentView.value === 'my'
 })
 const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && events.value.length === 0)
 
@@ -357,21 +357,18 @@ const loadCategories = async () => {
 }
 
 const viewEvent = (event: Event) => {
-  // Check if user owns or can edit this event:
-  // 1. User is on "My Events" tab (these are their own/collaborated events)
-  // 2. Event has can_edit flag set to true
-  // 3. User is the organizer of the event
-  const isOwnerOrCollaborator =
-    currentView.value === 'my' ||
+  // Check if user can edit this event (organizer or collaborator with edit permission)
+  const canEditEvent =
     event.can_edit === true ||
     (authStore.user?.id && event.organizer === authStore.user.id)
 
-  if (isOwnerOrCollaborator) {
+  if (canEditEvent) {
+    // User is organizer or collaborator - go to manage page
     router.push(`/events/${event.id}/manage`)
     return
   }
 
-  // For public users viewing public events, open the drawer instead
+  // For registered events (or any event user can't edit), open the drawer
   selectedEventId.value = event.id
   selectedEventIndex.value = events.value.findIndex(e => e.id === event.id)
   showEventDrawer.value = true
@@ -643,7 +640,7 @@ watch(
   () => route.query.view,
   (newView) => {
     const view = newView as ViewType | undefined
-    if (view && ['all', 'my', 'registered'].includes(view)) {
+    if (view && ['all', 'my'].includes(view)) {
       if (currentView.value !== view) {
         currentView.value = view
       }
@@ -684,8 +681,8 @@ watch(
       // Reload events when user logs in
       loadEvents(currentView.value, filters.value)
     } else {
-      // User logged out - if they're on 'my' or 'registered' tabs, clear events to show login prompt
-      if (currentView.value === 'my' || currentView.value === 'registered') {
+      // User logged out - if they're on 'my' tab, clear events to show login prompt
+      if (currentView.value === 'my') {
         events.value = []
       }
     }

@@ -1,7 +1,8 @@
 /**
  * useEventsData.ts
  *
- * Composable for managing event data fetching across different views (My Events, Public Events, Registered Events).
+ * Composable for managing event data fetching across different views (Events, Explore).
+ * Events tab includes organized, collaborated, and registered events.
  * Handles pagination, filtering, authentication checks, and data transformation.
  *
  * @module composables/useEventsData
@@ -16,10 +17,10 @@ import {
   type PaginatedResponse,
 } from '../services/api'
 
-export type ViewType = 'all' | 'my' | 'registered'
+export type ViewType = 'all' | 'my'
 
 /**
- * Client-side filter helper for My Events and Registered tabs
+ * Client-side filter helper for My Events tab
  * Applies search, category, date range, virtual/in-person, and sorting filters
  */
 const applyClientSideFilters = (events: Event[], filterValues: EventFiltersType): Event[] => {
@@ -103,22 +104,36 @@ const applyClientSideFilters = (events: Event[], filterValues: EventFiltersType)
 }
 
 /**
- * Loads user's own events (organized + collaborated)
+ * Loads user's own events (organized + collaborated + registered)
  * Applies client-side filtering and deduplication
  */
 const loadMyEvents = async (
   filters: EventFiltersType
 ): Promise<ApiResponse<PaginatedResponse<Event>>> => {
-  const myEventsResponse = await eventsService.getMyEvents(filters)
+  // Fetch both my events and registered events in parallel
+  const [myEventsResponse, registeredResponse] = await Promise.all([
+    eventsService.getMyEvents(filters),
+    eventsService.getMyRegisteredEvents(filters),
+  ])
 
   if (myEventsResponse.success && myEventsResponse.data) {
     const organized = myEventsResponse.data.organized || []
     const collaborated = myEventsResponse.data.collaborated || []
+    const registered = registeredResponse.success && registeredResponse.data ? registeredResponse.data : []
 
-    // Deduplicate events (user might be both organizer and collaborator)
+    // Deduplicate events (user might be organizer, collaborator, and/or registered)
     const eventMap = new Map<string, Event>()
-    organized.forEach(event => eventMap.set(event.id, event))
+    // Add organized events first (highest priority) - user can always edit their own events
+    organized.forEach(event => eventMap.set(event.id, { ...event, can_edit: true }))
+    // Add collaborated events if not already present - collaborators can edit
     collaborated.forEach(event => {
+      if (!eventMap.has(event.id)) {
+        eventMap.set(event.id, { ...event, can_edit: true })
+      }
+    })
+    // Add registered events if not already present (avoid duplicates when user registers for own event)
+    // Registered events keep their original can_edit value (usually false/undefined)
+    registered.forEach(event => {
       if (!eventMap.has(event.id)) {
         eventMap.set(event.id, event)
       }
@@ -143,40 +158,6 @@ const loadMyEvents = async (
   return {
     success: false,
     message: myEventsResponse.message || 'Failed to load events',
-  }
-}
-
-/**
- * Loads events user has registered for
- * Applies client-side filtering
- */
-const loadRegisteredEvents = async (
-  filters: EventFiltersType
-): Promise<ApiResponse<PaginatedResponse<Event>>> => {
-  const registeredResponse = await eventsService.getMyRegisteredEvents(filters)
-
-  if (registeredResponse.success && registeredResponse.data) {
-    // The API returns an array directly, not a paginated response
-    let registeredEvents = registeredResponse.data || []
-
-    // Apply client-side filtering
-    registeredEvents = applyClientSideFilters(registeredEvents, filters)
-
-    // Return mock paginated response (no pagination for registered events)
-    return {
-      success: true,
-      data: {
-        count: registeredEvents.length,
-        next: null,
-        previous: null,
-        results: registeredEvents,
-      },
-    }
-  }
-
-  return {
-    success: false,
-    message: registeredResponse.message || 'Failed to load registered events',
   }
 }
 
@@ -216,7 +197,7 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
   /**
    * Load events based on current view type
    *
-   * @param view - Type of view ('all', 'my', 'registered')
+   * @param view - Type of view ('all', 'my')
    * @param filters - Event filters to apply
    * @param append - Whether to append to existing events (pagination) or replace
    * @returns Object with success status, optional error message, and hasMore flag
@@ -226,8 +207,8 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
     filters: EventFiltersType,
     append = false
   ): Promise<{ success: boolean; message?: string; hasMore: boolean }> => {
-    // Don't load if unauthenticated and trying to view 'my' or 'registered' tabs
-    if (!isAuthenticated.value && (view === 'my' || view === 'registered')) {
+    // Don't load if unauthenticated and trying to view 'my' tab
+    if (!isAuthenticated.value && view === 'my') {
       events.value = []
       loading.value = false
       return { success: true, hasMore: false }
@@ -248,8 +229,6 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
       // Route to appropriate loader based on view type
       if (view === 'my') {
         response = await loadMyEvents(filters)
-      } else if (view === 'registered') {
-        response = await loadRegisteredEvents(filters)
       } else {
         // Public events with pagination
         const page = append ? currentPage.value : 1
