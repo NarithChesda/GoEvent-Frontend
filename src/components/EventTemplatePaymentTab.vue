@@ -101,15 +101,6 @@
       @referrer-updated="handleReferrerUpdated"
     />
 
-    <!-- Payment Stats Cards (shown when template is selected) -->
-    <PaymentStatsCards
-      v-if="hasSelectedTemplate"
-      :confirmed-count="confirmedPaymentsCount"
-      :pending-count="pendingPaymentsCount"
-      :total-amount="totalAmount"
-      :is-active="isTemplateActivated"
-    />
-
     <!-- Current Payment Status (when template selected but not activated) -->
     <div
       v-if="hasSelectedTemplate && currentPayment && !isTemplateActivated"
@@ -547,7 +538,6 @@ import { type Event, type EventTemplate, apiService } from '../services/api'
 import BrowseTemplateModal from './BrowseTemplateModal.vue'
 import EventReferrerSection from './EventReferrerSection.vue'
 import TemplateDisplayCard from './template/TemplateDisplayCard.vue'
-import PaymentStatsCards from './template/PaymentStatsCards.vue'
 import PaymentHistoryList from './template/PaymentHistoryList.vue'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useNotifications } from '../composables/useNotifications'
@@ -697,22 +687,6 @@ const isFormValid = computed(() => {
       templatePackageDetails.value,
   )
 })
-
-// Stats computed properties
-const confirmedPaymentsCount = computed(
-  () => existingPayments.value.filter((p) => p.status === 'confirmed').length,
-)
-
-const pendingPaymentsCount = computed(
-  () => existingPayments.value.filter((p) => p.status === 'pending').length,
-)
-
-const totalAmount = computed(() =>
-  existingPayments.value
-    .filter((p) => p.status === 'confirmed')
-    .reduce((sum, p) => sum + parseFloat(p.amount), 0)
-    .toFixed(2),
-)
 
 // Helper functions
 const sanitizeInput = (input: string): string => {

@@ -450,12 +450,12 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'overview', label: 'Overview', icon: 'file-text' },
   { id: 'agenda', label: 'Agenda', icon: 'calendar' },
   { id: 'hosts', label: 'Hosts & Speakers', icon: 'users', mobileLabel: 'Hosts' },
-  { id: 'registration', label: 'Registration', icon: 'user-plus' },
   { id: 'media', label: 'Showcase', icon: 'image' },
-  { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'template-payment', label: 'Template & Payment', icon: 'credit-card', mobileLabel: 'Template' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
   { id: 'expenses', label: 'Expense Tracking', icon: 'dollar-sign', mobileLabel: 'Expenses' },
+  { id: 'registration', label: 'Registration', icon: 'user-plus' },
+  { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'review', label: 'Event Review', icon: 'star', mobileLabel: 'Review' },
 ])
 
