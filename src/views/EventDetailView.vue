@@ -190,30 +190,6 @@
               />
             </div>
 
-            <!-- Payment Tab -->
-            <div v-if="activeTab === 'payment'">
-              <div v-if="!canViewPayment" class="text-center py-12">
-                <div
-                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <Lock class="w-8 h-8 text-slate-400" />
-                </div>
-                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
-                <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view and manage payments.
-                </p>
-              </div>
-              <EventPaymentTab
-                v-else-if="event?.id"
-                ref="paymentTabRef"
-                :event-id="event.id"
-                :event="event as any"
-                :can-edit="event.can_edit || false"
-                @tab-change="activeTab = $event"
-                @event-updated="handleEventUpdated"
-              />
-            </div>
-
             <!-- Guest Management Tab -->
             <div v-if="activeTab === 'guest-management'">
               <div v-if="!canViewGuestManagement" class="text-center py-12">
@@ -258,8 +234,8 @@
               />
             </div>
 
-            <!-- Template Tab -->
-            <div v-if="activeTab === 'template'">
+            <!-- Template & Payment Tab (Combined) -->
+            <div v-if="activeTab === 'template-payment'">
               <div v-if="!canViewTemplate" class="text-center py-12">
                 <div
                   class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -268,16 +244,16 @@
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
                 <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view and manage event templates.
+                  Only the event organizer and collaborators can view and manage templates and payments.
                 </p>
               </div>
-              <EventTemplateTab
+              <EventTemplatePaymentTab
                 v-else
-                ref="templateTabRef"
+                ref="templatePaymentTabRef"
                 :event="event"
                 :can-edit="event.can_edit || false"
                 @template-updated="handleTemplateUpdated"
-                @tab-change="handleTabChange"
+                @event-updated="handleEventUpdated"
               />
             </div>
 
@@ -389,8 +365,7 @@ import EventHostsTab from '../components/EventHostsTab.vue'
 import EventMediaTab from '../components/EventMediaTab.vue'
 import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
 import EventRegistrationTab from '../components/EventRegistrationTab.vue'
-import EventTemplateTab from '../components/EventTemplateTab.vue'
-import EventPaymentTab from '../components/EventPaymentTab.vue'
+import EventTemplatePaymentTab from '../components/EventTemplatePaymentTab.vue'
 import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
 import EventExpenseTab from '../components/EventExpenseTab.vue'
 import EventReviewTab from '../components/EventReviewTab.vue'
@@ -465,9 +440,8 @@ const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
 const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
 const registrationTabRef = ref<InstanceType<typeof EventRegistrationTab> | null>(null)
-const paymentTabRef = ref<InstanceType<typeof EventPaymentTab> | null>(null)
 const collaboratorTabRef = ref<InstanceType<typeof EventCollaboratorsTab> | null>(null)
-const templateTabRef = ref<InstanceType<typeof EventTemplateTab> | null>(null)
+const templatePaymentTabRef = ref<InstanceType<typeof EventTemplatePaymentTab> | null>(null)
 const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> | null>(null)
 const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
 
@@ -479,8 +453,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'registration', label: 'Registration', icon: 'user-plus' },
   { id: 'media', label: 'Showcase', icon: 'image' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
-  { id: 'template', label: 'Template', icon: 'monitor' },
-  { id: 'payment', label: 'Payment', icon: 'credit-card' },
+  { id: 'template-payment', label: 'Template & Payment', icon: 'credit-card', mobileLabel: 'Template' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
   { id: 'expenses', label: 'Expense Tracking', icon: 'dollar-sign', mobileLabel: 'Expenses' },
   { id: 'review', label: 'Event Review', icon: 'star', mobileLabel: 'Review' },
@@ -637,18 +610,6 @@ const handleEventUpdatedFromDrawer = (updatedEvent: Event) => {
 const handleEventDeletedFromDrawer = () => {
   // Navigate back to events list after successful deletion
   router.push('/events')
-}
-
-const handleTabChange = (tab: string, options?: { openPaymentModal?: boolean }) => {
-  activeTab.value = tab
-
-  // If switching to payment tab and openPaymentModal flag is set, open the payment modal
-  if (tab === 'payment' && options?.openPaymentModal) {
-    // Use nextTick to ensure the payment tab component is mounted before calling the method
-    nextTick(() => {
-      paymentTabRef.value?.openPaymentModal()
-    })
-  }
 }
 
 const joinVirtualEvent = () => {
