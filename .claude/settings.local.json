@@ -182,7 +182,9 @@
       "Bash(timeout 120 npm run build-skip-typecheck:*)",
       "Bash(timeout 30 npx vue-tsc:*)",
       "Bash(git mv:*)",
-      "Bash(timeout 60 npx vue-tsc:*)"
+      "Bash(timeout 60 npx vue-tsc:*)",
+      "Bash(timeout 90 npx vue-tsc:*)",
+      "Bash(timeout 120 npx vue-tsc:*)"
     ],
     "deny": [],
     "additionalDirectories": [

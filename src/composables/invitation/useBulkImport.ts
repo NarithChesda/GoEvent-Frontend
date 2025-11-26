@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import * as XLSX from 'xlsx'
 import { guestGroupService, type ApiResponse } from '../../services/api'
+import { validateGuestName } from '../../utils/guestValidation'
 
 // Constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -156,36 +157,8 @@ export function useBulkImport(
       .filter((line) => line.length > 0)
   }
 
-  /**
-   * Validate a guest name
-   * @param name - The guest name to validate
-   * @param existingNames - Optional set of existing guest names (normalized to lowercase) for duplicate checking
-   */
-  const validateGuestName = (
-    name: string,
-    existingNames?: Set<string>
-  ): { isValid: boolean; error?: string } => {
-    if (!name || name.trim().length === 0) {
-      return { isValid: false, error: 'Name is empty' }
-    }
-
-    const trimmedName = name.trim()
-
-    if (trimmedName.length < 2) {
-      return { isValid: false, error: 'Name too short (min 2 characters)' }
-    }
-
-    if (trimmedName.length > 100) {
-      return { isValid: false, error: 'Name too long (max 100 characters)' }
-    }
-
-    // Check for duplicates against existing guests in the group
-    if (existingNames && existingNames.has(trimmedName.toLowerCase())) {
-      return { isValid: false, error: 'Already exists in group' }
-    }
-
-    return { isValid: true }
-  }
+  // Use centralized validation from utils/guestValidation.ts
+  // validateGuestName, sanitizeGuestName, buildExistingNamesSet are imported
 
   // Store parsed names for re-validation when group changes
   const parsedNames = ref<string[]>([])

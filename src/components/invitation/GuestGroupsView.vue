@@ -325,16 +325,16 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null
 // Tab container ref
 const tabsContainer = ref<HTMLElement | null>(null)
 
-// Function to trigger group expansion based on active filter
+// Function to trigger group data loading based on active filter
 const triggerGroupExpansion = () => {
   if (activeFilter.value === 'all') {
     // Load all guests without group filter
     props.loadAllGuests(1, false)
   } else {
     const groupId = parseInt(activeFilter.value)
-    if (!props.isGroupExpanded(groupId)) {
-      emit('toggle-group', groupId)
-    }
+    // Always emit toggle-group to ensure guests are loaded for this group
+    // The parent handler will check if guests need to be loaded
+    emit('toggle-group', groupId)
   }
 }
 

@@ -26,6 +26,7 @@ import {
 
 // Constants
 const PAGE_SIZE = 20
+const CACHE_DURATION_MS = 30000 // 30 seconds cache
 
 // Types
 interface PaginationState {
@@ -35,6 +36,7 @@ interface PaginationState {
   loading: boolean
   searchTerm: string
   hasLoaded: boolean
+  lastFetched: number // Timestamp of last fetch for cache invalidation
 }
 
 export const useGuestManagementStore = defineStore('guestManagement', () => {
@@ -62,6 +64,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     loading: false,
     searchTerm: '',
     hasLoaded: false,
+    lastFetched: 0,
   })
 
   // ============================================================================
@@ -92,9 +95,17 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
         loading: false,
         searchTerm: '',
         hasLoaded: false,
+        lastFetched: 0,
       })
     }
     return groupPagination.value.get(groupId)!
+  }
+
+  /**
+   * Check if cache is still valid (within CACHE_DURATION_MS)
+   */
+  function isCacheValid(lastFetched: number): boolean {
+    return Date.now() - lastFetched < CACHE_DURATION_MS
   }
 
   /**
@@ -267,10 +278,16 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   // ============================================================================
 
   /**
-   * Load guests for a specific group with pagination
+   * Load guests for a specific group with pagination and caching
+   * @param forceRefresh - If true, bypasses cache and fetches fresh data
    */
-  async function loadGuestsForGroup(eventId: string, groupId: number, page: number = 1, silent: boolean = false) {
+  async function loadGuestsForGroup(eventId: string, groupId: number, page: number = 1, silent: boolean = false, forceRefresh: boolean = false) {
     const pagination = getGroupPaginationState(groupId)
+
+    // Use cache if valid and not force-refreshing and same page
+    if (!forceRefresh && pagination.hasLoaded && pagination.currentPage === page && isCacheValid(pagination.lastFetched)) {
+      return { success: true, data: { results: pagination.guests, count: pagination.totalCount } }
+    }
 
     if (!silent) {
       pagination.loading = true
@@ -290,6 +307,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
         pagination.totalCount = response.data.count
         pagination.currentPage = page
         pagination.hasLoaded = true
+        pagination.lastFetched = Date.now()
       }
 
       return response
@@ -302,9 +320,15 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   }
 
   /**
-   * Load all guests (across all groups) with pagination
+   * Load all guests (across all groups) with pagination and caching
+   * @param forceRefresh - If true, bypasses cache and fetches fresh data
    */
-  async function loadAllGuests(eventId: string, page: number = 1, silent: boolean = false) {
+  async function loadAllGuests(eventId: string, page: number = 1, silent: boolean = false, forceRefresh: boolean = false) {
+    // Use cache if valid and not force-refreshing and same page
+    if (!forceRefresh && allGuestsPagination.value.hasLoaded && allGuestsPagination.value.currentPage === page && isCacheValid(allGuestsPagination.value.lastFetched)) {
+      return { success: true, data: { results: allGuestsPagination.value.guests, count: allGuestsPagination.value.totalCount } }
+    }
+
     if (!silent) {
       allGuestsPagination.value.loading = true
     }
@@ -322,6 +346,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
         allGuestsPagination.value.totalCount = response.data.count
         allGuestsPagination.value.currentPage = page
         allGuestsPagination.value.hasLoaded = true
+        allGuestsPagination.value.lastFetched = Date.now()
       }
 
       return response
@@ -353,32 +378,79 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   }
 
   /**
-   * Create a new guest
+   * Create a new guest with optimistic update
    */
   async function createGuest(eventId: string, name: string, groupId: number) {
+    // Generate temporary ID for optimistic update
+    const tempId = -Date.now()
+    const trimmedName = name.trim()
+
+    // Find group details for optimistic guest
+    const group = groups.value.find(g => g.id === groupId)
+
+    // Create optimistic guest object
+    const optimisticGuest: EventGuest = {
+      id: tempId,
+      name: trimmedName,
+      group: groupId,
+      group_details: group ? { id: group.id, name: group.name, color: group.color } : undefined,
+      invitation_status: 'not_sent',
+      short_link: '',
+      showcase_link: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    // Optimistic update: immediately add to UI
+    const groupPag = getGroupPaginationState(groupId)
+    groupPag.guests = [optimisticGuest, ...groupPag.guests]
+    groupPag.totalCount += 1
+    allGuestsPagination.value.guests = [optimisticGuest, ...allGuestsPagination.value.guests]
+    allGuestsPagination.value.totalCount += 1
+    updateGroupGuestCount(groupId, 1)
+    updateStats(1)
+
     try {
       const response = await guestService.createGuest(eventId, {
-        name: name.trim(),
+        name: trimmedName,
         group: groupId,
       })
 
       if (response.success && response.data) {
-        // Update group count
-        updateGroupGuestCount(groupId, 1)
+        // Replace optimistic guest with real data
+        const realGuest = response.data
 
-        // Update stats
-        updateStats(1)
-
-        // Refresh lists
-        const groupPag = getGroupPaginationState(groupId)
-        if (groupPag.hasLoaded) {
-          await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
+        // Update in group pagination
+        const guestIndex = groupPag.guests.findIndex(g => g.id === tempId)
+        if (guestIndex !== -1) {
+          groupPag.guests[guestIndex] = realGuest
         }
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
+
+        // Update in all guests pagination
+        const allGuestIndex = allGuestsPagination.value.guests.findIndex(g => g.id === tempId)
+        if (allGuestIndex !== -1) {
+          allGuestsPagination.value.guests[allGuestIndex] = realGuest
+        }
+      } else {
+        // Rollback optimistic update on failure
+        groupPag.guests = groupPag.guests.filter(g => g.id !== tempId)
+        groupPag.totalCount -= 1
+        allGuestsPagination.value.guests = allGuestsPagination.value.guests.filter(g => g.id !== tempId)
+        allGuestsPagination.value.totalCount -= 1
+        updateGroupGuestCount(groupId, -1)
+        updateStats(-1)
       }
 
       return response
     } catch (error) {
+      // Rollback optimistic update on error
+      groupPag.guests = groupPag.guests.filter(g => g.id !== tempId)
+      groupPag.totalCount -= 1
+      allGuestsPagination.value.guests = allGuestsPagination.value.guests.filter(g => g.id !== tempId)
+      allGuestsPagination.value.totalCount -= 1
+      updateGroupGuestCount(groupId, -1)
+      updateStats(-1)
+
       console.error('Error creating guest:', error)
       throw error
     }
@@ -427,57 +499,105 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   }
 
   /**
-   * Delete a guest
+   * Delete a guest with optimistic update
    */
   async function deleteGuest(eventId: string, guestId: number, groupId: number) {
-    try {
-      // Capture guest status BEFORE deletion
-      const groupPag = getGroupPaginationState(groupId)
-      const guestToDelete = groupPag.guests.find((g) => g.id === guestId)
-      const guestStatus = guestToDelete?.invitation_status || 'not_sent'
+    // Capture guest data BEFORE deletion for rollback
+    const groupPag = getGroupPaginationState(groupId)
+    const guestToDelete = groupPag.guests.find((g) => g.id === guestId)
+    const allGuestToDelete = allGuestsPagination.value.guests.find((g) => g.id === guestId)
+    const guestStatus = guestToDelete?.invitation_status || 'not_sent'
+    const guestIndexInGroup = groupPag.guests.findIndex((g) => g.id === guestId)
+    const guestIndexInAll = allGuestsPagination.value.guests.findIndex((g) => g.id === guestId)
 
+    // Optimistic update: immediately remove from UI
+    groupPag.guests = groupPag.guests.filter(g => g.id !== guestId)
+    groupPag.totalCount -= 1
+    allGuestsPagination.value.guests = allGuestsPagination.value.guests.filter(g => g.id !== guestId)
+    allGuestsPagination.value.totalCount -= 1
+    updateGroupGuestCount(groupId, -1)
+    updateStats(-1, { from: guestStatus, to: undefined })
+
+    try {
       const response = await guestService.deleteGuest(eventId, guestId)
 
-      if (response.success) {
-        // Update counts
-        updateGroupGuestCount(groupId, -1)
-        updateStats(-1, { from: guestStatus, to: undefined })
-
-        // Refresh lists
-        if (groupPag.hasLoaded) {
-          await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
+      if (!response.success) {
+        // Rollback optimistic update on failure
+        if (guestToDelete && guestIndexInGroup !== -1) {
+          groupPag.guests.splice(guestIndexInGroup, 0, guestToDelete)
+          groupPag.totalCount += 1
         }
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
+        if (allGuestToDelete && guestIndexInAll !== -1) {
+          allGuestsPagination.value.guests.splice(guestIndexInAll, 0, allGuestToDelete)
+          allGuestsPagination.value.totalCount += 1
+        }
+        updateGroupGuestCount(groupId, 1)
+        updateStats(1, { from: undefined, to: guestStatus })
       }
 
       return response
     } catch (error) {
+      // Rollback optimistic update on error
+      if (guestToDelete && guestIndexInGroup !== -1) {
+        groupPag.guests.splice(guestIndexInGroup, 0, guestToDelete)
+        groupPag.totalCount += 1
+      }
+      if (allGuestToDelete && guestIndexInAll !== -1) {
+        allGuestsPagination.value.guests.splice(guestIndexInAll, 0, allGuestToDelete)
+        allGuestsPagination.value.totalCount += 1
+      }
+      updateGroupGuestCount(groupId, 1)
+      updateStats(1, { from: undefined, to: guestStatus })
+
       console.error('Error deleting guest:', error)
       throw error
     }
   }
 
   /**
-   * Mark a guest invitation as sent
+   * Mark a guest invitation as sent with optimistic update
    */
   async function markGuestAsSent(eventId: string, guestId: number, groupId: number) {
+    // Capture original status for rollback
+    const groupPag = getGroupPaginationState(groupId)
+    const guestInGroup = groupPag.guests.find(g => g.id === guestId)
+    const guestInAll = allGuestsPagination.value.guests.find(g => g.id === guestId)
+    const originalStatus = guestInGroup?.invitation_status || 'not_sent'
+
+    // Optimistic update: immediately update status in UI
+    if (guestInGroup) {
+      guestInGroup.invitation_status = 'sent'
+    }
+    if (guestInAll) {
+      guestInAll.invitation_status = 'sent'
+    }
+    updateStats(0, { from: 'not_sent', to: 'sent' })
+
     try {
       const response = await guestService.markInvitationSent(eventId, guestId)
 
-      if (response.success) {
-        // Update stats (guest moved from 'not_sent' to 'sent')
-        updateStats(0, { from: 'not_sent', to: 'sent' })
-
-        // Refresh lists
-        const groupPag = getGroupPaginationState(groupId)
-        if (groupPag.hasLoaded) {
-          await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
+      if (!response.success) {
+        // Rollback optimistic update on failure
+        if (guestInGroup) {
+          guestInGroup.invitation_status = originalStatus
         }
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
+        if (guestInAll) {
+          guestInAll.invitation_status = originalStatus
+        }
+        updateStats(0, { from: 'sent', to: 'not_sent' })
       }
 
       return response
     } catch (error) {
+      // Rollback optimistic update on error
+      if (guestInGroup) {
+        guestInGroup.invitation_status = originalStatus
+      }
+      if (guestInAll) {
+        guestInAll.invitation_status = originalStatus
+      }
+      updateStats(0, { from: 'sent', to: 'not_sent' })
+
       console.error('Error marking guest as sent:', error)
       throw error
     }
@@ -703,7 +823,18 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       loading: false,
       searchTerm: '',
       hasLoaded: false,
+      lastFetched: 0,
     }
+  }
+
+  /**
+   * Invalidate all caches (forces fresh data on next load)
+   */
+  function invalidateCache() {
+    allGuestsPagination.value.lastFetched = 0
+    groupPagination.value.forEach(pagination => {
+      pagination.lastFetched = 0
+    })
   }
 
   // ============================================================================
@@ -752,10 +883,14 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     // Helpers
     getGroupPaginationState,
 
+    // Cache
+    invalidateCache,
+
     // Reset
     $reset,
 
     // Constants
     PAGE_SIZE,
+    CACHE_DURATION_MS,
   }
 })
