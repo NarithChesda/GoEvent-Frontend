@@ -242,13 +242,19 @@
             </div>
           </div>
         </div>
+
+        <!-- Guest Overview -->
+        <div v-if="event.can_edit && hasTemplatePayment" class="border-t border-slate-100 pt-6">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Guest Overview</h3>
+          <GuestStatsCard :stats="guestStats" :loading="loadingStats" compact />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import DOMPurify from 'dompurify'
 import {
   MapPin,
@@ -258,11 +264,13 @@ import {
   ExternalLink,
   ImageIcon,
 } from 'lucide-vue-next'
-import { type Event } from '../services/api'
+import { type Event, guestService, type GuestStats } from '../services/api'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import type { EventAgendaItem } from '../services/api/types/event.types'
 import { createEventDescription } from '../utils/metaUtils'
+import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
+import GuestStatsCard from './invitation/GuestStatsCard.vue'
 
 interface Props {
   event: Event
@@ -274,6 +282,53 @@ interface Emits {
 
 const props = defineProps<Props>()
 defineEmits<Emits>()
+
+// Use payment template integration composable
+const { isTemplateActivated, loadPayments } = usePaymentTemplateIntegration(props.event)
+
+// Guest statistics state
+const guestStats = ref<GuestStats | null>(null)
+const loadingStats = ref(false)
+
+// Check if event has template payment enabled (required for guest management)
+const hasTemplatePayment = computed(() => {
+  if (!props.event?.event_template) return false
+  return isTemplateActivated.value
+})
+
+// Load guest stats
+const loadGuestData = async () => {
+  if (!props.event?.id || !props.event.can_edit || !hasTemplatePayment.value) return
+
+  loadingStats.value = true
+  try {
+    const statsResponse = await guestService.getGuestStats(props.event.id)
+    if (statsResponse.success && statsResponse.data) {
+      guestStats.value = statsResponse.data
+    }
+  } catch (error) {
+    console.error('Error loading guest data:', error)
+  } finally {
+    loadingStats.value = false
+  }
+}
+
+// Load data on mount and when event/template payment status changes
+onMounted(async () => {
+  await loadPayments()
+  loadGuestData()
+})
+
+watch(() => props.event?.id, async () => {
+  await loadPayments()
+  loadGuestData()
+})
+
+watch(hasTemplatePayment, (isActivated) => {
+  if (isActivated) {
+    loadGuestData()
+  }
+})
 
 // State
 const showCalendarOptions = ref(false)
