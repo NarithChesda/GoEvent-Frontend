@@ -29,7 +29,6 @@
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
-                <UserPlus class="w-5 h-5 text-white" />
                 <h2 class="text-base font-semibold text-white">Add Guest</h2>
               </div>
             </div>
@@ -143,10 +142,116 @@
                   v-model="localSelectedGroup"
                   :groups="groups"
                   placeholder="Choose a group..."
+                  :show-actions="true"
+                  @edit-group="openInlineEditGroup"
+                  @delete-group="openInlineDeleteGroup"
                 />
                 <p v-if="groups.length === 0 && !showCreateGroupForm" class="mt-2 text-xs text-red-600">
                   Please create a group first before adding guests.
                 </p>
+
+                <!-- Inline Edit Group Form -->
+                <Transition name="slide-down">
+                  <div v-if="showEditGroupForm && editingGroup" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2 text-blue-700">
+                        <Edit2 class="w-4 h-4" />
+                        <span class="text-sm font-medium">Edit Group</span>
+                      </div>
+                      <button
+                        type="button"
+                        @click="closeInlineEditGroup"
+                        class="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
+                      >
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
+                    <input
+                      v-model="editGroupName"
+                      type="text"
+                      placeholder="Group name *"
+                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
+                    />
+                    <input
+                      v-model="editGroupDescription"
+                      type="text"
+                      placeholder="Description (optional)"
+                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
+                    />
+                    <div class="flex items-center gap-2">
+                      <input
+                        v-model="editGroupColor"
+                        type="color"
+                        class="w-10 h-8 rounded border border-blue-200 cursor-pointer"
+                      />
+                      <div class="flex-1 flex flex-wrap gap-1.5">
+                        <button
+                          v-for="color in colorPresets"
+                          :key="color"
+                          type="button"
+                          @click="editGroupColor = color"
+                          :class="[
+                            'w-6 h-6 rounded-md border transition-all',
+                            editGroupColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
+                          ]"
+                          :style="{ backgroundColor: color }"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        @click="closeInlineEditGroup"
+                        class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitInlineEditGroup"
+                        :disabled="!editGroupName.trim() || isUpdatingGroup"
+                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isUpdatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>{{ isUpdatingGroup ? 'Saving...' : 'Save Changes' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
+
+                <!-- Inline Delete Group Confirmation -->
+                <Transition name="slide-down">
+                  <div v-if="showDeleteGroupConfirm && deletingGroup" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-red-700">
+                      <Trash2 class="w-4 h-4" />
+                      <span class="text-sm font-medium">Delete Group</span>
+                    </div>
+                    <p class="text-sm text-red-800">
+                      Are you sure you want to delete "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
+                    </p>
+                    <p v-if="deletingGroup.guest_count > 0" class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
+                      ⚠️ This will also delete {{ deletingGroup.guest_count }} guest(s) in this group!
+                    </p>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        @click="closeInlineDeleteGroup"
+                        class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitInlineDeleteGroup"
+                        :disabled="isDeletingGroup"
+                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isDeletingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>{{ isDeletingGroup ? 'Deleting...' : 'Delete Group' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
               </div>
 
               <!-- Guest Name -->
@@ -246,11 +351,117 @@
                   v-model="localSelectedGroupForImport"
                   :groups="groups"
                   placeholder="Choose a group..."
+                  :show-actions="true"
                   @change="handleImportGroupChange"
+                  @edit-group="openInlineEditGroup"
+                  @delete-group="openInlineDeleteGroup"
                 />
                 <p v-if="groups.length === 0 && !showCreateGroupForm" class="mt-2 text-xs text-red-600">
                   Please create a group first before importing guests.
                 </p>
+
+                <!-- Inline Edit Group Form (Bulk Import Mode) -->
+                <Transition name="slide-down">
+                  <div v-if="showEditGroupForm && editingGroup" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2 text-blue-700">
+                        <Edit2 class="w-4 h-4" />
+                        <span class="text-sm font-medium">Edit Group</span>
+                      </div>
+                      <button
+                        type="button"
+                        @click="closeInlineEditGroup"
+                        class="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
+                      >
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
+                    <input
+                      v-model="editGroupName"
+                      type="text"
+                      placeholder="Group name *"
+                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
+                    />
+                    <input
+                      v-model="editGroupDescription"
+                      type="text"
+                      placeholder="Description (optional)"
+                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
+                    />
+                    <div class="flex items-center gap-2">
+                      <input
+                        v-model="editGroupColor"
+                        type="color"
+                        class="w-10 h-8 rounded border border-blue-200 cursor-pointer"
+                      />
+                      <div class="flex-1 flex flex-wrap gap-1.5">
+                        <button
+                          v-for="color in colorPresets"
+                          :key="color"
+                          type="button"
+                          @click="editGroupColor = color"
+                          :class="[
+                            'w-6 h-6 rounded-md border transition-all',
+                            editGroupColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
+                          ]"
+                          :style="{ backgroundColor: color }"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        @click="closeInlineEditGroup"
+                        class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitInlineEditGroup"
+                        :disabled="!editGroupName.trim() || isUpdatingGroup"
+                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isUpdatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>{{ isUpdatingGroup ? 'Saving...' : 'Save Changes' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
+
+                <!-- Inline Delete Group Confirmation (Bulk Import Mode) -->
+                <Transition name="slide-down">
+                  <div v-if="showDeleteGroupConfirm && deletingGroup" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-red-700">
+                      <Trash2 class="w-4 h-4" />
+                      <span class="text-sm font-medium">Delete Group</span>
+                    </div>
+                    <p class="text-sm text-red-800">
+                      Are you sure you want to delete "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
+                    </p>
+                    <p v-if="deletingGroup.guest_count > 0" class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
+                      ⚠️ This will also delete {{ deletingGroup.guest_count }} guest(s) in this group!
+                    </p>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        @click="closeInlineDeleteGroup"
+                        class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitInlineDeleteGroup"
+                        :disabled="isDeletingGroup"
+                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isDeletingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>{{ isDeletingGroup ? 'Deleting...' : 'Delete Group' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
               </div>
 
               <!-- Download Template Button -->
@@ -485,7 +696,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UserPlus, X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ArrowRight, Users } from 'lucide-vue-next'
+import { UserPlus, X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ArrowRight, Users, Edit2 } from 'lucide-vue-next'
 import GroupDropdown from './GroupDropdown.vue'
 import type { GuestGroup } from '../../services/api'
 import type { FilePreview } from '../../composables/invitation/useBulkImport'
@@ -520,6 +731,8 @@ const emit = defineEmits<{
   'group-change': [groupId: number]
   'update-guest-name': [index: number, newName: string, groupId: number | null]
   'delete-guest': [index: number, groupId: number | null]
+  'edit-group': [group: GuestGroup]
+  'delete-group': [group: GuestGroup]
 }>()
 
 // Color presets for quick selection
@@ -541,6 +754,19 @@ const showCreateGroupForm = ref(false)
 const newGroupName = ref('')
 const newGroupDescription = ref('')
 const newGroupColor = ref('#3498db')
+
+// Edit group form state
+const showEditGroupForm = ref(false)
+const editingGroup = ref<GuestGroup | null>(null)
+const editGroupName = ref('')
+const editGroupDescription = ref('')
+const editGroupColor = ref('#3498db')
+const isUpdatingGroup = ref(false)
+
+// Delete group confirmation state
+const showDeleteGroupConfirm = ref(false)
+const deletingGroup = ref<GuestGroup | null>(null)
+const isDeletingGroup = ref(false)
 
 // Validation computed properties
 const guestNameErrorMessage = computed(() => {
@@ -583,6 +809,17 @@ watch(() => props.show, (newShow) => {
     newGroupName.value = ''
     newGroupDescription.value = ''
     newGroupColor.value = '#3498db'
+    // Reset edit group form
+    showEditGroupForm.value = false
+    editingGroup.value = null
+    editGroupName.value = ''
+    editGroupDescription.value = ''
+    editGroupColor.value = '#3498db'
+    isUpdatingGroup.value = false
+    // Reset delete group confirmation
+    showDeleteGroupConfirm.value = false
+    deletingGroup.value = null
+    isDeletingGroup.value = false
     // Clear file input to allow re-selecting the same file
     if (fileInputRef.value) {
       fileInputRef.value.value = ''
@@ -677,6 +914,77 @@ const handleGuestNameChange = (index: number, event: Event) => {
 
 const handleDeleteGuest = (index: number) => {
   emit('delete-guest', index, localSelectedGroupForImport.value)
+}
+
+// Inline edit group handlers
+const openInlineEditGroup = (group: GuestGroup) => {
+  // Close other forms
+  showCreateGroupForm.value = false
+  showDeleteGroupConfirm.value = false
+
+  // Set up edit form
+  editingGroup.value = group
+  editGroupName.value = group.name
+  editGroupDescription.value = group.description || ''
+  editGroupColor.value = group.color || '#3498db'
+  showEditGroupForm.value = true
+}
+
+const closeInlineEditGroup = () => {
+  showEditGroupForm.value = false
+  editingGroup.value = null
+  editGroupName.value = ''
+  editGroupDescription.value = ''
+  editGroupColor.value = '#3498db'
+}
+
+const submitInlineEditGroup = () => {
+  if (!editingGroup.value || !editGroupName.value.trim()) return
+
+  isUpdatingGroup.value = true
+
+  emit('edit-group', {
+    ...editingGroup.value,
+    name: editGroupName.value.trim(),
+    description: editGroupDescription.value.trim() || undefined,
+    color: editGroupColor.value,
+  } as GuestGroup)
+
+  // Note: Parent will handle the API call and close the form on success
+  // We'll reset the form state after a short delay to allow parent to process
+  setTimeout(() => {
+    isUpdatingGroup.value = false
+    closeInlineEditGroup()
+  }, 500)
+}
+
+// Inline delete group handlers
+const openInlineDeleteGroup = (group: GuestGroup) => {
+  // Close other forms
+  showCreateGroupForm.value = false
+  showEditGroupForm.value = false
+
+  deletingGroup.value = group
+  showDeleteGroupConfirm.value = true
+}
+
+const closeInlineDeleteGroup = () => {
+  showDeleteGroupConfirm.value = false
+  deletingGroup.value = null
+}
+
+const submitInlineDeleteGroup = () => {
+  if (!deletingGroup.value) return
+
+  isDeletingGroup.value = true
+
+  emit('delete-group', deletingGroup.value)
+
+  // Note: Parent will handle the API call
+  setTimeout(() => {
+    isDeletingGroup.value = false
+    closeInlineDeleteGroup()
+  }, 500)
 }
 </script>
 

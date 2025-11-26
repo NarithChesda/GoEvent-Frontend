@@ -123,18 +123,6 @@
         @register-group-card="(groupId, el) => groupCardRefs.set(groupId, el)"
       />
 
-      <!-- Guest Groups Management View (new) -->
-      <GuestGroupsManagementView
-        v-if="activeSubTab === 'groups'"
-        ref="guestGroupsManagementViewRef"
-        :groups="groups"
-        :loading-groups="loadingGroups"
-        @create-group="handleCreateGroupFromManagement"
-        @update-group="handleUpdateGroupFromManagement"
-        @delete-group="handleDeleteGroupFromManagement"
-        @reload-groups="loadGroups"
-      />
-
       <!-- Statistics View -->
       <GuestStatisticsView
         v-if="activeSubTab === 'statistics'"
@@ -210,6 +198,8 @@
       @group-change="handleImportGroupChange"
       @update-guest-name="handleUpdatePreviewGuestName"
       @delete-guest="handleDeletePreviewGuest"
+      @edit-group="handleEditGroupFromAddGuest"
+      @delete-group="handleDeleteGroupFromAddGuest"
     />
 
     <!-- Edit Guest Modal -->
@@ -274,7 +264,6 @@ import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
 import EditGroupModal from './invitation/EditGroupModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
-import GuestGroupsManagementView from './invitation/GuestGroupsManagementView.vue'
 import GuestStatisticsView from './invitation/GuestStatisticsView.vue'
 
 // Props
@@ -427,7 +416,6 @@ const groupCardRefs = new Map<number, any>()
 // Sub-tabs configuration
 const subTabs = [
   { id: 'guests', label: 'Guest List', icon: UserPlus },
-  { id: 'groups', label: 'Guest Groups', icon: Users },
   { id: 'statistics', label: 'Statistics', icon: BarChart3 },
 ]
 
@@ -436,9 +424,6 @@ const showEditGuestModal = ref(false)
 const editTargetGuest = ref<EventGuest | null>(null)
 const isUpdatingGuest = ref(false)
 const editGuestModalRef = ref<InstanceType<typeof EditGuestModal> | null>(null)
-
-// Guest Groups Management View ref
-const guestGroupsManagementViewRef = ref<InstanceType<typeof GuestGroupsManagementView> | null>(null)
 
 // Edit group modal state
 const showEditGroupModal = ref(false)
@@ -601,6 +586,36 @@ const handleCreateGroupFromAddGuest = async (data: { name: string; description?:
   }
 
   isCreatingGroup.value = false
+}
+
+const handleEditGroupFromAddGuest = async (group: GuestGroup) => {
+  const response = await updateGroup(group.id, {
+    name: group.name,
+    description: group.description,
+    color: group.color,
+  })
+
+  if (response.success && response.data) {
+    showMessage('success', `Group "${response.data.name}" updated`)
+    await loadGroups()
+  } else {
+    showMessage('error', response.message || 'Failed to update group')
+  }
+}
+
+const handleDeleteGroupFromAddGuest = async (group: GuestGroup) => {
+  const response = await deleteGroup(group.id)
+
+  if (response.success) {
+    showMessage('success', `Group "${group.name}" deleted`)
+    // Update stats reactively
+    if (group.guest_count > 0) {
+      handleStatsChange(-group.guest_count)
+    }
+    await loadGroups()
+  } else {
+    showMessage('error', response.message || 'Failed to delete group')
+  }
 }
 
 const handleCloseCreateGroupModal = () => {
@@ -976,46 +991,6 @@ const cancelBulkDelete = () => {
   bulkDeleteGroupId.value = 0
 }
 
-const handleCreateGroupFromManagement = async (data: { name: string; description?: string; color: string }) => {
-  const response = await createGroup({
-    name: data.name,
-    description: data.description,
-    color: data.color,
-    order: groups.value.length + 1,
-  })
-
-  if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" created`)
-    await loadGroups()
-  } else {
-    showMessage('error', response.message || 'Failed to create group')
-  }
-}
-
-const handleUpdateGroupFromManagement = async (groupId: number, data: { name: string; description?: string; color: string }) => {
-  const response = await updateGroup(groupId, data)
-
-  if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" updated`)
-    await loadGroups()
-  } else {
-    showMessage('error', response.message || 'Failed to update group')
-  }
-}
-
-const handleDeleteGroupFromManagement = async (groupId: number) => {
-  const response = await deleteGroup(groupId)
-
-  if (response.success) {
-    const group = groups.value.find(g => g.id === groupId)
-    showMessage('success', `Group "${group?.name || ''}" deleted`)
-    await loadGuestStats()
-    await loadGroups()
-  } else {
-    showMessage('error', response.message || 'Failed to delete group')
-  }
-}
-
 const showMessage = (type: 'success' | 'error', text: string) => {
   message.value = { type, text }
   setTimeout(() => {
@@ -1054,9 +1029,6 @@ watch(activeSubTab, (newTab, oldTab) => {
 defineExpose({
   openAddGuestModal: () => {
     showAddGuestModal.value = true
-  },
-  openAddGroupModal: () => {
-    guestGroupsManagementViewRef.value?.openAddGroupModal()
   },
   getActiveSubTab: () => activeSubTab.value,
 })
