@@ -338,6 +338,7 @@
         v-model="showEditDrawer"
         :event-id="event?.id || null"
         @updated="handleEventUpdatedFromDrawer"
+        @deleted="handleEventDeletedFromDrawer"
       />
     </div>
 
@@ -664,6 +665,11 @@ const handleEventUpdatedFromDrawer = (updatedEvent: Event) => {
     }
     showMessage('success', 'Event updated successfully!')
   }
+}
+
+const handleEventDeletedFromDrawer = () => {
+  // Navigate back to events list after successful deletion
+  router.push('/events')
 }
 
 const handleTabChange = (tab: string, options?: { openPaymentModal?: boolean }) => {

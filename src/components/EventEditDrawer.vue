@@ -418,17 +418,29 @@
           </div>
         </div>
 
-        <!-- Footer with Save Button -->
+        <!-- Footer with Save and Delete Buttons -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
-          <button
-            @click="handleSubmit"
-            :disabled="isSubmitting"
-            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-            <Save v-else class="w-4 h-4" />
-            <span>{{ isSubmitting ? 'Saving...' : 'Update Event' }}</span>
-          </button>
+          <div class="flex items-center justify-between">
+            <button
+              @click="handleSubmit"
+              :disabled="isSubmitting"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+              <Save v-else class="w-4 h-4" />
+              <span>{{ isSubmitting ? 'Saving...' : 'Update Event' }}</span>
+            </button>
+
+            <button
+              v-if="event"
+              @click="showDeleteConfirm = true"
+              :disabled="isSubmitting || isDeleting"
+              class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 class="w-4 h-4" />
+              <span>Delete</span>
+            </button>
+          </div>
         </div>
 
         <!-- Success/Error Toast -->
@@ -462,6 +474,17 @@
     @apply="handleBannerCropApply"
     @update:cropper-ref="setBannerCropperRef"
   />
+
+  <!-- Delete Confirmation Modal -->
+  <DeleteConfirmModal
+    :show="showDeleteConfirm"
+    :loading="isDeleting"
+    title="Delete Event"
+    :item-name="event?.title"
+    message="This will permanently delete this event and all associated data including guests, media, and agenda items."
+    @confirm="handleDeleteConfirm"
+    @cancel="showDeleteConfirm = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -482,9 +505,11 @@ import {
   Crop,
   MoreHorizontal,
   ArrowRight,
+  Trash2,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
 import ImageCropperModal from './common/ImageCropperModal.vue'
+import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import {
   eventsService,
   eventCategoriesService,
@@ -503,6 +528,7 @@ interface Props {
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
   (e: 'updated', event: Event): void
+  (e: 'deleted', eventId: string): void
 }
 
 const props = defineProps<Props>()
@@ -513,6 +539,8 @@ const event = ref<Event | null>(null)
 const categories = ref<EventCategory[]>([])
 const loading = ref(false)
 const isSubmitting = ref(false)
+const isDeleting = ref(false)
+const showDeleteConfirm = ref(false)
 const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -773,6 +801,29 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 
 const closeDrawer = () => {
   emit('update:modelValue', false)
+}
+
+// Handle delete confirmation
+const handleDeleteConfirm = async () => {
+  if (!event.value) return
+
+  isDeleting.value = true
+
+  try {
+    const response = await eventsService.deleteEvent(event.value.id)
+    if (response.success) {
+      showDeleteConfirm.value = false
+      emit('deleted', event.value.id)
+      closeDrawer()
+    } else {
+      showMessage('error', response.message || 'Failed to delete event')
+    }
+  } catch (err) {
+    console.error('Error deleting event:', err)
+    showMessage('error', 'An error occurred while deleting the event')
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 // Handle paste events for Google Maps iframe
