@@ -164,19 +164,17 @@
       </button>
     </div>
 
-    <!-- Unified Create/Edit Modal -->
-    <EditHostModal
-      v-if="showCreateModal"
+    <!-- Unified Create/Edit Drawer -->
+    <EditHostDrawer
+      v-model="showCreateModal"
       :event-id="eventId"
-      @close="showCreateModal = false"
       @created="handleHostCreated"
     />
 
-    <EditHostModal
-      v-if="showEditModal && selectedHost"
-      :host="selectedHost"
+    <EditHostDrawer
+      v-model="showEditModal"
       :event-id="eventId"
-      @close="closeEditModal"
+      :host="selectedHost"
       @updated="handleHostUpdated"
     />
 
@@ -212,7 +210,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Users, UserPlus, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
-import EditHostModal from './EditHostModal.vue'
+import EditHostDrawer from './EditHostDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {
@@ -306,7 +304,10 @@ const editHost = (host: EventHost) => {
 
 const closeEditModal = () => {
   showEditModal.value = false
-  selectedHost.value = null
+  // Clear selectedHost after a short delay to allow drawer close animation
+  setTimeout(() => {
+    selectedHost.value = null
+  }, 300)
 }
 
 const confirmDeleteHost = (host: EventHost) => {
@@ -342,8 +343,7 @@ const deleteHost = async () => {
 
 const handleHostCreated = (newHost: EventHost) => {
   hosts.value.push(newHost)
-  showMessage('success', 'Host added successfully')
-  showCreateModal.value = false
+  // Drawer shows its own success message and closes itself
 }
 
 const handleHostUpdated = (updatedHost: EventHost) => {
@@ -351,8 +351,11 @@ const handleHostUpdated = (updatedHost: EventHost) => {
   if (index !== -1) {
     hosts.value[index] = updatedHost
   }
-  showMessage('success', 'Host updated successfully')
-  closeEditModal()
+  // Drawer shows its own success message and closes itself
+  // Clear selectedHost after animation
+  setTimeout(() => {
+    selectedHost.value = null
+  }, 300)
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {

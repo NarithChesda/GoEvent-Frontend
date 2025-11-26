@@ -88,19 +88,17 @@
       </div>
     </div>
 
-    <!-- Unified Create/Edit Modal -->
-    <EditHostModal
-      v-if="showCreateModal"
+    <!-- Unified Create/Edit Drawer -->
+    <EditHostDrawer
+      v-model="showCreateModal"
       :event-id="eventId"
-      @close="showCreateModal = false"
       @created="handleHostCreated"
     />
 
-    <EditHostModal
-      v-if="showEditModal && selectedHost"
+    <EditHostDrawer
+      v-model="showEditModal"
       :event-id="eventId"
       :host="selectedHost"
-      @close="showEditModal = false"
       @updated="handleHostUpdated"
     />
 
@@ -121,7 +119,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { Plus, Users, AlertCircle, Trash2 } from 'lucide-vue-next'
 import { hostsService, type EventHost } from '../services/api'
 import HostCard from './HostCard.vue'
-import EditHostModal from './EditHostModal.vue'
+import EditHostDrawer from './EditHostDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {
@@ -215,7 +213,7 @@ const handleHostCreated = (newHost: EventHost) => {
   } else {
     hosts.value = [newHost]
   }
-  showCreateModal.value = false
+  // Drawer shows its own success message and closes itself
 }
 
 const handleHostUpdated = (updatedHost: EventHost) => {
@@ -227,8 +225,10 @@ const handleHostUpdated = (updatedHost: EventHost) => {
   } else {
     hosts.value = [updatedHost]
   }
-  showEditModal.value = false
-  selectedHost.value = null
+  // Drawer closes itself via v-model, clear selectedHost after animation
+  setTimeout(() => {
+    selectedHost.value = null
+  }, 300)
 }
 
 // Drag and drop handlers
