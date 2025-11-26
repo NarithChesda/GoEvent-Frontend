@@ -190,8 +190,11 @@
       :groups="groups"
       :is-adding="isAddingGuest"
       :is-importing="isImporting"
+      :is-parsing="isParsing"
       :selected-file="selectedFile"
       :is-dragging="isDragging"
+      :file-preview="filePreview"
+      :parse-error="parseError"
       :pending-group-id="pendingGuestGroupSelection"
       @close="handleCloseAddGuestModal"
       @add-guest="handleAddGuest"
@@ -202,6 +205,10 @@
       @drag-over="handleDragOver"
       @drag-leave="handleDragLeave"
       @create-group="handleCreateGroupFromAddGuest"
+      @clear-preview="clearPreview"
+      @group-change="handleImportGroupChange"
+      @update-guest-name="handleUpdatePreviewGuestName"
+      @delete-guest="handleDeletePreviewGuest"
     />
 
     <!-- Edit Guest Modal -->
@@ -376,11 +383,23 @@ const {
   setAllGuestsSearchTerm,
 } = useGuests(props.eventId, handleGroupCountChange, handleStatsChange)
 
-// Initialize bulk import composable with callbacks
+/**
+ * Get existing guest names for a group (for duplicate checking during bulk import)
+ * Returns names from currently loaded guests in the group's pagination
+ */
+const getExistingGuestNamesForGroup = (groupId: number): string[] => {
+  const guests = getGroupGuests(groupId)
+  return guests.map((g) => g.name)
+}
+
+// Initialize bulk import composable with callbacks and existing guest names getter
 const {
   selectedFile,
   isDragging,
   isImporting,
+  isParsing,
+  filePreview,
+  parseError,
   handleFileSelect,
   handleFileDrop,
   handleDragOver,
@@ -388,7 +407,11 @@ const {
   importGuests,
   downloadTemplate,
   resetImportState,
-} = useBulkImport(props.eventId, handleGroupCountChange, handleStatsChange)
+  clearPreview,
+  revalidatePreviewForGroup,
+  updateGuestName,
+  deleteGuestFromPreview,
+} = useBulkImport(props.eventId, handleGroupCountChange, handleStatsChange, getExistingGuestNamesForGroup)
 
 // Local state
 const activeSubTab = ref('guests')
@@ -537,6 +560,34 @@ const handleCloseAddGuestModal = () => {
   showAddGuestModal.value = false
   resetImportState()
   pendingGuestGroupSelection.value = null
+}
+
+/**
+ * Handle group selection change in bulk import mode
+ * Re-validates the preview against the new group's existing guests
+ */
+const handleImportGroupChange = async (groupId: number) => {
+  // First, ensure we have loaded guests for this group to check duplicates
+  const pagination = getGroupPagination(groupId)
+  if (!pagination.hasLoaded) {
+    await loadGuestsForGroup(groupId, 1)
+  }
+  // Re-validate the preview with the new group's existing guests
+  revalidatePreviewForGroup(groupId)
+}
+
+/**
+ * Handle updating a guest name in the bulk import preview
+ */
+const handleUpdatePreviewGuestName = (index: number, newName: string, groupId: number | null) => {
+  updateGuestName(index, newName, groupId ?? undefined)
+}
+
+/**
+ * Handle deleting a guest from the bulk import preview
+ */
+const handleDeletePreviewGuest = (index: number, groupId: number | null) => {
+  deleteGuestFromPreview(index, groupId ?? undefined)
 }
 
 const handleCreateGroupFromAddGuest = () => {

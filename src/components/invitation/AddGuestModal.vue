@@ -6,7 +6,10 @@
 
         <div class="flex min-h-full items-center justify-center p-4">
           <div
-            class="relative w-full max-w-md bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+            :class="[
+              'relative bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300',
+              filePreview ? 'w-full max-w-2xl' : 'w-full max-w-md'
+            ]"
             @click.stop
           >
             <!-- Header -->
@@ -39,7 +42,7 @@
                     :class="[
                       'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
                       localMode === 'single'
-                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                        ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
@@ -52,7 +55,7 @@
                     :class="[
                       'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
                       localMode === 'bulk'
-                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
+                        ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
@@ -78,55 +81,11 @@
                       + Create Group
                     </button>
                   </div>
-                  <div class="relative">
-                    <button
-                      type="button"
-                      @click="isGroupDropdownOpen = !isGroupDropdownOpen"
-                      class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    >
-                      <Users class="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span class="flex-1 text-left text-slate-900 truncate">
-                        {{ localSelectedGroup ? groups.find(g => g.id === localSelectedGroup)?.name : 'Choose a group...' }}
-                      </span>
-                      <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isGroupDropdownOpen }" />
-                    </button>
-
-                    <!-- Dropdown Menu -->
-                    <Transition name="dropdown">
-                      <div
-                        v-if="isGroupDropdownOpen"
-                        class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[300px] overflow-y-auto"
-                        @click.stop
-                      >
-                        <button
-                          v-for="group in groups"
-                          :key="group.id"
-                          type="button"
-                          @click="selectGroup(group.id)"
-                          :class="[
-                            'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
-                            localSelectedGroup === group.id
-                              ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
-                              : 'text-slate-700 hover:bg-slate-50'
-                          ]"
-                        >
-                          <div
-                            class="w-3 h-3 rounded-full flex-shrink-0"
-                            :style="{ backgroundColor: localSelectedGroup === group.id ? 'white' : (group.color || '#3498db') }"
-                          />
-                          <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                          <span class="text-xs opacity-75">({{ group.guest_count }})</span>
-                        </button>
-                      </div>
-                    </Transition>
-
-                    <!-- Click outside to close dropdown -->
-                    <div
-                      v-if="isGroupDropdownOpen"
-                      @click="isGroupDropdownOpen = false"
-                      class="fixed inset-0 z-[90]"
-                    ></div>
-                  </div>
+                  <GroupDropdown
+                    v-model="localSelectedGroup"
+                    :groups="groups"
+                    placeholder="Choose a group..."
+                  />
                   <p v-if="groups.length === 0" class="mt-2 text-xs text-red-600">
                     Please create a group first before adding guests.
                   </p>
@@ -143,8 +102,17 @@
                     type="text"
                     required
                     placeholder="Enter guest's full name"
-                    class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 bg-white transition-all duration-200 hover:border-emerald-300"
+                    @blur="guestNameTouched = true"
+                    :class="[
+                      'w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200',
+                      showGuestNameError
+                        ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400'
+                        : 'border-slate-300 focus:ring-emerald-500/20 focus:border-emerald-400 hover:border-emerald-300'
+                    ]"
                   />
+                  <p v-if="showGuestNameError" class="mt-1.5 text-xs text-red-600">
+                    {{ guestNameErrorMessage }}
+                  </p>
                 </div>
 
                 <!-- Action Buttons -->
@@ -159,8 +127,8 @@
                   <button
                     type="button"
                     @click="handleAddGuest"
-                    :disabled="!localGuestName.trim() || !localSelectedGroup || isAdding"
-                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    :disabled="!canAddGuest"
+                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-600 hover:to-sky-600 text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <span
                       v-if="isAdding"
@@ -187,55 +155,12 @@
                       + Create Group
                     </button>
                   </div>
-                  <div class="relative">
-                    <button
-                      type="button"
-                      @click="isImportGroupDropdownOpen = !isImportGroupDropdownOpen"
-                      class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    >
-                      <Users class="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span class="flex-1 text-left text-slate-900 truncate">
-                        {{ localSelectedGroupForImport ? groups.find(g => g.id === localSelectedGroupForImport)?.name : 'Choose a group...' }}
-                      </span>
-                      <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isImportGroupDropdownOpen }" />
-                    </button>
-
-                    <!-- Dropdown Menu -->
-                    <Transition name="dropdown">
-                      <div
-                        v-if="isImportGroupDropdownOpen"
-                        class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[300px] overflow-y-auto"
-                        @click.stop
-                      >
-                        <button
-                          v-for="group in groups"
-                          :key="group.id"
-                          type="button"
-                          @click="selectImportGroup(group.id)"
-                          :class="[
-                            'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
-                            localSelectedGroupForImport === group.id
-                              ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
-                              : 'text-slate-700 hover:bg-slate-50'
-                          ]"
-                        >
-                          <div
-                            class="w-3 h-3 rounded-full flex-shrink-0"
-                            :style="{ backgroundColor: localSelectedGroupForImport === group.id ? 'white' : (group.color || '#3498db') }"
-                          />
-                          <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                          <span class="text-xs opacity-75">({{ group.guest_count }})</span>
-                        </button>
-                      </div>
-                    </Transition>
-
-                    <!-- Click outside to close dropdown -->
-                    <div
-                      v-if="isImportGroupDropdownOpen"
-                      @click="isImportGroupDropdownOpen = false"
-                      class="fixed inset-0 z-[90]"
-                    ></div>
-                  </div>
+                  <GroupDropdown
+                    v-model="localSelectedGroupForImport"
+                    :groups="groups"
+                    placeholder="Choose a group..."
+                    @change="handleImportGroupChange"
+                  />
                   <p v-if="groups.length === 0" class="mt-2 text-xs text-red-600">
                     Please create a group first before importing guests.
                   </p>
@@ -251,8 +176,8 @@
                   Download Template (CSV)
                 </button>
 
-                <!-- File Upload Area -->
-                <div class="space-y-4">
+                <!-- File Upload Area (shown when no preview) -->
+                <div v-if="!filePreview" class="space-y-4">
                   <div>
                     <div
                       @drop.prevent="handleFileDrop"
@@ -266,15 +191,22 @@
                       ]"
                       @click="triggerFileSelect"
                     >
-                      <Upload
-                        :class="['w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3', isDragging ? 'text-sky-500' : 'text-slate-400']"
-                      />
-                      <p class="text-sm font-medium text-slate-700 mb-1">
-                        {{ selectedFile ? selectedFile.name : 'Drop your file here or click to browse' }}
-                      </p>
-                      <p class="text-xs text-slate-500">
-                        Supported formats: CSV, Excel (.xlsx, .xls), TXT
-                      </p>
+                      <!-- Parsing Indicator -->
+                      <div v-if="isParsing" class="flex flex-col items-center">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 animate-spin border-4 border-sky-500 border-t-transparent rounded-full"></div>
+                        <p class="text-sm font-medium text-slate-700">Parsing file...</p>
+                      </div>
+                      <template v-else>
+                        <Upload
+                          :class="['w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3', isDragging ? 'text-sky-500' : 'text-slate-400']"
+                        />
+                        <p class="text-sm font-medium text-slate-700 mb-1">
+                          {{ selectedFile ? selectedFile.name : 'Drop your file here or click to browse' }}
+                        </p>
+                        <p class="text-xs text-slate-500">
+                          Supported formats: CSV, Excel (.xlsx, .xls), TXT
+                        </p>
+                      </template>
                       <input
                         ref="fileInputRef"
                         type="file"
@@ -285,33 +217,152 @@
                     </div>
                   </div>
 
+                  <!-- Parse Error -->
+                  <div v-if="parseError" class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+                    <AlertCircle class="w-4 h-4 inline-block mr-1.5 text-red-600" />
+                    {{ parseError }}
+                  </div>
+
                   <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-slate-600">
                     <FileText class="w-4 h-4 inline-block mr-1.5 text-sky-600" />
                     <strong>Format:</strong> CSV must have "name" as the header in the first row. Excel/TXT: one guest name per line.
                   </div>
+                </div>
 
-                  <!-- Action Buttons -->
-                  <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                <!-- File Preview Section -->
+                <div v-if="filePreview" class="space-y-4">
+                  <!-- File Info Header -->
+                  <div class="flex items-center justify-between bg-slate-50 rounded-lg p-3">
+                    <div class="flex items-center gap-2">
+                      <FileSpreadsheet class="w-5 h-5 text-emerald-600" />
+                      <div>
+                        <p class="text-sm font-medium text-slate-900 truncate max-w-[200px]">{{ filePreview.fileName }}</p>
+                        <p class="text-xs text-slate-500">{{ filePreview.totalRows }} guest(s) found</p>
+                      </div>
+                    </div>
                     <button
                       type="button"
-                      @click="$emit('close')"
-                      class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                      @click="$emit('clear-preview')"
+                      class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors"
+                      title="Remove file"
                     >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      @click="handleImport"
-                      :disabled="!selectedFile || !localSelectedGroupForImport || isImporting"
-                      class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      <span
-                        v-if="isImporting"
-                        class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                      ></span>
-                      {{ isImporting ? 'Importing...' : 'Import Guests' }}
+                      <X class="w-4 h-4" />
                     </button>
                   </div>
+
+                  <!-- Preview Stats -->
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-slate-50 rounded-lg p-3 text-center">
+                      <p class="text-2xl font-bold text-slate-900">{{ filePreview.totalRows }}</p>
+                      <p class="text-xs text-slate-500">Total</p>
+                    </div>
+                    <div class="bg-emerald-50 rounded-lg p-3 text-center">
+                      <p class="text-2xl font-bold text-emerald-600">{{ filePreview.validCount }}</p>
+                      <p class="text-xs text-emerald-600">Valid</p>
+                    </div>
+                    <div class="bg-red-50 rounded-lg p-3 text-center">
+                      <p class="text-2xl font-bold text-red-600">{{ filePreview.invalidCount }}</p>
+                      <p class="text-xs text-red-600">Invalid</p>
+                    </div>
+                  </div>
+
+                  <!-- Preview Table -->
+                  <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200">
+                      <p class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Preview (click name to edit)</p>
+                    </div>
+                    <div class="max-h-[250px] overflow-y-auto">
+                      <table class="w-full">
+                        <thead class="bg-slate-50 sticky top-0">
+                          <tr>
+                            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 w-12">#</th>
+                            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Name</th>
+                            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 w-24">Status</th>
+                            <th class="px-2 py-2 text-center text-xs font-semibold text-slate-600 w-10"></th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                          <tr
+                            v-for="(guest, index) in filePreview.guests"
+                            :key="index"
+                            :class="guest.isValid ? '' : 'bg-red-50/50'"
+                          >
+                            <td class="px-4 py-2.5 text-xs text-slate-500">{{ index + 1 }}</td>
+                            <td class="px-4 py-2.5 text-sm">
+                              <input
+                                type="text"
+                                :value="guest.name"
+                                @input="handleGuestNameChange(index, $event)"
+                                :class="[
+                                  'w-full px-2 py-1 text-sm border rounded-md transition-colors',
+                                  guest.isValid
+                                    ? 'border-slate-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20'
+                                    : 'border-red-300 bg-red-50 text-red-700 focus:border-red-400 focus:ring-1 focus:ring-red-400/20'
+                                ]"
+                                placeholder="Enter name"
+                              />
+                              <span v-if="guest.error" class="block text-xs text-red-500 mt-0.5">{{ guest.error }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <span
+                                v-if="guest.isValid"
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700"
+                              >
+                                <CheckCircle class="w-3 h-3" />
+                                Valid
+                              </span>
+                              <span
+                                v-else
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700"
+                              >
+                                <AlertCircle class="w-3 h-3" />
+                                Invalid
+                              </span>
+                            </td>
+                            <td class="px-2 py-2.5 text-center">
+                              <button
+                                type="button"
+                                @click="handleDeleteGuest(index)"
+                                class="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                title="Remove from list"
+                              >
+                                <Trash2 class="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Warning for invalid entries -->
+                  <div v-if="filePreview.invalidCount > 0" class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                    <AlertCircle class="w-4 h-4 inline-block mr-1.5 text-amber-600" />
+                    {{ filePreview.invalidCount }} invalid entries will be skipped during import.
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+                  <button
+                    type="button"
+                    @click="$emit('close')"
+                    class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    @click="handleImport"
+                    :disabled="!filePreview || filePreview.validCount === 0 || !localSelectedGroupForImport || isImporting"
+                    class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-600 hover:to-sky-600 text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span
+                      v-if="isImporting"
+                      class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
+                    ></span>
+                    {{ isImporting ? 'Importing...' : `Import ${filePreview?.validCount || 0} Guest(s)` }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -323,9 +374,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { UserPlus, X, Upload, Download, FileText, ChevronDown, Users } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+import { UserPlus, X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2 } from 'lucide-vue-next'
+import GroupDropdown from './GroupDropdown.vue'
 import type { GuestGroup } from '../../services/api'
+import type { FilePreview } from '../../composables/invitation/useBulkImport'
 
 // Props
 const props = defineProps<{
@@ -333,8 +386,11 @@ const props = defineProps<{
   groups: GuestGroup[]
   isAdding: boolean
   isImporting: boolean
+  isParsing: boolean
   selectedFile: File | null
   isDragging: boolean
+  filePreview: FilePreview | null
+  parseError: string | null
   pendingGroupId?: number | null
 }>()
 
@@ -349,6 +405,10 @@ const emit = defineEmits<{
   'drag-over': [event: DragEvent]
   'drag-leave': []
   'create-group': []
+  'clear-preview': []
+  'group-change': [groupId: number]
+  'update-guest-name': [index: number, newName: string, groupId: number | null]
+  'delete-guest': [index: number, groupId: number | null]
 }>()
 
 // Local state
@@ -357,8 +417,30 @@ const localGuestName = ref('')
 const localSelectedGroup = ref<number | null>(null)
 const localSelectedGroupForImport = ref<number | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const isGroupDropdownOpen = ref(false)
-const isImportGroupDropdownOpen = ref(false)
+const guestNameTouched = ref(false)
+
+// Validation computed properties
+const guestNameErrorMessage = computed(() => {
+  const name = localGuestName.value.trim()
+  if (!name) return 'Guest name is required'
+  if (name.length < 2) return 'Name must be at least 2 characters'
+  if (name.length > 100) return 'Name must be less than 100 characters'
+  return ''
+})
+
+const showGuestNameError = computed(() => {
+  return guestNameTouched.value && guestNameErrorMessage.value !== ''
+})
+
+const canAddGuest = computed(() => {
+  const name = localGuestName.value.trim()
+  return (
+    name.length >= 2 &&
+    name.length <= 100 &&
+    localSelectedGroup.value !== null &&
+    !props.isAdding
+  )
+})
 
 // Reset form when modal is closed
 watch(() => props.show, (newShow) => {
@@ -367,8 +449,11 @@ watch(() => props.show, (newShow) => {
     localGuestName.value = ''
     localSelectedGroup.value = null
     localSelectedGroupForImport.value = null
-    isGroupDropdownOpen.value = false
-    isImportGroupDropdownOpen.value = false
+    guestNameTouched.value = false
+    // Clear file input to allow re-selecting the same file
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
   } else if (newShow && props.pendingGroupId) {
     // Auto-select the pending group when modal opens
     localSelectedGroup.value = props.pendingGroupId
@@ -376,24 +461,18 @@ watch(() => props.show, (newShow) => {
   }
 })
 
-// Methods for dropdown
-const selectGroup = (groupId: number) => {
-  localSelectedGroup.value = groupId
-  isGroupDropdownOpen.value = false
-}
-
-const selectImportGroup = (groupId: number) => {
-  localSelectedGroupForImport.value = groupId
-  isImportGroupDropdownOpen.value = false
+// Handle import group change to re-validate preview
+const handleImportGroupChange = (groupId: number) => {
+  emit('group-change', groupId)
 }
 
 const handleAddGuest = () => {
-  if (!localGuestName.value.trim() || !localSelectedGroup.value) return
-  emit('add-guest', localGuestName.value.trim(), localSelectedGroup.value)
+  if (!canAddGuest.value) return
+  emit('add-guest', localGuestName.value.trim(), localSelectedGroup.value!)
 }
 
 const handleImport = () => {
-  if (!props.selectedFile || !localSelectedGroupForImport.value) return
+  if (!props.filePreview || props.filePreview.validCount === 0 || !localSelectedGroupForImport.value) return
   emit('import', localSelectedGroupForImport.value)
 }
 
@@ -416,6 +495,15 @@ const handleDragOver = (event: DragEvent) => {
 const handleDragLeave = () => {
   emit('drag-leave')
 }
+
+const handleGuestNameChange = (index: number, event: Event) => {
+  const target = event.target as HTMLInputElement
+  emit('update-guest-name', index, target.value, localSelectedGroupForImport.value)
+}
+
+const handleDeleteGuest = (index: number) => {
+  emit('delete-guest', index, localSelectedGroupForImport.value)
+}
 </script>
 
 <style scoped>
@@ -430,7 +518,12 @@ const handleDragLeave = () => {
   transform: scale(0.9);
 }
 
-/* Custom scrollbar for modal content */
+/* Custom scrollbar for modal content - cross-browser */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
@@ -446,17 +539,5 @@ const handleDragLeave = () => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-/* Dropdown transition */
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 </style>
