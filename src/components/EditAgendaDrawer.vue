@@ -29,10 +29,6 @@
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                  <Edit2 v-if="isEditMode" class="w-4 h-4 text-white" />
-                  <Calendar v-else class="w-4 h-4 text-white" />
-                </div>
                 <h2 class="text-base font-semibold text-white">
                   {{ isEditMode ? 'Edit Agenda Item' : 'Add Agenda Item' }}
                 </h2>
