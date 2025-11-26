@@ -34,8 +34,10 @@ interface PaginationState {
   totalCount: number
   guests: EventGuest[]
   loading: boolean
+  loadingMore: boolean // For infinite scroll "load more" state
   searchTerm: string
   hasLoaded: boolean
+  hasMore: boolean // Whether there are more items to load
   lastFetched: number // Timestamp of last fetch for cache invalidation
 }
 
@@ -62,8 +64,10 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     totalCount: 0,
     guests: [],
     loading: false,
+    loadingMore: false,
     searchTerm: '',
     hasLoaded: false,
+    hasMore: true,
     lastFetched: 0,
   })
 
@@ -93,8 +97,10 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
         totalCount: 0,
         guests: [],
         loading: false,
+        loadingMore: false,
         searchTerm: '',
         hasLoaded: false,
+        hasMore: true,
         lastFetched: 0,
       })
     }
@@ -280,16 +286,20 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   /**
    * Load guests for a specific group with pagination and caching
    * @param forceRefresh - If true, bypasses cache and fetches fresh data
+   * @param append - If true, appends results to existing list (for infinite scroll)
    */
-  async function loadGuestsForGroup(eventId: string, groupId: number, page: number = 1, silent: boolean = false, forceRefresh: boolean = false) {
+  async function loadGuestsForGroup(eventId: string, groupId: number, page: number = 1, silent: boolean = false, forceRefresh: boolean = false, append: boolean = false) {
     const pagination = getGroupPaginationState(groupId)
 
-    // Use cache if valid and not force-refreshing and same page
-    if (!forceRefresh && pagination.hasLoaded && pagination.currentPage === page && isCacheValid(pagination.lastFetched)) {
+    // Use cache if valid and not force-refreshing and same page and not appending
+    if (!append && !forceRefresh && pagination.hasLoaded && pagination.currentPage === page && isCacheValid(pagination.lastFetched)) {
       return { success: true, data: { results: pagination.guests, count: pagination.totalCount } }
     }
 
-    if (!silent) {
+    // Set appropriate loading state
+    if (append) {
+      pagination.loadingMore = true
+    } else if (!silent) {
       pagination.loading = true
     }
 
@@ -303,10 +313,17 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       })
 
       if (response.success && response.data) {
-        pagination.guests = response.data.results
+        if (append && page > 1) {
+          // Append new guests to existing list (infinite scroll)
+          pagination.guests = [...pagination.guests, ...response.data.results]
+        } else {
+          // Replace guests (initial load or refresh)
+          pagination.guests = response.data.results
+        }
         pagination.totalCount = response.data.count
         pagination.currentPage = page
         pagination.hasLoaded = true
+        pagination.hasMore = pagination.guests.length < response.data.count
         pagination.lastFetched = Date.now()
       }
 
@@ -316,20 +333,25 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       throw error
     } finally {
       pagination.loading = false
+      pagination.loadingMore = false
     }
   }
 
   /**
    * Load all guests (across all groups) with pagination and caching
    * @param forceRefresh - If true, bypasses cache and fetches fresh data
+   * @param append - If true, appends results to existing list (for infinite scroll)
    */
-  async function loadAllGuests(eventId: string, page: number = 1, silent: boolean = false, forceRefresh: boolean = false) {
-    // Use cache if valid and not force-refreshing and same page
-    if (!forceRefresh && allGuestsPagination.value.hasLoaded && allGuestsPagination.value.currentPage === page && isCacheValid(allGuestsPagination.value.lastFetched)) {
+  async function loadAllGuests(eventId: string, page: number = 1, silent: boolean = false, forceRefresh: boolean = false, append: boolean = false) {
+    // Use cache if valid and not force-refreshing and same page and not appending
+    if (!append && !forceRefresh && allGuestsPagination.value.hasLoaded && allGuestsPagination.value.currentPage === page && isCacheValid(allGuestsPagination.value.lastFetched)) {
       return { success: true, data: { results: allGuestsPagination.value.guests, count: allGuestsPagination.value.totalCount } }
     }
 
-    if (!silent) {
+    // Set appropriate loading state
+    if (append) {
+      allGuestsPagination.value.loadingMore = true
+    } else if (!silent) {
       allGuestsPagination.value.loading = true
     }
 
@@ -342,10 +364,17 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       })
 
       if (response.success && response.data) {
-        allGuestsPagination.value.guests = response.data.results
+        if (append && page > 1) {
+          // Append new guests to existing list (infinite scroll)
+          allGuestsPagination.value.guests = [...allGuestsPagination.value.guests, ...response.data.results]
+        } else {
+          // Replace guests (initial load or refresh)
+          allGuestsPagination.value.guests = response.data.results
+        }
         allGuestsPagination.value.totalCount = response.data.count
         allGuestsPagination.value.currentPage = page
         allGuestsPagination.value.hasLoaded = true
+        allGuestsPagination.value.hasMore = allGuestsPagination.value.guests.length < response.data.count
         allGuestsPagination.value.lastFetched = Date.now()
       }
 
@@ -355,6 +384,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       throw error
     } finally {
       allGuestsPagination.value.loading = false
+      allGuestsPagination.value.loadingMore = false
     }
   }
 
@@ -725,10 +755,14 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
           updateStats(createdCount)
         }
 
-        // Refresh lists
-        const groupPag = getGroupPaginationState(groupId)
-        await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
+        // Reset and refresh lists for infinite scroll
+        // Reset group pagination to page 1 and reload fresh data
+        resetGroupPagination(groupId)
+        await loadGuestsForGroup(eventId, groupId, 1, true)
+
+        // Reset all guests pagination and reload fresh data
+        resetAllGuestsPagination()
+        await loadAllGuests(eventId, 1, true)
       }
 
       return response
@@ -799,7 +833,61 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function setAllGuestsSearchTerm(eventId: string, searchTerm: string) {
     allGuestsPagination.value.searchTerm = searchTerm
+    // Reset to page 1 and clear existing guests for fresh search
+    allGuestsPagination.value.guests = []
+    allGuestsPagination.value.hasMore = true
     await loadAllGuests(eventId, 1, true)
+  }
+
+  // ============================================================================
+  // INFINITE SCROLL ACTIONS
+  // ============================================================================
+
+  /**
+   * Load more guests for infinite scroll (all guests view)
+   */
+  async function loadMoreAllGuests(eventId: string) {
+    if (allGuestsPagination.value.loadingMore || !allGuestsPagination.value.hasMore) {
+      return { success: true, data: null }
+    }
+
+    const nextPage = allGuestsPagination.value.currentPage + 1
+    return await loadAllGuests(eventId, nextPage, true, false, true)
+  }
+
+  /**
+   * Load more guests for infinite scroll (specific group view)
+   */
+  async function loadMoreGroupGuests(eventId: string, groupId: number) {
+    const pagination = getGroupPaginationState(groupId)
+
+    if (pagination.loadingMore || !pagination.hasMore) {
+      return { success: true, data: null }
+    }
+
+    const nextPage = pagination.currentPage + 1
+    return await loadGuestsForGroup(eventId, groupId, nextPage, true, false, true)
+  }
+
+  /**
+   * Reset pagination state for fresh load (useful when changing filters)
+   */
+  function resetAllGuestsPagination() {
+    allGuestsPagination.value.currentPage = 1
+    allGuestsPagination.value.guests = []
+    allGuestsPagination.value.hasMore = true
+    allGuestsPagination.value.hasLoaded = false
+  }
+
+  /**
+   * Reset group pagination state for fresh load
+   */
+  function resetGroupPagination(groupId: number) {
+    const pagination = getGroupPaginationState(groupId)
+    pagination.currentPage = 1
+    pagination.guests = []
+    pagination.hasMore = true
+    pagination.hasLoaded = false
   }
 
   // ============================================================================
@@ -821,8 +909,10 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       totalCount: 0,
       guests: [],
       loading: false,
+      loadingMore: false,
       searchTerm: '',
       hasLoaded: false,
+      hasMore: true,
       lastFetched: 0,
     }
   }
@@ -879,6 +969,12 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     nextAllGuestsPage,
     previousAllGuestsPage,
     setAllGuestsSearchTerm,
+
+    // Infinite Scroll Actions
+    loadMoreAllGuests,
+    loadMoreGroupGuests,
+    resetAllGuestsPagination,
+    resetGroupPagination,
 
     // Helpers
     getGroupPaginationState,

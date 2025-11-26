@@ -177,42 +177,9 @@
 
               <!-- Guest count info (shown when no selections) -->
               <div v-else class="text-xs sm:text-sm text-slate-600">
-                Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
+                Showing <span class="font-semibold text-slate-900">{{ loadedGuestCount }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
               </div>
             </div>
-          </div>
-
-          <!-- Right: Pagination controls -->
-          <div v-if="showPagination" class="flex items-center justify-center sm:justify-start gap-1 bg-slate-50 rounded-xl px-2 py-1 w-full sm:w-auto">
-            <button
-              @click="handlePreviousPage"
-              :disabled="currentPageNumber === 1 || isAnyGroupLoading"
-              class="p-1.5 sm:p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              :title="currentPageNumber === 1 ? 'First page' : 'Previous page'"
-              aria-label="Previous page"
-            >
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <div class="flex items-center gap-1 px-2 sm:px-3 min-w-[50px] sm:min-w-[60px] justify-center">
-              <span class="text-xs sm:text-sm font-semibold text-slate-900">{{ currentPageNumber }}</span>
-              <span class="text-xs sm:text-sm text-slate-400">/</span>
-              <span class="text-xs sm:text-sm text-slate-600">{{ totalPagesCount }}</span>
-            </div>
-
-            <button
-              @click="handleNextPage"
-              :disabled="currentPageNumber >= totalPagesCount || isAnyGroupLoading"
-              class="p-1.5 sm:p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              :title="currentPageNumber >= totalPagesCount ? 'Last page' : 'Next page'"
-              aria-label="Next page"
-            >
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
           </div>
         </div>
 
@@ -225,17 +192,10 @@
       <!-- Guest List Items (Scrollable) -->
       <div v-else-if="hasAnyGuests">
         <!-- Scrollable container with max height -->
-        <div class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0">
-          <!-- Loading overlay for pagination -->
-          <Transition name="fade">
-            <div v-if="isAnyGroupLoading" class="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
-              <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg border border-slate-200">
-                <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <span class="text-sm text-slate-600">Loading...</span>
-              </div>
-            </div>
-          </Transition>
-
+        <div
+          ref="scrollContainerRef"
+          class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0"
+        >
           <GuestListItem
             v-for="guest in allFilteredGuests"
             :key="guest.id"
@@ -247,6 +207,22 @@
             @delete="$emit('delete-guest', $event)"
             @toggle-select="handleToggleSelect"
           />
+
+          <!-- Infinite Scroll Trigger -->
+          <div
+            ref="scrollTriggerRef"
+            class="py-4 flex justify-center"
+          >
+            <!-- Loading more indicator -->
+            <div v-if="isLoadingMore" class="flex items-center gap-2">
+              <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-sm text-slate-500">Loading more guests...</span>
+            </div>
+            <!-- End of list indicator -->
+            <div v-else-if="!hasMoreToLoad && allFilteredGuests.length > 0" class="text-sm text-slate-400">
+              All {{ paginationTotal }} guests loaded
+            </div>
+          </div>
         </div>
       </div>
 
@@ -261,7 +237,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import type { GuestGroup, EventGuest } from '../../services/api'
@@ -271,8 +247,10 @@ interface GroupPaginationData {
   totalCount: number
   guests: EventGuest[]
   loading: boolean
+  loadingMore: boolean
   searchTerm: string
   hasLoaded: boolean
+  hasMore: boolean
 }
 
 interface Props {
@@ -282,11 +260,7 @@ interface Props {
   getGroupGuests: (groupId: number) => EventGuest[]
   isGroupLoading: (groupId: number) => boolean
   isGroupExpanded: (groupId: number) => boolean
-  getGroupPagination: (groupId: number) => {
-    currentPage: number
-    totalCount: number
-    searchTerm: string
-  }
+  getGroupPagination: (groupId: number) => GroupPaginationData
   // All Groups pagination - now accepts the data directly instead of a getter function
   allGuestsPagination: GroupPaginationData
   isAllGuestsLoading: () => boolean
@@ -304,12 +278,10 @@ const emit = defineEmits<{
   'mark-sent': [guest: EventGuest]
   'edit-guest': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
-  'next-page': [groupId: number]
-  'previous-page': [groupId: number]
   'search': [groupId: number, searchTerm: string]
-  'next-all-page': []
-  'previous-all-page': []
   'search-all': [searchTerm: string]
+  'load-more-all': []
+  'load-more-group': [groupId: number]
   'bulk-mark-sent': [groupId: number, selectedIds: number[]]
   'bulk-delete': [groupId: number, selectedIds: number[]]
   'register-group-card': [groupId: number, el: any]
@@ -440,16 +412,8 @@ const activePagination = computed(() => {
   return props.getGroupPagination(filteredGroups.value[0].id)
 })
 
-const showPagination = computed(() => {
-  if (!activePagination.value) return false
-  return Math.ceil(activePagination.value.totalCount / props.pageSize) > 1
-})
-
-const currentPageNumber = computed(() => activePagination.value?.currentPage || 1)
 const paginationTotal = computed(() => activePagination.value?.totalCount || 0)
-const totalPagesCount = computed(() => Math.ceil(paginationTotal.value / props.pageSize))
-const paginationStart = computed(() => ((currentPageNumber.value - 1) * props.pageSize) + 1)
-const paginationEnd = computed(() => Math.min(currentPageNumber.value * props.pageSize, paginationTotal.value))
+const loadedGuestCount = computed(() => allFilteredGuests.value.length)
 
 // Methods
 const selectFilter = (filterId: string) => {
@@ -566,27 +530,86 @@ const handleBulkDelete = () => {
   selectedGuestIds.value.clear()
 }
 
-const handlePreviousPage = () => {
+// Infinite scroll trigger element ref
+const scrollTriggerRef = ref<HTMLElement | null>(null)
+const scrollContainerRef = ref<HTMLElement | null>(null)
+
+// Computed properties for infinite scroll state
+const isLoadingMore = computed(() => {
   if (activeFilter.value === 'all') {
-    emit('previous-all-page')
+    return props.allGuestsPagination.loadingMore
+  }
+  return filteredGroups.value.some(group => props.getGroupPagination(group.id).loadingMore)
+})
+
+const hasMoreToLoad = computed(() => {
+  if (activeFilter.value === 'all') {
+    return props.allGuestsPagination.hasMore
+  }
+  return filteredGroups.value.some(group => props.getGroupPagination(group.id).hasMore)
+})
+
+// Handle load more for infinite scroll
+const handleLoadMore = () => {
+  if (isLoadingMore.value || !hasMoreToLoad.value) return
+
+  if (activeFilter.value === 'all') {
+    emit('load-more-all')
   } else {
     filteredGroups.value.forEach(group => {
-      emit('previous-page', group.id)
+      emit('load-more-group', group.id)
     })
   }
-  selectedGuestIds.value.clear()
 }
 
-const handleNextPage = () => {
-  if (activeFilter.value === 'all') {
-    emit('next-all-page')
-  } else {
-    filteredGroups.value.forEach(group => {
-      emit('next-page', group.id)
-    })
+// IntersectionObserver for infinite scroll
+let intersectionObserver: IntersectionObserver | null = null
+
+const setupIntersectionObserver = () => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
   }
-  selectedGuestIds.value.clear()
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && hasMoreToLoad.value && !isLoadingMore.value) {
+        handleLoadMore()
+      }
+    },
+    {
+      root: scrollContainerRef.value,
+      rootMargin: '100px', // Trigger 100px before reaching the bottom
+      threshold: 0.1,
+    }
+  )
+
+  if (scrollTriggerRef.value) {
+    intersectionObserver.observe(scrollTriggerRef.value)
+  }
 }
+
+// Watch for scroll trigger element to be available
+watch(scrollTriggerRef, (newRef) => {
+  if (newRef) {
+    setupIntersectionObserver()
+  }
+})
+
+// Re-setup observer when filter changes (content changes)
+watch(activeFilter, () => {
+  // Wait for next tick to ensure DOM has updated with new content
+  setTimeout(() => {
+    setupIntersectionObserver()
+  }, 100)
+})
+
+// Cleanup observer on unmount
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+  }
+})
 </script>
 
 <style scoped>

@@ -112,12 +112,10 @@
         @mark-sent="handleMarkAsSent"
         @edit-guest="openEditGuestModal"
         @delete-guest="openDeleteGuestModal"
-        @next-page="nextGroupPage"
-        @previous-page="previousGroupPage"
         @search="handleGroupSearch"
-        @next-all-page="nextAllGuestsPage"
-        @previous-all-page="previousAllGuestsPage"
         @search-all="setAllGuestsSearchTerm"
+        @load-more-all="loadMoreAllGuests"
+        @load-more-group="loadMoreGroupGuests"
         @bulk-mark-sent="handleBulkMarkSent"
         @bulk-delete="handleBulkDelete"
         @register-group-card="(groupId, el) => groupCardRefs.set(groupId, el)"
@@ -322,13 +320,13 @@ const getAllGuestsPagination = () => store.allGuestsPagination
 const isAllGuestsLoading = () => store.allGuestsPagination.loading
 
 // Pagination actions
-const nextGroupPage = (groupId: number) => store.nextGroupPage(props.eventId, groupId)
-const previousGroupPage = (groupId: number) => store.previousGroupPage(props.eventId, groupId)
 const setGroupSearchTerm = (groupId: number, searchTerm: string) =>
   store.setGroupSearchTerm(props.eventId, groupId, searchTerm)
-const nextAllGuestsPage = () => store.nextAllGuestsPage(props.eventId)
-const previousAllGuestsPage = () => store.previousAllGuestsPage(props.eventId)
 const setAllGuestsSearchTerm = (searchTerm: string) => store.setAllGuestsSearchTerm(props.eventId, searchTerm)
+
+// Infinite scroll actions
+const loadMoreAllGuests = () => store.loadMoreAllGuests(props.eventId)
+const loadMoreGroupGuests = (groupId: number) => store.loadMoreGroupGuests(props.eventId, groupId)
 
 /**
  * Get existing guest names for a group (for duplicate checking during bulk import)
@@ -478,15 +476,14 @@ const handleBulkImport = async (groupId: number) => {
   if (response.success && response.data) {
     const { created, skipped, skipped_guests } = response.data
 
-    // Refresh guest lists after successful import
-    // Store handles count updates, but we need to refresh the lists
-    const groupPag = getGroupPagination(groupId)
-    if (groupPag.hasLoaded) {
-      await loadGuestsForGroup(groupId, groupPag.currentPage, true)
-    }
-    // Always refresh All Guests pagination to ensure new guests appear immediately
-    const allGuestsPag = getAllGuestsPagination()
-    await loadAllGuests(allGuestsPag.currentPage, true)
+    // Reset and refresh guest lists for infinite scroll
+    // Reset group pagination to page 1 and reload fresh data
+    store.resetGroupPagination(groupId)
+    await loadGuestsForGroup(groupId, 1, true)
+
+    // Reset all guests pagination and reload fresh data
+    store.resetAllGuestsPagination()
+    await loadAllGuests(1, true)
 
     // Reload groups to get accurate counts from server
     await loadGroups()
