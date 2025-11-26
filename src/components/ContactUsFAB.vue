@@ -51,7 +51,7 @@
       target="_blank"
       rel="noopener noreferrer"
       :class="fabPositionClass"
-      class="fixed right-6 z-[60] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
+      class="fixed right-6 z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
       aria-label="Contact support"
       @click="dismissPopup"
     >
@@ -74,9 +74,13 @@ import { useAuthStore } from '@/stores/auth'
 
 interface Props {
   canEdit?: boolean
+  hasFabBelow?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  canEdit: false,
+  hasFabBelow: false
+})
 const route = useRoute()
 const authStore = useAuthStore()
 
@@ -104,13 +108,22 @@ const telegramLink = computed(() => {
   return `https://t.me/goeventkh`
 })
 
-// FAB position
+// FAB position - moves up when there's another FAB below
+// Create FAB is at bottom-20 (80px), so we need bottom-20 + h-14 (56px) + gap (8px) = 144px = bottom-36
+// On desktop: Create FAB is at bottom-4 (16px), so we need bottom-4 + h-14 (56px) + gap (8px) = 80px = bottom-20
 const fabPositionClass = computed(() => {
+  if (props.hasFabBelow) {
+    return 'bottom-[152px] lg:bottom-[88px]'
+  }
   return 'bottom-20 lg:bottom-4'
 })
 
 // Chat popup position (above the FAB)
+// FAB is at 152px/88px, popup needs to be above it: +56px (FAB height) + 16px gap
 const chatPopupPositionClass = computed(() => {
+  if (props.hasFabBelow) {
+    return 'bottom-[224px] lg:bottom-[160px]'
+  }
   return 'bottom-[150px] lg:bottom-[78px]'
 })
 

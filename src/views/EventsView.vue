@@ -165,25 +165,22 @@
       </div>
     </Transition>
 
-    <!-- Floating Action Button -->
-    <Transition name="fab-fade">
-      <button
-        v-if="authStore.isAuthenticated"
-        @click="createEvent"
-        class="fixed bottom-20 lg:bottom-4 right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
-        aria-label="Create Event"
-      >
-        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
-        <div
-          class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
-        >
-          Create Event
-        </div>
-      </button>
-    </Transition>
+    <!-- Contact Us FAB (Telegram) - moved up when Create FAB is visible -->
+    <ContactUsFAB :has-fab-below="true" />
 
-    <!-- Contact Us FAB (Telegram) -->
-    <ContactUsFAB />
+    <!-- Create Event FAB -->
+    <button
+      @click="handleCreateEventClick"
+      class="fixed bottom-20 lg:bottom-4 right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
+      aria-label="Create Event"
+    >
+      <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+      <div
+        class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+      >
+        Create Event
+      </div>
+    </button>
 
     <!-- Event Create Modal -->
     <EventCreateModal
@@ -406,6 +403,18 @@ const handleLoginRequired = () => {
 
 const createEvent = () => {
   showCreateModal.value = true
+}
+
+const handleCreateEventClick = () => {
+  if (authStore.isAuthenticated) {
+    showCreateModal.value = true
+  } else {
+    // Redirect to login with redirect back to events with createEvent param
+    router.push({
+      path: '/signin',
+      query: { redirect: '/events?createEvent=true' }
+    })
+  }
 }
 
 const editEvent = (event: Event) => {
@@ -730,22 +739,6 @@ onMounted(async () => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
-}
-
-/* Floating Action Button Animation */
-.fab-fade-enter-active,
-.fab-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fab-fade-enter-from {
-  opacity: 0;
-  transform: scale(0.8) translateY(20px);
-}
-
-.fab-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.8) translateY(20px);
 }
 
 /* Tab Button Unified Gradient Styling */

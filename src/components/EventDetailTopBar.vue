@@ -17,8 +17,8 @@
           <Menu v-else class="w-6 h-6 text-white" />
         </button>
 
-        <!-- Host Avatar -->
-        <div v-if="organizerAvatar || organizerName" class="flex-shrink-0">
+        <!-- Host Avatar (hidden on mobile) -->
+        <div v-if="organizerAvatar || organizerName" class="hidden md:block flex-shrink-0">
           <div
             v-if="organizerAvatar"
             class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 shadow-md"
@@ -46,19 +46,19 @@
             <h1 class="text-lg font-bold text-white truncate">
               {{ eventTitle || 'Event Details' }}
             </h1>
-            <!-- Event Status Badge -->
+            <!-- Event Status Badge (hidden on mobile) -->
             <span
               v-if="eventStatus"
               :class="[
-                'flex-shrink-0 px-2.5 py-1 text-xs font-semibold rounded-full',
+                'hidden md:inline-block flex-shrink-0 px-2.5 py-1 text-xs font-semibold rounded-full',
                 statusClasses
               ]"
             >
               {{ statusLabel }}
             </span>
           </div>
-          <!-- Organizer name -->
-          <p v-if="organizerName" class="text-sm text-white/80 truncate">
+          <!-- Organizer name (hidden on mobile) -->
+          <p v-if="organizerName" class="hidden md:block text-sm text-white/80 truncate">
             by {{ organizerName }}
           </p>
         </div>
