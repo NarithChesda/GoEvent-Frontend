@@ -129,6 +129,10 @@ export interface TemplateAssets {
     bottom_decoration?: string
     left_decoration?: string
     right_decoration?: string
+    cover_top_decoration?: string
+    cover_bottom_decoration?: string
+    cover_left_decoration?: string
+    cover_right_decoration?: string
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
@@ -144,6 +148,25 @@ export interface EventPhoto {
   order: number
   is_featured: boolean
   created_at: string
+}
+
+export interface DressCode {
+  id: number
+  event: string
+  dress_code_type: string
+  dress_code_type_display: string
+  time_period: string
+  time_period_display: string
+  gender: string
+  gender_display: string
+  title: string
+  description: string
+  color: string
+  image: string | null
+  order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface UserDetails {
@@ -207,6 +230,7 @@ export interface EventData {
   event_photos?: EventPhoto[]
   photos?: EventPhoto[]
   payment_methods?: EventPaymentMethod[]
+  dress_codes?: DressCode[]
   available_languages?: Array<{ id: number; language: string; language_display: string }>
   top_decoration?: string | null
   bottom_decoration?: string | null

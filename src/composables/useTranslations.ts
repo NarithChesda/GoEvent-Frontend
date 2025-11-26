@@ -30,7 +30,8 @@ export function useTranslations<T extends Translation>(
   // State
   const activeTab = ref<string>('en') // Default to English tab
   const showAddTranslation = ref(false)
-  const newTranslation = reactive<Omit<T, 'id'>>({ ...defaultTranslation })
+  // Use ref instead of reactive to avoid complex type inference issues
+  const newTranslation = ref<Omit<T, 'id'>>({ ...defaultTranslation })
 
   // Computed
   const availableLanguagesForAdd = computed(() => {
@@ -45,22 +46,22 @@ export function useTranslations<T extends Translation>(
   }
 
   const addTranslation = () => {
-    if (!newTranslation.language) return
+    if (!newTranslation.value.language) return
 
     // Check if translation for this language already exists
-    if (translations.value.some((t) => t.language === newTranslation.language)) {
+    if (translations.value.some((t) => t.language === newTranslation.value.language)) {
       alert('Translation for this language already exists')
       return
     }
 
-    const languageCode = newTranslation.language
-    translations.value.push({ ...newTranslation } as T)
+    const languageCode = newTranslation.value.language
+    translations.value.push({ ...newTranslation.value } as T)
 
     // Switch to the newly added language tab
     activeTab.value = languageCode
 
     // Reset form
-    Object.assign(newTranslation, { ...defaultTranslation })
+    newTranslation.value = { ...defaultTranslation }
 
     showAddTranslation.value = false
   }
@@ -77,7 +78,7 @@ export function useTranslations<T extends Translation>(
 
   const closeAddTranslation = () => {
     showAddTranslation.value = false
-    Object.assign(newTranslation, { ...defaultTranslation })
+    newTranslation.value = { ...defaultTranslation }
   }
 
   // Keyboard navigation for tabs

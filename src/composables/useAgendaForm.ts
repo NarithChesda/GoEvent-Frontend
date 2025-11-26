@@ -9,8 +9,12 @@ import {
   coreDataService,
   type EventAgendaItem,
   type AgendaIcon,
+  type CreateAgendaRequest,
 } from '@/services/api'
 import { sanitizePlainText, validateUrl } from '@/utils/sanitize'
+
+// Type for agenda_type to ensure type safety
+type AgendaType = CreateAgendaRequest['agenda_type']
 
 // Constants
 const MAX_TITLE_LENGTH = 200
@@ -23,7 +27,7 @@ const MAX_DATE_TEXT_LENGTH = 100
 interface AgendaFormData {
   title: string
   description: string
-  agenda_type: string
+  agenda_type: AgendaType
   date: string
   date_text: string
   start_time_text: string

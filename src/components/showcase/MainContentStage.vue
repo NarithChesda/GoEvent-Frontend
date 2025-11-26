@@ -1372,7 +1372,6 @@ const handleReminder = () => {
 // Cleanup on component unmount
 onUnmounted(() => {
   // Clear local references
-  existingBackgroundVideo.value = null
   videoResourceManager.value = null
 })
 </script>

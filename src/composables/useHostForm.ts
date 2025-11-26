@@ -337,7 +337,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
         )
       } else if (hasChanges) {
         // Only field changes, no image - use PATCH with only changed fields
-        response = await hostsService.patchHost(eventId, currentHost.value.id, updateData)
+        response = await hostsService.patchHost(eventId, currentHost.value.id, updateData as Partial<CreateHostRequest>)
       } else {
         // No changes at all - shouldn't reach here due to early return above
         loading.value = false

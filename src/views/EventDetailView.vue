@@ -9,7 +9,7 @@
       :event-title="event.title"
       :event-status="computedEventStatus"
       :can-edit="event.can_edit"
-      :organizer-name="event.organizer_details?.name || event.organizer_details?.username"
+      :organizer-name="event.organizer_details?.first_name && event.organizer_details?.last_name ? `${event.organizer_details.first_name} ${event.organizer_details.last_name}`.trim() : event.organizer_details?.username"
       :organizer-avatar="getOrganizerAvatarUrl(event.organizer_details?.profile_picture)"
       @edit="handleEditEvent(event.id)"
     />
