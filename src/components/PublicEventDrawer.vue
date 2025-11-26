@@ -94,29 +94,34 @@
 
             <!-- Event Info -->
             <div class="px-4 py-5 space-y-5">
-              <!-- Title & Calendar -->
+              <!-- Title & Category -->
               <div>
-                <h1 class="text-xl font-bold text-slate-900 leading-tight mb-3">
-                  {{ event.title }}
-                </h1>
+                <div class="flex items-start justify-between gap-3 mb-3">
+                  <h1 class="text-xl font-bold text-slate-900 leading-tight">
+                    {{ event.title }}
+                  </h1>
+                  <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full flex-shrink-0">
+                    <span class="text-slate-400">#</span>
+                    {{ event.category_details.name }}
+                  </span>
+                </div>
 
-                <!-- Organizer / Calendar -->
-                <div v-if="event.organizer_details || event.category_details" class="flex items-center gap-2 text-sm text-slate-600">
+                <!-- Organizer -->
+                <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
                   <div class="flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
                       {{ getInitials(organizerName) }}
                     </div>
                     <span>{{ organizerName }}</span>
                   </div>
-                  <ChevronRight class="w-4 h-4 text-slate-400" />
                 </div>
               </div>
 
               <!-- Date & Time -->
-              <div class="flex items-start gap-3">
-                <div class="w-11 h-14 bg-slate-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
                   <span class="text-[10px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(event.start_date) }}</span>
-                  <span class="text-lg font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
+                  <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-medium text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
@@ -153,17 +158,14 @@
               </div>
 
               <!-- Location -->
-              <div v-if="event.location || event.is_virtual" class="flex items-start gap-3">
-                <div class="w-11 h-14 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div v-if="event.location || event.is_virtual" class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Video v-if="event.is_virtual" class="w-5 h-5 text-slate-600" />
                   <MapPin v-else class="w-5 h-5 text-slate-600" />
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-medium text-slate-900">
-                    {{ event.is_virtual ? 'Virtual Event' : getLocationName(event.location) }}
-                  </p>
-                  <p v-if="!event.is_virtual && event.location" class="text-sm text-slate-600 truncate">
-                    {{ event.location }}
+                    {{ event.is_virtual ? 'Virtual Event' : event.location }}
                   </p>
                   <button
                     v-if="!event.is_virtual && event.location"
@@ -338,15 +340,6 @@
                 </div>
               </div>
 
-              <!-- Tags -->
-              <div v-if="event.category_details" class="border-t border-slate-100 pt-5">
-                <div class="flex flex-wrap gap-2">
-                  <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full">
-                    <span class="text-slate-400">#</span>
-                    {{ event.category_details.name }}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -611,13 +604,6 @@ const getTimeRange = (startStr: string, endStr: string): string => {
   }
 
   return `${formatTime(start)} - ${formatTime(end)}`
-}
-
-const getLocationName = (location: string | null): string => {
-  if (!location) return ''
-  // Get the first part before comma as venue name
-  const parts = location.split(',')
-  return parts[0].trim()
 }
 
 const getInitials = (name: string): string => {

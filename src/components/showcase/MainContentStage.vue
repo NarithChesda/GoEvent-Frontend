@@ -4,6 +4,21 @@
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
     <!-- Decoration Images -->
+    <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
+    <img
+      v-if="leftDecoration"
+      :src="getMediaUrl(leftDecoration)"
+      alt="Left decoration"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromLeft"
+      loading="eager"
+    />
+    <img
+      v-if="rightDecoration"
+      :src="getMediaUrl(rightDecoration)"
+      alt="Right decoration"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromRight"
+      loading="eager"
+    />
     <img
       v-if="topDecoration"
       :src="getMediaUrl(topDecoration)"
@@ -16,20 +31,6 @@
       :src="getMediaUrl(bottomDecoration)"
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromBottom"
-      loading="eager"
-    />
-    <img
-      v-if="leftDecoration"
-      :src="getMediaUrl(leftDecoration)"
-      alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25] animate-slideInFromLeft"
-      loading="eager"
-    />
-    <img
-      v-if="rightDecoration"
-      :src="getMediaUrl(rightDecoration)"
-      alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25] animate-slideInFromRight"
       loading="eager"
     />
 

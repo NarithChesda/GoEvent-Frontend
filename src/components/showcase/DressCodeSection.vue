@@ -55,7 +55,7 @@
                 <div
                   v-if="getCurrentDressCodeForActiveGender().image"
                   class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
-                  :style="{ backgroundColor: `${getCurrentDressCodeForActiveGender().color}20` }"
+                  :style="{ backgroundColor: `${primaryColor}20` }"
                 >
                   <img
                     :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"

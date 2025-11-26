@@ -2,6 +2,23 @@
   <!-- Wrapper for decorations and content -->
   <div class="absolute inset-0">
     <!-- Decoration Images - Animate independently from content -->
+    <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
+    <img
+      v-if="coverLeftDecoration"
+      :src="getMediaUrl(coverLeftDecoration)"
+      alt="Left decoration"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] cover-decoration-left"
+      :class="{ 'slide-out-to-left': isContentHidden }"
+      loading="lazy"
+    />
+    <img
+      v-if="coverRightDecoration"
+      :src="getMediaUrl(coverRightDecoration)"
+      alt="Right decoration"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] cover-decoration-right"
+      :class="{ 'slide-out-to-right': isContentHidden }"
+      loading="lazy"
+    />
     <img
       v-if="coverTopDecoration"
       :src="getMediaUrl(coverTopDecoration)"
@@ -16,22 +33,6 @@
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-bottom"
       :class="{ 'slide-out-to-bottom': isContentHidden }"
-      loading="lazy"
-    />
-    <img
-      v-if="coverLeftDecoration"
-      :src="getMediaUrl(coverLeftDecoration)"
-      alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25] cover-decoration-left"
-      :class="{ 'slide-out-to-left': isContentHidden }"
-      loading="lazy"
-    />
-    <img
-      v-if="coverRightDecoration"
-      :src="getMediaUrl(coverRightDecoration)"
-      alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25] cover-decoration-right"
-      :class="{ 'slide-out-to-right': isContentHidden }"
       loading="lazy"
     />
 
