@@ -72,12 +72,14 @@ export const hostsService = {
     return apiClient.put<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, data)
   },
 
-  // Update a host with file upload or to remove image
+  // Update a host with file upload
+  // Use removeImage=true to explicitly remove the existing image
   async updateHostWithFile(
     eventId: string,
     hostId: number,
     data: Partial<CreateHostRequest>,
     profileImageFile?: File,
+    removeImage = false,
   ): Promise<ApiResponse<EventHost>> {
     // Always use FormData when this method is called
     const formData = new FormData()
@@ -94,19 +96,21 @@ export const hostsService = {
     if (data.website_url !== undefined) formData.append('website_url', data.website_url)
     if (data.order !== undefined) formData.append('order', data.order.toString())
 
-    // Handle profile image
+    // Handle profile image - only append if there's a new file or explicit removal
     if (profileImageFile) {
       formData.append('profile_image', profileImageFile)
-    } else {
+    } else if (removeImage) {
+      // Only send empty string when explicitly removing the image
       formData.append('profile_image', '')
     }
+    // If neither, don't append profile_image at all - keeps existing image
 
     // Add translations as JSON string if they exist
     if (data.translations && data.translations.length > 0) {
       formData.append('translations', JSON.stringify(data.translations))
     }
 
-    return apiClient.putFormData<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, formData)
+    return apiClient.patchFormData<EventHost>(`/api/events/${eventId}/hosts/${hostId}/`, formData)
   },
 
   // Partially update a host

@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { X } from 'lucide-vue-next'
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
@@ -102,6 +102,7 @@ const emit = defineEmits<Emits>()
 
 const cropperRef = ref<any>(null)
 const errorMessage = ref<string>('')
+const isCropperReady = ref(false)
 
 const stencilProps = computed(() => ({
   aspectRatio: props.aspectRatio,
@@ -110,30 +111,45 @@ const stencilProps = computed(() => ({
 const handleCropperError = (error: any) => {
   console.error('Cropper error:', error)
   errorMessage.value = 'Failed to load image. Please try again.'
+  isCropperReady.value = false
 }
 
 const handleCropperReady = () => {
-  console.log('Cropper ready')
   errorMessage.value = ''
-}
-
-// Emit cropper ref to parent when it's mounted
-watch(
-  cropperRef,
-  (newRef) => {
-    if (newRef) {
-      emit('update:cropperRef', newRef)
-    }
-  },
-  { immediate: true }
-)
-
-// Also emit on mount to ensure parent gets the ref
-onMounted(() => {
+  isCropperReady.value = true
+  // Emit the cropper ref when the cropper is actually ready
   if (cropperRef.value) {
     emit('update:cropperRef', cropperRef.value)
   }
-})
+}
+
+// Reset ready state when modal closes
+watch(
+  () => props.show,
+  (isShown) => {
+    if (!isShown) {
+      isCropperReady.value = false
+    } else {
+      // When modal opens, wait for next tick and emit ref if already available
+      nextTick(() => {
+        if (cropperRef.value) {
+          emit('update:cropperRef', cropperRef.value)
+        }
+      })
+    }
+  }
+)
+
+// Watch the cropperRef for initial availability
+watch(
+  cropperRef,
+  (newRef) => {
+    if (newRef && props.show) {
+      emit('update:cropperRef', newRef)
+    }
+  },
+  { flush: 'post' }
+)
 </script>
 
 <style scoped>
