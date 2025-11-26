@@ -196,6 +196,7 @@
       :file-preview="filePreview"
       :parse-error="parseError"
       :pending-group-id="pendingGuestGroupSelection"
+      :is-creating-group="isCreatingGroup"
       @close="handleCloseAddGuestModal"
       @add-guest="handleAddGuest"
       @import="handleBulkImport"
@@ -420,7 +421,6 @@ const showAddGuestModal = ref(false)
 const showCreateGroupModal = ref(false)
 const isAddingGuest = ref(false)
 const isCreatingGroup = ref(false)
-const isCreatingGroupFromAddGuest = ref(false)
 const pendingGuestGroupSelection = ref<number | null>(null)
 const groupCardRefs = new Map<number, any>()
 
@@ -501,13 +501,6 @@ const handleCreateGroup = async (data: { name: string; description?: string; col
   if (response.success && response.data) {
     showMessage('success', `Group "${response.data.name}" created`)
     showCreateGroupModal.value = false
-
-    // If group was created from Add Guest modal, reopen it and select the new group
-    if (isCreatingGroupFromAddGuest.value) {
-      pendingGuestGroupSelection.value = response.data.id
-      showAddGuestModal.value = true
-      isCreatingGroupFromAddGuest.value = false
-    }
   } else {
     showMessage('error', response.message || 'Failed to create group')
   }
@@ -590,22 +583,28 @@ const handleDeletePreviewGuest = (index: number, groupId: number | null) => {
   deleteGuestFromPreview(index, groupId ?? undefined)
 }
 
-const handleCreateGroupFromAddGuest = () => {
-  // Close Add Guest modal temporarily and open Create Group modal
-  showAddGuestModal.value = false
-  isCreatingGroupFromAddGuest.value = true
-  showCreateGroupModal.value = true
+const handleCreateGroupFromAddGuest = async (data: { name: string; description?: string; color: string }) => {
+  isCreatingGroup.value = true
+
+  const response = await createGroup({
+    name: data.name,
+    description: data.description,
+    color: data.color,
+    order: groups.value.length + 1,
+  })
+
+  if (response.success && response.data) {
+    showMessage('success', `Group "${response.data.name}" created`)
+    // The AddGuestModal watches groups.length and will auto-select the new group
+  } else {
+    showMessage('error', response.message || 'Failed to create group')
+  }
+
+  isCreatingGroup.value = false
 }
 
 const handleCloseCreateGroupModal = () => {
   showCreateGroupModal.value = false
-
-  // If user was creating a group from Add Guest modal and cancelled,
-  // reopen the Add Guest modal
-  if (isCreatingGroupFromAddGuest.value) {
-    showAddGuestModal.value = true
-    isCreatingGroupFromAddGuest.value = false
-  }
 }
 
 const openEditGroupModal = (group: GuestGroup) => {
