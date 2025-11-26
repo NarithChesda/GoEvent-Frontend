@@ -183,9 +183,7 @@
               tabindex="0"
               class="space-y-4"
             >
-              <div class="text-sm text-slate-500 mb-4">
-                Edit text content for <span class="font-medium text-slate-700">{{ getLanguageName(lang) }}</span>
-              </div>
+
 
               <!-- Text Type Sections -->
               <div

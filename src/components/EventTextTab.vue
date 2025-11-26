@@ -1,39 +1,34 @@
 <template>
-  <div class="space-y-4">
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight tracking-tight">
-          Event Text
-        </h2>
-        <p class="text-xs text-slate-500 mt-0.5">Multi-language content</p>
-      </div>
-      <button
-        @click="showTextDrawer = true"
-        class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] shadow-md flex items-center text-sm"
-      >
-        <Edit2 class="w-3.5 h-3.5 mr-1.5" />
-        Edit Texts
-      </button>
+    <div class="mb-6">
+      <h5 class="font-semibold text-slate-900">Showcase Texts</h5>
+      <p class="text-sm text-slate-600">Add multi-language text content for your event showcase</p>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-xl border border-slate-200 p-6">
-      <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 text-sm text-slate-600">Loading...</span>
+    <div v-if="loading">
+      <div class="flex justify-center py-6 sm:py-8">
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-white rounded-xl border border-slate-200 p-6 text-center">
-      <div class="text-sm text-red-600 font-medium mb-3">{{ error }}</div>
-      <button
-        @click="fetchTexts"
-        class="text-sm text-[#1e90ff] hover:text-[#1873cc] font-medium"
-      >
-        Try again
-      </button>
+    <div v-else-if="error">
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-4">
+        <div class="flex items-center space-x-2">
+          <AlertCircle class="w-5 h-5 text-red-500" />
+          <div class="flex-1">
+            <p class="text-sm text-red-600 font-medium">{{ error }}</p>
+            <button
+              @click="fetchTexts"
+              class="text-red-600 text-sm hover:text-red-700 underline mt-1"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -53,97 +48,113 @@
       </div>
     </div>
 
-    <!-- Language Tabs and Content -->
-    <div v-else class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <!-- Content -->
+    <div v-else class="space-y-3 sm:space-y-4">
       <!-- Language Tabs -->
-      <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" aria-label="Language tabs">
-        <div class="flex overflow-x-auto scrollbar-hide">
-          <button
-            v-for="lang in availableLanguages"
-            :key="lang"
-            @click="selectedLanguage = lang"
-            role="tab"
-            :aria-selected="selectedLanguage === lang"
-            :aria-controls="`tabpanel-${lang}`"
-            :id="`tab-${lang}`"
-            :class="[
-              'flex-shrink-0 px-4 py-2.5 text-sm font-medium transition-colors relative',
-              selectedLanguage === lang
-                ? 'text-[#1e90ff] bg-white'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
-            ]"
-          >
-            <span class="flex items-center gap-1.5">
-              {{ getLanguageName(lang) }}
-              <span class="text-xs text-slate-400">({{ textCountByLanguage[lang] || 0 }})</span>
-            </span>
-            <span
-              v-if="selectedLanguage === lang"
-              class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1e90ff]"
-            ></span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Text List for Selected Language -->
-      <div
-        role="tabpanel"
-        :id="`tabpanel-${selectedLanguage}`"
-        :aria-labelledby="`tab-${selectedLanguage}`"
-        class="divide-y divide-slate-100"
-      >
-        <div
-          v-for="text in textsForSelectedLanguage"
-          :key="text.id"
-          class="p-3 sm:p-4 hover:bg-slate-50/50 transition-colors"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <!-- Text Info -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <component
-                  :is="getTextTypeIcon(text.text_type)"
-                  class="w-3.5 h-3.5 text-[#1e90ff] flex-shrink-0"
-                  aria-hidden="true"
-                />
-                <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                  {{ getTextTypeLabel(text.text_type) }}
-                </span>
-                <span
-                  v-if="!text.is_active"
-                  class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500"
-                >
-                  Inactive
-                </span>
-              </div>
-
-              <!-- Title if exists -->
-              <div v-if="text.title" class="text-sm font-medium text-slate-900 mb-0.5">
-                {{ text.title }}
-              </div>
-
-              <!-- Content Preview -->
-              <p class="text-sm text-slate-600 line-clamp-2">
-                {{ text.content }}
-              </p>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-1 flex-shrink-0">
-              <button
-                @click="deleteText(text.id)"
-                class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                :aria-label="`Delete ${getTextTypeLabel(text.text_type)}`"
-              >
-                <Trash2 class="w-3.5 h-3.5" aria-hidden="true" />
-              </button>
-            </div>
+      <div class="bg-white rounded-xl sm:rounded-2xl border border-gray-200 overflow-hidden">
+        <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" aria-label="Language tabs">
+          <div class="flex overflow-x-auto scrollbar-hide">
+            <button
+              v-for="lang in availableLanguages"
+              :key="lang"
+              @click="selectedLanguage = lang"
+              role="tab"
+              :aria-selected="selectedLanguage === lang"
+              :aria-controls="`tabpanel-${lang}`"
+              :id="`tab-${lang}`"
+              :class="[
+                'flex-shrink-0 px-4 py-2.5 text-sm font-medium transition-colors relative',
+                selectedLanguage === lang
+                  ? 'text-[#1e90ff] bg-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+              ]"
+            >
+              <span class="flex items-center gap-1.5">
+                {{ getLanguageName(lang) }}
+                <span class="text-xs text-slate-400">({{ textCountByLanguage[lang] || 0 }})</span>
+              </span>
+              <span
+                v-if="selectedLanguage === lang"
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1e90ff]"
+              ></span>
+            </button>
           </div>
         </div>
 
-        <!-- Empty state for selected language -->
-        <div v-if="textsForSelectedLanguage.length === 0" class="p-6 text-center">
-          <p class="text-sm text-slate-500">No text content for {{ getLanguageName(selectedLanguage) }}</p>
+        <!-- Text List for Selected Language -->
+        <div
+          role="tabpanel"
+          :id="`tabpanel-${selectedLanguage}`"
+          :aria-labelledby="`tab-${selectedLanguage}`"
+          class="divide-y divide-slate-100"
+        >
+          <div
+            v-for="text in textsForSelectedLanguage"
+            :key="text.id"
+            class="p-3 sm:p-4 hover:bg-slate-50/50 transition-colors"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <!-- Text Info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <component
+                    :is="getTextTypeIcon(text.text_type)"
+                    class="w-3.5 h-3.5 text-[#1e90ff] flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                    {{ getTextTypeLabel(text.text_type) }}
+                  </span>
+                  <span
+                    v-if="!text.is_active"
+                    class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500"
+                  >
+                    Inactive
+                  </span>
+                </div>
+
+                <!-- Title if exists -->
+                <div v-if="text.title" class="text-sm font-medium text-slate-900 mb-0.5">
+                  {{ text.title }}
+                </div>
+
+                <!-- Content Preview -->
+                <p class="text-sm text-slate-600 line-clamp-2">
+                  {{ text.content }}
+                </p>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <button
+                  @click="deleteText(text.id)"
+                  class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  :aria-label="`Delete ${getTextTypeLabel(text.text_type)}`"
+                >
+                  <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state for selected language -->
+          <div v-if="textsForSelectedLanguage.length === 0" class="p-6 text-center">
+            <p class="text-sm text-slate-500">No text content for {{ getLanguageName(selectedLanguage) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Another Text Button -->
+      <div
+        @click="showTextDrawer = true"
+        class="border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
+      >
+        <div class="flex flex-col items-center justify-center">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
+            <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
+          </div>
+          <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">Add or Edit Text Content</p>
+          <p class="text-xs text-slate-400 mt-1">Click to manage</p>
         </div>
       </div>
     </div>
@@ -184,9 +195,9 @@ import {
   Clock,
   MapPin,
   Heart,
-  Edit2,
   Trash2,
   Plus,
+  AlertCircle,
 } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EditEventTextDrawer from './EditEventTextDrawer.vue'

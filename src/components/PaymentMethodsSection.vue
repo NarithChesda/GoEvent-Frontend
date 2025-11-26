@@ -4,7 +4,7 @@
     <div class="mb-6">
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2">
             <h5 class="font-semibold text-slate-900">Payment Methods</h5>
             <span
               v-if="isPaymentLocked"

@@ -21,7 +21,6 @@
       :can-view-registration="canViewRegistration"
       :can-view-media="canViewMedia"
       :can-view-collaborators="canViewCollaborators"
-      :can-view-event-texts="canViewEventTexts"
       :can-view-template="canViewTemplate"
       :can-view-payment="canViewPayment"
       :can-view-guest-management="canViewGuestManagement"
@@ -80,7 +79,6 @@
         :can-view-registration="canViewRegistration"
         :can-view-media="canViewMedia"
         :can-view-collaborators="canViewCollaborators"
-        :can-view-event-texts="canViewEventTexts"
         :can-view-template="canViewTemplate"
         :can-view-payment="canViewPayment"
         :can-view-guest-management="canViewGuestManagement"
@@ -119,30 +117,6 @@
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
               />
-            </div>
-
-            <!-- Event Texts Tab -->
-            <div v-if="activeTab === 'event-texts'">
-              <div v-if="!canViewEventTexts || !event?.id" class="text-center py-12">
-                <div v-if="!event?.id">
-                  <div
-                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e90ff] mx-auto mb-2"
-                  ></div>
-                  <span class="text-lg text-slate-600 leading-relaxed">Loading event data...</span>
-                </div>
-                <div v-else>
-                  <div
-                    class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                  >
-                    <Lock class="w-8 h-8 text-slate-400" />
-                  </div>
-                  <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
-                  <p class="text-slate-600 max-w-md mx-auto">
-                    Only the event organizer and collaborators can view and manage event texts.
-                  </p>
-                </div>
-              </div>
-              <EventTextTab v-else ref="textTabRef" :event-id="event.id" />
             </div>
 
             <!-- Registration Tab -->
@@ -412,7 +386,6 @@ import EventNavigationTabs from '../components/EventNavigationTabs.vue'
 import EventDetailMobileTabBar from '../components/EventDetailMobileTabBar.vue'
 import EventAgendaTab from '../components/EventAgendaTab.vue'
 import EventHostsTab from '../components/EventHostsTab.vue'
-import EventTextTab from '../components/EventTextTab.vue'
 import EventMediaTab from '../components/EventMediaTab.vue'
 import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
 import EventRegistrationTab from '../components/EventRegistrationTab.vue'
@@ -491,7 +464,6 @@ const expenseTrackingPollInterval = ref<number | null>(null)
 const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
 const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
-const textTabRef = ref<InstanceType<typeof EventTextTab> | null>(null)
 const registrationTabRef = ref<InstanceType<typeof EventRegistrationTab> | null>(null)
 const paymentTabRef = ref<InstanceType<typeof EventPaymentTab> | null>(null)
 const collaboratorTabRef = ref<InstanceType<typeof EventCollaboratorsTab> | null>(null)
@@ -505,8 +477,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'agenda', label: 'Agenda', icon: 'calendar' },
   { id: 'hosts', label: 'Hosts & Speakers', icon: 'users', mobileLabel: 'Hosts' },
   { id: 'registration', label: 'Registration', icon: 'user-plus' },
-  { id: 'media', label: 'Media', icon: 'image' },
-  { id: 'event-texts', label: 'Event Texts', icon: 'file-text', mobileLabel: 'Texts' },
+  { id: 'media', label: 'Showcase', icon: 'image' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'template', label: 'Template', icon: 'monitor' },
   { id: 'payment', label: 'Payment', icon: 'credit-card' },
@@ -534,10 +505,6 @@ const canViewMedia = computed(() => {
 })
 
 const canViewCollaborators = computed(() => {
-  return canViewRestrictedTabs.value
-})
-
-const canViewEventTexts = computed(() => {
   return canViewRestrictedTabs.value
 })
 

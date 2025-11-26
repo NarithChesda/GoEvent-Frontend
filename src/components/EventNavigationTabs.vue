@@ -63,7 +63,6 @@ interface Props {
   canViewRegistration?: boolean
   canViewMedia?: boolean
   canViewCollaborators?: boolean
-  canViewEventTexts?: boolean
   canViewTemplate?: boolean
   canViewPayment?: boolean
   canViewGuestManagement?: boolean
@@ -121,7 +120,6 @@ const visibleTabs = computed(() => {
     if (tab.id === 'registration' && !props.canViewRegistration) return false
     if (tab.id === 'media' && !props.canViewMedia) return false
     if (tab.id === 'collaborator' && !props.canViewCollaborators) return false
-    if (tab.id === 'event-texts' && !props.canViewEventTexts) return false
     if (tab.id === 'template' && !props.canViewTemplate) return false
     if (tab.id === 'payment' && !props.canViewPayment) return false
     if (tab.id === 'guest-management' && !props.canViewGuestManagement) return false

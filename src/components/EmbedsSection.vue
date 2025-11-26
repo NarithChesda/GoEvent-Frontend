@@ -1,12 +1,12 @@
 <template>
   <div class="space-y-6 sm:space-y-8">
     <!-- YouTube Embed -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <div class="mb-3 sm:mb-4">
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+      <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1">
-            <h5 class="text-sm sm:text-base font-semibold text-slate-900 mb-1.5 sm:mb-2">YouTube Video</h5>
-            <p class="text-xs sm:text-sm text-slate-600">Embed a YouTube video for your event</p>
+            <h5 class="font-semibold text-slate-900">YouTube Video</h5>
+            <p class="text-sm text-slate-600">Embed a YouTube video for your event</p>
           </div>
 
           <!-- Help Button -->

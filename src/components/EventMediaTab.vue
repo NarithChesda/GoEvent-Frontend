@@ -1,18 +1,10 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 overflow-hidden">
-      <!-- Title Section -->
-      <div class="px-6 py-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
-            <ImageIcon class="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Event Media</h2>
-            <p class="text-sm text-slate-500">Manage all visual content and media for your event</p>
-          </div>
-        </div>
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Showcase</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage all visual content and media for your event showcase or invitation</p>
       </div>
     </div>
 
@@ -159,6 +151,14 @@
         />
       </div>
 
+      <!-- Event Texts Section -->
+      <div v-if="localEventData?.id">
+        <EventTextTab
+          ref="eventTextTabRef"
+          :event-id="localEventData.id"
+        />
+      </div>
+
     </div>
 
     <!-- Upload Modal -->
@@ -206,6 +206,7 @@ import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import BasicMediaSection from './BasicMediaSection.vue'
 import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
+import EventTextTab from './EventTextTab.vue'
 
 interface Props {
   eventId?: string
@@ -241,6 +242,7 @@ const draggedMedia = ref<EventPhoto | null>(null)
 // Template refs for sections
 const paymentMethodsSectionRef = ref<InstanceType<typeof PaymentMethodsSection> | null>(null)
 const basicMediaSectionRef = ref<InstanceType<typeof BasicMediaSection> | null>(null)
+const eventTextTabRef = ref<InstanceType<typeof EventTextTab> | null>(null)
 
 // Watch for prop changes to sync localEventData
 watch(
@@ -470,6 +472,10 @@ defineExpose({
   // Method to trigger dress code addition
   openDressCodeModal: () => {
     basicMediaSectionRef.value?.openDressCodeModal()
+  },
+  // Method to trigger event text editing
+  openEventTextModal: () => {
+    eventTextTabRef.value?.openAddModal()
   }
 })
 </script>
