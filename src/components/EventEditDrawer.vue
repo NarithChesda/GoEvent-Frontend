@@ -167,151 +167,157 @@
 
               <!-- Title -->
               <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Event Title *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Event Title *</label>
                 <input
                   v-model="form.title"
                   type="text"
                   required
                   placeholder="Enter event title"
-                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
               </div>
 
               <!-- Short Description -->
               <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Short Description</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Short Description</label>
                 <input
                   v-model="form.short_description"
                   type="text"
                   maxlength="300"
                   placeholder="Brief description for event cards"
-                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
-                <p class="text-[10px] text-slate-500 mt-0.5">
+                <p class="text-xs text-slate-500 mt-1">
                   {{ form.short_description?.length || 0 }}/300 characters
                 </p>
               </div>
 
               <!-- Description -->
               <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Full Description *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Full Description *</label>
                 <RichTextEditor
                   v-model="form.description"
                   placeholder="Detailed event description"
-                  min-height="100px"
+                  min-height="120px"
                 />
               </div>
 
               <!-- Category -->
               <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Category</label>
-                <select
-                  v-model="form.category"
-                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_0.5rem_center] bg-no-repeat pr-8"
-                >
-                  <option value="">Select a category</option>
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <div class="relative">
+                  <select
+                    v-model="form.category"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
+                  >
+                    <option value="">Select a category</option>
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                      {{ category.name }}
+                    </option>
+                  </select>
+                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
             </div>
 
             <!-- Date and Time -->
-            <div class="space-y-3 border-t border-slate-100 pt-5">
+            <div class="space-y-4 border-t border-slate-100 pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
 
               <!-- Start Date/Time -->
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Start Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Start Date *</label>
                   <input
                     v-model="startDate"
                     type="date"
                     required
-                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Start Time *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Start Time *</label>
                   <input
                     v-model="startTime"
                     type="time"
                     required
-                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
               </div>
 
               <!-- End Date/Time -->
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">End Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
                   <input
                     v-model="endDate"
                     type="date"
                     required
-                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">End Time *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">End Time *</label>
                   <input
                     v-model="endTime"
                     type="time"
                     required
-                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
               </div>
 
               <!-- Timezone -->
               <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Timezone</label>
-                <select
-                  v-model="form.timezone"
-                  class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_0.5rem_center] bg-no-repeat pr-8"
-                >
-                  <optgroup
-                    v-for="(timezones, region) in timezonesByRegion"
-                    :key="region"
-                    :label="region"
+                <label class="block text-sm font-medium text-slate-700 mb-2">Timezone</label>
+                <div class="relative">
+                  <select
+                    v-model="form.timezone"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                   >
-                    <option
-                      v-for="timezone in timezones"
-                      :key="timezone.value"
-                      :value="timezone.value"
+                    <optgroup
+                      v-for="(timezones, region) in timezonesByRegion"
+                      :key="region"
+                      :label="region"
                     >
-                      {{ timezone.label }}
-                    </option>
-                  </optgroup>
-                </select>
+                      <option
+                        v-for="timezone in timezones"
+                        :key="timezone.value"
+                        :value="timezone.value"
+                      >
+                        {{ timezone.label }}
+                      </option>
+                    </optgroup>
+                  </select>
+                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
             </div>
 
             <!-- Location -->
-            <div class="space-y-3 border-t border-slate-100 pt-5">
+            <div class="space-y-4 border-t border-slate-100 pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
 
               <!-- Location Type Toggle Buttons -->
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   @click="form.is_virtual = false"
                   :class="[
-                    'flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all',
+                    'flex items-center gap-2 px-3.5 py-3 rounded-lg border-2 transition-all',
                     !form.is_virtual
                       ? 'border-[#2ecc71] bg-white'
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   ]"
                 >
                   <div :class="[
-                    'w-5 h-5 rounded flex items-center justify-center',
+                    'w-6 h-6 rounded flex items-center justify-center',
                     !form.is_virtual ? 'bg-[#2ecc71]' : 'bg-slate-100'
                   ]">
-                    <MapPin :class="['w-3 h-3', !form.is_virtual ? 'text-white' : 'text-slate-500']" />
+                    <MapPin :class="['w-3.5 h-3.5', !form.is_virtual ? 'text-white' : 'text-slate-500']" />
                   </div>
-                  <span :class="['font-medium text-xs flex-1', !form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
+                  <span :class="['font-medium text-sm flex-1', !form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
                     In Person
                   </span>
                   <Check v-if="!form.is_virtual" class="w-4 h-4 text-[#2ecc71]" />
@@ -321,19 +327,19 @@
                   type="button"
                   @click="form.is_virtual = true"
                   :class="[
-                    'flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all',
+                    'flex items-center gap-2 px-3.5 py-3 rounded-lg border-2 transition-all',
                     form.is_virtual
                       ? 'border-[#1e90ff] bg-white'
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   ]"
                 >
                   <div :class="[
-                    'w-5 h-5 rounded flex items-center justify-center',
+                    'w-6 h-6 rounded flex items-center justify-center',
                     form.is_virtual ? 'bg-[#1e90ff]' : 'bg-slate-100'
                   ]">
-                    <Video :class="['w-3 h-3', form.is_virtual ? 'text-white' : 'text-slate-500']" />
+                    <Video :class="['w-3.5 h-3.5', form.is_virtual ? 'text-white' : 'text-slate-500']" />
                   </div>
-                  <span :class="['font-medium text-xs flex-1', form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
+                  <span :class="['font-medium text-sm flex-1', form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
                     Virtual
                   </span>
                   <Check v-if="form.is_virtual" class="w-4 h-4 text-[#1e90ff]" />
@@ -341,37 +347,37 @@
               </div>
 
               <!-- Location Input (In Person) -->
-              <div v-if="!form.is_virtual" class="space-y-2">
+              <div v-if="!form.is_virtual" class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Address</label>
-                  <div class="relative flex items-center">
-                    <MapPin class="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Address</label>
+                  <div class="relative">
+                    <MapPin class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       v-model="form.location"
                       type="text"
                       placeholder="Enter location address"
-                      class="w-full pl-9 pr-9 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                      class="w-full pl-9 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                     <button
                       v-if="form.location"
                       type="button"
                       @click="form.location = ''"
-                      class="absolute right-3 w-4 h-4 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
                     >
-                      <X class="w-2.5 h-2.5 text-slate-500" />
+                      <X class="w-3 h-3 text-slate-500" />
                     </button>
                   </div>
                 </div>
 
                 <!-- Google Maps Embed -->
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Map</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Map</label>
 
                   <!-- Map Preview -->
-                  <div v-if="form.google_map_embed_link" class="relative mb-2">
+                  <div v-if="form.google_map_embed_link" class="relative mb-3">
                     <iframe
                       :src="form.google_map_embed_link"
-                      class="w-full h-32 rounded-lg border border-slate-200"
+                      class="w-full h-36 rounded-lg border border-slate-200"
                       style="border: 0"
                       allowfullscreen
                       loading="lazy"
@@ -379,23 +385,23 @@
                     <button
                       type="button"
                       @click="form.google_map_embed_link = ''"
-                      class="absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition-colors"
+                      class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
                     >
-                      <X class="w-2.5 h-2.5" />
+                      <X class="w-3 h-3" />
                     </button>
                   </div>
 
-                  <div class="relative flex items-center">
-                    <Map class="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <div class="relative">
+                    <Map class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       v-model="form.google_map_embed_link"
                       type="text"
                       placeholder="Paste Google Maps embed URL"
                       @paste="handleMapsPaste"
-                      class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                      class="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                   </div>
-                  <p class="text-[10px] text-slate-500 mt-1 ml-0">
+                  <p class="text-xs text-slate-500 mt-1.5">
                     Paste Google Maps embed code or URL
                   </p>
                 </div>
@@ -403,14 +409,14 @@
 
               <!-- Virtual Link Input -->
               <div v-else>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Virtual Meeting Link</label>
-                <div class="relative flex items-center">
-                  <Link2 class="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                <label class="block text-sm font-medium text-slate-700 mb-2">Virtual Meeting Link</label>
+                <div class="relative">
+                  <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     v-model="form.virtual_link"
                     type="url"
                     placeholder="https://zoom.us/meeting/..."
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all bg-white"
+                    class="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
               </div>
@@ -506,6 +512,7 @@ import {
   MoreHorizontal,
   ArrowRight,
   Trash2,
+  ChevronDown,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
 import ImageCropperModal from './common/ImageCropperModal.vue'

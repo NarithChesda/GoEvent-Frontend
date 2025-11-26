@@ -5,7 +5,7 @@
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
-        @click="!showCropper && closeDrawer()"
+        @click="closeDrawer"
       />
     </Transition>
 
@@ -30,11 +30,11 @@
               </button>
               <div class="flex items-center gap-2">
                 <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                  <UserPen v-if="isEditMode" class="w-4 h-4 text-white" />
-                  <UserPlus v-else class="w-4 h-4 text-white" />
+                  <Edit2 v-if="isEditMode" class="w-4 h-4 text-white" />
+                  <Calendar v-else class="w-4 h-4 text-white" />
                 </div>
                 <h2 class="text-base font-semibold text-white">
-                  {{ isEditMode ? 'Edit Host' : 'Add Host' }}
+                  {{ isEditMode ? 'Edit Agenda Item' : 'Add Agenda Item' }}
                 </h2>
               </div>
             </div>
@@ -44,7 +44,10 @@
         <!-- Content -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
           <!-- General error banner -->
-          <div v-if="generalError" class="mx-4 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+          <div
+            v-if="generalError"
+            class="mx-4 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"
+          >
             <AlertCircle class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div class="flex-1">
               <p class="text-sm font-medium text-red-700">{{ generalError }}</p>
@@ -60,23 +63,8 @@
 
           <!-- Form -->
           <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
-            <!-- Profile Picture Section -->
-            <div>
-              <ProfilePictureSection
-                :profile-picture-preview="profilePicturePreview"
-                :profile-image="profileImageFullUrl"
-                :profile-picture-uploading="profilePictureUploading"
-                :profile-picture-input="profilePictureInput"
-                @trigger-upload="triggerProfilePictureUpload"
-                @select-image="handleProfilePictureSelect"
-                @crop-image="handleCropExistingImage"
-                @remove-image="handleRemoveProfilePicture"
-                @update:profile-picture-input="profilePictureInput = $event"
-              />
-            </div>
-
             <!-- Language Tabs Section -->
-            <div class="border-t border-slate-100 pt-5">
+            <div>
               <LanguageTabs
                 :active-tab="activeTab"
                 :translations="formData.translations"
@@ -105,15 +93,15 @@
                 tabindex="0"
                 class="space-y-5"
               >
-                <HostFormFields
+                <AgendaFormFields
                   v-model:title="formData.title"
-                  v-model:name="formData.name"
-                  v-model:parent-a-name="formData.parent_a_name"
-                  v-model:parent-b-name="formData.parent_b_name"
-                  v-model:bio="formData.bio"
+                  v-model:start-time-text="formData.start_time_text"
+                  v-model:end-time-text="formData.end_time_text"
+                  v-model:description="formData.description"
+                  v-model:speaker="formData.speaker"
+                  v-model:description-open="descriptionOpen"
+                  v-model:speaker-open="speakerOpen"
                   :field-errors="fieldErrors"
-                  :bio-open="bioOpen"
-                  @update:bio-open="bioOpen = $event"
                 />
               </div>
 
@@ -128,32 +116,46 @@
                 tabindex="0"
                 class="space-y-5"
               >
-                <HostFormFields
+                <AgendaFormFields
                   v-model:title="translation.title"
-                  v-model:name="translation.name"
-                  v-model:parent-a-name="translation.parent_a_name"
-                  v-model:parent-b-name="translation.parent_b_name"
-                  v-model:bio="translation.bio"
+                  v-model:start-time-text="translation.start_time_text"
+                  v-model:end-time-text="translation.end_time_text"
+                  v-model:description="translation.description"
+                  v-model:speaker="translation.speaker"
+                  v-model:description-open="descriptionOpen"
+                  v-model:speaker-open="speakerOpen"
                   :language-name="getLanguageName(translation.language)"
-                  :bio-open="bioOpen"
-                  @update:bio-open="bioOpen = $event"
                 />
               </div>
             </div>
 
-            <!-- Contact Information Section -->
+            <!-- Schedule Section -->
             <div class="border-t border-slate-100 pt-5">
-              <ContactSection
-                v-model:email="formData.email"
-                v-model:linkedin-url="formData.linkedin_url"
-                v-model:twitter-url="formData.twitter_url"
-                v-model:website-url="formData.website_url"
-                :contact-open="contactOpen"
-                :email-error="emailError"
-                @update:contact-open="contactOpen = $event"
-                @validate-email="validateEmail"
+              <ScheduleSection
+                v-model:date="formData.date"
+                v-model:agenda-type="formData.agenda_type"
               />
             </div>
+
+            <!-- Location Section -->
+            <LocationSection
+              v-model:location="formData.location"
+              v-model:virtual-link="formData.virtual_link"
+              v-model:location-open="locationOpen"
+              :url-error="urlValidationError"
+            />
+
+            <!-- Display Options Section -->
+            <DisplayOptionsSection
+              v-model:color="formData.color"
+              v-model:is-featured="formData.is_featured"
+              v-model:display-open="displayOpen"
+              v-model:show-icon-picker="showIconPicker"
+              :icon-id="formData.icon_id"
+              :available-icons="availableIcons"
+              :selected-icon="getSelectedIcon()"
+              @select-icon="selectIcon"
+            />
           </form>
         </div>
 
@@ -162,12 +164,20 @@
           <div class="flex items-center justify-between">
             <button
               @click="handleSubmit"
-              :disabled="loading || !formData.name"
+              :disabled="loading || !formData.title"
               class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader v-if="loading" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Host' : 'Create Host') }}</span>
+              <span>{{
+                loading
+                  ? isEditMode
+                    ? 'Updating...'
+                    : 'Creating...'
+                  : isEditMode
+                    ? 'Update Agenda'
+                    : 'Create Agenda'
+              }}</span>
             </button>
 
             <button
@@ -195,50 +205,44 @@
         </Transition>
       </div>
     </Transition>
-
-    <!-- Image Cropper Modal -->
-    <ImageCropperModal
-      v-if="showCropper"
-      :show="showCropper"
-      :image-source="cropperImage || ''"
-      title="Crop Avatar"
-      :aspect-ratio="1"
-      help-text="Adjust the crop area to frame your avatar image"
-      @close="closeCropper"
-      @apply="handleCropApply"
-      @update:cropper-ref="setCropperRef"
-    />
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, toRef, watch } from 'vue'
-import { ArrowRight, UserPen, UserPlus, AlertCircle, CheckCircle, Loader, Save } from 'lucide-vue-next'
-import type { EventHost, HostTranslation } from '@/services/api'
-import { apiService } from '@/services/api'
+import { ref, watch, onMounted, toRef } from 'vue'
+import {
+  ArrowRight,
+  Edit2,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+  Loader,
+  Save,
+} from 'lucide-vue-next'
+import type { EventAgendaItem, AgendaTranslation } from '@/services/api'
 
 // Composables
-import { useHostForm } from '@/composables/useHostForm'
+import { useAgendaForm } from '@/composables/useAgendaForm'
 import { useTranslations } from '@/composables/useTranslations'
-import { useProfilePictureUpload } from '@/composables/useProfilePictureUpload'
 
 // Child components
-import ProfilePictureSection from './host/ProfilePictureSection.vue'
 import LanguageTabs from './host/LanguageTabs.vue'
-import HostFormFields from './host/HostFormFields.vue'
-import ContactSection from './host/ContactSection.vue'
-import ImageCropperModal from './common/ImageCropperModal.vue'
+import AgendaFormFields from './agenda/AgendaFormFields.vue'
+import ScheduleSection from './agenda/ScheduleSection.vue'
+import LocationSection from './agenda/LocationSection.vue'
+import DisplayOptionsSection from './agenda/DisplayOptionsSection.vue'
 
 interface Props {
   modelValue: boolean
   eventId: string
-  host?: EventHost
+  item?: EventAgendaItem
+  existingAgendaItems?: EventAgendaItem[]
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
-  (e: 'updated', host: EventHost): void
-  (e: 'created', host: EventHost): void
+  (e: 'updated', item: EventAgendaItem): void
+  (e: 'created', item: EventAgendaItem): void
 }
 
 const props = defineProps<Props>()
@@ -252,23 +256,27 @@ const {
   formData,
   loading,
   isEditMode,
+  availableIcons,
   fieldErrors,
   generalError,
-  emailError,
-  validateEmail,
-  createHost,
-  updateHost,
+  urlValidationError,
+  fetchIcons,
+  getSelectedIcon,
+  createAgendaItem,
+  updateAgendaItem,
   resetErrors,
   resetForm,
-} = useHostForm(props.eventId, props.host)
+  initializeTranslationsForCreate,
+} = useAgendaForm(props.eventId, props.item, props.existingAgendaItems)
 
-const defaultTranslation: Omit<HostTranslation, 'id' | 'host' | 'created_at' | 'updated_at'> = {
+const defaultTranslation: Omit<AgendaTranslation, 'id' | 'agenda' | 'created_at' | 'updated_at'> = {
   language: '',
-  name: '',
-  parent_a_name: '',
-  parent_b_name: '',
   title: '',
-  bio: '',
+  description: '',
+  date_text: '',
+  start_time_text: '',
+  end_time_text: '',
+  speaker: '',
 }
 
 const {
@@ -283,56 +291,17 @@ const {
   focusPreviousTab,
 } = useTranslations(toRef(formData, 'translations'), defaultTranslation)
 
-const {
-  profilePictureInput,
-  profilePicturePreview,
-  profilePictureUploading,
-  selectedProfileImageFile,
-  imageRemoved,
-  showCropper,
-  cropperImage,
-  closeCropper,
-  setCropperRef,
-  triggerProfilePictureUpload,
-  handleProfilePictureSelect,
-  removeProfilePicture,
-  handleCropApply,
-  validateFileSize,
-  openCropperWithExistingImage,
-  resetProfilePicture,
-} = useProfilePictureUpload(props.host?.profile_image || undefined, true) // Enable cropping
-
 // Local UI state
-const bioOpen = ref(false)
-const contactOpen = ref(false)
+const descriptionOpen = ref(false)
+const speakerOpen = ref(false)
+const locationOpen = ref(false)
+const displayOpen = ref(false)
+const showIconPicker = ref(false)
 
-// Computed full URL for profile image display
-const profileImageFullUrl = computed(() => {
-  if (!formData.profile_image || imageRemoved.value) return ''
-  return apiService.getProfilePictureUrl(formData.profile_image)
-})
-
-// Handle removing profile picture
-const handleRemoveProfilePicture = () => {
-  // Clear the form data
-  formData.profile_image = ''
-  // Use the composable's remove function to clear preview and set imageRemoved flag
-  removeProfilePicture(toRef(formData, 'profile_image'))
-}
-
-// Handle cropping existing image
-const handleCropExistingImage = () => {
-  // Determine which image to crop: preview (if new image uploaded) or existing profile_image
-  let imageUrl = profilePicturePreview.value
-
-  // If no preview, use the existing profile_image with full URL
-  if (!imageUrl && formData.profile_image) {
-    imageUrl = apiService.getProfilePictureUrl(formData.profile_image)
-  }
-
-  if (imageUrl && openCropperWithExistingImage) {
-    openCropperWithExistingImage(imageUrl)
-  }
+// Select icon handler
+const selectIcon = (iconId: number | null) => {
+  formData.icon_id = iconId
+  showIconPicker.value = false
 }
 
 // Show toast message
@@ -350,34 +319,19 @@ const closeDrawer = () => {
 
 // Unified submit handler
 const handleSubmit = async () => {
-  // Validate file size before submission
-  const fileSizeValidation = validateFileSize()
-  if (!fileSizeValidation.valid) {
-    generalError.value = fileSizeValidation.error || 'Image file size is too large'
-    return
-  }
+  const result = isEditMode.value ? await updateAgendaItem() : await createAgendaItem()
 
-  const result = isEditMode.value
-    ? await updateHost(selectedProfileImageFile.value, imageRemoved.value)
-    : await createHost(selectedProfileImageFile.value)
-
-  if (result.success) {
-    if (result.data) {
-      // Actual update/create happened
-      if (isEditMode.value) {
-        emit('updated', result.data)
-        showMessage('success', 'Host updated successfully!')
-      } else {
-        emit('created', result.data)
-        showMessage('success', 'Host created successfully!')
-      }
-      setTimeout(() => {
-        closeDrawer()
-      }, 1000)
-    } else if (result.message === 'No changes to save') {
-      // No changes were made - just inform user, don't close
-      showMessage('success', 'No changes to save')
+  if (result.success && result.data) {
+    if (isEditMode.value) {
+      emit('updated', result.data)
+      showMessage('success', 'Agenda item updated successfully!')
+    } else {
+      emit('created', result.data)
+      showMessage('success', 'Agenda item created successfully!')
     }
+    setTimeout(() => {
+      closeDrawer()
+    }, 1000)
   } else {
     showMessage('error', result.message || 'An error occurred')
   }
@@ -393,14 +347,20 @@ watch(
   () => props.modelValue,
   (isOpen) => {
     if (isOpen) {
-      // Reset form with current host data when drawer opens
-      resetForm(props.host)
-      // Reset profile picture state
-      resetProfilePicture(props.host?.profile_image || undefined)
+      // Reset form with current item data when drawer opens
+      resetForm(props.item, props.existingAgendaItems)
       // Reset UI state
       activeTab.value = 'en'
-      bioOpen.value = false
-      contactOpen.value = false
+      descriptionOpen.value = false
+      speakerOpen.value = false
+      locationOpen.value = false
+      displayOpen.value = false
+      showIconPicker.value = false
+
+      // Initialize translations for create mode
+      if (!props.item) {
+        initializeTranslationsForCreate()
+      }
 
       const scrollbarWidth = getScrollbarWidth()
       document.body.style.overflow = 'hidden'
@@ -411,11 +371,12 @@ watch(
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
     }
-  }
+  },
 )
 
-// Reset error states when drawer opens
+// Fetch icons and reset error states on mount
 onMounted(() => {
+  fetchIcons()
   resetErrors()
 })
 </script>
