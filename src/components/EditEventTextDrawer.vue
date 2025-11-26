@@ -343,13 +343,13 @@ const TEXT_TYPES: { value: string; label: string; icon: Component }[] = [
   { value: 'cover_header', label: 'Cover Header', icon: FileText },
   { value: 'welcome_message', label: 'Welcome Message', icon: MessageSquare },
   { value: 'description', label: 'Description', icon: FileText },
-  { value: 'short_description', label: 'Short Description', icon: FileText },
   { value: 'date_text', label: 'Date Text', icon: Calendar },
   { value: 'time_text', label: 'Time Text', icon: Clock },
   { value: 'location_text', label: 'Location Text', icon: MapPin },
-  { value: 'instructions', label: 'Instructions', icon: Info },
   { value: 'thank_you_message', label: 'Thank You Message', icon: Heart },
   { value: 'sorry_message', label: 'Sorry Message', icon: MessageSquare },
+  { value: 'short_description', label: 'Short Description', icon: FileText },
+  { value: 'instructions', label: 'Instructions', icon: Info },
   { value: 'custom', label: 'Custom Content', icon: FileText },
 ]
 
