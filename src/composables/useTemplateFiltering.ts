@@ -79,24 +79,26 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
     return filtered
   })
 
-  // Clear all filters
-  const clearFilters = () => {
+  /**
+   * Clear all filters and reset to default state
+   */
+  const clearFilters = (): void => {
     searchQuery.value = ''
     selectedCategoryId.value = null
     selectedPlan.value = null
   }
 
-  // Reset filters
-  const resetFilters = () => {
-    clearFilters()
-  }
-
-  // Set category filter (e.g., from props)
-  const setCategoryFilter = (categoryId: number | null) => {
+  /**
+   * Set category filter (e.g., from props)
+   */
+  const setCategoryFilter = (categoryId: number | null): void => {
     selectedCategoryId.value = categoryId
   }
 
-  const setPlanFilter = (plan: null | 'basic' | 'standard') => {
+  /**
+   * Set plan filter
+   */
+  const setPlanFilter = (plan: null | 'basic' | 'standard'): void => {
     selectedPlan.value = plan
   }
 
@@ -112,7 +114,6 @@ export function useTemplateFiltering(templates: Ref<EventTemplate[]>) {
 
     // Actions
     clearFilters,
-    resetFilters,
     setCategoryFilter,
     setPlanFilter,
   }

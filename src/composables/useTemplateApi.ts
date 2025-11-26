@@ -185,26 +185,25 @@ export function useTemplateApi() {
     clearMessage()
 
     try {
-      try {
-        const response = await eventTemplateService.selectEventTemplate(eventId, templateId)
+      const response = await eventTemplateService.selectEventTemplate(eventId, templateId)
 
-        if (response.success && response.data) {
-          showMessage('success', 'Template selected successfully!')
-          return { success: true, template: selectedTemplate }
-        } else {
-          console.warn('API response not successful:', response)
-          showMessage('error', 'Failed to select template. Please try again.')
-          return { success: false }
-        }
-      } catch (apiError) {
-        console.warn('API selection failed:', apiError)
-        showMessage('error', 'Unable to connect to server. Template will be selected locally.')
-        // Return success for local fallback
+      if (response.success && response.data) {
+        showMessage('success', 'Template selected successfully!')
         return { success: true, template: selectedTemplate }
+      } else {
+        // Log in development only
+        if (import.meta.env.DEV) {
+          console.warn('API response not successful:', response)
+        }
+        showMessage('error', response.message || 'Failed to select template. Please try again.')
+        return { success: false }
       }
     } catch (error) {
-      console.error('Error selecting template:', error)
-      showMessage('error', 'An unexpected error occurred. Please try again.')
+      // Log in development only
+      if (import.meta.env.DEV) {
+        console.error('Error selecting template:', error)
+      }
+      showMessage('error', 'Unable to connect to server. Please check your connection and try again.')
       return { success: false }
     } finally {
       selecting.value = false
