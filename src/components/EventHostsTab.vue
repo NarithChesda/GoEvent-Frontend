@@ -174,7 +174,7 @@
     <EditHostDrawer
       v-model="showEditModal"
       :event-id="eventId"
-      :host="selectedHost"
+      :host="selectedHost || undefined"
       @updated="handleHostUpdated"
     />
 

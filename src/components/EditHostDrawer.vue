@@ -62,7 +62,7 @@
                 :profile-picture-preview="profilePicturePreview"
                 :profile-image="profileImageFullUrl"
                 :profile-picture-uploading="profilePictureUploading"
-                :profile-picture-input="profilePictureInput"
+                :profile-picture-input="profilePictureInput || undefined"
                 @trigger-upload="triggerProfilePictureUpload"
                 @select-image="handleProfilePictureSelect"
                 @crop-image="handleCropExistingImage"
@@ -305,7 +305,7 @@ const contactOpen = ref(false)
 // Computed full URL for profile image display
 const profileImageFullUrl = computed(() => {
   if (!formData.profile_image || imageRemoved.value) return ''
-  return apiService.getProfilePictureUrl(formData.profile_image)
+  return apiService.getProfilePictureUrl(formData.profile_image) || ''
 })
 
 // Handle removing profile picture

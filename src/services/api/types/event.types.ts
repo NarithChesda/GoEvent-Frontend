@@ -60,6 +60,19 @@ export interface Event {
   youtube_embed_link?: string | null
   event_template?: number | null
   event_template_enabled?: boolean
+  referrer?: number | null
+  referrer_details?: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+    profile_picture?: string | null
+    bio?: string
+    is_verified?: boolean
+    is_partner?: boolean
+    logo?: string | null
+  } | null
   collaborators_count: number
   registrations_count: number
   is_ongoing: boolean

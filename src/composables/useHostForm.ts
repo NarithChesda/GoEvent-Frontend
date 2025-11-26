@@ -154,7 +154,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
   const buildDirtyUpdatePayload = (): { data: Record<string, unknown>; hasChanges: boolean } => {
     if (!originalFormData.value) {
       // No original data, send all fields
-      return { data: sanitizeFormData(), hasChanges: true }
+      return { data: sanitizeFormData() as unknown as Record<string, unknown>, hasChanges: true }
     }
 
     const updateData: Record<string, unknown> = {}
@@ -248,7 +248,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
   // Create host
   const createHost = async (
     profileImageFile: File | null,
-  ): Promise<{ success: boolean; data?: EventHost }> => {
+  ): Promise<{ success: boolean; data?: EventHost; message?: string }> => {
     loading.value = true
     fieldErrors.value = {}
     generalError.value = ''
@@ -257,7 +257,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
       // Validate
       if (!validateEmail() || !validateUrls() || !validateProfileImage(profileImageFile)) {
         loading.value = false
-        return { success: false }
+        return { success: false, message: generalError.value || 'Validation failed' }
       }
 
       const requestData = sanitizeFormData()
@@ -276,12 +276,12 @@ export function useHostForm(eventId: string, host?: EventHost) {
           fieldErrors.value = response.errors as Record<string, string[]>
         }
         generalError.value = response.message || 'Failed to create host'
-        return { success: false }
+        return { success: false, message: generalError.value }
       }
     } catch (error) {
       console.error('Error creating host:', error)
       generalError.value = 'Network error. Please check your connection and try again.'
-      return { success: false }
+      return { success: false, message: generalError.value }
     } finally {
       loading.value = false
     }
