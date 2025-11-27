@@ -45,6 +45,7 @@ import {
   Monitor,
   CreditCard,
   DollarSign,
+  BarChart,
   Star,
   Mic,
 } from 'lucide-vue-next'
@@ -66,6 +67,7 @@ interface Props {
   canViewTemplate?: boolean
   canViewPayment?: boolean
   canViewGuestManagement?: boolean
+  canViewAnalytics?: boolean
   canViewExpenses?: boolean
   canViewReview?: boolean
   canEdit?: boolean
@@ -107,6 +109,7 @@ const getIconComponent = (iconName: string) => {
     image: ImageIcon,
     monitor: Monitor,
     'credit-card': CreditCard,
+    'bar-chart': BarChart,
     'dollar-sign': DollarSign,
     star: Star,
     mic: Mic,
@@ -123,6 +126,7 @@ const visibleTabs = computed(() => {
     if (tab.id === 'template' && !props.canViewTemplate) return false
     if (tab.id === 'payment' && !props.canViewPayment) return false
     if (tab.id === 'guest-management' && !props.canViewGuestManagement) return false
+    if (tab.id === 'analytics' && !props.canViewAnalytics) return false
     if (tab.id === 'expenses' && !props.canViewExpenses) return false
     if (tab.id === 'review' && !props.canViewReview) return false
 
