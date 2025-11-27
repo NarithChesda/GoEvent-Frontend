@@ -3,7 +3,6 @@
   <div class="space-y-6">
     <!-- Header with Sub-navigation -->
 
-
     <!-- Loading State -->
     <div
       v-if="loadingPayments"
