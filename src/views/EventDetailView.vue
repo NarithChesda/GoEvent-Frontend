@@ -360,7 +360,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, type Ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, defineAsyncComponent, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSidebar } from '../composables/useSidebar'
 import {
@@ -386,21 +386,23 @@ import EventAboutSection from '../components/EventAboutSection.vue'
 import EventDetailTopBar from '../components/EventDetailTopBar.vue'
 import EventNavigationTabs from '../components/EventNavigationTabs.vue'
 import EventDetailMobileTabBar from '../components/EventDetailMobileTabBar.vue'
-import EventAgendaTab from '../components/EventAgendaTab.vue'
-import EventHostsTab from '../components/EventHostsTab.vue'
-import EventMediaTab from '../components/EventMediaTab.vue'
-import EventCollaboratorsTab from '../components/EventCollaboratorsTab.vue'
-import EventRegistrationTab from '../components/EventRegistrationTab.vue'
-import EventTemplatePaymentTab from '../components/EventTemplatePaymentTab.vue'
-import EventGuestManagementTab from '../components/EventGuestManagementTab.vue'
-import EventAnalyticsTab from '../components/EventAnalyticsTab.vue'
-import EventExpenseTab from '../components/EventExpenseTab.vue'
-import EventReviewTab from '../components/EventReviewTab.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
+
+// Lazy load heavy tab components for better code splitting
+const EventAgendaTab = defineAsyncComponent(() => import('../components/EventAgendaTab.vue'))
+const EventHostsTab = defineAsyncComponent(() => import('../components/EventHostsTab.vue'))
+const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
+const EventCollaboratorsTab = defineAsyncComponent(() => import('../components/EventCollaboratorsTab.vue'))
+const EventRegistrationTab = defineAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
+const EventTemplatePaymentTab = defineAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
+const EventGuestManagementTab = defineAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))
+const EventAnalyticsTab = defineAsyncComponent(() => import('../components/EventAnalyticsTab.vue'))
+const EventExpenseTab = defineAsyncComponent(() => import('../components/EventExpenseTab.vue'))
+const EventReviewTab = defineAsyncComponent(() => import('../components/EventReviewTab.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -452,7 +454,8 @@ const event = ref<Event | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-const activeTab = ref('overview')
+// Initialize activeTab from URL query parameter or default to 'overview'
+const activeTab = ref((route.query.tab as string) || 'overview')
 const activeSubTab = ref<string>('')
 const guestManagementSubTab = ref<string>('guests')
 const expenseTrackingSubTab = ref<string>('summary')
@@ -480,9 +483,9 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'media', label: 'Showcase', icon: 'image' },
   { id: 'template-payment', label: 'Template & Payment', icon: 'credit-card', mobileLabel: 'Template' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
-  { id: 'analytics', label: 'Analytics', icon: 'bar-chart', mobileLabel: 'Analytics' },
   { id: 'expenses', label: 'Expense Tracking', icon: 'dollar-sign', mobileLabel: 'Expenses' },
   { id: 'registration', label: 'Registration', icon: 'user-plus' },
+  { id: 'analytics', label: 'Analytics', icon: 'bar-chart', mobileLabel: 'Analytics' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
   { id: 'review', label: 'Event Review', icon: 'star', mobileLabel: 'Review' },
 ])
@@ -864,6 +867,24 @@ watch(
     }
   },
   { immediate: true }
+)
+
+// Watch activeTab and update URL query parameter for tab persistence
+watch(activeTab, (newTab) => {
+  // Update URL query parameter without triggering navigation
+  router.replace({
+    query: { ...route.query, tab: newTab }
+  })
+})
+
+// Watch route.query.tab to sync activeTab when user uses browser back/forward
+watch(
+  () => route.query.tab,
+  (newTab) => {
+    if (newTab && typeof newTab === 'string' && newTab !== activeTab.value) {
+      activeTab.value = newTab
+    }
+  }
 )
 
 // Lifecycle

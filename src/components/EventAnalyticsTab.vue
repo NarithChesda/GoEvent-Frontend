@@ -1,21 +1,9 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 overflow-hidden">
-      <!-- Title Section -->
-      <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200/80">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 sm:gap-3">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md">
-              <BarChart3 class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <div>
-              <h2 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight tracking-tight">Analytics</h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">Track event metrics and insights</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Analytics</h2>
+      <p class="text-xs sm:text-sm text-slate-600 mt-1">Track event metrics and insights</p>
     </div>
 
     <!-- Loading State -->

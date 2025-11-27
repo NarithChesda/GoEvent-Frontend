@@ -1,122 +1,117 @@
 <template>
-  <div>
-    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div class="space-y-2">
-        <div class="space-y-1">
-          <h3 class="text-lg font-bold text-slate-900">Cash Gift Analytics</h3>
-          <p class="text-sm text-slate-500 mt-1">Distribution and insights across guest groups</p>
-        </div>
-      </div>
-    </header>
+  <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+    <!-- Header -->
+    <div class="mb-6">
+      <p class="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">Cash Gift Analytics</p>
+      <p class="mt-1 text-sm text-slate-500">Distribution and insights across guest groups</p>
+    </div>
 
-    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
-      <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
-        <span class="ml-3 text-sm text-slate-600">Loading analytics...</span>
-      </div>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+      <span class="ml-3 text-sm text-slate-600">Loading analytics...</span>
+    </div>
 
-      <!-- No Data State -->
-      <div v-else-if="totalGifts === 0" class="text-center py-12">
-        <Coins class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p class="text-base text-slate-500">No cash gifts recorded yet</p>
-        <p class="text-sm text-slate-400 mt-1">Data will appear once guests add their gifts</p>
-      </div>
+    <!-- No Data State -->
+    <div v-else-if="totalGifts === 0" class="text-center py-12">
+      <Coins class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+      <p class="text-base text-slate-500">No cash gifts recorded yet</p>
+      <p class="text-sm text-slate-400 mt-1">Data will appear once guests add their gifts</p>
+    </div>
 
-      <!-- Data Visualization -->
-      <div v-else class="flex flex-col gap-6">
-        <!-- Key Metrics Overview -->
-        <div class="grid gap-3 sm:grid-cols-3">
-          <!-- Total Gifts -->
-          <div class="rounded-2xl border border-transparent bg-amber-50/80 p-4 shadow-sm shadow-amber-100/70">
-            <div class="flex items-center justify-between">
-              <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Total Gifts</p>
-              <Coins class="h-4 w-4 text-amber-600" />
-            </div>
-            <p class="mt-3 text-lg font-semibold text-slate-900">{{ totalGifts }} gifts</p>
-            <p class="text-xs text-amber-700/70">
-              Across {{ currencyBreakdown.length }} {{ currencyBreakdown.length === 1 ? 'currency' : 'currencies' }}
-            </p>
+    <!-- Data Visualization -->
+    <div v-else class="flex flex-col gap-6">
+      <!-- Key Metrics Overview -->
+      <div class="grid gap-3 sm:grid-cols-3">
+        <!-- Total Gifts -->
+        <div class="rounded-2xl border border-transparent bg-amber-50/80 p-4 shadow-sm shadow-amber-100/70">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Total Gifts</p>
+            <Coins class="h-4 w-4 text-amber-600" />
           </div>
-
-          <!-- Participation Rate -->
-          <div class="rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70">
-            <div class="flex items-center justify-between">
-              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Participation</p>
-              <span class="text-xs font-semibold text-emerald-600">{{ giftParticipationPercentage }}%</span>
-            </div>
-            <p class="mt-3 text-lg font-semibold text-slate-900">{{ totalGuestsWithGifts }} guests</p>
-            <p class="text-xs text-emerald-700/70">Out of {{ totalGuests }} total guests</p>
-          </div>
-
-          <!-- Currencies -->
-          <div class="rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70">
-            <div class="flex items-center justify-between">
-              <p class="text-xs font-semibold uppercase tracking-wide text-sky-600">Currencies</p>
-              <span class="text-xs font-semibold text-sky-600">{{ currencyBreakdown.length }}</span>
-            </div>
-            <p class="mt-3 text-lg font-semibold text-slate-900">
-              <span v-for="(currency, index) in currencyBreakdown" :key="currency.code">
-                {{ currency.code }}<span v-if="index < currencyBreakdown.length - 1">, </span>
-              </span>
-            </p>
-            <p class="text-xs text-sky-700/70">Active currency types</p>
-          </div>
+          <p class="mt-3 text-lg font-semibold text-slate-900">{{ totalGifts }} gifts</p>
+          <p class="text-xs text-amber-700/70">
+            Across {{ currencyBreakdown.length }} {{ currencyBreakdown.length === 1 ? 'currency' : 'currencies' }}
+          </p>
         </div>
 
-        <!-- Currency Distribution Charts -->
-        <div class="space-y-5">
-          <div
-            v-for="currencyData in currencyChartData"
-            :key="currencyData.currency"
-          >
-            <!-- Currency Header -->
-            <div class="flex flex-wrap items-end justify-between gap-4 mb-4">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ currencyData.currency }}</p>
-                <p class="text-4xl font-semibold tracking-tight text-slate-900">
-                  {{ formatCurrency(currencyData.totalAmount, currencyData.currency) }}
-                </p>
-                <p class="mt-1 text-sm text-slate-500">
-                  From {{ currencyData.guestCount }} {{ currencyData.guestCount === 1 ? 'guest' : 'guests' }}
-                  · Avg {{ formatCurrency(currencyData.totalAmount / currencyData.guestCount, currencyData.currency) }}
-                </p>
+        <!-- Participation Rate -->
+        <div class="rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Participation</p>
+            <span class="text-xs font-semibold text-emerald-600">{{ giftParticipationPercentage }}%</span>
+          </div>
+          <p class="mt-3 text-lg font-semibold text-slate-900">{{ totalGuestsWithGifts }} guests</p>
+          <p class="text-xs text-emerald-700/70">Out of {{ totalGuests }} total guests</p>
+        </div>
+
+        <!-- Currencies -->
+        <div class="rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-wide text-sky-600">Currencies</p>
+            <span class="text-xs font-semibold text-sky-600">{{ currencyBreakdown.length }}</span>
+          </div>
+          <p class="mt-3 text-lg font-semibold text-slate-900">
+            <span v-for="(currency, index) in currencyBreakdown" :key="currency.code">
+              {{ currency.code }}<span v-if="index < currencyBreakdown.length - 1">, </span>
+            </span>
+          </p>
+          <p class="text-xs text-sky-700/70">Active currency types</p>
+        </div>
+      </div>
+
+      <!-- Currency Distribution Charts -->
+      <div class="space-y-5">
+        <div
+          v-for="currencyData in currencyChartData"
+          :key="currencyData.currency"
+        >
+          <!-- Currency Header -->
+          <div class="flex flex-wrap items-end justify-between gap-4 mb-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ currencyData.currency }}</p>
+              <p class="text-4xl font-semibold tracking-tight text-slate-900">
+                {{ formatCurrency(currencyData.totalAmount, currencyData.currency) }}
+              </p>
+              <p class="mt-1 text-sm text-slate-500">
+                From {{ currencyData.guestCount }} {{ currencyData.guestCount === 1 ? 'guest' : 'guests' }}
+                · Avg {{ formatCurrency(currencyData.totalAmount / currencyData.guestCount, currencyData.currency) }}
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Pie Chart -->
+            <div class="flex items-center justify-center">
+              <div class="w-full max-w-sm">
+                <Pie :data="currencyData.chartData" :options="chartOptions" />
               </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <!-- Pie Chart -->
-              <div class="flex items-center justify-center">
-                <div class="w-full max-w-sm">
-                  <Pie :data="currencyData.chartData" :options="chartOptions" />
-                </div>
-              </div>
-
-              <!-- Group Breakdown -->
-              <div class="space-y-2">
-                <div
-                  v-for="group in currencyData.groupTotals"
-                  :key="group.id"
-                  class="rounded-2xl border border-transparent p-4 shadow-sm"
-                  :style="{ backgroundColor: group.color + '15' }"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <div
-                        class="w-3 h-3 rounded-full"
-                        :style="{ backgroundColor: group.color }"
-                      ></div>
-                      <p class="text-xs font-semibold uppercase tracking-wide" :style="{ color: group.color }">{{ group.name }}</p>
-                    </div>
-                    <span class="text-xs font-semibold" :style="{ color: group.color }">
-                      {{ ((group.total / currencyData.totalAmount) * 100).toFixed(1) }}%
-                    </span>
+            <!-- Group Breakdown -->
+            <div class="space-y-2">
+              <div
+                v-for="group in currencyData.groupTotals"
+                :key="group.id"
+                class="rounded-2xl border border-transparent p-4 shadow-sm"
+                :style="{ backgroundColor: group.color + '15' }"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-3 h-3 rounded-full"
+                      :style="{ backgroundColor: group.color }"
+                    ></div>
+                    <p class="text-xs font-semibold uppercase tracking-wide" :style="{ color: group.color }">{{ group.name }}</p>
                   </div>
-                  <p class="mt-3 text-lg font-semibold text-slate-900">
-                    {{ formatCurrency(group.total, currencyData.currency) }}
-                  </p>
-                  <p class="text-xs text-slate-600/80">{{ group.guestCount }} {{ group.guestCount === 1 ? 'guest' : 'guests' }} contributed</p>
+                  <span class="text-xs font-semibold" :style="{ color: group.color }">
+                    {{ ((group.total / currencyData.totalAmount) * 100).toFixed(1) }}%
+                  </span>
                 </div>
+                <p class="mt-3 text-lg font-semibold text-slate-900">
+                  {{ formatCurrency(group.total, currencyData.currency) }}
+                </p>
+                <p class="text-xs text-slate-600/80">{{ group.guestCount }} {{ group.guestCount === 1 ? 'guest' : 'guests' }} contributed</p>
               </div>
             </div>
           </div>

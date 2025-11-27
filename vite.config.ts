@@ -28,8 +28,8 @@ export default defineConfig(({ mode }) => {
       sourcemap: env.VITE_GENERATE_SOURCEMAP === 'true',
       // Optimize bundle size
       minify: 'esbuild',
-      // Increase chunk size warning limit for modern apps
-      chunkSizeWarningLimit: 1000,
+      // Increase chunk size warning limit for modern apps (in KB)
+      chunkSizeWarningLimit: 1500,
       // Optimize chunk splitting for better caching
       rollupOptions: {
         output: {
@@ -48,15 +48,38 @@ export default defineConfig(({ mode }) => {
             }
             return 'assets/[name]-[hash][extname]'
           },
-          manualChunks: {
-            // Vendor chunk for core dependencies
-            vendor: ['vue', 'vue-router', 'pinia'],
-            // UI chunk for UI-related dependencies
-            ui: ['lucide-vue-next', 'dompurify'],
+          manualChunks: (id) => {
+            // Vendor chunk for core Vue dependencies
+            if (id.includes('node_modules/vue') || id.includes('node_modules/vue-router') || id.includes('node_modules/pinia')) {
+              return 'vendor'
+            }
+            // RichTextEditor chunk for Tiptap and related heavy dependencies
+            if (id.includes('@tiptap') || id.includes('prosemirror')) {
+              return 'RichTextEditor'
+            }
+            // UI chunk for icon libraries and UI utilities
+            if (id.includes('lucide-vue-next') || id.includes('dompurify')) {
+              return 'ui'
+            }
             // Auth chunk for authentication-related code
-            auth: ['vue3-google-login'],
-            // Tailwind utilities chunk
-            styles: ['tailwindcss']
+            if (id.includes('vue3-google-login')) {
+              return 'auth'
+            }
+            // Styles chunk for CSS frameworks
+            if (id.includes('tailwindcss')) {
+              return 'styles'
+            }
+            // Event tabs chunk for tab components (dynamically imported)
+            if (id.includes('/components/Event') && (
+              id.includes('Tab.vue') ||
+              id.includes('Section.vue')
+            )) {
+              return 'event-tabs'
+            }
+            // Showcase chunk for showcase-related components
+            if (id.includes('/components/showcase/') || id.includes('/composables/showcase/')) {
+              return 'EventShowcaseRefactored'
+            }
           }
         }
       },

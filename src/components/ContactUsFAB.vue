@@ -5,10 +5,10 @@
       <div
         v-if="showChatPopup"
         :class="chatPopupPositionClass"
-        class="fixed right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-gray-100"
+        class="fixed right-4 lg:right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-gray-100"
       >
         <!-- Arrow pointing to FAB -->
-        <div class="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r border-b border-gray-100 transform rotate-45"></div>
+        <div class="absolute -bottom-2 right-4 lg:right-6 w-4 h-4 bg-white border-r border-b border-gray-100 transform rotate-45"></div>
 
         <!-- Close button -->
         <button
@@ -51,7 +51,7 @@
       target="_blank"
       rel="noopener noreferrer"
       :class="fabPositionClass"
-      class="fixed right-6 z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
+      class="fixed right-4 lg:right-6 z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
       aria-label="Contact support"
       @click="dismissPopup"
     >
@@ -109,22 +109,25 @@ const telegramLink = computed(() => {
 })
 
 // FAB position - moves up when there's another FAB below
-// Create FAB is at bottom-20 (80px), so we need bottom-20 + h-14 (56px) + gap (8px) = 144px = bottom-36
-// On desktop: Create FAB is at bottom-4 (16px), so we need bottom-4 + h-14 (56px) + gap (8px) = 80px = bottom-20
+// Standard FAB positioning: 16px from edges on mobile, 24px on desktop (via right-4 lg:right-6)
+// Mobile: bottom-4 (16px) matches standard FAB placement
+// When Create FAB is below: Create FAB is at bottom-20 (80px), so we need bottom-20 + h-14 (56px) + gap (16px) = 152px
+// On desktop with FAB below: bottom-4 (16px) + h-14 (56px) + gap (16px) = 88px
 const fabPositionClass = computed(() => {
   if (props.hasFabBelow) {
     return 'bottom-[152px] lg:bottom-[88px]'
   }
-  return 'bottom-20 lg:bottom-4'
+  return 'bottom-4'
 })
 
 // Chat popup position (above the FAB)
-// FAB is at 152px/88px, popup needs to be above it: +56px (FAB height) + 16px gap
+// FAB is at bottom-4 (16px), add FAB height (56px) + gap (16px) = 88px
+// When FAB below: FAB is at 152px/88px, popup needs to be above it: +56px (FAB height) + 16px gap = 224px/160px
 const chatPopupPositionClass = computed(() => {
   if (props.hasFabBelow) {
     return 'bottom-[224px] lg:bottom-[160px]'
   }
-  return 'bottom-[150px] lg:bottom-[78px]'
+  return 'bottom-[88px]'
 })
 
 // Check if popup should be shown (with 1-day expiry)
