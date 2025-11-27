@@ -1,5 +1,5 @@
 <template>
-  <MainLayout :hide-home-sidebar="true" :hide-mobile-tab-bar="true">
+  <MainLayout :hide-home-sidebar="true" :hide-mobile-tab-bar="false">
     <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
 
     <!-- Top Navigation Bar -->
@@ -66,29 +66,31 @@
       </div>
     </div>
 
+    <!-- Mobile Tab Bar (fixed position for stable scrolling) -->
+    <EventDetailMobileTabBar
+      v-if="event"
+      :active-tab="activeTab"
+      :tabs="navigationTabs"
+      :can-view-registration="canViewRegistration"
+      :can-view-media="canViewMedia"
+      :can-view-collaborators="canViewCollaborators"
+      :can-view-template="canViewTemplate"
+      :can-view-payment="canViewPayment"
+      :can-view-guest-management="canViewGuestManagement"
+      :can-view-analytics="canViewAnalytics"
+      :can-view-expenses="canViewExpenses"
+      :can-view-review="canViewReview"
+      @tab-change="activeTab = $event"
+    />
+    <!-- Spacer for fixed mobile tab bar (h-[52px] = py-2 + button height) -->
+    <div v-if="event" class="md:hidden h-[52px]"></div>
+
     <!-- Event Detail -->
     <div
-      v-else-if="event"
+      v-if="event"
       class="transition-all duration-300 ease-in-out"
       :style="{ marginLeft: contentMarginLeft }"
     >
-      <!-- Mobile Bottom Tab Bar -->
-      <EventDetailMobileTabBar
-        v-if="event"
-        :active-tab="activeTab"
-        :tabs="navigationTabs"
-        :can-view-registration="canViewRegistration"
-        :can-view-media="canViewMedia"
-        :can-view-collaborators="canViewCollaborators"
-        :can-view-template="canViewTemplate"
-        :can-view-payment="canViewPayment"
-        :can-view-guest-management="canViewGuestManagement"
-        :can-view-analytics="canViewAnalytics"
-        :can-view-expenses="canViewExpenses"
-        :can-view-review="canViewReview"
-        @tab-change="activeTab = $event"
-      />
-
       <!-- Main Content Section -->
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div class="flex flex-col">

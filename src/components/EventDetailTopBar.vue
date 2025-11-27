@@ -7,10 +7,10 @@
     <div class="flex items-center justify-between h-[72px] px-4">
       <!-- Left Section: Hamburger + Host Avatar + Event Title -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
-        <!-- Hamburger Menu Button -->
+        <!-- Hamburger Menu Button (hidden on mobile) -->
         <button
           @click="toggleHomeSidebar"
-          class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl hover:bg-white/20 transition-colors"
+          class="hidden lg:flex flex-shrink-0 items-center justify-center w-12 h-12 rounded-xl hover:bg-white/20 transition-colors"
           :aria-label="isHomeSidebarVisible ? 'Close main navigation' : 'Open main navigation'"
         >
           <X v-if="isHomeSidebarVisible" class="w-6 h-6 text-white" />

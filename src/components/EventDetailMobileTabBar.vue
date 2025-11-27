@@ -1,7 +1,6 @@
 <template>
-  <div
-    class="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10"
-  >
+  <!-- Fixed position wrapper for stable mobile scrolling -->
+  <div class="md:hidden fixed top-[72px] left-0 right-0 z-40 bg-white border-b border-[#B0E0E6]/50 shadow-md tab-bar-container">
     <div class="relative">
       <!-- Left scroll fade -->
       <div
@@ -16,7 +15,7 @@
       <!-- Scrollable tabs -->
       <div
         ref="tabContainer"
-        class="flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5 scroll-smooth"
+        class="flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5"
         role="tablist"
         aria-label="Event detail sections"
       >
@@ -136,9 +135,11 @@ const scrollTabIntoView = async (tabId: string) => {
     const buttonWidth = button.offsetWidth
     const scrollLeft = buttonLeft - containerWidth / 2 + buttonWidth / 2
 
+    // Use 'auto' instead of 'smooth' to prevent conflicts with page scroll
+    // This ensures the horizontal tab scroll doesn't interfere with vertical page scroll
     container.scrollTo({
       left: scrollLeft,
-      behavior: 'smooth',
+      behavior: 'auto',
     })
   }
 }
@@ -176,6 +177,15 @@ const handleKeyboard = (event: KeyboardEvent, index: number) => {
 </script>
 
 <style scoped>
+/* Fixed positioning is more stable than sticky on mobile */
+.tab-bar-container {
+  /* Force GPU layer for smooth rendering */
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
