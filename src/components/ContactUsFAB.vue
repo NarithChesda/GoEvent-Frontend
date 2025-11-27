@@ -108,26 +108,31 @@ const telegramLink = computed(() => {
   return `https://t.me/goeventkh`
 })
 
-// FAB position - moves up when there's another FAB below
-// Standard FAB positioning: 16px from edges on mobile, 24px on desktop (via right-4 lg:right-6)
-// Mobile: bottom-4 (16px) matches standard FAB placement
-// When Create FAB is below: Create FAB is at bottom-20 (80px), so we need bottom-20 + h-14 (56px) + gap (16px) = 152px
-// On desktop with FAB below: bottom-4 (16px) + h-14 (56px) + gap (16px) = 88px
+// FAB position - accounts for mobile tab bar
+// Mobile: Tab bar is ~64px tall, so FAB needs to be above it: 64px + 16px gap = 80px (bottom-20)
+// Desktop: No tab bar, standard 16px from bottom (lg:bottom-4)
+// When Create FAB is below:
+//   Mobile: bottom-20 (80px for tab bar) + h-14 (56px) + gap (16px) = 152px
+//   Desktop: bottom-4 (16px) + h-14 (56px) + gap (16px) = 88px
 const fabPositionClass = computed(() => {
   if (props.hasFabBelow) {
     return 'bottom-[152px] lg:bottom-[88px]'
   }
-  return 'bottom-4'
+  return 'bottom-20 lg:bottom-4'
 })
 
 // Chat popup position (above the FAB)
-// FAB is at bottom-4 (16px), add FAB height (56px) + gap (16px) = 88px
-// When FAB below: FAB is at 152px/88px, popup needs to be above it: +56px (FAB height) + 16px gap = 224px/160px
+// Mobile: Contact FAB at 80px (or 152px with FAB below), add FAB height (56px) + gap (16px)
+//   Without FAB below: 80 + 56 + 16 = 152px
+//   With FAB below: 152 + 56 + 16 = 224px
+// Desktop: Contact FAB at 16px (or 88px with FAB below), add FAB height (56px) + gap (16px)
+//   Without FAB below: 16 + 56 + 16 = 88px
+//   With FAB below: 88 + 56 + 16 = 160px
 const chatPopupPositionClass = computed(() => {
   if (props.hasFabBelow) {
     return 'bottom-[224px] lg:bottom-[160px]'
   }
-  return 'bottom-[88px]'
+  return 'bottom-[152px] lg:bottom-[88px]'
 })
 
 // Check if popup should be shown (with 1-day expiry)
