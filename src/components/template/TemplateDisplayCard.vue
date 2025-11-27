@@ -4,7 +4,7 @@
   >
     <div class="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
       <!-- Left: Portrait Preview Image Card -->
-      <div class="flex-shrink-0 w-full lg:w-80">
+      <div class="flex-shrink-0 w-full lg:w-64 xl:w-72 2xl:w-80">
         <div
           v-if="template.preview_image"
           class="relative bg-slate-100 rounded-2xl overflow-hidden shadow-lg"

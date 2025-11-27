@@ -92,7 +92,7 @@
       :style="{ marginLeft: contentMarginLeft }"
     >
       <!-- Main Content Section -->
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      <div class="max-w-3xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div class="flex flex-col">
           <!-- Main Content Area -->
           <div class="flex-1 min-w-0 pb-20 lg:pb-0">
