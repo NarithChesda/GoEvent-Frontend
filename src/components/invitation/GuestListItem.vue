@@ -1,29 +1,14 @@
 <template>
-  <!-- Compact table-row style layout -->
-  <div class="bg-white border border-slate-200 rounded-xl hover:border-emerald-300 hover:shadow-md transition-all duration-200 group">
+  <!-- Guest Card - Clean minimalist design -->
+  <div class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group">
     <div class="flex items-center gap-3 px-4 py-3">
       <!-- Checkbox -->
       <input
         type="checkbox"
         :checked="selected"
         @change="$emit('toggle-select', guest)"
-        class="w-4 h-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer flex-shrink-0"
+        class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
       />
-
-      <!-- Avatar -->
-      <div class="relative flex-shrink-0">
-        <div
-          class="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm"
-        >
-          {{ getInitials(guest.name) }}
-        </div>
-        <!-- Viewed indicator dot -->
-        <div
-          v-if="guest.invitation_status === 'viewed'"
-          class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
-          title="Viewed"
-        ></div>
-      </div>
 
       <!-- Guest Info (grows to fill space) -->
       <div class="flex-1 min-w-0">
@@ -32,10 +17,23 @@
 
         <!-- Badges under name -->
         <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+          <!-- Group badge -->
+          <div
+            v-if="guest.group_details"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium border"
+            :style="{
+              color: guest.group_details.color || '#64748b',
+              borderColor: guest.group_details.color || '#64748b',
+              backgroundColor: `${guest.group_details.color || '#64748b'}10`
+            }"
+          >
+            <span class="truncate max-w-[80px]">{{ guest.group_details.name }}</span>
+          </div>
+
           <!-- Sent status badge -->
           <div
             v-if="guest.invitation_status === 'sent' || guest.invitation_status === 'viewed'"
-            class="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md text-xs font-medium border border-blue-200"
+            class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium"
             title="Invitation sent"
           >
             <CheckCheck class="w-3 h-3" />
@@ -43,7 +41,7 @@
           </div>
 
           <!-- Cash Gift badge -->
-          <div v-if="guest.cash_gift_amount" class="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-200">
+          <div v-if="guest.cash_gift_amount" class="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium">
             <Coins class="w-3 h-3" />
             <span>{{ formatCurrency(guest.cash_gift_amount, guest.cash_gift_currency) }}</span>
           </div>
@@ -51,13 +49,13 @@
       </div>
 
       <!-- Actions (Always visible, compact) -->
-      <div class="flex items-center gap-1 flex-shrink-0">
+      <div class="flex items-center gap-0.5 flex-shrink-0">
         <!-- Mark Sent (only if not sent) -->
         <button
           v-if="guest.invitation_status === 'not_sent'"
           @click.stop="$emit('mark-sent', guest)"
           title="Mark as sent"
-          class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+          class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
         >
           <Send class="w-4 h-4" />
         </button>
@@ -68,8 +66,8 @@
             ref="linkButton"
             @click.stop="toggleLinkMenu"
             title="Copy invitation link"
-            class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-            :class="{ 'bg-slate-100': showLinkMenu }"
+            class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
+            :class="{ 'bg-slate-100 text-slate-700': showLinkMenu }"
           >
             <Link class="w-4 h-4" />
           </button>
@@ -79,7 +77,7 @@
         <button
           @click.stop="$emit('edit', guest)"
           title="Edit guest"
-          class="p-1.5 text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all"
+          class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
         >
           <Edit2 class="w-4 h-4" />
         </button>
@@ -88,7 +86,7 @@
         <button
           @click.stop="$emit('delete', guest)"
           title="Delete guest"
-          class="p-1.5 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
+          class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
         >
           <Trash2 class="w-4 h-4" />
         </button>
@@ -103,23 +101,25 @@
         v-if="showLinkMenu"
         ref="dropdownMenu"
         :style="dropdownStyle"
-        class="fixed w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] overflow-hidden"
+        class="fixed w-32 bg-white border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/50 z-[9999] overflow-hidden"
         @click.stop
       >
-        <button
-          @click="handleCopyLink('kh')"
-          class="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
-        >
-          <Globe class="w-3.5 h-3.5" />
-          Khmer
-        </button>
-        <button
-          @click="handleCopyLink('en')"
-          class="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
-        >
-          <Globe class="w-3.5 h-3.5" />
-          English
-        </button>
+        <div class="p-1">
+          <button
+            @click="handleCopyLink('kh')"
+            class="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Globe class="w-3.5 h-3.5 text-slate-400" />
+            Khmer
+          </button>
+          <button
+            @click="handleCopyLink('en')"
+            class="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Globe class="w-3.5 h-3.5 text-slate-400" />
+            English
+          </button>
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -198,15 +198,6 @@ const dropdownStyle = ref<Record<string, string>>({})
 const dropdownManager = DropdownManager.getInstance()
 
 // Methods
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
-
 const formatCurrency = (amount: string | number, currency: string = 'USD') => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
   if (isNaN(numAmount)) return ''

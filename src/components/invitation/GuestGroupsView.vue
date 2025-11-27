@@ -59,18 +59,19 @@
             <div class="relative" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl text-sm font-medium transition-all duration-200 border border-slate-200 hover:border-slate-300"
+                class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+                :class="activeFilter === 'all'
+                  ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  : 'text-white border-transparent'"
+                :style="activeFilter !== 'all' ? {
+                  backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db'
+                } : {}"
               >
-                <Filter class="w-4 h-4 text-slate-500 flex-shrink-0" />
-                <div
-                  v-if="activeFilter !== 'all'"
-                  class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
-                />
+                <Filter class="w-4 h-4 flex-shrink-0" :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'" />
                 <span class="truncate max-w-[100px] sm:max-w-[160px]">
                   {{ activeFilter === 'all' ? 'All Groups' : groups.find(g => g.id.toString() === activeFilter)?.name || 'Select' }}
                 </span>
-                <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
+                <ChevronDown class="w-4 h-4 transition-transform flex-shrink-0" :class="[{ 'rotate-180': isDropdownOpen }, activeFilter === 'all' ? 'text-slate-400' : 'text-white/80']" />
               </button>
 
               <!-- Dropdown Menu -->
@@ -87,11 +88,10 @@
                       :class="[
                         'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
                         activeFilter === 'all'
-                          ? 'bg-emerald-50 text-emerald-700'
+                          ? 'bg-slate-100 text-slate-900'
                           : 'text-slate-700 hover:bg-slate-50'
                       ]"
                     >
-                      <div class="w-2.5 h-2.5 rounded-full bg-slate-400 flex-shrink-0" />
                       <span class="flex-1 text-left">All Groups</span>
                       <span class="text-xs text-slate-400 tabular-nums">{{ totalGuestCount }}</span>
                     </button>
@@ -104,19 +104,19 @@
                       v-for="group in groups"
                       :key="group.id"
                       @click="selectFilter(group.id.toString())"
-                      :class="[
-                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
-                        activeFilter === group.id.toString()
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'text-slate-700 hover:bg-slate-50'
-                      ]"
+                      class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                      :class="activeFilter === group.id.toString() ? 'text-white' : 'text-slate-700 hover:bg-slate-50'"
+                      :style="activeFilter === group.id.toString() ? {
+                        backgroundColor: group.color || '#3498db'
+                      } : {}"
                     >
                       <div
+                        v-if="activeFilter !== group.id.toString()"
                         class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         :style="{ backgroundColor: group.color || '#3498db' }"
                       />
                       <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                      <span class="text-xs text-slate-400 tabular-nums">{{ group.guest_count }}</span>
+                      <span class="text-xs tabular-nums" :class="activeFilter === group.id.toString() ? 'text-white/70' : 'text-slate-400'">{{ group.guest_count }}</span>
                     </button>
                   </div>
                 </div>
