@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    // Ensure base path is set correctly for Cloudflare Pages
+    base: '/',
     plugins: [
       vue(),
       vueJsx(),

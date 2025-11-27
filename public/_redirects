@@ -1,0 +1,22 @@
+# Cloudflare Pages redirects and rewrites
+# This file handles client-side routing for Vue.js SPA
+
+# Shortlink routing: Frontend /g/{code} → Backend /api/events/g/{code}/
+# Backend handles bot detection (SSR meta tags) and user redirection
+# Status: 302 (temporary redirect) to preserve analytics tracking
+#
+# ⚠️ KNOWN LIMITATION: Hardcoded to production API
+# Preview/staging deployments will redirect to production backend
+# TODO: Implement environment-specific redirects via:
+#   - Build-time template replacement in vite.config.ts, OR
+#   - Cloudflare Workers/Functions for dynamic routing
+/g/:code  https://api.goevent.online/api/events/g/:code/  302
+
+# Handle Vue Router routes - redirect all non-asset requests to index.html
+# This ensures that direct navigation to routes like /events/123 works properly
+/*    /index.html   200
+
+# Optional: Redirect old API routes if you had any
+# /api/*  https://api.goevent.online/:splat  302
+
+# Security headers and performance optimizations are handled in _headers file
