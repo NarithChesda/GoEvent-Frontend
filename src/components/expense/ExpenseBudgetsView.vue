@@ -37,133 +37,147 @@
       </div>
     </div>
 
-    <!-- Budget List -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Budget List - Minimalist Data-Driven Design -->
+    <div v-else class="space-y-3">
       <!-- Dynamic Budget Cards -->
       <div
         v-for="budget in budgets"
         :key="budget.id"
-        :class="[
-          'rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300',
-          budget.is_over_budget
-            ? 'bg-red-50/50 border border-red-200/50 shadow-red-500/10'
-            : 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-emerald-500/10'
-        ]"
+        class="group relative rounded-2xl border border-slate-200/60 bg-white hover:border-slate-300 hover:shadow-md transition-all duration-200"
       >
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <div
-              class="w-12 h-12 rounded-xl flex items-center justify-center"
-              :style="{ backgroundColor: `${budget.category_info.color}20` }"
-            >
-              <component
-                :is="getIconComponent(budget.category_info.icon)"
-                class="w-6 h-6"
-                :style="{ color: budget.category_info.color }"
-              />
+        <div class="p-4 sm:p-5">
+          <!-- Header Row -->
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <!-- Category Info -->
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                :style="{ backgroundColor: `${budget.category_info.color}15` }"
+              >
+                <component
+                  :is="getIconComponent(budget.category_info.icon)"
+                  class="w-5 h-5"
+                  :style="{ color: budget.category_info.color }"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <h4 class="font-semibold text-slate-900 text-sm truncate">{{ budget.category_info.name }}</h4>
+                  <span
+                    v-if="budget.is_over_budget"
+                    class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] font-semibold rounded uppercase tracking-wide flex-shrink-0"
+                  >
+                    Over
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500">{{ budget.currency }} Budget</p>
+              </div>
             </div>
+
+            <!-- Actions -->
+            <div v-if="canEdit" class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+              <button
+                @click="editBudget(budget)"
+                :aria-label="`Edit budget for ${budget.category_info.name}`"
+                title="Edit budget"
+                class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              >
+                <Edit2 class="w-3.5 h-3.5" />
+              </button>
+              <button
+                @click="confirmDeleteBudget(budget)"
+                :aria-label="`Delete budget for ${budget.category_info.name}`"
+                title="Delete budget"
+                class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Data Grid -->
+          <div class="grid grid-cols-3 gap-4 mb-3">
+            <!-- Budgeted -->
             <div>
-              <h4 class="font-bold text-slate-900 flex items-center gap-2">
-                {{ budget.category_info.name }}
-                <span
-                  v-if="budget.is_over_budget"
-                  class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-medium rounded-full"
-                >
-                  Over Budget
-                </span>
-              </h4>
-              <p class="text-xs text-slate-500">{{ budget.category_info.description || 'No description' }}</p>
+              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Budgeted</p>
+              <p class="text-base font-bold text-slate-900 tabular-nums">
+                {{ formatAmount(budget.budgeted_amount, budget.currency) }}
+              </p>
             </div>
-          </div>
-          <div v-if="canEdit" class="flex items-center gap-1">
-            <button
-              @click="editBudget(budget)"
-              :aria-label="`Edit budget for ${budget.category_info.name}`"
-              title="Edit budget"
-              class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-            >
-              <Edit2 class="w-4 h-4" />
-            </button>
-            <button
-              @click="confirmDeleteBudget(budget)"
-              :aria-label="`Delete budget for ${budget.category_info.name}`"
-              title="Delete budget"
-              class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-            >
-              <Trash2 class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
 
-        <div class="space-y-3">
-          <!-- Budget Amount -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Budgeted</span>
-            <span class="text-lg font-bold text-slate-900">{{ SUPPORTED_CURRENCIES.find(c => c.code === budget.currency)?.symbol || '$' }}{{ parseFloat(budget.budgeted_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
-          </div>
+            <!-- Spent -->
+            <div>
+              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Spent</p>
+              <p
+                class="text-base font-bold tabular-nums"
+                :class="budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'"
+              >
+                {{ formatAmount(budget.spent_amount, budget.currency) }}
+              </p>
+            </div>
 
-          <!-- Spent Amount -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Spent</span>
-            <span
-              class="text-lg font-bold"
-              :class="budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'"
-            >
-              {{ SUPPORTED_CURRENCIES.find(c => c.code === budget.currency)?.symbol || '$' }}{{ parseFloat(budget.spent_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
-            </span>
-          </div>
-
-          <!-- Remaining Amount -->
-          <div
-            class="flex items-center justify-between pb-3 border-b"
-            :class="budget.is_over_budget ? 'border-red-200' : 'border-slate-200'"
-          >
-            <span class="text-sm text-slate-500">{{ budget.is_over_budget ? 'Over Budget' : 'Remaining' }}</span>
-            <span
-              class="text-lg font-bold"
-              :class="budget.is_over_budget ? 'text-red-600' : 'text-blue-600'"
-            >
-              {{ SUPPORTED_CURRENCIES.find(c => c.code === budget.currency)?.symbol || '$' }}{{ Math.abs(parseFloat(budget.remaining_amount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
-            </span>
+            <!-- Remaining -->
+            <div>
+              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">
+                {{ budget.is_over_budget ? 'Over' : 'Left' }}
+              </p>
+              <p
+                class="text-base font-bold tabular-nums"
+                :class="budget.is_over_budget ? 'text-red-600' : 'text-blue-600'"
+              >
+                {{ formatAmount(Math.abs(parseFloat(budget.remaining_amount)), budget.currency) }}
+              </p>
+            </div>
           </div>
 
           <!-- Progress Bar -->
-          <div class="pt-2">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-medium text-slate-600">Budget Usage</span>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Usage</span>
               <div class="flex items-center gap-1">
                 <AlertTriangle v-if="budget.is_over_budget" class="w-3 h-3 text-red-600" />
                 <span
-                  class="text-xs font-bold"
+                  class="text-xs font-bold tabular-nums"
                   :class="budget.is_over_budget ? 'text-red-600' : budget.percentage_used >= 90 ? 'text-amber-600' : 'text-emerald-600'"
                 >
-                  {{ budget.percentage_used.toFixed(1) }}%
+                  {{ budget.percentage_used.toFixed(0) }}%
                 </span>
               </div>
             </div>
-            <div class="relative h-2.5 bg-slate-200 rounded-full overflow-hidden">
+            <div class="relative h-1.5 bg-slate-100 rounded-full overflow-hidden">
               <div
                 class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-                :class="budget.is_over_budget ? 'bg-gradient-to-r from-red-500 to-red-600' : budget.percentage_used >= 90 ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500'"
+                :class="budget.is_over_budget ? 'bg-red-500' : budget.percentage_used >= 90 ? 'bg-amber-500' : 'bg-emerald-500'"
                 :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
               ></div>
             </div>
           </div>
 
-          <!-- Currency & Notes -->
-          <div
-            class="pt-3 border-t"
-            :class="budget.is_over_budget ? 'border-red-200' : 'border-slate-200'"
-          >
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1 text-slate-500">
-                <DollarSign class="w-3 h-3" />
-                <span>{{ budget.currency }}</span>
-              </div>
-              <span class="text-slate-400 truncate max-w-[200px]">{{ budget.notes || 'No notes' }}</span>
-            </div>
+          <!-- Notes (if any) -->
+          <div v-if="budget.notes" class="mt-3 pt-3 border-t border-slate-100">
+            <p class="text-xs text-slate-500 line-clamp-1">{{ budget.notes }}</p>
           </div>
         </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-if="budgets.length === 0"
+        class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-12 text-center"
+      >
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Wallet class="w-8 h-8 text-slate-400" />
+        </div>
+        <h4 class="font-semibold text-slate-900 mb-2">No Budgets Yet</h4>
+        <p class="text-sm text-slate-500 mb-4">Create budgets to track spending for different categories</p>
+        <button
+          v-if="canEdit"
+          @click="$emit('create-budget')"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-all"
+        >
+          <Plus class="w-4 h-4" />
+          Add Your First Budget
+        </button>
       </div>
     </div>
 
@@ -363,6 +377,19 @@ const { showToast: showSuccessToast, message: successMessage, showSuccess } = us
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
+
+// Format amount with currency
+const formatAmount = (amount: string | number, currency: string): string => {
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
+  const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === currency)
+  const symbol = currencyInfo?.symbol || '$'
+
+  if (currency === 'KHR') {
+    return `${symbol}${numAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  }
+
+  return `${symbol}${numAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
 
 const loadBudgets = async () => {
   loading.value = true
