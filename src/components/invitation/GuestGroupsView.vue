@@ -39,70 +39,86 @@
       :aria-label="`${activeFilter === 'all' ? 'All groups' : groups.find(g => g.id.toString() === activeFilter)?.name || ''} guests`"
       class="space-y-4"
     >
-      <!-- Filter and Actions Bar - Sticky on Scroll -->
-      <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-20 py-4 mb-4 border border-slate-200 rounded-2xl shadow-sm">
-        <!-- Row 1: Main Controls -->
-        <div class="flex items-center justify-between gap-2 mb-3 px-4">
-          <!-- Left: Filter & Select All -->
-          <div class="flex items-center gap-2">
+      <!-- Filter and Actions Bar - Clean Minimalist Design -->
+      <div class="sticky top-0 z-20 mb-4">
+        <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+          <!-- Single Row Layout -->
+          <div class="flex items-center gap-3 p-3">
+            <!-- Select All Checkbox -->
+            <label class="flex items-center cursor-pointer group flex-shrink-0">
+              <input
+                type="checkbox"
+                :checked="isAllCurrentPageSelected"
+                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
+                @change="handleToggleSelectAll"
+                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer transition-colors"
+              />
+            </label>
+
             <!-- Filter Dropdown -->
-            <div class="relative z-[100]" ref="tabsContainer">
+            <div class="relative" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-lg font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                :title="activeFilterLabel"
+                class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl text-sm font-medium transition-all duration-200 border border-slate-200 hover:border-slate-300"
               >
-                <Filter class="w-4 h-4 text-white flex-shrink-0" />
-                <span class="hidden sm:inline text-sm text-white truncate max-w-[120px] lg:max-w-[180px]">
-                  {{ activeFilterLabel }}
+                <Filter class="w-4 h-4 text-slate-500 flex-shrink-0" />
+                <div
+                  v-if="activeFilter !== 'all'"
+                  class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
+                />
+                <span class="truncate max-w-[100px] sm:max-w-[160px]">
+                  {{ activeFilter === 'all' ? 'All Groups' : groups.find(g => g.id.toString() === activeFilter)?.name || 'Select' }}
                 </span>
-                <ChevronDown class="w-3.5 h-3.5 text-white transition-transform flex-shrink-0 hidden sm:block" :class="{ 'rotate-180': isDropdownOpen }" />
+                <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
 
               <!-- Dropdown Menu -->
               <Transition name="dropdown">
                 <div
                   v-if="isDropdownOpen"
-                  class="absolute top-full left-0 mt-2 w-full min-w-[250px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[400px] overflow-y-auto"
+                  class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
                   @click.stop
                 >
-                  <!-- All Groups Option -->
-                  <button
-                    @click="selectFilter('all')"
-                    :class="[
-                      'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
-                      activeFilter === 'all'
-                        ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    ]"
-                  >
-                    <Filter class="w-4 h-4" />
-                    <span class="flex-1 text-left">All Groups</span>
-                    <span class="text-xs opacity-75">({{ totalGuestCount }})</span>
-                  </button>
+                  <div class="p-1.5">
+                    <!-- All Groups Option -->
+                    <button
+                      @click="selectFilter('all')"
+                      :class="[
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                        activeFilter === 'all'
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      ]"
+                    >
+                      <div class="w-2.5 h-2.5 rounded-full bg-slate-400 flex-shrink-0" />
+                      <span class="flex-1 text-left">All Groups</span>
+                      <span class="text-xs text-slate-400 tabular-nums">{{ totalGuestCount }}</span>
+                    </button>
 
-                  <!-- Divider -->
-                  <div v-if="groups.length > 0" class="border-t border-slate-100"></div>
+                    <!-- Divider -->
+                    <div v-if="groups.length > 0" class="my-1.5 border-t border-slate-100"></div>
 
-                  <!-- Individual Groups -->
-                  <button
-                    v-for="group in groups"
-                    :key="group.id"
-                    @click="selectFilter(group.id.toString())"
-                    :class="[
-                      'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
-                      activeFilter === group.id.toString()
-                        ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    ]"
-                  >
-                    <div
-                      class="w-3 h-3 rounded-full flex-shrink-0"
-                      :style="{ backgroundColor: activeFilter === group.id.toString() ? 'white' : (group.color || '#3498db') }"
-                    />
-                    <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                    <span class="text-xs opacity-75">({{ group.guest_count }})</span>
-                  </button>
+                    <!-- Individual Groups -->
+                    <button
+                      v-for="group in groups"
+                      :key="group.id"
+                      @click="selectFilter(group.id.toString())"
+                      :class="[
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                        activeFilter === group.id.toString()
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      ]"
+                    >
+                      <div
+                        class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        :style="{ backgroundColor: group.color || '#3498db' }"
+                      />
+                      <span class="flex-1 text-left truncate">{{ group.name }}</span>
+                      <span class="text-xs text-slate-400 tabular-nums">{{ group.guest_count }}</span>
+                    </button>
+                  </div>
                 </div>
               </Transition>
 
@@ -114,120 +130,79 @@
               ></div>
             </div>
 
-            <!-- Select All Checkbox (hidden on mobile when nothing selected) -->
-            <label class="hidden sm:flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                :checked="isAllCurrentPageSelected"
-                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
-                @change="handleToggleSelectAll"
-                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-              />
-              <span class="text-xs sm:text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Select All</span>
-            </label>
-          </div>
+            <!-- Divider -->
+            <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
 
-          <!-- Center: Expandable Search -->
-          <div class="flex-1 max-w-md mx-2">
-            <div class="relative">
-              <button
-                v-if="!isSearchExpanded"
-                @click="isSearchExpanded = true"
-                class="sm:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-                title="Search guests"
-              >
-                <Search class="w-4 h-4" />
-              </button>
-
-              <div :class="['relative', isSearchExpanded || 'hidden sm:block']">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search class="w-4 h-4 text-slate-400" />
-                </div>
+            <!-- Search Input -->
+            <div class="flex-1 min-w-0">
+              <div class="relative">
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <input
                   ref="searchInputRef"
                   id="guest-search"
                   type="text"
                   v-model="groupSearchQuery"
                   @input="handleGroupSearch"
-                  @blur="onSearchBlur"
                   placeholder="Search guests..."
                   aria-label="Search guests by name, email, or phone"
-                  class="w-full pl-10 pr-10 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white transition-all text-sm"
+                  class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
                 />
                 <button
                   v-if="groupSearchQuery"
                   @click="clearGroupSearch"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                  title="Clear search"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
+
+            <!-- Guest Count -->
+            <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+              <span class="font-medium text-slate-700">{{ loadedGuestCount }}</span>
+              <span>/</span>
+              <span>{{ paginationTotal }}</span>
+            </div>
+
+            <!-- Add Guest Button -->
+            <button
+              @click="$emit('add-guest')"
+              class="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
+            >
+              <UserPlus class="w-4 h-4" />
+              <span class="hidden sm:inline">Add</span>
+            </button>
           </div>
 
-          <!-- Right: Add Guest Button -->
-          <button
-            @click="$emit('add-guest')"
-            class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold px-4 py-1.5 rounded-lg transition-all duration-200 hover:scale-[1.02] shadow-sm"
-          >
-            <UserPlus class="w-4 h-4" />
-            <span class="text-sm">Add Guest</span>
-          </button>
-
-          <!-- Mobile: Add Guest Icon Button -->
-          <button
-            @click="$emit('add-guest')"
-            class="sm:hidden p-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg transition-all duration-200 shadow-sm"
-            title="Add Guest"
-          >
-            <UserPlus class="w-4 h-4" />
-          </button>
-        </div>
-
-        <!-- Row 2: Selection Actions & Guest Count -->
-        <div class="flex items-center justify-between gap-3 text-xs sm:text-sm px-4 pt-3 border-t border-slate-100">
-          <!-- Left: Selection Actions (appears when items selected) -->
-          <div class="flex items-center gap-2">
-            <!-- Mobile Select All (only shown when selections exist or on sm+) -->
-            <label class="sm:hidden flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                :checked="isAllCurrentPageSelected"
-                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
-                @change="handleToggleSelectAll"
-                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-              />
-              <span class="text-xs font-medium text-slate-700">Select</span>
-            </label>
-
-            <Transition name="slide-fade">
-              <div v-if="totalSelectedCount > 0" class="flex items-center gap-2">
-                <span class="text-slate-600 font-medium px-2 bg-slate-100 rounded-lg py-1">
-                  {{ totalSelectedCount }} selected
+          <!-- Selection Actions Bar - Appears when items selected -->
+          <Transition name="selection-bar">
+            <div
+              v-if="totalSelectedCount > 0"
+              class="flex items-center justify-between gap-3 px-3 pb-3"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-slate-600">
+                  <span class="font-semibold text-slate-900">{{ totalSelectedCount }}</span> selected
                 </span>
+              </div>
+              <div class="flex items-center gap-1">
                 <button
                   @click="handleBulkMarkSent"
-                  title="Mark all selected as sent"
-                  class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                 >
-                  <Send class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Send class="w-3.5 h-3.5" />
+                  <span class="hidden xs:inline">Mark Sent</span>
                 </button>
                 <button
                   @click="handleBulkDelete"
-                  title="Delete all selected"
-                  class="p-1.5 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all"
                 >
-                  <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span class="hidden xs:inline">Delete</span>
                 </button>
               </div>
-            </Transition>
-          </div>
-
-          <!-- Right: Guest Count Badge -->
-          <div class="px-3 py-1 bg-slate-100 rounded-lg text-slate-700 font-medium">
-            <span class="text-emerald-600">{{ loadedGuestCount }}</span> / {{ paginationTotal }}
-          </div>
+            </div>
+          </Transition>
         </div>
       </div>
 
@@ -447,15 +422,6 @@ const isAnyGroupLoading = computed(() => {
 
 const totalSelectedCount = computed(() => selectedGuestIds.value.size)
 
-// Active filter label for dropdown
-const activeFilterLabel = computed(() => {
-  if (activeFilter.value === 'all') {
-    return `All Groups (${totalGuestCount.value})`
-  }
-  const group = props.groups.find(g => g.id.toString() === activeFilter.value)
-  return group ? `${group.name} (${group.guest_count})` : 'Select Group'
-})
-
 // Pagination computed properties
 const activePagination = computed(() => {
   if (activeFilter.value === 'all') {
@@ -498,15 +464,6 @@ const clearGroupSearch = () => {
     filteredGroups.value.forEach(group => {
       emit('search', group.id, '')
     })
-  }
-}
-
-const onSearchBlur = () => {
-  // Collapse search on mobile if empty
-  if (!groupSearchQuery.value && isSearchExpanded.value) {
-    setTimeout(() => {
-      isSearchExpanded.value = false
-    }, 200)
   }
 }
 
@@ -767,19 +724,15 @@ onUnmounted(() => {
   transform: translateY(-10px);
 }
 
-/* Slide fade transition for selection actions */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
+/* Selection bar transition */
+.selection-bar-enter-active,
+.selection-bar-leave-active {
+  transition: all 0.2s ease;
 }
 
-.slide-fade-enter-from {
+.selection-bar-enter-from,
+.selection-bar-leave-to {
   opacity: 0;
-  transform: translateX(-10px);
-}
-
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-10px);
+  transform: translateY(-8px);
 }
 </style>
