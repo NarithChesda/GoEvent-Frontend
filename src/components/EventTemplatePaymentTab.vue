@@ -159,40 +159,52 @@
       @template-selected="handleTemplateSelected"
     />
 
-    <!-- Payment Modal -->
+    <!-- Payment Drawer -->
     <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="showPaymentModal" class="fixed inset-0 z-[70] overflow-y-auto">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="closePaymentModal"></div>
+      <!-- Backdrop -->
+      <Transition name="fade">
+        <div
+          v-if="showPaymentModal"
+          class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+          @click="closePaymentModal"
+        />
+      </Transition>
 
-          <div class="flex min-h-full items-center justify-center p-4">
-            <div
-              class="relative w-full max-w-xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden max-h-[calc(100vh-40px)] flex flex-col"
-              @click.stop
-            >
-              <header
-                class="px-6 py-5 border-b border-slate-200 bg-white/90 flex items-center justify-between gap-4"
-              >
+      <!-- Drawer Panel -->
+      <Transition name="slide-right">
+        <div
+          v-if="showPaymentModal"
+          class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+          @click.stop
+        >
+          <!-- Header -->
+          <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+            <div class="flex items-center px-3 py-2.5">
+              <!-- Left: Close button & Title -->
+              <div class="flex items-center gap-2 flex-1">
+                <button
+                  @click="closePaymentModal"
+                  class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Close"
+                >
+                  <ArrowRight class="w-5 h-5 text-white" />
+                </button>
                 <div class="min-w-0">
                   <p
                     v-if="templateName"
-                    class="text-[11px] sm:text-xs uppercase tracking-wide text-slate-500"
+                    class="text-[10px] uppercase tracking-wide text-white/80"
                   >
                     {{ templateName }}
                   </p>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900 leading-tight">Make Payment</h2>
+                  <h2 class="text-base font-semibold text-white leading-tight">Make Payment</h2>
                 </div>
-                <button
-                  @click="closePaymentModal"
-                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  aria-label="Close"
-                >
-                  <X class="w-4 h-4" />
-                </button>
-              </header>
+              </div>
+            </div>
+          </div>
 
-              <div class="flex-1 overflow-y-auto">
-                <div class="p-6 sm:p-8 space-y-6">
+          <!-- Content -->
+          <div class="flex-1 overflow-y-auto overscroll-contain">
+            <div class="p-4 space-y-5">
                   <div
                     v-if="currentPayment"
                     class="rounded-xl border border-slate-200 bg-white/80 p-4 flex items-start justify-between gap-3"
@@ -334,7 +346,7 @@
                     </div>
                   </section>
 
-                  <form @submit.prevent="submitPaymentWithSync" class="space-y-4">
+                  <section class="space-y-4">
                     <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment details</h3>
 
                     <div
@@ -392,25 +404,21 @@
                         placeholder="Any additional notes for the host"
                       ></textarea>
                     </div>
-
-                    <button
-                      type="submit"
-                      :disabled="submittingPayment || !isFormValid"
-                      class="w-full bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] disabled:bg-slate-300 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 inline-flex items-center justify-center text-sm sm:text-base"
-                    >
-                      <span v-if="submittingPayment" class="flex items-center">
-                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Submitting...
-                      </span>
-                      <span v-else class="flex items-center">
-                        <CheckCircle class="w-4 h-4 mr-2" />
-                        Submit Payment
-                      </span>
-                    </button>
-                  </form>
-                </div>
-              </div>
+                  </section>
             </div>
+          </div>
+
+          <!-- Footer with Submit Button -->
+          <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+            <button
+              @click="submitPaymentWithSync"
+              :disabled="submittingPayment || !isFormValid"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-[#1e90ff] disabled:hover:to-[#2ecc71]"
+            >
+              <Loader v-if="submittingPayment" class="w-4 h-4 animate-spin" />
+              <CheckCircle v-else class="w-4 h-4" />
+              <span>{{ submittingPayment ? 'Submitting...' : 'Submit Payment' }}</span>
+            </button>
           </div>
         </div>
       </Transition>
@@ -533,6 +541,8 @@ import {
   Clock,
   X,
   Pencil,
+  ArrowRight,
+  Loader,
 } from 'lucide-vue-next'
 import { type Event, type EventTemplate, apiService } from '../services/api'
 import BrowseTemplateModal from './BrowseTemplateModal.vue'
@@ -1142,6 +1152,11 @@ const handleReferrerUpdated = (updatedEvent: unknown) => {
   }
 }
 
+// Calculate scrollbar width to prevent layout shift
+const getScrollbarWidth = (): number => {
+  return window.innerWidth - document.documentElement.clientWidth
+}
+
 // Watchers
 watch(
   () => ({ templateId: props.event.event_template, eventId: props.event.id }),
@@ -1151,6 +1166,23 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => showPaymentModal.value,
+  (isOpen) => {
+    // Prevent body scroll when drawer is open
+    if (isOpen) {
+      const scrollbarWidth = getScrollbarWidth()
+      document.body.style.overflow = 'hidden'
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+    }
+  }
 )
 
 watch(
@@ -1220,6 +1252,39 @@ defineExpose({
   transform: translateY(-20px);
 }
 
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s ease-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide from right on desktop, from bottom on mobile */
+.slide-right-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: translateX(100%);
+  }
+}
+
+/* Modal transition for Update Payment modal */
 .modal-enter-active,
 .modal-leave-active {
   transition: all 0.3s ease;
