@@ -40,38 +40,56 @@ npm run format           # Format code with Prettier
 ### State Management
 - **Pinia stores** ([src/stores/](src/stores/)):
   - `auth.ts`: Authentication state, login/logout, profile management, Google/Telegram OAuth
+  - `guestManagement.ts`: Guest list state management with optimistic updates and local filtering
   - `counter.ts`: Example counter store
 - Authentication uses JWT tokens stored in secure storage with automatic refresh
 - Auth initialization happens in [App.vue](src/App.vue) on mount
 
 ### API Layer Architecture
-- **Central API service** ([src/services/api.ts](src/services/api.ts)):
-  - Single `ApiService` class handles all HTTP requests
-  - Automatic token injection via `getAuthHeaders()`
-  - Network state management with offline detection
-  - Request timeout handling (30s default)
-  - User-friendly error messages with field-specific validation errors
-  - Support for JSON and FormData payloads
-  - Public endpoints available via `getPublic()` for unauthenticated access
+- **Modular API architecture** - The API layer has been refactored into a modular structure:
+  - **Core infrastructure** ([src/services/api/core/](src/services/api/core/)):
+    - `ApiClient.ts`: Central HTTP client with automatic token injection, request deduplication, and retry logic
+    - `NetworkManager.ts`: Network state monitoring and offline detection
+    - `SecureLogger.ts`: Secure logging with sensitive data redaction
+  - **Type definitions** ([src/services/api/types/](src/services/api/types/)): Domain-specific types organized by feature
+  - **Service modules** ([src/services/api/modules/](src/services/api/modules/)): Specialized services for each domain
 
-- **Service layer** exports specialized services from [api.ts](src/services/api.ts):
+- **Backward compatibility layer** ([src/services/api.ts](src/services/api.ts)):
+  - Re-exports all services and types for backward compatibility
+  - Existing imports continue to work: `import { eventsService } from '@/services/api'`
+  - New code can import directly from modules: `import { eventsService } from '@/services/api/modules/events.service'`
+
+- **Service layer** exports from [api.ts](src/services/api.ts):
   - `eventsService`: Event CRUD, registrations, RSVP, check-ins
   - `agendaService`: Agenda item management with bulk reordering
   - `hostsService`: Event host management with profile images
   - `mediaService`: Photo uploads (single and bulk), reordering
   - `eventTextsService`: Multi-language event text content
   - `paymentMethodsService`: Payment method management (bank, QR, URL)
-  - `guestService`: Guest list management with invitation tracking
+  - `guestService`, `guestGroupService`: Guest list and group management with invitation tracking
   - `commentsService`: Event comments and feedback
   - `eventTemplateService`: Template browsing and selection
   - `eventCategoriesService`: Event categories
-  - `teamMembersService`: Team member data
+  - `teamMembersService`, `userService`: Team member and user data
   - `coreDataService`: Core data like icons
+  - `expenseCategoriesService`, `expenseBudgetsService`, `expensesService`: Expense tracking
+  - `dressCodeService`: Dress code management for events
+  - `reviewsService`: Event reviews and ratings
 
 - **Additional services**:
   - [src/services/auth.ts](src/services/auth.ts): Authentication operations (login, register, OAuth)
+  - [src/services/tokenManager.ts](src/services/tokenManager.ts): JWT token management with automatic refresh
   - [src/services/commission.ts](src/services/commission.ts): Commission tracking
   - [src/services/upload.ts](src/services/upload.ts): File upload utilities
+
+- **Core API features**:
+  - Automatic token injection and refresh via `tokenManager`
+  - Network state management with offline detection
+  - Request timeout handling (30s default)
+  - Request deduplication to prevent duplicate concurrent requests
+  - User-friendly error messages with field-specific validation errors
+  - Support for JSON and FormData payloads
+  - Public endpoints available via `apiClient.getPublic()` for unauthenticated access
 
 ### Routing & Navigation
 - Vue Router with dynamic imports for code-splitting ([src/router/index.ts](src/router/index.ts))
@@ -107,7 +125,12 @@ The showcase system is a complex, multi-stage component system for displaying ev
   - `components/settings/`: Settings page components
   - `components/settings/commission/`: Commission-specific components
   - `components/template/`: Template selection and management
-  - `components/showcase/`: Event showcase components
+  - `components/showcase/`: Event showcase components (stages, RSVP, payment, galleries)
+  - `components/expense/`: Expense tracking components (budgets, categories, records)
+  - `components/host/`: Host-related components
+  - `components/agenda/`: Agenda item components
+  - `components/invitation/`: Invitation management components
+  - `components/common/`: Shared/common components
 - Components use composition API with `<script setup>`
 - TypeScript for type safety across all components
 
@@ -120,10 +143,22 @@ The showcase system is a complex, multi-stage component system for displaying ev
 - [src/utils/embedExtractor.ts](src/utils/embedExtractor.ts): Extract embed URLs from various formats
 - [src/utils/performance.ts](src/utils/performance.ts): Performance monitoring utilities
 - [src/utils/browserDetection.ts](src/utils/browserDetection.ts): Browser detection utilities
+- [src/utils/budgetCalculations.ts](src/utils/budgetCalculations.ts): Budget and expense calculation utilities
+- [src/utils/guestValidation.ts](src/utils/guestValidation.ts): Guest data validation utilities
+- [src/utils/currency.ts](src/utils/currency.ts): Currency formatting utilities
+- [src/utils/jwtUtils.ts](src/utils/jwtUtils.ts): JWT token parsing and validation
 
 ### Type Definitions
 - [src/types/showcase.ts](src/types/showcase.ts): Comprehensive type definitions for showcase system
-- API types defined inline in [src/services/api.ts](src/services/api.ts)
+- API types organized by domain in [src/services/api/types/](src/services/api/types/):
+  - `api.types.ts`: Core API types (ApiResponse, PaginatedResponse, QueryParams, ErrorData)
+  - `event.types.ts`: Event, agenda, host, photo, collaborator, registration types
+  - `guest.types.ts`: Guest, guest group, and invitation types
+  - `expense.types.ts`: Budget, expense category, and expense record types
+  - `payment.types.ts`: Payment method types
+  - `template.types.ts`: Event template and asset types
+  - `dress-code.types.ts`: Dress code types
+  - `review.types.ts`: Event review types
 - All components use proper TypeScript typing
 
 ## Important Development Notes
@@ -143,7 +178,7 @@ Required env vars (see [.env.example](.env.example)):
 5. Route guards validate tokens on protected routes
 6. Token refresh handled automatically by `authService.ensureValidToken()`
 
-### Backend Testing Cridential
+### Backend Testing Credential
 Email: admin@goevent.com
 Password: 2025Password@admin
 
@@ -169,9 +204,10 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 
 ### Media/File Uploads
 - Use FormData for file uploads (images, videos, QR codes)
-- API service has dedicated methods: `postFormData`, `putFormData`, `patchFormData`
-- Media URLs returned by API may be relative - use `apiService.getProfilePictureUrl()` for full URLs
+- API client has dedicated methods: `postFormData`, `putFormData`, `patchFormData`
+- Media URLs returned by API may be relative - use `apiClient.getProfilePictureUrl()` for full URLs
 - Bulk upload supported for photos (up to 50 per request)
+- File validation handled by upload utilities in [src/services/upload.ts](src/services/upload.ts)
 
 ### Showcase System Development
 - Showcase uses template-driven rendering with dynamic font/color loading
@@ -185,6 +221,22 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 - Pagination and filtering supported
 - Bulk claim operations available
 - Commission stats calculated server-side
+
+### Expense Tracking System
+- Three-tier expense tracking: Categories → Budgets → Expense Records
+- Real-time budget calculations with spent/remaining amounts
+- Quick add modal for rapid expense entry ([components/expense/QuickAddModal.vue](src/components/expense/QuickAddModal.vue))
+- Budget calculations handled by [src/utils/budgetCalculations.ts](src/utils/budgetCalculations.ts)
+- Services: `expenseCategoriesService`, `expenseBudgetsService`, `expensesService`
+
+### Guest Management System
+- Centralized guest state management via `guestManagement` Pinia store
+- Optimistic UI updates for better UX during network operations
+- Local filtering and searching for responsive guest list interactions
+- Guest group organization with stats tracking
+- Bulk operations supported (import, export, invitation sending)
+- Validation utilities in [src/utils/guestValidation.ts](src/utils/guestValidation.ts)
+- Services: `guestService`, `guestGroupService`
 
 ### Testing
 - Unit tests use Vitest with Vue Test Utils
