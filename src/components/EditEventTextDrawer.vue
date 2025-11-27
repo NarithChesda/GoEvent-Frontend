@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="modelValue"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -58,7 +58,7 @@
           </div>
 
           <!-- Form -->
-          <form @submit.prevent class="p-4 space-y-5 pb-24">
+          <form @submit.prevent class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
             <!-- Language Tabs Section -->
             <div class="space-y-4">
               <div class="flex items-center justify-between">
@@ -231,7 +231,7 @@
                     <input
                       v-model="getTextData(lang, textType.value).title"
                       type="text"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                       :placeholder="'Enter title for ' + textType.label.toLowerCase()"
                     />
                   </div>
@@ -244,7 +244,7 @@
                     <textarea
                       v-model="getTextData(lang, textType.value).content"
                       rows="4"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
+                      class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
                       :placeholder="'Enter ' + textType.label.toLowerCase() + ' content...'"
                     ></textarea>
                     <div class="mt-1 text-xs text-slate-500">

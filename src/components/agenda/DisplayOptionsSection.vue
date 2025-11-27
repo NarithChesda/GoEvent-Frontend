@@ -30,7 +30,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <!-- Color -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Theme Color</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Theme Color</label>
             <div class="flex items-center gap-3">
               <input
                 :value="color"
@@ -42,7 +42,7 @@
                 :value="color"
                 @input="$emit('update:color', ($event.target as HTMLInputElement).value)"
                 type="text"
-                class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                 placeholder="#3498db"
               />
             </div>
@@ -50,11 +50,11 @@
 
           <!-- Icon Selection -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Icon</label>
             <button
               type="button"
               @click="$emit('update:show-icon-picker', true)"
-              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors duration-200 flex items-center justify-between bg-white/90"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors duration-200 flex items-center justify-between bg-white/90"
             >
               <div class="flex items-center gap-3">
                 <div

@@ -31,25 +31,25 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <!-- Physical Location -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Physical Location</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Physical Location</label>
             <input
               :value="location"
               @input="$emit('update:location', ($event.target as HTMLInputElement).value)"
               type="text"
-              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
               placeholder="e.g., Conference Room A"
             />
           </div>
 
           <!-- Virtual Link -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Virtual Link</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Link</label>
             <input
               :value="virtualLink"
               @input="$emit('update:virtual-link', ($event.target as HTMLInputElement).value)"
               type="url"
               :class="[
-                'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white/90',
+                'w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white/90',
                 urlError
                   ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
                   : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400',

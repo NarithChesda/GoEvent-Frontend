@@ -8,23 +8,23 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <!-- Date -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">Date</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
         <input
           :value="date"
           @input="$emit('update:date', ($event.target as HTMLInputElement).value)"
           type="date"
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
         />
       </div>
 
       <!-- Agenda Type -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">Type</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Type</label>
         <div class="relative">
           <select
             :value="agendaType"
             @input="$emit('update:agenda-type', ($event.target as HTMLSelectElement).value)"
-            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
           >
             <option value="session">Session</option>
             <option value="keynote">Keynote</option>

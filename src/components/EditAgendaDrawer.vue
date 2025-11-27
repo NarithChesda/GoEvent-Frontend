@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="modelValue"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -58,7 +58,7 @@
           </div>
 
           <!-- Form -->
-          <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
+          <form @submit.prevent="handleSubmit" class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
             <!-- Language Tabs Section -->
             <div>
               <LanguageTabs
@@ -79,7 +79,7 @@
             </div>
 
             <!-- Form Content -->
-            <div class="space-y-5">
+            <div class="space-y-4 laptop-sm:space-y-5">
               <!-- English Content (Default Language) -->
               <div
                 v-if="activeTab === 'en'"
@@ -87,7 +87,7 @@
                 id="tabpanel-en"
                 aria-labelledby="tab-en"
                 tabindex="0"
-                class="space-y-5"
+                class="space-y-4 laptop-sm:space-y-5"
               >
                 <AgendaFormFields
                   v-model:title="formData.title"
@@ -110,7 +110,7 @@
                 :id="'tabpanel-' + translation.language"
                 :aria-labelledby="'tab-' + translation.language"
                 tabindex="0"
-                class="space-y-5"
+                class="space-y-4 laptop-sm:space-y-5"
               >
                 <AgendaFormFields
                   v-model:title="translation.title"
@@ -126,7 +126,7 @@
             </div>
 
             <!-- Schedule Section -->
-            <div class="border-t border-slate-100 pt-5">
+            <div class="border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <ScheduleSection
                 v-model:date="formData.date"
                 v-model:agenda-type="formData.agenda_type"
