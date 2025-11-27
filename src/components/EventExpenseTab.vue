@@ -21,6 +21,8 @@
         :can-edit="canEdit"
         @create-category="handleCreateCategory"
         @create-budget="openQuickAddBudget"
+        @edit-budget="handleEditBudget"
+        @edit-expense="handleEditExpense"
       />
     </div>
 
@@ -31,7 +33,9 @@
       :categories="categories"
       :budgets="budgets"
       :initial-type="quickAddInitialType"
-      @close="showQuickAddModal = false"
+      :edit-mode="isEditMode"
+      :edit-data="editData"
+      @close="handleCloseQuickAdd"
       @success="handleQuickAddSuccess"
     />
   </div>
@@ -46,7 +50,8 @@ import {
   expenseCategoriesService,
   expenseBudgetsService,
   type ExpenseCategory,
-  type ExpenseBudget
+  type ExpenseBudget,
+  type ExpenseRecord
 } from '@/services/api'
 
 interface Props {
@@ -59,6 +64,8 @@ const props = defineProps<Props>()
 const showQuickAddModal = ref(false)
 const quickAddInitialType = ref<'expense' | 'budget' | 'category'>('expense')
 const summaryRefreshKey = ref(0)
+const isEditMode = ref(false)
+const editData = ref<ExpenseBudget | ExpenseRecord | null>(null)
 
 // Data for Quick Add Modal
 const categories = ref<ExpenseCategory[]>([])
@@ -110,17 +117,52 @@ const openQuickAddCategory = () => {
   showQuickAddModal.value = true
 }
 
+// Edit handlers
+const handleEditBudget = (budget: ExpenseBudget) => {
+  quickAddInitialType.value = 'budget'
+  isEditMode.value = true
+  editData.value = budget
+  showQuickAddModal.value = true
+}
+
+const handleEditExpense = (expense: ExpenseRecord) => {
+  quickAddInitialType.value = 'expense'
+  isEditMode.value = true
+  editData.value = expense
+  showQuickAddModal.value = true
+}
+
+// Close handler that resets edit mode
+const handleCloseQuickAdd = () => {
+  showQuickAddModal.value = false
+  isEditMode.value = false
+  editData.value = null
+}
+
 // Handle Quick Add success - refresh data
 const handleQuickAddSuccess = async (type: 'expense' | 'budget' | 'category') => {
-  // Reload categories and budgets
+  // Reload categories and budgets for the modal
   await loadCategoriesAndBudgets()
 
-  // Refresh the appropriate view
-  if (type === 'expense' || type === 'budget' || type === 'category') {
+  // Refresh the budgets view based on what was changed
+  if (type === 'expense') {
+    // Reload expenses and budgets (expenses affect budget spent amounts)
+    budgetsViewRef.value?.reloadExpenses()
+    budgetsViewRef.value?.reloadBudgets()
+  } else if (type === 'budget') {
+    // Reload budgets
+    budgetsViewRef.value?.reloadBudgets()
+  } else if (type === 'category') {
+    // Reload categories
     budgetsViewRef.value?.reloadCategories()
-    // Trigger summary refresh
-    summaryRefreshKey.value++
   }
+
+  // Trigger summary refresh
+  summaryRefreshKey.value++
+
+  // Reset edit mode after success
+  isEditMode.value = false
+  editData.value = null
 }
 
 // Handle create category from expense modal

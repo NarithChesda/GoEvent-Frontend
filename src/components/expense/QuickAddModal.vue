@@ -28,7 +28,7 @@
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">Quick Add</h2>
+              <h2 class="text-base font-semibold text-white">{{ isEditMode ? 'Edit' : 'Quick Add' }}</h2>
             </div>
           </div>
         </div>
@@ -41,8 +41,8 @@
                 <p class="text-sm text-red-600">{{ error }}</p>
               </div>
 
-              <!-- Mode Toggle (Expense/Budget Tabs) -->
-              <div class="space-y-3 sm:space-y-4">
+              <!-- Mode Toggle (Expense/Budget Tabs) - Hidden in Edit Mode -->
+              <div v-if="!isEditMode" class="space-y-3 sm:space-y-4">
                 <div class="flex gap-2">
                   <button
                     type="button"
@@ -145,13 +145,15 @@
                   <button
                     type="button"
                     @click="isCategoryDropdownOpen = !isCategoryDropdownOpen"
-                    class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-purple-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                    :disabled="isEditMode"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-purple-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-slate-200"
                   >
                     <FolderOpen class="w-4 h-4 text-purple-600 flex-shrink-0" />
                     <span class="flex-1 text-left text-slate-900 truncate">
                       {{ selectedCategory?.name || 'Select a category' }}
                     </span>
                     <ChevronDown
+                      v-if="!isEditMode"
                       class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0"
                       :class="{ 'rotate-180': isCategoryDropdownOpen }"
                     />
@@ -745,10 +747,14 @@ interface Props {
   categories: ExpenseCategory[]
   budgets: ExpenseBudget[]
   initialType?: 'expense' | 'budget' | 'category'
+  editMode?: boolean
+  editData?: any
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initialType: 'expense'
+  initialType: 'expense',
+  editMode: false,
+  editData: undefined
 })
 
 const emit = defineEmits<{
@@ -771,6 +777,7 @@ const showInlineBudget = ref(false)
 const creatingInlineBudget = ref(false)
 const inlineBudgetAmount = ref<number | null>(null)
 const inlineBudgetCurrency = ref<CurrencyCode>('USD')
+const isEditMode = ref(props.editMode)
 
 // Category management state
 const showCreateCategoryForm = ref(false)
@@ -858,6 +865,17 @@ const formatCurrency = (amount: string | number, currency: string): string => {
 }
 
 const getSubmitButtonText = () => {
+  if (isEditMode.value) {
+    switch (selectedType.value) {
+      case 'expense':
+        return 'Update Expense'
+      case 'budget':
+        return 'Update Budget'
+      default:
+        return 'Update'
+    }
+  }
+
   switch (selectedType.value) {
     case 'expense':
       return 'Add Expense'
@@ -1072,12 +1090,20 @@ const handleSubmit = async () => {
   submitting.value = true
 
   try {
-    if (selectedType.value === 'expense') {
-      await submitExpense()
-    } else if (selectedType.value === 'budget') {
-      await submitBudget()
-    } else if (selectedType.value === 'category') {
-      await submitCategory()
+    if (isEditMode.value) {
+      if (selectedType.value === 'expense') {
+        await updateExpense()
+      } else if (selectedType.value === 'budget') {
+        await updateBudget()
+      }
+    } else {
+      if (selectedType.value === 'expense') {
+        await submitExpense()
+      } else if (selectedType.value === 'budget') {
+        await submitBudget()
+      } else if (selectedType.value === 'category') {
+        await submitCategory()
+      }
     }
   } finally {
     submitting.value = false
@@ -1142,6 +1168,66 @@ const submitBudget = async () => {
   }
 }
 
+const updateExpense = async () => {
+  if (!formData.value.category_id || !formData.value.description || !formData.value.amount || !props.editData?.id) {
+    error.value = 'Please fill in all required fields'
+    return
+  }
+
+  const categoryId = parseInt(formData.value.category_id)
+  const requestData: CreateExpenseRecordRequest = {
+    category: categoryId,
+    category_id: categoryId,
+    description: formData.value.description,
+    amount: formData.value.amount!,
+    currency: formData.value.currency,
+    date: formData.value.date,
+    payment_method: formData.value.payment_method,
+    paid_to: formData.value.paid_to || undefined,
+    notes: formData.value.notes || undefined
+  }
+
+  const response = await expensesService.updateExpense(
+    props.eventId,
+    props.editData.id,
+    requestData,
+    selectedFile.value || undefined
+  )
+
+  if (response.success) {
+    emit('success', 'expense')
+    handleClose()
+  } else {
+    error.value = response.message || 'Failed to update expense'
+  }
+}
+
+const updateBudget = async () => {
+  if (!formData.value.category_id || !formData.value.budgeted_amount || !props.editData?.id) {
+    error.value = 'Please fill in all required fields'
+    return
+  }
+
+  const requestData = {
+    budgeted_amount: formData.value.budgeted_amount!,
+    currency: formData.value.currency,
+    notes: formData.value.notes || undefined
+  }
+
+  const response = await expenseBudgetsService.patchBudget(
+    props.eventId,
+    props.editData.id,
+    requestData
+  )
+
+  if (response.success) {
+    emit('success', 'budget')
+    handleClose()
+  } else {
+    error.value = response.message || 'Failed to update budget'
+  }
+}
+
 const submitCategory = async () => {
   if (!formData.value.name) {
     error.value = 'Category name is required'
@@ -1203,11 +1289,57 @@ watch(selectedType, () => {
   error.value = null
 })
 
+// Populate form with edit data
+const populateEditData = () => {
+  if (!props.editData || !props.editMode) return
+
+  if (selectedType.value === 'expense') {
+    formData.value = {
+      category_id: props.editData.category.toString(),
+      currency: props.editData.currency || 'USD',
+      notes: props.editData.notes || '',
+      amount: props.editData.amount ? parseFloat(props.editData.amount) : null,
+      description: props.editData.description || '',
+      date: props.editData.date || new Date().toISOString().split('T')[0],
+      payment_method: props.editData.payment_method || 'cash',
+      paid_to: props.editData.paid_to || '',
+      budgeted_amount: null,
+      name: '',
+      category_description: '',
+      icon: '',
+      color: '#3498db'
+    }
+  } else if (selectedType.value === 'budget') {
+    formData.value = {
+      category_id: props.editData.category.toString(),
+      currency: props.editData.currency || 'USD',
+      notes: props.editData.notes || '',
+      amount: null,
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      payment_method: 'cash',
+      paid_to: '',
+      budgeted_amount: props.editData.budgeted_amount ? parseFloat(props.editData.budgeted_amount) : null,
+      name: '',
+      category_description: '',
+      icon: '',
+      color: '#3498db'
+    }
+  }
+}
+
 // Watch for show prop changes
 watch(() => props.show, (newVal) => {
   if (newVal) {
     selectedType.value = props.initialType === 'category' ? 'expense' : props.initialType
-    resetForm()
+    isEditMode.value = props.editMode
+
+    if (props.editMode && props.editData) {
+      populateEditData()
+    } else {
+      resetForm()
+    }
+
     // Lock body scroll when drawer opens
     const scrollbarWidth = getScrollbarWidth()
     document.body.style.overflow = 'hidden'
@@ -1218,6 +1350,7 @@ watch(() => props.show, (newVal) => {
     // Restore body scroll when drawer closes
     document.body.style.overflow = ''
     document.body.style.paddingRight = ''
+    isEditMode.value = false
   }
 })
 </script>

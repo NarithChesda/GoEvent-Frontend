@@ -43,17 +43,12 @@
       <div
         v-for="budget in budgets"
         :key="budget.id"
-        class="rounded-3xl border border-white/70 bg-white overflow-hidden transition-all duration-200"
-        :class="[
-          isBudgetExpanded(budget.id)
-            ? 'shadow-lg shadow-slate-200/60'
-            : 'shadow-md shadow-slate-200/40 hover:shadow-lg hover:shadow-slate-200/60'
-        ]"
+        class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white overflow-hidden transition-all duration-200"
       >
         <!-- Budget Header (Clickable) - Compact -->
         <div
           @click="toggleBudget(budget.id)"
-          class="group relative px-3 sm:px-4 py-3 cursor-pointer hover:bg-slate-50/30 transition-colors"
+          class="group relative px-4 py-3 cursor-pointer transition-colors"
         >
           <div class="flex items-center gap-3">
             <!-- Icon -->
@@ -122,29 +117,30 @@
             </div>
 
             <!-- Actions + Expand -->
-            <div class="flex items-center gap-1 flex-shrink-0">
-              <div
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+              <!-- Edit -->
+              <button
                 v-if="canEdit"
-                @click.stop
-                class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                @click.stop="editBudget(budget)"
+                :aria-label="`Edit budget for ${budget.category_info.name}`"
+                title="Edit budget"
+                class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
               >
-                <button
-                  @click="editBudget(budget)"
-                  :aria-label="`Edit budget for ${budget.category_info.name}`"
-                  title="Edit budget"
-                  class="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all"
-                >
-                  <Edit2 class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  @click="confirmDeleteBudget(budget)"
-                  :aria-label="`Delete budget for ${budget.category_info.name}`"
-                  title="Delete budget"
-                  class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
-                >
-                  <Trash2 class="w-3.5 h-3.5" />
-                </button>
-              </div>
+                <Edit2 class="w-4 h-4" />
+              </button>
+
+              <!-- Delete -->
+              <button
+                v-if="canEdit"
+                @click.stop="confirmDeleteBudget(budget)"
+                :aria-label="`Delete budget for ${budget.category_info.name}`"
+                title="Delete budget"
+                class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+              >
+                <Trash2 class="w-4 h-4" />
+              </button>
+
+              <!-- Expand indicator -->
               <div class="w-6 flex justify-center">
                 <ChevronDown
                   class="w-4 h-4 text-slate-400 transition-transform duration-200"
@@ -172,27 +168,51 @@
                 <div
                   v-for="expense in getBudgetExpenses(budget.category)"
                   :key="expense.id"
-                  class="group bg-white rounded-xl border border-white/60 px-3 py-2.5 hover:shadow-sm hover:border-white/80 transition-all shadow-sm shadow-slate-100/50"
+                  class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group"
                 >
-                  <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 px-4 py-3">
                     <div class="flex-1 min-w-0">
-                      <div class="flex items-center justify-between gap-2 mb-0.5">
-                        <h5 class="font-medium text-slate-900 text-sm truncate">{{ expense.description }}</h5>
-                        <span class="text-sm font-bold text-slate-900 tabular-nums flex-shrink-0">
+                      <div class="flex items-center justify-between gap-2 mb-1">
+                        <h5 class="font-semibold text-slate-900 truncate">{{ expense.description }}</h5>
+                        <span class="text-sm font-medium text-slate-900 tabular-nums flex-shrink-0">
                           {{ formatAmount(expense.amount, expense.currency) }}
                         </span>
                       </div>
-                      <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <span>{{ formatDate(expense.date) }}</span>
-                        <span v-if="expense.paid_to" class="flex items-center gap-1">
-                          <span class="text-slate-300">•</span>
-                          <span class="truncate max-w-[120px]">{{ expense.paid_to }}</span>
-                        </span>
-                        <span v-if="expense.receipt" class="flex items-center gap-1 text-emerald-600">
-                          <span class="text-slate-300">•</span>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <div class="flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 text-slate-700 rounded-lg text-xs font-medium">
+                          <span>{{ formatDate(expense.date) }}</span>
+                        </div>
+                        <div v-if="expense.paid_to" class="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                          <span class="truncate max-w-[100px]">{{ expense.paid_to }}</span>
+                        </div>
+                        <div v-if="expense.receipt" class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium">
                           <Paperclip class="w-3 h-3" />
-                        </span>
+                          <span>Receipt</span>
+                        </div>
                       </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div v-if="canEdit" class="flex items-center gap-0.5 flex-shrink-0">
+                      <!-- Edit -->
+                      <button
+                        @click.stop="editExpense(expense)"
+                        :aria-label="`Edit expense ${expense.description}`"
+                        title="Edit expense"
+                        class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                      >
+                        <Edit2 class="w-4 h-4" />
+                      </button>
+
+                      <!-- Delete -->
+                      <button
+                        @click.stop="confirmDeleteExpense(expense)"
+                        :aria-label="`Delete expense ${expense.description}`"
+                        title="Delete expense"
+                        class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 class="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -228,111 +248,7 @@
       </div>
     </div>
 
-    <!-- Edit Budget Modal -->
-    <ExpenseModal
-      :show="showEditModal"
-      title="Edit Budget"
-      :icon="Wallet"
-      icon-bg-class="bg-blue-50 text-blue-600"
-      icon-size-class="w-5 h-5"
-      aria-label-id="edit-budget-modal-title"
-      :error="modalError"
-      :submitting="submitting"
-      submit-text="Update Budget"
-      z-index-class="z-[60]"
-      @close="closeEditModal"
-      @submit="handleUpdateBudget"
-    >
-      <!-- Category Selection -->
-      <div>
-        <label for="budget-category" class="block text-sm font-medium text-slate-700 mb-2">
-          Category <span class="text-red-500">*</span>
-        </label>
-        <div class="relative">
-          <select
-            id="budget-category"
-            v-model="editForm.category_id"
-            required
-            aria-required="true"
-            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white/90 appearance-none pr-10"
-            disabled
-          >
-            <option value="">Select a category</option>
-            <option
-              v-for="category in categories"
-              :key="category.id"
-              :value="category.id.toString()"
-            >
-              {{ category.name }}
-            </option>
-          </select>
-          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <ChevronDown class="w-4 h-4 text-slate-500" />
-          </div>
-        </div>
-        <p class="text-xs text-slate-500 mt-1">Category cannot be changed after creation</p>
-      </div>
-
-      <!-- Budgeted Amount & Currency -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="budget-amount" class="block text-sm font-medium text-slate-700 mb-2">
-            Budgeted Amount <span class="text-red-500">*</span>
-          </label>
-          <input
-            id="budget-amount"
-            type="number"
-            v-model.number="editForm.budgeted_amount"
-            placeholder="0.00"
-            step="0.01"
-            min="0"
-            required
-            aria-required="true"
-            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white/90"
-          />
-        </div>
-
-        <div>
-          <label for="budget-currency" class="block text-sm font-medium text-slate-700 mb-2">
-            Currency <span class="text-red-500">*</span>
-          </label>
-          <div class="relative">
-            <select
-              id="budget-currency"
-              v-model="editForm.currency"
-              required
-              aria-required="true"
-              class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white/90 appearance-none pr-10"
-            >
-              <option
-                v-for="currency in SUPPORTED_CURRENCIES"
-                :key="currency.code"
-                :value="currency.code"
-              >
-                {{ currency.symbol }} {{ currency.code }} - {{ currency.name }}
-              </option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <ChevronDown class="w-4 h-4 text-slate-500" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <label for="budget-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-        <textarea
-          id="budget-notes"
-          v-model="editForm.notes"
-          rows="3"
-          placeholder="Optional notes about this budget..."
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white/90 resize-none"
-        ></textarea>
-      </div>
-    </ExpenseModal>
-
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Budget Confirmation Modal -->
     <DeleteConfirmModal
       :show="!!deletingBudget"
       :loading="submitting"
@@ -341,6 +257,16 @@
       warning-message="Expenses will remain but won't have budget tracking."
       @confirm="handleDelete"
       @cancel="deletingBudget = null"
+    />
+
+    <!-- Delete Expense Confirmation Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteExpenseModal"
+      :loading="submitting"
+      title="Delete Expense"
+      :item-name="deletingExpense ? deletingExpense.description : undefined"
+      @confirm="handleDeleteExpense"
+      @cancel="() => { showDeleteExpenseModal = false; deletingExpense = null }"
     />
 
     <!-- Success Toast -->
@@ -367,8 +293,6 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import {
   Edit2,
   Trash2,
-  DollarSign,
-  AlertTriangle,
   AlertCircle,
   Check,
   Wallet,
@@ -382,14 +306,12 @@ import {
   expensesService,
   type ExpenseBudget,
   type ExpenseCategory,
-  type Expense
+  type ExpenseRecord
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { useSuccessToast } from '@/composables/useSuccessToast'
-import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/constants/currencies'
 import { getErrorMessage } from '@/utils/errorMessages'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
-import ExpenseModal from './ExpenseModal.vue'
 
 interface Props {
   eventId: string
@@ -402,6 +324,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'create-category': []
   'create-budget': []
+  'edit-budget': [budget: ExpenseBudget]
+  'edit-expense': [expense: ExpenseRecord]
 }>()
 
 const loading = ref(false)
@@ -409,23 +333,14 @@ const error = ref<string | null>(null)
 const budgets = ref<ExpenseBudget[]>([])
 const categories = ref<ExpenseCategory[]>([])
 const deletingBudget = ref<ExpenseBudget | null>(null)
-const editingBudget = ref<ExpenseBudget | null>(null)
-const showEditModal = ref(false)
-const modalError = ref<string | null>(null)
 const submitting = ref(false)
 
 // Expense management
-const expenses = ref<Expense[]>([])
+const expenses = ref<ExpenseRecord[]>([])
 const loadingExpenses = ref(false)
 const expandedBudgets = ref<number[]>([])
-
-// Edit form data
-const editForm = ref({
-  category_id: '',
-  budgeted_amount: null as number | null,
-  currency: 'USD' as CurrencyCode,
-  notes: ''
-})
+const deletingExpense = ref<ExpenseRecord | null>(null)
+const showDeleteExpenseModal = ref(false)
 
 // Use composables
 const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
@@ -436,8 +351,7 @@ const { getIconComponent } = useExpenseIcons()
 // Format amount with currency
 const formatAmount = (amount: string | number, currency: string): string => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
-  const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === currency)
-  const symbol = currencyInfo?.symbol || '$'
+  const symbol = currency === 'USD' ? '$' : currency === 'KHR' ? '៛' : currency
 
   if (currency === 'KHR') {
     return `${symbol}${numAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
@@ -476,7 +390,7 @@ const getExpenseCount = (categoryId: number): number => {
 }
 
 // Get expenses for a budget
-const getBudgetExpenses = (categoryId: number): Expense[] => {
+const getBudgetExpenses = (categoryId: number): ExpenseRecord[] => {
   return expenses.value.filter(e => e.category === categoryId)
 }
 
@@ -528,6 +442,47 @@ const loadExpenses = async () => {
   }
 }
 
+// Expense edit and delete handlers
+const editExpense = (expense: ExpenseRecord) => {
+  emit('edit-expense', expense)
+}
+
+const confirmDeleteExpense = (expense: ExpenseRecord) => {
+  deletingExpense.value = expense
+  showDeleteExpenseModal.value = true
+}
+
+const handleDeleteExpense = async () => {
+  if (!deletingExpense.value) return
+
+  submitting.value = true
+  const deletedId = deletingExpense.value.id
+
+  try {
+    const response = await expensesService.deleteExpense(
+      props.eventId,
+      deletedId
+    )
+
+    if (response.success) {
+      // Remove from local list
+      expenses.value = expenses.value.filter(expense => expense.id !== deletedId)
+      showSuccess('Expense deleted successfully!')
+      deletingExpense.value = null
+      showDeleteExpenseModal.value = false
+      // Reload budgets to update spent amounts
+      await loadBudgets()
+    } else {
+      error.value = response.message || 'Failed to delete expense'
+    }
+  } catch (err) {
+    error.value = getErrorMessage(err, 'delete expense')
+    console.error('Error deleting expense:', err)
+  } finally {
+    submitting.value = false
+  }
+}
+
 const confirmDeleteBudget = (budget: ExpenseBudget) => {
   deletingBudget.value = budget
 }
@@ -562,68 +517,9 @@ const handleDelete = async () => {
 
 // Edit budget functions
 const editBudget = (budget: ExpenseBudget) => {
-  editingBudget.value = budget
-  editForm.value = {
-    category_id: budget.category.toString(),
-    budgeted_amount: parseFloat(budget.budgeted_amount),
-    currency: budget.currency as CurrencyCode,
-    notes: budget.notes || ''
-  }
-  showEditModal.value = true
+  emit('edit-budget', budget)
 }
 
-const closeEditModal = () => {
-  showEditModal.value = false
-  modalError.value = null
-  editingBudget.value = null
-  editForm.value = {
-    category_id: '',
-    budgeted_amount: null,
-    currency: 'USD',
-    notes: ''
-  }
-}
-
-const handleUpdateBudget = async () => {
-  if (!editingBudget.value) return
-
-  // Validation
-  if (!editForm.value.budgeted_amount || editForm.value.budgeted_amount <= 0) {
-    modalError.value = 'Please enter a valid budgeted amount'
-    return
-  }
-
-  submitting.value = true
-  modalError.value = null
-
-  try {
-    const requestData = {
-      budgeted_amount: editForm.value.budgeted_amount,
-      currency: editForm.value.currency,
-      notes: editForm.value.notes || undefined
-    }
-
-    const response = await expenseBudgetsService.patchBudget(
-      props.eventId,
-      editingBudget.value.id,
-      requestData
-    )
-
-    if (response.success) {
-      // Reload budgets from server
-      await loadBudgets()
-      showSuccess('Budget updated successfully!')
-      closeEditModal()
-    } else {
-      modalError.value = response.message || 'Failed to update budget'
-    }
-  } catch (err) {
-    modalError.value = getErrorMessage(err, 'update budget')
-    console.error('Error updating budget:', err)
-  } finally {
-    submitting.value = false
-  }
-}
 
 onMounted(async () => {
   await Promise.all([loadBudgets(), loadCategories()])
@@ -638,6 +534,15 @@ onUnmounted(() => {
 defineExpose({
   reloadCategories: () => {
     loadCategories()
+  },
+  reloadBudgets: () => {
+    loadBudgets()
+  },
+  reloadExpenses: () => {
+    loadExpenses()
+  },
+  reloadAll: async () => {
+    await Promise.all([loadBudgets(), loadCategories(), loadExpenses()])
   }
 })
 </script>
