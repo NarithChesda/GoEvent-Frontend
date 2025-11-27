@@ -815,10 +815,11 @@ watch(
     if (activeTab.value === 'expenses') {
       // Use nextTick to ensure component is mounted
       nextTick(() => {
-        const currentSubTab = expenseTabRef.value?.getActiveSubTab()
-        if (currentSubTab) {
-          expenseTrackingSubTab.value = currentSubTab
-        }
+        // Note: getActiveSubTab was removed in expense tab refactor
+        // const currentSubTab = expenseTabRef.value?.getActiveSubTab()
+        // if (currentSubTab) {
+        //   expenseTrackingSubTab.value = currentSubTab
+        // }
       })
     }
   }
@@ -874,10 +875,11 @@ watch(
           }
           return
         }
-        const currentSubTab = expenseTabRef.value.getActiveSubTab()
-        if (currentSubTab && currentSubTab !== expenseTrackingSubTab.value) {
-          expenseTrackingSubTab.value = currentSubTab
-        }
+        // Note: getActiveSubTab was removed in expense tab refactor
+        // const currentSubTab = expenseTabRef.value.getActiveSubTab()
+        // if (currentSubTab && currentSubTab !== expenseTrackingSubTab.value) {
+        //   expenseTrackingSubTab.value = currentSubTab
+        // }
       }, 1000) as unknown as number
     }
   },

@@ -14,7 +14,7 @@
         <div>
           <h4 class="font-semibold text-red-900 mb-1">Error Loading Summary</h4>
           <p class="text-sm text-red-700">{{ error }}</p>
-          <button @click="loadSummary" class="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
+          <button @click="() => loadSummary()" class="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
             Try Again
           </button>
         </div>
