@@ -1236,18 +1236,20 @@ const footerThankYouText = computed(() =>
 )
 
 // Computed property to check if host message section should be displayed
+// Checks for messages in ANY language to ensure section shows with fallback content
 const showHostMessage = computed(() => {
-  if (!props.eventTexts?.length || !props.currentLanguage) {
+  if (!props.eventTexts?.length) {
     return false
   }
 
-  // Check if thank you message or sorry message exists for current language
+  // Check if thank you message or sorry message exists in ANY language
+  // This ensures the section shows even when switching to a language without messages
   const hasThankYouMessage = props.eventTexts.some(
-    (text) => text.text_type === 'thank_you_message' && text.language === props.currentLanguage,
+    (text) => text.text_type === 'thank_you_message',
   )
 
   const hasSorryMessage = props.eventTexts.some(
-    (text) => text.text_type === 'sorry_message' && text.language === props.currentLanguage,
+    (text) => text.text_type === 'sorry_message',
   )
 
   return hasThankYouMessage || hasSorryMessage

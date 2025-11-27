@@ -733,11 +733,24 @@ export function useEventShowcase() {
       // Update only the content-related parts of showcaseData
       // IMPORTANT: We must update template_fonts and template_assets to get new language fonts
       if (showcaseData.value) {
+        // Merge event_texts: keep existing texts for other languages, add/update texts for new language
+        // This ensures fallback content remains available when switching between languages
+        const existingTexts = showcaseData.value.event.event_texts || []
+        const newTexts = data.event.event_texts || []
+
+        // Remove texts for the new language from existing (will be replaced with new ones)
+        const textsFromOtherLanguages = existingTexts.filter(
+          (text) => text.language !== newLanguage,
+        )
+
+        // Combine: texts from other languages + new texts for current language
+        const mergedEventTexts = [...textsFromOtherLanguages, ...newTexts]
+
         showcaseData.value = {
           ...showcaseData.value,
           event: {
             ...showcaseData.value.event,
-            event_texts: data.event.event_texts,
+            event_texts: mergedEventTexts,
             hosts: data.event.hosts,
             agenda_items: data.event.agenda_items,
             available_languages: data.event.available_languages,

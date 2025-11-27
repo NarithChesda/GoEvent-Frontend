@@ -96,28 +96,48 @@ const props = defineProps<Props>()
 
 /**
  * Get thank you message from event texts
+ * Falls back to any available language if current language doesn't have one
  */
 const thankYouMessage = computed(() => {
-  if (!props.eventTexts?.length || !props.currentLanguage) {
+  if (!props.eventTexts?.length) {
     return null
   }
 
-  return props.eventTexts.find(
-    (text) => text.text_type === 'thank_you_message' && text.language === props.currentLanguage,
-  ) || null
+  // Try to find message in current language first
+  if (props.currentLanguage) {
+    const currentLangMessage = props.eventTexts.find(
+      (text) => text.text_type === 'thank_you_message' && text.language === props.currentLanguage,
+    )
+    if (currentLangMessage) {
+      return currentLangMessage
+    }
+  }
+
+  // Fallback: use any available thank you message
+  return props.eventTexts.find((text) => text.text_type === 'thank_you_message') || null
 })
 
 /**
  * Get sorry message from event texts
+ * Falls back to any available language if current language doesn't have one
  */
 const sorryMessage = computed(() => {
-  if (!props.eventTexts?.length || !props.currentLanguage) {
+  if (!props.eventTexts?.length) {
     return null
   }
 
-  return props.eventTexts.find(
-    (text) => text.text_type === 'sorry_message' && text.language === props.currentLanguage,
-  ) || null
+  // Try to find message in current language first
+  if (props.currentLanguage) {
+    const currentLangMessage = props.eventTexts.find(
+      (text) => text.text_type === 'sorry_message' && text.language === props.currentLanguage,
+    )
+    if (currentLangMessage) {
+      return currentLangMessage
+    }
+  }
+
+  // Fallback: use any available sorry message
+  return props.eventTexts.find((text) => text.text_type === 'sorry_message') || null
 })
 </script>
 
