@@ -1,92 +1,74 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
+    <!-- Backdrop -->
+    <Transition name="fade">
       <div
         v-if="show"
-        class="fixed inset-0 z-[70] overflow-y-auto"
-        @click.self="handleClose"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        @click="handleClose"
+      />
+    </Transition>
+
+    <!-- Drawer Panel -->
+    <Transition name="slide-right">
+      <div
+        v-if="show"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        @click.stop
       >
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm pointer-events-none"></div>
-
-        <div class="flex min-h-full items-center justify-center p-4" @click.self="handleClose">
-          <div
-            ref="modalRef"
-            role="dialog"
-            aria-labelledby="quick-add-modal-title"
-            aria-modal="true"
-            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-            @click.stop
-          >
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 text-white flex items-center justify-center">
-                    <Zap class="w-5 h-5" />
-                  </div>
-                  <h2 id="quick-add-modal-title" class="text-lg sm:text-xl font-semibold text-slate-900">
-                    Quick Add
-                  </h2>
-                </div>
-                <button
-                  @click="handleClose"
-                  aria-label="Close dialog"
-                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                >
-                  <X class="w-4 h-4" />
-                </button>
-              </div>
+        <!-- Header -->
+        <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+          <div class="flex items-center px-3 py-2.5">
+            <!-- Left: Close button & Title -->
+            <div class="flex items-center gap-2">
+              <button
+                @click="handleClose"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                title="Close"
+              >
+                <ArrowRight class="w-5 h-5 text-white" />
+              </button>
+              <h2 class="text-base font-semibold text-white">Quick Add</h2>
             </div>
+          </div>
+        </div>
 
-            <!-- Form -->
-            <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto overscroll-contain">
+          <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
               <!-- Error Message -->
               <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
                 <p class="text-sm text-red-600">{{ error }}</p>
               </div>
 
-              <!-- Type Selection -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-3">What are you adding?</label>
-                <div class="grid grid-cols-3 gap-3">
+              <!-- Mode Toggle (Expense/Budget Tabs) -->
+              <div class="space-y-3 sm:space-y-4">
+                <div class="flex gap-2">
                   <button
                     type="button"
                     @click="selectedType = 'expense'"
                     :class="[
-                      'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200',
+                      'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
                       selectedType === 'expense'
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
-                    <Receipt class="w-5 h-5" />
-                    <span class="text-sm font-medium">Expense</span>
+                    <Receipt class="w-4 h-4 inline-block mr-1.5" />
+                    Expense
                   </button>
                   <button
                     type="button"
                     @click="selectedType = 'budget'"
                     :class="[
-                      'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200',
+                      'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
                       selectedType === 'budget'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
-                    <Wallet class="w-5 h-5" />
-                    <span class="text-sm font-medium">Budget</span>
-                  </button>
-                  <button
-                    type="button"
-                    @click="selectedType = 'category'"
-                    :class="[
-                      'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200',
-                      selectedType === 'category'
-                        ? 'border-purple-500 bg-purple-50 text-purple-700'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                    ]"
-                  >
-                    <FolderOpen class="w-5 h-5" />
-                    <span class="text-sm font-medium">Category</span>
+                    <Wallet class="w-4 h-4 inline-block mr-1.5" />
+                    Budget
                   </button>
                 </div>
               </div>
@@ -99,71 +81,291 @@
                   </label>
                   <button
                     type="button"
-                    @click="switchToCategory"
-                    class="text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                    @click="showCreateCategoryForm = !showCreateCategoryForm"
+                    class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
                   >
-                    + Create New
+                    {{ showCreateCategoryForm ? 'Cancel' : '+ Create Category' }}
                   </button>
                 </div>
-                <div class="relative">
-                  <select
-                    id="quick-add-category"
-                    v-model="formData.category_id"
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none pr-10"
-                    required
-                    @change="onCategoryChange"
-                  >
-                    <option value="">Select a category</option>
-                    <option
-                      v-for="category in categories"
-                      :key="category.id"
-                      :value="category.id"
+
+                <!-- Inline Create Category Form -->
+                <Transition name="slide-down">
+                  <div v-if="showCreateCategoryForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-purple-700 mb-2">
+                      <FolderOpen class="w-4 h-4" />
+                      <span class="text-sm font-medium">New Category</span>
+                    </div>
+                    <input
+                      v-model="newCategoryName"
+                      type="text"
+                      placeholder="Category name *"
+                      maxlength="100"
+                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
+                    />
+                    <textarea
+                      v-model="newCategoryDescription"
+                      rows="2"
+                      placeholder="Description (optional)"
+                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white resize-none"
+                    ></textarea>
+                    <div class="flex items-center gap-2">
+                      <input
+                        v-model="newCategoryColor"
+                        type="color"
+                        class="w-10 h-8 rounded border border-purple-200 cursor-pointer"
+                      />
+                      <div class="flex-1 flex flex-wrap gap-1.5">
+                        <button
+                          v-for="color in colorPresets"
+                          :key="color"
+                          type="button"
+                          @click="newCategoryColor = color"
+                          :class="[
+                            'w-6 h-6 rounded-md border transition-all',
+                            newCategoryColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
+                          ]"
+                          :style="{ backgroundColor: color }"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      @click="handleCreateCategory"
+                      :disabled="!newCategoryName.trim() || isCreatingCategory"
+                      class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {{ category.name }}
-                    </option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <ChevronDown class="w-4 h-4 text-slate-500" />
+                      <span v-if="isCreatingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                      <span>{{ isCreatingCategory ? 'Creating...' : 'Create Category' }}</span>
+                    </button>
                   </div>
+                </Transition>
+
+                <!-- Custom Dropdown for Category with inline Edit/Delete -->
+                <div class="relative" ref="categoryDropdownRef">
+                  <button
+                    type="button"
+                    @click="isCategoryDropdownOpen = !isCategoryDropdownOpen"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-purple-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                  >
+                    <FolderOpen class="w-4 h-4 text-purple-600 flex-shrink-0" />
+                    <span class="flex-1 text-left text-slate-900 truncate">
+                      {{ selectedCategory?.name || 'Select a category' }}
+                    </span>
+                    <ChevronDown
+                      class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0"
+                      :class="{ 'rotate-180': isCategoryDropdownOpen }"
+                    />
+                  </button>
+
+                  <!-- Dropdown Menu -->
+                  <Transition name="dropdown">
+                    <div
+                      v-if="isCategoryDropdownOpen"
+                      class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[300px] overflow-y-auto"
+                    >
+                      <div
+                        v-for="category in categories"
+                        :key="category.id"
+                        class="group/item relative border-b border-slate-100 last:border-b-0"
+                      >
+                        <div
+                          :class="[
+                            'flex items-center gap-2 px-3 py-2.5 transition-all duration-200',
+                            formData.category_id === category.id.toString()
+                              ? 'bg-gradient-to-r from-emerald-500 to-sky-500'
+                              : 'hover:bg-slate-50'
+                          ]"
+                        >
+                          <!-- Clickable area for selection -->
+                          <button
+                            type="button"
+                            @click="selectCategory(category.id)"
+                            :class="[
+                              'flex-1 flex items-center gap-3 text-sm font-medium min-w-0',
+                              formData.category_id === category.id.toString() ? 'text-white' : 'text-slate-700'
+                            ]"
+                          >
+                            <div
+                              class="w-3 h-3 rounded-full flex-shrink-0"
+                              :style="{ backgroundColor: formData.category_id === category.id.toString() ? 'white' : (category.color || '#3498db') }"
+                            />
+                            <span class="flex-1 text-left truncate">{{ category.name }}</span>
+                          </button>
+                          <!-- Edit/Delete Actions -->
+                          <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
+                            <button
+                              type="button"
+                              @click.stop="handleEditCategory(category)"
+                              :title="`Edit ${category.name}`"
+                              :class="[
+                                'p-1.5 rounded-md transition-all',
+                                formData.category_id === category.id.toString()
+                                  ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                  : 'text-slate-400 hover:text-blue-600 hover:bg-blue-100'
+                              ]"
+                            >
+                              <Edit2 class="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              @click.stop="handleDeleteCategory(category)"
+                              :title="`Delete ${category.name}`"
+                              :class="[
+                                'p-1.5 rounded-md transition-all',
+                                formData.category_id === category.id.toString()
+                                  ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                  : 'text-slate-400 hover:text-red-600 hover:bg-red-100'
+                              ]"
+                            >
+                              <Trash2 class="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Transition>
                 </div>
 
-                <!-- Budget Warning/Info for Expense -->
-                <div v-if="selectedType === 'expense' && formData.category_id" class="mt-3">
-                  <div v-if="!categoryBudget" class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <AlertCircle class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm text-amber-700 font-medium">No budget set for this category</p>
+                <!-- Inline Edit Category Form -->
+                <Transition name="slide-down">
+                  <div v-if="showEditCategoryForm && editingCategory" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2 text-blue-700">
+                        <Edit2 class="w-4 h-4" />
+                        <span class="text-sm font-medium">Edit Category</span>
+                      </div>
                       <button
                         type="button"
-                        @click="showInlineBudget = true"
-                        class="text-xs text-amber-600 hover:text-amber-700 underline mt-1"
+                        @click="closeEditCategoryForm"
+                        class="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
                       >
-                        Set budget now
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
+                    <input
+                      v-model="editCategoryName"
+                      type="text"
+                      placeholder="Category name *"
+                      maxlength="100"
+                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
+                    />
+                    <textarea
+                      v-model="editCategoryDescription"
+                      rows="2"
+                      placeholder="Description (optional)"
+                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white resize-none"
+                    ></textarea>
+                    <div class="flex items-center gap-2">
+                      <input
+                        v-model="editCategoryColor"
+                        type="color"
+                        class="w-10 h-8 rounded border border-blue-200 cursor-pointer"
+                      />
+                      <div class="flex-1 flex flex-wrap gap-1.5">
+                        <button
+                          v-for="color in colorPresets"
+                          :key="color"
+                          type="button"
+                          @click="editCategoryColor = color"
+                          :class="[
+                            'w-6 h-6 rounded-md border transition-all',
+                            editCategoryColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
+                          ]"
+                          :style="{ backgroundColor: color }"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        @click="closeEditCategoryForm"
+                        class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitEditCategory"
+                        :disabled="!editCategoryName.trim() || isUpdatingCategory"
+                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isUpdatingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>{{ isUpdatingCategory ? 'Saving...' : 'Save Changes' }}</span>
                       </button>
                     </div>
                   </div>
-                  <div v-else class="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                    <div class="flex items-center gap-2">
-                      <TrendingUp class="w-4 h-4 text-emerald-600" />
-                      <span class="text-sm font-medium text-emerald-700">
-                        {{ formatCurrency(categoryBudget.spent_amount, categoryBudget.currency) }} /
-                        {{ formatCurrency(categoryBudget.budgeted_amount, categoryBudget.currency) }}
-                      </span>
+                </Transition>
+
+                <!-- Inline Delete Category Confirmation -->
+                <Transition name="slide-down">
+                  <div v-if="showDeleteCategoryConfirm && deletingCategory" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-red-700">
+                      <Trash2 class="w-4 h-4" />
+                      <span class="text-sm font-medium">Delete Category</span>
                     </div>
-                    <span
-                      :class="[
-                        'text-xs font-semibold px-2 py-1 rounded-full',
-                        categoryBudget.is_over_budget
-                          ? 'bg-red-100 text-red-600'
-                          : categoryBudget.percentage_used >= 90
-                          ? 'bg-amber-100 text-amber-600'
-                          : 'bg-emerald-100 text-emerald-600'
-                      ]"
+                    <p class="text-sm text-red-800">
+                      Are you sure you want to delete "<span class="font-semibold">{{ deletingCategory.name }}</span>"?
+                    </p>
+                    <p class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
+                      ⚠️ This action cannot be undone!
+                    </p>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        @click="closeDeleteCategoryConfirm"
+                        class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitDeleteCategory"
+                        :disabled="isDeletingCategory"
+                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isDeletingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>{{ isDeletingCategory ? 'Deleting...' : 'Delete Category' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
+
+              <!-- Budget Warning/Info for Expense -->
+              <div v-if="selectedType === 'expense' && formData.category_id" class="mt-3">
+                <div v-if="!categoryBudget" class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertCircle class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm text-amber-700 font-medium">No budget set for this category</p>
+                    <button
+                      type="button"
+                      @click="showInlineBudget = true"
+                      class="text-xs text-amber-600 hover:text-amber-700 underline mt-1"
                     >
-                      {{ categoryBudget.percentage_used.toFixed(0) }}% used
+                      Set budget now
+                    </button>
+                  </div>
+                </div>
+                <div v-else class="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <div class="flex items-center gap-2">
+                    <TrendingUp class="w-4 h-4 text-emerald-600" />
+                    <span class="text-sm font-medium text-emerald-700">
+                      {{ formatCurrency(categoryBudget.spent_amount, categoryBudget.currency) }} /
+                      {{ formatCurrency(categoryBudget.budgeted_amount, categoryBudget.currency) }}
                     </span>
                   </div>
+                  <span
+                    :class="[
+                      'text-xs font-semibold px-2 py-1 rounded-full',
+                      categoryBudget.is_over_budget
+                        ? 'bg-red-100 text-red-600'
+                        : categoryBudget.percentage_used >= 90
+                        ? 'bg-amber-100 text-amber-600'
+                        : 'bg-emerald-100 text-emerald-600'
+                    ]"
+                  >
+                    {{ categoryBudget.percentage_used.toFixed(0) }}% used
+                  </span>
                 </div>
 
                 <!-- Inline Budget Creation -->
@@ -473,114 +675,32 @@
                 </div>
               </template>
 
-              <!-- CATEGORY FIELDS -->
-              <template v-if="selectedType === 'category'">
-                <!-- Category Name -->
-                <div>
-                  <label for="category-name" class="block text-sm font-medium text-slate-700 mb-2">
-                    Category Name <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="category-name"
-                    type="text"
-                    v-model="formData.name"
-                    placeholder="E.g., Venue, Catering, Photography..."
-                    maxlength="100"
-                    aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                    required
-                  />
-                </div>
-
-                <!-- Description -->
-                <div>
-                  <label for="category-description" class="block text-sm font-medium text-slate-700 mb-2">Description</label>
-                  <textarea
-                    id="category-description"
-                    v-model="formData.category_description"
-                    rows="3"
-                    placeholder="Describe what expenses this category covers..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
-                  ></textarea>
-                </div>
-
-                <!-- Color and Icon -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <!-- Color -->
-                  <div>
-                    <label for="category-color" class="block text-sm font-medium text-slate-700 mb-2">Color</label>
-                    <div class="flex items-center gap-3">
-                      <input
-                        id="category-color"
-                        v-model="formData.color"
-                        type="color"
-                        class="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
-                      />
-                      <input
-                        v-model="formData.color"
-                        type="text"
-                        placeholder="#3498db"
-                        class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Icon -->
-                  <div>
-                    <label for="category-icon" class="block text-sm font-medium text-slate-700 mb-2">Icon</label>
-                    <select
-                      id="category-icon"
-                      v-model="formData.icon"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none"
-                    >
-                      <option value="">Select an icon</option>
-                      <option value="fa-building">Building</option>
-                      <option value="fa-utensils">Food & Catering</option>
-                      <option value="fa-palette">Decoration</option>
-                      <option value="fa-camera">Photography</option>
-                      <option value="fa-music">Entertainment</option>
-                      <option value="fa-gift">Gifts & Favors</option>
-                      <option value="fa-car">Transportation</option>
-                      <option value="fa-hotel">Venue & Lodging</option>
-                      <option value="fa-shirt">Attire & Costumes</option>
-                      <option value="fa-lightbulb">Lighting & AV</option>
-                      <option value="fa-clipboard">Planning & Coordination</option>
-                      <option value="fa-megaphone">Marketing & Promotion</option>
-                    </select>
-                  </div>
-                </div>
-              </template>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                <button
-                  type="button"
-                  @click="handleClose"
-                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border-2 border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
-                  :disabled="submitting"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  :class="[
-                    'flex-1 sm:flex-none px-6 py-3 text-sm text-white rounded-lg font-bold transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center',
-                    selectedType === 'expense'
-                      ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 shadow-emerald-600/40'
-                      : selectedType === 'budget'
-                      ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-blue-600/40'
-                      : 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 shadow-purple-600/40'
-                  ]"
-                  :disabled="submitting"
-                >
-                  <span
-                    v-if="submitting"
-                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                  ></span>
-                  {{ submitting ? 'Saving...' : getSubmitButtonText() }}
-                </button>
-              </div>
             </form>
+          </div>
+
+        <!-- Footer with Action Buttons -->
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+          <div class="flex items-center justify-between">
+            <button
+              type="button"
+              @click="handleSubmit"
+              :disabled="submitting"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span
+                v-if="submitting"
+                class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+              ></span>
+              <span>{{ submitting ? 'Saving...' : getSubmitButtonText() }}</span>
+            </button>
+
+            <button
+              type="button"
+              @click="handleClose"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -590,9 +710,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import {
   X,
-  Zap,
   Receipt,
   Wallet,
   FolderOpen,
@@ -601,7 +721,10 @@ import {
   AlertCircle,
   TrendingUp,
   Upload,
-  Sparkles
+  Sparkles,
+  ArrowRight,
+  Edit2,
+  Trash2
 } from 'lucide-vue-next'
 import {
   expensesService,
@@ -633,9 +756,14 @@ const emit = defineEmits<{
   success: [type: 'expense' | 'budget' | 'category']
 }>()
 
+// Color presets for category quick selection
+const colorPresets = [
+  '#3498db', '#2ecc71', '#e74c3c', '#9b59b6', '#f39c12',
+  '#1abc9c', '#e91e63', '#00bcd4', '#ff5722', '#607d8b'
+]
+
 // State
-const modalRef = ref<HTMLElement | null>(null)
-const selectedType = ref<'expense' | 'budget' | 'category'>(props.initialType)
+const selectedType = ref<'expense' | 'budget'>(props.initialType === 'category' ? 'expense' : props.initialType)
 const submitting = ref(false)
 const error = ref<string | null>(null)
 const showMoreDetails = ref(false)
@@ -644,9 +772,36 @@ const creatingInlineBudget = ref(false)
 const inlineBudgetAmount = ref<number | null>(null)
 const inlineBudgetCurrency = ref<CurrencyCode>('USD')
 
+// Category management state
+const showCreateCategoryForm = ref(false)
+const newCategoryName = ref('')
+const newCategoryDescription = ref('')
+const newCategoryColor = ref('#3498db')
+const isCreatingCategory = ref(false)
+
+const showEditCategoryForm = ref(false)
+const editingCategory = ref<ExpenseCategory | null>(null)
+const editCategoryName = ref('')
+const editCategoryDescription = ref('')
+const editCategoryColor = ref('#3498db')
+const isUpdatingCategory = ref(false)
+
+const showDeleteCategoryConfirm = ref(false)
+const deletingCategory = ref<ExpenseCategory | null>(null)
+const isDeletingCategory = ref(false)
+
 // File upload
 const receiptInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
+
+// Category dropdown state
+const isCategoryDropdownOpen = ref(false)
+const categoryDropdownRef = ref<HTMLElement | null>(null)
+
+// Close category dropdown when clicking outside
+onClickOutside(categoryDropdownRef, () => {
+  isCategoryDropdownOpen.value = false
+})
 
 // Form data
 const formData = ref({
@@ -679,6 +834,12 @@ const categoryBudget = computed(() => {
   return props.budgets.find(b => b.category === categoryId)
 })
 
+const selectedCategory = computed(() => {
+  if (!formData.value.category_id) return null
+  const categoryId = parseInt(formData.value.category_id)
+  return props.categories.find(c => c.id === categoryId)
+})
+
 const formatCurrency = (amount: string | number, currency: string): string => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
   if (currency === 'USD') {
@@ -702,8 +863,8 @@ const getSubmitButtonText = () => {
       return 'Add Expense'
     case 'budget':
       return 'Add Budget'
-    case 'category':
-      return 'Create Category'
+    default:
+      return 'Add'
   }
 }
 
@@ -715,7 +876,9 @@ const handleFileChange = (event: Event) => {
   }
 }
 
-const onCategoryChange = () => {
+const selectCategory = (categoryId: number) => {
+  formData.value.category_id = categoryId.toString()
+  isCategoryDropdownOpen.value = false
   showInlineBudget.value = false
   // Match currency to category budget if exists
   if (categoryBudget.value) {
@@ -723,9 +886,152 @@ const onCategoryChange = () => {
   }
 }
 
-const switchToCategory = () => {
-  selectedType.value = 'category'
-  resetForm()
+// Category management methods
+const handleCreateCategory = async () => {
+  if (!newCategoryName.value.trim()) return
+
+  isCreatingCategory.value = true
+  error.value = null
+
+  try {
+    const requestData = {
+      name: newCategoryName.value.trim(),
+      description: newCategoryDescription.value.trim() || undefined,
+      color: newCategoryColor.value,
+      is_active: true
+    }
+
+    const response = await expenseCategoriesService.createCategory(requestData)
+
+    if (response.success && response.data) {
+      // Auto-select the newly created category
+      formData.value.category_id = response.data.id.toString()
+
+      // Close the form and reset fields
+      showCreateCategoryForm.value = false
+      newCategoryName.value = ''
+      newCategoryDescription.value = ''
+      newCategoryColor.value = '#3498db'
+
+      // Emit success to refresh categories
+      emit('success', 'category')
+    } else {
+      error.value = response.message || 'Failed to create category'
+    }
+  } catch (err) {
+    error.value = getErrorMessage(err, 'create category')
+  } finally {
+    isCreatingCategory.value = false
+  }
+}
+
+const openEditCategoryForm = (category?: ExpenseCategory) => {
+  const categoryToEdit = category || selectedCategory.value
+  if (!categoryToEdit) return
+
+  // Close other forms
+  showCreateCategoryForm.value = false
+  showDeleteCategoryConfirm.value = false
+
+  // Set up edit form
+  editingCategory.value = categoryToEdit
+  editCategoryName.value = categoryToEdit.name
+  editCategoryDescription.value = categoryToEdit.description || ''
+  editCategoryColor.value = categoryToEdit.color || '#3498db'
+  showEditCategoryForm.value = true
+}
+
+const closeEditCategoryForm = () => {
+  showEditCategoryForm.value = false
+  editingCategory.value = null
+  editCategoryName.value = ''
+  editCategoryDescription.value = ''
+  editCategoryColor.value = '#3498db'
+}
+
+const submitEditCategory = async () => {
+  if (!editingCategory.value || !editCategoryName.value.trim()) return
+
+  isUpdatingCategory.value = true
+  error.value = null
+
+  try {
+    const requestData = {
+      name: editCategoryName.value.trim(),
+      description: editCategoryDescription.value.trim() || undefined,
+      color: editCategoryColor.value,
+      is_active: true
+    }
+
+    const response = await expenseCategoriesService.updateCategory(editingCategory.value.id, requestData)
+
+    if (response.success) {
+      closeEditCategoryForm()
+      // Emit success to refresh categories
+      emit('success', 'category')
+    } else {
+      error.value = response.message || 'Failed to update category'
+    }
+  } catch (err) {
+    error.value = getErrorMessage(err, 'update category')
+  } finally {
+    isUpdatingCategory.value = false
+  }
+}
+
+const openDeleteCategoryConfirm = (category?: ExpenseCategory) => {
+  const categoryToDelete = category || selectedCategory.value
+  if (!categoryToDelete) return
+
+  // Close other forms
+  showCreateCategoryForm.value = false
+  showEditCategoryForm.value = false
+
+  deletingCategory.value = categoryToDelete
+  showDeleteCategoryConfirm.value = true
+}
+
+const closeDeleteCategoryConfirm = () => {
+  showDeleteCategoryConfirm.value = false
+  deletingCategory.value = null
+}
+
+const handleEditCategory = (category: ExpenseCategory) => {
+  openEditCategoryForm(category)
+  isCategoryDropdownOpen.value = false
+}
+
+const handleDeleteCategory = (category: ExpenseCategory) => {
+  openDeleteCategoryConfirm(category)
+  isCategoryDropdownOpen.value = false
+}
+
+const submitDeleteCategory = async () => {
+  if (!deletingCategory.value) return
+
+  isDeletingCategory.value = true
+  error.value = null
+
+  try {
+    const response = await expenseCategoriesService.deleteCategory(deletingCategory.value.id)
+
+    if (response.success) {
+      // Clear the category selection if it was deleted
+      if (formData.value.category_id === deletingCategory.value.id.toString()) {
+        formData.value.category_id = ''
+      }
+
+      closeDeleteCategoryConfirm()
+      // Emit success to refresh categories
+      emit('success', 'category')
+    } else {
+      error.value = response.message || 'Failed to delete category'
+    }
+  } catch (err) {
+    error.value = getErrorMessage(err, 'delete category')
+  } finally {
+    isDeletingCategory.value = false
+  }
 }
 
 const createInlineBudget = async () => {
@@ -887,6 +1193,11 @@ const handleClose = () => {
   emit('close')
 }
 
+// Calculate scrollbar width to prevent layout shift
+const getScrollbarWidth = (): number => {
+  return window.innerWidth - document.documentElement.clientWidth
+}
+
 // Watch for type changes to reset form
 watch(selectedType, () => {
   error.value = null
@@ -895,40 +1206,77 @@ watch(selectedType, () => {
 // Watch for show prop changes
 watch(() => props.show, (newVal) => {
   if (newVal) {
-    selectedType.value = props.initialType
+    selectedType.value = props.initialType === 'category' ? 'expense' : props.initialType
     resetForm()
+    // Lock body scroll when drawer opens
+    const scrollbarWidth = getScrollbarWidth()
+    document.body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+  } else {
+    // Restore body scroll when drawer closes
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
   }
 })
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s ease-out;
 }
 
-.modal-enter-from,
-.modal-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: scale(0.95);
 }
 
+/* Slide from right on desktop, from bottom on mobile */
+.slide-right-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: translateX(100%);
+  }
+}
+
+/* Slide down transition for inline forms */
 .slide-down-enter-active,
 .slide-down-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.25s ease-out;
 }
 
 .slide-down-enter-from,
 .slide-down-leave-to {
   opacity: 0;
-  max-height: 0;
-  overflow: hidden;
+  transform: translateY(-10px);
 }
 
-.slide-down-enter-to,
-.slide-down-leave-from {
-  opacity: 1;
-  max-height: 500px;
+/* Dropdown transition */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .collapse-enter-active,
