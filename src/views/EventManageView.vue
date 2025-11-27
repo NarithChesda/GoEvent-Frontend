@@ -213,7 +213,7 @@
                 :event-id="event.id"
                 :event="event"
                 :can-edit="event.can_edit || false"
-                @tab-change="activeTab = $event"
+                @tab-change="handleGuestTabChange"
               />
             </div>
 
@@ -753,6 +753,19 @@ const handleTemplateUpdated = (template: any) => {
     event.value.event_template_details = template // Set template details for immediate use
     event.value.event_template_enabled = false // Keep for backward compatibility
     showMessage('success', 'Template selected successfully!')
+  }
+}
+
+const handleGuestTabChange = async (tab: string, action?: string) => {
+  activeTab.value = tab
+
+  if (action === 'open-payment') {
+    // Wait for the template-payment tab to be rendered
+    await nextTick()
+    // Open the payment modal
+    if (templatePaymentTabRef.value && typeof templatePaymentTabRef.value.openPaymentModal === 'function') {
+      templatePaymentTabRef.value.openPaymentModal()
+    }
   }
 }
 

@@ -225,7 +225,7 @@ const props = defineProps<{
 
 // Emits
 const emit = defineEmits<{
-  'tab-change': [tab: string]
+  'tab-change': [tab: string, action?: string]
 }>()
 
 // Use composables
@@ -366,12 +366,12 @@ const hasTemplatePayment = computed(() => {
 
 
 // Methods
-const redirectToPaymentTab = () => {
-  emit('tab-change', 'payment')
+const redirectToPaymentTab = async () => {
+  emit('tab-change', 'template-payment', 'open-payment')
 }
 
 const redirectToTemplateTab = () => {
-  emit('tab-change', 'template')
+  emit('tab-change', 'template-payment')
 }
 
 const handleGroupToggle = async (groupId: number) => {
