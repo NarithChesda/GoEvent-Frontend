@@ -37,127 +37,174 @@
       </div>
     </div>
 
-    <!-- Budget List - Minimalist Data-Driven Design -->
+    <!-- Budget List - Collapsible with Expense Items -->
     <div v-else class="space-y-3">
       <!-- Dynamic Budget Cards -->
       <div
         v-for="budget in budgets"
         :key="budget.id"
-        class="group relative rounded-2xl border border-slate-200/60 bg-white hover:border-slate-300 hover:shadow-md transition-all duration-200"
+        class="rounded-3xl border border-white/70 bg-white overflow-hidden transition-all duration-200"
+        :class="[
+          isBudgetExpanded(budget.id)
+            ? 'shadow-lg shadow-slate-200/60'
+            : 'shadow-md shadow-slate-200/40 hover:shadow-lg hover:shadow-slate-200/60'
+        ]"
       >
-        <div class="p-4 sm:p-5">
-          <!-- Header Row -->
-          <div class="flex items-start justify-between gap-4 mb-4">
-            <!-- Category Info -->
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-              <div
-                class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                :style="{ backgroundColor: `${budget.category_info.color}15` }"
-              >
-                <component
-                  :is="getIconComponent(budget.category_info.icon)"
-                  class="w-5 h-5"
-                  :style="{ color: budget.category_info.color }"
-                />
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-0.5">
+        <!-- Budget Header (Clickable) - Compact -->
+        <div
+          @click="toggleBudget(budget.id)"
+          class="group relative px-3 sm:px-4 py-3 cursor-pointer hover:bg-slate-50/30 transition-colors"
+        >
+          <div class="flex items-center gap-3">
+            <!-- Icon -->
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+              :style="{ backgroundColor: `${budget.category_info.color}12` }"
+            >
+              <component
+                :is="getIconComponent(budget.category_info.icon)"
+                class="w-4.5 h-4.5"
+                :style="{ color: budget.category_info.color }"
+              />
+            </div>
+
+            <!-- Info Section -->
+            <div class="flex-1 min-w-0">
+              <!-- Top Row: Name + Badge + Amount -->
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="flex items-center gap-1.5 min-w-0">
                   <h4 class="font-semibold text-slate-900 text-sm truncate">{{ budget.category_info.name }}</h4>
                   <span
                     v-if="budget.is_over_budget"
-                    class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] font-semibold rounded uppercase tracking-wide flex-shrink-0"
+                    class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[9px] font-bold rounded uppercase tracking-wide flex-shrink-0"
                   >
                     Over
                   </span>
                 </div>
-                <p class="text-xs text-slate-500">{{ budget.currency }} Budget</p>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-sm font-bold text-slate-900 tabular-nums">
+                    {{ formatAmount(budget.spent_amount, budget.currency) }}
+                  </span>
+                  <span class="text-xs text-slate-400">/</span>
+                  <span class="text-xs font-medium text-slate-500 tabular-nums">
+                    {{ formatAmount(budget.budgeted_amount, budget.currency) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Progress + Stats -->
+              <div class="flex items-center gap-3">
+                <!-- Progress Bar -->
+                <div class="flex-1 min-w-0">
+                  <div class="relative h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                      :class="budget.is_over_budget ? 'bg-red-500' : budget.percentage_used >= 90 ? 'bg-amber-500' : 'bg-emerald-500'"
+                      :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span
+                    class="text-xs font-semibold tabular-nums"
+                    :class="budget.is_over_budget ? 'text-red-600' : budget.percentage_used >= 90 ? 'text-amber-600' : 'text-emerald-600'"
+                  >
+                    {{ budget.percentage_used.toFixed(0) }}%
+                  </span>
+                  <span class="text-xs text-slate-400">•</span>
+                  <span class="text-xs text-slate-500">
+                    {{ getExpenseCount(budget.category) }}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <!-- Actions -->
-            <div v-if="canEdit" class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-              <button
-                @click="editBudget(budget)"
-                :aria-label="`Edit budget for ${budget.category_info.name}`"
-                title="Edit budget"
-                class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-              >
-                <Edit2 class="w-3.5 h-3.5" />
-              </button>
-              <button
-                @click="confirmDeleteBudget(budget)"
-                :aria-label="`Delete budget for ${budget.category_info.name}`"
-                title="Delete budget"
-                class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-              >
-                <Trash2 class="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Data Grid -->
-          <div class="grid grid-cols-3 gap-4 mb-3">
-            <!-- Budgeted -->
-            <div>
-              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Budgeted</p>
-              <p class="text-base font-bold text-slate-900 tabular-nums">
-                {{ formatAmount(budget.budgeted_amount, budget.currency) }}
-              </p>
-            </div>
-
-            <!-- Spent -->
-            <div>
-              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Spent</p>
-              <p
-                class="text-base font-bold tabular-nums"
-                :class="budget.is_over_budget ? 'text-red-600' : 'text-emerald-600'"
-              >
-                {{ formatAmount(budget.spent_amount, budget.currency) }}
-              </p>
-            </div>
-
-            <!-- Remaining -->
-            <div>
-              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">
-                {{ budget.is_over_budget ? 'Over' : 'Left' }}
-              </p>
-              <p
-                class="text-base font-bold tabular-nums"
-                :class="budget.is_over_budget ? 'text-red-600' : 'text-blue-600'"
-              >
-                {{ formatAmount(Math.abs(parseFloat(budget.remaining_amount)), budget.currency) }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Progress Bar -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Usage</span>
-              <div class="flex items-center gap-1">
-                <AlertTriangle v-if="budget.is_over_budget" class="w-3 h-3 text-red-600" />
-                <span
-                  class="text-xs font-bold tabular-nums"
-                  :class="budget.is_over_budget ? 'text-red-600' : budget.percentage_used >= 90 ? 'text-amber-600' : 'text-emerald-600'"
-                >
-                  {{ budget.percentage_used.toFixed(0) }}%
-                </span>
-              </div>
-            </div>
-            <div class="relative h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <!-- Actions + Expand -->
+            <div class="flex items-center gap-1 flex-shrink-0">
               <div
-                class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-                :class="budget.is_over_budget ? 'bg-red-500' : budget.percentage_used >= 90 ? 'bg-amber-500' : 'bg-emerald-500'"
-                :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
-              ></div>
+                v-if="canEdit"
+                @click.stop
+                class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <button
+                  @click="editBudget(budget)"
+                  :aria-label="`Edit budget for ${budget.category_info.name}`"
+                  title="Edit budget"
+                  class="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all"
+                >
+                  <Edit2 class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  @click="confirmDeleteBudget(budget)"
+                  :aria-label="`Delete budget for ${budget.category_info.name}`"
+                  title="Delete budget"
+                  class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div class="w-6 flex justify-center">
+                <ChevronDown
+                  class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                  :class="{ 'rotate-180': isBudgetExpanded(budget.id) }"
+                />
+              </div>
             </div>
-          </div>
-
-          <!-- Notes (if any) -->
-          <div v-if="budget.notes" class="mt-3 pt-3 border-t border-slate-100">
-            <p class="text-xs text-slate-500 line-clamp-1">{{ budget.notes }}</p>
           </div>
         </div>
+
+        <!-- Expense Items (Collapsible) -->
+        <Transition name="slide-down">
+          <div v-if="isBudgetExpanded(budget.id)" class="border-t border-slate-100">
+            <div class="px-3 sm:px-4 py-2.5 bg-slate-50/40">
+              <!-- Loading expenses -->
+              <div v-if="loadingExpenses" class="flex justify-center py-3">
+                <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+
+              <!-- Expense items -->
+              <div
+                v-else-if="getBudgetExpenses(budget.category).length > 0"
+                class="space-y-2"
+              >
+                <div
+                  v-for="expense in getBudgetExpenses(budget.category)"
+                  :key="expense.id"
+                  class="group bg-white rounded-xl border border-white/60 px-3 py-2.5 hover:shadow-sm hover:border-white/80 transition-all shadow-sm shadow-slate-100/50"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-2 mb-0.5">
+                        <h5 class="font-medium text-slate-900 text-sm truncate">{{ expense.description }}</h5>
+                        <span class="text-sm font-bold text-slate-900 tabular-nums flex-shrink-0">
+                          {{ formatAmount(expense.amount, expense.currency) }}
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-2 text-xs text-slate-500">
+                        <span>{{ formatDate(expense.date) }}</span>
+                        <span v-if="expense.paid_to" class="flex items-center gap-1">
+                          <span class="text-slate-300">•</span>
+                          <span class="truncate max-w-[120px]">{{ expense.paid_to }}</span>
+                        </span>
+                        <span v-if="expense.receipt" class="flex items-center gap-1 text-emerald-600">
+                          <span class="text-slate-300">•</span>
+                          <Paperclip class="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No expenses -->
+              <div v-else class="text-center py-4">
+                <p class="text-xs text-slate-400">No expenses recorded yet</p>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
 
       <!-- Empty State -->
@@ -326,13 +373,16 @@ import {
   Check,
   Wallet,
   ChevronDown,
-  Plus
+  Plus,
+  Paperclip
 } from 'lucide-vue-next'
 import {
   expenseBudgetsService,
   expenseCategoriesService,
+  expensesService,
   type ExpenseBudget,
-  type ExpenseCategory
+  type ExpenseCategory,
+  type Expense
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { useSuccessToast } from '@/composables/useSuccessToast'
@@ -364,6 +414,11 @@ const showEditModal = ref(false)
 const modalError = ref<string | null>(null)
 const submitting = ref(false)
 
+// Expense management
+const expenses = ref<Expense[]>([])
+const loadingExpenses = ref(false)
+const expandedBudgets = ref<number[]>([])
+
 // Edit form data
 const editForm = ref({
   category_id: '',
@@ -389,6 +444,40 @@ const formatAmount = (amount: string | number, currency: string): string => {
   }
 
   return `${symbol}${numAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+// Format date
+const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Toggle budget expansion
+const toggleBudget = async (budgetId: number) => {
+  const index = expandedBudgets.value.indexOf(budgetId)
+  if (index > -1) {
+    expandedBudgets.value.splice(index, 1)
+  } else {
+    expandedBudgets.value.push(budgetId)
+    // Load expenses when expanding for the first time
+    if (expenses.value.length === 0) {
+      await loadExpenses()
+    }
+  }
+}
+
+// Check if budget is expanded
+const isBudgetExpanded = (budgetId: number): boolean => {
+  return expandedBudgets.value.includes(budgetId)
+}
+
+// Get expense count for a category
+const getExpenseCount = (categoryId: number): number => {
+  return expenses.value.filter(e => e.category === categoryId).length
+}
+
+// Get expenses for a budget
+const getBudgetExpenses = (categoryId: number): Expense[] => {
+  return expenses.value.filter(e => e.category === categoryId)
 }
 
 const loadBudgets = async () => {
@@ -420,6 +509,22 @@ const loadCategories = async () => {
     }
   } catch (err) {
     console.error('Error loading categories:', err)
+  }
+}
+
+const loadExpenses = async () => {
+  loadingExpenses.value = true
+
+  try {
+    const response = await expensesService.getExpenses(props.eventId)
+
+    if (response.success && response.data) {
+      expenses.value = response.data.results
+    }
+  } catch (err) {
+    console.error('Error loading expenses:', err)
+  } finally {
+    loadingExpenses.value = false
   }
 }
 
@@ -576,5 +681,23 @@ defineExpose({
 .toast-leave-to {
   opacity: 0;
   transform: translateY(1rem);
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.slide-down-enter-to,
+.slide-down-leave-from {
+  opacity: 1;
+  max-height: 1000px;
 }
 </style>
