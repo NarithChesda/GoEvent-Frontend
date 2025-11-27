@@ -99,17 +99,17 @@
               <button
                 v-if="template.youtube_preview_url"
                 @click="$emit('preview-video', template.youtube_preview_url)"
-                class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
+                class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 laptop-sm:py-2 laptop-sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm laptop-sm:text-xs"
               >
-                <PlayCircle class="w-5 h-5 mr-2" />
+                <PlayCircle class="w-5 h-5 laptop-sm:w-4 laptop-sm:h-4 mr-2 laptop-sm:mr-1.5" />
                 Preview
               </button>
               <button
                 v-if="status === 'preview' && showPaymentButton"
                 @click="$emit('make-payment')"
-                class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center"
+                class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 laptop-sm:py-2 laptop-sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm laptop-sm:text-xs"
               >
-                <CreditCard class="w-5 h-5 mr-2" />
+                <CreditCard class="w-5 h-5 laptop-sm:w-4 laptop-sm:h-4 mr-2 laptop-sm:mr-1.5" />
                 Make Payment
               </button>
             </div>
