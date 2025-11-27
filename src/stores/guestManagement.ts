@@ -493,32 +493,39 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     try {
       const response = await guestService.updateGuest(eventId, guestId, data)
 
-      if (response.success) {
-        // If guest moved to different group
+      if (response.success && response.data) {
+        const updatedGuest = response.data
+
+        // Optimistically update the guest in both lists immediately
+        // Update in group pagination
+        const groupPag = getGroupPaginationState(groupId)
+        const guestIndexInGroup = groupPag.guests.findIndex(g => g.id === guestId)
+        if (guestIndexInGroup !== -1) {
+          groupPag.guests[guestIndexInGroup] = updatedGuest
+        }
+
+        // Update in all guests pagination
+        const guestIndexInAll = allGuestsPagination.value.guests.findIndex(g => g.id === guestId)
+        if (guestIndexInAll !== -1) {
+          allGuestsPagination.value.guests[guestIndexInAll] = updatedGuest
+        }
+
+        // If guest moved to different group, handle the move
         if (data.group && data.group !== groupId) {
           updateGroupGuestCount(groupId, -1)
           updateGroupGuestCount(data.group, 1)
 
-          // Refresh both groups
-          const oldGroupPag = getGroupPaginationState(groupId)
-          if (oldGroupPag.hasLoaded) {
-            await loadGuestsForGroup(eventId, groupId, oldGroupPag.currentPage, true)
-          }
+          // Remove from old group
+          groupPag.guests = groupPag.guests.filter(g => g.id !== guestId)
+          groupPag.totalCount -= 1
 
+          // Add to new group if it's loaded
           const newGroupPag = getGroupPaginationState(data.group)
           if (newGroupPag.hasLoaded) {
-            await loadGuestsForGroup(eventId, data.group, newGroupPag.currentPage, true)
-          }
-        } else {
-          // Just refresh the current group
-          const groupPag = getGroupPaginationState(groupId)
-          if (groupPag.hasLoaded) {
-            await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
+            newGroupPag.guests = [updatedGuest, ...newGroupPag.guests]
+            newGroupPag.totalCount += 1
           }
         }
-
-        // Always refresh all guests
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
       }
 
       return response
@@ -805,7 +812,10 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   async function setGroupSearchTerm(eventId: string, groupId: number, searchTerm: string) {
     const pagination = getGroupPaginationState(groupId)
     pagination.searchTerm = searchTerm
-    await loadGuestsForGroup(eventId, groupId, 1, true)
+    // Reset to page 1 without clearing guests (prevents flicker)
+    pagination.currentPage = 1
+    pagination.hasMore = true
+    await loadGuestsForGroup(eventId, groupId, 1, true, true) // forceRefresh=true to bypass cache
   }
 
   /**
@@ -833,10 +843,11 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function setAllGuestsSearchTerm(eventId: string, searchTerm: string) {
     allGuestsPagination.value.searchTerm = searchTerm
-    // Reset to page 1 and clear existing guests for fresh search
-    allGuestsPagination.value.guests = []
+    // Reset to page 1 without clearing guests (prevents flicker)
+    // loadAllGuests will replace guests atomically when results arrive
+    allGuestsPagination.value.currentPage = 1
     allGuestsPagination.value.hasMore = true
-    await loadAllGuests(eventId, 1, true)
+    await loadAllGuests(eventId, 1, true, true) // forceRefresh=true to bypass cache
   }
 
   // ============================================================================
