@@ -10,8 +10,8 @@
     <div class="space-y-6">
       <!-- Summary View -->
       <ExpenseSummaryView
+        ref="summaryViewRef"
         :event-id="eventId"
-        :key="summaryRefreshKey"
       />
 
       <!-- Budgets View -->
@@ -63,9 +63,8 @@ const props = defineProps<Props>()
 
 const showQuickAddModal = ref(false)
 const quickAddInitialType = ref<'expense' | 'budget' | 'category'>('expense')
-const summaryRefreshKey = ref(0)
 const isEditMode = ref(false)
-const editData = ref<ExpenseBudget | ExpenseRecord | null>(null)
+const editData = ref<ExpenseBudget | ExpenseRecord | undefined>(undefined)
 
 // Data for Quick Add Modal
 const categories = ref<ExpenseCategory[]>([])
@@ -73,6 +72,7 @@ const budgets = ref<ExpenseBudget[]>([])
 
 // Refs for expense sub-views
 const budgetsViewRef = ref<InstanceType<typeof ExpenseBudgetsView> | null>(null)
+const summaryViewRef = ref<InstanceType<typeof ExpenseSummaryView> | null>(null)
 
 // Load categories and budgets for Quick Add Modal
 const loadCategoriesAndBudgets = async () => {
@@ -107,15 +107,6 @@ const openQuickAddBudget = () => {
   showQuickAddModal.value = true
 }
 
-const openQuickAddExpense = () => {
-  quickAddInitialType.value = 'expense'
-  showQuickAddModal.value = true
-}
-
-const openQuickAddCategory = () => {
-  quickAddInitialType.value = 'category'
-  showQuickAddModal.value = true
-}
 
 // Edit handlers
 const handleEditBudget = (budget: ExpenseBudget) => {
@@ -136,33 +127,63 @@ const handleEditExpense = (expense: ExpenseRecord) => {
 const handleCloseQuickAdd = () => {
   showQuickAddModal.value = false
   isEditMode.value = false
-  editData.value = null
+  editData.value = undefined
 }
 
-// Handle Quick Add success - refresh data
-const handleQuickAddSuccess = async (type: 'expense' | 'budget' | 'category') => {
-  // Reload categories and budgets for the modal
-  await loadCategoriesAndBudgets()
-
-  // Refresh the budgets view based on what was changed
-  if (type === 'expense') {
-    // Reload expenses and budgets (expenses affect budget spent amounts)
-    budgetsViewRef.value?.reloadExpenses()
-    budgetsViewRef.value?.reloadBudgets()
-  } else if (type === 'budget') {
-    // Reload budgets
-    budgetsViewRef.value?.reloadBudgets()
-  } else if (type === 'category') {
-    // Reload categories
+// Handle Quick Add success - update local state instead of reloading
+const handleQuickAddSuccess = async (
+  type: 'expense' | 'budget' | 'category',
+  data?: ExpenseBudget | ExpenseRecord | any
+) => {
+  // Update local categories/budgets arrays for the modal
+  if (type === 'category' && data) {
+    const existingIndex = categories.value.findIndex(c => c.id === data.id)
+    if (existingIndex >= 0) {
+      // Update existing category
+      categories.value[existingIndex] = data
+    } else {
+      // Add new category
+      categories.value.push(data)
+    }
+    // Reload categories in budgets view
     budgetsViewRef.value?.reloadCategories()
-  }
+  } else if (type === 'budget' && data) {
+    const existingIndex = budgets.value.findIndex(b => b.id === data.id)
+    if (existingIndex >= 0) {
+      // Update existing budget
+      budgets.value[existingIndex] = data
+    } else {
+      // Add new budget
+      budgets.value.push(data)
+    }
+    // Update budget in budgets view locally (no reload)
+    budgetsViewRef.value?.updateLocalBudget(data)
 
-  // Trigger summary refresh
-  summaryRefreshKey.value++
+    // Refresh summary view silently (no loading state)
+    summaryViewRef.value?.refresh()
+  } else if (type === 'expense' && data) {
+    // Update expense locally (automatically updates affected budgets)
+    if (isEditMode.value) {
+      // Editing existing expense
+      budgetsViewRef.value?.updateLocalExpense(data)
+    } else {
+      // Adding new expense
+      budgetsViewRef.value?.addLocalExpense(data)
+    }
+
+    // Update budgets array for modal with fresh data
+    const response = await expenseBudgetsService.getBudgets(props.eventId)
+    if (response.success && response.data) {
+      budgets.value = response.data.results
+    }
+
+    // Refresh summary view silently (no loading state)
+    summaryViewRef.value?.refresh()
+  }
 
   // Reset edit mode after success
   isEditMode.value = false
-  editData.value = null
+  editData.value = undefined
 }
 
 // Handle create category from expense modal

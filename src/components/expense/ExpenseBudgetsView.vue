@@ -311,6 +311,11 @@ import {
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { useSuccessToast } from '@/composables/useSuccessToast'
 import { getErrorMessage } from '@/utils/errorMessages'
+import {
+  updateBudgetAfterExpenseDelete,
+  cloneBudget,
+  parseExpenseAmount
+} from '@/utils/budgetCalculations'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 
 interface Props {
@@ -457,25 +462,56 @@ const handleDeleteExpense = async () => {
 
   submitting.value = true
   const deletedId = deletingExpense.value.id
+  const deletedExpense = { ...deletingExpense.value } // Keep a copy for rollback
 
   try {
+    // Optimistic update: Remove from local list immediately
+    expenses.value = expenses.value.filter(expense => expense.id !== deletedId)
+
+    // Optimistic update: Update affected budget locally using helper
+    const affectedBudget = budgets.value.find(b => b.category === deletedExpense.category)
+    let previousBudgetState: ExpenseBudget | null = null
+
+    if (affectedBudget) {
+      // Keep copy for rollback using helper
+      previousBudgetState = cloneBudget(affectedBudget)
+
+      // Update budget metrics using helper function
+      const expenseAmount = parseExpenseAmount(deletedExpense.amount)
+      updateBudgetAfterExpenseDelete(affectedBudget, expenseAmount)
+    }
+
+    // Close modal immediately for better UX
+    deletingExpense.value = null
+    showDeleteExpenseModal.value = false
+    showSuccess('Expense deleted successfully!')
+
+    // Make API call
     const response = await expensesService.deleteExpense(
       props.eventId,
       deletedId
     )
 
-    if (response.success) {
-      // Remove from local list
-      expenses.value = expenses.value.filter(expense => expense.id !== deletedId)
-      showSuccess('Expense deleted successfully!')
-      deletingExpense.value = null
-      showDeleteExpenseModal.value = false
-      // Reload budgets to update spent amounts
-      await loadBudgets()
-    } else {
+    if (!response.success) {
+      // Rollback on failure
+      expenses.value.push(deletedExpense)
+
+      if (affectedBudget && previousBudgetState) {
+        Object.assign(affectedBudget, previousBudgetState)
+      }
+
       error.value = response.message || 'Failed to delete expense'
     }
   } catch (err) {
+    // Rollback on error
+    expenses.value.push(deletedExpense)
+
+    const affectedBudget = budgets.value.find(b => b.category === deletedExpense.category)
+    if (affectedBudget) {
+      // Reload just this budget to get accurate data
+      await loadBudgets()
+    }
+
     error.value = getErrorMessage(err, 'delete expense')
     console.error('Error deleting expense:', err)
   } finally {
@@ -492,22 +528,30 @@ const handleDelete = async () => {
 
   submitting.value = true
   const deletedId = deletingBudget.value.id
+  const deletedBudget = cloneBudget(deletingBudget.value) // Keep a copy for rollback using helper
 
   try {
+    // Optimistic update: Remove from local list immediately
+    budgets.value = budgets.value.filter(budget => budget.id !== deletedId)
+
+    // Close modal immediately for better UX
+    deletingBudget.value = null
+    showSuccess('Budget deleted successfully!')
+
+    // Make API call
     const response = await expenseBudgetsService.deleteBudget(
       props.eventId,
       deletedId
     )
 
-    if (response.success) {
-      // Remove from local list
-      budgets.value = budgets.value.filter(budget => budget.id !== deletedId)
-      showSuccess('Budget deleted successfully!')
-      deletingBudget.value = null
-    } else {
+    if (!response.success) {
+      // Rollback on failure
+      budgets.value.push(deletedBudget)
       error.value = response.message || 'Failed to delete budget'
     }
   } catch (err) {
+    // Rollback on error
+    budgets.value.push(deletedBudget)
     error.value = getErrorMessage(err, 'delete budget')
     console.error('Error deleting budget:', err)
   } finally {
@@ -530,6 +574,88 @@ onUnmounted(() => {
   deletingBudget.value = null
 })
 
+// Methods to update local state without reloading
+const updateLocalBudget = (updatedBudget: ExpenseBudget) => {
+  const index = budgets.value.findIndex(b => b.id === updatedBudget.id)
+  if (index >= 0) {
+    budgets.value[index] = updatedBudget
+  } else {
+    budgets.value.push(updatedBudget)
+  }
+}
+
+const updateLocalExpense = (updatedExpense: ExpenseRecord) => {
+  const index = expenses.value.findIndex(e => e.id === updatedExpense.id)
+  if (index >= 0) {
+    // Update existing expense
+    const oldExpense = expenses.value[index]
+    expenses.value[index] = updatedExpense
+
+    // Update affected budgets if category or amount changed
+    if (oldExpense.category === updatedExpense.category) {
+      // Same category - update budget with amount difference
+      const affectedBudget = budgets.value.find(b => b.category === updatedExpense.category)
+      if (affectedBudget) {
+        const oldAmount = parseExpenseAmount(oldExpense.amount)
+        const newAmount = parseExpenseAmount(updatedExpense.amount)
+        const difference = newAmount - oldAmount
+
+        const newSpent = parseFloat(affectedBudget.spent_amount) + difference
+        affectedBudget.spent_amount = newSpent.toString()
+        affectedBudget.percentage_used = (newSpent / parseFloat(affectedBudget.budgeted_amount)) * 100
+        affectedBudget.is_over_budget = newSpent > parseFloat(affectedBudget.budgeted_amount)
+      }
+    } else {
+      // Category changed - update both old and new budgets
+      const oldBudget = budgets.value.find(b => b.category === oldExpense.category)
+      const newBudget = budgets.value.find(b => b.category === updatedExpense.category)
+
+      if (oldBudget) {
+        const oldAmount = parseExpenseAmount(oldExpense.amount)
+        updateBudgetAfterExpenseDelete(oldBudget, oldAmount)
+      }
+
+      if (newBudget) {
+        const newAmount = parseExpenseAmount(updatedExpense.amount)
+        const newSpent = parseFloat(newBudget.spent_amount) + newAmount
+        newBudget.spent_amount = newSpent.toString()
+        newBudget.percentage_used = (newSpent / parseFloat(newBudget.budgeted_amount)) * 100
+        newBudget.is_over_budget = newSpent > parseFloat(newBudget.budgeted_amount)
+      }
+    }
+  } else {
+    // Add new expense
+    expenses.value.push(updatedExpense)
+
+    // Update budget
+    const affectedBudget = budgets.value.find(b => b.category === updatedExpense.category)
+    if (affectedBudget) {
+      const amount = parseExpenseAmount(updatedExpense.amount)
+      const newSpent = parseFloat(affectedBudget.spent_amount) + amount
+      affectedBudget.spent_amount = newSpent.toString()
+      affectedBudget.percentage_used = (newSpent / parseFloat(affectedBudget.budgeted_amount)) * 100
+      affectedBudget.is_over_budget = newSpent > parseFloat(affectedBudget.budgeted_amount)
+    }
+  }
+}
+
+const addLocalExpense = (newExpense: ExpenseRecord) => {
+  // Only add if expenses are loaded (to avoid duplicates when lazy loading)
+  if (expenses.value.length > 0 || expandedBudgets.value.length > 0) {
+    expenses.value.push(newExpense)
+  }
+
+  // Update affected budget
+  const affectedBudget = budgets.value.find(b => b.category === newExpense.category)
+  if (affectedBudget) {
+    const amount = parseExpenseAmount(newExpense.amount)
+    const newSpent = parseFloat(affectedBudget.spent_amount) + amount
+    affectedBudget.spent_amount = newSpent.toString()
+    affectedBudget.percentage_used = (newSpent / parseFloat(affectedBudget.budgeted_amount)) * 100
+    affectedBudget.is_over_budget = newSpent > parseFloat(affectedBudget.budgeted_amount)
+  }
+}
+
 // Expose methods for parent component
 defineExpose({
   reloadCategories: () => {
@@ -543,7 +669,11 @@ defineExpose({
   },
   reloadAll: async () => {
     await Promise.all([loadBudgets(), loadCategories(), loadExpenses()])
-  }
+  },
+  // New methods for optimistic updates
+  updateLocalBudget,
+  updateLocalExpense,
+  addLocalExpense
 })
 </script>
 

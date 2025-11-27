@@ -734,6 +734,7 @@ import {
   expenseCategoriesService,
   type ExpenseCategory,
   type ExpenseBudget,
+  type ExpenseRecord,
   type CreateExpenseRecordRequest,
   type CreateExpenseBudgetRequest
 } from '@/services/api'
@@ -748,7 +749,7 @@ interface Props {
   budgets: ExpenseBudget[]
   initialType?: 'expense' | 'budget' | 'category'
   editMode?: boolean
-  editData?: any
+  editData?: ExpenseBudget | ExpenseRecord
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -759,7 +760,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   close: []
-  success: [type: 'expense' | 'budget' | 'category']
+  success: [type: 'expense' | 'budget' | 'category', data?: ExpenseBudget | ExpenseRecord | ExpenseCategory]
 }>()
 
 // Color presets for category quick selection
@@ -931,8 +932,8 @@ const handleCreateCategory = async () => {
       newCategoryDescription.value = ''
       newCategoryColor.value = '#3498db'
 
-      // Emit success to refresh categories
-      emit('success', 'category')
+      // Emit success to refresh categories with new data
+      emit('success', 'category', response.data)
     } else {
       error.value = response.message || 'Failed to create category'
     }
@@ -985,8 +986,8 @@ const submitEditCategory = async () => {
 
     if (response.success) {
       closeEditCategoryForm()
-      // Emit success to refresh categories
-      emit('success', 'category')
+      // Emit success to refresh categories with updated data
+      emit('success', 'category', response.data)
     } else {
       error.value = response.message || 'Failed to update category'
     }
@@ -1031,17 +1032,18 @@ const submitDeleteCategory = async () => {
   error.value = null
 
   try {
-    const response = await expenseCategoriesService.deleteCategory(deletingCategory.value.id)
+    const deletedCategoryId = deletingCategory.value.id
+    const response = await expenseCategoriesService.deleteCategory(deletedCategoryId)
 
     if (response.success) {
       // Clear the category selection if it was deleted
-      if (formData.value.category_id === deletingCategory.value.id.toString()) {
+      if (formData.value.category_id === deletedCategoryId.toString()) {
         formData.value.category_id = ''
       }
 
       closeDeleteCategoryConfirm()
-      // Emit success to refresh categories
-      emit('success', 'category')
+      // Emit success to refresh categories (pass deleted category info)
+      emit('success', 'category', { id: deletedCategoryId } as ExpenseCategory)
     } else {
       error.value = response.message || 'Failed to delete category'
     }
@@ -1073,8 +1075,8 @@ const createInlineBudget = async () => {
     if (response.success) {
       showInlineBudget.value = false
       inlineBudgetAmount.value = null
-      // Emit success to refresh budgets
-      emit('success', 'budget')
+      // Emit success to refresh budgets with new data
+      emit('success', 'budget', response.data)
     } else {
       error.value = response.message || 'Failed to create budget'
     }
@@ -1136,7 +1138,7 @@ const submitExpense = async () => {
   )
 
   if (response.success) {
-    emit('success', 'expense')
+    emit('success', 'expense', response.data)
     handleClose()
   } else {
     error.value = response.message || 'Failed to create expense'
@@ -1161,7 +1163,7 @@ const submitBudget = async () => {
   const response = await expenseBudgetsService.createBudget(props.eventId, requestData)
 
   if (response.success) {
-    emit('success', 'budget')
+    emit('success', 'budget', response.data)
     handleClose()
   } else {
     error.value = response.message || 'Failed to create budget'
@@ -1195,7 +1197,7 @@ const updateExpense = async () => {
   )
 
   if (response.success) {
-    emit('success', 'expense')
+    emit('success', 'expense', response.data)
     handleClose()
   } else {
     error.value = response.message || 'Failed to update expense'
@@ -1221,7 +1223,7 @@ const updateBudget = async () => {
   )
 
   if (response.success) {
-    emit('success', 'budget')
+    emit('success', 'budget', response.data)
     handleClose()
   } else {
     error.value = response.message || 'Failed to update budget'
@@ -1245,7 +1247,7 @@ const submitCategory = async () => {
   const response = await expenseCategoriesService.createCategory(requestData)
 
   if (response.success) {
-    emit('success', 'category')
+    emit('success', 'category', response.data)
     handleClose()
   } else {
     error.value = response.message || 'Failed to create category'
@@ -1289,11 +1291,20 @@ watch(selectedType, () => {
   error.value = null
 })
 
+// Type guards for edit data
+const isExpenseRecord = (data: ExpenseBudget | ExpenseRecord): data is ExpenseRecord => {
+  return 'description' in data && 'amount' in data
+}
+
+const isExpenseBudget = (data: ExpenseBudget | ExpenseRecord): data is ExpenseBudget => {
+  return 'budgeted_amount' in data
+}
+
 // Populate form with edit data
 const populateEditData = () => {
   if (!props.editData || !props.editMode) return
 
-  if (selectedType.value === 'expense') {
+  if (selectedType.value === 'expense' && isExpenseRecord(props.editData)) {
     formData.value = {
       category_id: props.editData.category.toString(),
       currency: props.editData.currency || 'USD',
@@ -1309,7 +1320,7 @@ const populateEditData = () => {
       icon: '',
       color: '#3498db'
     }
-  } else if (selectedType.value === 'budget') {
+  } else if (selectedType.value === 'budget' && isExpenseBudget(props.editData)) {
     formData.value = {
       category_id: props.editData.category.toString(),
       currency: props.editData.currency || 'USD',

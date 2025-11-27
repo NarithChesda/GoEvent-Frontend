@@ -34,7 +34,7 @@
           <div class="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ currency }} Budget</p>
-              <p class="text-4xl font-semibold tracking-tight text-slate-900" aria-live="polite">
+              <p class="text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300" aria-live="polite">
                 {{ formatCurrency(summary.overall_totals[currency].total_budget, currency) }}
               </p>
               <p class="mt-1 text-sm text-slate-500">{{ getBudgetedCategoriesCount(currency) }} categories budgeted</p>
@@ -59,7 +59,7 @@
             <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
               <div
                 :class="[
-                  'h-full transition-[width] duration-500',
+                  'h-full transition-all duration-700 ease-out',
                   isOverBudget(currency)
                     ? 'bg-gradient-to-r from-red-400 via-red-500 to-red-600'
                     : 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600'
@@ -96,7 +96,7 @@
                     {{ getBudgetPercentage(currency) }}%
                   </span>
                 </div>
-                <p class="mt-3 text-lg font-semibold text-slate-900">
+                <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">
                   {{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }}
                 </p>
                 <p :class="['text-xs', isOverBudget(currency) ? 'text-red-700/70' : 'text-emerald-700/70']">
@@ -131,7 +131,7 @@
                     {{ Math.abs(getRemainingBudget(currency)) > 0 ? (isOverBudget(currency) ? '+' : '') : '' }}{{ Math.abs(100 - getBudgetPercentage(currency)) }}%
                   </span>
                 </div>
-                <p class="mt-3 text-lg font-semibold text-slate-900">
+                <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">
                   {{ formatCurrency(Math.abs(getRemainingBudget(currency)), currency) }}
                 </p>
                 <p :class="['text-xs', isOverBudget(currency) ? 'text-red-700/70' : 'text-sky-700/70']">
@@ -144,7 +144,7 @@
                 <div class="flex items-center justify-between">
                   <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Status</p>
                 </div>
-                <p class="mt-3 text-lg font-semibold text-slate-900">
+                <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">
                   {{ isOverBudget(currency) ? 'Over Budget' : 'On Track' }}
                 </p>
                 <p class="text-xs text-slate-500">
@@ -241,14 +241,17 @@ const topExpenseCategories = computed(() => {
     .slice(0, 5)
 })
 
-const loadSummary = async () => {
+const loadSummary = async (silent = false) => {
   // Cancel previous request if exists
   if (abortController.value) {
     abortController.value.abort()
   }
 
   abortController.value = new AbortController()
-  loading.value = true
+  // Only show loading state on initial load, not on refreshes
+  if (!silent && !summary.value) {
+    loading.value = true
+  }
   error.value = null
 
   try {
@@ -424,5 +427,10 @@ onUnmounted(() => {
   if (abortController.value) {
     abortController.value.abort()
   }
+})
+
+// Expose methods for parent component
+defineExpose({
+  refresh: () => loadSummary(true) // Pass silent=true to avoid loading flicker
 })
 </script>
