@@ -77,7 +77,7 @@ const router = createRouter({
     {
       path: '/events/:id/manage',
       name: 'event-manage',
-      component: () => import('../views/EventDetailView.vue'),
+      component: () => import('../views/EventManageView.vue'),
       meta: { requiresAuth: true, title: 'Manage Event - GoEvent' },
     },
     {

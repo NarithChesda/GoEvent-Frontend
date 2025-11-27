@@ -98,9 +98,9 @@ const storageKey = computed(() => {
   return userId ? `${STORAGE_KEY_PREFIX}${userId}` : null
 })
 
-// Check if user is on their own event detail page
-const isOwnEventDetailPage = computed(() => {
-  return route.name === 'event-detail' && props.canEdit === true
+// Check if user is on their own event manage page
+const isOwnEventPage = computed(() => {
+  return route.name === 'event-manage' && props.canEdit === true
 })
 
 // Create Telegram link
@@ -151,7 +151,7 @@ const shouldShowPopup = () => {
 const startPopupTimer = () => {
   if (popupTimer) clearTimeout(popupTimer)
 
-  if (isOwnEventDetailPage.value && shouldShowPopup()) {
+  if (isOwnEventPage.value && shouldShowPopup()) {
     popupTimer = setTimeout(() => {
       showChatPopup.value = true
     }, POPUP_DELAY)
@@ -178,15 +178,28 @@ const handleDontShowAgainChange = () => {
 // Watch for route/canEdit changes
 watch(
   () => [route.name, props.canEdit],
-  () => {
-    dismissPopup()
+  ([newRouteName, newCanEdit], [oldRouteName, oldCanEdit]) => {
+    // Only dismiss if route changed (not just canEdit becoming true)
+    if (newRouteName !== oldRouteName) {
+      dismissPopup()
+    }
     startPopupTimer()
   }
 )
 
-onMounted(() => {
-  startPopupTimer()
-})
+// Watch for user changes (account switch) and initial load
+watch(
+  () => authStore.user?.id,
+  (newUserId, oldUserId) => {
+    // Reset state for new user or on initial load
+    dontShowAgain.value = false
+    dismissPopup()
+    if (newUserId) {
+      startPopupTimer()
+    }
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => {
   if (popupTimer) {

@@ -3,7 +3,7 @@
     <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
 
     <!-- Top Navigation Bar -->
-    <EventDetailTopBar
+    <EventManageTopBar
       v-if="event"
       :event-id="event.id"
       :event-title="event.title"
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Mobile Tab Bar (fixed position for stable scrolling) -->
-    <EventDetailMobileTabBar
+    <EventManageMobileTabBar
       v-if="event"
       :active-tab="activeTab"
       :tabs="navigationTabs"
@@ -385,9 +385,9 @@ import {
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
-import EventDetailTopBar from '../components/EventDetailTopBar.vue'
+import EventManageTopBar from '../components/EventManageTopBar.vue'
 import EventNavigationTabs from '../components/EventNavigationTabs.vue'
-import EventDetailMobileTabBar from '../components/EventDetailMobileTabBar.vue'
+import EventManageMobileTabBar from '../components/EventManageMobileTabBar.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, type Event, type EventPhoto } from '../services/api'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
