@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="modelValue"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -64,7 +64,7 @@
           </div>
 
           <!-- Edit Form -->
-          <div v-else class="p-4 space-y-5 pb-24">
+          <div v-else class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
             <!-- Banner Image Upload -->
             <div class="space-y-2">
               <div class="flex items-center justify-between">
@@ -162,30 +162,30 @@
             </div>
 
             <!-- Basic Information -->
-            <div class="space-y-3 border-t border-slate-100 pt-5">
+            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
 
               <!-- Title -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Event Title *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Event Title *</label>
                 <input
                   v-model="form.title"
                   type="text"
                   required
                   placeholder="Enter event title"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
               </div>
 
               <!-- Short Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Short Description</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Short Description</label>
                 <input
                   v-model="form.short_description"
                   type="text"
                   maxlength="300"
                   placeholder="Brief description for event cards"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
                 <p class="text-xs text-slate-500 mt-1">
                   {{ form.short_description?.length || 0 }}/300 characters
@@ -194,7 +194,7 @@
 
               <!-- Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Full Description *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Full Description *</label>
                 <RichTextEditor
                   v-model="form.description"
                   placeholder="Detailed event description"
@@ -204,11 +204,11 @@
 
               <!-- Category -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
                 <div class="relative">
                   <select
                     v-model="form.category"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
+                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                   >
                     <option value="">Select a category</option>
                     <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -221,27 +221,27 @@
             </div>
 
             <!-- Date and Time -->
-            <div class="space-y-4 border-t border-slate-100 pt-5">
+            <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
 
               <!-- Start Date/Time -->
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Start Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Date *</label>
                   <input
                     v-model="startDate"
                     type="date"
                     required
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Start Time *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Time *</label>
                   <input
                     v-model="startTime"
                     type="time"
                     required
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
               </div>
@@ -249,32 +249,32 @@
               <!-- End Date/Time -->
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Date *</label>
                   <input
                     v-model="endDate"
                     type="date"
                     required
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">End Time *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Time *</label>
                   <input
                     v-model="endTime"
                     type="time"
                     required
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
               </div>
 
               <!-- Timezone -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Timezone</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Timezone</label>
                 <div class="relative">
                   <select
                     v-model="form.timezone"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
+                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                   >
                     <optgroup
                       v-for="(timezones, region) in timezonesByRegion"
@@ -296,7 +296,7 @@
             </div>
 
             <!-- Location -->
-            <div class="space-y-4 border-t border-slate-100 pt-5">
+            <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
 
               <!-- Location Type Toggle Buttons -->
@@ -347,16 +347,16 @@
               </div>
 
               <!-- Location Input (In Person) -->
-              <div v-if="!form.is_virtual" class="space-y-4">
+              <div v-if="!form.is_virtual" class="space-y-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Address</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
                   <div class="relative">
                     <MapPin class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       v-model="form.location"
                       type="text"
                       placeholder="Enter location address"
-                      class="w-full pl-9 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      class="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                     <button
                       v-if="form.location"
@@ -371,13 +371,13 @@
 
                 <!-- Google Maps Embed -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Map</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Map</label>
 
                   <!-- Map Preview -->
-                  <div v-if="form.google_map_embed_link" class="relative mb-3">
+                  <div v-if="form.google_map_embed_link" class="relative mb-2">
                     <iframe
                       :src="form.google_map_embed_link"
-                      class="w-full h-36 rounded-lg border border-slate-200"
+                      class="w-full h-32 laptop-sm:h-36 rounded-lg border border-slate-200"
                       style="border: 0"
                       allowfullscreen
                       loading="lazy"
@@ -398,10 +398,10 @@
                       type="text"
                       placeholder="Paste Google Maps embed URL"
                       @paste="handleMapsPaste"
-                      class="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                   </div>
-                  <p class="text-xs text-slate-500 mt-1.5">
+                  <p class="text-xs text-slate-500 mt-1">
                     Paste Google Maps embed code or URL
                   </p>
                 </div>
@@ -409,14 +409,14 @@
 
               <!-- Virtual Link Input -->
               <div v-else>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Virtual Meeting Link</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Meeting Link</label>
                 <div class="relative">
                   <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     v-model="form.virtual_link"
                     type="url"
                     placeholder="https://zoom.us/meeting/..."
-                    class="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
               </div>

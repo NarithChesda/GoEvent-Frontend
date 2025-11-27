@@ -174,7 +174,7 @@
       <Transition name="slide-right">
         <div
           v-if="showPaymentModal"
-          class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+          class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
           @click.stop
         >
           <!-- Header -->
@@ -204,10 +204,10 @@
 
           <!-- Content -->
           <div class="flex-1 overflow-y-auto overscroll-contain">
-            <div class="p-4 space-y-5">
+            <div class="p-3 laptop-sm:p-4 space-y-3 laptop-sm:space-y-4">
                   <div
                     v-if="currentPayment"
-                    class="rounded-xl border border-slate-200 bg-white/80 p-4 flex items-start justify-between gap-3"
+                    class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 flex items-start justify-between gap-3"
                   >
                     <div class="min-w-0">
                       <p class="text-xs sm:text-sm font-medium text-slate-700">Current payment</p>
@@ -223,7 +223,7 @@
                     </span>
                   </div>
 
-                  <section class="rounded-xl border border-slate-200 bg-white/80 p-4 sm:p-5">
+                  <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
                     <div class="flex flex-wrap items-end justify-between gap-3">
                       <div>
                         <p class="text-xs sm:text-sm text-slate-600">Amount due</p>
@@ -293,17 +293,17 @@
 
                   <section
                     v-if="selectedMethod"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4"
+                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 laptop-sm:p-4 space-y-3"
                   >
                     <div class="flex items-center justify-between">
                       <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment instructions</h3>
                       <span class="text-[11px] sm:text-xs text-slate-500">{{ selectedMethod.name }}</span>
                     </div>
 
-                    <div class="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
                       <div
                         v-if="selectedMethod.bank_name || selectedMethod.account_number || selectedMethod.account_name"
-                        class="flex-1 space-y-2 rounded-lg bg-white/70 px-4 py-3 text-xs sm:text-sm text-slate-600"
+                        class="flex-1 space-y-1.5 rounded-lg bg-white/70 px-3 py-2.5 text-xs sm:text-sm text-slate-600"
                       >
                         <p v-if="selectedMethod.bank_name">
                           <span class="font-medium text-slate-800">Bank:</span> {{ selectedMethod.bank_name }}
@@ -318,20 +318,20 @@
 
                       <div
                         v-if="selectedMethod.qr_code_image || selectedMethod.payment_link"
-                        class="flex flex-col items-center gap-4 md:w-60 md:self-start"
+                        class="flex flex-col items-center gap-3 md:w-48 laptop-md:w-52 md:self-start"
                       >
                         <div
                           v-if="selectedMethod.qr_code_image"
-                          class="w-full rounded-lg border border-slate-200 bg-white p-4 text-center"
+                          class="w-full rounded-lg border border-slate-200 bg-white p-3 text-center"
                         >
                           <img
                             :src="selectedMethod.qr_code_image"
                             :alt="`QR Code for ${selectedMethod.name}`"
-                            class="mx-auto h-28 w-28 sm:h-32 sm:w-32 object-contain"
+                            class="mx-auto h-24 w-24 laptop-sm:h-28 laptop-sm:w-28 laptop-md:h-32 laptop-md:w-32 object-contain"
                             loading="lazy"
                             @error="handleImageError"
                           />
-                          <p class="text-[11px] sm:text-xs text-slate-500 mt-3">Scan with your banking app</p>
+                          <p class="text-[11px] sm:text-xs text-slate-500 mt-2">Scan with your banking app</p>
                         </div>
 
                         <button
@@ -346,7 +346,7 @@
                     </div>
                   </section>
 
-                  <section class="space-y-4">
+                  <section class="space-y-3">
                     <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment details</h3>
 
                     <div
@@ -363,7 +363,7 @@
                       {{ error }}
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                       <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-700">
                         Transaction Reference <span class="text-red-500">*</span>
                       </label>
@@ -372,12 +372,12 @@
                         v-model="paymentForm.transaction_reference"
                         type="text"
                         required
-                        class="w-full px-4 py-3 text-sm sm:text-base border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90"
+                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90"
                         placeholder="Enter transaction ID"
                       />
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                       <label for="paymentProof" class="text-xs sm:text-sm font-medium text-slate-700">
                         Payment Receipt <span class="text-slate-400">(Optional)</span>
                       </label>
@@ -387,20 +387,20 @@
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                         @change="handleFileSelect"
-                        class="w-full px-4 py-3 text-sm sm:text-base border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-[#E6F4FF] file:text-[#1873cc] file:text-sm file:font-semibold"
+                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#E6F4FF] file:text-[#1873cc] file:text-xs file:font-semibold"
                       />
-                      <p class="text-[11px] sm:text-xs text-slate-500">JPG, PNG, PDF up to 10MB</p>
+                      <p class="text-[11px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                       <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-700">
                         Notes <span class="text-slate-400">(Optional)</span>
                       </label>
                       <textarea
                         id="paymentNotes"
                         v-model="paymentForm.user_notes"
-                        rows="3"
-                        class="w-full px-4 py-3 text-sm sm:text-base border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 resize-none"
+                        rows="2"
+                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 resize-none"
                         placeholder="Any additional notes for the host"
                       ></textarea>
                     </div>
