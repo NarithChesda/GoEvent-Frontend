@@ -10,6 +10,7 @@ import type {
   EventComment,
   CommentFilters,
 } from '../types'
+import { useAuthStore } from '@/stores/auth'
 
 export const commentsService = {
   // List all comments (with optional filtering)
@@ -40,8 +41,8 @@ export const commentsService = {
 
   // Create a new comment
   async createComment(eventId: string, commentText: string): Promise<ApiResponse<EventComment>> {
-    // Import auth store dynamically to get user ID
-    const authStore = await import('@/stores/auth').then((m) => m.useAuthStore())
+    // Get user ID from auth store
+    const authStore = useAuthStore()
     const userId = authStore.user?.id
 
     const data = {
@@ -74,7 +75,7 @@ export const commentsService = {
       return false
     }
 
-    const authStore = await import('@/stores/auth').then((m) => m.useAuthStore())
+    const authStore = useAuthStore()
     const userId = authStore.user?.id
 
     if (!userId) {

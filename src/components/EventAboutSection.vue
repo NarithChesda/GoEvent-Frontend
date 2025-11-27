@@ -339,8 +339,8 @@ const hostname = computed(() => {
 })
 
 const metaTitle = computed(() => {
-  if (!props.event?.title) return 'សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស'
-  return `${props.event.title} - សូមគោរពអញ្ជើញភ្ញៀវកិត្តិយស`
+  if (!props.event?.title) return 'សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស'
+  return `${props.event.title} - សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស`
 })
 
 const metaDescription = computed(() => {

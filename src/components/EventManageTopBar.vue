@@ -120,10 +120,10 @@ const emit = defineEmits<{
   edit: []
 }>()
 
-// Inject the toggle function and state from MainLayout
+// Inject the toggle function and state from MainLayout (with default values to prevent warnings)
 const toggleHomeSidebarOverlay = inject<() => void>('toggleHomeSidebarOverlay', () => {})
-const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay')
-const isCollapsed = inject<Ref<boolean>>('isCollapsed')
+const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))
+const isCollapsed = inject<Ref<boolean>>('isCollapsed', ref(false))
 
 const toggleHomeSidebar = () => {
   toggleHomeSidebarOverlay()

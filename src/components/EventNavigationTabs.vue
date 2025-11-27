@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, type Ref } from 'vue'
+import { computed, inject, ref, type Ref } from 'vue'
 import {
   Calendar,
   FileText,
@@ -80,9 +80,9 @@ interface Emits {
 const props = defineProps<Props>()
 defineEmits<Emits>()
 
-// Inject sidebar state from MainLayout
-const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay')
-const isCollapsed = inject<Ref<boolean>>('isCollapsed')
+// Inject sidebar state from MainLayout (with default values to prevent warnings)
+const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))
+const isCollapsed = inject<Ref<boolean>>('isCollapsed', ref(false))
 
 // Check if home sidebar is currently visible
 const isHomeSidebarVisible = computed(() => {

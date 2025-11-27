@@ -411,8 +411,8 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { isCollapsed } = useSidebar()
 
-// Inject home sidebar state from MainLayout
-const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay')
+// Inject home sidebar state from MainLayout (with default value to prevent warnings)
+const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))
 
 // Reactive window width for responsive margin calculation
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)

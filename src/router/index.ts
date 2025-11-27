@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { resetMetaTags } from '../utils/metaUtils'
+import { useAuthStore } from '../stores/auth'
+import { authService } from '../services/auth'
 
 /**
  * Router Configuration
@@ -146,9 +148,7 @@ router.beforeEach(async (to, from, next) => {
       return
     }
 
-    // Dynamically import to avoid circular dependency
-    const { useAuthStore } = await import('../stores/auth')
-    const { authService } = await import('../services/auth')
+    // Use statically imported auth store and service
     const authStore = useAuthStore()
 
     // Basic authentication check
