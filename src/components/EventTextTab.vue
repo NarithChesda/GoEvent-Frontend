@@ -69,10 +69,7 @@
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
               ]"
             >
-              <span class="flex items-center gap-1.5">
-                {{ getLanguageName(lang) }}
-                <span class="text-xs text-slate-400">({{ textCountByLanguage[lang] || 0 }})</span>
-              </span>
+              {{ getLanguageName(lang) }}
               <span
                 v-if="selectedLanguage === lang"
                 class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1e90ff]"
@@ -301,15 +298,6 @@ watch(availableLanguages, (langs) => {
     selectedLanguage.value = langs[0]
   }
 }, { immediate: true })
-
-// Computed: Get text count per language as a map (more efficient than function)
-const textCountByLanguage = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const text of allTexts.value) {
-    counts[text.language] = (counts[text.language] || 0) + 1
-  }
-  return counts
-})
 
 // Computed: Get texts for selected language, sorted by type priority
 const textsForSelectedLanguage = computed(() => {

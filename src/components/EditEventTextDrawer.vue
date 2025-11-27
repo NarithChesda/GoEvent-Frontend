@@ -197,18 +197,18 @@
                   @click="toggleSection(lang, textType.value)"
                   class="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
                     <component
                       :is="textType.icon"
-                      class="w-4 h-4 text-[#1e90ff]"
+                      class="w-4 h-4 text-[#1e90ff] flex-shrink-0"
                       aria-hidden="true"
                     />
-                    <span class="text-sm font-medium text-slate-900">{{ textType.label }}</span>
+                    <span class="text-sm font-medium text-slate-900 flex-shrink-0">{{ textType.label }}</span>
                     <span
-                      v-if="hasContent(lang, textType.value)"
-                      class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700"
+                      v-if="hasContent(lang, textType.value) && !isSectionOpen(lang, textType.value)"
+                      class="text-xs text-slate-500 truncate"
                     >
-                      Has content
+                      — {{ getContentPreview(lang, textType.value) }}
                     </span>
                   </div>
                   <ChevronDown
@@ -489,6 +489,16 @@ const getTextData = (lang: string, textType: string): TextFormData => {
 const hasContent = (lang: string, textType: string): boolean => {
   const data = formData[getFormKey(lang, textType)]
   return !!(data?.content || data?.title)
+}
+
+const getContentPreview = (lang: string, textType: string): string => {
+  const data = formData[getFormKey(lang, textType)]
+  const text = data?.content || data?.title || ''
+  if (!text) return ''
+  // Truncate to ~50 chars and add ellipsis if needed
+  const maxLength = 50
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength).trim() + '...'
 }
 
 const isSectionOpen = (lang: string, textType: string): boolean => {
