@@ -1,9 +1,19 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
-    <div class="mb-6">
-      <h5 class="font-semibold text-slate-900">Showcase Texts</h5>
-      <p class="text-sm text-slate-600">Add multi-language text content for your event showcase</p>
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h5 class="font-semibold text-slate-900">Showcase Texts</h5>
+        <p class="text-sm text-slate-600">Add multi-language text content for your event showcase</p>
+      </div>
+      <button
+        v-if="allTexts.length > 0"
+        @click="showTextDrawer = true"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500"
+      >
+        <Pencil class="w-4 h-4" />
+        <span>Edit</span>
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -195,6 +205,7 @@ import {
   Trash2,
   Plus,
   AlertCircle,
+  Pencil,
 } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EditEventTextDrawer from './EditEventTextDrawer.vue'
