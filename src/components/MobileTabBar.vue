@@ -93,57 +93,23 @@
 
     <div class="bg-white/95 backdrop-blur-sm border-t border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10">
       <div class="flex items-center justify-around px-2 py-1">
-        <template v-for="item in navigationItems" :key="item.path">
-          <!-- Special handling for home to ensure scroll to hero -->
-          <button
-            v-if="item.path === '/home'"
-            @click="handleHomeClick"
-            class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
-            :class="($route.path === item.path && !isPricingSectionVisible) ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
-            :aria-current="($route.path === item.path && !isPricingSectionVisible) ? 'page' : undefined"
-            aria-label="Navigate to home"
-          >
-            <component
-              :is="item.icon"
-              class="w-5 h-5 flex-shrink-0"
-              :class="($route.path === item.path && !isPricingSectionVisible) ? 'gradient-text' : 'group-hover:gradient-text'"
-              aria-hidden="true"
-            />
-            <span class="text-xs font-medium truncate">{{ item.label }}</span>
-          </button>
-          <!-- Other navigation items -->
-          <RouterLink
-            v-else
-            :to="item.path"
-            class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
-            :class="$route.path === item.path ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
-            :aria-current="$route.path === item.path ? 'page' : undefined"
-          >
-            <component
-              :is="item.icon"
-              class="w-5 h-5 flex-shrink-0"
-              :class="$route.path === item.path ? 'gradient-text' : 'group-hover:gradient-text'"
-              aria-hidden="true"
-            />
-            <span class="text-xs font-medium truncate">{{ item.label }}</span>
-          </RouterLink>
-        </template>
-
-        <!-- Pricing Button -->
-        <button
-          @click="handlePricingClick"
+        <!-- Navigation items -->
+        <RouterLink
+          v-for="item in navigationItems"
+          :key="item.path"
+          :to="item.path"
           class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
-          :class="isPricingSectionVisible ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
-          :aria-current="isPricingSectionVisible ? 'page' : undefined"
-          aria-label="Navigate to pricing"
+          :class="isActiveRoute(item.path) ? 'text-[#2ecc71] font-semibold' : 'text-slate-600 hover:text-[#2ecc71]'"
+          :aria-current="isActiveRoute(item.path) ? 'page' : undefined"
         >
-          <BadgeDollarSign
+          <component
+            :is="item.icon"
             class="w-5 h-5 flex-shrink-0"
-            :class="isPricingSectionVisible ? 'gradient-text' : 'group-hover:gradient-text'"
+            :class="isActiveRoute(item.path) ? 'text-[#2ecc71]' : 'group-hover:text-[#2ecc71]'"
             aria-hidden="true"
           />
-          <span class="text-xs font-medium truncate">Pricing</span>
-        </button>
+          <span class="text-xs font-medium truncate">{{ item.label }}</span>
+        </RouterLink>
 
         <!-- Profile Tab -->
         <div class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1">
@@ -195,11 +161,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Lock, Wallet, LogOut, House, CircleHelp, CalendarDays, BadgeDollarSign, User } from 'lucide-vue-next'
+import { Lock, Wallet, LogOut, Ticket, Globe, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
-import { useLandingNavigation } from '../composables/useLandingNavigation'
-import { usePricingObserver } from '../composables/usePricingObserver'
 import { sanitizePlainText } from '@/utils/sanitize'
 
 const userMenuOpen = ref(false)
@@ -208,16 +172,16 @@ const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
-// Use composables for navigation and pricing observer
-const { navigateHome, scrollToPricing } = useLandingNavigation()
-const { isPricingSectionVisible, initialize: initializePricingObserver } = usePricingObserver()
-
-// Navigation items configuration (same as Sidebar)
+// Navigation items configuration (matching top nav)
 const navigationItems = [
-  { path: '/home', label: 'Home', icon: House },
-  { path: '/about', label: 'About', icon: CircleHelp },
-  { path: '/events', label: 'Events', icon: CalendarDays }
+  { path: '/events', label: 'Events', icon: Ticket },
+  { path: '/explore', label: 'Discover', icon: Globe }
 ]
+
+// Check if route is active
+const isActiveRoute = (path: string) => {
+  return route.path === path || route.path.startsWith(path + '/')
+}
 
 // Profile picture computed property
 const profilePictureUrl = computed(() => {
@@ -239,16 +203,6 @@ const sanitizedUserEmail = computed(() => {
   const email = authStore.user?.email || ''
   return sanitizePlainText(email, 100)
 })
-
-// Handle home click using composable
-const handleHomeClick = () => {
-  navigateHome()
-}
-
-// Handle pricing click using composable
-const handlePricingClick = () => {
-  scrollToPricing()
-}
 
 // Close menu when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
@@ -273,7 +227,7 @@ const handleLogout = async () => {
   try {
     await authStore.logout()
     userMenuOpen.value = false
-    router.push('/home')
+    router.push('/events')
   } catch (error) {
     console.error('Logout failed:', error)
     userMenuOpen.value = false
@@ -285,7 +239,6 @@ const handleLogout = async () => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeyDown)
-  initializePricingObserver()
 })
 
 onUnmounted(() => {

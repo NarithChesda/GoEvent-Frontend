@@ -1,0 +1,336 @@
+<template>
+  <!-- Desktop Top Navigation Bar -->
+  <header
+    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 bg-gradient-to-r from-[#2ecc71]/10 via-white to-[#1e90ff]/10 backdrop-blur-sm border-b transition-colors duration-200 z-50"
+    :class="isScrolled ? 'border-[#2ecc71]/20' : 'border-transparent'"
+    role="navigation"
+    aria-label="Main navigation"
+  >
+    <div class="w-full h-full relative">
+      <!-- Logo (absolute left) -->
+      <div class="absolute left-6 top-1/2 -translate-y-1/2">
+        <button
+          @click="handleLogoClick"
+          class="flex items-center group"
+          aria-label="Go to home page"
+        >
+          <img
+            :src="IconSvg"
+            alt="GoEvent Logo"
+            class="h-6 w-auto transition-all duration-300 group-hover:scale-110"
+          />
+        </button>
+      </div>
+
+      <!-- Main Navigation (aligned with page content) -->
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+        <nav class="flex items-center">
+          <RouterLink
+            v-for="(item, index) in navigationItems"
+            :key="item.path"
+            :to="item.path"
+            class="flex items-center space-x-2 py-2 rounded-lg text-base font-medium transition-all duration-200"
+            :class="[
+              isActiveRoute(item.path)
+                ? 'text-slate-900'
+                : 'text-slate-400 hover:text-slate-700',
+              index === 0 ? 'pr-4' : 'px-4'
+            ]"
+          >
+            <component
+              :is="item.icon"
+              class="w-4 h-4"
+              aria-hidden="true"
+            />
+            <span>{{ item.label }}</span>
+          </RouterLink>
+        </nav>
+      </div>
+
+      <!-- Right Section: Time, Actions, Profile (absolute right) -->
+      <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center space-x-4">
+        <!-- Current Time -->
+        <div class="text-sm text-slate-600 font-medium">
+          {{ currentTime }}
+        </div>
+
+        <!-- Create Event Button -->
+        <RouterLink
+          to="/events?createEvent=true"
+          class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-slate-700 transition-colors"
+        >
+          Create Event
+        </RouterLink>
+
+        <!-- Search Button -->
+        <button
+          @click="toggleSearch"
+          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200"
+          aria-label="Search"
+        >
+          <Search class="w-5 h-5" />
+        </button>
+
+        <!-- Notifications Button -->
+        <button
+          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 relative"
+          aria-label="Notifications"
+        >
+          <Bell class="w-5 h-5" />
+          <!-- Notification badge (hidden for now) -->
+          <!-- <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> -->
+        </button>
+
+        <!-- Profile Button -->
+        <div ref="userMenuRef" class="relative">
+          <button
+            v-if="authStore.isAuthenticated"
+            @click.stop="userMenuOpen = !userMenuOpen"
+            class="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
+            :aria-expanded="userMenuOpen"
+            aria-label="User menu"
+          >
+            <img
+              v-if="profilePictureUrl"
+              :src="profilePictureUrl"
+              :alt="sanitizedUserName"
+              class="w-full h-full object-cover"
+              @error="handleProfilePictureError"
+            />
+            <div
+              v-else
+              class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
+              :aria-label="`${sanitizedUserName} avatar`"
+            >
+              {{ authStore.userInitials }}
+            </div>
+          </button>
+          <RouterLink
+            v-else
+            :to="signinLink"
+            class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 transition-colors"
+            aria-label="Sign in"
+          >
+            <User class="w-5 h-5 text-slate-600" />
+          </RouterLink>
+
+          <!-- User Dropdown Menu -->
+          <Transition name="dropdown">
+            <div
+              v-if="userMenuOpen && authStore.isAuthenticated"
+              class="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-[100] min-w-[200px]"
+              role="menu"
+              aria-orientation="vertical"
+            >
+              <!-- User Info Header -->
+              <div class="px-4 py-3 border-b border-slate-100">
+                <div class="font-semibold text-sm text-slate-900">
+                  {{ sanitizedUserName }}
+                </div>
+                <div class="text-xs text-slate-500">{{ sanitizedUserEmail }}</div>
+              </div>
+
+              <RouterLink
+                to="/settings"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                role="menuitem"
+              >
+                <User class="w-5 h-5" aria-hidden="true" />
+                <span class="font-medium">Profile</span>
+              </RouterLink>
+              <RouterLink
+                to="/security"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                role="menuitem"
+              >
+                <Lock class="w-5 h-5" aria-hidden="true" />
+                <span class="font-medium">Security</span>
+              </RouterLink>
+              <RouterLink
+                v-if="authStore.user?.is_partner"
+                to="/commission"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                role="menuitem"
+              >
+                <Wallet class="w-5 h-5" aria-hidden="true" />
+                <span class="font-medium">Commission</span>
+              </RouterLink>
+              <div class="border-t border-slate-200"></div>
+              <button
+                @click="handleLogout"
+                class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 text-left"
+                role="menuitem"
+              >
+                <LogOut class="w-5 h-5" aria-hidden="true" />
+                <span class="font-medium">Logout</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
+import {
+  Ticket,
+  Compass,
+  Search,
+  Bell,
+  User,
+  Lock,
+  Wallet,
+  LogOut
+} from 'lucide-vue-next'
+import { useAuthStore } from '../stores/auth'
+import { apiService } from '../services/api'
+import IconSvg from '@/assets/icon.svg'
+import { sanitizePlainText } from '@/utils/sanitize'
+
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+
+const userMenuOpen = ref(false)
+const userMenuRef = ref<HTMLElement>()
+const currentTime = ref('')
+const isScrolled = ref(false)
+
+// Navigation items matching the screenshot
+const navigationItems = [
+  { path: '/events', label: 'Events', icon: Ticket },
+  { path: '/explore', label: 'Discover', icon: Compass }
+]
+
+// Check if route is active
+const isActiveRoute = (path: string) => {
+  return route.path === path || route.path.startsWith(path + '/')
+}
+
+// Profile picture state
+const profilePictureUrl = computed(() => {
+  if (!authStore.user?.profile_picture) return null
+  return apiService.getProfilePictureUrl(authStore.user.profile_picture)
+})
+
+const handleProfilePictureError = () => {
+  console.warn('Failed to load profile picture')
+}
+
+// Sanitized user data
+const sanitizedUserName = computed(() => {
+  const name = authStore.user?.first_name || authStore.user?.username || 'User'
+  return sanitizePlainText(name, 100)
+})
+
+const sanitizedUserEmail = computed(() => {
+  const email = authStore.user?.email || ''
+  return sanitizePlainText(email, 100)
+})
+
+// Sign in link with redirect
+const signinLink = computed(() => {
+  const currentPath = route.fullPath
+  if (currentPath === '/signin' || currentPath === '/signup') {
+    return '/signin'
+  }
+  return `/signin?redirect=${encodeURIComponent(currentPath)}`
+})
+
+// Update current time
+const updateTime = () => {
+  const now = new Date()
+  const options: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZoneName: 'short'
+  }
+  currentTime.value = now.toLocaleTimeString('en-US', options)
+}
+
+// Handle logo click
+const handleLogoClick = () => {
+  router.push('/events')
+}
+
+// Toggle search (placeholder for future implementation)
+const toggleSearch = () => {
+  // TODO: Implement search functionality
+  console.log('Search toggled')
+}
+
+// Handle logout
+const handleLogout = async () => {
+  try {
+    await authStore.logout()
+    userMenuOpen.value = false
+    router.push('/events')
+  } catch (error) {
+    console.error('Logout failed:', error)
+    userMenuOpen.value = false
+    alert('Logout failed. Please try again.')
+  }
+}
+
+// Close menu when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+  if (!event.target || !(event.target instanceof Node)) {
+    return
+  }
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
+    userMenuOpen.value = false
+  }
+}
+
+// Close menu on Escape
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && userMenuOpen.value) {
+    userMenuOpen.value = false
+  }
+}
+
+// Handle scroll to show/hide border
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 0
+}
+
+// Timer for updating time
+let timeInterval: ReturnType<typeof setInterval>
+
+onMounted(() => {
+  updateTime()
+  timeInterval = setInterval(updateTime, 1000)
+  document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeyDown)
+  window.addEventListener('scroll', handleScroll)
+  handleScroll() // Check initial scroll position
+})
+
+onUnmounted(() => {
+  clearInterval(timeInterval)
+  document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('scroll', handleScroll)
+})
+</script>
+
+<style scoped>
+/* Dropdown animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>

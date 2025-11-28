@@ -253,6 +253,7 @@ import {
   House,
   CircleHelp,
   CalendarDays,
+  Globe,
   BadgeDollarSign,
   User,
   Lock,
@@ -342,7 +343,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
 const navigationItems = [
   { path: '/home', label: 'Home', icon: House },
   { path: '/about', label: 'About', icon: CircleHelp },
-  { path: '/events', label: 'Events', icon: CalendarDays }
+  { path: '/events', label: 'Events', icon: CalendarDays },
+  { path: '/explore', label: 'Explore', icon: Globe }
 ]
 
 // Computed property for signin link with redirect

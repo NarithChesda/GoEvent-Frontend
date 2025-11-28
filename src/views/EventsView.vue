@@ -1,152 +1,228 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
+    <div class="min-h-screen bg-gradient-to-br from-violet-50/30 via-white to-violet-50/30">
 
     <!-- Main Content -->
-    <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-6 sm:mb-8 md:mb-10">
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold leading-tight tracking-tight text-slate-900 mb-2 px-4">
-            <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent">
-              Discover What's
-              Happening Around You!!!
-            </span>
+    <section class="py-8 sm:py-12 lg:py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header with Toggle -->
+        <div class="flex items-center justify-between mb-8 sm:mb-10">
+          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">
+            Events
           </h1>
-        </div>
 
-        <!-- View Toggle -->
-        <div class="flex justify-center mb-6 sm:mb-8 md:mb-10">
-          <div class="inline-flex bg-white rounded-full p-1 border-2 border-slate-200 shadow-sm">
+          <!-- Upcoming/Past Toggle -->
+          <div class="flex items-center bg-slate-100 rounded-full p-1">
             <button
-              v-for="option in VIEW_OPTIONS"
-              :key="option.type"
-              @click="handleViewChange(option.type)"
-              class="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 relative overflow-hidden"
-              :class="currentView === option.type ? 'text-white shadow-md' : 'text-slate-700 hover:bg-slate-50'"
+              @click="timeFilter = 'upcoming'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                timeFilter === 'upcoming'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              ]"
             >
-              <span
-                v-if="currentView === option.type"
-                class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
-              ></span>
-              <component :is="option.icon" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0 relative z-10" />
-              <span class="relative z-10">{{ option.label }}</span>
+              Upcoming
+            </button>
+            <button
+              @click="timeFilter = 'past'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                timeFilter === 'past'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              ]"
+            >
+              Past
             </button>
           </div>
         </div>
 
-        <!-- Filters -->
-        <EventFilters v-model="filters" :categories="categories" class="mb-6 sm:mb-8" />
-
         <!-- Loading State -->
-        <div v-if="loading">
-          <!-- Mobile loading skeleton -->
-          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 scrollbar-hide -mx-4 px-4">
-            <div
-              v-for="i in 2"
-              :key="`mobile-skeleton-${i}`"
-              class="flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
-            >
-              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
-              <div class="p-6 space-y-4">
-                <div class="h-4 bg-slate-200 rounded"></div>
-                <div class="h-6 bg-slate-200 rounded"></div>
-                <div class="h-16 bg-slate-200 rounded"></div>
-                <div class="flex justify-between">
-                  <div class="h-4 bg-slate-200 rounded w-20"></div>
-                  <div class="h-4 bg-slate-200 rounded w-16"></div>
-                </div>
-              </div>
+        <div v-if="loading" class="space-y-8">
+          <div v-for="i in 3" :key="`skeleton-${i}`" class="flex gap-6">
+            <div class="w-24 flex-shrink-0">
+              <div class="h-4 bg-slate-200 rounded w-16 mb-2 animate-pulse"></div>
+              <div class="h-3 bg-slate-200 rounded w-12 animate-pulse"></div>
             </div>
-          </div>
-
-          <!-- Desktop loading skeleton -->
-          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            <div
-              v-for="i in 6"
-              :key="`desktop-skeleton-${i}`"
-              class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
-            >
-              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
-              <div class="p-6 space-y-4">
-                <div class="h-4 bg-slate-200 rounded"></div>
-                <div class="h-6 bg-slate-200 rounded"></div>
-                <div class="h-16 bg-slate-200 rounded"></div>
-                <div class="flex justify-between">
-                  <div class="h-4 bg-slate-200 rounded w-20"></div>
-                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 animate-pulse">
+              <div class="flex gap-4">
+                <div class="flex-1 space-y-3">
+                  <div class="h-3 bg-slate-200 rounded w-16"></div>
+                  <div class="h-5 bg-slate-200 rounded w-3/4"></div>
+                  <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+                  <div class="h-4 bg-slate-200 rounded w-1/3"></div>
                 </div>
+                <div class="w-32 h-24 bg-slate-200 rounded-xl"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Events Grid -->
-        <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
-          <EventCategorySection
-            v-for="categoryGroup in categorizedEvents"
-            :key="getViewPrefix + (categoryGroup.category?.id || 'uncategorized')"
-            :category-group="categoryGroup"
-            :view-prefix="getViewPrefix"
-            :has-overflow="categoryHasOverflow(getViewPrefix + (categoryGroup.category?.id || 'uncategorized'))"
-            @view-event="viewEvent"
-            @edit-event="editEvent"
-            @delete-event="deleteEvent"
-            @scroll-left="scrollCategory($event, 'left')"
-            @scroll-right="scrollCategory($event, 'right')"
-            @set-scroll-ref="setCategoryScrollRef"
-          />
-        </div>
-
-        <!-- Infinite Scroll Loading Indicator -->
-        <div
-          v-if="currentView === 'all' && hasEvents"
-          ref="loadMoreTrigger"
-          class="py-8 flex justify-center"
-        >
-          <div v-if="isLoadingMore" class="flex items-center gap-3 text-slate-600">
-            <div class="w-6 h-6 border-3 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
-            <span class="text-sm font-medium">Loading more events...</span>
-          </div>
-          <div v-else-if="!hasMore" class="text-sm text-slate-500 font-medium">
-            No more events to load
-          </div>
-        </div>
-
-        <!-- Login Required State for Unauthenticated Users -->
-        <div v-else-if="showLoginPrompt" class="text-center py-12 sm:py-16 px-4">
+        <!-- Events Timeline -->
+        <div v-else-if="hasEvents" class="space-y-8">
           <div
-            class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
+            v-for="(dateGroup, index) in groupedByDate"
+            :key="dateGroup.date"
+            class="relative flex gap-4"
           >
-            <User class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
+            <!-- Left: Date Column (Sticky) -->
+            <div class="w-24 flex-shrink-0">
+              <div class="sticky top-20 lg:top-24 pt-1">
+                <div class="text-slate-900 font-semibold text-lg">{{ dateGroup.monthDay }}</div>
+                <div class="text-slate-400 text-base">{{ dateGroup.weekday }}</div>
+              </div>
+            </div>
+
+            <!-- Middle: Timeline -->
+            <div class="flex flex-col items-center flex-shrink-0 relative">
+              <!-- Timeline dot (Sticky) -->
+              <div class="sticky top-20 lg:top-24 z-10">
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 mt-2"></div>
+              </div>
+              <!-- Timeline line -->
+              <div
+                v-if="index < groupedByDate.length - 1 || dateGroup.events.length > 1"
+                class="absolute top-4 bottom-0 w-px bg-slate-200"
+              ></div>
+            </div>
+
+            <!-- Right: Event Cards -->
+            <div class="flex-1 space-y-4 pb-2">
+              <div
+                v-for="event in dateGroup.events"
+                :key="event.id"
+                class="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden cursor-pointer group"
+                @click="viewEvent(event)"
+              >
+                <div class="p-5 flex gap-4">
+                  <!-- Event Details -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Time and Category -->
+                    <div class="flex items-center gap-2 text-sm mb-1">
+                      <span class="text-slate-400">{{ formatEventTime(event.start_date) }}</span>
+                      <span v-if="getEventCategory(event)" class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium">
+                        {{ getEventCategory(event) }}
+                      </span>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors">
+                      {{ event.title }}
+                    </h3>
+
+                    <!-- Hosts -->
+                    <div v-if="getEventHosts(event).length > 0" class="flex items-center gap-2 text-sm mb-2">
+                      <div class="flex -space-x-1">
+                        <div
+                          v-for="(host, idx) in getEventHosts(event).slice(0, 3)"
+                          :key="idx"
+                          class="w-5 h-5 rounded-full border border-white overflow-hidden bg-slate-200"
+                        >
+                          <img
+                            v-if="host.image"
+                            :src="host.image"
+                            :alt="host.name"
+                            class="w-full h-full object-cover"
+                          />
+                          <div v-else class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium">
+                            {{ host.name.charAt(0).toUpperCase() }}
+                          </div>
+                        </div>
+                      </div>
+                      <span class="text-slate-600">By {{ formatHostNames(event) }}</span>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="flex items-center gap-2 text-sm mb-2">
+                      <template v-if="event.location">
+                        <MapPin class="w-4 h-4 text-slate-400" />
+                        <span class="text-slate-600">{{ event.location }}</span>
+                      </template>
+                      <template v-else>
+                        <AlertTriangle class="w-4 h-4 text-amber-500" />
+                        <span class="text-amber-600">Location Missing</span>
+                      </template>
+                    </div>
+
+                    <!-- Guest Count -->
+                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                      <Users class="w-4 h-4" />
+                      <span>{{ getGuestCount(event) }}</span>
+                    </div>
+
+                    <!-- Manage Button (only for events user can edit) -->
+                    <button
+                      v-if="canManageEvent(event)"
+                      @click.stop="manageEvent(event)"
+                      class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
+                      Manage Event
+                      <ArrowRight class="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <!-- Event Image (landscape) -->
+                  <div class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+                    <img
+                      v-if="getEventImage(event)"
+                      :src="getEventImage(event) ?? undefined"
+                      :alt="event.title"
+                      class="w-full h-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                    >
+                      <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
+        </div>
+
+        <!-- Login Required State -->
+        <div v-else-if="!authStore.isAuthenticated" class="text-center py-16 px-4">
+          <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
+            <User class="w-16 h-16 text-[#2ecc71]" />
+          </div>
+          <h3 class="text-2xl font-bold text-slate-900 mb-3">
             Sign In Required
           </h3>
-          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
-            {{ loginPromptMessage }}
+          <p class="text-slate-600 mb-6 max-w-md mx-auto">
+            Please sign in to view and manage your events.
           </p>
           <button
             @click="goToLogin"
-            class="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:shadow-lg text-sm sm:text-base"
+            class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
           >
             Sign In to Continue
           </button>
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16 px-4">
-          <div
-            class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
-          >
-            <Calendar class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
+        <div v-else-if="isEmpty" class="text-center py-16 px-4">
+          <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
+            <CalendarDays class="w-16 h-16 text-[#2ecc71]" />
           </div>
-          <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
-            {{ emptyStateTitle }}
+          <h3 class="text-2xl font-bold text-slate-900 mb-3">
+            {{ timeFilter === 'upcoming' ? 'No upcoming events' : 'No past events' }}
           </h3>
-          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
-            {{ emptyStateMessage }}
+          <p class="text-slate-600 mb-6 max-w-md mx-auto">
+            {{ timeFilter === 'upcoming'
+              ? 'Start organizing amazing events and bring people together.'
+              : 'Your past events will appear here.'
+            }}
           </p>
+          <button
+            v-if="timeFilter === 'upcoming'"
+            @click="handleCreateEventClick"
+            class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
+          >
+            Create Your First Event
+          </button>
         </div>
       </div>
     </section>
@@ -165,25 +241,20 @@
       </div>
     </Transition>
 
-    <!-- Floating Action Button -->
-    <Transition name="fab-fade">
-      <button
-        v-if="authStore.isAuthenticated"
-        @click="createEvent"
-        class="fixed bottom-20 lg:bottom-4 right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50 group"
-        aria-label="Create Event"
-      >
-        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
-        <div
-          class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
-        >
-          Create Event
-        </div>
-      </button>
-    </Transition>
+    <!-- Contact Us FAB -->
+    <ContactUsFAB :has-fab-below="true" />
 
-    <!-- Contact Us FAB (Telegram) -->
-    <ContactUsFAB :smart-fab-visible="authStore.isAuthenticated" />
+    <!-- Create Event FAB -->
+    <button
+      @click="handleCreateEventClick"
+      class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
+      aria-label="Create Event"
+    >
+      <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+      <div class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+        Create Event
+      </div>
+    </button>
 
     <!-- Event Create Modal -->
     <EventCreateModal
@@ -219,18 +290,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  Calendar,
+  CalendarDays,
   Plus,
   CheckCircle,
   AlertCircle,
   User,
+  MapPin,
+  Users,
+  ArrowRight,
+  AlertTriangle,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
-import EventCategorySection from '../components/EventCategorySection.vue'
-import EventFilters from '../components/EventFilters.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
@@ -238,42 +311,22 @@ import PublicEventDrawer from '../components/PublicEventDrawer.vue'
 import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
-  eventCategoriesService,
+  apiService,
   type Event,
-  type EventCategory,
-  type EventFilters as EventFiltersType,
 } from '../services/api'
-import { useEventsData, type ViewType } from '../composables/useEventsData'
-import { useCategoryScroll } from '../composables/useCategoryScroll'
-import { useCategoryGrouping } from '../composables/useCategoryGrouping'
-import {
-  VIEW_OPTIONS,
-  EMPTY_STATE_CONFIG,
-  LOGIN_PROMPT_CONFIG,
-} from '../constants/eventsViewConfig'
+import { useEventsData } from '../composables/useEventsData'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// Initialize current view from URL query parameter or default to 'all'
-const initialView = (): ViewType => {
-  const viewParam = route.query.view as string | undefined
-  if (viewParam && ['all', 'my'].includes(viewParam)) {
-    return viewParam as ViewType
-  }
-  return 'all'
-}
-
-const currentView = ref<ViewType>(initialView())
-const categories = ref<EventCategory[]>([])
-const filters = ref<EventFiltersType>({})
+// Time filter state
+const timeFilter = ref<'upcoming' | 'past'>('upcoming')
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const eventToDelete = ref<Event | null>(null)
-const loadMoreTrigger = ref<HTMLElement | null>(null)
 
 // Public Event Drawer state
 const showEventDrawer = ref(false)
@@ -284,137 +337,203 @@ const selectedEventIndex = ref<number>(-1)
 const {
   events,
   loading,
-  hasMore,
-  isLoadingMore,
   loadEvents,
-  loadMoreEvents,
 } = useEventsData(computed(() => authStore.isAuthenticated))
 
-const {
-  setCategoryScrollRef,
-  categoryHasOverflow,
-  scrollCategory,
-  recheckAllOverflows,
-} = useCategoryScroll()
+// Filter events based on time filter
+const filteredEvents = computed(() => {
+  const now = new Date()
+  return events.value.filter(event => {
+    const eventDate = new Date(event.start_date)
+    if (timeFilter.value === 'upcoming') {
+      return eventDate >= now
+    } else {
+      return eventDate < now
+    }
+  })
+})
 
-const {
-  categorizedEvents,
-  getViewPrefix,
-} = useCategoryGrouping(currentView, events, categories)
+// Group events by date
+const groupedByDate = computed(() => {
+  const groups: { date: string; monthDay: string; weekday: string; events: Event[] }[] = []
+
+  // Sort events by date
+  const sortedEvents = [...filteredEvents.value].sort((a, b) => {
+    const dateA = new Date(a.start_date).getTime()
+    const dateB = new Date(b.start_date).getTime()
+    return timeFilter.value === 'upcoming' ? dateA - dateB : dateB - dateA
+  })
+
+  sortedEvents.forEach(event => {
+    const eventDate = new Date(event.start_date)
+    const dateKey = eventDate.toISOString().split('T')[0]
+
+    // Format date parts
+    const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const weekday = eventDate.toLocaleDateString('en-US', { weekday: 'long' })
+
+    const existingGroup = groups.find(g => g.date === dateKey)
+    if (existingGroup) {
+      existingGroup.events.push(event)
+    } else {
+      groups.push({
+        date: dateKey,
+        monthDay,
+        weekday,
+        events: [event]
+      })
+    }
+  })
+
+  return groups
+})
 
 // Computed properties
-const hasEvents = computed(() => events.value.length > 0)
-const showLoginPrompt = computed(() => {
-  return !loading.value && !authStore.isAuthenticated && currentView.value === 'my'
-})
-const isEmpty = computed(() => !loading.value && !showLoginPrompt.value && events.value.length === 0)
+const hasEvents = computed(() => filteredEvents.value.length > 0)
+const isEmpty = computed(() => !loading.value && authStore.isAuthenticated && filteredEvents.value.length === 0)
 
-const emptyStateTitle = computed(() => EMPTY_STATE_CONFIG[currentView.value].title)
-const emptyStateMessage = computed(() => EMPTY_STATE_CONFIG[currentView.value].message)
-const loginPromptMessage = computed(() => LOGIN_PROMPT_CONFIG[currentView.value])
-
-// Methods
-const handleViewChange = (view: ViewType) => {
-  currentView.value = view
-
-  // Update URL query parameter to persist tab state
-  router.replace({
-    path: route.path,
-    query: {
-      ...route.query,
-      view: view
-    }
-  })
+// Format event time
+const formatEventTime = (dateStr: string) => {
+  const date = new Date(dateStr)
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-const goToLogin = () => {
-  // Store the current view in the redirect URL so user returns to the same tab after login
-  const currentPath = route.path
-  const viewParam = currentView.value !== 'all' ? `?view=${currentView.value}` : ''
-  const redirectUrl = `${currentPath}${viewParam}`
-
-  router.push({
-    path: '/signin',
-    query: { redirect: redirectUrl }
-  })
+// Get guest count display
+const getGuestCount = (event: Event) => {
+  const count = (event as Event & { guest_count?: number; registrations?: unknown[] }).guest_count
+    || (event as Event & { registrations?: unknown[] }).registrations?.length
+    || 0
+  if (count === 0) return 'No guests'
+  if (count === 1) return '1 guest'
+  return `${count} guests`
 }
 
-const loadCategories = async () => {
-  try {
-    const response = await eventCategoriesService.getCategories()
-    if (response.success && response.data) {
-      categories.value = response.data.results || []
-    } else {
-      if (import.meta.env.DEV) {
-        console.error('Failed to load categories:', response.message)
-      }
-    }
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Failed to load categories:', error)
+// Get event image
+const getEventImage = (event: Event) => {
+  if (event.banner_image) {
+    return apiService.getProfilePictureUrl(event.banner_image)
+  }
+  if (event.photos && event.photos.length > 0) {
+    return apiService.getProfilePictureUrl(event.photos[0].image)
+  }
+  return null
+}
+
+// Get event hosts
+const getEventHosts = (event: Event) => {
+  const hosts: { name: string; image: string | null }[] = []
+  const eventWithHosts = event as Event & { hosts?: Array<{ name: string; profile_image?: string }> }
+
+  if (eventWithHosts.hosts && eventWithHosts.hosts.length > 0) {
+    eventWithHosts.hosts.forEach(host => {
+      hosts.push({
+        name: host.name,
+        image: host.profile_image ? apiService.getProfilePictureUrl(host.profile_image) : null
+      })
+    })
+  }
+
+  return hosts
+}
+
+// Format host names for display
+const formatHostNames = (event: Event) => {
+  const hosts = getEventHosts(event)
+  if (hosts.length === 0) return ''
+  if (hosts.length === 1) return hosts[0].name
+  if (hosts.length === 2) return `${hosts[0].name}, ${hosts[1].name}`
+  return `${hosts[0].name}, ${hosts[1].name} & ${hosts.length - 2} other${hosts.length - 2 > 1 ? 's' : ''}`
+}
+
+// Get event category name
+const getEventCategory = (event: Event) => {
+  const eventWithCategory = event as Event & { category?: { name?: string } | number | string | null; category_name?: string }
+
+  // Check for category_name field first
+  if (eventWithCategory.category_name) {
+    return eventWithCategory.category_name
+  }
+
+  // Check for category object with name
+  if (eventWithCategory.category && typeof eventWithCategory.category === 'object') {
+    const categoryObj = eventWithCategory.category as { name?: string }
+    if (categoryObj.name) {
+      return categoryObj.name
     }
   }
+
+  return null
+}
+
+// Check if user can manage this event
+const canManageEvent = (event: Event) => {
+  return event.can_edit === true ||
+    (authStore.user?.id && event.organizer === authStore.user.id)
+}
+
+// Methods
+const goToLogin = () => {
+  router.push({
+    path: '/signin',
+    query: { redirect: '/events' }
+  })
 }
 
 const viewEvent = (event: Event) => {
-  // Check if user can edit this event (organizer or collaborator with edit permission)
   const canEditEvent =
     event.can_edit === true ||
     (authStore.user?.id && event.organizer === authStore.user.id)
 
   if (canEditEvent) {
-    // User is organizer or collaborator - go to manage page
     router.push(`/events/${event.id}/manage`)
     return
   }
 
-  // For registered events (or any event user can't edit), open the drawer
   selectedEventId.value = event.id
-  selectedEventIndex.value = events.value.findIndex(e => e.id === event.id)
+  selectedEventIndex.value = filteredEvents.value.findIndex(e => e.id === event.id)
   showEventDrawer.value = true
 }
 
-// Drawer navigation computed properties
-const hasDrawerPrev = computed(() => selectedEventIndex.value > 0)
-const hasDrawerNext = computed(() => selectedEventIndex.value < events.value.length - 1)
+const manageEvent = (event: Event) => {
+  router.push(`/events/${event.id}/manage`)
+}
 
-// Drawer navigation methods
+// Drawer navigation
+const hasDrawerPrev = computed(() => selectedEventIndex.value > 0)
+const hasDrawerNext = computed(() => selectedEventIndex.value < filteredEvents.value.length - 1)
+
 const handleDrawerPrev = () => {
   if (hasDrawerPrev.value) {
     selectedEventIndex.value--
-    selectedEventId.value = events.value[selectedEventIndex.value].id
+    selectedEventId.value = filteredEvents.value[selectedEventIndex.value].id
   }
 }
 
 const handleDrawerNext = () => {
   if (hasDrawerNext.value) {
     selectedEventIndex.value++
-    selectedEventId.value = events.value[selectedEventIndex.value].id
+    selectedEventId.value = filteredEvents.value[selectedEventIndex.value].id
   }
 }
 
 const handleEventRegistered = () => {
   showMessage('success', 'Successfully registered for the event!')
-  // Reload events to update registration status
-  loadEvents(currentView.value, filters.value)
+  loadEvents('my', {})
 }
 
 const handleLoginRequired = () => {
-  // The drawer will close and redirect to login
   showEventDrawer.value = false
 }
 
-const createEvent = () => {
-  showCreateModal.value = true
-}
-
-const editEvent = (event: Event) => {
-  router.push(`/events/${event.id}/edit`)
-}
-
-const deleteEvent = (event: Event) => {
-  eventToDelete.value = event
-  showDeleteModal.value = true
+const handleCreateEventClick = () => {
+  if (authStore.isAuthenticated) {
+    showCreateModal.value = true
+  } else {
+    router.push({
+      path: '/signin',
+      query: { redirect: '/events?createEvent=true' }
+    })
+  }
 }
 
 const handleDeleteConfirm = async () => {
@@ -426,8 +545,7 @@ const handleDeleteConfirm = async () => {
     if (response.success) {
       showMessage('success', 'Event deleted successfully')
       closeDeleteModal()
-      // Reload events
-      await loadEvents(currentView.value, filters.value)
+      await loadEvents('my', {})
     } else {
       showMessage('error', response.message || 'Failed to delete event')
       isDeleting.value = false
@@ -459,28 +577,21 @@ const shouldOpenCreateModalFromQuery = () => {
   const values = Array.isArray(param) ? param : [param]
 
   return values.some((value) => {
-    if (value == null) {
-      return false
-    }
+    if (value == null) return false
     const normalized = value.toLowerCase()
     return normalized === '' || normalized === '1' || normalized === 'true' || normalized === 'yes'
   })
 }
 
 const clearCreateEventQuery = () => {
-  const newQuery = { ...route.query } as Record<string, any>
+  const newQuery = { ...route.query }
   delete newQuery.createEvent
   router.replace({ path: route.path, query: newQuery })
 }
 
 const maybeOpenCreateModalFromRoute = () => {
-  if (!authStore.isAuthenticated) {
-    return
-  }
-
-  if (!shouldOpenCreateModalFromQuery()) {
-    return
-  }
+  if (!authStore.isAuthenticated) return
+  if (!shouldOpenCreateModalFromQuery()) return
 
   showCreateModal.value = true
   clearCreateEventQuery()
@@ -509,11 +620,6 @@ interface EventFormData {
 
 const handleEventCreate = async (formData: EventFormData) => {
   try {
-    if (import.meta.env.DEV) {
-      console.log('Creating event with data:', formData)
-    }
-
-    // Prepare event data for API
     const eventData = {
       title: formData.title,
       description: formData.description,
@@ -536,37 +642,14 @@ const handleEventCreate = async (formData: EventFormData) => {
       timezone: formData.timezone || 'UTC',
     }
 
-    if (import.meta.env.DEV) {
-      console.log('Sending event data to API:', eventData)
-    }
     const response = await eventsService.createEvent(eventData)
-    if (import.meta.env.DEV) {
-      console.log('API response:', response)
-    }
 
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
-
-      // Store the target view to prevent race conditions
-      const targetView = 'my'
-
-      // Switch to "My Events" tab to show the newly created event
-      currentView.value = targetView
-
-      // Reload events to show the newly created event
-      await loadEvents(currentView.value, filters.value)
-
-      // Verify we're still on the correct view after loading completes
-      if (currentView.value !== targetView && import.meta.env.DEV) {
-        console.log('View changed during event creation, skipping reload')
-      }
+      await loadEvents('my', {})
     } else {
-      if (import.meta.env.DEV) {
-        console.error('Create event failed:', response)
-      }
       let errorMessage = response.message || 'Failed to create event'
 
-      // If there are validation errors, show them
       if (response.errors) {
         const errorDetails = Object.entries(response.errors)
           .map(
@@ -590,66 +673,7 @@ const handleEventCreate = async (formData: EventFormData) => {
   }
 }
 
-// Intersection Observer for infinite scroll
-let observer: IntersectionObserver | null = null
-
-const setupInfiniteScroll = () => {
-  // Clean up existing observer
-  if (observer) {
-    observer.disconnect()
-  }
-
-  // Only set up for public events view
-  if (currentView.value !== 'all') {
-    return
-  }
-
-  // Wait for trigger element to be available
-  const checkTrigger = () => {
-    const trigger = loadMoreTrigger.value
-    if (!trigger) {
-      // Try again after a short delay
-      setTimeout(checkTrigger, 100)
-      return
-    }
-
-    // Create intersection observer
-    observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMore.value && !isLoadingMore.value) {
-            loadMoreEvents(currentView.value, filters.value)
-          }
-        })
-      },
-      {
-        root: null,
-        rootMargin: '200px',
-        threshold: 0,
-      }
-    )
-
-    observer.observe(trigger)
-  }
-
-  checkTrigger()
-}
-
 // Watchers
-watch(
-  () => route.query.view,
-  (newView) => {
-    const view = newView as ViewType | undefined
-    if (view && ['all', 'my'].includes(view)) {
-      if (currentView.value !== view) {
-        currentView.value = view
-      }
-    } else if (!view && currentView.value !== 'all') {
-      currentView.value = 'all'
-    }
-  }
-)
-
 watch(
   () => route.query.createEvent,
   () => {
@@ -659,60 +683,35 @@ watch(
 )
 
 watch(
-  [() => currentView.value, filters],
-  async () => {
-    const result = await loadEvents(currentView.value, filters.value)
-    if (!result.success && result.message) {
-      showMessage('error', result.message)
+  () => route.query.view,
+  (newView) => {
+    if (newView === 'all') {
+      router.replace('/explore')
     }
-    // Re-setup infinite scroll after events are loaded and DOM is updated
-    await nextTick()
-    setupInfiniteScroll()
   },
-  { deep: true },
+  { immediate: true }
 )
 
-// Watch authentication state changes
 watch(
   () => authStore.isAuthenticated,
   (isAuthenticated) => {
     if (isAuthenticated) {
       maybeOpenCreateModalFromRoute()
-      // Reload events when user logs in
-      loadEvents(currentView.value, filters.value)
+      loadEvents('my', {})
     } else {
-      // User logged out - if they're on 'my' tab, clear events to show login prompt
-      if (currentView.value === 'my') {
-        events.value = []
-      }
+      events.value = []
     }
   },
 )
 
-// Watch for category overflow checking based on current view
-watch(
-  [() => currentView.value, () => events.value.length],
-  () => {
-    // Wait for DOM to update, then check category overflows
-    nextTick(() => {
-      recheckAllOverflows()
-    })
-  }
-)
-
 // Lifecycle
 onMounted(async () => {
-  // Load initial data
-  await loadCategories()
-
-  // Load events after categories
-  const result = await loadEvents(currentView.value, filters.value)
-  if (!result.success && result.message) {
-    showMessage('error', result.message)
+  if (authStore.isAuthenticated) {
+    const result = await loadEvents('my', {})
+    if (!result.success && result.message) {
+      showMessage('error', result.message)
+    }
   }
-
-  // Set up infinite scroll
-  setupInfiniteScroll()
 })
 </script>
 
@@ -730,60 +729,5 @@ onMounted(async () => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
-}
-
-/* Floating Action Button Animation */
-.fab-fade-enter-active,
-.fab-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fab-fade-enter-from {
-  opacity: 0;
-  transform: scale(0.8) translateY(20px);
-}
-
-.fab-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.8) translateY(20px);
-}
-
-/* Tab Button Unified Gradient Styling */
-.tab-inactive {
-  position: relative;
-  border: 2px solid transparent;
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(to right, #2ecc71, #1e90ff) border-box;
-}
-
-.tab-inactive span {
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-/* Icon styling for inactive tabs - primary green color */
-.tab-inactive svg {
-  color: #2ecc71 !important;
-  fill: none;
-  stroke: currentColor;
-}
-
-/* Hover state for unified gradient */
-.tab-inactive:hover {
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(to right, #27ae60, #1873cc) border-box;
-}
-
-/* Hide scrollbar for horizontal scroll on mobile */
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
 }
 </style>

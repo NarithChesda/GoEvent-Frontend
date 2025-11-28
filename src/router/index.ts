@@ -66,7 +66,19 @@ const router = createRouter({
       path: '/events',
       name: 'events',
       component: () => import('../views/EventsView.vue'),
-      meta: { title: 'Events - GoEvent' },
+      meta: { title: 'My Events - GoEvent' },
+    },
+    {
+      path: '/explore',
+      name: 'explore',
+      component: () => import('../views/ExploreView.vue'),
+      meta: { title: 'Discover Events - GoEvent' },
+    },
+    {
+      path: '/calendars',
+      name: 'calendars',
+      component: () => import('../views/CalendarsView.vue'),
+      meta: { title: 'Calendars - GoEvent' },
     },
     {
       path: '/events/:id',
