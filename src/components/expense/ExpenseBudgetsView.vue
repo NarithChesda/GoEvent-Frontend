@@ -1,19 +1,126 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-lg font-bold text-slate-900">Budget Management</h3>
-        <p class="text-sm text-slate-500 mt-1">Set and track spending limits for each category</p>
+    <!-- Filter and Actions Bar -->
+    <div class="sticky top-0 z-20">
+      <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+        <div class="flex items-center gap-3 p-3">
+          <!-- Filter Dropdown -->
+          <div class="relative" ref="filterContainer">
+            <button
+              @click="isFilterDropdownOpen = !isFilterDropdownOpen"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+              :class="activeFilter === 'all'
+                ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                : 'text-white border-transparent'"
+              :style="activeFilter !== 'all' && selectedCategory ? {
+                backgroundColor: selectedCategory.color || '#10b981'
+              } : {}"
+            >
+              <component
+                :is="activeFilter === 'all' ? Filter : getIconComponent(selectedCategory?.icon || 'Wallet')"
+                class="w-4 h-4 flex-shrink-0"
+                :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'"
+              />
+              <span class="truncate max-w-[100px] sm:max-w-[160px]">
+                {{ activeFilter === 'all' ? 'All Categories' : selectedCategory?.name || 'Select' }}
+              </span>
+              <ChevronDown
+                class="w-4 h-4 transition-transform flex-shrink-0"
+                :class="[{ 'rotate-180': isFilterDropdownOpen }, activeFilter === 'all' ? 'text-slate-400' : 'text-white/80']"
+              />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <Transition name="dropdown">
+              <div
+                v-if="isFilterDropdownOpen"
+                class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
+                @click.stop
+              >
+                <div class="p-1.5">
+                  <!-- All Categories Option -->
+                  <button
+                    @click="selectFilter('all')"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      activeFilter === 'all'
+                        ? 'bg-slate-100 text-slate-900'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <Filter class="w-4 h-4 text-slate-400" />
+                    <span class="flex-1 text-left">All Categories</span>
+                    <span class="text-xs text-slate-400 tabular-nums">{{ budgets.length }}</span>
+                  </button>
+
+                  <!-- Divider -->
+                  <div v-if="budgets.length > 0" class="my-1.5 border-t border-slate-100"></div>
+
+                  <!-- Individual Categories from Budgets -->
+                  <button
+                    v-for="budget in budgets"
+                    :key="budget.id"
+                    @click="selectFilter(budget.category.toString())"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                    :class="activeFilter === budget.category.toString() ? 'text-white' : 'text-slate-700 hover:bg-slate-50'"
+                    :style="activeFilter === budget.category.toString() ? {
+                      backgroundColor: budget.category_info.color || '#10b981'
+                    } : {}"
+                  >
+                    <component
+                      v-if="activeFilter !== budget.category.toString()"
+                      :is="getIconComponent(budget.category_info.icon)"
+                      class="w-4 h-4 flex-shrink-0"
+                      :style="{ color: budget.category_info.color || '#10b981' }"
+                    />
+                    <component
+                      v-else
+                      :is="getIconComponent(budget.category_info.icon)"
+                      class="w-4 h-4 flex-shrink-0 text-white/80"
+                    />
+                    <span class="flex-1 text-left truncate">{{ budget.category_info.name }}</span>
+                    <span
+                      class="text-xs tabular-nums"
+                      :class="activeFilter === budget.category.toString() ? 'text-white/70' : 'text-slate-400'"
+                    >
+                      {{ budget.percentage_used.toFixed(0) }}%
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Click outside to close dropdown -->
+            <div
+              v-if="isFilterDropdownOpen"
+              @click="isFilterDropdownOpen = false"
+              class="fixed inset-0 z-[90]"
+            ></div>
+          </div>
+
+          <!-- Divider -->
+          <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
+
+          <!-- Budget Count -->
+          <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+            <span class="font-medium text-slate-700">{{ filteredBudgets.length }}</span>
+            <span>budget{{ filteredBudgets.length !== 1 ? 's' : '' }}</span>
+          </div>
+
+          <!-- Spacer -->
+          <div class="flex-1"></div>
+
+          <!-- Quick Add Button -->
+          <button
+            v-if="canEdit"
+            @click="$emit('create-budget')"
+            class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
+          >
+            <Plus class="w-4 h-4" />
+            <span class="hidden sm:inline">Quick Add</span>
+          </button>
+        </div>
       </div>
-      <button
-        v-if="canEdit"
-        @click="$emit('create-budget')"
-        class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:-translate-y-0.5"
-      >
-        <Plus class="w-4 h-4" />
-        <span class="hidden sm:inline">Add Budget</span>
-      </button>
     </div>
 
     <!-- Loading State -->
@@ -41,7 +148,7 @@
     <div v-else class="space-y-3">
       <!-- Dynamic Budget Cards -->
       <div
-        v-for="budget in budgets"
+        v-for="budget in filteredBudgets"
         :key="budget.id"
         class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white overflow-hidden transition-all duration-200"
       >
@@ -68,20 +175,20 @@
               <!-- Top Row: Name + Badge + Amount -->
               <div class="flex items-center justify-between gap-2 mb-1">
                 <div class="flex items-center gap-1.5 min-w-0">
-                  <h4 class="font-semibold text-slate-900 text-sm truncate">{{ budget.category_info.name }}</h4>
+                  <h4 class="font-semibold text-slate-900 truncate">{{ budget.category_info.name }}</h4>
                   <span
                     v-if="budget.is_over_budget"
-                    class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[9px] font-bold rounded uppercase tracking-wide flex-shrink-0"
+                    class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded uppercase tracking-wide flex-shrink-0"
                   >
                     Over
                   </span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                  <span class="text-sm font-bold text-slate-900 tabular-nums">
+                  <span class="font-bold text-slate-900 tabular-nums">
                     {{ formatAmount(budget.spent_amount, budget.currency) }}
                   </span>
                   <span class="text-xs text-slate-400">/</span>
-                  <span class="text-xs font-medium text-slate-500 tabular-nums">
+                  <span class="text-sm font-medium text-slate-500 tabular-nums">
                     {{ formatAmount(budget.budgeted_amount, budget.currency) }}
                   </span>
                 </div>
@@ -174,7 +281,7 @@
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center justify-between gap-2 mb-1">
                         <h5 class="font-semibold text-slate-900 truncate">{{ expense.description }}</h5>
-                        <span class="text-sm font-medium text-slate-900 tabular-nums flex-shrink-0">
+                        <span class="font-medium text-slate-900 tabular-nums flex-shrink-0">
                           {{ formatAmount(expense.amount, expense.currency) }}
                         </span>
                       </div>
@@ -227,7 +334,7 @@
         </Transition>
       </div>
 
-      <!-- Empty State -->
+      <!-- Empty State - No budgets at all -->
       <div
         v-if="budgets.length === 0"
         class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-12 text-center"
@@ -244,6 +351,24 @@
         >
           <Plus class="w-4 h-4" />
           Add Your First Budget
+        </button>
+      </div>
+
+      <!-- Empty State - Filter has no results -->
+      <div
+        v-else-if="filteredBudgets.length === 0 && activeFilter !== 'all'"
+        class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center"
+      >
+        <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+          <Filter class="w-6 h-6 text-slate-400" />
+        </div>
+        <h4 class="font-semibold text-slate-900 mb-1">No Budget Found</h4>
+        <p class="text-sm text-slate-500 mb-3">The selected category doesn't have a budget yet</p>
+        <button
+          @click="selectFilter('all')"
+          class="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+        >
+          View all budgets
         </button>
       </div>
     </div>
@@ -289,7 +414,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   Edit2,
   Trash2,
@@ -298,7 +423,8 @@ import {
   Wallet,
   ChevronDown,
   Plus,
-  Paperclip
+  Paperclip,
+  Filter
 } from 'lucide-vue-next'
 import {
   expenseBudgetsService,
@@ -346,6 +472,31 @@ const loadingExpenses = ref(false)
 const expandedBudgets = ref<number[]>([])
 const deletingExpense = ref<ExpenseRecord | null>(null)
 const showDeleteExpenseModal = ref(false)
+
+// Filter state
+const activeFilter = ref<string>('all')
+const isFilterDropdownOpen = ref(false)
+const filterContainer = ref<HTMLElement | null>(null)
+
+// Computed properties for filtering
+const filteredBudgets = computed(() => {
+  if (activeFilter.value === 'all') {
+    return budgets.value
+  }
+  return budgets.value.filter(b => b.category.toString() === activeFilter.value)
+})
+
+const selectedCategory = computed(() => {
+  if (activeFilter.value === 'all') return null
+  const budget = budgets.value.find(b => b.category.toString() === activeFilter.value)
+  return budget?.category_info || null
+})
+
+// Filter methods
+const selectFilter = (filter: string) => {
+  activeFilter.value = filter
+  isFilterDropdownOpen.value = false
+}
 
 // Use composables
 const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
@@ -734,5 +885,16 @@ defineExpose({
 .slide-down-leave-from {
   opacity: 1;
   max-height: 1000px;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>
