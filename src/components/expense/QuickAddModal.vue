@@ -54,7 +54,7 @@
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
-                    <Receipt class="w-4 h-4 inline-block mr-1.5" />
+                    <Banknote class="w-4 h-4 inline-block mr-1.5" />
                     Expense
                   </button>
                   <button
@@ -335,16 +335,17 @@
 
               <!-- Budget Warning/Info for Expense -->
               <div v-if="selectedType === 'expense' && formData.category_id" class="mt-3">
-                <div v-if="!categoryBudget" class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <AlertCircle class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div v-if="!categoryBudget" class="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Sparkles class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm text-amber-700 font-medium">No budget set for this category</p>
+                    <p class="text-sm text-blue-700 font-medium">Budget will be set to match this expense</p>
+                    <p class="text-xs text-blue-600 mt-0.5">This becomes your baseline for tracking</p>
                     <button
                       type="button"
                       @click="showInlineBudget = true"
-                      class="text-xs text-amber-600 hover:text-amber-700 underline mt-1"
+                      class="text-xs text-blue-600 hover:text-blue-700 underline mt-1"
                     >
-                      Set budget now
+                      Or set a different budget
                     </button>
                   </div>
                 </div>
@@ -715,7 +716,7 @@ import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import {
   X,
-  Receipt,
+  Banknote,
   Wallet,
   FolderOpen,
   DollarSign,
@@ -1119,11 +1120,37 @@ const submitExpense = async () => {
   }
 
   const categoryId = parseInt(formData.value.category_id)
+  const expenseAmount = formData.value.amount!
+
+  // Auto-create budget if none exists for this category
+  if (!categoryBudget.value) {
+    try {
+      const budgetRequestData: CreateExpenseBudgetRequest & { category: number } = {
+        category: categoryId,
+        category_id: categoryId,
+        budgeted_amount: expenseAmount,
+        currency: formData.value.currency,
+        notes: undefined
+      }
+
+      const budgetResponse = await expenseBudgetsService.createBudget(props.eventId, budgetRequestData)
+
+      if (budgetResponse.success && budgetResponse.data) {
+        // Emit budget creation success so parent can update budgets list
+        emit('success', 'budget', budgetResponse.data)
+      }
+      // Continue with expense creation even if budget creation fails
+    } catch (err) {
+      // Log but don't block expense creation
+      console.warn('Auto-budget creation failed:', err)
+    }
+  }
+
   const requestData: CreateExpenseRecordRequest = {
     category: categoryId,
     category_id: categoryId,
     description: formData.value.description,
-    amount: formData.value.amount!,
+    amount: expenseAmount,
     currency: formData.value.currency,
     date: formData.value.date,
     payment_method: formData.value.payment_method,

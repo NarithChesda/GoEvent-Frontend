@@ -44,7 +44,7 @@ import {
   ImageIcon,
   Monitor,
   CreditCard,
-  DollarSign,
+  Wallet,
   BarChart,
   Star,
   Mic,
@@ -110,7 +110,7 @@ const getIconComponent = (iconName: string) => {
     monitor: Monitor,
     'credit-card': CreditCard,
     'bar-chart': BarChart,
-    'dollar-sign': DollarSign,
+    wallet: Wallet,
     star: Star,
     mic: Mic,
   }

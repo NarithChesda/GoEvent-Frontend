@@ -56,7 +56,7 @@ import {
   Monitor,
   CreditCard,
   Mail,
-  DollarSign,
+  Wallet,
   BarChart,
   Star,
 } from 'lucide-vue-next'
@@ -108,7 +108,7 @@ const iconMap = {
   monitor: Monitor,
   'credit-card': CreditCard,
   'bar-chart': BarChart,
-  'dollar-sign': DollarSign,
+  wallet: Wallet,
   mail: Mail,
   star: Star,
 } as const

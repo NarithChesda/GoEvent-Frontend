@@ -21,6 +21,7 @@
         :can-edit="canEdit"
         @create-category="handleCreateCategory"
         @create-budget="openQuickAddBudget"
+        @quick-add="openQuickAdd"
         @edit-budget="handleEditBudget"
         @edit-expense="handleEditExpense"
       />

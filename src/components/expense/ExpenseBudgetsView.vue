@@ -113,7 +113,7 @@
           <!-- Quick Add Button -->
           <button
             v-if="canEdit"
-            @click="$emit('create-budget')"
+            @click="$emit('quick-add')"
             class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
           >
             <Plus class="w-4 h-4" />
@@ -336,22 +336,29 @@
 
       <!-- Empty State - No budgets at all -->
       <div
-        v-if="budgets.length === 0"
-        class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-12 text-center"
+        v-if="budgets.length === 0 && canEdit"
+        @click="$emit('create-budget')"
+        class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group"
+      >
+        <div class="flex flex-col items-center justify-center">
+          <div class="w-16 h-16 bg-slate-200 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300">
+            <Wallet class="w-8 h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+          </div>
+          <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Add First Budget</h4>
+          <p class="text-sm text-slate-400 mt-1">Start tracking spending for different categories</p>
+        </div>
+      </div>
+
+      <!-- Empty State - No budgets (Read-only) -->
+      <div
+        v-else-if="budgets.length === 0"
+        class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 text-center"
       >
         <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Wallet class="w-8 h-8 text-slate-400" />
         </div>
         <h4 class="font-semibold text-slate-900 mb-2">No Budgets Yet</h4>
-        <p class="text-sm text-slate-500 mb-4">Create budgets to track spending for different categories</p>
-        <button
-          v-if="canEdit"
-          @click="$emit('create-budget')"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-all"
-        >
-          <Plus class="w-4 h-4" />
-          Add Your First Budget
-        </button>
+        <p class="text-sm text-slate-500">No budgets have been created for this event</p>
       </div>
 
       <!-- Empty State - Filter has no results -->
@@ -455,6 +462,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'create-category': []
   'create-budget': []
+  'quick-add': []
   'edit-budget': [budget: ExpenseBudget]
   'edit-expense': [expense: ExpenseRecord]
 }>()

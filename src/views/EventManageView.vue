@@ -380,7 +380,7 @@ import {
   CreditCard,
   Mail,
   Share2,
-  DollarSign,
+  Wallet,
   BarChart,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
@@ -485,7 +485,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'media', label: 'Showcase', icon: 'image' },
   { id: 'template-payment', label: 'Template & Payment', icon: 'credit-card', mobileLabel: 'Template' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
-  { id: 'expenses', label: 'Expense Tracking', icon: 'dollar-sign', mobileLabel: 'Expenses' },
+  { id: 'expenses', label: 'Expense Tracking', icon: 'wallet', mobileLabel: 'Expenses' },
   { id: 'registration', label: 'Registration', icon: 'user-plus' },
   { id: 'analytics', label: 'Analytics', icon: 'bar-chart', mobileLabel: 'Analytics' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
@@ -581,7 +581,7 @@ const currentTabIcon = computed(() => {
     monitor: Monitor,
     'credit-card': CreditCard,
     'bar-chart': BarChart,
-    'dollar-sign': DollarSign,
+    wallet: Wallet,
     mail: Mail,
     'share-2': Share2,
   } as const
