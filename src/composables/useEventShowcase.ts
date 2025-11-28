@@ -129,6 +129,10 @@ export interface TemplateAssets {
     bottom_decoration?: string
     left_decoration?: string
     right_decoration?: string
+    cover_top_decoration?: string
+    cover_bottom_decoration?: string
+    cover_left_decoration?: string
+    cover_right_decoration?: string
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
@@ -144,6 +148,25 @@ export interface EventPhoto {
   order: number
   is_featured: boolean
   created_at: string
+}
+
+export interface DressCode {
+  id: number
+  event: string
+  dress_code_type: string
+  dress_code_type_display: string
+  time_period: string
+  time_period_display: string
+  gender: string
+  gender_display: string
+  title: string
+  description: string
+  color: string
+  image: string | null
+  order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface UserDetails {
@@ -207,6 +230,7 @@ export interface EventData {
   event_photos?: EventPhoto[]
   photos?: EventPhoto[]
   payment_methods?: EventPaymentMethod[]
+  dress_codes?: DressCode[]
   available_languages?: Array<{ id: number; language: string; language_display: string }>
   top_decoration?: string | null
   bottom_decoration?: string | null
@@ -709,11 +733,24 @@ export function useEventShowcase() {
       // Update only the content-related parts of showcaseData
       // IMPORTANT: We must update template_fonts and template_assets to get new language fonts
       if (showcaseData.value) {
+        // Merge event_texts: keep existing texts for other languages, add/update texts for new language
+        // This ensures fallback content remains available when switching between languages
+        const existingTexts = showcaseData.value.event.event_texts || []
+        const newTexts = data.event.event_texts || []
+
+        // Remove texts for the new language from existing (will be replaced with new ones)
+        const textsFromOtherLanguages = existingTexts.filter(
+          (text) => text.language !== newLanguage,
+        )
+
+        // Combine: texts from other languages + new texts for current language
+        const mergedEventTexts = [...textsFromOtherLanguages, ...newTexts]
+
         showcaseData.value = {
           ...showcaseData.value,
           event: {
             ...showcaseData.value.event,
-            event_texts: data.event.event_texts,
+            event_texts: mergedEventTexts,
             hosts: data.event.hosts,
             agenda_items: data.event.agenda_items,
             available_languages: data.event.available_languages,

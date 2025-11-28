@@ -37,11 +37,19 @@ export function useImageCropper() {
   ): Promise<{ file: File; preview: string } | null> => {
     return new Promise((resolve) => {
       if (!cropper.value) {
+        console.error('applyCrop: cropper.value is null')
         resolve(null)
         return
       }
 
-      let { canvas } = cropper.value.getResult()
+      const result = cropper.value.getResult()
+      if (!result) {
+        console.error('applyCrop: getResult() returned null')
+        resolve(null)
+        return
+      }
+
+      let { canvas } = result
       if (!canvas) {
         resolve(null)
         return

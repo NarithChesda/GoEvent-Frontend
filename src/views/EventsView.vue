@@ -241,17 +241,19 @@
       </div>
     </Transition>
 
-    <!-- Contact Us FAB -->
+    <!-- Contact Us FAB (Telegram) - moved up when Create FAB is visible -->
     <ContactUsFAB :has-fab-below="true" />
 
     <!-- Create Event FAB -->
     <button
       @click="handleCreateEventClick"
-      class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
+      class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
       aria-label="Create Event"
     >
       <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
-      <div class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+      <div
+        class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+      >
         Create Event
       </div>
     </button>
@@ -525,15 +527,29 @@ const handleLoginRequired = () => {
   showEventDrawer.value = false
 }
 
+const createEvent = () => {
+  showCreateModal.value = true
+}
+
 const handleCreateEventClick = () => {
   if (authStore.isAuthenticated) {
     showCreateModal.value = true
   } else {
+    // Redirect to login with redirect back to events with createEvent param
     router.push({
       path: '/signin',
       query: { redirect: '/events?createEvent=true' }
     })
   }
+}
+
+const editEvent = (event: Event) => {
+  router.push(`/events/${event.id}/edit`)
+}
+
+const deleteEvent = (event: Event) => {
+  eventToDelete.value = event
+  showDeleteModal.value = true
 }
 
 const handleDeleteConfirm = async () => {
@@ -729,5 +745,44 @@ onMounted(async () => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Tab Button Unified Gradient Styling */
+.tab-inactive {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #2ecc71, #1e90ff) border-box;
+}
+
+.tab-inactive span {
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Icon styling for inactive tabs - primary green color */
+.tab-inactive svg {
+  color: #2ecc71 !important;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* Hover state for unified gradient */
+.tab-inactive:hover {
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, #27ae60, #1873cc) border-box;
+}
+
+/* Hide scrollbar for horizontal scroll on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 </style>

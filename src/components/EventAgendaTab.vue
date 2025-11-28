@@ -15,7 +15,7 @@
       </div>
       <button
         v-if="canEdit"
-        @click="showCreateModal = true"
+        @click="openCreateDrawer"
         class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center"
       >
         <Plus class="w-4 h-4 mr-2" />
@@ -122,7 +122,7 @@
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Start building your event schedule by adding agenda items.</p>
       <button
         v-if="canEdit"
-        @click="showCreateModal = true"
+        @click="openCreateDrawer"
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
         <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
@@ -169,13 +169,12 @@
       </ul>
     </div>
 
-    <!-- Unified Agenda Modal (for both create and edit) -->
-    <EditAgendaModal
-      v-if="showCreateModal || (showEditModal && selectedItem)"
+    <!-- Unified Agenda Drawer (for both create and edit) -->
+    <EditAgendaDrawer
+      v-model="showAgendaDrawer"
       :event-id="eventId"
       :item="selectedItem || undefined"
       :existing-agenda-items="agendaItems"
-      @close="closeAgendaModal"
       @created="handleAgendaCreated"
       @updated="handleAgendaUpdated"
     />
@@ -212,7 +211,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
-import EditAgendaModal from './EditAgendaModal.vue'
+import EditAgendaDrawer from './EditAgendaDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {
@@ -225,8 +224,7 @@ const props = defineProps<Props>()
 // State
 const agendaItems = ref<EventAgendaItem[]>([])
 const loading = ref(false)
-const showCreateModal = ref(false)
-const showEditModal = ref(false)
+const showAgendaDrawer = ref(false)
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const selectedItem = ref<EventAgendaItem | null>(null)
@@ -429,18 +427,12 @@ const formatDayHeader = (date: string): string => {
 
 const editAgendaItem = (item: EventAgendaItem) => {
   selectedItem.value = item
-  showEditModal.value = true
+  showAgendaDrawer.value = true
 }
 
-const closeEditModal = () => {
-  showEditModal.value = false
+const openCreateDrawer = () => {
   selectedItem.value = null
-}
-
-const closeAgendaModal = () => {
-  showCreateModal.value = false
-  showEditModal.value = false
-  selectedItem.value = null
+  showAgendaDrawer.value = true
 }
 
 const confirmDeleteItem = (item: EventAgendaItem) => {
@@ -476,8 +468,7 @@ const deleteAgendaItem = async () => {
 
 const handleAgendaCreated = (newItem: EventAgendaItem) => {
   agendaItems.value.push(newItem)
-  showMessage('success', 'Agenda item added successfully')
-  showCreateModal.value = false
+  selectedItem.value = null
 }
 
 const handleAgendaUpdated = (updatedItem: EventAgendaItem) => {
@@ -485,8 +476,7 @@ const handleAgendaUpdated = (updatedItem: EventAgendaItem) => {
   if (index !== -1) {
     agendaItems.value[index] = updatedItem
   }
-  showMessage('success', 'Agenda item updated successfully')
-  closeEditModal()
+  selectedItem.value = null
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
@@ -623,7 +613,7 @@ onMounted(() => {
 // Expose method for parent component (Smart FAB)
 defineExpose({
   openAddModal: () => {
-    showCreateModal.value = true
+    showAgendaDrawer.value = true
   }
 })
 </script>

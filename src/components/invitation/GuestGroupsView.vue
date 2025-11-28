@@ -1,43 +1,14 @@
 <template>
   <div class="space-y-6">
-    <!-- Header with Add Guest Button -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h3 class="text-lg font-bold text-slate-900">Guest List</h3>
-        <p class="text-sm text-slate-500 mt-1">Manage event invitations and guest responses</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <!-- Search & Filter -->
-        <div class="relative flex-1 sm:flex-initial">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search class="w-4 h-4 text-slate-400" />
-          </div>
-          <input
-            id="guest-search"
-            type="text"
-            v-model="groupSearchQuery"
-            @input="handleGroupSearch"
-            placeholder="Search guests..."
-            aria-label="Search guests by name, email, or phone"
-            class="w-full sm:w-64 pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
-          />
-          <button
-            v-if="groupSearchQuery"
-            @click="clearGroupSearch"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-            title="Clear search"
-          >
-            <X class="w-4 h-4" />
-          </button>
-        </div>
-        <button
-          @click="$emit('add-guest')"
-          class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 whitespace-nowrap"
-        >
-          <UserPlus class="w-4 h-4" />
-          <span class="hidden sm:inline">Add Guest</span>
-        </button>
-      </div>
+    <!-- Header -->
+    <div>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Guest Management</h2>
+      <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage event invitations and guest responses</p>
+    </div>
+
+    <!-- Guest Statistics Card -->
+    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+      <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
     </div>
 
     <!-- Loading State -->
@@ -68,67 +39,86 @@
       :aria-label="`${activeFilter === 'all' ? 'All groups' : groups.find(g => g.id.toString() === activeFilter)?.name || ''} guests`"
       class="space-y-4"
     >
-      <!-- Filter and Actions Bar - Always Visible -->
-      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 lg:gap-4 py-3 lg:py-4 px-4 lg:px-6 bg-white border border-slate-200 rounded-xl relative z-10">
-        <!-- Left: Filter Dropdown, Select All & Selection Count -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 w-full lg:w-auto">
+      <!-- Filter and Actions Bar - Clean Minimalist Design -->
+      <div class="sticky top-0 z-20 mb-4">
+        <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+          <!-- Single Row Layout -->
+          <div class="flex items-center gap-3 p-3">
+            <!-- Select All Checkbox -->
+            <label class="flex items-center cursor-pointer group flex-shrink-0">
+              <input
+                type="checkbox"
+                :checked="isAllCurrentPageSelected"
+                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
+                @change="handleToggleSelectAll"
+                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer transition-colors"
+              />
+            </label>
+
             <!-- Filter Dropdown -->
-            <div class="relative z-[100] w-full sm:w-auto" ref="tabsContainer">
+            <div class="relative" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="w-full sm:w-auto flex items-center gap-2 px-3 lg:px-4 py-2 lg:py-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 min-w-0 sm:min-w-[180px]"
+                class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+                :class="activeFilter === 'all'
+                  ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  : 'text-white border-transparent'"
+                :style="activeFilter !== 'all' ? {
+                  backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db'
+                } : {}"
               >
-                <Filter class="w-4 h-4 text-white flex-shrink-0" />
-                <span class="flex-1 text-left text-white truncate text-sm lg:text-base">
-                  {{ activeFilterLabel }}
+                <Filter class="w-4 h-4 flex-shrink-0" :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'" />
+                <span class="truncate max-w-[100px] sm:max-w-[160px]">
+                  {{ activeFilter === 'all' ? 'All Groups' : groups.find(g => g.id.toString() === activeFilter)?.name || 'Select' }}
                 </span>
-                <ChevronDown class="w-4 h-4 text-white transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
+                <ChevronDown class="w-4 h-4 transition-transform flex-shrink-0" :class="[{ 'rotate-180': isDropdownOpen }, activeFilter === 'all' ? 'text-slate-400' : 'text-white/80']" />
               </button>
 
               <!-- Dropdown Menu -->
               <Transition name="dropdown">
                 <div
                   v-if="isDropdownOpen"
-                  class="absolute top-full left-0 mt-2 w-full min-w-[250px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[400px] overflow-y-auto"
+                  class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
                   @click.stop
                 >
-                  <!-- All Groups Option -->
-                  <button
-                    @click="selectFilter('all')"
-                    :class="[
-                      'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
-                      activeFilter === 'all'
-                        ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    ]"
-                  >
-                    <Filter class="w-4 h-4" />
-                    <span class="flex-1 text-left">All Groups</span>
-                    <span class="text-xs opacity-75">({{ totalGuestCount }})</span>
-                  </button>
+                  <div class="p-1.5">
+                    <!-- All Groups Option -->
+                    <button
+                      @click="selectFilter('all')"
+                      :class="[
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                        activeFilter === 'all'
+                          ? 'bg-slate-100 text-slate-900'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      ]"
+                    >
+                      <span class="flex-1 text-left">All Groups</span>
+                      <span class="text-xs text-slate-400 tabular-nums">{{ totalGuestCount }}</span>
+                    </button>
 
-                  <!-- Divider -->
-                  <div v-if="groups.length > 0" class="border-t border-slate-100"></div>
+                    <!-- Divider -->
+                    <div v-if="groups.length > 0" class="my-1.5 border-t border-slate-100"></div>
 
-                  <!-- Individual Groups -->
-                  <button
-                    v-for="group in groups"
-                    :key="group.id"
-                    @click="selectFilter(group.id.toString())"
-                    :class="[
-                      'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200',
-                      activeFilter === group.id.toString()
-                        ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    ]"
-                  >
-                    <div
-                      class="w-3 h-3 rounded-full flex-shrink-0"
-                      :style="{ backgroundColor: activeFilter === group.id.toString() ? 'white' : (group.color || '#3498db') }"
-                    />
-                    <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                    <span class="text-xs opacity-75">({{ group.guest_count }})</span>
-                  </button>
+                    <!-- Individual Groups -->
+                    <button
+                      v-for="group in groups"
+                      :key="group.id"
+                      @click="selectFilter(group.id.toString())"
+                      class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                      :class="activeFilter === group.id.toString() ? 'text-white' : 'text-slate-700 hover:bg-slate-50'"
+                      :style="activeFilter === group.id.toString() ? {
+                        backgroundColor: group.color || '#3498db'
+                      } : {}"
+                    >
+                      <div
+                        v-if="activeFilter !== group.id.toString()"
+                        class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        :style="{ backgroundColor: group.color || '#3498db' }"
+                      />
+                      <span class="flex-1 text-left truncate">{{ group.name }}</span>
+                      <span class="text-xs tabular-nums" :class="activeFilter === group.id.toString() ? 'text-white/70' : 'text-slate-400'">{{ group.guest_count }}</span>
+                    </button>
+                  </div>
                 </div>
               </Transition>
 
@@ -140,81 +130,81 @@
               ></div>
             </div>
 
-            <!-- Select All Checkbox & Actions Row -->
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <!-- Select All Checkbox -->
-              <label class="flex items-center gap-2.5 cursor-pointer group">
+            <!-- Divider -->
+            <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
+
+            <!-- Search Input -->
+            <div class="flex-1 min-w-0">
+              <div class="relative">
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <input
-                  type="checkbox"
-                  :checked="isAllCurrentPageSelected"
-                  :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
-                  @change="handleToggleSelectAll"
-                  class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  ref="searchInputRef"
+                  id="guest-search"
+                  type="text"
+                  v-model="groupSearchQuery"
+                  @input="handleGroupSearch"
+                  placeholder="Search guests..."
+                  aria-label="Search guests by name, email, or phone"
+                  class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
                 />
-                <span class="text-xs sm:text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Select All</span>
-              </label>
-
-              <!-- Selection actions (shown when guests are selected) -->
-              <div v-if="totalSelectedCount > 0" class="flex items-center gap-2">
-                <span class="text-xs sm:text-sm text-slate-600 font-medium px-2">{{ totalSelectedCount }} selected</span>
-                <div class="flex items-center gap-1">
-                  <button
-                    @click="handleBulkMarkSent"
-                    title="Mark all selected as sent"
-                    class="p-1.5 sm:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                  >
-                    <Send class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </button>
-                  <button
-                    @click="handleBulkDelete"
-                    title="Delete all selected"
-                    class="p-1.5 sm:p-2 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"
-                  >
-                    <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Guest count info (shown when no selections) -->
-              <div v-else class="text-xs sm:text-sm text-slate-600">
-                Showing <span class="font-semibold text-slate-900">{{ paginationStart }}-{{ paginationEnd }}</span> of <span class="font-semibold text-slate-900">{{ paginationTotal }}</span> guests
+                <button
+                  v-if="groupSearchQuery"
+                  @click="clearGroupSearch"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
+                >
+                  <X class="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-          </div>
 
-          <!-- Right: Pagination controls -->
-          <div v-if="showPagination" class="flex items-center justify-center sm:justify-start gap-1 bg-slate-50 rounded-xl px-2 py-1 w-full sm:w-auto">
-            <button
-              @click="handlePreviousPage"
-              :disabled="currentPageNumber === 1 || isAnyGroupLoading"
-              class="p-1.5 sm:p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              :title="currentPageNumber === 1 ? 'First page' : 'Previous page'"
-              aria-label="Previous page"
-            >
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <div class="flex items-center gap-1 px-2 sm:px-3 min-w-[50px] sm:min-w-[60px] justify-center">
-              <span class="text-xs sm:text-sm font-semibold text-slate-900">{{ currentPageNumber }}</span>
-              <span class="text-xs sm:text-sm text-slate-400">/</span>
-              <span class="text-xs sm:text-sm text-slate-600">{{ totalPagesCount }}</span>
+            <!-- Guest Count -->
+            <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+              <span class="font-medium text-slate-700">{{ loadedGuestCount }}</span>
+              <span>/</span>
+              <span>{{ paginationTotal }}</span>
             </div>
 
+            <!-- Add Guest Button -->
             <button
-              @click="handleNextPage"
-              :disabled="currentPageNumber >= totalPagesCount || isAnyGroupLoading"
-              class="p-1.5 sm:p-2 rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              :title="currentPageNumber >= totalPagesCount ? 'Last page' : 'Next page'"
-              aria-label="Next page"
+              @click="$emit('add-guest')"
+              class="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
             >
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <UserPlus class="w-4 h-4" />
+              <span class="hidden sm:inline">Add</span>
             </button>
           </div>
+
+          <!-- Selection Actions Bar - Appears when items selected -->
+          <Transition name="selection-bar">
+            <div
+              v-if="totalSelectedCount > 0"
+              class="flex items-center justify-between gap-3 px-3 pb-3"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-slate-600">
+                  <span class="font-semibold text-slate-900">{{ totalSelectedCount }}</span> selected
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button
+                  @click="handleBulkMarkSent"
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                >
+                  <Send class="w-3.5 h-3.5" />
+                  <span class="hidden xs:inline">Mark Sent</span>
+                </button>
+                <button
+                  @click="handleBulkDelete"
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span class="hidden xs:inline">Delete</span>
+                </button>
+              </div>
+            </div>
+          </Transition>
         </div>
+      </div>
 
       <!-- Content Area -->
       <!-- Loading State -->
@@ -225,17 +215,10 @@
       <!-- Guest List Items (Scrollable) -->
       <div v-else-if="hasAnyGuests">
         <!-- Scrollable container with max height -->
-        <div class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0">
-          <!-- Loading overlay for pagination -->
-          <Transition name="fade">
-            <div v-if="isAnyGroupLoading" class="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
-              <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg border border-slate-200">
-                <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <span class="text-sm text-slate-600">Loading...</span>
-              </div>
-            </div>
-          </Transition>
-
+        <div
+          ref="scrollContainerRef"
+          class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0"
+        >
           <GuestListItem
             v-for="guest in allFilteredGuests"
             :key="guest.id"
@@ -247,6 +230,22 @@
             @delete="$emit('delete-guest', $event)"
             @toggle-select="handleToggleSelect"
           />
+
+          <!-- Infinite Scroll Trigger -->
+          <div
+            ref="scrollTriggerRef"
+            class="py-4 flex justify-center"
+          >
+            <!-- Loading more indicator -->
+            <div v-if="isLoadingMore" class="flex items-center gap-2">
+              <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-sm text-slate-500">Loading more guests...</span>
+            </div>
+            <!-- End of list indicator -->
+            <div v-else-if="!hasMoreToLoad && allFilteredGuests.length > 0" class="text-sm text-slate-400">
+              All {{ paginationTotal }} guests loaded
+            </div>
+          </div>
         </div>
       </div>
 
@@ -261,18 +260,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
-import type { GuestGroup, EventGuest } from '../../services/api'
+import GuestStatsCard from './GuestStatsCard.vue'
+import type { GuestGroup, EventGuest, GuestStats } from '../../services/api'
 
 interface GroupPaginationData {
   currentPage: number
   totalCount: number
   guests: EventGuest[]
   loading: boolean
+  loadingMore: boolean
   searchTerm: string
   hasLoaded: boolean
+  hasMore: boolean
 }
 
 interface Props {
@@ -282,15 +284,14 @@ interface Props {
   getGroupGuests: (groupId: number) => EventGuest[]
   isGroupLoading: (groupId: number) => boolean
   isGroupExpanded: (groupId: number) => boolean
-  getGroupPagination: (groupId: number) => {
-    currentPage: number
-    totalCount: number
-    searchTerm: string
-  }
+  getGroupPagination: (groupId: number) => GroupPaginationData
   // All Groups pagination - now accepts the data directly instead of a getter function
   allGuestsPagination: GroupPaginationData
   isAllGuestsLoading: () => boolean
   loadAllGuests: (page: number, silent: boolean) => Promise<any>
+  // Guest statistics
+  guestStats: GuestStats | null
+  loadingStats: boolean
 }
 
 const props = defineProps<Props>()
@@ -304,12 +305,10 @@ const emit = defineEmits<{
   'mark-sent': [guest: EventGuest]
   'edit-guest': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
-  'next-page': [groupId: number]
-  'previous-page': [groupId: number]
   'search': [groupId: number, searchTerm: string]
-  'next-all-page': []
-  'previous-all-page': []
   'search-all': [searchTerm: string]
+  'load-more-all': []
+  'load-more-group': [groupId: number]
   'bulk-mark-sent': [groupId: number, selectedIds: number[]]
   'bulk-delete': [groupId: number, selectedIds: number[]]
   'register-group-card': [groupId: number, el: any]
@@ -320,21 +319,23 @@ const activeFilter = ref('all')
 const groupSearchQuery = ref('')
 const selectedGuestIds = ref<Set<number>>(new Set())
 const isDropdownOpen = ref(false)
+const isSearchExpanded = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Tab container ref
 const tabsContainer = ref<HTMLElement | null>(null)
+const searchInputRef = ref<HTMLInputElement | null>(null)
 
-// Function to trigger group expansion based on active filter
+// Function to trigger group data loading based on active filter
 const triggerGroupExpansion = () => {
   if (activeFilter.value === 'all') {
     // Load all guests without group filter
     props.loadAllGuests(1, false)
   } else {
     const groupId = parseInt(activeFilter.value)
-    if (!props.isGroupExpanded(groupId)) {
-      emit('toggle-group', groupId)
-    }
+    // Always emit toggle-group to ensure guests are loaded for this group
+    // The parent handler will check if guests need to be loaded
+    emit('toggle-group', groupId)
   }
 }
 
@@ -421,15 +422,6 @@ const isAnyGroupLoading = computed(() => {
 
 const totalSelectedCount = computed(() => selectedGuestIds.value.size)
 
-// Active filter label for dropdown
-const activeFilterLabel = computed(() => {
-  if (activeFilter.value === 'all') {
-    return `All Groups (${totalGuestCount.value})`
-  }
-  const group = props.groups.find(g => g.id.toString() === activeFilter.value)
-  return group ? `${group.name} (${group.guest_count})` : 'Select Group'
-})
-
 // Pagination computed properties
 const activePagination = computed(() => {
   if (activeFilter.value === 'all') {
@@ -440,16 +432,8 @@ const activePagination = computed(() => {
   return props.getGroupPagination(filteredGroups.value[0].id)
 })
 
-const showPagination = computed(() => {
-  if (!activePagination.value) return false
-  return Math.ceil(activePagination.value.totalCount / props.pageSize) > 1
-})
-
-const currentPageNumber = computed(() => activePagination.value?.currentPage || 1)
 const paginationTotal = computed(() => activePagination.value?.totalCount || 0)
-const totalPagesCount = computed(() => Math.ceil(paginationTotal.value / props.pageSize))
-const paginationStart = computed(() => ((currentPageNumber.value - 1) * props.pageSize) + 1)
-const paginationEnd = computed(() => Math.min(currentPageNumber.value * props.pageSize, paginationTotal.value))
+const loadedGuestCount = computed(() => allFilteredGuests.value.length)
 
 // Methods
 const selectFilter = (filterId: string) => {
@@ -482,6 +466,15 @@ const clearGroupSearch = () => {
     })
   }
 }
+
+// Watch for search expansion to auto-focus
+watch(isSearchExpanded, (newValue) => {
+  if (newValue && searchInputRef.value) {
+    setTimeout(() => {
+      searchInputRef.value?.focus()
+    }, 100)
+  }
+})
 
 const handleToggleSelect = (guest: EventGuest) => {
   if (selectedGuestIds.value.has(guest.id)) {
@@ -566,27 +559,86 @@ const handleBulkDelete = () => {
   selectedGuestIds.value.clear()
 }
 
-const handlePreviousPage = () => {
+// Infinite scroll trigger element ref
+const scrollTriggerRef = ref<HTMLElement | null>(null)
+const scrollContainerRef = ref<HTMLElement | null>(null)
+
+// Computed properties for infinite scroll state
+const isLoadingMore = computed(() => {
   if (activeFilter.value === 'all') {
-    emit('previous-all-page')
+    return props.allGuestsPagination.loadingMore
+  }
+  return filteredGroups.value.some(group => props.getGroupPagination(group.id).loadingMore)
+})
+
+const hasMoreToLoad = computed(() => {
+  if (activeFilter.value === 'all') {
+    return props.allGuestsPagination.hasMore
+  }
+  return filteredGroups.value.some(group => props.getGroupPagination(group.id).hasMore)
+})
+
+// Handle load more for infinite scroll
+const handleLoadMore = () => {
+  if (isLoadingMore.value || !hasMoreToLoad.value) return
+
+  if (activeFilter.value === 'all') {
+    emit('load-more-all')
   } else {
     filteredGroups.value.forEach(group => {
-      emit('previous-page', group.id)
+      emit('load-more-group', group.id)
     })
   }
-  selectedGuestIds.value.clear()
 }
 
-const handleNextPage = () => {
-  if (activeFilter.value === 'all') {
-    emit('next-all-page')
-  } else {
-    filteredGroups.value.forEach(group => {
-      emit('next-page', group.id)
-    })
+// IntersectionObserver for infinite scroll
+let intersectionObserver: IntersectionObserver | null = null
+
+const setupIntersectionObserver = () => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
   }
-  selectedGuestIds.value.clear()
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && hasMoreToLoad.value && !isLoadingMore.value) {
+        handleLoadMore()
+      }
+    },
+    {
+      root: scrollContainerRef.value,
+      rootMargin: '100px', // Trigger 100px before reaching the bottom
+      threshold: 0.1,
+    }
+  )
+
+  if (scrollTriggerRef.value) {
+    intersectionObserver.observe(scrollTriggerRef.value)
+  }
 }
+
+// Watch for scroll trigger element to be available
+watch(scrollTriggerRef, (newRef) => {
+  if (newRef) {
+    setupIntersectionObserver()
+  }
+})
+
+// Re-setup observer when filter changes (content changes)
+watch(activeFilter, () => {
+  // Wait for next tick to ensure DOM has updated with new content
+  setTimeout(() => {
+    setupIntersectionObserver()
+  }, 100)
+})
+
+// Cleanup observer on unmount
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+  }
+})
 </script>
 
 <style scoped>
@@ -670,5 +722,17 @@ const handleNextPage = () => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Selection bar transition */
+.selection-bar-enter-active,
+.selection-bar-leave-active {
+  transition: all 0.2s ease;
+}
+
+.selection-bar-enter-from,
+.selection-bar-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>

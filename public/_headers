@@ -1,0 +1,33 @@
+# Security and performance headers for Cloudflare Pages
+
+# Apply to all files
+/*
+  # Security headers
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+  # Cache control for HTML (no cache)
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Cache static assets for 1 year
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache images
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache fonts
+*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+*.woff
+  Cache-Control: public, max-age=31536000, immutable
+*.ttf
+  Cache-Control: public, max-age=31536000, immutable
+
+# Don't cache service worker
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate

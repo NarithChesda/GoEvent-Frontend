@@ -43,4 +43,5 @@ export interface ReviewFilters {
   event?: string // Filter by event UUID
   page?: number // Page number for pagination
   page_size?: number // Results per page (default: 20)
+  [key: string]: string | number | boolean | null | undefined // Index signature for QueryParams compatibility
 }

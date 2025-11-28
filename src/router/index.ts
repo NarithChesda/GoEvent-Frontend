@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { resetMetaTags } from '../utils/metaUtils'
+import { useAuthStore } from '../stores/auth'
+import { authService } from '../services/auth'
 
 /**
  * Router Configuration
@@ -89,7 +91,7 @@ const router = createRouter({
     {
       path: '/events/:id/manage',
       name: 'event-manage',
-      component: () => import('../views/EventDetailView.vue'),
+      component: () => import('../views/EventManageView.vue'),
       meta: { requiresAuth: true, title: 'Manage Event - GoEvent' },
     },
     {
@@ -158,9 +160,7 @@ router.beforeEach(async (to, from, next) => {
       return
     }
 
-    // Dynamically import to avoid circular dependency
-    const { useAuthStore } = await import('../stores/auth')
-    const { authService } = await import('../services/auth')
+    // Use statically imported auth store and service
     const authStore = useAuthStore()
 
     // Basic authentication check

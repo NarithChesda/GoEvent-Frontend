@@ -103,20 +103,23 @@
           <label class="block text-sm font-medium text-slate-700 mb-2">
             Select Language
           </label>
-          <select
-            :value="newTranslation.language"
-            @input="$emit('update:new-translation', { ...newTranslation, language: ($event.target as HTMLSelectElement).value })"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent"
-          >
-            <option value="">Choose a language...</option>
-            <option
-              v-for="lang in availableLanguagesForAdd"
-              :key="lang.code"
-              :value="lang.code"
+          <div class="relative">
+            <select
+              :value="newTranslation.language"
+              @input="$emit('update:new-translation', { ...newTranslation, language: ($event.target as HTMLSelectElement).value })"
+              class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent appearance-none bg-white"
             >
-              {{ lang.name }}
-            </option>
-          </select>
+              <option value="">Choose a language...</option>
+              <option
+                v-for="lang in availableLanguagesForAdd"
+                :key="lang.code"
+                :value="lang.code"
+              >
+                {{ lang.name }}
+              </option>
+            </select>
+            <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
 
         <div class="flex space-x-2">
@@ -142,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { Languages, Plus, X } from 'lucide-vue-next'
+import { Languages, Plus, X, ChevronDown } from 'lucide-vue-next'
 
 interface Translation {
   id?: number

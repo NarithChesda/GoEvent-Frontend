@@ -1,24 +1,5 @@
 <template>
   <div class="space-y-6" @click="dropdownManager.handleClickOutside">
-    <!-- Banner Image -->
-    <MediaUploadCard
-      title="Event Banner"
-      description="Main hero image for your event (1200x630px recommended - Facebook ratio)"
-      :media-url="getMediaUrl(eventData?.banner_image)"
-      :can-edit="canEdit"
-      :is-uploading="mediaUpload.isUploading.value('banner_image')"
-      :show-dropdown="dropdownManager.isOpen('banner')"
-      accept-types="image/*"
-      content-type="image"
-      empty-state-text="No banner image uploaded"
-      :enable-cropping="true"
-      @upload="handleBannerFileSelect"
-      @remove="confirmRemove('banner_image', 'Delete Banner Image', 'Event Banner')"
-      @toggle-dropdown="dropdownManager.toggleDropdown('banner')"
-      @close-dropdown="dropdownManager.closeAllDropdowns()"
-      @crop="openBannerCropper"
-    />
-
     <!-- Logos Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Primary Logo -->
@@ -199,19 +180,6 @@
       @cancel="showDeleteModal = false"
     />
 
-    <!-- Banner Image Cropper Modal -->
-    <ImageCropperModal
-      v-if="showBannerCropper"
-      :show="showBannerCropper"
-      :image-source="bannerCropperImage"
-      title="Crop Banner Image"
-      :aspect-ratio="BANNER_ASPECT_RATIO"
-      cropper-height="450px"
-      help-text="Adjust the crop area to frame your banner image (1200x630px ratio)"
-      @close="closeBannerCropper"
-      @apply="handleBannerCropApply"
-      @update:cropper-ref="setBannerCropperRef"
-    />
   </div>
 </template>
 
@@ -225,7 +193,6 @@ import { useMediaUrl } from '@/composables/useMediaUrl'
 import { usePaymentTemplateIntegration } from '@/composables/usePaymentTemplateIntegration'
 import MediaUploadCard from './MediaUploadCard.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import ImageCropperModal from './common/ImageCropperModal.vue'
 
 interface Props {
   eventData?: Event
@@ -242,7 +209,7 @@ const emit = defineEmits<Emits>()
 // Composables
 const eventDataRef = toRef(props, 'eventData')
 const mediaUpload = useMediaUpload(eventDataRef, (event) => emit('updated', event))
-const dropdownManager = useDropdownManager(['banner', 'logoOne', 'logoTwo', 'video', 'music'])
+const dropdownManager = useDropdownManager(['logoOne', 'logoTwo', 'video', 'music'])
 const { getMediaUrl } = useMediaUrl()
 
 // Create a reactive proxy for the event data to use with payment integration
@@ -300,95 +267,6 @@ const deleteModalData = ref<{
   itemName: '',
   fieldToDelete: ''
 })
-
-// Cropper state for banner image
-const showBannerCropper = ref(false)
-const bannerCropperImage = ref<string | null>(null)
-const bannerCropperRef = ref<any>(null)
-const pendingBannerFile = ref<File | null>(null)
-
-// Banner aspect ratio: 1200x630 = 1.9047619... ≈ 40/21
-const BANNER_ASPECT_RATIO = 1200 / 630
-
-/**
- * Open cropper for existing banner image
- */
-const openBannerCropper = () => {
-  const bannerUrl = getMediaUrl(props.eventData?.banner_image)
-  if (bannerUrl) {
-    bannerCropperImage.value = bannerUrl
-    showBannerCropper.value = true
-  }
-}
-
-/**
- * Handle banner file selection - open cropper instead of direct upload
- * Skip file size validation since we'll compress after cropping
- */
-const handleBannerFileSelect = (file: File) => {
-  // Only validate file type, not size (will be compressed after crop)
-  if (!file.type.startsWith('image/')) {
-    return
-  }
-
-  // Store the file and open cropper
-  pendingBannerFile.value = file
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    bannerCropperImage.value = e.target?.result as string
-    showBannerCropper.value = true
-  }
-  reader.readAsDataURL(file)
-}
-
-/**
- * Handle crop apply - resize to 1200x630 and compress
- */
-const handleBannerCropApply = async () => {
-  if (!bannerCropperRef.value) return
-
-  const { canvas } = bannerCropperRef.value.getResult()
-  if (!canvas) return
-
-  // Create a new canvas with exact 1200x630 dimensions
-  const outputCanvas = document.createElement('canvas')
-  outputCanvas.width = 1200
-  outputCanvas.height = 630
-  const ctx = outputCanvas.getContext('2d')
-  if (!ctx) return
-
-  // Draw the cropped image scaled to 1200x630
-  ctx.drawImage(canvas, 0, 0, 1200, 630)
-
-  outputCanvas.toBlob(async (blob: Blob | null) => {
-    if (!blob) return
-
-    const fileName = pendingBannerFile.value?.name?.replace(/\.[^/.]+$/, '.jpg') || 'banner.jpg'
-    const croppedFile = new File([blob], fileName, { type: 'image/jpeg' })
-
-    showBannerCropper.value = false
-    bannerCropperImage.value = null
-    pendingBannerFile.value = null
-
-    await mediaUpload.uploadMedia('banner_image', croppedFile)
-  }, 'image/jpeg', 0.85)
-}
-
-/**
- * Close banner cropper
- */
-const closeBannerCropper = () => {
-  showBannerCropper.value = false
-  bannerCropperImage.value = null
-  pendingBannerFile.value = null
-}
-
-/**
- * Set banner cropper ref
- */
-const setBannerCropperRef = (ref: any) => {
-  bannerCropperRef.value = ref
-}
 
 /**
  * Handle file upload with validation

@@ -14,13 +14,33 @@
     aria-label="Select template"
   >
     <!-- Template Preview - Portrait Ratio (9:16 for 1080x1920) -->
-    <div class="relative w-full aspect-[9/16] overflow-hidden">
+    <div class="relative w-full aspect-[9/16] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+      <!-- Actual Image -->
       <img
-        :src="template.preview_image || '/api/placeholder/400/300'"
-        :alt="template.name"
-        class="w-full h-full object-cover"
+        v-if="template.preview_image && !imageError"
+        :src="template.preview_image"
+        :alt="`${template.name} template preview`"
+        class="w-full h-full object-cover transition-opacity duration-300"
+        :class="{ 'opacity-0': imageLoading, 'opacity-100': !imageLoading }"
         loading="lazy"
+        @load="handleImageLoad"
+        @error="handleImageError"
       />
+      <!-- Loading Indicator -->
+      <div
+        v-if="imageLoading && template.preview_image && !imageError"
+        class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200"
+      >
+        <div class="w-8 h-8 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />
+      </div>
+      <!-- Fallback Placeholder -->
+      <div
+        v-if="!template.preview_image || imageError"
+        class="absolute inset-0 flex flex-col items-center justify-center text-slate-400"
+      >
+        <ImageOff class="w-10 h-10 mb-2 opacity-50" />
+        <span class="text-xs font-medium opacity-70 text-center px-2">{{ template.name }}</span>
+      </div>
 
       <!-- Price pill (top-right, minimal) -->
       <div class="absolute top-2 right-2 z-10">
@@ -74,8 +94,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Check } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { Check, ImageOff } from 'lucide-vue-next'
 import type { EventTemplate } from '../../services/api'
 import TemplateCategoryBadge from './TemplateCategoryBadge.vue'
 
@@ -89,6 +109,19 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   select: [template: EventTemplate]
 }>()
+
+// Track image loading and error states
+const imageLoading = ref(true)
+const imageError = ref(false)
+
+const handleImageLoad = (): void => {
+  imageLoading.value = false
+}
+
+const handleImageError = (): void => {
+  imageError.value = true
+  imageLoading.value = false
+}
 
 const handleSelect = (): void => {
   emit('select', props.template)

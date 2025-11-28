@@ -1,5 +1,5 @@
 import { ref, computed, type Ref } from 'vue'
-import { eventsService, type Event } from '@/services/api'
+import { eventsService, type Event as ApiEvent } from '@/services/api'
 
 /**
  * Media types supported by the upload system
@@ -60,8 +60,8 @@ const MEDIA_TYPE_CONFIGS: Record<MediaType, MediaTypeConfig> = {
  * @param onUpdate - Callback when media is successfully uploaded or removed
  */
 export function useMediaUpload(
-  eventData: Ref<Event | undefined>,
-  onUpdate?: (event: Event) => void
+  eventData: Ref<ApiEvent | undefined>,
+  onUpdate?: (event: ApiEvent) => void
 ) {
   // Track uploading state for each field
   const uploading = ref<Record<string, boolean>>({})

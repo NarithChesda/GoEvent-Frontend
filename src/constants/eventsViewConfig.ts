@@ -10,7 +10,7 @@
 import { Ticket, Globe } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
-export type ViewType = 'all' | 'my'
+export type ViewType = 'all' | 'my' | 'registered'
 
 /**
  * View option configuration
@@ -52,6 +52,10 @@ export const EMPTY_STATE_CONFIG: Record<ViewType, { title: string; message: stri
     title: 'No events found',
     message: 'Try adjusting your filters or check back later for new events.',
   },
+  registered: {
+    title: "You haven't registered for any events yet",
+    message: 'Browse events and register to join amazing experiences.',
+  },
 }
 
 /**
@@ -60,6 +64,7 @@ export const EMPTY_STATE_CONFIG: Record<ViewType, { title: string; message: stri
 export const LOGIN_PROMPT_CONFIG: Record<ViewType, string> = {
   my: 'Please sign in to view and manage your events.',
   all: 'Please sign in to continue.',
+  registered: 'Please sign in to view your registered events.',
 }
 
 /**
@@ -68,4 +73,5 @@ export const LOGIN_PROMPT_CONFIG: Record<ViewType, string> = {
 export const SECTION_LABEL_CONFIG: Record<ViewType, string> = {
   my: 'Events',
   all: 'Explore',
+  registered: 'Registered',
 }

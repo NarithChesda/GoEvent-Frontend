@@ -5,10 +5,10 @@
       <div
         v-if="showChatPopup"
         :class="chatPopupPositionClass"
-        class="fixed right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-gray-100"
+        class="fixed right-4 lg:right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-gray-100"
       >
         <!-- Arrow pointing to FAB -->
-        <div class="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r border-b border-gray-100 transform rotate-45"></div>
+        <div class="absolute -bottom-2 right-4 lg:right-6 w-4 h-4 bg-white border-r border-b border-gray-100 transform rotate-45"></div>
 
         <!-- Close button -->
         <button
@@ -51,7 +51,7 @@
       target="_blank"
       rel="noopener noreferrer"
       :class="fabPositionClass"
-      class="fixed right-6 z-[60] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
+      class="fixed right-4 lg:right-6 z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
       aria-label="Contact support"
       @click="dismissPopup"
     >
@@ -73,11 +73,14 @@ import { secureStorage } from '@/utils/secureStorage'
 import { useAuthStore } from '@/stores/auth'
 
 interface Props {
-  smartFabVisible: boolean
   canEdit?: boolean
+  hasFabBelow?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  canEdit: false,
+  hasFabBelow: false
+})
 const route = useRoute()
 const authStore = useAuthStore()
 
@@ -95,9 +98,9 @@ const storageKey = computed(() => {
   return userId ? `${STORAGE_KEY_PREFIX}${userId}` : null
 })
 
-// Check if user is on their own event detail page
-const isOwnEventDetailPage = computed(() => {
-  return route.name === 'event-detail' && props.canEdit === true
+// Check if user is on their own event manage page
+const isOwnEventPage = computed(() => {
+  return route.name === 'event-manage' && props.canEdit === true
 })
 
 // Create Telegram link
@@ -105,22 +108,31 @@ const telegramLink = computed(() => {
   return `https://t.me/goeventkh`
 })
 
-// Dynamic positioning based on smart FAB visibility
+// FAB position - accounts for mobile tab bar
+// Mobile: Tab bar is ~64px tall, so FAB needs to be above it: 64px + 16px gap = 80px (bottom-20)
+// Desktop: No tab bar, standard 16px from bottom (lg:bottom-4)
+// When Create FAB is below:
+//   Mobile: bottom-20 (80px for tab bar) + h-14 (56px) + gap (16px) = 152px
+//   Desktop: bottom-4 (16px) + h-14 (56px) + gap (16px) = 88px
 const fabPositionClass = computed(() => {
-  if (props.smartFabVisible) {
-    return 'bottom-[160px] lg:bottom-[88px]'
-  } else {
-    return 'bottom-20 lg:bottom-4'
+  if (props.hasFabBelow) {
+    return 'bottom-[152px] lg:bottom-[88px]'
   }
+  return 'bottom-20 lg:bottom-4'
 })
 
 // Chat popup position (above the FAB)
+// Mobile: Contact FAB at 80px (or 152px with FAB below), add FAB height (56px) + gap (16px)
+//   Without FAB below: 80 + 56 + 16 = 152px
+//   With FAB below: 152 + 56 + 16 = 224px
+// Desktop: Contact FAB at 16px (or 88px with FAB below), add FAB height (56px) + gap (16px)
+//   Without FAB below: 16 + 56 + 16 = 88px
+//   With FAB below: 88 + 56 + 16 = 160px
 const chatPopupPositionClass = computed(() => {
-  if (props.smartFabVisible) {
-    return 'bottom-[230px] lg:bottom-[158px]'
-  } else {
-    return 'bottom-[150px] lg:bottom-[78px]'
+  if (props.hasFabBelow) {
+    return 'bottom-[224px] lg:bottom-[160px]'
   }
+  return 'bottom-[152px] lg:bottom-[88px]'
 })
 
 // Check if popup should be shown (with 1-day expiry)
@@ -139,7 +151,7 @@ const shouldShowPopup = () => {
 const startPopupTimer = () => {
   if (popupTimer) clearTimeout(popupTimer)
 
-  if (isOwnEventDetailPage.value && shouldShowPopup()) {
+  if (isOwnEventPage.value && shouldShowPopup()) {
     popupTimer = setTimeout(() => {
       showChatPopup.value = true
     }, POPUP_DELAY)
@@ -166,15 +178,28 @@ const handleDontShowAgainChange = () => {
 // Watch for route/canEdit changes
 watch(
   () => [route.name, props.canEdit],
-  () => {
-    dismissPopup()
+  ([newRouteName, newCanEdit], [oldRouteName, oldCanEdit]) => {
+    // Only dismiss if route changed (not just canEdit becoming true)
+    if (newRouteName !== oldRouteName) {
+      dismissPopup()
+    }
     startPopupTimer()
   }
 )
 
-onMounted(() => {
-  startPopupTimer()
-})
+// Watch for user changes (account switch) and initial load
+watch(
+  () => authStore.user?.id,
+  (newUserId, oldUserId) => {
+    // Reset state for new user or on initial load
+    dontShowAgain.value = false
+    dismissPopup()
+    if (newUserId) {
+      startPopupTimer()
+    }
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => {
   if (popupTimer) {

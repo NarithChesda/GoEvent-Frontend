@@ -1,154 +1,136 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="isVisible" class="fixed inset-0 z-50 overflow-y-auto" @click="handleBackdropClick">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <!-- Backdrop -->
+    <Transition name="fade">
+      <div
+        v-if="isVisible"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        @click="handleBackdropClick"
+      />
+    </Transition>
 
-        <!-- Modal -->
-        <div class="flex min-h-full items-center justify-center p-4">
-          <div
-            ref="modalRef"
-            class="relative w-full max-w-2xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-            @click.stop
-          >
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <Plus class="w-4.5 h-4.5" />
-                  </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Create New Event</h2>
-                </div>
-                <button
-                  @click="$emit('close')"
-                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  aria-label="Close"
-                >
-                  <X class="w-4 h-4" />
-                </button>
-              </div>
+    <!-- Drawer Panel -->
+    <Transition name="slide-right">
+      <div
+        v-if="isVisible"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        @click.stop
+      >
+        <!-- Header -->
+        <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+          <div class="flex items-center px-3 py-2.5">
+            <!-- Left: Close button & Title -->
+            <div class="flex items-center gap-2">
+              <button
+                @click="$emit('close')"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                title="Close"
+              >
+                <ArrowRight class="w-5 h-5 text-white" />
+              </button>
+              <h2 class="text-base font-semibold text-white">Create New Event</h2>
             </div>
+          </div>
+        </div>
 
-            <!-- Form -->
-            <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div class="space-y-5">
-                <!-- Basic Information -->
-                <div class="space-y-3">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <Calendar class="w-4 h-4 mr-2 text-sky-500" />
-                    Basic Information
-                  </h4>
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto overscroll-contain">
+          <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
+            <div class="space-y-5">
+              <!-- Basic Information -->
+              <div class="space-y-3 border-t border-slate-100 pt-5">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
 
-                  <div class="space-y-3">
-                    <!-- Title -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Event Title <span class="text-red-500">*</span>
-                      </label>
-                      <input
-                        v-model="form.title"
-                        type="text"
-                        required
-                        placeholder="Enter event title"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors"
-                      />
-                    </div>
-
-                    <!-- Category -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Event Category
-                      </label>
-                      <select
-                        v-model="form.category"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors appearance-none pr-10 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:18px_18px] bg-[right_0.75rem_center] bg-no-repeat cursor-pointer"
-                      >
-                        <option value="">Select a category</option>
-                        <option v-for="category in categories" :key="category.id" :value="category.id">
-                          {{ category.name }}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
+                <!-- Title -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Event Title *</label>
+                  <input
+                    v-model="form.title"
+                    type="text"
+                    required
+                    placeholder="Enter event title"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  />
                 </div>
 
                 <!-- Description -->
-                <div class="space-y-3">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <FileText class="w-4 h-4 mr-2 text-sky-500" />
-                    Description
-                  </h4>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Full Description *</label>
+                  <div
+                    contenteditable="true"
+                    ref="descriptionEditor"
+                    @input="handleDescriptionInput"
+                    @blur="handleDescriptionBlur"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[140px] max-h-[320px] overflow-y-auto"
+                    :data-placeholder="form.description ? '' : 'Detailed event description'"
+                  ></div>
+                </div>
 
+                <!-- Category -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                  <div class="relative">
+                    <select
+                      v-model="form.category"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
+                    >
+                      <option value="">Select a category</option>
+                      <option v-for="category in categories" :key="category.id" :value="category.id">
+                        {{ category.name }}
+                      </option>
+                    </select>
+                    <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Date and Time -->
+              <div class="space-y-4 border-t border-slate-100 pt-5">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      Full Description <span class="text-red-500">*</span>
-                    </label>
-                    <div
-                      contenteditable="true"
-                      ref="descriptionEditor"
-                      @input="handleDescriptionInput"
-                      @blur="handleDescriptionBlur"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors min-h-[140px] max-h-[320px] overflow-y-auto"
-                      :data-placeholder="form.description ? '' : 'Detailed event description'"
-                    ></div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Start Date & Time *</label>
+                    <input
+                      v-model="form.start_date"
+                      type="datetime-local"
+                      required
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    />
                   </div>
-                </div>
-
-                <!-- Schedule -->
-                <div class="space-y-3">
-                  <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <Clock class="w-4 h-4 mr-2 text-sky-500" />
-                    Schedule
-                  </h4>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Start Date &amp; Time <span class="text-red-500">*</span>
-                      </label>
-                      <input
-                        v-model="form.start_date"
-                        type="datetime-local"
-                        required
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        End Date &amp; Time <span class="text-red-500">*</span>
-                      </label>
-                      <input
-                        v-model="form.end_date"
-                        type="datetime-local"
-                        required
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 text-slate-800 transition-colors"
-                      />
-                    </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">End Date & Time *</label>
+                    <input
+                      v-model="form.end_date"
+                      type="datetime-local"
+                      required
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    />
                   </div>
                 </div>
               </div>
+            </div>
+          </form>
+        </div>
 
-              <!-- Action Buttons -->
-              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                <button
-                  type="button"
-                  @click="$emit('close')"
-                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  :disabled="isSubmitting"
-                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <Loader v-if="isSubmitting" class="w-4 h-4 mr-2 animate-spin" />
-                  {{ isSubmitting ? 'Creating...' : 'Create Event' }}
-                </button>
-              </div>
-            </form>
+        <!-- Footer with Action Buttons -->
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+          <div class="flex items-center justify-between gap-3">
+            <button
+              @click="handleSubmit"
+              :disabled="isSubmitting"
+              class="flex-1 sm:flex-none flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+              <span>{{ isSubmitting ? 'Creating...' : 'Create Event' }}</span>
+            </button>
+            <button
+              type="button"
+              @click="$emit('close')"
+              class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -158,7 +140,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
-import { Plus, X, Loader, Calendar, FileText, Clock } from 'lucide-vue-next'
+import { ArrowRight, Loader, ChevronDown } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
@@ -198,7 +180,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // Refs
-const modalRef = ref<HTMLElement>()
 const descriptionEditor = ref<HTMLElement>()
 const isSubmitting = ref(false)
 const categories = ref<EventCategory[]>([])
@@ -327,19 +308,29 @@ const handleSubmit = async () => {
   }
 }
 
-// Watch for modal visibility to handle focus
+// Calculate scrollbar width to prevent layout shift
+const getScrollbarWidth = (): number => {
+  return window.innerWidth - document.documentElement.clientWidth
+}
+
+// Watch for drawer visibility
 watch(
   () => props.isVisible,
   (isVisible) => {
     if (isVisible) {
-      // Reset form when modal opens
+      // Reset form when drawer opens
       resetForm()
-
-      // Focus management
-      setTimeout(() => {
-        const firstInput = modalRef.value?.querySelector('input, textarea, select') as HTMLElement
-        firstInput?.focus()
-      }, 100)
+    }
+    // Prevent body scroll when drawer is open
+    if (isVisible) {
+      const scrollbarWidth = getScrollbarWidth()
+      document.body.style.overflow = 'hidden'
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
     }
   },
 )
@@ -401,15 +392,36 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s ease-out;
 }
 
-.modal-enter-from,
-.modal-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+}
+
+/* Slide from right on desktop, from bottom on mobile */
+.slide-right-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: translateX(100%);
+  }
 }
 
 /* Custom scrollbar for modal content */

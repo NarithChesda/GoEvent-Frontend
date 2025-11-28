@@ -70,7 +70,10 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
   }
 
   const handleCropApply = async () => {
-    if (!imageCropper) return
+    if (!imageCropper) {
+      console.error('handleCropApply: imageCropper is null')
+      return
+    }
 
     // Use JPEG with good compression and max dimensions to reduce file size
     // Max 1024x1024 is more than enough for profile avatars
@@ -87,6 +90,8 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
       selectedProfileImageFile.value = result.file
       profilePicturePreview.value = result.preview
       imageRemoved.value = false
+    } else {
+      console.error('handleCropApply: applyCrop returned null - cropper ref may not be set')
     }
 
     // Clear temp values
@@ -101,10 +106,12 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
     imageRemoved.value = true // Explicit tracking
   }
 
-  const resetProfilePicture = () => {
+  const resetProfilePicture = (initialImage?: string) => {
     profilePicturePreview.value = null
     selectedProfileImageFile.value = null
     imageRemoved.value = false
+    // Update the initial image reference if needed (for re-opening with different data)
+    // Note: initialProfileImage is captured at composable creation, so we don't update it here
   }
 
   const validateFileSize = (): { valid: boolean; error?: string } => {
@@ -146,7 +153,8 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
     }
   }
 
-  return {
+  // Build return object with proper typing
+  const baseReturn = {
     // Refs
     profilePictureInput,
 
@@ -156,14 +164,6 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
     selectedProfileImageFile,
     imageRemoved,
 
-    // Cropper state (only if enabled)
-    ...(imageCropper && {
-      showCropper: imageCropper.showCropper,
-      cropperImage: imageCropper.cropperImage,
-      closeCropper: imageCropper.closeCropper,
-      setCropperRef: imageCropper.setCropperRef,
-    }),
-
     // Methods
     triggerProfilePictureUpload,
     handleProfilePictureSelect,
@@ -172,5 +172,25 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
     handleCropApply,
     validateFileSize,
     openCropperWithExistingImage,
+  }
+
+  // Add cropper state only if cropping is enabled
+  if (imageCropper) {
+    return {
+      ...baseReturn,
+      showCropper: imageCropper.showCropper,
+      cropperImage: imageCropper.cropperImage,
+      closeCropper: imageCropper.closeCropper,
+      setCropperRef: imageCropper.setCropperRef,
+    }
+  }
+
+  return {
+    ...baseReturn,
+    // Provide default values when cropping is disabled
+    showCropper: ref(false),
+    cropperImage: ref<string | null>(null),
+    closeCropper: () => {},
+    setCropperRef: () => {},
   }
 }

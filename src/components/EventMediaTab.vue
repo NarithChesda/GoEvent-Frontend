@@ -1,91 +1,17 @@
 <template>
   <div class="space-y-6">
-    <!-- Header with Sub-navigation -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg shadow-emerald-500/10 overflow-hidden">
-      <!-- Title Section -->
-      <div class="px-6 py-4 border-b border-slate-200/80">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
-            <ImageIcon class="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Event Media</h2>
-            <p class="text-sm text-slate-500">Manage all visual content and media for your event</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sub-navigation Tabs -->
-      <div class="px-4 bg-slate-50/50">
-        <div class="flex gap-2 overflow-x-auto scrollbar-hide py-3">
-          <button
-            @click="activeSection = 'basic'"
-            :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
-              activeSection === 'basic'
-                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
-                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
-            ]"
-          >
-            <Layout class="w-4 h-4" />
-            <span>Basic Media</span>
-          </button>
-          <button
-            @click="activeSection = 'gallery'"
-            :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
-              activeSection === 'gallery'
-                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
-                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
-            ]"
-          >
-            <ImageIcon class="w-4 h-4" />
-            <span>Photo Gallery</span>
-          </button>
-          <button
-            @click="activeSection = 'embeds'"
-            :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
-              activeSection === 'embeds'
-                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
-                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
-            ]"
-          >
-            <Video class="w-4 h-4" />
-            <span>Videos & Maps</span>
-          </button>
-          <button
-            @click="activeSection = 'payment'"
-            :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
-              activeSection === 'payment'
-                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
-                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
-            ]"
-          >
-            <CreditCard class="w-4 h-4" />
-            <span>Event Payment</span>
-          </button>
-          <button
-            @click="activeSection = 'social-media'"
-            :class="[
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
-              activeSection === 'social-media'
-                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
-                : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
-            ]"
-          >
-            <Share2 class="w-4 h-4" />
-            <span>Social Media</span>
-          </button>
-        </div>
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Showcase</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage all visual content and media for your event showcase or invitation</p>
       </div>
     </div>
 
-    <!-- Tab Content -->
-    <div class="mt-6">
+    <!-- All Sections Stacked -->
+    <div class="space-y-6">
       <!-- Basic Media Section -->
-      <div v-if="activeSection === 'basic'">
+      <div>
         <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
           <div class="flex items-center justify-center">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
@@ -102,7 +28,7 @@
       </div>
 
       <!-- Photo Gallery Section -->
-      <div v-if="activeSection === 'gallery'">
+      <div>
         <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
           <!-- Header -->
           <div class="mb-6">
@@ -141,9 +67,9 @@
           <!-- Gallery Content -->
           <div v-else>
             <!-- Empty State -->
-            <div v-if="!Array.isArray(media) || media.length === 0">
+            <div v-if="media.length === 0">
               <div
-                @click="canEdit && eventData && props.eventId ? handleUploadClick() : null"
+                @click="canEdit && eventData && props.eventId ? openUploadModal() : null"
                 :class="[
                   'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
                   canEdit && eventData && props.eventId
@@ -191,7 +117,7 @@
               <!-- Upload Card at the end -->
               <div
                 v-if="canEdit && eventData && props.eventId"
-                @click="handleUploadClick"
+                @click="openUploadModal"
                 class="border-2 border-dashed rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer group border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 aspect-square flex flex-col items-center justify-center p-4"
               >
                 <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
@@ -206,7 +132,7 @@
       </div>
 
       <!-- Videos & Maps Section -->
-      <div v-if="activeSection === 'embeds'">
+      <div>
         <EmbedsSection
           :event-data="localEventData"
           :can-edit="canEdit"
@@ -215,9 +141,8 @@
       </div>
 
       <!-- Event Payment Section -->
-      <div v-if="activeSection === 'payment'">
+      <div v-if="localEventData?.id">
         <PaymentMethodsSection
-          v-if="localEventData?.id"
           ref="paymentMethodsSectionRef"
           :event-id="localEventData.id"
           :event="localEventData"
@@ -226,15 +151,14 @@
         />
       </div>
 
-      <!-- Social Media Preview Section -->
-      <div v-if="activeSection === 'social-media'">
-        <SocialMediaPreview
-          v-if="localEventData"
-          :event-data="localEventData"
-          guest-name="ភ្ញៀវកិត្តិយស"
-          language="kh"
+      <!-- Event Texts Section -->
+      <div v-if="localEventData?.id">
+        <EventTextTab
+          ref="eventTextTabRef"
+          :event-id="localEventData.id"
         />
       </div>
+
     </div>
 
     <!-- Upload Modal -->
@@ -272,16 +196,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, nextTick } from 'vue'
-import { Upload, ImageIcon, AlertCircle, Video, Layout, CheckCircle, CreditCard, Share2 } from 'lucide-vue-next'
+import { ref, onMounted, watch } from 'vue'
+import { Upload, ImageIcon, AlertCircle, CheckCircle } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
+import { useToast } from '../composables/useToast'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import BasicMediaSection from './BasicMediaSection.vue'
 import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
-import SocialMediaPreview from './SocialMediaPreview.vue'
+import EventTextTab from './EventTextTab.vue'
 
 interface Props {
   eventId?: string
@@ -290,30 +215,25 @@ interface Props {
   eventData?: Event
 }
 
-interface Emits {
-  'media-updated': [media: EventPhoto[]]
-  'event-updated': [event: Event]
-}
-
 const props = defineProps<Props>()
 const emit = defineEmits<{
-  'media-updated': [media: EventPhoto[]]
-  'event-updated': [event: Event]
-  'sub-tab-change': [subTab: string]
+  (e: 'media-updated', media: EventPhoto[]): void
+  (e: 'event-updated', event: Event): void
 }>()
+
+// Toast notifications with automatic cleanup
+const { message, showSuccess, showError } = useToast()
 
 // State
 const media = ref<EventPhoto[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const activeSection = ref<'basic' | 'gallery' | 'embeds' | 'payment' | 'social-media'>('basic')
 const showUploadModal = ref(false)
 const showDeleteModal = ref(false)
 const mediaToDelete = ref<EventPhoto | null>(null)
 const deleting = ref(false)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
-// Local reactive eventData state
+// Local event data - synced with props
 const localEventData = ref<Event | undefined>(props.eventData ? { ...props.eventData } : undefined)
 
 // Drag and drop state
@@ -322,50 +242,17 @@ const draggedMedia = ref<EventPhoto | null>(null)
 // Template refs for sections
 const paymentMethodsSectionRef = ref<InstanceType<typeof PaymentMethodsSection> | null>(null)
 const basicMediaSectionRef = ref<InstanceType<typeof BasicMediaSection> | null>(null)
+const eventTextTabRef = ref<InstanceType<typeof EventTextTab> | null>(null)
 
-// Computed properties
-const totalPhotos = computed(() => {
-  return Array.isArray(media.value) ? media.value.length : 0
-})
-
-const featuredCount = computed(() => {
-  if (!Array.isArray(media.value)) return 0
-  return media.value.filter((item) => item.is_featured).length
-})
-
-const videosCount = computed(() => {
-  // Count video embeds from eventData
-  if (!localEventData.value) return 0
-  let count = 0
-  if (localEventData.value.event_video) count++
-  if (localEventData.value.youtube_embed_link) count++
-  return count
-})
-
-const hasBanner = computed(() => {
-  return localEventData.value?.banner_image ? true : false
-})
-
-// Watch for prop changes
+// Watch for prop changes to sync localEventData
 watch(
   () => props.eventData,
   (newEventData) => {
-    if (newEventData) {
-      localEventData.value = { ...newEventData }
-    } else {
-      localEventData.value = undefined
-    }
+    localEventData.value = newEventData ? { ...newEventData } : undefined
   },
   { deep: true },
 )
 
-// Watch for active section changes and emit to parent
-watch(
-  () => activeSection.value,
-  (newSection) => {
-    emit('sub-tab-change', newSection)
-  },
-)
 
 // Methods
 const fetchMedia = async () => {
@@ -387,18 +274,17 @@ const fetchMedia = async () => {
   try {
     const response = await mediaService.getEventMedia(props.eventId)
     if (response.success && response.data) {
-      // The API returns the photos directly as an array in this case
-      if (Array.isArray(response.data)) {
-        media.value = response.data.sort((a, b) => a.order - b.order)
-      } else {
-        media.value = []
-      }
+      // Normalize API response - ensure it's always an array
+      media.value = Array.isArray(response.data)
+        ? response.data.sort((a, b) => a.order - b.order)
+        : []
     } else {
-      showMessage('error', response.message || 'Failed to load media')
+      showError(response.message || 'Failed to load media')
       media.value = []
     }
-  } catch {
-    showMessage('error', 'Network error while loading media')
+  } catch (err) {
+    console.error('Failed to fetch media:', err)
+    showError('Network error while loading media')
     media.value = []
   } finally {
     loading.value = false
@@ -407,10 +293,6 @@ const fetchMedia = async () => {
 
 const openUploadModal = () => {
   showUploadModal.value = true
-}
-
-const handleUploadClick = () => {
-  openUploadModal()
 }
 
 const deleteMedia = (mediaItem: EventPhoto) => {
@@ -426,21 +308,18 @@ const confirmDelete = async () => {
     const response = await mediaService.deleteEventMedia(props.eventId, mediaToDelete.value.id)
     if (response.success) {
       // Remove from array
-      if (Array.isArray(media.value)) {
-        media.value = media.value.filter((item) => item.id !== mediaToDelete.value!.id)
-      } else {
-        media.value = []
-      }
+      media.value = media.value.filter((item) => item.id !== mediaToDelete.value!.id)
       showDeleteModal.value = false
       mediaToDelete.value = null
       // Emit updated media to parent
       emit('media-updated', media.value)
-      showMessage('success', 'Photo deleted successfully')
+      showSuccess('Photo deleted successfully')
     } else {
-      showMessage('error', response.message || 'Failed to delete media')
+      showError(response.message || 'Failed to delete media')
     }
-  } catch {
-    showMessage('error', 'Network error while deleting media')
+  } catch (err) {
+    console.error('Failed to delete media:', err)
+    showError('Network error while deleting media')
   } finally {
     deleting.value = false
   }
@@ -460,13 +339,14 @@ const toggleFeatured = async (mediaItem: EventPhoto) => {
         media.value[index] = response.data
         // Emit updated media to parent
         emit('media-updated', media.value)
-        showMessage('success', 'Featured status updated')
+        showSuccess('Featured status updated')
       }
     } else {
-      showMessage('error', response.message || 'Failed to update featured status')
+      showError(response.message || 'Failed to update featured status')
     }
-  } catch {
-    showMessage('error', 'Network error while updating featured status')
+  } catch (err) {
+    console.error('Failed to update featured status:', err)
+    showError('Network error while updating featured status')
   }
 }
 
@@ -475,15 +355,11 @@ const uploadBatchStart = ref(0)
 const handleMediaUploaded = (newMedia: EventPhoto) => {
   // Track the starting count before upload
   if (uploadBatchStart.value === 0) {
-    uploadBatchStart.value = Array.isArray(media.value) ? media.value.length : 0
+    uploadBatchStart.value = media.value.length
   }
 
-  if (Array.isArray(media.value)) {
-    media.value.push(newMedia)
-    media.value.sort((a, b) => a.order - b.order)
-  } else {
-    media.value = [newMedia]
-  }
+  media.value.push(newMedia)
+  media.value.sort((a, b) => a.order - b.order)
 
   // Emit updated media to parent
   emit('media-updated', media.value)
@@ -493,11 +369,10 @@ const handleMediaUploaded = (newMedia: EventPhoto) => {
 watch(showUploadModal, (newValue, oldValue) => {
   if (oldValue === true && newValue === false && uploadBatchStart.value > 0) {
     // Modal just closed, calculate how many photos were uploaded
-    const currentCount = Array.isArray(media.value) ? media.value.length : 0
-    const uploadedCount = currentCount - uploadBatchStart.value
+    const uploadedCount = media.value.length - uploadBatchStart.value
 
     if (uploadedCount > 0) {
-      showMessage('success', `${uploadedCount} ${uploadedCount === 1 ? 'photo' : 'photos'} uploaded successfully`)
+      showSuccess(`${uploadedCount} ${uploadedCount === 1 ? 'photo' : 'photos'} uploaded successfully`)
     }
 
     // Reset the batch counter
@@ -524,12 +399,6 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
     draggedMedia.value.id === targetMedia.id ||
     !props.eventId
   ) {
-    draggedMedia.value = null
-    return
-  }
-
-  // Ensure media.value is an array
-  if (!Array.isArray(media.value)) {
     draggedMedia.value = null
     return
   }
@@ -569,22 +438,16 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
     if (!response.success) {
       // Rollback on failure - refetch media
       await fetchMedia()
-      showMessage('error', response.message || 'Failed to reorder media')
+      showError(response.message || 'Failed to reorder media')
     }
-  } catch {
+  } catch (err) {
+    console.error('Failed to reorder media:', err)
     // Rollback on failure - refetch media
     await fetchMedia()
-    showMessage('error', 'Network error while reordering media')
+    showError('Network error while reordering media')
   } finally {
     draggedMedia.value = null
   }
-}
-
-const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
 }
 
 // Lifecycle
@@ -595,30 +458,24 @@ onMounted(() => {
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openAddModal: () => {
-    // Default behavior: set active section to gallery and open upload modal
-    activeSection.value = 'gallery'
+    // Open upload modal for photo gallery
     showUploadModal.value = true
   },
   openPhotoGalleryModal: () => {
-    // Specifically for photo gallery
-    activeSection.value = 'gallery'
+    // Open upload modal for photo gallery
     showUploadModal.value = true
   },
   // Method to trigger payment method addition
-  openPaymentMethodModal: async () => {
-    // Switch to payment section and open the add modal
-    activeSection.value = 'payment'
-    // Use nextTick to ensure the PaymentMethodsSection is rendered before calling its method
-    await nextTick()
+  openPaymentMethodModal: () => {
     paymentMethodsSectionRef.value?.openAddModal()
   },
   // Method to trigger dress code addition
-  openDressCodeModal: async () => {
-    // Switch to basic section and open the dress code modal
-    activeSection.value = 'basic'
-    // Use nextTick to ensure the BasicMediaSection is rendered before calling its method
-    await nextTick()
+  openDressCodeModal: () => {
     basicMediaSectionRef.value?.openDressCodeModal()
+  },
+  // Method to trigger event text editing
+  openEventTextModal: () => {
+    eventTextTabRef.value?.openAddModal()
   }
 })
 </script>

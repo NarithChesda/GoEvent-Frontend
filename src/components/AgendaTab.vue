@@ -17,7 +17,7 @@
       </div>
       <button
         v-if="canEdit"
-        @click="showCreateModal = true"
+        @click="openCreateDrawer"
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2"
       >
         <Plus class="w-4 h-4" />
@@ -64,7 +64,7 @@
         </p>
         <button
           v-if="canEdit"
-          @click="showCreateModal = true"
+          @click="openCreateDrawer"
           class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-2 mx-auto"
         >
           <Plus class="w-4 h-4" />
@@ -170,13 +170,12 @@
       </div>
     </div>
 
-    <!-- Unified Agenda Modal (for both create and edit) -->
-    <EditAgendaModal
-      v-if="showCreateModal || (showEditModal && selectedItem)"
+    <!-- Unified Agenda Drawer (for both create and edit) -->
+    <EditAgendaDrawer
+      v-model="showAgendaDrawer"
       :event-id="eventId"
       :item="selectedItem || undefined"
       :existing-agenda-items="agendaItems"
-      @close="closeModal"
       @created="handleAgendaItemCreated"
       @updated="handleAgendaItemUpdated"
     />
@@ -198,7 +197,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { Plus, Calendar, AlertCircle, ChevronDown } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
-import EditAgendaModal from './EditAgendaModal.vue'
+import EditAgendaDrawer from './EditAgendaDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {
@@ -212,8 +211,7 @@ const props = defineProps<Props>()
 const agendaItems = ref<EventAgendaItem[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const showCreateModal = ref(false)
-const showEditModal = ref(false)
+const showAgendaDrawer = ref(false)
 const showDeleteModal = ref(false)
 const selectedItem = ref<EventAgendaItem | null>(null)
 const itemToDelete = ref<EventAgendaItem | null>(null)
@@ -324,7 +322,7 @@ const fetchAgendaItems = async () => {
 
 const editAgendaItem = (item: EventAgendaItem) => {
   selectedItem.value = item
-  showEditModal.value = true
+  showAgendaDrawer.value = true
 }
 
 const deleteAgendaItem = (item: EventAgendaItem) => {
@@ -364,7 +362,7 @@ const handleAgendaItemCreated = (newItem: EventAgendaItem) => {
   } else {
     agendaItems.value = [newItem]
   }
-  showCreateModal.value = false
+  selectedItem.value = null
 }
 
 const handleAgendaItemUpdated = (updatedItem: EventAgendaItem) => {
@@ -376,14 +374,12 @@ const handleAgendaItemUpdated = (updatedItem: EventAgendaItem) => {
   } else {
     agendaItems.value = [updatedItem]
   }
-  showEditModal.value = false
   selectedItem.value = null
 }
 
-const closeModal = () => {
-  showCreateModal.value = false
-  showEditModal.value = false
+const openCreateDrawer = () => {
   selectedItem.value = null
+  showAgendaDrawer.value = true
 }
 
 // Drag and drop handlers

@@ -17,7 +17,7 @@ import {
   type PaginatedResponse,
 } from '../services/api'
 
-export type ViewType = 'all' | 'my'
+export type ViewType = 'all' | 'my' | 'registered'
 
 /**
  * Client-side filter helper for My Events tab

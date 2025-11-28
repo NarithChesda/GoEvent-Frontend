@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    // Ensure base path is set correctly for Cloudflare Pages
+    base: '/',
     plugins: [
       vue(),
       vueJsx(),
@@ -28,8 +30,8 @@ export default defineConfig(({ mode }) => {
       sourcemap: env.VITE_GENERATE_SOURCEMAP === 'true',
       // Optimize bundle size
       minify: 'esbuild',
-      // Increase chunk size warning limit for modern apps
-      chunkSizeWarningLimit: 1000,
+      // Increase chunk size warning limit for modern apps (in KB)
+      chunkSizeWarningLimit: 1500,
       // Optimize chunk splitting for better caching
       rollupOptions: {
         output: {
@@ -49,14 +51,12 @@ export default defineConfig(({ mode }) => {
             return 'assets/[name]-[hash][extname]'
           },
           manualChunks: {
-            // Vendor chunk for core dependencies
+            // Vendor chunk for core Vue dependencies
             vendor: ['vue', 'vue-router', 'pinia'],
-            // UI chunk for UI-related dependencies
+            // UI chunk for icon libraries and UI utilities
             ui: ['lucide-vue-next', 'dompurify'],
             // Auth chunk for authentication-related code
             auth: ['vue3-google-login'],
-            // Tailwind utilities chunk
-            styles: ['tailwindcss']
           }
         }
       },

@@ -3,8 +3,15 @@
     <!-- Background -->
     <div class="fixed inset-0 bg-gradient-to-br from-[#2ecc71]/5 via-white to-[#1e90ff]/5 -z-10"></div>
 
-    <!-- Desktop Top Navigation Bar -->
-    <TopNavBar v-if="!hideTopNav" />
+    <!-- Desktop Sidebar (can be hidden) -->
+    <AppSidebar v-if="!hideHomeSidebar" />
+
+    <!-- Home Sidebar (shown when hamburger is clicked while hideHomeSidebar is true) -->
+    <!-- This pushes content to the right instead of overlapping -->
+    <AppSidebar
+      v-if="hideHomeSidebar && showHomeSidebarOverlay"
+      class="!flex z-40"
+    />
 
     <!-- Mobile Tab Bar -->
     <MobileTabBar v-if="!hideMobileTabBar" />
@@ -14,7 +21,9 @@
       :class="[
         'relative min-h-screen transition-all duration-300 ease-in-out',
         hideMobileTabBar ? '' : 'pb-20 lg:pb-0',
-        hideTopNav ? '' : 'lg:pt-16'
+        hideHomeSidebar
+          ? (showHomeSidebarOverlay ? (isCollapsed ? 'lg:ml-24' : 'lg:ml-64') : 'lg:ml-0')
+          : (isCollapsed ? 'lg:ml-24' : 'lg:ml-64')
       ]"
     >
       <slot />
@@ -23,16 +32,31 @@
 </template>
 
 <script setup lang="ts">
-import TopNavBar from './TopNavBar.vue'
+import { ref, provide, readonly } from 'vue'
+import AppSidebar from './AppSidebar.vue'
 import MobileTabBar from './MobileTabBar.vue'
 
 interface Props {
-  hideTopNav?: boolean
+  hideHomeSidebar?: boolean
   hideMobileTabBar?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
-  hideTopNav: false,
+const props = withDefaults(defineProps<Props>(), {
+  hideHomeSidebar: false,
   hideMobileTabBar: false
 })
+
+const { isCollapsed } = useSidebar()
+
+// State for showing home sidebar overlay
+const showHomeSidebarOverlay = ref(false)
+
+// Provide method for child components to toggle the overlay
+const toggleHomeSidebarOverlay = () => {
+  showHomeSidebarOverlay.value = !showHomeSidebarOverlay.value
+}
+
+provide('toggleHomeSidebarOverlay', toggleHomeSidebarOverlay)
+provide('showHomeSidebarOverlay', readonly(showHomeSidebarOverlay))
+provide('isCollapsed', readonly(isCollapsed))
 </script>

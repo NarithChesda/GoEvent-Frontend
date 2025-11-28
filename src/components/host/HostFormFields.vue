@@ -3,20 +3,20 @@
     <!-- Title and Name -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Title/Position
         </label>
         <input
           :value="title"
           @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
           type="text"
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
           :placeholder="languageName ? `Enter title in ${languageName}` : 'e.g., Chief Technology Officer'"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Name <span class="text-red-500">*</span>
         </label>
         <input
@@ -27,7 +27,7 @@
           :aria-invalid="fieldErrors?.name ? 'true' : 'false'"
           :aria-describedby="fieldErrors?.name ? 'name-error' : undefined"
           :class="[
-            'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2',
+            'w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2',
             fieldErrors?.name
               ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
               : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400',
@@ -46,27 +46,27 @@
     <!-- Parent Names -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Parent A Name
         </label>
         <input
           :value="parentAName"
           @input="$emit('update:parent-a-name', ($event.target as HTMLInputElement).value)"
           type="text"
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
           :placeholder="languageName ? `First parent's name in ${languageName}` : `First parent's name`"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Parent B Name
         </label>
         <input
           :value="parentBName"
           @input="$emit('update:parent-b-name', ($event.target as HTMLInputElement).value)"
           type="text"
-          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
           :placeholder="languageName ? `Second parent's name in ${languageName}` : `Second parent's name`"
         />
       </div>
@@ -100,7 +100,7 @@
             :value="bio"
             @input="$emit('update:bio', ($event.target as HTMLTextAreaElement).value)"
             rows="4"
-            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
             :placeholder="languageName ? `Enter biography in ${languageName}` : 'Brief biography or description'"
           ></textarea>
         </div>

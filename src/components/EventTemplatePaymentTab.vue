@@ -4,306 +4,210 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Payment Management
+          Template & Payment
         </h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">
-          Manage payment packages and transactions for your event
+          {{ headerDescription }}
         </p>
       </div>
-    </div>
-
-    <!-- Template-Based Package Selection -->
-    <div
-      v-if="!hasSelectedTemplate"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
-    >
-      <FileText class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Select a Template First</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
-        You need to select an event template before you can view payment packages. Templates
-        determine the available pricing plans for your event.
-      </p>
       <button
-        @click="redirectToTemplateTab"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm sm:text-base"
+        v-if="canEdit"
+        @click="openTemplateSelector"
+        class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
       >
-        <FileText class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Select Template
+        <Palette class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span>Browse</span>
+        <span class="hidden sm:inline ml-1">Templates</span>
       </button>
     </div>
 
-    <!-- Template Selected - Show Template Pricing Info -->
-    <div v-else-if="hasSelectedTemplate" class="space-y-6">
-      <!-- Current Template Info -->
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
-          <FileText class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-          Selected Template Package
-        </h3>
+    <!-- Active Template Display -->
+    <TemplateDisplayCard
+      v-if="event.event_template && isTemplateActivated && event.event_template_details"
+      :template="event.event_template_details"
+      status="active"
+      @preview-video="openYoutubePreview"
+    />
+
+    <!-- Preview Template Display (selected but not paid) -->
+    <TemplateDisplayCard
+      v-else-if="selectedTemplateDetails && !isTemplateActivated"
+      :template="selectedTemplateDetails"
+      status="preview"
+      :show-payment-button="true"
+      @preview-video="openYoutubePreview"
+      @make-payment="handleStartPayment"
+    />
+
+    <!-- No Template Selected State -->
+    <div
+      v-else-if="!event.event_template && !showTemplateSelector"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
+    >
+      <div
+        class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6"
+      >
+        <Palette class="w-8 h-8 sm:w-10 sm:h-10 text-slate-400" />
+      </div>
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Template Selected</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
+        Choose a professional template to enhance your event's visual appeal and provide a better
+        experience for your attendees.
+      </p>
+      <button
+        v-if="canEdit"
+        @click="openTemplateSelector"
+        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 sm:py-3 sm:px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
+      >
+        <Palette class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+        Browse Templates
+      </button>
+    </div>
+
+    <!-- Template Selected But Not Enabled State (fallback) -->
+    <div
+      v-else-if="event.event_template && !isTemplateActivated && !selectedTemplateDetails"
+      class="bg-gradient-to-r from-[#E6F4FF] to-indigo-50 border border-[#87CEEB] rounded-3xl p-4 sm:p-6"
+    >
+      <div class="flex items-start space-x-3 sm:space-x-4">
         <div
-          class="bg-gradient-to-br from-emerald-50 to-sky-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#87CEEB]/50"
+          class="w-10 h-10 sm:w-12 sm:h-12 bg-[#B0E0E6] rounded-full flex items-center justify-center flex-shrink-0"
         >
-          <div class="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-            <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-slate-900 text-sm sm:text-base truncate">{{ templateName }}</h4>
-              <p class="text-xs sm:text-sm text-slate-700 truncate">
-                {{ templatePackageDetails?.name || 'Standard Package' }}
-              </p>
-            </div>
-            <div class="text-right flex-shrink-0">
-              <span class="text-xl sm:text-2xl font-bold text-slate-900"
-                >${{ templatePackageDetails?.price || '0.00' }}</span
-              >
-              <p class="text-[10px] sm:text-xs text-slate-600">USD</p>
-            </div>
-          </div>
-
-          <!-- Package Features -->
-          <div
-            v-if="templatePackageDetails?.features && templatePackageDetails.features.length > 0"
-            class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[#87CEEB]/50"
-          >
-            <p class="text-xs sm:text-sm font-medium text-slate-800 mb-1.5 sm:mb-2">Included Features:</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
-              <div
-                v-for="feature in templatePackageDetails.features"
-                :key="feature"
-                class="flex items-center text-xs sm:text-sm text-slate-700"
-              >
-                <CheckCircle class="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1.5 sm:mr-2 flex-shrink-0" />
-                <span class="truncate">{{ feature }}</span>
-              </div>
-            </div>
-          </div>
+          <Package class="w-5 h-5 sm:w-6 sm:h-6 text-[#1e90ff]" />
         </div>
-
-        <!-- Payment Action Button -->
-        <div class="mt-4 sm:mt-6 text-center">
+        <div class="flex-1">
+          <h3 class="text-base sm:text-lg font-semibold text-slate-900">Template Selected</h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1">
+            You have selected template ID {{ event.event_template }}. Complete payment to activate it.
+          </p>
           <button
             @click="handleStartPayment"
-            :disabled="!canStartNewPayment"
-            :class="[
-              'py-3 px-6 rounded-xl font-semibold transition-all duration-200 inline-flex items-center',
-              canStartNewPayment
-                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] hover:scale-[1.02] text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30'
-                : 'bg-slate-300 text-slate-600 cursor-not-allowed'
-            ]"
+            class="mt-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
           >
-            <CreditCard class="w-5 h-5 mr-2" />
-            <span class="hidden sm:inline">{{ currentPayment ? 'Make New Payment' : 'Make Payment' }}</span>
-            <span class="sm:hidden">{{ currentPayment ? 'New Payment' : 'Payment' }}</span>
+            <CreditCard class="w-4 h-4 mr-2" />
+            Make Payment
           </button>
-          <div v-if="currentPayment" class="mt-4 max-w-md mx-auto space-y-2">
-            <div
-              v-if="currentPayment.status === 'confirmed'"
-              class="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-2 text-xs sm:text-sm text-emerald-700"
-            >
-              <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
-              <span class="text-center">
-                Payment confirmed for {{ currentPayment.plan_name || templatePackageDetails?.name || 'this package' }}. You're all set!
-              </span>
-            </div>
-            <div
-              v-else
-              class="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs sm:text-sm text-slate-600"
-            >
-              <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
-              <span class="text-center">
-                Your payment is awaiting review. You can update the existing payment instead of creating a new one.
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- Referrer Section -->
     <EventReferrerSection
-      :event-id="eventId"
+      v-if="hasSelectedTemplate"
+      :event-id="event.id"
       :can-edit="canEdit"
       :referrer-details="event?.referrer_details"
       :organizer-email="event?.organizer_details?.email"
       @referrer-updated="handleReferrerUpdated"
     />
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <div
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">
-              {{ confirmedPaymentsCount }}
-            </p>
-            <p class="text-xs sm:text-sm text-slate-600 mt-1">Confirmed</p>
-          </div>
-          <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"
-          >
-            <CreditCard class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">
-              {{ pendingPaymentsCount }}
-            </p>
-            <p class="text-xs sm:text-sm text-slate-600 mt-1">Pending</p>
-          </div>
-          <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0"
-          >
-            <Clock class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <p class="text-lg sm:text-2xl font-semibold text-slate-900 truncate">
-              ${{ totalAmount }}
-            </p>
-            <p class="text-xs sm:text-sm text-slate-600 mt-1">Total Value</p>
-          </div>
-          <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#B0E0E6] flex items-center justify-center flex-shrink-0"
-          >
-            <DollarSign class="w-5 h-5 sm:w-6 sm:h-6 text-[#1e90ff]" />
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 sm:p-5 min-w-0"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <p class="text-xl sm:text-2xl font-bold text-slate-900 truncate">
-              {{ activePackage ? '1' : '0' }}
-            </p>
-            <p class="text-xs sm:text-sm text-slate-600 mt-1">Active</p>
-          </div>
-          <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0"
-          >
-            <Package class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Existing Payments -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-      <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
-        <History class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-        Payment History
-      </h3>
-
-      <div v-if="loadingPayments" class="text-center py-6 sm:py-8">
-        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
-        <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading payment history...</p>
-      </div>
-
-      <div v-else-if="existingPayments.length === 0 && !loadingPayments" class="text-center py-6 sm:py-8">
-        <History class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
-        <p class="text-xs sm:text-sm text-slate-500">No payments found for this event.</p>
-      </div>
-
-      <div v-else-if="existingPayments.length > 0" class="space-y-3 sm:space-y-4">
-        <div
-          v-for="payment in existingPayments"
-          :key="payment.id"
-          class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl hover:bg-slate-100/50 transition-colors duration-200"
+    <!-- Current Payment Status (when template selected but not activated) -->
+    <div
+      v-if="hasSelectedTemplate && currentPayment && !isTemplateActivated"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+          <CreditCard class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
+          Payment Status
+        </h3>
+        <button
+          v-if="canStartNewPayment"
+          @click="handleStartPayment"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
         >
-          <div class="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-            <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-slate-900 text-sm sm:text-base truncate">{{ payment.plan_name }}</h4>
-              <p class="text-xs sm:text-sm text-slate-600">{{ formatDate(payment.created_at) }}</p>
-            </div>
-            <div class="text-right flex-shrink-0">
-              <p class="text-base sm:text-lg font-bold text-slate-900">${{ payment.amount }}</p>
-              <span
-                class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium"
-                :class="getStatusBadgeClass(payment.status)"
-              >
-                {{ getStatusDisplay(payment.status) }}
-              </span>
-            </div>
-          </div>
+          <CreditCard class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Make New Payment</span>
+          <span class="sm:hidden">New Payment</span>
+        </button>
+      </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs sm:text-sm">
-            <p class="text-slate-600 truncate">
-              <span class="font-medium">Reference:</span> {{ payment.transaction_reference }}
-            </p>
-            <p class="text-slate-600 truncate">
-              <span class="font-medium">Method:</span> {{ payment.payment_method_name }}
-            </p>
-            <p v-if="payment.template_name" class="text-slate-600 sm:col-span-2 truncate">
-              <span class="font-medium">Template:</span> {{ payment.template_name }}
-            </p>
-          </div>
-
-          <!-- Update Payment (if pending) -->
-          <div v-if="payment.status === 'pending'" class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-200">
-            <button
-              @click="startUpdatePayment(payment)"
-              class="text-[#1e90ff] hover:text-[#1873cc] text-xs sm:text-sm font-medium inline-flex items-center"
-            >
-              <Pencil class="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
-              <span class="hidden sm:inline">{{ payment.payment_proof ? 'Update Payment Details' : 'Update Payment / Upload Receipt' }}</span>
-              <span class="sm:hidden">{{ payment.payment_proof ? 'Update' : 'Update / Upload' }}</span>
-            </button>
-          </div>
-        </div>
+      <div
+        v-if="currentPayment.status === 'confirmed'"
+        class="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-xs sm:text-sm text-emerald-700"
+      >
+        <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
+        <span class="text-center">
+          Payment confirmed for {{ currentPayment.plan_name || templatePackageDetails?.name || 'this package' }}. You're all set!
+        </span>
+      </div>
+      <div
+        v-else
+        class="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-xs sm:text-sm text-slate-600"
+      >
+        <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
+        <span class="text-center">
+          Your payment is awaiting review. You can update the existing payment instead of creating a new one.
+        </span>
       </div>
     </div>
 
-    <!-- Payment Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="showPaymentModal" class="fixed inset-0 z-[70] overflow-y-auto">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="closePaymentModal"></div>
+    <!-- Payment History -->
+    <PaymentHistoryList
+      v-if="hasSelectedTemplate"
+      :payments="existingPayments"
+      :loading="loadingPayments"
+      @update-payment="startUpdatePayment"
+    />
 
-          <div class="flex min-h-full items-center justify-center p-4">
-            <div
-              class="relative w-full max-w-xl bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden max-h-[calc(100vh-40px)] flex flex-col"
-              @click.stop
-            >
-              <header
-                class="px-6 py-5 border-b border-slate-200 bg-white/90 flex items-center justify-between gap-4"
-              >
+    <!-- Browse Template Modal -->
+    <BrowseTemplateModal
+      :is-open="showTemplateSelector"
+      :event-id="event.id"
+      :event-category="event.category || undefined"
+      @close="closeTemplateSelector"
+      @template-selected="handleTemplateSelected"
+    />
+
+    <!-- Payment Drawer -->
+    <Teleport to="body">
+      <!-- Backdrop -->
+      <Transition name="fade">
+        <div
+          v-if="showPaymentModal"
+          class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+          @click="closePaymentModal"
+        />
+      </Transition>
+
+      <!-- Drawer Panel -->
+      <Transition name="slide-right">
+        <div
+          v-if="showPaymentModal"
+          class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+          @click.stop
+        >
+          <!-- Header -->
+          <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+            <div class="flex items-center px-3 py-2.5">
+              <!-- Left: Close button & Title -->
+              <div class="flex items-center gap-2 flex-1">
+                <button
+                  @click="closePaymentModal"
+                  class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Close"
+                >
+                  <ArrowRight class="w-5 h-5 text-white" />
+                </button>
                 <div class="min-w-0">
                   <p
                     v-if="templateName"
-                    class="text-[11px] sm:text-xs uppercase tracking-wide text-slate-500"
+                    class="text-[10px] uppercase tracking-wide text-white/80"
                   >
                     {{ templateName }}
                   </p>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900 leading-tight">Make Payment</h2>
+                  <h2 class="text-base font-semibold text-white leading-tight">Make Payment</h2>
                 </div>
-                <button
-                  @click="closePaymentModal"
-                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  aria-label="Close"
-                >
-                  <X class="w-4 h-4" />
-                </button>
-              </header>
+              </div>
+            </div>
+          </div>
 
-              <div class="flex-1 overflow-y-auto">
-                <div class="p-6 sm:p-8 space-y-6">
+          <!-- Content -->
+          <div class="flex-1 overflow-y-auto overscroll-contain">
+            <div class="p-3 laptop-sm:p-4 space-y-3 laptop-sm:space-y-4">
                   <div
                     v-if="currentPayment"
-                    class="rounded-xl border border-slate-200 bg-white/80 p-4 flex items-start justify-between gap-3"
+                    class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 flex items-start justify-between gap-3"
                   >
                     <div class="min-w-0">
                       <p class="text-xs sm:text-sm font-medium text-slate-700">Current payment</p>
@@ -319,7 +223,7 @@
                     </span>
                   </div>
 
-                  <section class="rounded-xl border border-slate-200 bg-white/80 p-4 sm:p-5">
+                  <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
                     <div class="flex flex-wrap items-end justify-between gap-3">
                       <div>
                         <p class="text-xs sm:text-sm text-slate-600">Amount due</p>
@@ -389,17 +293,17 @@
 
                   <section
                     v-if="selectedMethod"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4"
+                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 laptop-sm:p-4 space-y-3"
                   >
                     <div class="flex items-center justify-between">
                       <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment instructions</h3>
                       <span class="text-[11px] sm:text-xs text-slate-500">{{ selectedMethod.name }}</span>
                     </div>
 
-                    <div class="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
                       <div
                         v-if="selectedMethod.bank_name || selectedMethod.account_number || selectedMethod.account_name"
-                        class="flex-1 space-y-2 rounded-lg bg-white/70 px-4 py-3 text-xs sm:text-sm text-slate-600"
+                        class="flex-1 space-y-1.5 rounded-lg bg-white/70 px-3 py-2.5 text-xs sm:text-sm text-slate-600"
                       >
                         <p v-if="selectedMethod.bank_name">
                           <span class="font-medium text-slate-800">Bank:</span> {{ selectedMethod.bank_name }}
@@ -414,20 +318,20 @@
 
                       <div
                         v-if="selectedMethod.qr_code_image || selectedMethod.payment_link"
-                        class="flex flex-col items-center gap-4 md:w-60 md:self-start"
+                        class="flex flex-col items-center gap-3 md:w-48 laptop-md:w-52 md:self-start"
                       >
                         <div
                           v-if="selectedMethod.qr_code_image"
-                          class="w-full rounded-lg border border-slate-200 bg-white p-4 text-center"
+                          class="w-full rounded-lg border border-slate-200 bg-white p-3 text-center"
                         >
                           <img
                             :src="selectedMethod.qr_code_image"
                             :alt="`QR Code for ${selectedMethod.name}`"
-                            class="mx-auto h-28 w-28 sm:h-32 sm:w-32 object-contain"
+                            class="mx-auto h-24 w-24 laptop-sm:h-28 laptop-sm:w-28 laptop-md:h-32 laptop-md:w-32 object-contain"
                             loading="lazy"
                             @error="handleImageError"
                           />
-                          <p class="text-[11px] sm:text-xs text-slate-500 mt-3">Scan with your banking app</p>
+                          <p class="text-[11px] sm:text-xs text-slate-500 mt-2">Scan with your banking app</p>
                         </div>
 
                         <button
@@ -442,7 +346,7 @@
                     </div>
                   </section>
 
-                  <form @submit.prevent="submitPaymentWithSync" class="space-y-4">
+                  <section class="space-y-3">
                     <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment details</h3>
 
                     <div
@@ -459,7 +363,7 @@
                       {{ error }}
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                       <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-700">
                         Transaction Reference <span class="text-red-500">*</span>
                       </label>
@@ -468,12 +372,12 @@
                         v-model="paymentForm.transaction_reference"
                         type="text"
                         required
-                        class="w-full px-4 py-3 text-sm sm:text-base border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90"
+                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90"
                         placeholder="Enter transaction ID"
                       />
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                       <label for="paymentProof" class="text-xs sm:text-sm font-medium text-slate-700">
                         Payment Receipt <span class="text-slate-400">(Optional)</span>
                       </label>
@@ -483,46 +387,43 @@
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
                         @change="handleFileSelect"
-                        class="w-full px-4 py-3 text-sm sm:text-base border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-[#E6F4FF] file:text-[#1873cc] file:text-sm file:font-semibold"
+                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#E6F4FF] file:text-[#1873cc] file:text-xs file:font-semibold"
                       />
-                      <p class="text-[11px] sm:text-xs text-slate-500">JPG, PNG, PDF up to 10MB</p>
+                      <p class="text-[11px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                       <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-700">
                         Notes <span class="text-slate-400">(Optional)</span>
                       </label>
                       <textarea
                         id="paymentNotes"
                         v-model="paymentForm.user_notes"
-                        rows="3"
-                        class="w-full px-4 py-3 text-sm sm:text-base border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 resize-none"
+                        rows="2"
+                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 resize-none"
                         placeholder="Any additional notes for the host"
                       ></textarea>
                     </div>
-
-                    <button
-                      type="submit"
-                      :disabled="submittingPayment || !isFormValid"
-                      class="w-full bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] disabled:bg-slate-300 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 inline-flex items-center justify-center text-sm sm:text-base"
-                    >
-                      <span v-if="submittingPayment" class="flex items-center">
-                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Submitting...
-                      </span>
-                      <span v-else class="flex items-center">
-                        <CheckCircle class="w-4 h-4 mr-2" />
-                        Submit Payment
-                      </span>
-                    </button>
-                  </form>
-                </div>
-              </div>
+                  </section>
             </div>
+          </div>
+
+          <!-- Footer with Submit Button -->
+          <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+            <button
+              @click="submitPaymentWithSync"
+              :disabled="submittingPayment || !isFormValid"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-[#1e90ff] disabled:hover:to-[#2ecc71]"
+            >
+              <Loader v-if="submittingPayment" class="w-4 h-4 animate-spin" />
+              <CheckCircle v-else class="w-4 h-4" />
+              <span>{{ submittingPayment ? 'Submitting...' : 'Submit Payment' }}</span>
+            </button>
           </div>
         </div>
       </Transition>
     </Teleport>
+
     <!-- Update Payment Modal -->
     <Teleport to="body">
       <Transition name="modal">
@@ -615,14 +516,14 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 max-w-[calc(100vw-2rem)] sm:max-w-md">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
+          class="text-white px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-lg flex items-center text-sm sm:text-base"
         >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
+          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <span class="break-words">{{ message.text }}</span>
         </div>
       </div>
     </Transition>
@@ -630,146 +531,72 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue'
 import {
-  CreditCard,
-  Clock,
-  DollarSign,
+  Palette,
   Package,
-  FileText,
   CheckCircle,
   AlertCircle,
+  CreditCard,
+  Clock,
   X,
-  History,
   Pencil,
+  ArrowRight,
+  Loader,
 } from 'lucide-vue-next'
-import { apiService } from '../services/api'
+import { type Event, type EventTemplate, apiService } from '../services/api'
+import BrowseTemplateModal from './BrowseTemplateModal.vue'
+import EventReferrerSection from './EventReferrerSection.vue'
+import TemplateDisplayCard from './template/TemplateDisplayCard.vue'
+import PaymentHistoryList from './template/PaymentHistoryList.vue'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useNotifications } from '../composables/useNotifications'
-import EventReferrerSection from './EventReferrerSection.vue'
+import { useTemplateLoader } from '../composables/useTemplateLoader'
+import type { Payment, PaymentMethod, PaymentFormData, UpdateFormData } from '../types/payment'
 
-// Define emits
-const emit = defineEmits<{
-  'tab-change': [tabId: string]
-  'event-updated': [event: Event]
-}>()
-
-// Proper TypeScript interfaces
+// Types
 interface Props {
-  eventId: string
-  canEdit?: boolean
-  event?: Event
-}
-
-interface Event {
-  id: string
-  event_template?: number | null
-  event_template_details?: {
-    name: string
-    package_plan: {
-      id: number
-      name: string
-      description: string
-      price: string
-      features: string[]
-    }
-  } | null
-  event_template_enabled?: boolean
-  referrer?: number | null
-  referrer_details?: {
-    id: number
-    username: string
-    email: string
-    first_name: string
-    last_name: string
-  } | null
-  organizer_details?: {
-    id: number
-    username: string
-    email: string
-    first_name: string
-    last_name: string
-    profile_picture?: string | null
-  } | null
-}
-
-interface PaymentMethod {
-  readonly id: number
-  readonly name: string
-  readonly payment_type: string
-  readonly payment_type_display: string
-  readonly bank_name: string
-  readonly account_number: string
-  readonly account_name: string
-  readonly qr_code_image: string | null
-  readonly payment_link: string
-  readonly currency: string
-  readonly is_active: boolean
-}
-
-interface Payment {
-  readonly id: string
-  readonly payment_reference: string
-  readonly user_email: string
-  readonly event: string
-  readonly event_title: string
-  readonly template_name: string | null
-  readonly plan_name: string
-  readonly payment_method_name: string
-  readonly amount: string
-  readonly original_price: string
-  readonly discount_amount: string
-  readonly currency: string
-  readonly status: 'pending' | 'confirmed' | 'failed' | 'cancelled' | 'refunded'
-  readonly status_display: string
-  readonly transaction_reference: string
-  readonly created_at: string
-  readonly is_confirmed: boolean
-  readonly is_upgrade: boolean
-  readonly payment_proof?: string
-  readonly user_notes?: string
-  readonly updated_at?: string
-}
-
-interface PaymentFormData {
-  transaction_reference: string
-  user_notes: string
-  payment_proof: File | null
-}
-
-interface UpdateFormData {
-  transaction_reference: string
-  user_notes: string
-  payment_proof: File | null
+  event: Event
+  canEdit: boolean
 }
 
 const props = defineProps<Props>()
 
-// API service is imported as singleton
+const emit = defineEmits<{
+  'template-updated': [template: EventTemplate]
+  'event-updated': [event: Event]
+}>()
 
-// Use composables
+// Composables
 const {
   payments: existingPayments,
   loadingPayments,
+  isTemplateActivated,
   refreshPayments,
   loadPayments: loadExistingPayments,
-} = usePaymentTemplateIntegration(props.event as Event)
+} = usePaymentTemplateIntegration(props.event)
 
 const { success: showSuccess, error: showError } = useNotifications()
 
-// Local component state
+const { selectedTemplateDetails, loadTemplateDetails, clearTemplate, setTemplateDetails } =
+  useTemplateLoader()
+
+// Local state
+const showTemplateSelector = ref(false)
+const showPaymentModal = ref(false)
+const showUpdateModal = ref(false)
+const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+
+// Payment state
 const paymentMethods = ref<readonly PaymentMethod[]>([])
 const selectedMethod = ref<PaymentMethod | null>(null)
-
-// Loading states
 const loadingMethods = ref(false)
 const submittingPayment = ref(false)
 const updatingPayment = ref(false)
-
-// Error states
 const error = ref<string | null>(null)
+const paymentToUpdate = ref<Payment | null>(null)
 
-// Forms with proper typing
+// Forms
 const paymentForm = ref<PaymentFormData>({
   transaction_reference: '',
   user_notes: '',
@@ -782,29 +609,54 @@ const updateForm = ref<UpdateFormData>({
   payment_proof: null,
 })
 
-// Update modal
-const showUpdateModal = ref(false)
-const paymentToUpdate = ref<Payment | null>(null)
-
-// Payment modal
-const showPaymentModal = ref(false)
-
-// Message state
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-
-// File inputs with proper refs
+// File inputs
 const fileInput = ref<HTMLInputElement | null>(null)
 const updateFileInput = ref<HTMLInputElement | null>(null)
 
 // AbortController for request cancellation
 let abortController: AbortController | null = null
 
-// Computed properties with proper typing and memoization
+// Computed properties
+const headerDescription = computed((): string => {
+  if (isTemplateActivated.value) {
+    return 'Your template is active and ready to use'
+  }
+  if (props.event.event_template) {
+    return 'Complete payment to activate your template'
+  }
+  return 'Select a template and complete payment'
+})
+
+const hasSelectedTemplate = computed(() => Boolean(props.event.event_template))
+
+const templateName = computed(() => {
+  if (props.event.event_template_details?.name) {
+    return props.event.event_template_details.name
+  }
+  if (selectedTemplateDetails.value?.name) {
+    return selectedTemplateDetails.value.name
+  }
+  return props.event.event_template ? `Template ID: ${props.event.event_template}` : ''
+})
+
+const templatePackageDetails = computed(() => {
+  return (
+    props.event.event_template_details?.package_plan ||
+    selectedTemplateDetails.value?.package_plan ||
+    null
+  )
+})
+
+const templateIdAsString = computed((): string => {
+  const id = props.event.event_template
+  return typeof id === 'string' ? id : String(id || '')
+})
+
 const currentPayment = computed(() => {
   const normalize = (value?: string | null) =>
     value && typeof value === 'string' ? value.trim().toLowerCase() : null
 
-  const currentTemplateName = normalize(props.event?.event_template_details?.name || null)
+  const currentTemplateName = normalize(props.event.event_template_details?.name || null)
   const currentPlanName = normalize(templatePackageDetails.value?.name || null)
 
   const fallbackPayment =
@@ -838,22 +690,6 @@ const currentPayment = computed(() => {
 
 const canStartNewPayment = computed(() => !currentPayment.value)
 
-const hasSelectedTemplate = computed(() => {
-  return Boolean(props.event?.event_template)
-})
-
-// Memoized getters to prevent unnecessary re-renders
-const templateName = computed(() => {
-  if (props.event?.event_template_details?.name) {
-    return props.event.event_template_details.name
-  }
-  return props.event?.event_template ? `Template ID: ${props.event.event_template}` : ''
-})
-
-const templatePackageDetails = computed(() => {
-  return props.event?.event_template_details?.package_plan || null
-})
-
 const isFormValid = computed(() => {
   return Boolean(
     selectedMethod.value &&
@@ -862,25 +698,7 @@ const isFormValid = computed(() => {
   )
 })
 
-// Stats computed properties
-const confirmedPaymentsCount = computed(
-  () => existingPayments.value.filter((p) => p.status === 'confirmed').length,
-)
-
-const pendingPaymentsCount = computed(
-  () => existingPayments.value.filter((p) => p.status === 'pending').length,
-)
-
-const totalAmount = computed(() =>
-  existingPayments.value
-    .filter((p) => p.status === 'confirmed')
-    .reduce((sum, p) => sum + parseFloat(p.amount), 0)
-    .toFixed(2),
-)
-
-const activePackage = computed(() => currentPayment.value?.status === 'confirmed')
-
-// Input sanitization helper
+// Helper functions
 const sanitizeInput = (input: string): string => {
   return input.trim().replace(/[<>"'&]/g, (match) => {
     const entities: Record<string, string> = {
@@ -894,10 +712,75 @@ const sanitizeInput = (input: string): string => {
   })
 }
 
-const redirectToTemplateTab = () => {
-  emit('tab-change', 'template')
+const showMessage = (type: 'success' | 'error', text: string): void => {
+  const sanitizedText = sanitizeInput(text)
+
+  if (type === 'success') {
+    showSuccess('Success', sanitizedText)
+  } else {
+    showError('Error', sanitizedText)
+  }
+
+  message.value = { type, text: sanitizedText }
+  setTimeout(() => {
+    message.value = null
+  }, 5000)
 }
 
+// Template management methods
+const openTemplateSelector = (): void => {
+  showTemplateSelector.value = true
+}
+
+const closeTemplateSelector = (): void => {
+  showTemplateSelector.value = false
+}
+
+const handleTemplateSelected = async (template: EventTemplate): Promise<void> => {
+  try {
+    setTemplateDetails(template)
+    emit('template-updated', template)
+    await refreshPayments()
+  } catch (err) {
+    console.error('Error handling template selection:', err)
+    showMessage('error', 'Failed to process template selection. Please try again.')
+  }
+}
+
+const openYoutubePreview = (url: string): void => {
+  if (!url) return
+
+  let videoUrl = url
+
+  if (url.includes('youtube.com/embed/')) {
+    const videoId = url.split('embed/')[1]?.split('?')[0]
+    if (videoId) {
+      videoUrl = `https://www.youtube.com/watch?v=${videoId}`
+    }
+  }
+
+  window.open(videoUrl, '_blank', 'noopener,noreferrer')
+}
+
+const initializeTemplateData = async (): Promise<void> => {
+  if (!props.event.event_template) {
+    clearTemplate()
+    return
+  }
+
+  try {
+    await loadTemplateDetails({
+      templateId: templateIdAsString.value,
+      eventId: props.event.id,
+      existingDetails: props.event.event_template_details,
+    })
+  } catch (err) {
+    console.error('Error initializing template data:', err)
+    showMessage('error', 'Failed to load template details. Please refresh the page.')
+  }
+}
+
+// Payment methods
 const handleStartPayment = () => {
   if (!canStartNewPayment.value) {
     showError(
@@ -911,7 +794,6 @@ const handleStartPayment = () => {
 
 const closePaymentModal = () => {
   showPaymentModal.value = false
-  // Reset form when closing modal
   paymentForm.value = {
     transaction_reference: '',
     user_notes: '',
@@ -923,47 +805,9 @@ const closePaymentModal = () => {
   error.value = null
 }
 
-// Validation helpers
-const validateTransactionReference = (ref: string): string | null => {
-  const sanitized = sanitizeInput(ref)
-  if (!sanitized || sanitized.length < 3) {
-    return 'Transaction reference must be at least 3 characters long'
-  }
-  if (sanitized.length > 100) {
-    return 'Transaction reference must be less than 100 characters'
-  }
-  if (!/^[a-zA-Z0-9\-_\s]+$/.test(sanitized)) {
-    return 'Transaction reference can only contain letters, numbers, dashes, underscores, and spaces'
-  }
-  return null
-}
-
-const validateFile = (file: File): string | null => {
-  const maxSize = 10 * 1024 * 1024 // 10MB
-  const allowedTypes = [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'application/pdf',
-  ]
-
-  if (file.size > maxSize) {
-    return 'File size must be less than 10MB'
-  }
-
-  if (!allowedTypes.includes(file.type)) {
-    return 'File type not allowed. Please use JPG, PNG, GIF, WebP, or PDF files'
-  }
-
-  return null
-}
-
 const loadPaymentMethods = async (): Promise<void> => {
   if (loadingMethods.value) return
 
-  // Cancel previous request if still pending
   if (abortController) {
     abortController.abort()
   }
@@ -994,18 +838,6 @@ const loadPaymentMethods = async (): Promise<void> => {
   }
 }
 
-// Enhanced payment submission with better state synchronization
-const submitPaymentWithSync = async (): Promise<void> => {
-  await submitPayment()
-
-  // Force refresh the payment integration state after successful submission
-  if (!error.value) {
-    await refreshPayments()
-    // Close payment modal on successful submission
-    closePaymentModal()
-  }
-}
-
 const selectMethod = (method: PaymentMethod): void => {
   selectedMethod.value = method
 }
@@ -1016,17 +848,12 @@ const openPaymentLink = (paymentLink: string): void => {
     return
   }
 
-  // Validate URL format for security
   try {
     const url = new URL(paymentLink)
-    // Allow both standard protocols and app-specific schemes (e.g., payway://, banking://)
     if (!url.protocol) {
       console.warn('Invalid protocol in payment link')
       return
     }
-
-    // Use location.href for better mobile deep link support
-    // This allows the OS to intercept and route to native apps
     window.location.href = paymentLink
   } catch (err) {
     console.error('Invalid payment link format:', err)
@@ -1037,9 +864,45 @@ const handleImageError = (event: globalThis.Event): void => {
   const img = event.target as HTMLImageElement
   if (img?.src) {
     console.error('Failed to load QR code image:', img.src)
-    // Hide the broken image
     img.style.display = 'none'
   }
+}
+
+// Validation helpers
+const validateTransactionReference = (ref: string): string | null => {
+  const sanitized = sanitizeInput(ref)
+  if (!sanitized || sanitized.length < 3) {
+    return 'Transaction reference must be at least 3 characters long'
+  }
+  if (sanitized.length > 100) {
+    return 'Transaction reference must be less than 100 characters'
+  }
+  if (!/^[a-zA-Z0-9\-_\s]+$/.test(sanitized)) {
+    return 'Transaction reference can only contain letters, numbers, dashes, underscores, and spaces'
+  }
+  return null
+}
+
+const validateFile = (file: File): string | null => {
+  const maxSize = 10 * 1024 * 1024
+  const allowedTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+  ]
+
+  if (file.size > maxSize) {
+    return 'File size must be less than 10MB'
+  }
+
+  if (!allowedTypes.includes(file.type)) {
+    return 'File type not allowed. Please use JPG, PNG, GIF, WebP, or PDF files'
+  }
+
+  return null
 }
 
 const handleFileSelect = (event: globalThis.Event): void => {
@@ -1051,7 +914,7 @@ const handleFileSelect = (event: globalThis.Event): void => {
     if (validationError) {
       error.value = validationError
       showMessage('error', validationError)
-      target.value = '' // Clear the input
+      target.value = ''
       return
     }
   }
@@ -1069,7 +932,7 @@ const handleUpdateFileSelect = (event: globalThis.Event): void => {
     if (validationError) {
       error.value = validationError
       showMessage('error', validationError)
-      target.value = '' // Clear the input
+      target.value = ''
       return
     }
   }
@@ -1078,10 +941,18 @@ const handleUpdateFileSelect = (event: globalThis.Event): void => {
   error.value = null
 }
 
+const submitPaymentWithSync = async (): Promise<void> => {
+  await submitPayment()
+
+  if (!error.value) {
+    await refreshPayments()
+    closePaymentModal()
+  }
+}
+
 const submitPayment = async (): Promise<void> => {
   if (submittingPayment.value) return
 
-  // Validate form data
   const templatePackage = templatePackageDetails.value
   if (!isFormValid.value || !templatePackage) {
     error.value = 'Please fill in all required fields.'
@@ -1089,7 +960,6 @@ const submitPayment = async (): Promise<void> => {
     return
   }
 
-  // Validate transaction reference
   const transactionRefError = validateTransactionReference(paymentForm.value.transaction_reference)
   if (transactionRefError) {
     error.value = transactionRefError
@@ -1097,7 +967,6 @@ const submitPayment = async (): Promise<void> => {
     return
   }
 
-  // Validate file if provided
   if (paymentForm.value.payment_proof) {
     const fileError = validateFile(paymentForm.value.payment_proof)
     if (fileError) {
@@ -1113,8 +982,7 @@ const submitPayment = async (): Promise<void> => {
   try {
     const formData = new FormData()
 
-    // Sanitize and validate all form inputs
-    formData.append('event', sanitizeInput(props.eventId))
+    formData.append('event', sanitizeInput(props.event.id))
     formData.append('pricing_plan', templatePackage.id.toString())
     formData.append('payment_method', selectedMethod.value!.id.toString())
     formData.append('amount', templatePackage.price)
@@ -1122,13 +990,11 @@ const submitPayment = async (): Promise<void> => {
     formData.append('transaction_reference', sanitizeInput(paymentForm.value.transaction_reference))
     formData.append('user_notes', sanitizeInput(paymentForm.value.user_notes))
 
-    // Only append payment proof if file is provided
     if (paymentForm.value.payment_proof) {
       formData.append('payment_proof', paymentForm.value.payment_proof)
     }
 
-    // Include event_template if available
-    if (props.event?.event_template) {
+    if (props.event.event_template) {
       formData.append('event_template', props.event.event_template.toString())
     }
 
@@ -1138,19 +1004,16 @@ const submitPayment = async (): Promise<void> => {
       throw new Error(response.message || 'Failed to submit payment')
     }
 
-    // Reset form securely
     paymentForm.value = {
       transaction_reference: '',
       user_notes: '',
       payment_proof: null,
     }
 
-    // Clear file input
     if (fileInput.value) {
       fileInput.value.value = ''
     }
 
-    // Refresh payments with composable
     await refreshPayments()
 
     const successMessage = paymentForm.value.payment_proof
@@ -1182,7 +1045,6 @@ const startUpdatePayment = (payment: Payment) => {
 const updatePayment = async (): Promise<void> => {
   if (!paymentToUpdate.value || updatingPayment.value) return
 
-  // Validate transaction reference
   const transactionRefError = validateTransactionReference(updateForm.value.transaction_reference)
   if (transactionRefError) {
     error.value = transactionRefError
@@ -1190,7 +1052,6 @@ const updatePayment = async (): Promise<void> => {
     return
   }
 
-  // Validate file if provided
   if (updateForm.value.payment_proof) {
     const fileError = validateFile(updateForm.value.payment_proof)
     if (fileError) {
@@ -1284,36 +1145,56 @@ const getStatusDisplay = (status?: string) => {
   }
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString([], {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
-}
-
 const handleReferrerUpdated = (updatedEvent: unknown) => {
-  // Update the event data with the new referrer information
-  console.log('handleReferrerUpdated called with:', updatedEvent)
-
   if (props.event && updatedEvent && typeof updatedEvent === 'object') {
     const eventData = updatedEvent as Event
-    console.log('Emitting event-updated with:', eventData)
-    // Emit the updated event to parent component
     emit('event-updated', eventData)
   }
 }
 
-// Watchers for reactive updates
+// Calculate scrollbar width to prevent layout shift
+const getScrollbarWidth = (): number => {
+  return window.innerWidth - document.documentElement.clientWidth
+}
+
+// Watchers
+watch(
+  () => ({ templateId: props.event.event_template, eventId: props.event.id }),
+  async (newData, oldData) => {
+    if (newData.templateId !== oldData?.templateId || newData.eventId !== oldData?.eventId) {
+      await initializeTemplateData()
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  () => showPaymentModal.value,
+  (isOpen) => {
+    // Prevent body scroll when drawer is open
+    if (isOpen) {
+      const scrollbarWidth = getScrollbarWidth()
+      document.body.style.overflow = 'hidden'
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+    }
+  }
+)
+
+watch(
+  () => props.event.event_template_details,
+  (newDetails) => {
+    if (newDetails && isTemplateActivated.value) {
+      setTemplateDetails(newDetails)
+    }
+  },
+  { immediate: true },
+)
+
 watch(
   () => hasSelectedTemplate.value,
   (newValue) => {
@@ -1327,38 +1208,31 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => props.eventId,
-  (newEventId, oldEventId) => {
-    if (newEventId && newEventId !== oldEventId) {
-      loadExistingPayments()
-    }
-  },
-  { immediate: true },
-)
-
-// Cleanup function
-onUnmounted(() => {
-  if (abortController) {
-    abortController.abort()
-  }
-})
-
 // Lifecycle
 onMounted(async () => {
-  await nextTick() // Ensure DOM is ready
-  await loadExistingPayments()
+  await nextTick()
+  await Promise.allSettled([initializeTemplateData(), loadExistingPayments()])
 
   if (hasSelectedTemplate.value) {
     await loadPaymentMethods()
   }
 })
 
-// Expose method for parent component (Smart FAB)
+onUnmounted(() => {
+  if (abortController) {
+    abortController.abort()
+  }
+  clearTemplate()
+})
+
+// Expose methods for parent component (Smart FAB)
 defineExpose({
+  openBrowseTemplates: () => {
+    openTemplateSelector()
+  },
   openPaymentModal: () => {
     handleStartPayment()
-  }
+  },
 })
 </script>
 
@@ -1378,6 +1252,39 @@ defineExpose({
   transform: translateY(-20px);
 }
 
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s ease-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide from right on desktop, from bottom on mobile */
+.slide-right-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: translateX(100%);
+  }
+}
+
+/* Modal transition for Update Payment modal */
 .modal-enter-active,
 .modal-leave-active {
   transition: all 0.3s ease;
@@ -1400,4 +1307,3 @@ defineExpose({
   transform: scale(0.95) translateY(-20px);
 }
 </style>
-

@@ -4,6 +4,21 @@
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
     <!-- Decoration Images -->
+    <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
+    <img
+      v-if="leftDecoration"
+      :src="getMediaUrl(leftDecoration)"
+      alt="Left decoration"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromLeft"
+      loading="eager"
+    />
+    <img
+      v-if="rightDecoration"
+      :src="getMediaUrl(rightDecoration)"
+      alt="Right decoration"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromRight"
+      loading="eager"
+    />
     <img
       v-if="topDecoration"
       :src="getMediaUrl(topDecoration)"
@@ -16,20 +31,6 @@
       :src="getMediaUrl(bottomDecoration)"
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromBottom"
-      loading="eager"
-    />
-    <img
-      v-if="leftDecoration"
-      :src="getMediaUrl(leftDecoration)"
-      alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[25] animate-slideInFromLeft"
-      loading="eager"
-    />
-    <img
-      v-if="rightDecoration"
-      :src="getMediaUrl(rightDecoration)"
-      alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[25] animate-slideInFromRight"
       loading="eager"
     />
 
@@ -1235,18 +1236,20 @@ const footerThankYouText = computed(() =>
 )
 
 // Computed property to check if host message section should be displayed
+// Checks for messages in ANY language to ensure section shows with fallback content
 const showHostMessage = computed(() => {
-  if (!props.eventTexts?.length || !props.currentLanguage) {
+  if (!props.eventTexts?.length) {
     return false
   }
 
-  // Check if thank you message or sorry message exists for current language
+  // Check if thank you message or sorry message exists in ANY language
+  // This ensures the section shows even when switching to a language without messages
   const hasThankYouMessage = props.eventTexts.some(
-    (text) => text.text_type === 'thank_you_message' && text.language === props.currentLanguage,
+    (text) => text.text_type === 'thank_you_message',
   )
 
   const hasSorryMessage = props.eventTexts.some(
-    (text) => text.text_type === 'sorry_message' && text.language === props.currentLanguage,
+    (text) => text.text_type === 'sorry_message',
   )
 
   return hasThankYouMessage || hasSorryMessage
@@ -1371,7 +1374,6 @@ const handleReminder = () => {
 // Cleanup on component unmount
 onUnmounted(() => {
   // Clear local references
-  existingBackgroundVideo.value = null
   videoResourceManager.value = null
 })
 </script>

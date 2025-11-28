@@ -84,7 +84,7 @@
         >
           <img
             v-if="sanitizedOrganizerDetails.profile_picture"
-            :src="apiClient.getProfilePictureUrl(sanitizedOrganizerDetails.profile_picture)"
+            :src="apiClient.getProfilePictureUrl(sanitizedOrganizerDetails.profile_picture ?? undefined) || undefined"
             :alt="sanitizedOrganizerDetails.first_name + ' ' + sanitizedOrganizerDetails.last_name"
             class="w-full h-full object-cover"
           />

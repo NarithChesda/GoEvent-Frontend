@@ -1,199 +1,177 @@
 <template>
-  <div class="space-y-6">
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-start justify-between mb-6">
       <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Event Text Content
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage multi-language text content for your event</p>
+        <h5 class="font-semibold text-slate-900">Showcase Texts</h5>
+        <p class="text-sm text-slate-600">Add multi-language text content for your event showcase</p>
       </div>
       <button
-        @click="showCreateModal = true"
-        class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
+        v-if="allTexts.length > 0"
+        @click="showTextDrawer = true"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500"
       >
-        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        <span class="hidden sm:inline">Add Text Content</span>
-
+        <Pencil class="w-4 h-4" />
+        <span>Edit</span>
       </button>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-      <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
-        <FileText class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-        Content Filters
-      </h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <div class="flex flex-col space-y-1.5">
-          <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</label>
-          <div class="relative">
-            <select
-              v-model="filters.textType"
-              @change="applyFilters"
-              class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm appearance-none pr-8"
-            >
-              <option value="">All Types</option>
-              <option value="cover_header">Cover Header</option>
-              <option value="welcome_message">Welcome Message</option>
-              <option value="instructions">Instructions</option>
-              <option value="description">Description</option>
-              <option value="short_description">Short Description</option>
-              <option value="date_text">Date Text</option>
-              <option value="time_text">Time Text</option>
-              <option value="location_text">Location Text</option>
-              <option value="thank_you_message">Thank You Message</option>
-              <option value="sorry_message">Sorry Message</option>
-              <option value="custom">Custom</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
-              <ChevronDown class="w-3.5 h-3.5 text-slate-500" />
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-col space-y-1.5">
-          <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide"
-            >Language</label
-          >
-          <div class="relative">
-            <select
-              v-model="filters.language"
-              @change="applyFilters"
-              class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm appearance-none pr-8"
-            >
-              <option value="">All Languages</option>
-              <option value="en">English</option>
-              <option value="kh">Khmer</option>
-              <option value="fr">French</option>
-              <option value="ja">Japanese</option>
-              <option value="ko">Korean</option>
-              <option value="zh-cn">Chinese (Simplified)</option>
-              <option value="th">Thai</option>
-              <option value="vn">Vietnamese</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
-              <ChevronDown class="w-3.5 h-3.5 text-slate-500" />
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-col space-y-1.5">
-          <label class="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
-          <div class="relative">
-            <select
-              v-model="filters.isActive"
-              @change="applyFilters"
-              class="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent text-xs sm:text-sm bg-white/70 backdrop-blur-sm appearance-none pr-8"
-            >
-              <option value="">All Statuses</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
-              <ChevronDown class="w-3.5 h-3.5 text-slate-500" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
-    >
-      <div class="flex items-center justify-center">
+    <div v-if="loading">
+      <div class="flex justify-center py-6 sm:py-8">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading text content...</span>
       </div>
     </div>
 
     <!-- Error State -->
-    <div
-      v-else-if="error"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8 text-center"
-    >
-      <div class="text-base sm:text-lg text-red-600 font-semibold mb-3 sm:mb-4">{{ error }}</div>
-      <button
-        @click="fetchTexts"
-        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-red-500/25 text-sm sm:text-base"
-      >
-        Try again
-      </button>
-    </div>
-
-    <!-- Empty State -->
-    <div
-      v-else-if="filteredTexts.length === 0"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
-    >
-      <FileText class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">
-        {{ allTexts.length === 0 ? 'No Text Content Yet' : 'No Matching Text Content' }}
-      </h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
-        {{
-          allTexts.length === 0
-            ? 'Start building your event content by adding your first text content.'
-            : 'Try adjusting your filters to see more content.'
-        }}
-      </p>
-      <button
-        v-if="allTexts.length === 0"
-        @click="showCreateModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
-      >
-        <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Add Your First Text Content
-      </button>
-    </div>
-
-    <!-- Text Content List -->
-    <div v-else class="space-y-4 sm:space-y-6">
-      <!-- Group by text type in priority order -->
-      <div
-        v-for="entry in orderedGroupedTexts"
-        :key="entry.textType"
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
-      >
-        <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 sm:px-6 py-3 sm:py-4 border-b border-white/20">
-          <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-            <component :is="getTextTypeIcon(entry.textType)" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[#1e90ff]" />
-            {{ getTextTypeLabel(entry.textType) }}
-            <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm text-slate-500"
-              >({{ entry.group.length }} item{{ entry.group.length !== 1 ? 's' : '' }})</span
+    <div v-else-if="error">
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-4">
+        <div class="flex items-center space-x-2">
+          <AlertCircle class="w-5 h-5 text-red-500" />
+          <div class="flex-1">
+            <p class="text-sm text-red-600 font-medium">{{ error }}</p>
+            <button
+              @click="fetchTexts"
+              class="text-red-600 text-sm hover:text-red-700 underline mt-1"
             >
-          </h3>
-        </div>
-
-        <div class="p-4 sm:p-6 space-y-3 sm:space-y-4">
-          <EventTextCard
-            v-for="text in entry.group"
-            :key="text.id"
-            :text="text"
-            @edit="editText"
-            @delete="deleteText"
-          />
+              Try again
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Create Modal -->
-    <EventTextModal
-      v-if="showCreateModal"
-      :event-id="eventId"
-      @close="showCreateModal = false"
-      @created="handleTextCreated"
-    />
+    <!-- Empty State -->
+    <div v-else-if="allTexts.length === 0">
+      <div
+        @click="showTextDrawer = true"
+        class="border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
+      >
+        <div class="flex flex-col items-center justify-center min-h-[120px]">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
+            <Plus class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
+          </div>
+          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900">No text content added</p>
+          <p class="text-sm text-slate-500 mt-1">Add multi-language text for your event showcase</p>
+          <p class="text-xs text-slate-400 mt-1">Click to add</p>
+        </div>
+      </div>
+    </div>
 
-    <!-- Edit Modal -->
-    <EventTextModal
-      v-if="showEditModal && selectedText"
+    <!-- Content -->
+    <div v-else class="space-y-3 sm:space-y-4">
+      <!-- Language Tabs -->
+      <div class="bg-white rounded-xl sm:rounded-2xl border border-gray-200 overflow-hidden">
+        <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" aria-label="Language tabs">
+          <div class="flex overflow-x-auto scrollbar-hide">
+            <button
+              v-for="lang in availableLanguages"
+              :key="lang"
+              @click="selectedLanguage = lang"
+              role="tab"
+              :aria-selected="selectedLanguage === lang"
+              :aria-controls="`tabpanel-${lang}`"
+              :id="`tab-${lang}`"
+              :class="[
+                'flex-shrink-0 px-4 py-2.5 text-sm font-medium transition-colors relative',
+                selectedLanguage === lang
+                  ? 'text-[#1e90ff] bg-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+              ]"
+            >
+              {{ getLanguageName(lang) }}
+              <span
+                v-if="selectedLanguage === lang"
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1e90ff]"
+              ></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Text List for Selected Language -->
+        <div
+          role="tabpanel"
+          :id="`tabpanel-${selectedLanguage}`"
+          :aria-labelledby="`tab-${selectedLanguage}`"
+          class="divide-y divide-slate-100"
+        >
+          <div
+            v-for="text in textsForSelectedLanguage"
+            :key="text.id"
+            class="p-3 sm:p-4 hover:bg-slate-50/50 transition-colors"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <!-- Text Info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <component
+                    :is="getTextTypeIcon(text.text_type)"
+                    class="w-3.5 h-3.5 text-[#1e90ff] flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                    {{ getTextTypeLabel(text.text_type) }}
+                  </span>
+                  <span
+                    v-if="!text.is_active"
+                    class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500"
+                  >
+                    Inactive
+                  </span>
+                </div>
+
+                <!-- Title if exists -->
+                <div v-if="text.title" class="text-sm font-medium text-slate-900 mb-0.5">
+                  {{ text.title }}
+                </div>
+
+                <!-- Content Preview -->
+                <p class="text-sm text-slate-600 line-clamp-2">
+                  {{ text.content }}
+                </p>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <button
+                  @click="deleteText(text.id)"
+                  class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  :aria-label="`Delete ${getTextTypeLabel(text.text_type)}`"
+                >
+                  <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state for selected language -->
+          <div v-if="textsForSelectedLanguage.length === 0" class="p-6 text-center">
+            <p class="text-sm text-slate-500">No text content for {{ getLanguageName(selectedLanguage) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Another Text Button -->
+      <div
+        @click="showTextDrawer = true"
+        class="border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
+      >
+        <div class="flex flex-col items-center justify-center">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
+            <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
+          </div>
+          <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">Add or Edit Text Content</p>
+          <p class="text-xs text-slate-400 mt-1">Click to manage</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Event Text Drawer -->
+    <EditEventTextDrawer
+      v-model="showTextDrawer"
       :event-id="eventId"
-      :text="selectedText"
-      @close="showEditModal = false"
-      @updated="handleTextUpdated"
+      :existing-texts="allTexts"
+      @saved="handleTextsSaved"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -207,6 +185,7 @@
           ? textToDelete.content.substring(0, 50) + (textToDelete.content.length > 50 ? '...' : '')
           : '')
       "
+      :warning-message="deleteError || undefined"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />
@@ -214,9 +193,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, type Component } from 'vue'
 import {
-  Plus,
   FileText,
   MessageSquare,
   Info,
@@ -224,11 +202,13 @@ import {
   Clock,
   MapPin,
   Heart,
-  ChevronDown,
+  Trash2,
+  Plus,
+  AlertCircle,
+  Pencil,
 } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
-import EventTextCard from './EventTextCard.vue'
-import EventTextModal from './EventTextModal.vue'
+import EditEventTextDrawer from './EditEventTextDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
 interface Props {
@@ -237,76 +217,119 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Track component mount state to prevent state updates after unmount
+let isMounted = true
+onUnmounted(() => {
+  isMounted = false
+})
+
 // State
 const loading = ref(true)
 const error = ref<string | null>(null)
+const deleteError = ref<string | null>(null)
 const allTexts = ref<EventText[]>([])
-const showCreateModal = ref(false)
-const showEditModal = ref(false)
-const selectedText = ref<EventText | null>(null)
+const selectedLanguage = ref<string>('')
+const showTextDrawer = ref(false)
 const showDeleteModal = ref(false)
 const deleteLoading = ref(false)
 const textToDelete = ref<EventText | null>(null)
 
-// Filters
-const filters = reactive({
-  textType: '',
-  language: '',
-  isActive: '',
-})
+// Constants
+const LANGUAGE_PRIORITY = ['en', 'kh', 'fr', 'ja', 'ko', 'zh-cn', 'th', 'vn'] as const
 
-// Computed
-const filteredTexts = computed(() => {
-  return allTexts.value.filter((text) => {
-    if (filters.textType && text.text_type !== filters.textType) return false
-    if (filters.language && text.language !== filters.language) return false
-    if (filters.isActive !== '' && text.is_active.toString() !== filters.isActive) return false
-    return true
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  kh: 'Khmer',
+  fr: 'French',
+  ja: 'Japanese',
+  ko: 'Korean',
+  'zh-cn': 'Chinese (Simplified)',
+  th: 'Thai',
+  vn: 'Vietnamese',
+}
+
+const TEXT_TYPE_LABELS: Record<string, string> = {
+  cover_header: 'Cover Header',
+  welcome_message: 'Welcome Message',
+  instructions: 'Instructions',
+  description: 'Description',
+  short_description: 'Short Description',
+  date_text: 'Date Text',
+  time_text: 'Time Text',
+  location_text: 'Location Text',
+  thank_you_message: 'Thank You Message',
+  sorry_message: 'Sorry Message',
+  custom: 'Custom Content',
+}
+
+const TEXT_TYPE_PRIORITY = [
+  'cover_header',
+  'welcome_message',
+  'description',
+  'short_description',
+  'date_text',
+  'time_text',
+  'location_text',
+  'instructions',
+  'thank_you_message',
+  'sorry_message',
+  'custom',
+] as const
+
+const TEXT_TYPE_ICONS: Record<string, Component> = {
+  cover_header: FileText,
+  welcome_message: MessageSquare,
+  instructions: Info,
+  description: FileText,
+  short_description: FileText,
+  date_text: Calendar,
+  time_text: Clock,
+  location_text: MapPin,
+  thank_you_message: Heart,
+  sorry_message: MessageSquare,
+  custom: FileText,
+}
+
+// Computed: Get unique languages from texts, sorted by priority
+const availableLanguages = computed(() => {
+  const langs = [...new Set(allTexts.value.map((t) => t.language))]
+  return langs.sort((a, b) => {
+    const aIdx = LANGUAGE_PRIORITY.indexOf(a as typeof LANGUAGE_PRIORITY[number])
+    const bIdx = LANGUAGE_PRIORITY.indexOf(b as typeof LANGUAGE_PRIORITY[number])
+    if (aIdx === -1 && bIdx === -1) return a.localeCompare(b)
+    if (aIdx === -1) return 1
+    if (bIdx === -1) return -1
+    return aIdx - bIdx
   })
 })
 
-const groupedTexts = computed(() => {
-  const groups: Record<string, EventText[]> = {}
+// Watch for available languages changes to set default selection
+watch(availableLanguages, (langs) => {
+  if (langs.length > 0 && !langs.includes(selectedLanguage.value)) {
+    selectedLanguage.value = langs[0]
+  }
+}, { immediate: true })
 
-  filteredTexts.value.forEach((text) => {
-    if (!groups[text.text_type]) {
-      groups[text.text_type] = []
-    }
-    groups[text.text_type].push(text)
-  })
-
-  // Sort texts within each group by order, then language
-  Object.keys(groups).forEach((textType) => {
-    groups[textType].sort((a, b) => {
-      if (a.order !== b.order) return a.order - b.order
-      return a.language.localeCompare(b.language)
+// Computed: Get texts for selected language, sorted by type priority
+const textsForSelectedLanguage = computed(() => {
+  return allTexts.value
+    .filter((t) => t.language === selectedLanguage.value)
+    .sort((a, b) => {
+      const aIdx = TEXT_TYPE_PRIORITY.indexOf(a.text_type as typeof TEXT_TYPE_PRIORITY[number])
+      const bIdx = TEXT_TYPE_PRIORITY.indexOf(b.text_type as typeof TEXT_TYPE_PRIORITY[number])
+      if (aIdx === -1 && bIdx === -1) return a.order - b.order
+      if (aIdx === -1) return 1
+      if (bIdx === -1) return -1
+      return aIdx - bIdx
     })
-  })
-
-  return groups
 })
 
-// Ordered groups by priority: cover_header, welcome_message, description,
-// date_text, time_text, location_text, then the rest in their original order
-const orderedGroupedTexts = computed(() => {
-  const groups = groupedTexts.value
-  const priority = [
-    'cover_header',
-    'welcome_message',
-    'description',
-    'date_text',
-    'time_text',
-    'location_text',
-  ]
+// Helper functions
+const getTextTypeLabel = (textType: string): string => TEXT_TYPE_LABELS[textType] || textType
 
-  const keys = Object.keys(groups)
-  const prioritized = priority.filter((k) => keys.includes(k))
-  const rest = keys.filter((k) => !priority.includes(k))
+const getTextTypeIcon = (textType: string): Component => TEXT_TYPE_ICONS[textType] || FileText
 
-  const orderedKeys = [...prioritized, ...rest]
-
-  return orderedKeys.map((textType) => ({ textType, group: groups[textType] }))
-})
+const getLanguageName = (code: string): string => LANGUAGE_NAMES[code] || code.toUpperCase()
 
 // Methods
 const fetchTexts = async () => {
@@ -315,6 +338,8 @@ const fetchTexts = async () => {
 
   try {
     const response = await eventTextsService.getEventTexts(props.eventId)
+
+    if (!isMounted) return
 
     if (response.success && response.data) {
       if (response.data.results && Array.isArray(response.data.results)) {
@@ -325,20 +350,14 @@ const fetchTexts = async () => {
     } else {
       error.value = response.message || 'Failed to load text content'
     }
-  } catch (err) {
+  } catch {
+    if (!isMounted) return
     error.value = 'Network error while loading text content'
   } finally {
-    loading.value = false
+    if (isMounted) {
+      loading.value = false
+    }
   }
-}
-
-const applyFilters = () => {
-  // Filters are reactive, so this just triggers re-computation
-}
-
-const editText = (text: EventText) => {
-  selectedText.value = text
-  showEditModal.value = true
 }
 
 const deleteText = (textId: number) => {
@@ -346,6 +365,7 @@ const deleteText = (textId: number) => {
   if (!text) return
 
   textToDelete.value = text
+  deleteError.value = null
   showDeleteModal.value = true
 }
 
@@ -353,89 +373,39 @@ const confirmDelete = async () => {
   if (!textToDelete.value) return
 
   deleteLoading.value = true
+  deleteError.value = null
 
   try {
     const response = await eventTextsService.deleteEventText(props.eventId, textToDelete.value.id)
+
+    if (!isMounted) return
 
     if (response.success) {
       allTexts.value = allTexts.value.filter((t) => t.id !== textToDelete.value!.id)
       showDeleteModal.value = false
       textToDelete.value = null
     } else {
-      alert(response.message || 'Failed to delete text content')
+      deleteError.value = response.message || 'Failed to delete text content'
     }
-  } catch (err) {
-    alert('Network error while deleting text content')
+  } catch {
+    if (!isMounted) return
+    deleteError.value = 'Network error while deleting text content'
   } finally {
-    deleteLoading.value = false
+    if (isMounted) {
+      deleteLoading.value = false
+    }
   }
 }
 
 const cancelDelete = () => {
   showDeleteModal.value = false
   textToDelete.value = null
+  deleteError.value = null
 }
 
-const handleTextCreated = (newText: EventText) => {
-  allTexts.value.push(newText)
-  showCreateModal.value = false
-}
-
-const handleTextUpdated = (updatedText: EventText) => {
-  const index = allTexts.value.findIndex((t) => t.id === updatedText.id)
-  if (index !== -1) {
-    allTexts.value[index] = updatedText
-  }
-  showEditModal.value = false
-  selectedText.value = null
-}
-
-const getTextTypeLabel = (textType: string): string => {
-  const labels: Record<string, string> = {
-    cover_header: 'Cover Header',
-    welcome_message: 'Welcome Message',
-    instructions: 'Instructions',
-    description: 'Description',
-    short_description: 'Short Description',
-    date_text: 'Date Text',
-    time_text: 'Time Text',
-    location_text: 'Location Text',
-    thank_you_message: 'Thank You Message',
-    sorry_message: 'Sorry Message',
-    custom: 'Custom Content',
-  }
-  return labels[textType] || textType
-}
-
-const getTextTypeIcon = (textType: string) => {
-  const icons: Record<string, any> = {
-    cover_header: FileText,
-    welcome_message: MessageSquare,
-    instructions: Info,
-    description: FileText,
-    short_description: FileText,
-    date_text: Calendar,
-    time_text: Clock,
-    location_text: MapPin,
-    thank_you_message: Heart,
-    sorry_message: MessageSquare,
-    custom: FileText,
-  }
-  return icons[textType] || FileText
-}
-
-const getLanguageName = (languageCode: string): string => {
-  const languageNames: Record<string, string> = {
-    en: 'English',
-    kh: 'Khmer',
-    fr: 'French',
-    ja: 'Japanese',
-    ko: 'Korean',
-    'zh-cn': 'Chinese (Simplified)',
-    th: 'Thai',
-    vn: 'Vietnamese',
-  }
-  return languageNames[languageCode] || languageCode.toUpperCase()
+const handleTextsSaved = () => {
+  // Refresh texts from server after drawer saves
+  fetchTexts()
 }
 
 // Lifecycle
@@ -446,11 +416,17 @@ onMounted(() => {
 // Expose method for parent component (Smart FAB)
 defineExpose({
   openAddModal: () => {
-    showCreateModal.value = true
+    showTextDrawer.value = true
   }
 })
 </script>
 
 <style scoped>
-/* Add any additional scoped styles if needed */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 </style>

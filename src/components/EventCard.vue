@@ -15,28 +15,18 @@
       </div>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Delete Button -->
     <div
+      v-if="event.can_delete"
       class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
     >
-      <div class="flex space-x-1">
-        <button
-          v-if="event.can_edit"
-          @click="handleAction('edit', $event)"
-          class="w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
-          title="Edit Event"
-        >
-          <Edit2 class="w-4 h-4 sm:w-4 md:w-4 text-gray-600" />
-        </button>
-        <button
-          v-if="event.can_delete"
-          @click="handleAction('delete', $event)"
-          class="w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
-          title="Delete Event"
-        >
-          <Trash2 class="w-4 h-4 sm:w-4 md:w-4 text-gray-600 hover:text-red-500" />
-        </button>
-      </div>
+      <button
+        @click="handleDelete($event)"
+        class="w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
+        title="Delete Event"
+      >
+        <Trash2 class="w-4 h-4 sm:w-4 md:w-4 text-gray-600 hover:text-red-500" />
+      </button>
     </div>
 
     <!-- Banner Image - 1.9:1 aspect ratio (1200x630) -->
@@ -270,7 +260,6 @@ import {
   Users,
   Monitor,
   Lock,
-  Edit2,
   Trash2,
   Music,
   Briefcase,
@@ -295,7 +284,6 @@ interface Props {
 
 interface Emits {
   view: [event: Event]
-  edit: [event: Event]
   delete: [event: Event]
 }
 
@@ -394,14 +382,10 @@ const getFallbackIcon = () => {
   return Calendar
 }
 
-// Handle action button clicks
-const handleAction = (action: 'edit' | 'delete', event: MouseEvent) => {
+// Handle delete button click
+const handleDelete = (event: MouseEvent) => {
   event.stopPropagation()
-  if (action === 'edit') {
-    emit('edit', props.event)
-  } else {
-    emit('delete', props.event)
-  }
+  emit('delete', props.event)
 }
 
 const getBannerImageUrl = (bannerImage: string | null): string | undefined => {

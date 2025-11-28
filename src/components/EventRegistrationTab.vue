@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Event Attendees
+          Event Registration
         </h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage registrations and check-ins</p>
       </div>
@@ -59,7 +59,7 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search attendees..."
+              placeholder="Search registrations..."
               class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff]/30 transition-all duration-200 text-sm sm:text-base relative text-slate-800 placeholder-slate-400 shadow-sm"
             />
             <button
@@ -118,11 +118,11 @@
     >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading attendees...</span>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading registrations...</span>
       </div>
     </div>
 
-    <!-- Attendees List -->
+    <!-- Registration List -->
     <div v-else-if="filteredRegistrations.length > 0" class="space-y-3 sm:space-y-4">
       <div
         v-for="registration in filteredRegistrations"
@@ -244,7 +244,7 @@
     >
       <Users class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
       <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">
-        {{ searchQuery || statusFilter ? 'No attendees found' : 'No registrations yet' }}
+        {{ searchQuery || statusFilter ? 'No registrations found' : 'No registrations yet' }}
       </h3>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
         {{
