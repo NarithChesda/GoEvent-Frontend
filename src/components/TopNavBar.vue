@@ -118,55 +118,73 @@
           <Transition name="dropdown">
             <div
               v-if="userMenuOpen && authStore.isAuthenticated"
-              class="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-[100] min-w-[200px]"
+              class="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl shadow-slate-900/10 overflow-hidden z-[100] w-64"
               role="menu"
               aria-orientation="vertical"
             >
-              <!-- User Info Header -->
-              <div class="px-4 py-3 border-b border-slate-100">
-                <div class="font-semibold text-sm text-slate-900">
-                  {{ sanitizedUserName }}
+              <!-- User Info Header with Avatar -->
+              <div class="px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center space-x-3">
+                  <!-- Large Avatar -->
+                  <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    <img
+                      v-if="profilePictureUrl"
+                      :src="profilePictureUrl"
+                      :alt="sanitizedUserName"
+                      class="w-full h-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-lg"
+                    >
+                      {{ authStore.userInitials }}
+                    </div>
+                  </div>
+                  <!-- Name and Email -->
+                  <div class="min-w-0">
+                    <div class="font-semibold text-lg text-slate-900 truncate">
+                      {{ sanitizedUserName }}
+                    </div>
+                    <div class="text-sm text-slate-400 truncate">{{ sanitizedUserEmail }}</div>
+                  </div>
                 </div>
-                <div class="text-xs text-slate-500">{{ sanitizedUserEmail }}</div>
               </div>
 
-              <RouterLink
-                to="/settings"
-                @click="userMenuOpen = false"
-                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-slate-50 transition-all duration-200"
-                role="menuitem"
-              >
-                <User class="w-5 h-5" aria-hidden="true" />
-                <span class="font-medium">Profile</span>
-              </RouterLink>
-              <RouterLink
-                to="/security"
-                @click="userMenuOpen = false"
-                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-slate-50 transition-all duration-200"
-                role="menuitem"
-              >
-                <Lock class="w-5 h-5" aria-hidden="true" />
-                <span class="font-medium">Security</span>
-              </RouterLink>
-              <RouterLink
-                v-if="authStore.user?.is_partner"
-                to="/commission"
-                @click="userMenuOpen = false"
-                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:bg-slate-50 transition-all duration-200"
-                role="menuitem"
-              >
-                <Wallet class="w-5 h-5" aria-hidden="true" />
-                <span class="font-medium">Commission</span>
-              </RouterLink>
-              <div class="border-t border-slate-200"></div>
-              <button
-                @click="handleLogout"
-                class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 text-left"
-                role="menuitem"
-              >
-                <LogOut class="w-5 h-5" aria-hidden="true" />
-                <span class="font-medium">Logout</span>
-              </button>
+              <!-- Menu Items -->
+              <div class="py-1">
+                <RouterLink
+                  to="/settings"
+                  @click="userMenuOpen = false"
+                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  View Profile
+                </RouterLink>
+                <RouterLink
+                  to="/security"
+                  @click="userMenuOpen = false"
+                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  Settings
+                </RouterLink>
+                <RouterLink
+                  v-if="authStore.user?.is_partner"
+                  to="/commission"
+                  @click="userMenuOpen = false"
+                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  Commission
+                </RouterLink>
+                <button
+                  @click="handleLogout"
+                  class="w-full text-left px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
           </Transition>
         </div>
