@@ -125,14 +125,19 @@
                 class="space-y-4 laptop-sm:space-y-5"
               >
                 <HostFormFields
-                  v-model:title="translation.title"
-                  v-model:name="translation.name"
-                  v-model:parent-a-name="translation.parent_a_name"
-                  v-model:parent-b-name="translation.parent_b_name"
-                  v-model:bio="translation.bio"
+                  :title="translation.title"
+                  :name="translation.name"
+                  :parent-a-name="translation.parent_a_name"
+                  :parent-b-name="translation.parent_b_name"
+                  :bio="translation.bio"
                   :language-name="getLanguageName(translation.language)"
                   :bio-open="bioOpen"
                   @update:bio-open="bioOpen = $event"
+                  @update:title="(val) => translation.title = val"
+                  @update:name="(val) => translation.name = val"
+                  @update:parent-a-name="(val) => translation.parent_a_name = val"
+                  @update:parent-b-name="(val) => translation.parent_b_name = val"
+                  @update:bio="(val) => translation.bio = val"
                 />
               </div>
             </div>

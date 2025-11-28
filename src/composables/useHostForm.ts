@@ -55,7 +55,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
     twitter_url: host?.twitter_url || '',
     website_url: host?.website_url || '',
     order: host?.order || 0,
-    translations: host ? [...host.translations] : [],
+    translations: host ? host.translations.map(t => ({ ...t })) : [],
   })
 
   // Original form values for dirty tracking (only used in edit mode)
@@ -227,11 +227,11 @@ export function useHostForm(eventId: string, host?: EventHost) {
       .filter((t: any) => t.language && t.language.trim() !== '')
       .map((t: any) => ({
         language: t.language,
-        name: t.name || '',
-        parent_a_name: t.parent_a_name || '',
-        parent_b_name: t.parent_b_name || '',
-        title: t.title || '',
-        bio: t.bio || '',
+        name: sanitizePlainText(t.name || '', MAX_NAME_LENGTH),
+        parent_a_name: sanitizePlainText(t.parent_a_name || '', MAX_NAME_LENGTH),
+        parent_b_name: sanitizePlainText(t.parent_b_name || '', MAX_NAME_LENGTH),
+        title: sanitizePlainText(t.title || '', MAX_TITLE_LENGTH),
+        bio: sanitizeRichContent(t.bio || '', MAX_BIO_LENGTH),
       }))
 
     // Simple comparison - if translations differ, include all translations
@@ -326,12 +326,14 @@ export function useHostForm(eventId: string, host?: EventHost) {
 
       if (imageChanged) {
         // When image changes, we need to use FormData
-        // Pass the removeImage flag to indicate if we're explicitly removing the image
-        const formDataPayload = hasChanges ? updateData : {}
+        // IMPORTANT: FormData PATCH may have different semantics than JSON PATCH
+        // We must include ALL current field values to prevent the backend from clearing them
+        const formDataPayload = sanitizeFormData()
+
         response = await hostsService.updateHostWithFile(
           eventId,
           currentHost.value.id,
-          formDataPayload as any,
+          formDataPayload,
           profileImageFile || undefined,
           isRemovingImage, // Pass the removeImage flag
         )
@@ -358,7 +360,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
           twitter_url: response.data.twitter_url || '',
           website_url: response.data.website_url || '',
           order: response.data.order || 0,
-          translations: response.data.translations ? [...response.data.translations] : [],
+          translations: response.data.translations ? response.data.translations.map(t => ({ ...t })) : [],
         }
         return { success: true, data: response.data }
       } else {
@@ -398,7 +400,8 @@ export function useHostForm(eventId: string, host?: EventHost) {
     formData.twitter_url = newHost?.twitter_url || ''
     formData.website_url = newHost?.website_url || ''
     formData.order = newHost?.order || 0
-    formData.translations = newHost ? [...newHost.translations] : []
+    // Deep copy translations to avoid shared references
+    formData.translations = newHost ? newHost.translations.map(t => ({ ...t })) : []
 
     // Store original values for dirty tracking (only in edit mode)
     if (newHost) {
@@ -414,7 +417,8 @@ export function useHostForm(eventId: string, host?: EventHost) {
         twitter_url: newHost.twitter_url || '',
         website_url: newHost.website_url || '',
         order: newHost.order || 0,
-        translations: newHost.translations ? [...newHost.translations] : [],
+        // Deep copy translations to avoid shared references with formData
+        translations: newHost.translations ? newHost.translations.map(t => ({ ...t })) : [],
       }
     } else {
       originalFormData.value = null

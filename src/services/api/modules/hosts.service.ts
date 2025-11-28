@@ -81,11 +81,11 @@ export const hostsService = {
     profileImageFile?: File,
     removeImage = false,
   ): Promise<ApiResponse<EventHost>> {
-    // Always use FormData when this method is called
     const formData = new FormData()
 
     // Add all the host data as form fields
-    if (data.name) formData.append('name', data.name)
+    // Use !== undefined to include empty strings (which are valid values)
+    if (data.name !== undefined) formData.append('name', data.name)
     if (data.parent_a_name !== undefined) formData.append('parent_a_name', data.parent_a_name)
     if (data.parent_b_name !== undefined) formData.append('parent_b_name', data.parent_b_name)
     if (data.title !== undefined) formData.append('title', data.title)
@@ -105,8 +105,9 @@ export const hostsService = {
     }
     // If neither, don't append profile_image at all - keeps existing image
 
-    // Add translations as JSON string if they exist
-    if (data.translations && data.translations.length > 0) {
+    // Add translations as JSON string if they exist in the data object
+    // Include translations array even if empty to allow clearing all translations
+    if (data.translations !== undefined) {
       formData.append('translations', JSON.stringify(data.translations))
     }
 
