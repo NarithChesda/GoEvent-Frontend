@@ -227,6 +227,9 @@
       </div>
     </section>
 
+    <!-- Footer -->
+    <AppFooter />
+
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
       <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
@@ -310,6 +313,7 @@ import EventCreateModal from '../components/EventCreateModal.vue'
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import PublicEventDrawer from '../components/PublicEventDrawer.vue'
+import AppFooter from '../components/AppFooter.vue'
 import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
