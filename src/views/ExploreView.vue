@@ -1,82 +1,189 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
+    <div class="min-h-screen bg-gradient-to-br from-violet-50/30 via-white to-violet-50/30">
 
     <!-- Main Content -->
-    <section class="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 to-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-6 sm:mb-8 md:mb-10">
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold leading-tight tracking-tight text-slate-900 mb-2 px-4">
-            <span class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent">
-              Discover What's
-              Happening Around You
-            </span>
+    <section class="py-8 sm:py-12 lg:py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header with Toggle -->
+        <div class="flex items-center justify-between mb-8 sm:mb-10">
+          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">
+            Discover
           </h1>
-          <p class="text-slate-600 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto px-4">
-            Find and join amazing events in your area
-          </p>
-        </div>
 
-        <!-- Filters -->
-        <EventFilters v-model="filters" :categories="categories" class="mb-6 sm:mb-8" />
+          <!-- Filters -->
+          <div class="flex items-center gap-3">
+            <!-- Category Filter Dropdown -->
+            <div class="relative">
+              <select
+                v-model="categoryFilter"
+                @change="handleCategoryChange"
+                class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium pl-4 pr-8 py-2 rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+                :class="categoryFilter ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900' : ''"
+              >
+                <option value="">All Categories</option>
+                <option v-for="category in categories" :key="category.id" :value="category.name">
+                  {{ category.name }}
+                </option>
+              </select>
+              <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+            </div>
+
+            <!-- Date Range Toggle -->
+            <div class="hidden sm:flex items-center bg-slate-100 rounded-full p-1">
+              <button
+                @click="setDateFilter('upcoming')"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  dateFilter === 'upcoming'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                ]"
+              >
+                Upcoming
+              </button>
+              <button
+                @click="setDateFilter('all')"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  dateFilter === 'all'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                ]"
+              >
+                All
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Loading State -->
-        <div v-if="loading">
-          <!-- Mobile loading skeleton -->
-          <div class="flex md:hidden overflow-x-auto gap-4 pb-4 scrollbar-hide -mx-4 px-4">
-            <div
-              v-for="i in 2"
-              :key="`mobile-skeleton-${i}`"
-              class="flex-none w-[calc(75vw-2.25rem)] max-w-[300px] min-w-[225px] bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
-            >
-              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
-              <div class="p-6 space-y-4">
-                <div class="h-4 bg-slate-200 rounded"></div>
-                <div class="h-6 bg-slate-200 rounded"></div>
-                <div class="h-16 bg-slate-200 rounded"></div>
-                <div class="flex justify-between">
-                  <div class="h-4 bg-slate-200 rounded w-20"></div>
-                  <div class="h-4 bg-slate-200 rounded w-16"></div>
-                </div>
-              </div>
+        <div v-if="loading" class="space-y-8">
+          <div v-for="i in 3" :key="`skeleton-${i}`" class="flex gap-6">
+            <div class="w-24 flex-shrink-0">
+              <div class="h-4 bg-slate-200 rounded w-16 mb-2 animate-pulse"></div>
+              <div class="h-3 bg-slate-200 rounded w-12 animate-pulse"></div>
             </div>
-          </div>
-
-          <!-- Desktop loading skeleton -->
-          <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            <div
-              v-for="i in 6"
-              :key="`desktop-skeleton-${i}`"
-              class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl animate-pulse"
-            >
-              <div class="h-48 bg-slate-200 rounded-t-3xl"></div>
-              <div class="p-6 space-y-4">
-                <div class="h-4 bg-slate-200 rounded"></div>
-                <div class="h-6 bg-slate-200 rounded"></div>
-                <div class="h-16 bg-slate-200 rounded"></div>
-                <div class="flex justify-between">
-                  <div class="h-4 bg-slate-200 rounded w-20"></div>
-                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 animate-pulse">
+              <div class="flex gap-4">
+                <div class="flex-1 space-y-3">
+                  <div class="h-3 bg-slate-200 rounded w-16"></div>
+                  <div class="h-5 bg-slate-200 rounded w-3/4"></div>
+                  <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+                  <div class="h-4 bg-slate-200 rounded w-1/3"></div>
                 </div>
+                <div class="w-32 h-24 bg-slate-200 rounded-xl"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Events Grid -->
-        <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
-          <EventCategorySection
-            v-for="categoryGroup in categorizedEvents"
-            :key="'explore-' + (categoryGroup.category?.id || 'uncategorized')"
-            :category-group="categoryGroup"
-            view-prefix="explore-"
-            :has-overflow="categoryHasOverflow('explore-' + (categoryGroup.category?.id || 'uncategorized'))"
-            @view-event="viewEvent"
-            @scroll-left="scrollCategory($event, 'left')"
-            @scroll-right="scrollCategory($event, 'right')"
-            @set-scroll-ref="setCategoryScrollRef"
-          />
+        <!-- Events Timeline -->
+        <div v-else-if="hasEvents" class="space-y-8">
+          <div
+            v-for="(dateGroup, index) in groupedByDate"
+            :key="dateGroup.date"
+            class="relative flex gap-4"
+          >
+            <!-- Left: Date Column (Sticky) -->
+            <div class="w-24 flex-shrink-0">
+              <div class="sticky top-20 lg:top-24 pt-1">
+                <div class="text-slate-900 font-semibold text-lg">{{ dateGroup.monthDay }}</div>
+                <div class="text-slate-400 text-base">{{ dateGroup.weekday }}</div>
+              </div>
+            </div>
+
+            <!-- Middle: Timeline -->
+            <div class="flex flex-col items-center flex-shrink-0 relative">
+              <!-- Timeline dot (Sticky) -->
+              <div class="sticky top-20 lg:top-24 z-10">
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 mt-2"></div>
+              </div>
+              <!-- Timeline line -->
+              <div
+                v-if="index < groupedByDate.length - 1 || dateGroup.events.length > 1"
+                class="absolute top-4 bottom-0 w-px bg-slate-200"
+              ></div>
+            </div>
+
+            <!-- Right: Event Cards -->
+            <div class="flex-1 space-y-4 pb-2">
+              <div
+                v-for="event in dateGroup.events"
+                :key="event.id"
+                class="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden cursor-pointer group"
+                @click="viewEvent(event)"
+              >
+                <div class="p-5 flex gap-4">
+                  <!-- Event Details -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Time and Category -->
+                    <div class="flex items-center gap-2 text-sm mb-1">
+                      <span class="text-slate-400">{{ formatEventTime(event.start_date) }}</span>
+                      <span v-if="getEventCategory(event)" class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium">
+                        {{ getEventCategory(event) }}
+                      </span>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors">
+                      {{ event.title }}
+                    </h3>
+
+                    <!-- Hosts -->
+                    <div v-if="getEventHosts(event).length > 0" class="flex items-center gap-2 text-sm mb-2">
+                      <div class="flex -space-x-1">
+                        <div
+                          v-for="(host, idx) in getEventHosts(event).slice(0, 3)"
+                          :key="idx"
+                          class="w-5 h-5 rounded-full border border-white overflow-hidden bg-slate-200"
+                        >
+                          <img
+                            v-if="host.image"
+                            :src="host.image"
+                            :alt="host.name"
+                            class="w-full h-full object-cover"
+                          />
+                          <div v-else class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium">
+                            {{ host.name.charAt(0).toUpperCase() }}
+                          </div>
+                        </div>
+                      </div>
+                      <span class="text-slate-600">By {{ formatHostNames(event) }}</span>
+                    </div>
+
+                    <!-- Location -->
+                    <div v-if="event.location" class="flex items-center gap-2 text-sm mb-2">
+                      <MapPin class="w-4 h-4 text-slate-400" />
+                      <span class="text-slate-600">{{ event.location }}</span>
+                    </div>
+
+                    <!-- Guest Count -->
+                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                      <Users class="w-4 h-4" />
+                      <span>{{ getGuestCount(event) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Event Image (landscape) -->
+                  <div class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+                    <img
+                      v-if="getEventImage(event)"
+                      :src="getEventImage(event) ?? undefined"
+                      :alt="event.title"
+                      class="w-full h-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                    >
+                      <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Infinite Scroll Loading Indicator -->
@@ -95,21 +202,22 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="isEmpty" class="text-center py-12 sm:py-16 px-4">
-          <div
-            class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center"
-          >
-            <Calendar class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-[#5eb3f6]" />
+        <div v-else-if="isEmpty" class="text-center py-16 px-4">
+          <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
+            <CalendarDays class="w-16 h-16 text-[#2ecc71]" />
           </div>
-          <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">
+          <h3 class="text-2xl font-bold text-slate-900 mb-3">
             No events found
           </h3>
-          <p class="text-sm sm:text-base lg:text-lg text-slate-600 mb-6 sm:mb-8 max-w-md mx-auto px-4">
+          <p class="text-slate-600 mb-6 max-w-md mx-auto">
             Try adjusting your filters or check back later for new events.
           </p>
         </div>
       </div>
     </section>
+
+    <!-- Footer -->
+    <AppFooter />
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
@@ -145,33 +253,35 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
 import {
-  Calendar,
+  CalendarDays,
   CheckCircle,
   AlertCircle,
+  ChevronDown,
+  MapPin,
+  Users,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
-import EventCategorySection from '../components/EventCategorySection.vue'
-import EventFilters from '../components/EventFilters.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import PublicEventDrawer from '../components/PublicEventDrawer.vue'
+import AppFooter from '../components/AppFooter.vue'
 import {
   eventCategoriesService,
+  apiService,
   type Event,
   type EventCategory,
   type EventFilters as EventFiltersType,
 } from '../services/api'
 import { useEventsData } from '../composables/useEventsData'
-import { useCategoryScroll } from '../composables/useCategoryScroll'
-import { useCategoryGrouping } from '../composables/useCategoryGrouping'
-
-const router = useRouter()
 
 const categories = ref<EventCategory[]>([])
 const filters = ref<EventFiltersType>({})
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const loadMoreTrigger = ref<HTMLElement | null>(null)
+
+// Filter states
+const categoryFilter = ref('')
+const dateFilter = ref<'upcoming' | 'all'>('upcoming')
 
 // Public Event Drawer state
 const showEventDrawer = ref(false)
@@ -179,8 +289,6 @@ const selectedEventId = ref<string | null>(null)
 const selectedEventIndex = ref<number>(-1)
 
 // Use composables - always treat as public view
-const currentView = ref<'all'>('all')
-
 const {
   events,
   loading,
@@ -190,20 +298,134 @@ const {
   loadMoreEvents,
 } = useEventsData(computed(() => true)) // Always pass true since explore doesn't require auth
 
-const {
-  setCategoryScrollRef,
-  categoryHasOverflow,
-  scrollCategory,
-  recheckAllOverflows,
-} = useCategoryScroll()
+// Group events by date
+const groupedByDate = computed(() => {
+  const groups: { date: string; monthDay: string; weekday: string; events: Event[] }[] = []
 
-const {
-  categorizedEvents,
-} = useCategoryGrouping(currentView, events, categories)
+  // Filter events based on date filter
+  const now = new Date()
+  let filteredEvents = events.value
+
+  if (dateFilter.value === 'upcoming') {
+    filteredEvents = events.value.filter(event => {
+      const eventDate = new Date(event.start_date)
+      return eventDate >= now
+    })
+  }
+
+  // Sort events by date (earliest first for discover)
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const dateA = new Date(a.start_date).getTime()
+    const dateB = new Date(b.start_date).getTime()
+    return dateA - dateB
+  })
+
+  sortedEvents.forEach(event => {
+    const eventDate = new Date(event.start_date)
+    const dateKey = eventDate.toISOString().split('T')[0]
+
+    // Format date parts
+    const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const weekday = eventDate.toLocaleDateString('en-US', { weekday: 'long' })
+
+    const existingGroup = groups.find(g => g.date === dateKey)
+    if (existingGroup) {
+      existingGroup.events.push(event)
+    } else {
+      groups.push({
+        date: dateKey,
+        monthDay,
+        weekday,
+        events: [event]
+      })
+    }
+  })
+
+  return groups
+})
 
 // Computed properties
-const hasEvents = computed(() => events.value.length > 0)
-const isEmpty = computed(() => !loading.value && events.value.length === 0)
+const hasEvents = computed(() => {
+  if (dateFilter.value === 'upcoming') {
+    const now = new Date()
+    return events.value.some(event => new Date(event.start_date) >= now)
+  }
+  return events.value.length > 0
+})
+const isEmpty = computed(() => !loading.value && !hasEvents.value)
+
+// Format event time
+const formatEventTime = (dateStr: string) => {
+  const date = new Date(dateStr)
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+}
+
+// Get guest count display
+const getGuestCount = (event: Event) => {
+  const count = (event as Event & { guest_count?: number; registrations?: unknown[] }).guest_count
+    || (event as Event & { registrations?: unknown[] }).registrations?.length
+    || 0
+  if (count === 0) return 'No guests'
+  if (count === 1) return '1 guest'
+  return `${count} guests`
+}
+
+// Get event image
+const getEventImage = (event: Event) => {
+  if (event.banner_image) {
+    return apiService.getProfilePictureUrl(event.banner_image)
+  }
+  if (event.photos && event.photos.length > 0) {
+    return apiService.getProfilePictureUrl(event.photos[0].image)
+  }
+  return null
+}
+
+// Get event hosts
+const getEventHosts = (event: Event) => {
+  const hosts: { name: string; image: string | null }[] = []
+  const eventWithHosts = event as Event & { hosts?: Array<{ name: string; profile_image?: string }> }
+
+  if (eventWithHosts.hosts && eventWithHosts.hosts.length > 0) {
+    eventWithHosts.hosts.forEach(host => {
+      hosts.push({
+        name: host.name,
+        image: host.profile_image ? apiService.getProfilePictureUrl(host.profile_image) : null
+      })
+    })
+  }
+
+  return hosts
+}
+
+// Format host names for display
+const formatHostNames = (event: Event) => {
+  const hosts = getEventHosts(event)
+  if (hosts.length === 0) return ''
+  if (hosts.length === 1) return hosts[0].name
+  if (hosts.length === 2) return `${hosts[0].name}, ${hosts[1].name}`
+  return `${hosts[0].name}, ${hosts[1].name} & ${hosts.length - 2} other${hosts.length - 2 > 1 ? 's' : ''}`
+}
+
+// Get event category name
+const getEventCategory = (event: Event) => {
+  const eventWithCategory = event as Event & { category?: { name?: string } | number | string | null; category_name?: string }
+
+  // Check for category_name field first
+  if (eventWithCategory.category_name) {
+    return eventWithCategory.category_name
+  }
+
+  // Check for category object with name
+  if (eventWithCategory.category && typeof eventWithCategory.category === 'object') {
+    const categoryObj = eventWithCategory.category as { name?: string }
+    if (categoryObj.name) {
+      return categoryObj.name
+    }
+  }
+
+  return null
+}
 
 // Methods
 const loadCategories = async () => {
@@ -266,6 +488,15 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   }, 5000)
 }
 
+// Filter handlers
+const handleCategoryChange = () => {
+  filters.value = { ...filters.value, category: categoryFilter.value || undefined }
+}
+
+const setDateFilter = (filter: 'upcoming' | 'all') => {
+  dateFilter.value = filter
+}
+
 // Intersection Observer for infinite scroll
 let observer: IntersectionObserver | null = null
 
@@ -319,17 +550,6 @@ watch(
     setupInfiniteScroll()
   },
   { deep: true },
-)
-
-// Watch for category overflow checking
-watch(
-  () => events.value.length,
-  () => {
-    // Wait for DOM to update, then check category overflows
-    nextTick(() => {
-      recheckAllOverflows()
-    })
-  }
 )
 
 // Lifecycle
