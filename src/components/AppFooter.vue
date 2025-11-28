@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-white/80 backdrop-blur-sm mt-16">
+  <footer class="mt-16 mb-20 lg:mb-0">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="border-t border-slate-200 pt-6 pb-6">
       <!-- Top Row: Navigation and Social -->
