@@ -1,6 +1,7 @@
 <template>
-  <footer class="border-t border-slate-200 bg-white/80 backdrop-blur-sm mt-16">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <footer class="bg-white/80 backdrop-blur-sm mt-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="border-t border-slate-200 pt-6 pb-6">
       <!-- Top Row: Navigation and Social -->
       <div class="flex items-center justify-between mb-4">
         <!-- Left: Logo and Navigation -->
@@ -105,6 +106,7 @@
             <polyline points="7 7 17 7 17 17"></polyline>
           </svg>
         </RouterLink>
+      </div>
       </div>
     </div>
   </footer>

@@ -11,30 +11,48 @@
             Events
           </h1>
 
-          <!-- Upcoming/Past Toggle -->
-          <div class="flex items-center bg-slate-100 rounded-full p-1">
-            <button
-              @click="timeFilter = 'upcoming'"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
-                timeFilter === 'upcoming'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              ]"
-            >
-              Upcoming
-            </button>
-            <button
-              @click="timeFilter = 'past'"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
-                timeFilter === 'past'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              ]"
-            >
-              Past
-            </button>
+          <!-- Filters -->
+          <div class="flex items-center gap-3">
+            <!-- Category Filter Dropdown -->
+            <div class="relative">
+              <select
+                v-model="categoryFilter"
+                class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium pl-4 pr-8 py-2 rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+                :class="categoryFilter ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900' : ''"
+              >
+                <option value="">All Categories</option>
+                <option v-for="category in categories" :key="category.id" :value="category.name">
+                  {{ category.name }}
+                </option>
+              </select>
+              <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+            </div>
+
+            <!-- Upcoming/Past Toggle -->
+            <div class="flex items-center bg-slate-100 rounded-full p-1">
+              <button
+                @click="timeFilter = 'upcoming'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  timeFilter === 'upcoming'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                ]"
+              >
+                Upcoming
+              </button>
+              <button
+                @click="timeFilter = 'past'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  timeFilter === 'past'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                ]"
+              >
+                Past
+              </button>
+            </div>
           </div>
         </div>
 
@@ -318,9 +336,12 @@ import { useAuthStore } from '../stores/auth'
 import {
   eventsService,
   apiService,
+  eventCategoriesService,
   type Event,
+  type EventCategory,
 } from '../services/api'
 import { useEventsData } from '../composables/useEventsData'
+import { ChevronDown } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
@@ -328,6 +349,8 @@ const authStore = useAuthStore()
 
 // Time filter state
 const timeFilter = ref<'upcoming' | 'past'>('upcoming')
+const categoryFilter = ref<string>('')
+const categories = ref<EventCategory[]>([])
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
@@ -346,16 +369,24 @@ const {
   loadEvents,
 } = useEventsData(computed(() => authStore.isAuthenticated))
 
-// Filter events based on time filter
+// Filter events based on time filter and category
 const filteredEvents = computed(() => {
   const now = new Date()
   return events.value.filter(event => {
+    // Time filter
     const eventDate = new Date(event.start_date)
-    if (timeFilter.value === 'upcoming') {
-      return eventDate >= now
-    } else {
-      return eventDate < now
+    const passesTimeFilter = timeFilter.value === 'upcoming'
+      ? eventDate >= now
+      : eventDate < now
+
+    // Category filter
+    let passesCategoryFilter = true
+    if (categoryFilter.value) {
+      const eventCategory = getEventCategory(event)
+      passesCategoryFilter = eventCategory === categoryFilter.value
     }
+
+    return passesTimeFilter && passesCategoryFilter
   })
 })
 
@@ -724,8 +755,25 @@ watch(
   },
 )
 
+// Load categories
+const loadCategories = async () => {
+  try {
+    const response = await eventCategoriesService.getCategories()
+    if (response.success && response.data) {
+      categories.value = response.data.results || []
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Failed to load categories:', error)
+    }
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
+  // Load categories
+  loadCategories()
+
   if (authStore.isAuthenticated) {
     const result = await loadEvents('my', {})
     if (!result.success && result.message) {
