@@ -24,6 +24,7 @@
         @quick-add="openQuickAdd"
         @edit-budget="handleEditBudget"
         @edit-expense="handleEditExpense"
+        @budget-deleted="handleBudgetDeleted"
       />
     </div>
 
@@ -191,6 +192,18 @@ const handleQuickAddSuccess = async (
 const handleCreateCategory = () => {
   // This is now handled within each view component (budgets/expenses)
   // to support nested modals
+}
+
+// Handle budget deletion - refresh summary and budgets list for modal
+const handleBudgetDeleted = async () => {
+  // Refresh summary view
+  summaryViewRef.value?.refresh()
+
+  // Update budgets array for the Quick Add modal
+  const response = await expenseBudgetsService.getBudgets(props.eventId)
+  if (response.success && response.data) {
+    budgets.value = response.data.results
+  }
 }
 
 // Load data on mount

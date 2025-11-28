@@ -386,7 +386,7 @@
       :loading="submitting"
       title="Delete Budget"
       :item-name="deletingBudget ? `Budget for ${deletingBudget.category_info.name}` : undefined"
-      warning-message="Expenses will remain but won't have budget tracking."
+      :warning-message="deletingBudgetWarning"
       @confirm="handleDelete"
       @cancel="deletingBudget = null"
     />
@@ -465,6 +465,7 @@ const emit = defineEmits<{
   'quick-add': []
   'edit-budget': [budget: ExpenseBudget]
   'edit-expense': [expense: ExpenseRecord]
+  'budget-deleted': []
 }>()
 
 const loading = ref(false)
@@ -498,6 +499,16 @@ const selectedCategory = computed(() => {
   if (activeFilter.value === 'all') return null
   const budget = budgets.value.find(b => b.category.toString() === activeFilter.value)
   return budget?.category_info || null
+})
+
+// Computed warning message for delete budget modal
+const deletingBudgetWarning = computed(() => {
+  if (!deletingBudget.value) return ''
+  const expenseCount = expenses.value.filter(e => e.category === deletingBudget.value!.category).length
+  if (expenseCount > 0) {
+    return `This will also delete ${expenseCount} expense${expenseCount !== 1 ? 's' : ''} in this category.`
+  }
+  return 'This budget has no expenses.'
 })
 
 // Filter methods
@@ -687,30 +698,65 @@ const handleDelete = async () => {
 
   submitting.value = true
   const deletedId = deletingBudget.value.id
+  const categoryId = deletingBudget.value.category
   const deletedBudget = cloneBudget(deletingBudget.value) // Keep a copy for rollback using helper
 
+  // Get all expenses for this category to delete them
+  const categoryExpenses = expenses.value.filter(e => e.category === categoryId)
+  const deletedExpenses = [...categoryExpenses] // Keep a copy for rollback
+
   try {
-    // Optimistic update: Remove from local list immediately
+    // Optimistic update: Remove budget from local list immediately
     budgets.value = budgets.value.filter(budget => budget.id !== deletedId)
+
+    // Optimistic update: Remove all expenses in this category
+    expenses.value = expenses.value.filter(e => e.category !== categoryId)
 
     // Close modal immediately for better UX
     deletingBudget.value = null
-    showSuccess('Budget deleted successfully!')
 
-    // Make API call
+    // Delete all expenses in this category first
+    const expenseDeletePromises = categoryExpenses.map(expense =>
+      expensesService.deleteExpense(props.eventId, expense.id)
+    )
+
+    // Wait for all expense deletions
+    const expenseResults = await Promise.all(expenseDeletePromises)
+    const failedExpenses = expenseResults.filter(r => !r.success)
+
+    if (failedExpenses.length > 0) {
+      // Some expenses failed to delete, rollback
+      budgets.value.push(deletedBudget)
+      expenses.value.push(...deletedExpenses)
+      error.value = 'Failed to delete some expenses. Budget was not deleted.'
+      return
+    }
+
+    // All expenses deleted, now delete the budget
     const response = await expenseBudgetsService.deleteBudget(
       props.eventId,
       deletedId
     )
 
     if (!response.success) {
-      // Rollback on failure
+      // Budget deletion failed, but expenses are already deleted
+      // Rollback budget only (expenses are gone)
       budgets.value.push(deletedBudget)
       error.value = response.message || 'Failed to delete budget'
+    } else {
+      const expenseCount = categoryExpenses.length
+      const message = expenseCount > 0
+        ? `Budget and ${expenseCount} expense${expenseCount !== 1 ? 's' : ''} deleted successfully!`
+        : 'Budget deleted successfully!'
+      showSuccess(message)
+
+      // Emit event to notify parent to refresh summary
+      emit('budget-deleted')
     }
   } catch (err) {
     // Rollback on error
     budgets.value.push(deletedBudget)
+    expenses.value.push(...deletedExpenses)
     error.value = getErrorMessage(err, 'delete budget')
     console.error('Error deleting budget:', err)
   } finally {
