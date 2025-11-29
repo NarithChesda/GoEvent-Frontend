@@ -148,9 +148,10 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.updateProfile(profileData)
 
       if (response.success && response.data) {
-        // Merge the updated data with existing user data to avoid losing fields
-        // The backend response.data should contain the complete updated user object
-        const updatedUser = { ...user.value, ...response.data } as User
+        // The backend returns { message, user } so we need to extract the user object
+        // Some endpoints return just the user object, others return { user: {...} }
+        const userData = (response.data as any).user || response.data
+        const updatedUser = { ...user.value, ...userData } as User
 
         // setUser now handles both reactive state AND storage persistence
         setUser(updatedUser)

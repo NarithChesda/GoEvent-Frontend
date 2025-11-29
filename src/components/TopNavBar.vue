@@ -158,14 +158,6 @@
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
-                  View Profile
-                </RouterLink>
-                <RouterLink
-                  to="/security"
-                  @click="userMenuOpen = false"
-                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                >
                   Settings
                 </RouterLink>
                 <RouterLink
@@ -250,7 +242,10 @@ const handleProfilePictureError = () => {
 
 // Sanitized user data
 const sanitizedUserName = computed(() => {
-  const name = authStore.user?.first_name || authStore.user?.username || 'User'
+  const firstName = authStore.user?.first_name || ''
+  const lastName = authStore.user?.last_name || ''
+  const fullName = `${firstName} ${lastName}`.trim()
+  const name = fullName || authStore.user?.username || 'User'
   return sanitizePlainText(name, 100)
 })
 
