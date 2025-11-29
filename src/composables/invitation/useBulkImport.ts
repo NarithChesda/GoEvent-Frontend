@@ -43,13 +43,13 @@ export interface FilePreview {
  * @param eventId - The event ID
  * @param onGroupCountChange - Optional callback invoked when a group's guest count changes
  * @param onStatsChange - Optional callback invoked when overall stats change
- * @param getExistingGuestNames - Optional callback to get existing guest names for a group (for duplicate checking)
+ * @param getExistingGuestNames - Optional async callback to get existing guest names for a group (for duplicate checking)
  */
 export function useBulkImport(
   eventId: string,
   onGroupCountChange?: (groupId: number, delta: number) => void,
   onStatsChange?: (delta: number) => void,
-  getExistingGuestNames?: (groupId: number) => string[]
+  getExistingGuestNames?: (groupId: number) => Promise<string[]>
 ) {
   const selectedFile = ref<File | null>(null)
   const isDragging = ref(false)
@@ -166,23 +166,23 @@ export function useBulkImport(
   /**
    * Build a set of existing guest names (normalized to lowercase) for duplicate checking
    */
-  const buildExistingNamesSet = (groupId?: number): Set<string> => {
+  const buildExistingNamesSet = async (groupId?: number): Promise<Set<string>> => {
     if (!groupId || !getExistingGuestNames) {
       return new Set()
     }
-    const existingNames = getExistingGuestNames(groupId)
+    const existingNames = await getExistingGuestNames(groupId)
     return new Set(existingNames.map((name) => name.toLowerCase()))
   }
 
   /**
    * Validate parsed names and create preview guests
    */
-  const validateParsedNames = (
+  const validateParsedNames = async (
     names: string[],
     fileName: string,
     groupId?: number
-  ): FilePreview => {
-    const existingNamesSet = buildExistingNamesSet(groupId)
+  ): Promise<FilePreview> => {
+    const existingNamesSet = await buildExistingNamesSet(groupId)
 
     // Also track names within the import file to detect duplicates within the file itself
     const seenInFile = new Set<string>()
@@ -267,7 +267,7 @@ export function useBulkImport(
       parsedNames.value = names
 
       // Validate and create preview
-      return validateParsedNames(names, file.name, groupId)
+      return await validateParsedNames(names, file.name, groupId)
     } catch (error) {
       console.error('Error parsing file:', error)
       parseError.value = error instanceof Error ? error.message : 'Failed to parse file'
@@ -281,12 +281,12 @@ export function useBulkImport(
    * Re-validate the current preview against a different group's existing guests
    * Call this when the user changes the target group selection
    */
-  const revalidatePreviewForGroup = (groupId: number): void => {
+  const revalidatePreviewForGroup = async (groupId: number): Promise<void> => {
     if (!selectedFile.value || parsedNames.value.length === 0) {
       return
     }
 
-    filePreview.value = validateParsedNames(
+    filePreview.value = await validateParsedNames(
       parsedNames.value,
       selectedFile.value.name,
       groupId
@@ -300,7 +300,7 @@ export function useBulkImport(
    * @param newName - The new name value
    * @param groupId - Optional group ID for re-validation against existing guests
    */
-  const updateGuestName = (index: number, newName: string, groupId?: number): void => {
+  const updateGuestName = async (index: number, newName: string, groupId?: number): Promise<void> => {
     if (index < 0 || index >= parsedNames.value.length) {
       return
     }
@@ -310,7 +310,7 @@ export function useBulkImport(
 
     // Re-validate the entire preview to update duplicate detection
     if (selectedFile.value) {
-      filePreview.value = validateParsedNames(
+      filePreview.value = await validateParsedNames(
         parsedNames.value,
         selectedFile.value.name,
         groupId
@@ -323,7 +323,7 @@ export function useBulkImport(
    * @param index - The index of the guest to delete
    * @param groupId - Optional group ID for re-validation against existing guests
    */
-  const deleteGuestFromPreview = (index: number, groupId?: number): void => {
+  const deleteGuestFromPreview = async (index: number, groupId?: number): Promise<void> => {
     if (index < 0 || index >= parsedNames.value.length) {
       return
     }
@@ -333,7 +333,7 @@ export function useBulkImport(
 
     // Re-validate the entire preview to update duplicate detection
     if (selectedFile.value && parsedNames.value.length > 0) {
-      filePreview.value = validateParsedNames(
+      filePreview.value = await validateParsedNames(
         parsedNames.value,
         selectedFile.value.name,
         groupId

@@ -656,16 +656,19 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
           updateStats(0, { from: 'not_sent', to: 'sent' })
         }
 
-        // Refresh all guests list
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
+        // Reset pagination and reload from page 1 to get fresh data
+        // This is necessary because infinite scroll may have loaded multiple pages
+        resetAllGuestsPagination()
+        await loadAllGuests(eventId, 1, true, true)
 
-        // Refresh any expanded groups
-        expandedGroupIds.value.forEach(async (groupId) => {
+        // Refresh any expanded groups - reset and reload from page 1
+        for (const groupId of expandedGroupIds.value) {
           const groupPag = getGroupPaginationState(groupId)
           if (groupPag.hasLoaded) {
-            await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
+            resetGroupPagination(groupId)
+            await loadGuestsForGroup(eventId, groupId, 1, true, true)
           }
-        })
+        }
       }
 
       return response
@@ -729,14 +732,21 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
           updateStats(-1, { from: 'viewed', to: undefined })
         }
 
-        // Refresh lists
-        await loadAllGuests(eventId, allGuestsPagination.value.currentPage, true)
-
+        // Optimistically decrement totalCount immediately (Issue 6 fix)
+        allGuestsPagination.value.totalCount = Math.max(0, allGuestsPagination.value.totalCount - count)
         if (groupId && groupId !== 0) {
           const groupPag = getGroupPaginationState(groupId)
-          if (groupPag.hasLoaded) {
-            await loadGuestsForGroup(eventId, groupId, groupPag.currentPage, true)
-          }
+          groupPag.totalCount = Math.max(0, groupPag.totalCount - count)
+        }
+
+        // Reset pagination and reload from page 1 to get fresh data
+        // This is necessary because infinite scroll may have loaded multiple pages
+        resetAllGuestsPagination()
+        await loadAllGuests(eventId, 1, true, true)
+
+        if (groupId && groupId !== 0) {
+          resetGroupPagination(groupId)
+          await loadGuestsForGroup(eventId, groupId, 1, true, true)
         }
       }
 
@@ -778,6 +788,35 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       console.error('Error importing guests:', error)
       throw error
     }
+  }
+
+  /**
+   * Fetch all guest names for a group (for duplicate validation during bulk import)
+   * This fetches all pages to get the complete list, not just currently loaded pages
+   */
+  async function getAllGuestNamesForGroup(eventId: string, groupId: number): Promise<string[]> {
+    const allNames: string[] = []
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      const response = await guestService.getGuests(eventId, {
+        group: groupId,
+        page: page,
+        page_size: PAGE_SIZE,
+        ordering: 'name',
+      })
+
+      if (response.success && response.data) {
+        allNames.push(...response.data.results.map((g) => g.name))
+        hasMore = response.data.results.length >= PAGE_SIZE
+        page++
+      } else {
+        break
+      }
+    }
+
+    return allNames
   }
 
   // ============================================================================
@@ -973,6 +1012,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     bulkMarkGuestsAsSent,
     bulkDeleteGuests,
     bulkImportGuests,
+    getAllGuestNamesForGroup,
 
     // Pagination Actions
     nextGroupPage,

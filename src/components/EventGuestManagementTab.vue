@@ -57,6 +57,7 @@
     <div v-else class="min-h-[400px]">
       <!-- Guests View (renamed from Guest Groups View) -->
       <GuestGroupsView
+        ref="guestGroupsViewRef"
         :groups="groups"
         :loading-groups="loadingGroups"
         :page-size="PAGE_SIZE"
@@ -64,7 +65,7 @@
         :is-group-loading="isGroupLoading"
         :is-group-expanded="isGroupExpanded"
         :get-group-pagination="getGroupPagination"
-        :all-guests-pagination="store.allGuestsPagination"
+        :all-guests-pagination="allGuestsPaginationValue"
         :is-all-guests-loading="isAllGuestsLoading"
         :load-all-guests="loadAllGuests"
         :guest-stats="guestStats"
@@ -241,6 +242,10 @@ const guestStats = computed(() => store.stats)
 const loadingStats = computed(() => store.loadingStats)
 const PAGE_SIZE = store.PAGE_SIZE
 
+// Wrap allGuestsPagination in computed to maintain reactivity when passed as prop
+// This ensures the child component receives reactive updates when the store's ref changes
+const allGuestsPaginationValue = computed(() => store.allGuestsPagination)
+
 // Store action wrappers that include eventId
 const loadGroups = () => store.loadGroups(props.eventId)
 const loadGuestStats = () => store.loadGuestStats(props.eventId)
@@ -270,8 +275,8 @@ const markGuestAsSent = (guestId: number, groupId: number) =>
 const getGroupPagination = (groupId: number) => store.getGroupPaginationState(groupId)
 const getGroupGuests = (groupId: number) => store.getGroupPaginationState(groupId).guests
 const isGroupLoading = (groupId: number) => store.getGroupPaginationState(groupId).loading
-const getAllGuestsPagination = () => store.allGuestsPagination
-const isAllGuestsLoading = () => store.allGuestsPagination.loading
+const getAllGuestsPagination = () => allGuestsPaginationValue.value
+const isAllGuestsLoading = () => allGuestsPaginationValue.value.loading
 
 // Pagination actions
 const setGroupSearchTerm = (groupId: number, searchTerm: string) =>
@@ -284,11 +289,10 @@ const loadMoreGroupGuests = (groupId: number) => store.loadMoreGroupGuests(props
 
 /**
  * Get existing guest names for a group (for duplicate checking during bulk import)
- * Returns names from currently loaded guests in the group's pagination
+ * Fetches ALL guest names from the server, not just currently loaded pages
  */
-const getExistingGuestNamesForGroup = (groupId: number): string[] => {
-  const guests = getGroupGuests(groupId)
-  return guests.map((g) => g.name)
+const getExistingGuestNamesForGroup = async (groupId: number): Promise<string[]> => {
+  return await store.getAllGuestNamesForGroup(props.eventId, groupId)
 }
 
 // Initialize bulk import composable (still used for file parsing, but no callbacks needed for state)
@@ -331,6 +335,9 @@ const groupCardRefs = new Map<number, any>()
 const subTabs = [
   { id: 'guests', label: 'Guest List', icon: UserPlus },
 ]
+
+// Guest groups view ref for controlling selection state
+const guestGroupsViewRef = ref<InstanceType<typeof GuestGroupsView> | null>(null)
 
 // Edit guest modal state
 const showEditGuestModal = ref(false)
@@ -470,27 +477,24 @@ const handleCloseAddGuestModal = () => {
  * Re-validates the preview against the new group's existing guests
  */
 const handleImportGroupChange = async (groupId: number) => {
-  // First, ensure we have loaded guests for this group to check duplicates
-  const pagination = getGroupPagination(groupId)
-  if (!pagination.hasLoaded) {
-    await loadGuestsForGroup(groupId, 1)
-  }
   // Re-validate the preview with the new group's existing guests
-  revalidatePreviewForGroup(groupId)
+  // Note: revalidatePreviewForGroup now fetches ALL guests from the server,
+  // so we don't need to pre-load the group's pagination
+  await revalidatePreviewForGroup(groupId)
 }
 
 /**
  * Handle updating a guest name in the bulk import preview
  */
-const handleUpdatePreviewGuestName = (index: number, newName: string, groupId: number | null) => {
-  updateGuestName(index, newName, groupId ?? undefined)
+const handleUpdatePreviewGuestName = async (index: number, newName: string, groupId: number | null) => {
+  await updateGuestName(index, newName, groupId ?? undefined)
 }
 
 /**
  * Handle deleting a guest from the bulk import preview
  */
-const handleDeletePreviewGuest = (index: number, groupId: number | null) => {
-  deleteGuestFromPreview(index, groupId ?? undefined)
+const handleDeletePreviewGuest = async (index: number, groupId: number | null) => {
+  await deleteGuestFromPreview(index, groupId ?? undefined)
 }
 
 const handleCreateGroupFromAddGuest = async (data: { name: string; description?: string; color: string }) => {
@@ -770,8 +774,12 @@ const handleBulkMarkSent = async (groupId: number, selectedIds: number[]) => {
   if (response.success && response.data) {
     const count = response.data.count
     showMessage('success', `Marked ${count} guest(s) as sent`)
+
+    // Clear selection after successful operation
+    guestGroupsViewRef.value?.clearSelection()
   } else {
     showMessage('error', response.message || 'Failed to mark guests as sent')
+    // Selection remains intact so user can retry
   }
 }
 
@@ -793,6 +801,9 @@ const confirmBulkDelete = async () => {
   const groupId = bulkDeleteGroupId.value
   const selectedIds = bulkDeleteGuestIds.value
 
+  // Store original selection before operation for potential rollback
+  const originalSelection = [...selectedIds]
+
   bulkDeletingGuests.value = true
 
   // Use store's bulk delete - handles all state updates internally
@@ -801,8 +812,14 @@ const confirmBulkDelete = async () => {
   if (response.success && response.data) {
     const count = response.data.count
     showMessage('success', `Deleted ${count} guest(s)`)
+
+    // Clear selection after successful operation
+    guestGroupsViewRef.value?.clearSelection()
   } else {
     showMessage('error', response.message || 'Failed to delete guests')
+
+    // Restore selection on failure so user can retry
+    guestGroupsViewRef.value?.restoreSelection(originalSelection)
   }
 
   bulkDeletingGuests.value = false
@@ -843,7 +860,7 @@ watch(activeSubTab, (newTab, oldTab) => {
   if (newTab === 'guests' && oldTab && oldTab !== 'guests') {
     // User returned to guests tab from another tab - reload guest data
     // Refresh all guests pagination to ensure data is current
-    const allGuestsPag = getAllGuestsPagination()
+    const allGuestsPag = allGuestsPaginationValue.value
     if (allGuestsPag.hasLoaded) {
       loadAllGuests(allGuestsPag.currentPage, true)
     }

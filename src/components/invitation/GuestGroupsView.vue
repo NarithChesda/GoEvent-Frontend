@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
@@ -476,6 +476,25 @@ watch(isSearchExpanded, (newValue) => {
   }
 })
 
+// Watch for guest list changes to remove deleted guest IDs from selection (Issue 2)
+watch(
+  () => allFilteredGuests.value,
+  (newGuests) => {
+    const validGuestIds = new Set(newGuests.map(g => g.id))
+    selectedGuestIds.value.forEach(id => {
+      if (!validGuestIds.has(id)) {
+        selectedGuestIds.value.delete(id)
+      }
+    })
+  },
+  { deep: true }
+)
+
+// Watch for search query changes to clear selections (Issue 3)
+watch(groupSearchQuery, () => {
+  selectedGuestIds.value.clear()
+})
+
 const handleToggleSelect = (guest: EventGuest) => {
   if (selectedGuestIds.value.has(guest.id)) {
     selectedGuestIds.value.delete(guest.id)
@@ -529,8 +548,7 @@ const handleBulkMarkSent = () => {
     })
   }
 
-  // Clear selection after emitting
-  selectedGuestIds.value.clear()
+  // DON'T clear selection here - let parent control it after operation completes
 }
 
 const handleBulkDelete = () => {
@@ -555,8 +573,7 @@ const handleBulkDelete = () => {
     })
   }
 
-  // Clear selection after emitting
-  selectedGuestIds.value.clear()
+  // DON'T clear selection here - let parent control it after operation completes
 }
 
 // Infinite scroll trigger element ref
@@ -626,17 +643,51 @@ watch(scrollTriggerRef, (newRef) => {
 })
 
 // Re-setup observer when filter changes (content changes)
-watch(activeFilter, () => {
+watch(activeFilter, async () => {
   // Wait for next tick to ensure DOM has updated with new content
-  setTimeout(() => {
-    setupIntersectionObserver()
-  }, 100)
+  await nextTick()
+  setupIntersectionObserver()
 })
 
 // Cleanup observer on unmount
 onUnmounted(() => {
   if (intersectionObserver) {
     intersectionObserver.disconnect()
+  }
+})
+
+// ============================================================================
+// EXPOSE METHODS FOR PARENT CONTROL
+// ============================================================================
+
+/**
+ * Expose methods to allow parent component to control selection state
+ * This enables proper parent-child communication for bulk operations
+ */
+defineExpose({
+  /**
+   * Clear all selected guest IDs
+   * Used by parent after successful bulk operations
+   */
+  clearSelection: () => {
+    selectedGuestIds.value.clear()
+  },
+
+  /**
+   * Restore selection to a specific set of IDs
+   * Used by parent to restore selection after failed bulk operations
+   */
+  restoreSelection: (ids: number[]) => {
+    selectedGuestIds.value.clear()
+    ids.forEach(id => selectedGuestIds.value.add(id))
+  },
+
+  /**
+   * Get current selection as an array
+   * Used by parent to capture selection before bulk operations
+   */
+  getSelection: (): number[] => {
+    return Array.from(selectedGuestIds.value)
   }
 })
 </script>
