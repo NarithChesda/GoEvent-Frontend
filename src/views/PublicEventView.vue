@@ -34,7 +34,7 @@
     <div v-else-if="event" class="pb-24">
       <!-- Header Bar -->
       <div class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             @click="$router.push('/events')"
             class="p-2 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-2 text-slate-600"
@@ -62,201 +62,207 @@
       </div>
 
       <!-- Main Content -->
-      <div class="max-w-2xl mx-auto">
+      <div class="max-w-3xl mx-auto px-4 py-6 md:py-8">
         <!-- Banner Image -->
-        <div v-if="event.banner_image" class="relative">
+        <div v-if="event.banner_image" class="relative w-full mb-6 rounded-2xl overflow-hidden shadow-lg" style="aspect-ratio: 1200 / 630;">
           <img
             :src="getBannerUrl(event.banner_image)"
             :alt="event.title"
-            class="w-full h-56 sm:h-72 object-cover"
+            class="w-full h-full object-cover"
           />
         </div>
 
-        <!-- Event Info -->
-        <div class="px-4 py-6 sm:py-8 space-y-6">
-          <!-- Title & Organizer -->
-          <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight mb-4">
-              {{ event.title }}
-            </h1>
-
-            <div v-if="event.organizer_details" class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-                {{ getInitials(organizerName) }}
+        <!-- Event Info Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="px-5 py-6 space-y-6">
+            <!-- Title & Category -->
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <h1 class="text-2xl font-bold text-slate-900 leading-tight">
+                  {{ event.title }}
+                </h1>
+                <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full flex-shrink-0">
+                  <span class="text-slate-400">#</span>
+                  {{ event.category_details.name }}
+                </span>
               </div>
-              <div>
-                <p class="font-medium text-slate-900">{{ organizerName }}</p>
-                <p v-if="event.category_details" class="text-sm text-slate-500">{{ event.category_details.name }}</p>
-              </div>
-            </div>
-          </div>
 
-          <!-- Date & Time -->
-          <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-            <div class="w-14 h-16 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center shadow-sm">
-              <span class="text-xs font-medium text-slate-500 uppercase">{{ getMonthAbbr(event.start_date) }}</span>
-              <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-slate-900 text-lg">{{ getFormattedDate(event.start_date) }}</p>
-              <p class="text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
-              <button
-                @click="showCalendarOptions = !showCalendarOptions"
-                class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Calendar class="w-4 h-4" />
-                Add to Calendar
-              </button>
-              <!-- Calendar Options Dropdown -->
-              <div v-if="showCalendarOptions" class="mt-2 flex flex-wrap gap-2">
-                <button
-                  @click="addToGoogleCalendar"
-                  class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  Google
-                </button>
-                <button
-                  @click="addToOutlookCalendar"
-                  class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  Outlook
-                </button>
-                <button
-                  @click="downloadICSFile"
-                  class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  Download .ics
-                </button>
+              <!-- Organizer -->
+              <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
+                <div class="flex items-center gap-2">
+                  <img
+                    v-if="event.organizer_details.profile_picture"
+                    :src="getProfileUrl(event.organizer_details.profile_picture)"
+                    :alt="organizerName"
+                    class="w-7 h-7 rounded-full object-cover"
+                  />
+                  <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
+                    {{ getInitials(organizerName) }}
+                  </div>
+                  <span class="font-medium">{{ organizerName }}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Location -->
-          <div v-if="event.location || event.is_virtual" class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-            <div class="w-14 h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
-              <Video v-if="event.is_virtual" class="w-6 h-6 text-slate-600" />
-              <MapPin v-else class="w-6 h-6 text-slate-600" />
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-slate-900">
-                {{ event.is_virtual ? 'Virtual Event' : getLocationName(event.location) }}
-              </p>
-              <p v-if="!event.is_virtual && event.location" class="text-slate-600">
-                {{ event.location }}
-              </p>
-              <button
-                v-if="!event.is_virtual && event.location"
-                @click="openMap"
-                class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                View larger map
-                <ExternalLink class="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Registration Section -->
-          <div v-if="event.registration_required" class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-100">
-            <h3 class="text-base font-semibold text-slate-800 mb-3">Registration</h3>
-            <p class="text-sm text-slate-600 mb-4">
-              {{ registrationMessage }}
-            </p>
-
-            <!-- User Info (if logged in) -->
-            <div v-if="currentUser" class="flex items-center gap-3 mb-4 p-3 bg-white rounded-lg border border-slate-200">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-medium">
-                {{ getInitials(currentUser.first_name || currentUser.username || 'U') }}
+            <!-- Date & Time -->
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(event.start_date) }}</span>
+                <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-medium text-slate-900 truncate">{{ currentUser.first_name || currentUser.username }}</p>
-                <p class="text-sm text-slate-500 truncate">{{ currentUser.email }}</p>
-              </div>
-            </div>
-
-            <!-- Register Button -->
-            <button
-              v-if="canRegister"
-              @click="handleRegister"
-              :disabled="isRegistering"
-              class="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold py-3.5 px-4 rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ isRegistering ? 'Registering...' : 'Register for Event' }}
-            </button>
-
-            <!-- Already Registered -->
-            <div
-              v-else-if="event.is_registered"
-              class="w-full bg-white text-green-700 font-semibold py-3.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 border border-green-200"
-            >
-              <CheckCircle class="w-5 h-5" />
-              You're Registered
-            </div>
-
-            <!-- Login to Register -->
-            <button
-              v-else-if="!currentUser"
-              @click="handleLoginToRegister"
-              class="w-full bg-slate-900 text-white font-semibold py-3.5 px-4 rounded-xl hover:bg-slate-800 transition-colors"
-            >
-              Login to Register
-            </button>
-
-            <!-- Registration Closed/Full -->
-            <div
-              v-else-if="isRegistrationClosed || isEventFull"
-              class="w-full bg-slate-100 text-slate-500 font-semibold py-3.5 px-4 rounded-xl text-center"
-            >
-              {{ isEventFull ? 'Event is Full' : 'Registration Closed' }}
-            </div>
-          </div>
-
-          <!-- About Event -->
-          <div class="pt-2">
-            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">About Event</h3>
-            <div
-              v-if="event.description"
-              class="prose prose-slate max-w-none"
-              v-html="sanitizedDescription"
-            />
-            <p v-else-if="event.short_description" class="text-slate-700 leading-relaxed">
-              {{ event.short_description }}
-            </p>
-            <p v-else class="text-slate-500 italic">No description provided.</p>
-          </div>
-
-          <!-- Hosts -->
-          <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-200 pt-6">
-            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Hosted By</h3>
-            <div class="space-y-4">
-              <div
-                v-for="host in event.hosts"
-                :key="host.id"
-                class="flex items-center gap-4 p-3 bg-slate-50 rounded-xl"
-              >
-                <img
-                  v-if="host.profile_image"
-                  :src="getProfileUrl(host.profile_image)"
-                  :alt="host.name"
-                  class="w-12 h-12 rounded-full object-cover"
-                />
-                <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium">
-                  {{ getInitials(host.name) }}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-slate-900 truncate">{{ host.name }}</p>
-                  <p v-if="host.title" class="text-sm text-slate-500 truncate">{{ host.title }}</p>
+                <p class="font-semibold text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
+                <p class="text-sm text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
+                <button
+                  @click="showCalendarOptions = !showCalendarOptions"
+                  class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
+                >
+                  <Calendar class="w-4 h-4" />
+                  Add to Calendar
+                </button>
+                <!-- Calendar Options Dropdown -->
+                <div v-if="showCalendarOptions" class="mt-2 flex flex-wrap gap-2">
+                  <button
+                    @click="addToGoogleCalendar"
+                    class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                  >
+                    Google
+                  </button>
+                  <button
+                    @click="addToOutlookCalendar"
+                    class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                  >
+                    Outlook
+                  </button>
+                  <button
+                    @click="downloadICSFile"
+                    class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                  >
+                    Download .ics
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Tags -->
-          <div v-if="event.category_details" class="border-t border-slate-200 pt-6">
-            <div class="flex flex-wrap gap-2">
-              <span class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-full">
-                <span class="text-slate-400">#</span>
-                {{ event.category_details.name }}
-              </span>
+            <!-- Location -->
+            <div v-if="event.location || event.is_virtual" class="flex items-start gap-4">
+              <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Video v-if="event.is_virtual" class="w-5 h-5 text-slate-600" />
+                <MapPin v-else class="w-5 h-5 text-slate-600" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-slate-900">
+                  {{ event.is_virtual ? 'Virtual Event' : (event.location || 'Location TBD') }}
+                </p>
+                <p v-if="event.is_virtual && event.virtual_link" class="text-sm text-slate-600 truncate">
+                  {{ event.virtual_link }}
+                </p>
+                <button
+                  v-if="!event.is_virtual && event.location"
+                  @click="openMap"
+                  class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
+                >
+                  <ExternalLink class="w-4 h-4" />
+                  View on Map
+                </button>
+                <button
+                  v-if="event.is_virtual && event.virtual_link"
+                  @click="joinVirtualEvent"
+                  class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
+                >
+                  <ExternalLink class="w-4 h-4" />
+                  Join Virtual Event
+                </button>
+              </div>
+            </div>
+
+            <!-- Registration Section -->
+            <div v-if="event.registration_required" class="border-t border-slate-100 pt-6">
+              <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-100">
+                <h3 class="text-base font-semibold text-slate-800 mb-3">Registration</h3>
+                <p class="text-sm text-slate-600 mb-4">
+                  {{ registrationMessage }}
+                </p>
+
+                <!-- User Info (if logged in) -->
+                <div v-if="currentUser" class="flex items-center gap-3 mb-4 p-3 bg-white rounded-lg border border-slate-200">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-medium">
+                    {{ getInitials(currentUser.first_name || currentUser.username || 'U') }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-900 truncate">{{ currentUser.first_name || currentUser.username }}</p>
+                    <p class="text-sm text-slate-500 truncate">{{ currentUser.email }}</p>
+                  </div>
+                </div>
+
+                <!-- Register Button -->
+                <button
+                  v-if="canRegister"
+                  @click="handleRegister"
+                  :disabled="isRegistering"
+                  class="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold py-3.5 px-4 rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ isRegistering ? 'Registering...' : 'Register for Event' }}
+                </button>
+
+                <!-- Already Registered -->
+                <div
+                  v-else-if="event.is_registered"
+                  class="w-full bg-white text-green-700 font-semibold py-3.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 border border-green-200"
+                >
+                  <CheckCircle class="w-5 h-5" />
+                  You're Registered
+                </div>
+
+                <!-- Login to Register -->
+                <button
+                  v-else-if="!currentUser"
+                  @click="handleLoginToRegister"
+                  class="w-full bg-slate-900 text-white font-semibold py-3.5 px-4 rounded-xl hover:bg-slate-800 transition-colors"
+                >
+                  Login to Register
+                </button>
+
+                <!-- Registration Closed/Full -->
+                <div
+                  v-else-if="isRegistrationClosed || isEventFull"
+                  class="w-full bg-slate-100 text-slate-500 font-semibold py-3.5 px-4 rounded-xl text-center"
+                >
+                  {{ isEventFull ? 'Event is Full' : 'Registration Closed' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- About Event -->
+            <div v-if="event.description" class="border-t border-slate-100 pt-6">
+              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">About Event</h3>
+              <div class="prose prose-sm max-w-none text-slate-700" v-html="sanitizedDescription" />
+            </div>
+
+            <!-- Hosts -->
+            <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-100 pt-6">
+              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Hosted By</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                  v-for="host in event.hosts"
+                  :key="host.id"
+                  class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl"
+                >
+                  <img
+                    v-if="host.profile_image"
+                    :src="getProfileUrl(host.profile_image)"
+                    :alt="host.name"
+                    class="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                    {{ getInitials(host.name) }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-slate-900 truncate">{{ host.name }}</p>
+                    <p v-if="host.title" class="text-sm text-slate-500 truncate">{{ host.title }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -439,6 +445,11 @@ const openMap = () => {
   window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank')
 }
 
+const joinVirtualEvent = () => {
+  if (!event.value?.virtual_link) return
+  window.open(event.value.virtual_link, '_blank')
+}
+
 const showMessage = (type: 'success' | 'error', text: string) => {
   message.value = { type, text }
   setTimeout(() => {
@@ -492,12 +503,6 @@ const getTimeRange = (startStr: string, endStr: string): string => {
   }
 
   return `${formatTime(start)} - ${formatTime(end)}`
-}
-
-const getLocationName = (location: string | null): string => {
-  if (!location) return ''
-  const parts = location.split(',')
-  return parts[0].trim()
 }
 
 const getInitials = (name: string): string => {
@@ -651,9 +656,9 @@ watch(
   transform: translateY(-20px);
 }
 
-/* Prose styling */
+/* Prose styling for description */
 .prose :deep(p) {
-  @apply mb-4 leading-relaxed;
+  @apply mb-3 leading-relaxed;
 }
 
 .prose :deep(strong) {
@@ -666,28 +671,22 @@ watch(
 
 .prose :deep(ul),
 .prose :deep(ol) {
-  @apply ml-4 mb-4 space-y-2;
+  @apply ml-4 mb-3 space-y-1;
 }
 
 .prose :deep(li) {
   @apply leading-relaxed;
 }
 
-.prose :deep(h1),
-.prose :deep(h2),
-.prose :deep(h3) {
-  @apply font-bold text-slate-900 mt-6 mb-3;
-}
-
 .prose :deep(h1) {
-  @apply text-xl;
+  @apply text-xl font-bold text-slate-900 mb-3 mt-4;
 }
 
 .prose :deep(h2) {
-  @apply text-lg;
+  @apply text-lg font-bold text-slate-900 mb-2 mt-3;
 }
 
 .prose :deep(h3) {
-  @apply text-base;
+  @apply text-base font-semibold text-slate-900 mb-2 mt-3;
 }
 </style>
