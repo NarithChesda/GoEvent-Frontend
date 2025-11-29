@@ -1,0 +1,105 @@
+<template>
+  <header
+    class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b z-40 transition-colors duration-200"
+    :class="isScrolled ? 'border-slate-200/50 shadow-sm' : 'border-transparent'"
+  >
+    <div class="h-full px-4 flex items-center justify-between">
+      <!-- Logo -->
+      <button
+        @click="handleLogoClick"
+        class="flex items-center"
+        aria-label="Go to home page"
+      >
+        <img :src="IconSvg" alt="GoEvent Logo" class="h-5 w-auto" />
+      </button>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-1">
+        <!-- Search Button -->
+        <button
+          @click="$emit('search')"
+          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
+          aria-label="Search"
+        >
+          <Search class="w-5 h-5" />
+        </button>
+
+        <!-- Notifications Button -->
+        <button
+          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 relative"
+          aria-label="Notifications"
+        >
+          <Bell class="w-5 h-5" />
+        </button>
+
+        <!-- Language Button -->
+        <button
+          @click="toggleLanguageMenu"
+          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 relative"
+          aria-label="Change language"
+        >
+          <Globe class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Language Dropdown -->
+    <Transition name="dropdown">
+      <div
+        v-if="showLanguageMenu"
+        class="absolute right-4 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-w-[140px]"
+      >
+        <button
+          v-for="lang in languages"
+          :key="lang.code"
+          @click="selectLanguage(lang.code)"
+          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
+          :class="
+            currentLanguage === lang.code
+              ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5'
+              : 'text-slate-700'
+          "
+        >
+          <span>{{ lang.flag }}</span>
+          <span>{{ lang.name }}</span>
+        </button>
+      </div>
+    </Transition>
+  </header>
+
+  <!-- Spacer -->
+  <div class="lg:hidden h-14"></div>
+</template>
+
+<script setup lang="ts">
+import { Search, Bell, Globe } from 'lucide-vue-next'
+import IconSvg from '@/assets/icon.svg'
+import { useMobileTopBar } from '@/composables/useMobileTopBar'
+
+defineEmits<{
+  search: []
+}>()
+
+const {
+  isScrolled,
+  showLanguageMenu,
+  currentLanguage,
+  languages,
+  handleLogoClick,
+  toggleLanguageMenu,
+  selectLanguage,
+} = useMobileTopBar()
+</script>
+
+<style scoped>
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>
