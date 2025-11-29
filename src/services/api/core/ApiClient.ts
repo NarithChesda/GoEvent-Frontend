@@ -647,7 +647,11 @@ export class ApiClient {
   /**
    * DELETE request
    */
-  async delete<T>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
+  async delete<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
     return this.handleNetworkRequest<T>(
       async (signal) => {
         return fetch(`${this.baseURL}${endpoint}`, {
@@ -656,6 +660,7 @@ export class ApiClient {
             'Content-Type': 'application/json',
             ...this.getAuthHeaders(),
           },
+          body: data ? JSON.stringify(data) : undefined,
           signal,
         })
       },

@@ -199,7 +199,7 @@ export interface CreateAgendaRequest {
 }
 
 export interface BulkReorderRequest {
-  updates: { id: number; order: number }[]
+  updates: { id: number; order: number; date?: string | null }[]
 }
 
 export interface EventPhoto {

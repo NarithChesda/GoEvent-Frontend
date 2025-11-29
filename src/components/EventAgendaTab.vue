@@ -61,35 +61,72 @@
         :key="day.date"
         class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden"
       >
-        <!-- Date Header -->
+        <!-- Date Header (Entire header is clickable) -->
         <div
           @click="toggleDay(day.date)"
-          class="bg-gradient-to-r from-emerald-600/5 to-sky-600/5 p-4 sm:p-6 border-b border-white/20 cursor-pointer hover:from-emerald-600/10 hover:to-sky-600/10 transition-all duration-200"
+          class="group/header bg-gradient-to-r from-emerald-600/5 to-sky-600/5 p-4 sm:p-6 border-b border-white/20 cursor-pointer hover:from-emerald-600/10 hover:to-sky-600/10 transition-all duration-200 select-none"
         >
           <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3 sm:space-x-4">
+            <div class="flex items-center space-x-3 sm:space-x-4 flex-1">
+              <!-- Date Icon (Calendar Page Style) -->
               <div
-                class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-sm sm:text-base font-bold"
+                v-if="!isUnscheduled(day.date)"
+                class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0 border border-emerald-200/50"
               >
-                {{ new Date(day.date).getDate() }}
+                <span class="text-[8px] sm:text-[10px] font-semibold text-emerald-600 uppercase leading-none">{{ getMonthAbbr(day.date) }}</span>
+                <span class="text-base sm:text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(day.date) }}</span>
+              </div>
+              <div
+                v-else
+                class="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200/50"
+              >
+                <Calendar class="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
               </div>
               <div>
                 <h3 class="text-base sm:text-xl font-bold text-slate-900">{{ formatDayHeader(day.date) }}</h3>
                 <p class="text-xs sm:text-sm text-slate-600">{{ day.items.length }} agenda items</p>
               </div>
             </div>
-            <div class="p-1 sm:p-2">
-              <ChevronDown
-                class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 transition-transform duration-200"
-                :class="{ 'rotate-180': expandedDays.includes(day.date) }"
-              />
+            <div class="flex items-center gap-1 sm:gap-2">
+              <!-- Edit/Delete buttons for date group -->
+              <div
+                v-if="canEdit"
+                class="flex items-center gap-1 mr-2 opacity-0 group-hover/header:opacity-100 transition-opacity"
+              >
+                <button
+                  @click.stop="openEditDateGroupModal(day.date, day.items.length)"
+                  class="p-1.5 sm:p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-lg transition-colors"
+                  title="Change date for all items"
+                >
+                  <Edit2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+                <button
+                  @click.stop="openDeleteDateGroupModal(day.date, day.items.length)"
+                  class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete all items in this date"
+                >
+                  <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              </div>
+              <div class="p-1 sm:p-2">
+                <ChevronDown
+                  class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 transition-transform duration-300"
+                  :class="{ 'rotate-180': expandedDays.includes(day.date) }"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Agenda Items -->
-        <Transition name="slide-down">
-          <div v-if="expandedDays.includes(day.date)" class="border-t border-white/20">
+        <!-- Agenda Items (with smooth collapse animation) -->
+        <Transition
+          name="collapse"
+          @enter="onCollapseEnter"
+          @after-enter="onCollapseAfterEnter"
+          @leave="onCollapseLeave"
+          @after-leave="onCollapseAfterLeave"
+        >
+          <div v-if="expandedDays.includes(day.date)" class="overflow-hidden">
             <div class="p-4 sm:p-6 pt-3 sm:pt-4 space-y-2 sm:space-y-3">
               <div ref="sortableContainer" class="space-y-2 sm:space-y-3" :data-date="day.date">
                 <AgendaItemCard
@@ -179,7 +216,7 @@
       @updated="handleAgendaUpdated"
     />
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal (Single Item) -->
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="isDeleting"
@@ -190,16 +227,38 @@
       @cancel="closeDeleteModal"
     />
 
+    <!-- Delete Date Group Confirmation Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteDateGroupModal"
+      :loading="isDeletingDateGroup"
+      title="Delete All Items in Date Group"
+      :item-name="dateGroupToDelete ? `all ${dateGroupToDelete.itemCount} agenda items on ${formatDayHeader(dateGroupToDelete.date)}` : ''"
+      message="This will permanently delete all agenda items scheduled for this date. This action cannot be undone."
+      @confirm="deleteDateGroup"
+      @cancel="closeDeleteDateGroupModal"
+    />
+
+    <!-- Edit Date Group Modal -->
+    <EditDateGroupModal
+      :show="showEditDateGroupModal"
+      v-model="newDateForGroup"
+      :current-date-display="dateGroupToEdit ? formatDayHeader(dateGroupToEdit.date) : ''"
+      :item-count="dateGroupToEdit?.itemCount || 0"
+      :loading="isUpdatingDateGroup"
+      @confirm="updateDateGroup"
+      @cancel="closeEditDateGroupModal"
+    />
+
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="toast.message.value" class="fixed bottom-8 right-8 z-50">
         <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
+          :class="toast.message.value.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
         >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
+          <CheckCircle v-if="toast.message.value.type === 'success'" class="w-5 h-5 mr-2" />
           <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
+          {{ toast.message.value.text }}
         </div>
       </div>
     </Transition>
@@ -207,12 +266,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { ref, computed, onMounted, nextTick, toRef } from 'vue'
+import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle, Edit2, Trash2 } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
 import EditAgendaDrawer from './EditAgendaDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import EditDateGroupModal from './EditDateGroupModal.vue'
+import { useDateGroupOperations } from '@/composables/useDateGroupOperations'
+import { useToast } from '@/composables/useToast'
+import { isUnscheduled, fromApiDate } from '@/constants/agenda'
 
 interface Props {
   eventId: string
@@ -230,9 +293,34 @@ const isDeleting = ref(false)
 const selectedItem = ref<EventAgendaItem | null>(null)
 const itemToDelete = ref<EventAgendaItem | null>(null)
 const expandedDays = ref<string[]>([])
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const draggedItem = ref<EventAgendaItem | null>(null)
-const isReordering = ref(false) // Lock to prevent concurrent reorder operations
+const isReordering = ref(false)
+
+// Toast notifications
+const toast = useToast()
+
+// Date group operations (composable)
+const {
+  showEditDateGroupModal,
+  dateGroupToEdit,
+  newDateForGroup,
+  isUpdatingDateGroup,
+  openEditDateGroupModal,
+  closeEditDateGroupModal,
+  updateDateGroup,
+  showDeleteDateGroupModal,
+  dateGroupToDelete,
+  isDeletingDateGroup,
+  openDeleteDateGroupModal,
+  closeDeleteDateGroupModal,
+  deleteDateGroup,
+} = useDateGroupOperations({
+  eventId: toRef(props, 'eventId'),
+  agendaItems,
+  expandedDates: expandedDays,
+  onSuccess: (message) => toast.showSuccess(message),
+  onError: (message) => toast.showError(message),
+})
 
 interface LegendItem {
   type: string
@@ -301,7 +389,7 @@ const groupedAgendaDays = computed(() => {
   const dateMap = new Map<string, EventAgendaItem[]>()
 
   agendaItems.value.forEach((item) => {
-    const date = item.date || 'no-date' // Handle null dates
+    const date = fromApiDate(item.date)
     if (!dateMap.has(date)) {
       dateMap.set(date, [])
     }
@@ -311,21 +399,16 @@ const groupedAgendaDays = computed(() => {
   // Sort dates and create grouped array
   Array.from(dateMap.entries())
     .sort((a, b) => {
-      if (a[0] === 'no-date') return 1
-      if (b[0] === 'no-date') return -1
+      if (isUnscheduled(a[0])) return 1
+      if (isUnscheduled(b[0])) return -1
       return new Date(a[0]).getTime() - new Date(b[0]).getTime()
     })
     .forEach(([date, items]) => {
       grouped.push({
         date,
-        items: items.sort((a, b) => a.order - b.order), // Use order field instead
+        items: items.sort((a, b) => a.order - b.order),
       })
     })
-
-  // Auto-expand first day
-  if (grouped.length > 0 && expandedDays.value.length === 0) {
-    // This will be handled in onMounted instead
-  }
 
   return grouped
 })
@@ -393,11 +476,11 @@ const loadAgenda = async () => {
     if (response.success && response.data) {
       agendaItems.value = response.data.results || []
     } else {
-      showMessage('error', response.message || 'Failed to load agenda')
+      toast.showError(response.message || 'Failed to load agenda')
     }
   } catch (error) {
     console.error('Error loading agenda:', error)
-    showMessage('error', 'An error occurred while loading the agenda')
+    toast.showError('An error occurred while loading the agenda')
   } finally {
     loading.value = false
   }
@@ -412,8 +495,17 @@ const toggleDay = (date: string) => {
   }
 }
 
+// Date formatting helpers for calendar icon
+const getMonthAbbr = (dateStr: string): string => {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+}
+
+const getDayOfMonth = (dateStr: string): string => {
+  return new Date(dateStr).getDate().toString()
+}
+
 const formatDayHeader = (date: string): string => {
-  if (date === 'no-date') {
+  if (isUnscheduled(date)) {
     return 'Unscheduled Items'
   }
   const dateObj = new Date(date)
@@ -452,15 +544,15 @@ const deleteAgendaItem = async () => {
   try {
     const response = await agendaService.deleteAgendaItem(props.eventId, itemToDelete.value.id)
     if (response.success) {
-      showMessage('success', 'Agenda item deleted successfully')
+      toast.showSuccess('Agenda item deleted successfully')
       agendaItems.value = agendaItems.value.filter((item) => item.id !== itemToDelete.value!.id)
       closeDeleteModal()
     } else {
-      showMessage('error', response.message || 'Failed to delete agenda item')
+      toast.showError(response.message || 'Failed to delete agenda item')
     }
   } catch (error) {
     console.error('Error deleting agenda item:', error)
-    showMessage('error', 'An error occurred while deleting the agenda item')
+    toast.showError('An error occurred while deleting the agenda item')
   } finally {
     isDeleting.value = false
   }
@@ -477,13 +569,6 @@ const handleAgendaUpdated = (updatedItem: EventAgendaItem) => {
     agendaItems.value[index] = updatedItem
   }
   selectedItem.value = null
-}
-
-const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
 }
 
 // Drag and drop handlers
@@ -504,23 +589,16 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null, targetDate?: st
     return
   }
 
-  // Ensure agendaItems.value is an array
   if (!Array.isArray(agendaItems.value)) {
     draggedItem.value = null
     return
   }
 
-  // Acquire lock
   isReordering.value = true
-
-  // Store original order for rollback
   const originalItems = [...agendaItems.value]
 
   try {
-    // Check if we're moving to a different date group
     const isChangingDate = draggedItem.value.date !== targetItem.date
-
-    // Find both items in the current array
     const draggedIndex = agendaItems.value.findIndex((item) => item.id === draggedItem.value!.id)
     const targetIndex = agendaItems.value.findIndex((item) => item.id === targetItem.id)
 
@@ -528,20 +606,17 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null, targetDate?: st
       return
     }
 
-    // Create new array with reordered items
     const newItems = [...agendaItems.value]
     const [draggedItemData] = newItems.splice(draggedIndex, 1)
 
-    // If changing date, update the dragged item's date
     if (isChangingDate && targetDate !== undefined) {
       draggedItemData.date = targetDate
+      draggedItemData.date_text = ''
     }
 
     newItems.splice(targetIndex, 0, draggedItemData)
 
-    // Update the order values - organize by date groups
     const itemsByDate = new Map<string | null, EventAgendaItem[]>()
-
     newItems.forEach((item) => {
       const dateKey = item.date
       if (!itemsByDate.has(dateKey)) {
@@ -550,7 +625,6 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null, targetDate?: st
       itemsByDate.get(dateKey)!.push(item)
     })
 
-    // Assign order values within each date group
     const updatedItems: EventAgendaItem[] = []
     itemsByDate.forEach((items) => {
       items.forEach((item, index) => {
@@ -559,45 +633,68 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null, targetDate?: st
       })
     })
 
+    agendaItems.value = [...newItems]
+    await nextTick()
+
     const updates = updatedItems.map((item) => ({
       id: item.id,
       order: item.order,
       date: item.date,
     }))
 
-    // Optimistic update - force reactivity by creating new array reference
-    agendaItems.value = [...newItems]
-
-    // Force Vue to update the computed property
-    await nextTick()
-
-    // Send update to server
     const response = await agendaService.bulkReorderAgendaItems(props.eventId, { updates })
 
     if (!response.success) {
-      // Rollback on failure - restore original order
       agendaItems.value = originalItems
       await nextTick()
-      showMessage('error', response.message || 'Failed to reorder agenda items')
+      toast.showError(response.message || 'Failed to reorder agenda items')
     } else {
-      // On success, trust the optimistic update and show success message
       if (isChangingDate) {
-        showMessage('success', 'Agenda item moved to new date successfully')
+        toast.showSuccess('Agenda item moved to new date successfully')
       } else {
-        showMessage('success', 'Agenda items reordered successfully')
+        toast.showSuccess('Agenda items reordered successfully')
       }
     }
   } catch (err) {
-    // Rollback on network error - restore original order
     agendaItems.value = originalItems
     await nextTick()
-    showMessage('error', 'Network error while reordering agenda items')
+    toast.showError('Network error while reordering agenda items')
     console.error('Error reordering agenda items:', err)
   } finally {
-    // Release lock and clear dragged item
     isReordering.value = false
     draggedItem.value = null
   }
+}
+
+// Collapse/Expand transition hooks for smooth animation
+const onCollapseEnter = (el: Element) => {
+  const element = el as HTMLElement
+  element.style.height = '0'
+  element.style.opacity = '0'
+  // Force reflow
+  void element.offsetHeight
+  element.style.height = element.scrollHeight + 'px'
+  element.style.opacity = '1'
+}
+
+const onCollapseAfterEnter = (el: Element) => {
+  const element = el as HTMLElement
+  element.style.height = 'auto'
+}
+
+const onCollapseLeave = (el: Element) => {
+  const element = el as HTMLElement
+  element.style.height = element.scrollHeight + 'px'
+  // Force reflow
+  void element.offsetHeight
+  element.style.height = '0'
+  element.style.opacity = '0'
+}
+
+const onCollapseAfterLeave = (el: Element) => {
+  const element = el as HTMLElement
+  element.style.height = 'auto'
+  element.style.opacity = '1'
 }
 
 // Lifecycle
@@ -619,23 +716,20 @@ defineExpose({
 </script>
 
 <style scoped>
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
+/* Collapse/Expand transition for agenda groups */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: height 0.3s ease-out, opacity 0.25s ease-out;
+  overflow: hidden;
 }
 
-.slide-down-enter-from {
+.collapse-enter-from,
+.collapse-leave-to {
+  height: 0;
   opacity: 0;
-  max-height: 0;
-  transform: translateY(-10px);
 }
 
-.slide-down-leave-to {
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-10px);
-}
-
+/* Toast slide-up transition */
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: all 0.3s ease;
@@ -671,18 +765,6 @@ defineExpose({
   box-shadow: 0 16px 28px -18px rgba(30, 144, 255, 0.28);
 }
 
-/* Collapse transition */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition: height 0.3s ease;
-  overflow: hidden;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  height: 0;
-}
-
 /* Fade transition for reordering overlay */
 .fade-enter-active,
 .fade-leave-active {
@@ -691,6 +773,17 @@ defineExpose({
 
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+/* Modal transition */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
 }
 </style>

@@ -54,7 +54,7 @@ export const agendaService = {
     return apiClient.delete(`/api/events/${eventId}/agenda/${agendaId}/`)
   },
 
-  // Bulk reorder agenda items
+  // Bulk reorder agenda items (also supports date changes)
   async bulkReorderAgendaItems(
     eventId: string,
     data: BulkReorderRequest,
@@ -62,6 +62,29 @@ export const agendaService = {
     return apiClient.patch<{ status: string; count: number }>(
       `/api/events/${eventId}/agenda/bulk-reorder/`,
       data,
+    )
+  },
+
+  // Bulk update date for all agenda items in a date group
+  async bulkUpdateDate(
+    eventId: string,
+    oldDate: string | null,
+    newDate: string | null,
+  ): Promise<ApiResponse<{ status: string; count: number }>> {
+    return apiClient.patch<{ status: string; count: number }>(
+      `/api/events/${eventId}/agenda/bulk-update-date/`,
+      { old_date: oldDate, new_date: newDate },
+    )
+  },
+
+  // Bulk delete all agenda items in a date group
+  async bulkDeleteByDate(
+    eventId: string,
+    date: string | null,
+  ): Promise<ApiResponse<{ status: string; count: number }>> {
+    return apiClient.delete<{ status: string; count: number }>(
+      `/api/events/${eventId}/agenda/bulk-delete-by-date/`,
+      { date },
     )
   },
 }
