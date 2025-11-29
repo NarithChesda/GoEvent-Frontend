@@ -120,7 +120,7 @@
             <button
               @click="handleSubmit"
               :disabled="isSubmitting"
-              class="flex-1 sm:flex-none flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
               <span>{{ isSubmitting ? 'Creating...' : 'Create Event' }}</span>

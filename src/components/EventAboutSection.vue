@@ -14,30 +14,36 @@
       <div class="px-5 py-6 space-y-6">
         <!-- Title & Category -->
         <div>
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <h1 class="text-2xl font-bold text-slate-900 leading-tight">
+          <!-- Title - Full width on mobile, aligned with category on desktop -->
+          <div class="mb-3">
+            <h1 class="text-2xl font-bold text-slate-900 leading-tight mb-2 sm:mb-0">
               {{ event.title }}
             </h1>
-            <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full flex-shrink-0">
+          </div>
+
+          <!-- Organizer & Category -->
+          <div class="flex items-center justify-between gap-3">
+            <!-- Organizer -->
+            <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
+              <div class="flex items-center gap-2">
+                <img
+                  v-if="event.organizer_details.profile_picture"
+                  :src="getProfileUrl(event.organizer_details.profile_picture)"
+                  :alt="organizerName"
+                  class="w-7 h-7 rounded-full object-cover"
+                />
+                <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
+                  {{ getInitials(organizerName) }}
+                </div>
+                <span class="font-medium">{{ organizerName }}</span>
+              </div>
+            </div>
+
+            <!-- Category Badge -->
+            <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full flex-shrink-0">
               <span class="text-slate-400">#</span>
               {{ event.category_details.name }}
             </span>
-          </div>
-
-          <!-- Organizer -->
-          <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
-            <div class="flex items-center gap-2">
-              <img
-                v-if="event.organizer_details.profile_picture"
-                :src="getProfileUrl(event.organizer_details.profile_picture)"
-                :alt="organizerName"
-                class="w-7 h-7 rounded-full object-cover"
-              />
-              <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
-                {{ getInitials(organizerName) }}
-              </div>
-              <span class="font-medium">{{ organizerName }}</span>
-            </div>
           </div>
         </div>
 
