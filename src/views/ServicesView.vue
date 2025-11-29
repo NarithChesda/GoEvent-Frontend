@@ -5,25 +5,13 @@
       <section class="py-4 sm:py-6 lg:py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header -->
-          <div class="flex items-center justify-between mb-8 sm:mb-10">
-            <div>
-              <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-                Event Services
-              </h1>
-              <p class="text-slate-600">
-                Discover vendors and services for your events
-              </p>
-            </div>
-
-            <!-- List Your Service Button (for vendors) -->
-            <button
-              v-if="authStore.isAuthenticated"
-              @click="handleListServiceClick"
-              class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm"
-            >
-              <Plus class="w-4 h-4" />
-              List Your Service
-            </button>
+          <div class="mb-8 sm:mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
+              Event Services
+            </h1>
+            <p class="text-slate-600">
+              Discover vendors and services for your events
+            </p>
           </div>
 
           <!-- Service Categories -->
@@ -46,27 +34,27 @@
           </div>
 
           <!-- Coming Soon State -->
-          <div class="text-center py-16 px-4">
-            <div class="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
-              <Briefcase class="w-12 h-12 lg:w-16 lg:h-16 text-[#2ecc71]" />
+          <div class="text-center py-12 lg:py-16 px-4">
+            <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
+              <Briefcase class="w-16 h-16 text-[#2ecc71]" />
             </div>
-            <h3 class="text-xl lg:text-2xl font-bold text-slate-900 mb-2 lg:mb-3">
+            <h3 class="text-2xl font-bold text-slate-900 mb-3">
               Coming Soon
             </h3>
-            <p class="text-sm lg:text-base text-slate-600 mb-5 lg:mb-6 max-w-md mx-auto">
+            <p class="text-slate-600 mb-6 max-w-md mx-auto">
               We're building a marketplace for event vendors to showcase their services. Check back soon!
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 @click="handleNotifyClick"
-                class="px-5 py-2.5 lg:px-6 lg:py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm lg:text-base rounded-xl font-medium transition-colors"
+                class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
               >
                 Notify Me When Ready
               </button>
               <RouterLink
                 v-if="authStore.user?.is_partner"
                 to="/commission"
-                class="px-5 py-2.5 lg:px-6 lg:py-3 border-2 border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 text-sm lg:text-base rounded-xl font-medium transition-colors"
+                class="px-6 py-3 border-2 border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 rounded-xl font-medium transition-colors"
               >
                 View My Commission
               </RouterLink>
@@ -81,11 +69,11 @@
       <!-- Contact Us FAB -->
       <ContactUsFAB :has-fab-below="authStore.isAuthenticated" />
 
-      <!-- Mobile List Service FAB (only for authenticated users) -->
+      <!-- List Service FAB -->
       <button
         v-if="authStore.isAuthenticated"
         @click="handleListServiceClick"
-        class="sm:hidden fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
+        class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
         aria-label="List Your Service"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
