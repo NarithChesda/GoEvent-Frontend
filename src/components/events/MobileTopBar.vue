@@ -1,6 +1,6 @@
 <template>
   <header
-    class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b z-40 transition-colors duration-200"
+    class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b z-40 gpu-layer"
     :class="isScrolled ? 'border-slate-200/50 shadow-sm' : 'border-transparent'"
   >
     <div class="h-full px-4 flex items-center justify-between">
@@ -101,5 +101,15 @@ const {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Force GPU compositing for smooth scrolling */
+.gpu-layer {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
 }
 </style>

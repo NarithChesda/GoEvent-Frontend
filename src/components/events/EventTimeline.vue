@@ -15,14 +15,14 @@
 
         <!-- Date Header with Dot (becomes pill when sticky) -->
         <div
-          class="sticky top-14 z-10 mb-3 date-header-sticky inline-flex items-center gap-3"
+          class="sticky top-[64px] z-10 mb-3 date-header-sticky inline-flex items-center gap-2"
         >
           <div class="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0"></div>
           <div class="inline-flex items-baseline gap-2">
-            <span class="text-slate-900 font-semibold text-base">{{
+            <span class="text-slate-900 font-semibold text-lg">{{
               dateGroup.monthDay
             }}</span>
-            <span class="text-slate-400 text-sm">{{ dateGroup.weekday }}</span>
+            <span class="text-slate-400 text-base">{{ dateGroup.weekday }}</span>
           </div>
         </div>
 
@@ -123,11 +123,18 @@ const canManageEvent = (event: Event): boolean => {
 @media (max-width: 639px) {
   .date-header-sticky {
     width: fit-content;
-    padding: 4px 12px 4px 8px;
-    margin: -4px -12px -4px -8px;
+    padding: 4px 24px 4px 14px;
+    margin: -4px -24px -4px -14px;
     border-radius: 9999px;
     border: 1px solid transparent;
     background-color: transparent;
+    /* Prevent sticky scroll shake - force GPU compositing */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Contain layout to prevent repaints */
+    contain: layout style;
   }
 
   .date-header-sticky.is-stuck {
