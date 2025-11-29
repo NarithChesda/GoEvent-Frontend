@@ -1,6 +1,6 @@
 <template>
-  <MainLayout :hide-home-sidebar="true" :hide-mobile-tab-bar="false">
-    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100">
+  <MainLayout :hide-top-nav="true" :hide-mobile-tab-bar="false">
+    <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.05] via-white/95 to-[#1e90ff]/[0.05]">
 
     <!-- Top Navigation Bar -->
     <EventManageTopBar
@@ -31,24 +31,24 @@
       @tab-change="activeTab = $event"
     />
 
-    <!-- Loading Top Bar Skeleton -->
-    <div v-if="loading" class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-lg h-[72px]">
-      <div class="flex items-center justify-between h-full px-4">
+    <!-- Loading Top Bar Skeleton (only show when loading and no event data) -->
+    <div v-if="loading && !event" class="fixed top-0 left-0 right-0 z-50 h-16 bg-gradient-to-r from-[#2ecc71]/10 via-white to-[#1e90ff]/10 backdrop-blur-sm border-b border-[#2ecc71]/20">
+      <div class="flex items-center justify-between h-full px-4 sm:px-6">
         <div class="flex items-center gap-3 animate-pulse">
-          <div class="w-12 h-12 bg-white/20 rounded-xl"></div>
-          <div class="w-10 h-10 bg-white/20 rounded-full"></div>
+          <div class="w-10 h-10 lg:w-12 lg:h-12 bg-slate-200 rounded-xl"></div>
+          <div class="w-10 h-10 bg-slate-200 rounded-full hidden md:block"></div>
           <div>
-            <div class="h-5 w-40 bg-white/20 rounded mb-2"></div>
-            <div class="h-3 w-24 bg-white/20 rounded"></div>
+            <div class="h-5 w-40 bg-slate-200 rounded mb-1"></div>
+            <div class="h-3 w-24 bg-slate-200 rounded hidden md:block"></div>
           </div>
         </div>
         <div class="flex gap-2 animate-pulse">
-          <div class="h-9 w-24 bg-white/20 rounded-xl hidden sm:block"></div>
-          <div class="h-9 w-20 bg-white rounded-xl"></div>
+          <div class="h-9 w-20 bg-slate-200 rounded-xl hidden md:block"></div>
+          <div class="h-9 w-16 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-xl"></div>
         </div>
       </div>
     </div>
-    <div v-if="loading" class="h-[72px]"></div>
+    <div v-if="loading && !event" class="h-16"></div>
 
     <!-- Loading State -->
     <div

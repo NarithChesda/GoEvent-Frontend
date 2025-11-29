@@ -1,27 +1,27 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-lg transition-all duration-300"
+    class="fixed top-0 left-0 right-0 z-50 h-16 bg-gradient-to-r from-[#2ecc71]/10 via-white to-[#1e90ff]/10 backdrop-blur-sm border-b border-[#2ecc71]/20 transition-all duration-300"
     :style="{ marginLeft: headerMarginLeft }"
   >
-    <div class="flex items-center justify-between h-[72px] px-4">
-      <!-- Left Section: Hamburger + Host Avatar + Event Title -->
+    <div class="flex items-center justify-between h-full px-4 sm:px-6">
+      <!-- Left Section: Back Button + Host Avatar + Event Title -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
-        <!-- Hamburger Menu Button (hidden on mobile) -->
+        <!-- Back to Events Button -->
         <button
-          @click="toggleHomeSidebar"
-          class="hidden lg:flex flex-shrink-0 items-center justify-center w-12 h-12 rounded-xl hover:bg-white/20 transition-colors"
-          :aria-label="isHomeSidebarVisible ? 'Close main navigation' : 'Open main navigation'"
+          @click="goBackToEvents"
+          class="flex-shrink-0 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-xl hover:bg-slate-100 transition-colors"
+          aria-label="Back to Events"
+          title="Back to Events"
         >
-          <X v-if="isHomeSidebarVisible" class="w-6 h-6 text-white" />
-          <Menu v-else class="w-6 h-6 text-white" />
+          <ArrowLeft class="w-5 h-5 lg:w-6 lg:h-6 text-slate-700" />
         </button>
 
         <!-- Host Avatar (hidden on mobile) -->
         <div v-if="organizerAvatar || organizerName" class="hidden md:block flex-shrink-0">
           <div
             v-if="organizerAvatar"
-            class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 shadow-md"
+            class="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-200 shadow-sm"
           >
             <img
               :src="organizerAvatar"
@@ -31,9 +31,9 @@
           </div>
           <div
             v-else
-            class="w-10 h-10 rounded-full bg-white/20 border-2 border-white/50 flex items-center justify-center shadow-md"
+            class="w-10 h-10 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center shadow-sm"
           >
-            <span class="text-white font-semibold text-sm">
+            <span class="text-slate-700 font-semibold text-sm">
               {{ organizerInitials }}
             </span>
           </div>
@@ -43,7 +43,7 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <!-- Event Title -->
-            <h1 class="text-lg font-bold text-white truncate">
+            <h1 class="text-lg font-bold text-slate-900 truncate">
               {{ eventTitle || 'Event Details' }}
             </h1>
             <!-- Event Status Badge (hidden on mobile) -->
@@ -58,7 +58,7 @@
             </span>
           </div>
           <!-- Organizer name (hidden on mobile) -->
-          <p v-if="organizerName" class="hidden md:block text-sm text-white/80 truncate">
+          <p v-if="organizerName" class="hidden md:block text-sm text-slate-600 truncate">
             by {{ organizerName }}
           </p>
         </div>
@@ -70,7 +70,7 @@
         <button
           v-if="canEdit && eventId"
           @click="previewShowcase"
-          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/20 rounded-xl transition-colors"
+          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
           title="Preview showcase"
         >
           <Eye class="w-5 h-5" />
@@ -81,7 +81,7 @@
         <button
           v-if="canEdit && eventId"
           @click="editEvent"
-          class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#1e90ff] bg-white hover:bg-white/90 rounded-xl transition-all shadow-md hover:shadow-lg"
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] rounded-xl transition-all shadow-sm hover:shadow-md"
         >
           <Pencil class="w-4 h-4" />
           <span class="hidden sm:inline">Edit</span>
@@ -90,13 +90,14 @@
     </div>
   </header>
 
-  <!-- Spacer to prevent content from going under the fixed header (matches sidebar header height) -->
-  <div class="h-[72px]"></div>
+  <!-- Spacer to prevent content from going under the fixed header -->
+  <div class="h-16"></div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
-import { Menu, X, Pencil, Eye } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { Pencil, Eye, ArrowLeft } from 'lucide-vue-next'
 
 interface Props {
   eventId?: string
@@ -120,19 +121,9 @@ const emit = defineEmits<{
   edit: []
 }>()
 
-// Inject the toggle function and state from MainLayout (with default values to prevent warnings)
-const toggleHomeSidebarOverlay = inject<() => void>('toggleHomeSidebarOverlay', () => {})
+// Inject sidebar state from MainLayout (with default values to prevent warnings)
 const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))
 const isCollapsed = inject<Ref<boolean>>('isCollapsed', ref(false))
-
-const toggleHomeSidebar = () => {
-  toggleHomeSidebarOverlay()
-}
-
-// Check if home sidebar is currently visible
-const isHomeSidebarVisible = computed(() => {
-  return showHomeSidebarOverlay?.value ?? false
-})
 
 // Reactive window width for responsive margin calculation
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
@@ -158,7 +149,7 @@ const headerMarginLeft = computed(() => {
     return '0px'
   }
 
-  if (!isHomeSidebarVisible.value) {
+  if (!showHomeSidebarOverlay?.value) {
     return '0px'
   }
 
@@ -177,19 +168,19 @@ const organizerInitials = computed(() => {
   return props.organizerName.substring(0, 2).toUpperCase()
 })
 
-// Status badge classes - white background variants for visibility on gradient
+// Status badge classes - colorful variants for light background
 const statusClasses = computed(() => {
   switch (props.eventStatus) {
     case 'upcoming':
-      return 'bg-white text-blue-600'
+      return 'bg-blue-100 text-blue-700'
     case 'ongoing':
-      return 'bg-white text-green-600'
+      return 'bg-green-100 text-green-700'
     case 'past':
-      return 'bg-white/80 text-slate-600'
+      return 'bg-slate-100 text-slate-600'
     case 'draft':
       return 'bg-amber-100 text-amber-700'
     default:
-      return 'bg-white/80 text-slate-600'
+      return 'bg-slate-100 text-slate-600'
   }
 })
 
@@ -215,5 +206,11 @@ const previewShowcase = () => {
     url.searchParams.append('lang', 'kh')
     window.open(url.toString(), '_blank')
   }
+}
+
+const router = useRouter()
+
+const goBackToEvents = () => {
+  router.push('/events')
 }
 </script>
