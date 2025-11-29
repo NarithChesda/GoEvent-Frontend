@@ -1,7 +1,7 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 h-16 glass-manage-header border-b border-slate-200/30 transition-all duration-300"
+    class="fixed top-0 left-0 right-0 z-50 h-16 glass-manage-header md:border-b md:border-slate-200/30 transition-all duration-300"
     :style="{ marginLeft: headerMarginLeft }"
   >
     <div class="flex items-center justify-between h-full px-4 sm:px-6">
@@ -226,5 +226,13 @@ const goBackToEvents = () => {
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+/* On mobile, add 1px overlap to prevent sub-pixel gap with tab bar */
+@media (max-width: 767px) {
+  .glass-manage-header {
+    padding-bottom: 1px;
+    margin-bottom: -1px;
+  }
 }
 </style>

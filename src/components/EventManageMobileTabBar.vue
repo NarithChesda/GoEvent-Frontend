@@ -1,21 +1,21 @@
 <template>
   <!-- Fixed position wrapper for stable mobile scrolling -->
-  <div class="md:hidden fixed top-[72px] left-0 right-0 z-40 glass-manage-mobile-tabs border-b border-slate-200/30 tab-bar-container">
+  <div class="md:hidden fixed top-16 left-0 right-0 z-40 glass-manage-mobile-tabs tab-bar-container">
     <div class="relative">
       <!-- Left scroll fade -->
       <div
-        class="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#f8fffe] to-transparent pointer-events-none z-10"
+        class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[#f8fffe]/90 via-[#f8fffe]/50 to-transparent pointer-events-none z-10"
       ></div>
 
       <!-- Right scroll fade -->
       <div
-        class="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#f0f9ff] to-transparent pointer-events-none z-10"
+        class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#f0f9ff]/90 via-[#f0f9ff]/50 to-transparent pointer-events-none z-10"
       ></div>
 
       <!-- Scrollable tabs -->
       <div
         ref="tabContainer"
-        class="flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5"
+        class="flex overflow-x-auto scrollbar-hide px-2 py-1 gap-1"
         role="tablist"
         aria-label="Event detail sections"
       >
@@ -24,21 +24,23 @@
           :key="tab.id"
           ref="tabButtons"
           @click="selectTab(tab.id)"
-          :class="[
-            'flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
-            'min-w-[44px] min-h-[44px]',
-            activeTab === tab.id
-              ? 'bg-[#E6F4FF] text-[#1e90ff] shadow-lg'
-              : 'text-slate-600 hover:bg-[#E6F4FF]/50 hover:text-[#1e90ff] active:scale-95',
-          ]"
+          class="flex-shrink-0 flex items-center justify-center px-4 py-2 text-sm font-medium transition-all duration-200 min-h-[40px] relative"
+          :class="activeTab === tab.id ? '' : 'active:scale-95'"
           :aria-current="activeTab === tab.id ? 'page' : undefined"
           :aria-label="`${tab.label}${activeTab === tab.id ? ' (current)' : ''}`"
           :aria-selected="activeTab === tab.id"
           role="tab"
           @keydown="handleKeyboard($event, index)"
         >
-          <component :is="getIcon(tab.icon)" class="w-4 h-4 flex-shrink-0" />
-          <span class="whitespace-nowrap">{{ tab.mobileLabel || tab.label }}</span>
+          <!-- Active indicator (bottom border) -->
+          <div
+            v-if="activeTab === tab.id"
+            class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-t-sm"
+          ></div>
+          <span
+            class="whitespace-nowrap transition-colors duration-200"
+            :class="activeTab === tab.id ? 'text-[#2ecc71] font-semibold' : 'text-slate-500'"
+          >{{ tab.mobileLabel || tab.label }}</span>
         </button>
       </div>
     </div>
@@ -47,19 +49,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import {
-  Calendar,
-  FileText,
-  Users,
-  UserPlus,
-  ImageIcon,
-  Monitor,
-  CreditCard,
-  Mail,
-  Wallet,
-  BarChart,
-  Star,
-} from 'lucide-vue-next'
 import type { TabConfig } from './EventNavigationTabs.vue'
 
 interface Props {
@@ -98,24 +87,6 @@ const visibleTabs = computed(() => {
     return tab.visible !== false
   })
 })
-
-const iconMap = {
-  calendar: Calendar,
-  'file-text': FileText,
-  users: Users,
-  'user-plus': UserPlus,
-  image: ImageIcon,
-  monitor: Monitor,
-  'credit-card': CreditCard,
-  'bar-chart': BarChart,
-  wallet: Wallet,
-  mail: Mail,
-  star: Star,
-} as const
-
-const getIcon = (iconName: string) => {
-  return iconMap[iconName as keyof typeof iconMap] || FileText
-}
 
 const selectTab = (tabId: string) => {
   emit('tab-change', tabId)
@@ -196,15 +167,17 @@ const handleKeyboard = (event: KeyboardEvent, index: number) => {
   display: none;
 }
 
-/* Glass mobile tabs effect - blends with brand gradient background */
+/* Glass mobile tabs effect - matches header for seamless connection */
 .glass-manage-mobile-tabs {
   background: linear-gradient(
     135deg,
-    rgba(248, 255, 254, 0.92) 0%,
-    rgba(240, 253, 249, 0.92) 50%,
-    rgba(240, 249, 255, 0.92) 100%
+    rgba(248, 255, 254, 0.9) 0%,
+    rgba(240, 253, 249, 0.9) 50%,
+    rgba(240, 249, 255, 0.9) 100%
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  /* Bottom border for separation from content */
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 </style>
