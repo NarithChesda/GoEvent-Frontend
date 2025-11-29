@@ -3,7 +3,7 @@
     <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]">
 
     <!-- Main Content -->
-    <section class="py-8 sm:py-12 lg:py-16">
+    <section class="py-4 sm:py-6 lg:py-8">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header with Toggle -->
         <div class="flex items-center justify-between mb-8 sm:mb-10">

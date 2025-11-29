@@ -38,19 +38,39 @@
           <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
             <div class="space-y-5">
               <!-- Basic Information -->
-              <div class="space-y-3 border-t border-slate-100 pt-5">
+              <div class="space-y-3">
                 <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
 
-                <!-- Title -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Event Title *</label>
-                  <input
-                    v-model="form.title"
-                    type="text"
-                    required
-                    placeholder="Enter event title"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
+                <!-- Title and Category Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <!-- Title -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Event Title *</label>
+                    <input
+                      v-model="form.title"
+                      type="text"
+                      required
+                      placeholder="Enter event title"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    />
+                  </div>
+
+                  <!-- Category -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                    <div class="relative">
+                      <select
+                        v-model="form.category"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
+                      >
+                        <option value="">Select a category</option>
+                        <option v-for="category in categories" :key="category.id" :value="category.id">
+                          {{ category.name }}
+                        </option>
+                      </select>
+                      <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Description -->
@@ -65,29 +85,10 @@
                     :data-placeholder="form.description ? '' : 'Detailed event description'"
                   ></div>
                 </div>
-
-                <!-- Category -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                  <div class="relative">
-                    <select
-                      v-model="form.category"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
-                    >
-                      <option value="">Select a category</option>
-                      <option v-for="category in categories" :key="category.id" :value="category.id">
-                        {{ category.name }}
-                      </option>
-                    </select>
-                    <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
               </div>
 
               <!-- Date and Time -->
-              <div class="space-y-4 border-t border-slate-100 pt-5">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
-
+              <div class="space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Start Date & Time *</label>

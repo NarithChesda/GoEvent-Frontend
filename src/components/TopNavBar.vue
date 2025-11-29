@@ -199,6 +199,7 @@ import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   Ticket,
   Compass,
+  Briefcase,
   Search,
   Bell,
   User,
@@ -223,7 +224,8 @@ const isScrolled = ref(false)
 // Navigation items matching the screenshot
 const navigationItems = [
   { path: '/events', label: 'Events', icon: Ticket },
-  { path: '/explore', label: 'Discover', icon: Compass }
+  { path: '/explore', label: 'Discover', icon: Compass },
+  { path: '/services', label: 'Services', icon: Briefcase }
 ]
 
 // Check if route is active

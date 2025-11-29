@@ -3,7 +3,7 @@
     <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]">
 
     <!-- Main Content -->
-    <section class="py-8 sm:py-12 lg:py-16">
+    <section class="py-4 sm:py-6 lg:py-8">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header with Toggle -->
         <div class="flex items-center justify-between mb-8 sm:mb-10">
@@ -28,7 +28,7 @@
               <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
 
-            <!-- Upcoming/Past Toggle -->
+            <!-- Upcoming/Past/Recent Toggle -->
             <div class="flex items-center bg-slate-100 rounded-full p-1">
               <button
                 @click="timeFilter = 'upcoming'"
@@ -51,6 +51,17 @@
                 ]"
               >
                 Past
+              </button>
+              <button
+                @click="timeFilter = 'recent'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  timeFilter === 'recent'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                ]"
+              >
+                Recent
               </button>
             </div>
           </div>
@@ -202,21 +213,21 @@
         </div>
 
         <!-- Login Required State -->
-        <div v-else-if="!authStore.isAuthenticated" class="text-center py-16 px-4">
-          <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
-            <User class="w-16 h-16 text-[#2ecc71]" />
+        <div v-else-if="!authStore.isAuthenticated" class="text-center py-12 lg:py-16 px-4">
+          <div class="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
+            <CalendarDays class="w-12 h-12 lg:w-16 lg:h-16 text-[#2ecc71]" />
           </div>
-          <h3 class="text-2xl font-bold text-slate-900 mb-3">
-            Sign In Required
+          <h3 class="text-xl lg:text-2xl font-bold text-slate-900 mb-2 lg:mb-3">
+            Ready to Create Your Event?
           </h3>
-          <p class="text-slate-600 mb-6 max-w-md mx-auto">
-            Please sign in to view and manage your events.
+          <p class="text-sm lg:text-base text-slate-600 mb-5 lg:mb-6 max-w-md mx-auto">
+            Start organizing amazing events and bring people together. Sign in to get started.
           </p>
           <button
-            @click="goToLogin"
-            class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
+            @click="handleCreateEventClick"
+            class="px-5 py-2.5 lg:px-6 lg:py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm lg:text-base rounded-xl font-medium transition-colors"
           >
-            Sign In to Continue
+            Create Event
           </button>
         </div>
 
@@ -226,16 +237,23 @@
             <CalendarDays class="w-16 h-16 text-[#2ecc71]" />
           </div>
           <h3 class="text-2xl font-bold text-slate-900 mb-3">
-            {{ timeFilter === 'upcoming' ? 'No upcoming events' : 'No past events' }}
+            {{
+              timeFilter === 'upcoming' ? 'No upcoming events' :
+              timeFilter === 'past' ? 'No past events' :
+              'No events created yet'
+            }}
           </h3>
           <p class="text-slate-600 mb-6 max-w-md mx-auto">
-            {{ timeFilter === 'upcoming'
-              ? 'Start organizing amazing events and bring people together.'
-              : 'Your past events will appear here.'
+            {{
+              timeFilter === 'upcoming'
+                ? 'Start organizing amazing events and bring people together.'
+                : timeFilter === 'past'
+                ? 'Your past events will appear here.'
+                : 'Events you create will appear here, sorted by creation date.'
             }}
           </p>
           <button
-            v-if="timeFilter === 'upcoming'"
+            v-if="timeFilter === 'upcoming' || timeFilter === 'recent'"
             @click="handleCreateEventClick"
             class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
           >
@@ -320,7 +338,6 @@ import {
   Plus,
   CheckCircle,
   AlertCircle,
-  User,
   MapPin,
   Users,
   ArrowRight,
@@ -348,7 +365,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 // Time filter state
-const timeFilter = ref<'upcoming' | 'past'>('upcoming')
+const timeFilter = ref<'upcoming' | 'past' | 'recent'>('upcoming')
 const categoryFilter = ref<string>('')
 const categories = ref<EventCategory[]>([])
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -374,10 +391,16 @@ const filteredEvents = computed(() => {
   const now = new Date()
   return events.value.filter(event => {
     // Time filter
-    const eventDate = new Date(event.start_date)
-    const passesTimeFilter = timeFilter.value === 'upcoming'
-      ? eventDate >= now
-      : eventDate < now
+    let passesTimeFilter = true
+    if (timeFilter.value === 'recent') {
+      // For 'recent', show all events (will sort by created_at later)
+      passesTimeFilter = true
+    } else {
+      const eventDate = new Date(event.start_date)
+      passesTimeFilter = timeFilter.value === 'upcoming'
+        ? eventDate >= now
+        : eventDate < now
+    }
 
     // Category filter
     let passesCategoryFilter = true
@@ -394,11 +417,18 @@ const filteredEvents = computed(() => {
 const groupedByDate = computed(() => {
   const groups: { date: string; monthDay: string; weekday: string; events: Event[] }[] = []
 
-  // Sort events by date
+  // Sort events by date or creation time
   const sortedEvents = [...filteredEvents.value].sort((a, b) => {
-    const dateA = new Date(a.start_date).getTime()
-    const dateB = new Date(b.start_date).getTime()
-    return timeFilter.value === 'upcoming' ? dateA - dateB : dateB - dateA
+    if (timeFilter.value === 'recent') {
+      // Sort by created_at timestamp (most recent first)
+      const createdA = new Date((a as Event & { created_at?: string }).created_at || a.start_date).getTime()
+      const createdB = new Date((b as Event & { created_at?: string }).created_at || b.start_date).getTime()
+      return createdB - createdA
+    } else {
+      const dateA = new Date(a.start_date).getTime()
+      const dateB = new Date(b.start_date).getTime()
+      return timeFilter.value === 'upcoming' ? dateA - dateB : dateB - dateA
+    }
   })
 
   sortedEvents.forEach(event => {
@@ -509,13 +539,6 @@ const canManageEvent = (event: Event) => {
 }
 
 // Methods
-const goToLogin = () => {
-  router.push({
-    path: '/signin',
-    query: { redirect: '/events' }
-  })
-}
-
 const viewEvent = (event: Event) => {
   const canEditEvent =
     event.can_edit === true ||

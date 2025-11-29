@@ -161,7 +161,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Lock, Wallet, LogOut, Ticket, Globe, User } from 'lucide-vue-next'
+import { Lock, Wallet, LogOut, Ticket, Globe, Briefcase, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
@@ -175,7 +175,8 @@ const router = useRouter()
 // Navigation items configuration (matching top nav)
 const navigationItems = [
   { path: '/events', label: 'Events', icon: Ticket },
-  { path: '/explore', label: 'Discover', icon: Globe }
+  { path: '/explore', label: 'Discover', icon: Globe },
+  { path: '/services', label: 'Services', icon: Briefcase }
 ]
 
 // Check if route is active
