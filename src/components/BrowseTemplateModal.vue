@@ -522,9 +522,12 @@ const initializeModal = async (): Promise<void> => {
       setCategoryFilter(props.eventCategory)
     }
 
-    // Focus search input when modal opens
+    // Focus search input when modal opens (desktop only to prevent mobile keyboard)
     nextTick(() => {
-      searchInputRef.value?.focus()
+      // Only focus on desktop (screen width >= 1024px / lg breakpoint)
+      if (window.innerWidth >= 1024) {
+        searchInputRef.value?.focus()
+      }
     })
   } finally {
     isInitializing.value = false
