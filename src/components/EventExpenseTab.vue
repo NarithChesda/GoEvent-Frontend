@@ -20,7 +20,6 @@
         :event-id="eventId"
         :can-edit="canEdit"
         @create-category="handleCreateCategory"
-        @create-budget="openQuickAddBudget"
         @quick-add="openQuickAdd"
         @edit-budget="handleEditBudget"
         @edit-expense="handleEditExpense"
@@ -102,13 +101,6 @@ const openQuickAdd = () => {
   quickAddInitialType.value = 'expense'
   showQuickAddModal.value = true
 }
-
-// Quick add handlers for specific types
-const openQuickAddBudget = () => {
-  quickAddInitialType.value = 'budget'
-  showQuickAddModal.value = true
-}
-
 
 // Edit handlers
 const handleEditBudget = (budget: ExpenseBudget) => {

@@ -337,7 +337,7 @@
       <!-- Empty State - No budgets at all -->
       <div
         v-if="budgets.length === 0 && canEdit"
-        @click="$emit('create-budget')"
+        @click="$emit('quick-add')"
         class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group"
       >
         <div class="flex flex-col items-center justify-center">
@@ -461,7 +461,6 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   'create-category': []
-  'create-budget': []
   'quick-add': []
   'edit-budget': [budget: ExpenseBudget]
   'edit-expense': [expense: ExpenseRecord]
@@ -701,7 +700,7 @@ const handleDelete = async () => {
   const categoryId = deletingBudget.value.category
   const deletedBudget = cloneBudget(deletingBudget.value) // Keep a copy for rollback using helper
 
-  // Get all expenses for this category to delete them
+  // Get all expenses for this category (for optimistic UI update and rollback)
   const categoryExpenses = expenses.value.filter(e => e.category === categoryId)
   const deletedExpenses = [...categoryExpenses] // Keep a copy for rollback
 
@@ -710,38 +709,22 @@ const handleDelete = async () => {
     budgets.value = budgets.value.filter(budget => budget.id !== deletedId)
 
     // Optimistic update: Remove all expenses in this category
+    // (Backend now automatically deletes related expenses when budget is deleted)
     expenses.value = expenses.value.filter(e => e.category !== categoryId)
 
     // Close modal immediately for better UX
     deletingBudget.value = null
 
-    // Delete all expenses in this category first
-    const expenseDeletePromises = categoryExpenses.map(expense =>
-      expensesService.deleteExpense(props.eventId, expense.id)
-    )
-
-    // Wait for all expense deletions
-    const expenseResults = await Promise.all(expenseDeletePromises)
-    const failedExpenses = expenseResults.filter(r => !r.success)
-
-    if (failedExpenses.length > 0) {
-      // Some expenses failed to delete, rollback
-      budgets.value.push(deletedBudget)
-      expenses.value.push(...deletedExpenses)
-      error.value = 'Failed to delete some expenses. Budget was not deleted.'
-      return
-    }
-
-    // All expenses deleted, now delete the budget
+    // Delete the budget - backend will cascade delete all related expenses
     const response = await expenseBudgetsService.deleteBudget(
       props.eventId,
       deletedId
     )
 
     if (!response.success) {
-      // Budget deletion failed, but expenses are already deleted
-      // Rollback budget only (expenses are gone)
+      // Budget deletion failed, rollback both budget and expenses
       budgets.value.push(deletedBudget)
+      expenses.value.push(...deletedExpenses)
       error.value = response.message || 'Failed to delete budget'
     } else {
       const expenseCount = categoryExpenses.length
