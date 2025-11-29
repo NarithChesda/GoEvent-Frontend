@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6 sm:space-y-8">
     <div
-      v-for="(dateGroup, index) in dateGroups"
+      v-for="dateGroup in dateGroups"
       :key="dateGroup.date"
       class="relative"
     >
@@ -58,9 +58,8 @@
           <div class="sticky top-20 lg:top-24 z-10">
             <div class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] mt-2 shadow-sm shadow-[#2ecc71]/30"></div>
           </div>
-          <!-- Timeline line -->
+          <!-- Timeline line: always show for all date groups -->
           <div
-            v-if="index < dateGroups.length - 1 || dateGroup.events.length > 1"
             class="absolute top-4 bottom-0 w-px bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/30"
           ></div>
         </div>
