@@ -11,59 +11,86 @@
             Events
           </h1>
 
-          <!-- Filters -->
-          <div class="flex items-center gap-2 sm:gap-3">
-            <!-- Category Filter Dropdown - Hidden on mobile -->
-            <div class="relative hidden sm:block">
-              <select
-                v-model="categoryFilter"
-                class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium pl-4 pr-8 py-2 rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-                :class="categoryFilter ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900' : ''"
-              >
-                <option value="">All Categories</option>
-                <option v-for="category in categories" :key="category.id" :value="category.name">
-                  {{ category.name }}
-                </option>
-              </select>
-              <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-            </div>
+          <!-- Upcoming/Past/Recent Toggle -->
+          <div class="flex items-center bg-slate-100 rounded-full p-1">
+            <button
+              @click="timeFilter = 'upcoming'"
+              :class="[
+                'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
+                timeFilter === 'upcoming'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              ]"
+            >
+              Upcoming
+            </button>
+            <button
+              @click="timeFilter = 'past'"
+              :class="[
+                'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
+                timeFilter === 'past'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              ]"
+            >
+              Past
+            </button>
+            <button
+              @click="timeFilter = 'recent'"
+              :class="[
+                'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
+                timeFilter === 'recent'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              ]"
+            >
+              Recent
+            </button>
+          </div>
 
-            <!-- Upcoming/Past/Recent Toggle -->
-            <div class="flex items-center bg-slate-100 rounded-full p-1">
-              <button
-                @click="timeFilter = 'upcoming'"
-                :class="[
-                  'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
-                  timeFilter === 'upcoming'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                ]"
-              >
-                Upcoming
-              </button>
-              <button
-                @click="timeFilter = 'past'"
-                :class="[
-                  'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
-                  timeFilter === 'past'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                ]"
-              >
-                Past
-              </button>
-              <button
-                @click="timeFilter = 'recent'"
-                :class="[
-                  'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
-                  timeFilter === 'recent'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                ]"
-              >
-                Recent
-              </button>
-            </div>
+          <!-- Category Filter Dropdown - Desktop only -->
+          <div class="relative hidden sm:block">
+            <select
+              v-model="categoryFilter"
+              class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium pl-4 pr-8 py-2 rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+              :class="categoryFilter ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900' : ''"
+            >
+              <option value="">All Categories</option>
+              <option v-for="category in categories" :key="category.id" :value="category.name">
+                {{ category.name }}
+              </option>
+            </select>
+            <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Mobile Category Filter - Horizontal scrollable pills -->
+        <div v-if="categories.length > 0" class="sm:hidden -mx-4 px-4 mb-4 overflow-x-auto scrollbar-hide">
+          <div class="flex items-center gap-2 pb-1">
+            <button
+              @click="categoryFilter = ''"
+              :class="[
+                'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap',
+                !categoryFilter
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              ]"
+            >
+              All
+            </button>
+            <button
+              v-for="category in categories"
+              :key="category.id"
+              @click="categoryFilter = category.name"
+              :class="[
+                'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap',
+                categoryFilter === category.name
+                  ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              ]"
+            >
+              {{ category.name }}
+            </button>
           </div>
         </div>
 
@@ -120,17 +147,17 @@
           >
             <!-- Mobile: Timeline with Date Header and Cards -->
             <div class="sm:hidden relative">
-              <!-- Timeline line (starts below the dot) -->
+              <!-- Timeline line -->
               <div
                 v-if="index < groupedByDate.length - 1"
-                class="absolute left-[3px] top-6 bottom-0 w-px bg-slate-200"
+                class="absolute left-[3.5px] top-7 bottom-0 w-px bg-slate-200"
               ></div>
 
               <!-- Date Header with Dot (becomes pill when sticky) -->
-              <div class="sticky top-14 z-10 mb-3 date-header-sticky flex items-center gap-3">
+              <div class="sticky top-14 z-10 mb-3 date-header-sticky inline-flex items-center gap-3">
                 <div class="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0"></div>
-                <div class="date-header-content inline-flex items-baseline gap-2 transition-all duration-200">
-                  <span class="text-slate-900 font-semibold">{{ dateGroup.monthDay }}</span>
+                <div class="inline-flex items-baseline gap-2">
+                  <span class="text-slate-900 font-semibold text-base">{{ dateGroup.monthDay }}</span>
                   <span class="text-slate-400 text-sm">{{ dateGroup.weekday }}</span>
                 </div>
               </div>
@@ -477,6 +504,7 @@ import {
   Users,
   ArrowRight,
   AlertTriangle,
+  ChevronDown,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import EventCreateModal from '../components/EventCreateModal.vue'
@@ -493,7 +521,6 @@ import {
   type EventCategory,
 } from '../services/api'
 import { useEventsData } from '../composables/useEventsData'
-import { ChevronDown } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
