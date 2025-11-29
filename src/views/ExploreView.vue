@@ -253,6 +253,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   CalendarDays,
   CheckCircle,
@@ -273,6 +274,9 @@ import {
   type EventFilters as EventFiltersType,
 } from '../services/api'
 import { useEventsData } from '../composables/useEventsData'
+
+const route = useRoute()
+const router = useRouter()
 
 const categories = ref<EventCategory[]>([])
 const filters = ref<EventFiltersType>({})
@@ -552,6 +556,27 @@ watch(
   { deep: true },
 )
 
+// Handle event query parameter from search
+const openEventFromQuery = () => {
+  const eventId = route.query.event as string | undefined
+  if (eventId) {
+    selectedEventId.value = eventId
+    showEventDrawer.value = true
+    // Clear the query parameter
+    router.replace({ path: route.path, query: {} })
+  }
+}
+
+// Watch for event query parameter changes
+watch(
+  () => route.query.event,
+  (eventId) => {
+    if (eventId) {
+      openEventFromQuery()
+    }
+  }
+)
+
 // Lifecycle
 onMounted(async () => {
   // Load initial data
@@ -565,6 +590,9 @@ onMounted(async () => {
 
   // Set up infinite scroll
   setupInfiniteScroll()
+
+  // Check if there's an event to open from query params
+  openEventFromQuery()
 })
 </script>
 

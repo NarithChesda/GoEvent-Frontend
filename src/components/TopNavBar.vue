@@ -191,6 +191,9 @@
       </div>
     </div>
   </header>
+
+  <!-- Global Search Modal -->
+  <GlobalSearchModal />
 </template>
 
 <script setup lang="ts">
@@ -202,19 +205,21 @@ import {
   Briefcase,
   Search,
   Bell,
-  User,
-  Lock,
-  Wallet,
-  LogOut
+  User
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import IconSvg from '@/assets/icon.svg'
 import { sanitizePlainText } from '@/utils/sanitize'
+import GlobalSearchModal from './GlobalSearchModal.vue'
+import { useGlobalSearch } from '@/composables/useGlobalSearch'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+
+// Global search
+const { open: openSearch } = useGlobalSearch()
 
 const userMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement>()
@@ -280,10 +285,9 @@ const handleLogoClick = () => {
   router.push('/events')
 }
 
-// Toggle search (placeholder for future implementation)
+// Toggle search
 const toggleSearch = () => {
-  // TODO: Implement search functionality
-  console.log('Search toggled')
+  openSearch()
 }
 
 // Handle logout
