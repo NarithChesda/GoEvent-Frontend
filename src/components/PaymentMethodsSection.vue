@@ -38,8 +38,9 @@
             @click="showLockConfirmModal = true"
             :disabled="isToggling"
             :class="[
-              'flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200',
+              'flex items-center justify-center rounded-xl font-medium text-sm transition-all duration-200',
               'border-2 focus:outline-none focus:ring-2 focus:ring-offset-2',
+              'p-2 sm:gap-2 sm:px-4 sm:py-2',
               isPaymentLocked
                 ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 focus:ring-amber-500'
                 : 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500',
@@ -53,7 +54,7 @@
                 isToggling ? 'animate-spin rounded-full border-2 border-current border-t-transparent' : ''
               ]"
             />
-            <span>{{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}</span>
+            <span class="hidden sm:inline">{{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}</span>
           </button>
         </div>
       </div>
@@ -159,50 +160,51 @@
             'drag-over': dragOverIndex === index,
           }"
         >
-          <div class="flex items-center justify-between">
+          <!-- Desktop Layout (sm and up) -->
+          <div class="hidden sm:flex items-center justify-between">
             <!-- Payment Method Info -->
             <div class="flex-1">
-              <div class="flex items-center space-x-2 sm:space-x-3">
+              <div class="flex items-center space-x-3">
                 <!-- Drag Handle -->
                 <div v-if="canEditPayments" class="flex items-center text-gray-400 hover:text-gray-600">
-                  <GripVertical class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <GripVertical class="w-4 h-4" />
                 </div>
 
                 <!-- Payment Method Icon -->
                 <div
-                  class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                   :class="getPaymentMethodIconBg(paymentMethod.payment_method)"
                 >
                   <component
                     :is="getPaymentMethodIcon(paymentMethod.payment_method)"
-                    class="w-4 h-4 sm:w-5 sm:h-5"
+                    class="w-5 h-5"
                     :class="getPaymentMethodIconColor(paymentMethod.payment_method)"
                   />
                 </div>
 
                 <!-- Payment Method Details -->
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-1.5 sm:space-x-2 flex-wrap">
-                    <h6 class="text-sm sm:text-base font-medium text-slate-900 truncate">{{ paymentMethod.name }}</h6>
+                  <div class="flex items-center space-x-2 flex-wrap">
+                    <h6 class="text-base font-medium text-slate-900 truncate">{{ paymentMethod.name }}</h6>
                     <span
-                      class="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap"
+                      class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
                       :class="getPaymentTypeStyle(paymentMethod.payment_type)"
                     >
                       {{ formatPaymentType(paymentMethod.payment_type) }}
                     </span>
                     <span
                       v-if="!paymentMethod.is_active"
-                      class="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap"
+                      class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium whitespace-nowrap"
                     >
                       Inactive
                     </span>
                   </div>
 
-                  <div class="text-xs sm:text-sm text-slate-600 mt-1">
+                  <div class="text-sm text-slate-600 mt-1">
                     <span class="font-medium">{{
                       formatPaymentMethod(paymentMethod.payment_method)
                     }}</span>
-                    <span v-if="paymentMethod.currency" class="ml-1 sm:ml-2"
+                    <span v-if="paymentMethod.currency" class="ml-2"
                       >• {{ paymentMethod.currency }}</span
                     >
                   </div>
@@ -210,64 +212,64 @@
                   <!-- Method-specific details -->
                   <div
                     v-if="paymentMethod.payment_method === 'bank_transfer'"
-                    class="space-y-1 mt-1.5 sm:mt-2"
+                    class="space-y-1 mt-2"
                   >
-                    <div class="text-[10px] sm:text-xs text-slate-600">
+                    <div class="text-xs text-slate-600">
                       <span class="font-medium">Bank:</span> {{ paymentMethod.bank_name }}
                     </div>
-                    <div class="text-[10px] sm:text-xs text-slate-600">
+                    <div class="text-xs text-slate-600">
                       <span class="font-medium">Account:</span> {{ paymentMethod.account_name }} -
                       {{ paymentMethod.account_number }}
                     </div>
 
                     <!-- Access Methods -->
-                    <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
+                    <div class="flex flex-wrap gap-2 mt-2">
                       <span
                         v-if="paymentMethod.qr_code_image"
-                        class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-[10px] sm:text-xs"
+                        class="inline-flex items-center px-2 py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-xs"
                       >
-                        <QrCode class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+                        <QrCode class="w-3 h-3 mr-1" />
                         QR Code Available
                       </span>
                       <span
                         v-if="paymentMethod.payment_url"
-                        class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] sm:text-xs"
+                        class="inline-flex items-center px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs"
                       >
-                        <Link class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+                        <Link class="w-3 h-3 mr-1" />
                         Online Payment
                       </span>
                       <span
                         v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
-                        class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 bg-gray-50 text-gray-600 rounded-lg text-[10px] sm:text-xs"
+                        class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs"
                       >
-                        <Building2 class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+                        <Building2 class="w-3 h-3 mr-1" />
                         Manual Transfer Only
                       </span>
                     </div>
                   </div>
                   <div
                     v-else-if="paymentMethod.payment_method === 'payment_url'"
-                    class="text-[10px] sm:text-xs text-slate-500 mt-1 truncate"
+                    class="text-xs text-slate-500 mt-1 truncate"
                   >
                     {{ paymentMethod.payment_url }}
                   </div>
                   <div
                     v-else-if="paymentMethod.payment_method === 'qr_code'"
-                    class="text-[10px] sm:text-xs text-slate-500 mt-1"
+                    class="text-xs text-slate-500 mt-1"
                   >
                     QR Code Payment
                   </div>
 
-                  <p v-if="paymentMethod.description" class="text-xs sm:text-sm text-slate-600 mt-1.5 sm:mt-2">
+                  <p v-if="paymentMethod.description" class="text-sm text-slate-600 mt-2">
                     {{ paymentMethod.description }}
                   </p>
                 </div>
               </div>
             </div>
 
-            <!-- Actions -->
-            <div v-if="props.canEdit" class="flex items-center space-x-1 sm:space-x-2 ml-2 sm:ml-4">
-              <!-- QR Code Preview - Show for bank transfer with QR or standalone QR code -->
+            <!-- Actions (Desktop) -->
+            <div v-if="props.canEdit" class="flex items-center space-x-2 ml-4">
+              <!-- QR Code Preview -->
               <button
                 v-if="
                   (paymentMethod.payment_method === 'bank_transfer' ||
@@ -275,21 +277,21 @@
                   paymentMethod.qr_code_image
                 "
                 @click="showQRPreview(paymentMethod)"
-                class="text-slate-400 hover:text-[#1e90ff] p-1.5 sm:p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
+                class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
                 title="View QR Code"
               >
-                <QrCode class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <QrCode class="w-4 h-4" />
               </button>
 
-              <!-- Payment URL - Show external link for bank transfer with URL -->
+              <!-- Payment URL -->
               <a
                 v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
                 :href="paymentMethod.payment_url"
-                class="text-slate-400 hover:text-purple-600 p-1.5 sm:p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
+                class="text-slate-400 hover:text-purple-600 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
                 title="Open Payment Link"
                 @click.stop
               >
-                <ExternalLink class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ExternalLink class="w-4 h-4" />
               </a>
 
               <!-- Edit Button -->
@@ -297,14 +299,14 @@
                 @click="editPaymentMethod(paymentMethod)"
                 :disabled="isPaymentLocked"
                 :class="[
-                  'p-1.5 sm:p-2 rounded-lg transition-colors duration-200',
+                  'p-2 rounded-lg transition-colors duration-200',
                   isPaymentLocked
                     ? 'text-slate-300 cursor-not-allowed'
                     : 'text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF]'
                 ]"
                 :title="isPaymentLocked ? 'Locked - Cannot edit' : 'Edit'"
               >
-                <Edit class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Edit class="w-4 h-4" />
               </button>
 
               <!-- Delete Button -->
@@ -312,15 +314,161 @@
                 @click="confirmDeletePaymentMethod(paymentMethod)"
                 :disabled="isPaymentLocked"
                 :class="[
-                  'p-1.5 sm:p-2 rounded-lg transition-colors duration-200',
+                  'p-2 rounded-lg transition-colors duration-200',
                   isPaymentLocked
                     ? 'text-slate-300 cursor-not-allowed'
                     : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
                 ]"
                 :title="isPaymentLocked ? 'Locked - Cannot delete' : 'Delete'"
               >
-                <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Trash2 class="w-4 h-4" />
               </button>
+            </div>
+          </div>
+
+          <!-- Mobile Layout (below sm) - Centered Design -->
+          <div class="sm:hidden">
+            <!-- Centered Content -->
+            <div class="text-center">
+              <!-- Name + Badge on same row -->
+              <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                <h6 class="text-sm font-semibold text-slate-900">{{ paymentMethod.name }}</h6>
+                <span
+                  class="px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap"
+                  :class="getPaymentTypeStyle(paymentMethod.payment_type)"
+                >
+                  {{ formatPaymentType(paymentMethod.payment_type) }}
+                </span>
+                <span
+                  v-if="!paymentMethod.is_active"
+                  class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-medium whitespace-nowrap"
+                >
+                  Inactive
+                </span>
+              </div>
+
+              <!-- Payment method type + currency + bank on same row -->
+              <div class="text-xs text-slate-500 mt-1">
+                <span class="font-medium">{{ formatPaymentMethod(paymentMethod.payment_method) }}</span>
+                <span v-if="paymentMethod.currency" class="ml-1">• {{ paymentMethod.currency }}</span>
+                <span v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.bank_name" class="ml-1">• {{ paymentMethod.bank_name }}</span>
+              </div>
+
+              <!-- Method-specific details -->
+              <div class="mt-2">
+                <div
+                  v-if="paymentMethod.payment_method === 'bank_transfer'"
+                  class="space-y-0.5"
+                >
+                  <div class="text-[11px] text-slate-600">
+                    {{ paymentMethod.account_name }}
+                  </div>
+                  <div class="text-[11px] text-slate-500">
+                    {{ paymentMethod.account_number }}
+                  </div>
+
+                  <!-- Access Method Badges -->
+                  <div class="flex flex-wrap justify-center gap-1.5 mt-2">
+                    <span
+                      v-if="paymentMethod.qr_code_image"
+                      class="inline-flex items-center px-1.5 py-0.5 bg-[#E6F4FF] text-[#1873cc] rounded text-[10px]"
+                    >
+                      <QrCode class="w-2.5 h-2.5 mr-0.5" />
+                      QR Code Available
+                    </span>
+                    <span
+                      v-if="paymentMethod.payment_url"
+                      class="inline-flex items-center px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-[10px]"
+                    >
+                      <Link class="w-2.5 h-2.5 mr-0.5" />
+                      Online Payment
+                    </span>
+                    <span
+                      v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
+                      class="inline-flex items-center px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded text-[10px]"
+                    >
+                      <Building2 class="w-2.5 h-2.5 mr-0.5" />
+                      Manual Transfer Only
+                    </span>
+                  </div>
+                </div>
+                <div
+                  v-else-if="paymentMethod.payment_method === 'payment_url'"
+                  class="text-[11px] text-slate-500 truncate"
+                >
+                  {{ paymentMethod.payment_url }}
+                </div>
+                <div
+                  v-else-if="paymentMethod.payment_method === 'qr_code'"
+                  class="text-[11px] text-slate-500"
+                >
+                  QR Code Payment
+                </div>
+
+                <p v-if="paymentMethod.description" class="text-xs text-slate-600 mt-2">
+                  {{ paymentMethod.description }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Mobile Actions Bar -->
+            <div v-if="props.canEdit" class="mt-3 pt-3 border-t border-gray-100">
+              <div class="flex items-center justify-center gap-1">
+                <!-- QR Code Preview -->
+                <button
+                  v-if="
+                    (paymentMethod.payment_method === 'bank_transfer' ||
+                      paymentMethod.payment_method === 'qr_code') &&
+                    paymentMethod.qr_code_image
+                  "
+                  @click="showQRPreview(paymentMethod)"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 text-[#1e90ff] bg-[#E6F4FF] rounded-lg text-xs font-medium transition-colors duration-200"
+                >
+                  <QrCode class="w-3.5 h-3.5" />
+                  <span>QR</span>
+                </button>
+
+                <!-- Payment URL -->
+                <a
+                  v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
+                  :href="paymentMethod.payment_url"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 text-purple-700 bg-purple-50 rounded-lg text-xs font-medium transition-colors duration-200"
+                  @click.stop
+                >
+                  <ExternalLink class="w-3.5 h-3.5" />
+                  <span>Link</span>
+                </a>
+
+                <!-- Edit Button -->
+                <button
+                  @click="editPaymentMethod(paymentMethod)"
+                  :disabled="isPaymentLocked"
+                  :class="[
+                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200',
+                    isPaymentLocked
+                      ? 'text-slate-300 bg-slate-50 cursor-not-allowed'
+                      : 'text-[#1e90ff] bg-[#E6F4FF]'
+                  ]"
+                >
+                  <Edit class="w-3.5 h-3.5" />
+                  <span>Edit</span>
+                </button>
+
+                <!-- Delete Button -->
+                <button
+                  @click="confirmDeletePaymentMethod(paymentMethod)"
+                  :disabled="isPaymentLocked"
+                  :class="[
+                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200',
+                    isPaymentLocked
+                      ? 'text-slate-300 bg-slate-50 cursor-not-allowed'
+                      : 'text-red-600 bg-red-50'
+                  ]"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -344,7 +492,7 @@
 
     <!-- Modals -->
     <PaymentMethodModal
-      v-if="showAddModal || showEditModal"
+      :show="showAddModal || showEditModal"
       :event-id="eventId"
       :existing-payment-method="editingPaymentMethod || undefined"
       @close="closeModals"
