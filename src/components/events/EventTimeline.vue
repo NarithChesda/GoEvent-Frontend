@@ -10,19 +10,19 @@
         <!-- Timeline line -->
         <div
           v-if="index < dateGroups.length - 1"
-          class="absolute left-[3.5px] top-7 bottom-0 w-px bg-slate-200"
+          class="absolute left-[3.5px] top-7 bottom-0 w-px bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/30"
         ></div>
 
         <!-- Date Header with Dot (becomes pill when sticky) -->
         <div
           class="sticky top-[64px] z-10 mb-3 date-header-sticky inline-flex items-center gap-2"
         >
-          <div class="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0"></div>
+          <div class="w-2 h-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] flex-shrink-0"></div>
           <div class="inline-flex items-baseline gap-2">
-            <span class="text-slate-900 font-semibold text-lg">{{
+            <span class="text-slate-800 font-semibold text-lg">{{
               dateGroup.monthDay
             }}</span>
-            <span class="text-slate-400 text-base">{{ dateGroup.weekday }}</span>
+            <span class="text-slate-500 text-base">{{ dateGroup.weekday }}</span>
           </div>
         </div>
 
@@ -46,10 +46,10 @@
         <!-- Left: Date Column (Sticky) -->
         <div class="w-24 flex-shrink-0">
           <div class="sticky top-20 lg:top-24 pt-1">
-            <div class="text-slate-900 font-semibold text-lg">
+            <div class="text-slate-800 font-semibold text-lg">
               {{ dateGroup.monthDay }}
             </div>
-            <div class="text-slate-400 text-base">{{ dateGroup.weekday }}</div>
+            <div class="text-slate-500 text-base">{{ dateGroup.weekday }}</div>
           </div>
         </div>
 
@@ -57,12 +57,12 @@
         <div class="flex flex-col items-center flex-shrink-0 relative">
           <!-- Timeline dot (Sticky) -->
           <div class="sticky top-20 lg:top-24 z-10">
-            <div class="w-2.5 h-2.5 rounded-full bg-slate-300 mt-2"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] mt-2 shadow-sm shadow-[#2ecc71]/30"></div>
           </div>
           <!-- Timeline line -->
           <div
             v-if="index < dateGroups.length - 1 || dateGroup.events.length > 1"
-            class="absolute top-4 bottom-0 w-px bg-slate-200"
+            class="absolute top-4 bottom-0 w-px bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/30"
           ></div>
         </div>
 
@@ -138,9 +138,13 @@ const canManageEvent = (event: Event): boolean => {
   }
 
   .date-header-sticky.is-stuck {
-    background-color: rgb(255, 255, 255);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border-color: rgb(226, 232, 240);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 2px 8px rgba(46, 204, 113, 0.1),
+      0 1px 3px rgba(30, 144, 255, 0.08);
+    border-color: rgba(46, 204, 113, 0.2);
   }
 }
 </style>

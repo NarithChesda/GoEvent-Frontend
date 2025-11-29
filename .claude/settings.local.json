@@ -184,7 +184,8 @@
       "Bash(git mv:*)",
       "Bash(timeout 60 npx vue-tsc:*)",
       "Bash(timeout 90 npx vue-tsc:*)",
-      "Bash(timeout 120 npx vue-tsc:*)"
+      "Bash(timeout 120 npx vue-tsc:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -2,7 +2,7 @@
   <!-- Mobile Card -->
   <div
     v-if="variant === 'mobile'"
-    class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer"
+    class="glass-card rounded-2xl overflow-hidden cursor-pointer"
     @click="$emit('click')"
   >
     <div class="p-4 flex gap-3">
@@ -98,7 +98,7 @@
   <!-- Desktop Card -->
   <div
     v-else
-    class="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden cursor-pointer group"
+    class="glass-card rounded-2xl hover:shadow-lg hover:shadow-[#2ecc71]/10 transition-all duration-300 overflow-hidden cursor-pointer group"
     @click="$emit('click')"
   >
     <div class="p-5 flex gap-4">
@@ -246,3 +246,21 @@ const hostNames = computed(() => formatHostNames(props.event))
 const guestCount = computed(() => getGuestCount(props.event))
 const category = computed(() => getEventCategory(props.event))
 </script>
+
+<style scoped>
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 6px -1px rgba(46, 204, 113, 0.05),
+    0 2px 4px -1px rgba(30, 144, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(46, 204, 113, 0.3);
+}
+</style>

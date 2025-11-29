@@ -6,11 +6,11 @@
   >
     <button
       @click.stop="toggleMenu"
-      class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+      class="glass-button flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
       :class="
         modelValue
-          ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900 hover:from-[#2ecc71]/20 hover:to-[#1e90ff]/20'
-          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+          ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
+          : 'text-slate-700'
       "
     >
       <span>{{ modelValue || 'All Categories' }}</span>
@@ -24,7 +24,7 @@
     <Transition name="dropdown">
       <div
         v-if="showMenu"
-        class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-w-[180px] z-[100]"
+        class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[180px] z-[100]"
       >
         <button
           @click="selectCategory('')"
@@ -63,10 +63,10 @@
       <button
         @click="selectCategory('')"
         :class="[
-          'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap',
+          'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap',
           !modelValue
-            ? 'bg-slate-900 text-white'
-            : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+            : 'glass-pill text-slate-600',
         ]"
       >
         All
@@ -76,10 +76,10 @@
         :key="category.id"
         @click="selectCategory(category.name)"
         :class="[
-          'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap',
+          'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap',
           modelValue === category.name
-            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
-            : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+            : 'glass-pill text-slate-600',
         ]"
       >
         {{ category.name }}
@@ -156,5 +156,38 @@ onUnmounted(() => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
+}
+
+/* Glass effect styles */
+.glass-button {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 32px rgba(46, 204, 113, 0.1),
+    0 4px 12px rgba(30, 144, 255, 0.08);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-pill:hover {
+  background: rgba(255, 255, 255, 0.8);
 }
 </style>

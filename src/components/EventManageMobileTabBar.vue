@@ -1,15 +1,15 @@
 <template>
   <!-- Fixed position wrapper for stable mobile scrolling -->
-  <div class="md:hidden fixed top-[72px] left-0 right-0 z-40 bg-white border-b border-[#B0E0E6]/50 shadow-md tab-bar-container">
+  <div class="md:hidden fixed top-[72px] left-0 right-0 z-40 glass-manage-mobile-tabs border-b border-slate-200/30 tab-bar-container">
     <div class="relative">
       <!-- Left scroll fade -->
       <div
-        class="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white to-transparent pointer-events-none z-10"
+        class="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#f8fffe] to-transparent pointer-events-none z-10"
       ></div>
 
       <!-- Right scroll fade -->
       <div
-        class="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white to-transparent pointer-events-none z-10"
+        class="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#f0f9ff] to-transparent pointer-events-none z-10"
       ></div>
 
       <!-- Scrollable tabs -->
@@ -194,5 +194,17 @@ const handleKeyboard = (event: KeyboardEvent, index: number) => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Glass mobile tabs effect - blends with brand gradient background */
+.glass-manage-mobile-tabs {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 255, 254, 0.92) 0%,
+    rgba(240, 253, 249, 0.92) 50%,
+    rgba(240, 249, 255, 0.92) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 </style>

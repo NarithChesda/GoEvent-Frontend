@@ -1,7 +1,7 @@
 <template>
   <div class="relative min-h-screen">
-    <!-- Background -->
-    <div class="fixed inset-0 bg-gradient-to-br from-[#2ecc71]/5 via-white to-[#1e90ff]/5 -z-10"></div>
+    <!-- Clean Minimal Gradient Background -->
+    <div class="fixed inset-0 -z-10 premium-bg"></div>
 
     <!-- Desktop Top Navigation Bar -->
     <TopNavBar v-if="!hideTopNav" />
@@ -40,3 +40,17 @@ withDefaults(defineProps<Props>(), {
   hideMobileTabBar: false
 })
 </script>
+
+<style>
+/* Premium minimal gradient background */
+.premium-bg {
+  background: linear-gradient(
+    135deg,
+    #f8fffe 0%,
+    #f0fdf9 25%,
+    #f5fbff 50%,
+    #f0f9ff 75%,
+    #f8fffe 100%
+  );
+}
+</style>

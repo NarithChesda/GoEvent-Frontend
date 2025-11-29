@@ -10,7 +10,7 @@
       <div
         v-if="userMenuOpen && authStore.isAuthenticated"
         ref="userMenuRef"
-        class="absolute bottom-full left-0 right-0 border-t border-[#B0E0E6]/50 bg-white/95 backdrop-blur-sm shadow-lg z-[70]"
+        class="absolute bottom-full left-0 right-0 glass-menu border-t border-white/30 z-[70]"
         role="menu"
         aria-orientation="vertical"
       >
@@ -91,7 +91,7 @@
       </div>
     </Transition>
 
-    <div class="bg-white/95 backdrop-blur-sm border-t border-[#B0E0E6]/50 shadow-xl shadow-[#1e90ff]/10">
+    <div class="glass-tab-bar border-t border-white/30">
       <div class="flex items-center justify-around px-2 py-1">
         <!-- Navigation items -->
         <RouterLink
@@ -286,5 +286,28 @@ onUnmounted(() => {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* Glass tab bar effect - blends with brand gradient background */
+.glass-tab-bar {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 255, 254, 0.9) 0%,
+    rgba(240, 253, 249, 0.9) 50%,
+    rgba(240, 249, 255, 0.9) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+}
+
+/* Glass menu effect */
+.glass-menu {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 -8px 32px rgba(46, 204, 113, 0.1),
+    0 -4px 12px rgba(30, 144, 255, 0.08);
 }
 </style>

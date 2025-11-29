@@ -1,7 +1,7 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 transition-all duration-300"
+    class="fixed top-0 left-0 right-0 z-50 h-16 glass-manage-header border-b border-slate-200/30 transition-all duration-300"
     :style="{ marginLeft: headerMarginLeft }"
   >
     <div class="flex items-center justify-between h-full px-4 sm:px-6">
@@ -214,3 +214,17 @@ const goBackToEvents = () => {
   router.push('/events')
 }
 </script>
+
+<style scoped>
+/* Glass header effect - blends with brand gradient background */
+.glass-manage-header {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 255, 254, 0.9) 0%,
+    rgba(240, 253, 249, 0.9) 50%,
+    rgba(240, 249, 255, 0.9) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+</style>

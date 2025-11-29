@@ -1,8 +1,8 @@
 <template>
   <!-- Desktop Top Navigation Bar -->
   <header
-    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b transition-colors duration-200 z-50"
-    :class="isScrolled ? 'border-slate-200/50 shadow-sm' : 'border-transparent'"
+    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 glass-nav border-b transition-colors duration-200 z-50"
+    :class="isScrolled ? 'border-white/30 shadow-lg shadow-[#2ecc71]/5' : 'border-transparent'"
     role="navigation"
     aria-label="Main navigation"
   >
@@ -95,7 +95,7 @@
           <Transition name="dropdown">
             <div
               v-if="showLanguageMenu"
-              class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-w-[140px] z-[100]"
+              class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[140px] z-[100]"
             >
               <button
                 v-for="lang in languages"
@@ -148,7 +148,7 @@
           <Transition name="dropdown">
             <div
               v-if="userMenuOpen && authStore.isAuthenticated"
-              class="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl shadow-slate-900/10 overflow-hidden z-[100] w-64"
+              class="glass-dropdown absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-[100] w-64"
               role="menu"
               aria-orientation="vertical"
             >
@@ -412,5 +412,28 @@ onUnmounted(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Glass navigation bar - blends with brand gradient background */
+.glass-nav {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 255, 254, 0.85) 0%,
+    rgba(240, 253, 249, 0.85) 50%,
+    rgba(240, 249, 255, 0.85) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Glass dropdown effect */
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 32px rgba(46, 204, 113, 0.1),
+    0 4px 12px rgba(30, 144, 255, 0.08);
 }
 </style>

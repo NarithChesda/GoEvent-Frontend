@@ -1,7 +1,7 @@
 <template>
   <!-- Desktop Fixed Sidebar Navigation (Canva-style compact) -->
   <aside
-    class="hidden lg:flex fixed top-16 h-[calc(100%-4rem)] bg-white/90 backdrop-blur-xl border-r border-slate-200/60 z-40 flex-col w-[88px] transition-all duration-300 ease-in-out"
+    class="hidden lg:flex fixed top-16 h-[calc(100%-4rem)] glass-manage-sidebar border-r border-slate-200/30 z-40 flex-col w-[88px] transition-all duration-300 ease-in-out"
     :style="{ left: sidebarLeftPosition }"
     role="navigation"
     aria-label="Event navigation"
@@ -171,5 +171,17 @@ nav::-webkit-scrollbar-thumb:hover {
 nav {
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+/* Glass sidebar effect - blends with brand gradient background */
+.glass-manage-sidebar {
+  background: linear-gradient(
+    180deg,
+    rgba(248, 255, 254, 0.88) 0%,
+    rgba(240, 253, 249, 0.88) 50%,
+    rgba(240, 249, 255, 0.88) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 </style>
