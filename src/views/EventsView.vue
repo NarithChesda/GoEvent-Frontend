@@ -6,15 +6,15 @@
     <section class="py-4 sm:py-6 lg:py-8">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header with Toggle -->
-        <div class="flex items-center justify-between mb-8 sm:mb-10">
-          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">
+        <div class="flex items-center justify-between mb-6 sm:mb-8 lg:mb-10">
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
             Events
           </h1>
 
           <!-- Filters -->
-          <div class="flex items-center gap-3">
-            <!-- Category Filter Dropdown -->
-            <div class="relative">
+          <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Category Filter Dropdown - Hidden on mobile -->
+            <div class="relative hidden sm:block">
               <select
                 v-model="categoryFilter"
                 class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium pl-4 pr-8 py-2 rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
@@ -33,7 +33,7 @@
               <button
                 @click="timeFilter = 'upcoming'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
                   timeFilter === 'upcoming'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -44,7 +44,7 @@
               <button
                 @click="timeFilter = 'past'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
                   timeFilter === 'past'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -55,7 +55,7 @@
               <button
                 @click="timeFilter = 'recent'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-full transition-all duration-200',
+                  'px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-200',
                   timeFilter === 'recent'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -68,142 +68,277 @@
         </div>
 
         <!-- Loading State -->
-        <div v-if="loading" class="space-y-8">
-          <div v-for="i in 3" :key="`skeleton-${i}`" class="flex gap-6">
-            <div class="w-24 flex-shrink-0">
-              <div class="h-4 bg-slate-200 rounded w-16 mb-2 animate-pulse"></div>
-              <div class="h-3 bg-slate-200 rounded w-12 animate-pulse"></div>
-            </div>
-            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 animate-pulse">
-              <div class="flex gap-4">
-                <div class="flex-1 space-y-3">
-                  <div class="h-3 bg-slate-200 rounded w-16"></div>
-                  <div class="h-5 bg-slate-200 rounded w-3/4"></div>
-                  <div class="h-4 bg-slate-200 rounded w-1/2"></div>
-                  <div class="h-4 bg-slate-200 rounded w-1/3"></div>
+        <div v-if="loading" class="space-y-6 sm:space-y-8">
+          <div v-for="i in 3" :key="`skeleton-${i}`">
+            <!-- Mobile Skeleton -->
+            <div class="sm:hidden">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-2 h-2 rounded-full bg-slate-200 animate-pulse"></div>
+                <div class="h-4 bg-slate-200 rounded w-24 animate-pulse"></div>
+              </div>
+              <div class="pl-5">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 animate-pulse">
+                  <div class="flex gap-3">
+                    <div class="flex-1 space-y-2">
+                      <div class="h-3 bg-slate-200 rounded w-12"></div>
+                      <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                      <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+                      <div class="h-3 bg-slate-200 rounded w-1/3"></div>
+                    </div>
+                    <div class="w-20 h-20 bg-slate-200 rounded-xl flex-shrink-0"></div>
+                  </div>
                 </div>
-                <div class="w-32 h-24 bg-slate-200 rounded-xl"></div>
+              </div>
+            </div>
+            <!-- Desktop Skeleton -->
+            <div class="hidden sm:flex gap-6">
+              <div class="w-24 flex-shrink-0">
+                <div class="h-4 bg-slate-200 rounded w-16 mb-2 animate-pulse"></div>
+                <div class="h-3 bg-slate-200 rounded w-12 animate-pulse"></div>
+              </div>
+              <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 animate-pulse">
+                <div class="flex gap-4">
+                  <div class="flex-1 space-y-3">
+                    <div class="h-3 bg-slate-200 rounded w-16"></div>
+                    <div class="h-5 bg-slate-200 rounded w-3/4"></div>
+                    <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+                    <div class="h-4 bg-slate-200 rounded w-1/3"></div>
+                  </div>
+                  <div class="w-32 h-24 bg-slate-200 rounded-xl"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Events Timeline -->
-        <div v-else-if="hasEvents" class="space-y-8">
+        <div v-else-if="hasEvents" class="space-y-6 sm:space-y-8">
           <div
             v-for="(dateGroup, index) in groupedByDate"
             :key="dateGroup.date"
-            class="relative flex gap-4"
+            class="relative"
           >
-            <!-- Left: Date Column (Sticky) -->
-            <div class="w-24 flex-shrink-0">
-              <div class="sticky top-20 lg:top-24 pt-1">
-                <div class="text-slate-900 font-semibold text-lg">{{ dateGroup.monthDay }}</div>
-                <div class="text-slate-400 text-base">{{ dateGroup.weekday }}</div>
-              </div>
-            </div>
-
-            <!-- Middle: Timeline -->
-            <div class="flex flex-col items-center flex-shrink-0 relative">
-              <!-- Timeline dot (Sticky) -->
-              <div class="sticky top-20 lg:top-24 z-10">
-                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 mt-2"></div>
-              </div>
-              <!-- Timeline line -->
+            <!-- Mobile: Timeline with Date Header and Cards -->
+            <div class="sm:hidden relative">
+              <!-- Timeline line (starts below the dot) -->
               <div
-                v-if="index < groupedByDate.length - 1 || dateGroup.events.length > 1"
-                class="absolute top-4 bottom-0 w-px bg-slate-200"
+                v-if="index < groupedByDate.length - 1"
+                class="absolute left-[3px] top-6 bottom-0 w-px bg-slate-200"
               ></div>
-            </div>
 
-            <!-- Right: Event Cards -->
-            <div class="flex-1 space-y-4 pb-2">
-              <div
-                v-for="event in dateGroup.events"
-                :key="event.id"
-                class="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden cursor-pointer group"
-                @click="viewEvent(event)"
-              >
-                <div class="p-5 flex gap-4">
-                  <!-- Event Details -->
-                  <div class="flex-1 min-w-0">
-                    <!-- Time and Category -->
-                    <div class="flex items-center gap-2 text-sm mb-1">
-                      <span class="text-slate-400">{{ formatEventTime(event.start_date) }}</span>
-                      <span v-if="getEventCategory(event)" class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium">
-                        {{ getEventCategory(event) }}
-                      </span>
-                    </div>
+              <!-- Date Header with Dot (becomes pill when sticky) -->
+              <div class="sticky top-14 z-10 mb-3 date-header-sticky flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0"></div>
+                <div class="date-header-content inline-flex items-baseline gap-2 transition-all duration-200">
+                  <span class="text-slate-900 font-semibold">{{ dateGroup.monthDay }}</span>
+                  <span class="text-slate-400 text-sm">{{ dateGroup.weekday }}</span>
+                </div>
+              </div>
 
-                    <!-- Title -->
-                    <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors">
-                      {{ event.title }}
-                    </h3>
+              <!-- Mobile Event Cards -->
+              <div class="space-y-3 ml-5">
+                <div
+                  v-for="event in dateGroup.events"
+                  :key="`mobile-${event.id}`"
+                  class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer"
+                  @click="viewEvent(event)"
+                >
+                  <div class="p-4 flex gap-3">
+                    <!-- Event Details -->
+                    <div class="flex-1 min-w-0">
+                      <!-- Time -->
+                      <div class="text-sm text-slate-400 mb-1">
+                        {{ formatEventTime(event.start_date) }}
+                      </div>
 
-                    <!-- Hosts -->
-                    <div v-if="getEventHosts(event).length > 0" class="flex items-center gap-2 text-sm mb-2">
-                      <div class="flex -space-x-1">
-                        <div
-                          v-for="(host, idx) in getEventHosts(event).slice(0, 3)"
-                          :key="idx"
-                          class="w-5 h-5 rounded-full border border-white overflow-hidden bg-slate-200"
-                        >
-                          <img
-                            v-if="host.image"
-                            :src="host.image"
-                            :alt="host.name"
-                            class="w-full h-full object-cover"
-                          />
-                          <div v-else class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium">
-                            {{ host.name.charAt(0).toUpperCase() }}
+                      <!-- Title -->
+                      <h3 class="text-base font-semibold text-slate-900 mb-2 line-clamp-2">
+                        {{ event.title }}
+                      </h3>
+
+                      <!-- Hosts (if available) -->
+                      <div v-if="getEventHosts(event).length > 0" class="flex items-center gap-1.5 text-sm text-slate-500 mb-1.5">
+                        <div class="flex -space-x-1">
+                          <div
+                            v-for="(host, idx) in getEventHosts(event).slice(0, 2)"
+                            :key="idx"
+                            class="w-4 h-4 rounded-full border border-white overflow-hidden bg-slate-200"
+                          >
+                            <img
+                              v-if="host.image"
+                              :src="host.image"
+                              :alt="host.name"
+                              class="w-full h-full object-cover"
+                            />
+                            <div v-else class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-[8px] font-medium">
+                              {{ host.name.charAt(0).toUpperCase() }}
+                            </div>
                           </div>
                         </div>
+                        <span class="truncate">By {{ formatHostNames(event) }}</span>
                       </div>
-                      <span class="text-slate-600">By {{ formatHostNames(event) }}</span>
+
+                      <!-- Location -->
+                      <div class="flex items-center gap-1.5 text-sm mb-1.5">
+                        <template v-if="event.location">
+                          <MapPin class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <span class="text-slate-500 truncate">{{ event.location }}</span>
+                        </template>
+                        <template v-else>
+                          <AlertTriangle class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                          <span class="text-amber-600">Location Missing</span>
+                        </template>
+                      </div>
+
+                      <!-- Guest Count -->
+                      <div class="flex items-center gap-1.5 text-sm text-slate-400">
+                        <Users class="w-3.5 h-3.5" />
+                        <span>{{ getGuestCount(event) }}</span>
+                      </div>
+
+                      <!-- Manage Button (only for events user can edit) -->
+                      <button
+                        v-if="canManageEvent(event)"
+                        @click.stop="manageEvent(event)"
+                        class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                      >
+                        Manage Event
+                        <ArrowRight class="w-3.5 h-3.5" />
+                      </button>
                     </div>
 
-                    <!-- Location -->
-                    <div class="flex items-center gap-2 text-sm mb-2">
-                      <template v-if="event.location">
-                        <MapPin class="w-4 h-4 text-slate-400" />
-                        <span class="text-slate-600">{{ event.location }}</span>
-                      </template>
-                      <template v-else>
-                        <AlertTriangle class="w-4 h-4 text-amber-500" />
-                        <span class="text-amber-600">Location Missing</span>
-                      </template>
+                    <!-- Event Image (square on mobile) -->
+                    <div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+                      <img
+                        v-if="getEventImage(event)"
+                        :src="getEventImage(event) ?? undefined"
+                        :alt="event.title"
+                        class="w-full h-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                      >
+                        <CalendarDays class="w-6 h-6 text-[#2ecc71]/60" />
+                      </div>
                     </div>
-
-                    <!-- Guest Count -->
-                    <div class="flex items-center gap-2 text-sm text-slate-500">
-                      <Users class="w-4 h-4" />
-                      <span>{{ getGuestCount(event) }}</span>
-                    </div>
-
-                    <!-- Manage Button (only for events user can edit) -->
-                    <button
-                      v-if="canManageEvent(event)"
-                      @click.stop="manageEvent(event)"
-                      class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
-                    >
-                      Manage Event
-                      <ArrowRight class="w-4 h-4" />
-                    </button>
                   </div>
+                </div>
+              </div>
+            </div>
 
-                  <!-- Event Image (landscape) -->
-                  <div class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
-                    <img
-                      v-if="getEventImage(event)"
-                      :src="getEventImage(event) ?? undefined"
-                      :alt="event.title"
-                      class="w-full h-full object-cover"
-                    />
-                    <div
-                      v-else
-                      class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
-                    >
-                      <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
+            <!-- Desktop: Original Timeline Layout -->
+            <div class="hidden sm:flex gap-4">
+              <!-- Left: Date Column (Sticky) -->
+              <div class="w-24 flex-shrink-0">
+                <div class="sticky top-20 lg:top-24 pt-1">
+                  <div class="text-slate-900 font-semibold text-lg">{{ dateGroup.monthDay }}</div>
+                  <div class="text-slate-400 text-base">{{ dateGroup.weekday }}</div>
+                </div>
+              </div>
+
+              <!-- Middle: Timeline -->
+              <div class="flex flex-col items-center flex-shrink-0 relative">
+                <!-- Timeline dot (Sticky) -->
+                <div class="sticky top-20 lg:top-24 z-10">
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300 mt-2"></div>
+                </div>
+                <!-- Timeline line -->
+                <div
+                  v-if="index < groupedByDate.length - 1 || dateGroup.events.length > 1"
+                  class="absolute top-4 bottom-0 w-px bg-slate-200"
+                ></div>
+              </div>
+
+              <!-- Right: Event Cards (Desktop) -->
+              <div class="flex-1 space-y-4 pb-2">
+                <div
+                  v-for="event in dateGroup.events"
+                  :key="event.id"
+                  class="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden cursor-pointer group"
+                  @click="viewEvent(event)"
+                >
+                  <div class="p-5 flex gap-4">
+                    <!-- Event Details -->
+                    <div class="flex-1 min-w-0">
+                      <!-- Time and Category -->
+                      <div class="flex items-center gap-2 text-sm mb-1">
+                        <span class="text-slate-400">{{ formatEventTime(event.start_date) }}</span>
+                        <span v-if="getEventCategory(event)" class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium">
+                          {{ getEventCategory(event) }}
+                        </span>
+                      </div>
+
+                      <!-- Title -->
+                      <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors">
+                        {{ event.title }}
+                      </h3>
+
+                      <!-- Hosts -->
+                      <div v-if="getEventHosts(event).length > 0" class="flex items-center gap-2 text-sm mb-2">
+                        <div class="flex -space-x-1">
+                          <div
+                            v-for="(host, idx) in getEventHosts(event).slice(0, 3)"
+                            :key="idx"
+                            class="w-5 h-5 rounded-full border border-white overflow-hidden bg-slate-200"
+                          >
+                            <img
+                              v-if="host.image"
+                              :src="host.image"
+                              :alt="host.name"
+                              class="w-full h-full object-cover"
+                            />
+                            <div v-else class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium">
+                              {{ host.name.charAt(0).toUpperCase() }}
+                            </div>
+                          </div>
+                        </div>
+                        <span class="text-slate-600">By {{ formatHostNames(event) }}</span>
+                      </div>
+
+                      <!-- Location -->
+                      <div class="flex items-center gap-2 text-sm mb-2">
+                        <template v-if="event.location">
+                          <MapPin class="w-4 h-4 text-slate-400" />
+                          <span class="text-slate-600">{{ event.location }}</span>
+                        </template>
+                        <template v-else>
+                          <AlertTriangle class="w-4 h-4 text-amber-500" />
+                          <span class="text-amber-600">Location Missing</span>
+                        </template>
+                      </div>
+
+                      <!-- Guest Count -->
+                      <div class="flex items-center gap-2 text-sm text-slate-500">
+                        <Users class="w-4 h-4" />
+                        <span>{{ getGuestCount(event) }}</span>
+                      </div>
+
+                      <!-- Manage Button (only for events user can edit) -->
+                      <button
+                        v-if="canManageEvent(event)"
+                        @click.stop="manageEvent(event)"
+                        class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                      >
+                        Manage Event
+                        <ArrowRight class="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <!-- Event Image (landscape) -->
+                    <div class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+                      <img
+                        v-if="getEventImage(event)"
+                        :src="getEventImage(event) ?? undefined"
+                        :alt="event.title"
+                        class="w-full h-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                      >
+                        <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -331,7 +466,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   CalendarDays,
@@ -792,6 +927,54 @@ const loadCategories = async () => {
   }
 }
 
+// Sticky header detection for mobile
+let stickyObserver: IntersectionObserver | null = null
+
+const setupStickyObserver = () => {
+  // Clean up existing observer
+  if (stickyObserver) {
+    stickyObserver.disconnect()
+  }
+
+  // Only run on mobile
+  if (window.innerWidth >= 640) return
+
+  nextTick(() => {
+    const stickyHeaders = document.querySelectorAll('.date-header-sticky')
+    if (stickyHeaders.length === 0) return
+
+    // Create sentinel elements and observer
+    stickyObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const header = entry.target.nextElementSibling as HTMLElement
+          if (header?.classList.contains('date-header-sticky')) {
+            if (!entry.isIntersecting) {
+              header.classList.add('is-stuck')
+            } else {
+              header.classList.remove('is-stuck')
+            }
+          }
+        })
+      },
+      { threshold: 0, rootMargin: '-57px 0px 0px 0px' }
+    )
+
+    stickyHeaders.forEach((header) => {
+      // Create a sentinel element before each sticky header
+      const sentinel = document.createElement('div')
+      sentinel.className = 'sticky-sentinel'
+      sentinel.style.height = '1px'
+      sentinel.style.width = '1px'
+      sentinel.style.position = 'absolute'
+      sentinel.style.top = '0'
+      sentinel.style.left = '0'
+      header.parentElement?.insertBefore(sentinel, header)
+      stickyObserver?.observe(sentinel)
+    })
+  })
+}
+
 // Lifecycle
 onMounted(async () => {
   // Load categories
@@ -803,7 +986,28 @@ onMounted(async () => {
       showMessage('error', result.message)
     }
   }
+
+  // Setup sticky observer after events load
+  setupStickyObserver()
 })
+
+onUnmounted(() => {
+  if (stickyObserver) {
+    stickyObserver.disconnect()
+  }
+  // Clean up sentinel elements
+  document.querySelectorAll('.sticky-sentinel').forEach((el) => el.remove())
+})
+
+// Re-setup sticky observer when events change
+watch(
+  () => groupedByDate.value,
+  () => {
+    // Clean up old sentinels
+    document.querySelectorAll('.sticky-sentinel').forEach((el) => el.remove())
+    setupStickyObserver()
+  }
+)
 </script>
 
 <style scoped>
@@ -859,5 +1063,23 @@ onMounted(async () => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Date header sticky pill effect - covers bullet and text */
+@media (max-width: 639px) {
+  .date-header-sticky {
+    width: fit-content;
+    padding: 4px 12px 4px 8px;
+    margin: -4px -12px -4px -8px;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    background-color: transparent;
+  }
+
+  .date-header-sticky.is-stuck {
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-color: rgb(226, 232, 240);
+  }
 }
 </style>
