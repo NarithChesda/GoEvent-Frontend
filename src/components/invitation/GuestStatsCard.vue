@@ -1,19 +1,19 @@
 <template>
-  <div class="space-y-4">
+  <div :class="compact ? 'space-y-4' : 'space-y-5'">
     <!-- Stats Summary -->
-    <div class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
       <div>
         <p
           :class="[
-            'uppercase tracking-wide',
-            compact ? 'text-xs font-medium text-slate-400' : 'text-xs font-semibold tracking-[0.2em] text-slate-400'
+            'uppercase',
+            compact ? 'text-xs font-medium tracking-wide text-slate-400' : 'text-xs font-semibold tracking-[0.2em] text-slate-400'
           ]"
         >
           Invited Guests
         </p>
         <p
           :class="[
-            'font-bold text-slate-900',
+            'font-semibold text-slate-900 transition-all duration-300',
             compact ? 'text-3xl' : 'text-4xl tracking-tight'
           ]"
           aria-live="polite"
@@ -24,10 +24,10 @@
           Total audience you're keeping in the loop.
         </p>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex flex-wrap items-center gap-3">
         <div
           :class="[
-            'inline-flex items-center gap-1.5 rounded-full bg-emerald-50 font-medium text-emerald-700',
+            'inline-flex items-center gap-1.5 rounded-full bg-emerald-50 font-semibold text-emerald-600',
             compact ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-2 text-sm ring-1 ring-emerald-200'
           ]"
         >
@@ -48,21 +48,21 @@
     >
       <div
         :class="[
-          'h-full transition-[width] duration-500',
+          'h-full transition-all duration-700 ease-out',
           compact ? 'bg-emerald-500' : 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600'
         ]"
         :style="{ width: segmentWidth(viewedInvitations) }"
       ></div>
       <div
         :class="[
-          'h-full transition-[width] duration-500',
+          'h-full transition-all duration-700 ease-out',
           compact ? 'bg-sky-500' : 'bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600'
         ]"
         :style="{ width: segmentWidth(awaitingViewInvitations) }"
       ></div>
       <div
         :class="[
-          'h-full transition-[width] duration-500',
+          'h-full transition-all duration-700 ease-out',
           compact ? 'bg-slate-300' : 'bg-gradient-to-r from-slate-300 via-slate-300 to-slate-400'
         ]"
         :style="{ width: segmentWidth(pendingInvitations) }"
@@ -77,20 +77,20 @@
           compact ? 'rounded-xl p-3' : 'rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70'
         ]"
       >
-        <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center justify-between">
           <p
             :class="[
-              'text-xs font-medium',
-              compact ? 'text-emerald-700' : 'font-semibold uppercase tracking-wide text-emerald-600'
+              'text-xs',
+              compact ? 'font-medium text-emerald-700' : 'font-semibold uppercase tracking-wide text-emerald-600'
             ]"
           >
             Viewed
           </p>
-          <span :class="['text-xs font-medium', compact ? 'text-emerald-600' : 'font-semibold text-emerald-600']">
+          <span :class="['text-xs font-semibold', compact ? 'text-emerald-600' : 'text-emerald-600']">
             {{ loading ? '...' : `${viewedPercentage}%` }}
           </span>
         </div>
-        <p :class="['font-semibold text-slate-900', compact ? 'text-lg' : 'mt-3 text-lg']">
+        <p :class="['font-semibold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-3 text-lg']">
           {{ loading ? '...' : (compact ? viewedInvitations : `${viewedInvitations} guests`) }}
         </p>
         <p v-if="!compact" class="text-xs text-emerald-700/70">Already engaged with their invite.</p>
@@ -102,20 +102,20 @@
           compact ? 'rounded-xl p-3' : 'rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70'
         ]"
       >
-        <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center justify-between">
           <p
             :class="[
-              'text-xs font-medium',
-              compact ? 'text-sky-700' : 'font-semibold uppercase tracking-wide text-sky-600'
+              'text-xs',
+              compact ? 'font-medium text-sky-700' : 'font-semibold uppercase tracking-wide text-sky-600'
             ]"
           >
             Awaiting View
           </p>
-          <span :class="['text-xs font-medium', compact ? 'text-sky-600' : 'font-semibold text-sky-600']">
+          <span :class="['text-xs font-semibold', compact ? 'text-sky-600' : 'text-sky-600']">
             {{ loading ? '...' : `${awaitingViewPercentage}%` }}
           </span>
         </div>
-        <p :class="['font-semibold text-slate-900', compact ? 'text-lg' : 'mt-3 text-lg']">
+        <p :class="['font-semibold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-3 text-lg']">
           {{ loading ? '...' : (compact ? awaitingViewInvitations : `${awaitingViewInvitations} guests`) }}
         </p>
         <p v-if="!compact" class="text-xs text-sky-700/70">Haven't opened their invitation yet.</p>
@@ -126,20 +126,20 @@
           compact ? 'rounded-xl bg-slate-100 p-3' : 'rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70'
         ]"
       >
-        <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center justify-between">
           <p
             :class="[
-              'text-xs font-medium',
-              compact ? 'text-slate-600' : 'font-semibold uppercase tracking-wide text-slate-600'
+              'text-xs',
+              compact ? 'font-medium text-slate-600' : 'font-semibold uppercase tracking-wide text-slate-600'
             ]"
           >
             Pending
           </p>
-          <span :class="['text-xs font-medium', compact ? 'text-slate-500' : 'font-semibold text-slate-600']">
+          <span :class="['text-xs font-semibold', compact ? 'text-slate-500' : 'text-slate-600']">
             {{ loading ? '...' : `${pendingPercentage}%` }}
           </span>
         </div>
-        <p :class="['font-semibold text-slate-900', compact ? 'text-lg' : 'mt-3 text-lg']">
+        <p :class="['font-semibold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-3 text-lg']">
           {{ loading ? '...' : (compact ? pendingInvitations : `${pendingInvitations} guests`) }}
         </p>
         <p v-if="!compact" class="text-xs text-slate-500">Still waiting to receive an invite.</p>

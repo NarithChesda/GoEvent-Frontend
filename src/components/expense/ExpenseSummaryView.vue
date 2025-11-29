@@ -22,7 +22,7 @@
     </div>
 
     <!-- Summary Content -->
-    <template v-else-if="summary">
+    <template v-else-if="summary && Object.keys(summary.overall_totals).length > 0">
       <!-- Budget Summary Cards (per currency) -->
       <div
         v-for="currency in Object.keys(summary.overall_totals)"
@@ -158,13 +158,64 @@
 
     </template>
 
-    <!-- Empty State -->
-    <div v-else class="rounded-3xl border border-white/70 bg-white p-12 shadow-lg shadow-slate-200/60 text-center">
-      <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <BarChart3 class="w-8 h-8 text-slate-400" />
+    <!-- Empty State - Show zero stats like guest tab -->
+    <div v-else class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+      <div class="flex flex-col gap-6">
+        <!-- Header with zero values -->
+        <div class="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Total Budget</p>
+            <p class="text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300">
+              $0.00
+            </p>
+            <p class="mt-1 text-sm text-slate-500">0 categories budgeted</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold ring-1 bg-slate-50 text-slate-500 ring-slate-200">
+              <TrendingUp class="h-4 w-4" aria-hidden="true" />
+              <span>$0.00 spent</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zero Progress Visualization -->
+        <div class="space-y-5">
+          <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
+            <div class="h-full transition-all duration-700 ease-out bg-slate-200" style="width: 0%"></div>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-3">
+            <!-- Budget Spent -->
+            <div class="rounded-2xl border border-transparent bg-slate-50/80 p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Spent</p>
+                <span class="text-xs font-semibold text-slate-500">0%</span>
+              </div>
+              <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">$0.00</p>
+              <p class="text-xs text-slate-400">0 expenses recorded</p>
+            </div>
+
+            <!-- Remaining -->
+            <div class="rounded-2xl border border-transparent bg-slate-50/80 p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Remaining</p>
+                <span class="text-xs font-semibold text-slate-500">0%</span>
+              </div>
+              <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">$0.00</p>
+              <p class="text-xs text-slate-400">No budget set yet</p>
+            </div>
+
+            <!-- Budget Status -->
+            <div class="rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Status</p>
+              </div>
+              <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">No Budget</p>
+              <p class="text-xs text-slate-500">Create a budget to start tracking</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <h4 class="font-semibold text-slate-900 mb-2">No Budget Data Available</h4>
-      <p class="text-sm text-slate-500">Create budgets and record expenses to see your financial overview</p>
     </div>
   </div>
 </template>
@@ -173,10 +224,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   TrendingUp,
-  AlertCircle,
-  AlertTriangle,
-  Folder,
-  BarChart3
+  AlertCircle
 } from 'lucide-vue-next'
 import {
   expensesService,
