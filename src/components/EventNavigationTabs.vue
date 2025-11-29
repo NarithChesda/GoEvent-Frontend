@@ -1,35 +1,43 @@
 <template>
   <!-- Desktop Fixed Sidebar Navigation (Canva-style compact) -->
   <aside
-    class="hidden lg:flex fixed top-16 h-[calc(100%-4rem)] bg-white/80 backdrop-blur-sm border-r border-slate-200/80 z-40 flex-col w-24 transition-all duration-300 ease-in-out"
+    class="hidden lg:flex fixed top-16 h-[calc(100%-4rem)] bg-white/90 backdrop-blur-xl border-r border-slate-200/60 z-40 flex-col w-[88px] transition-all duration-300 ease-in-out"
     :style="{ left: sidebarLeftPosition }"
     role="navigation"
     aria-label="Event navigation"
   >
     <!-- Navigation Links -->
-    <nav class="flex-1 py-3 overflow-y-auto">
+    <nav class="flex-1 py-2 overflow-y-auto">
       <button
         v-for="tab in visibleTabs"
         :key="tab.id"
         @click="$emit('tab-change', tab.id)"
-        class="w-full flex flex-col items-center justify-center py-4 px-3 transition-all duration-200 group relative"
+        class="w-full flex flex-col items-center justify-center py-3.5 px-2 transition-all duration-200 group relative"
         :class="activeTab === tab.id
-          ? 'text-[#2ecc71] bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10'
-          : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'"
+          ? 'text-[#2ecc71]'
+          : 'text-slate-400 hover:text-slate-700'"
       >
-        <!-- Active indicator -->
+        <!-- Active indicator (left border) -->
         <div
           v-if="activeTab === tab.id"
-          class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#2ecc71] to-[#1e90ff] rounded-r-full"
+          class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-10 bg-gradient-to-b from-[#2ecc71] to-[#1e90ff] rounded-r-sm"
+        ></div>
+        <!-- Hover background -->
+        <div
+          class="absolute inset-x-2 inset-y-1 rounded-xl transition-colors duration-200"
+          :class="activeTab === tab.id
+            ? 'bg-gradient-to-r from-[#2ecc71]/8 to-[#1e90ff]/8'
+            : 'group-hover:bg-slate-50/60'"
         ></div>
         <component
           :is="getIconComponent(tab.icon)"
-          class="w-6 h-6 mb-1.5 transition-colors duration-200"
-          :class="activeTab === tab.id ? 'text-[#2ecc71]' : 'text-slate-500 group-hover:text-slate-700'"
+          class="w-5 h-5 mb-1.5 transition-all duration-200 relative z-10"
+          :class="activeTab === tab.id ? 'text-[#2ecc71]' : 'text-slate-400 group-hover:text-slate-600'"
+          :stroke-width="activeTab === tab.id ? 2.5 : 2"
         />
         <span
-          class="text-[11px] font-medium text-center leading-tight transition-colors duration-200"
-          :class="activeTab === tab.id ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'"
+          class="text-[10.5px] font-medium text-center leading-tight transition-colors duration-200 relative z-10"
+          :class="activeTab === tab.id ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'"
         >
           {{ tab.mobileLabel || tab.label }}
         </span>

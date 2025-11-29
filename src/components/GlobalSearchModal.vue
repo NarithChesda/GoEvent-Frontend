@@ -1,40 +1,40 @@
 <template>
   <Teleport to="body">
-    <Transition name="fade">
+    <Transition name="modal-fade">
       <div
         v-if="isOpen"
         class="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4"
         @click.self="close"
       >
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="close"></div>
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="close"></div>
 
         <!-- Modal -->
         <div
-          class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+          class="relative w-full max-w-2xl bg-white/85 backdrop-blur-2xl rounded-2xl shadow-2xl ring-1 ring-slate-200/50 overflow-hidden"
           @keydown.escape="close"
           @keydown.up.prevent="navigateUp"
           @keydown.down.prevent="navigateDown"
           @keydown.enter.prevent="selectCurrent"
         >
           <!-- Search Input -->
-          <div class="relative border-b border-slate-100">
+          <div class="relative border-b border-slate-200/50">
             <Search class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               ref="searchInput"
               v-model="query"
               type="text"
               :placeholder="searchPlaceholder"
-              class="w-full pl-14 pr-20 py-5 text-lg text-slate-900 placeholder-slate-400 focus:outline-none"
+              class="w-full pl-14 pr-20 py-5 text-lg text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
               autocomplete="off"
             />
             <div class="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              <kbd class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-400 bg-slate-100 rounded">
+              <kbd class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-500 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">
                 <Command class="w-3 h-3" />K
               </kbd>
               <button
                 @click="close"
-                class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                class="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-white/40"
               >
                 <X class="w-5 h-5" />
               </button>
@@ -46,10 +46,10 @@
             <!-- Loading State -->
             <div v-if="isLoading && hasQuery" class="p-4 space-y-4">
               <div v-for="i in 3" :key="i" class="animate-pulse">
-                <div class="h-4 bg-slate-200 rounded w-24 mb-3"></div>
+                <div class="h-4 bg-white/40 backdrop-blur-sm rounded w-24 mb-3"></div>
                 <div class="space-y-2">
-                  <div class="h-12 bg-slate-100 rounded-lg"></div>
-                  <div class="h-12 bg-slate-100 rounded-lg"></div>
+                  <div class="h-12 bg-white/30 backdrop-blur-sm rounded-lg"></div>
+                  <div class="h-12 bg-white/30 backdrop-blur-sm rounded-lg"></div>
                 </div>
               </div>
             </div>
@@ -70,8 +70,8 @@
                     :key="result.id"
                     @click="navigateToResult(result)"
                     @mouseenter="setSelectedIndex(index)"
-                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-colors"
-                    :class="selectedIndex === index ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-slate-50'"
+                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-200"
+                    :class="selectedIndex === index ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
                   >
                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center flex-shrink-0">
                       <CalendarDays class="w-5 h-5 text-[#2ecc71]" />
@@ -102,10 +102,10 @@
                     :key="result.id"
                     @click="navigateToResult(result)"
                     @mouseenter="setSelectedIndex(getDiscoverIndex(index))"
-                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-colors"
-                    :class="selectedIndex === getDiscoverIndex(index) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-slate-50'"
+                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-200"
+                    :class="selectedIndex === getDiscoverIndex(index) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
                   >
-                    <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                    <div class="w-10 h-10 rounded-lg bg-white/40 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-slate-200/50">
                       <Globe class="w-5 h-5 text-slate-500" />
                     </div>
                     <div class="flex-1 min-w-0">
@@ -131,7 +131,7 @@
                   <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Services</span>
                 </div>
                 <div class="px-5 py-4 text-center">
-                  <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg text-sm text-slate-500">
+                  <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/40 backdrop-blur-sm rounded-lg text-sm text-slate-500 border border-slate-200/50">
                     <Sparkles class="w-4 h-4" />
                     <span>Service search coming soon</span>
                   </div>
@@ -143,7 +143,7 @@
                 v-if="!hasResults && !isLoading"
                 class="py-12 text-center"
               >
-                <div class="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center border border-slate-200/50">
                   <SearchX class="w-8 h-8 text-slate-400" />
                 </div>
                 <p class="text-slate-600 font-medium">No results found</p>
@@ -153,7 +153,7 @@
 
             <!-- Empty State (no query) -->
             <div v-else class="py-12 text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-slate-200/50">
                 <component :is="contextIcon" class="w-8 h-8 text-[#2ecc71]" />
               </div>
               <p class="text-slate-600 font-medium">{{ emptyStateTitle }}</p>
@@ -162,19 +162,19 @@
           </div>
 
           <!-- Footer -->
-          <div class="border-t border-slate-100 px-5 py-3 flex items-center justify-between text-xs text-slate-400">
+          <div class="border-t border-slate-200/50 px-5 py-3 flex items-center justify-between text-xs text-slate-500 bg-white/30 backdrop-blur-sm">
             <div class="flex items-center gap-4">
               <span class="flex items-center gap-1">
-                <kbd class="px-1.5 py-0.5 bg-slate-100 rounded">↑</kbd>
-                <kbd class="px-1.5 py-0.5 bg-slate-100 rounded">↓</kbd>
+                <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">↑</kbd>
+                <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">↓</kbd>
                 <span class="ml-1">to navigate</span>
               </span>
               <span class="flex items-center gap-1">
-                <kbd class="px-1.5 py-0.5 bg-slate-100 rounded">↵</kbd>
+                <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">↵</kbd>
                 <span class="ml-1">to select</span>
               </span>
               <span class="flex items-center gap-1">
-                <kbd class="px-1.5 py-0.5 bg-slate-100 rounded">esc</kbd>
+                <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">esc</kbd>
                 <span class="ml-1">to close</span>
               </span>
             </div>
@@ -321,15 +321,73 @@ const formatDate = (dateStr: string) => {
 </script>
 
 <style scoped>
-/* Fade transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+/* Modal container and backdrop transition */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.modal-fade-enter-from,
+.modal-fade-leave-to {
   opacity: 0;
+}
+
+/* Backdrop animation - animate opacity instead of blur value for performance */
+.modal-fade-enter-active .absolute {
+  animation: backdrop-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-fade-leave-active .absolute {
+  animation: backdrop-leave 0.25s cubic-bezier(0.4, 0, 1, 1);
+}
+
+@keyframes backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes backdrop-leave {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Modal content animation - scale and fade */
+.modal-fade-enter-active .relative {
+  animation: modal-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-fade-leave-active .relative {
+  animation: modal-leave 0.25s cubic-bezier(0.4, 0, 1, 1);
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-leave {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-10px);
+  }
 }
 
 /* Smooth scrollbar */

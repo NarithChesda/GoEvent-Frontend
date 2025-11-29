@@ -1,8 +1,8 @@
 <template>
   <!-- Desktop Top Navigation Bar -->
   <header
-    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 bg-gradient-to-r from-[#2ecc71]/10 via-white to-[#1e90ff]/10 backdrop-blur-sm border-b transition-colors duration-200 z-50"
-    :class="isScrolled ? 'border-[#2ecc71]/20' : 'border-transparent'"
+    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b transition-colors duration-200 z-50"
+    :class="isScrolled ? 'border-slate-200/50 shadow-sm' : 'border-transparent'"
     role="navigation"
     aria-label="Main navigation"
   >

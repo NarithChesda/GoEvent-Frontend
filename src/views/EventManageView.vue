@@ -1,6 +1,6 @@
 <template>
   <MainLayout :hide-top-nav="true" :hide-mobile-tab-bar="false">
-    <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.05] via-white/95 to-[#1e90ff]/[0.05]">
+    <div class="min-h-screen">
 
     <!-- Top Navigation Bar -->
     <EventManageTopBar
@@ -32,7 +32,7 @@
     />
 
     <!-- Loading Top Bar Skeleton (only show when loading and no event data) -->
-    <div v-if="loading && !event" class="fixed top-0 left-0 right-0 z-50 h-16 bg-gradient-to-r from-[#2ecc71]/10 via-white to-[#1e90ff]/10 backdrop-blur-sm border-b border-[#2ecc71]/20">
+    <div v-if="loading && !event" class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm">
       <div class="flex items-center justify-between h-full px-4 sm:px-6">
         <div class="flex items-center gap-3 animate-pulse">
           <div class="w-10 h-10 lg:w-12 lg:h-12 bg-slate-200 rounded-xl"></div>
@@ -438,8 +438,8 @@ const contentMarginLeft = computed(() => {
     return '0px'
   }
 
-  // Event detail sidebar width = 96px (w-24)
-  const eventSidebarWidth = 96
+  // Event detail sidebar width = 88px (w-[88px])
+  const eventSidebarWidth = 88
 
   // If home sidebar is visible, add its width too
   if (showHomeSidebarOverlay?.value) {

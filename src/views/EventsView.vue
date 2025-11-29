@@ -1,6 +1,6 @@
 <template>
   <MainLayout>
-    <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]">
+    <div class="min-h-screen">
 
     <!-- Main Content -->
     <section class="py-4 sm:py-6 lg:py-8">

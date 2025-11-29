@@ -1,7 +1,7 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 h-16 bg-gradient-to-r from-[#2ecc71]/10 via-white to-[#1e90ff]/10 backdrop-blur-sm border-b border-[#2ecc71]/20 transition-all duration-300"
+    class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 transition-all duration-300"
     :style="{ marginLeft: headerMarginLeft }"
   >
     <div class="flex items-center justify-between h-full px-4 sm:px-6">
@@ -10,18 +10,18 @@
         <!-- Back to Events Button -->
         <button
           @click="goBackToEvents"
-          class="flex-shrink-0 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-xl hover:bg-slate-100 transition-colors"
+          class="flex-shrink-0 flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 rounded-xl hover:bg-slate-50/80 transition-all duration-200"
           aria-label="Back to Events"
           title="Back to Events"
         >
-          <ArrowLeft class="w-5 h-5 lg:w-6 lg:h-6 text-slate-700" />
+          <ArrowLeft class="w-5 h-5 lg:w-5 lg:h-5 text-slate-600" />
         </button>
 
         <!-- Host Avatar (hidden on mobile) -->
         <div v-if="organizerAvatar || organizerName" class="hidden md:block flex-shrink-0">
           <div
             v-if="organizerAvatar"
-            class="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-200 shadow-sm"
+            class="w-9 h-9 rounded-full overflow-hidden ring-1 ring-slate-200/50"
           >
             <img
               :src="organizerAvatar"
@@ -31,9 +31,9 @@
           </div>
           <div
             v-else
-            class="w-10 h-10 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center shadow-sm"
+            class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 ring-1 ring-slate-200/50 flex items-center justify-center"
           >
-            <span class="text-slate-700 font-semibold text-sm">
+            <span class="text-slate-600 font-medium text-xs">
               {{ organizerInitials }}
             </span>
           </div>
@@ -41,16 +41,16 @@
 
         <!-- Event Info -->
         <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
             <!-- Event Title -->
-            <h1 class="text-lg font-bold text-slate-900 truncate">
+            <h1 class="text-base lg:text-lg font-semibold text-slate-900 truncate">
               {{ eventTitle || 'Event Details' }}
             </h1>
             <!-- Event Status Badge (hidden on mobile) -->
             <span
               v-if="eventStatus"
               :class="[
-                'hidden md:inline-block flex-shrink-0 px-2.5 py-1 text-xs font-semibold rounded-full',
+                'hidden md:inline-block flex-shrink-0 px-2.5 py-0.5 text-xs font-medium rounded-full',
                 statusClasses
               ]"
             >
@@ -58,7 +58,7 @@
             </span>
           </div>
           <!-- Organizer name (hidden on mobile) -->
-          <p v-if="organizerName" class="hidden md:block text-sm text-slate-600 truncate">
+          <p v-if="organizerName" class="hidden md:block text-xs text-slate-500 truncate mt-0.5">
             by {{ organizerName }}
           </p>
         </div>
@@ -70,10 +70,10 @@
         <button
           v-if="canEdit && eventId"
           @click="previewShowcase"
-          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50/80 rounded-lg transition-all duration-200"
           title="Preview showcase"
         >
-          <Eye class="w-5 h-5" />
+          <Eye class="w-4.5 h-4.5" />
           <span class="hidden md:inline">Preview</span>
         </button>
 
@@ -81,7 +81,7 @@
         <button
           v-if="canEdit && eventId"
           @click="editEvent"
-          class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] rounded-xl transition-all shadow-sm hover:shadow-md"
+          class="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] rounded-lg transition-all duration-200 shadow-sm"
         >
           <Pencil class="w-4 h-4" />
           <span class="hidden sm:inline">Edit</span>
