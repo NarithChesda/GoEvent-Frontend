@@ -9,7 +9,7 @@
       <div class="sm:hidden relative">
         <!-- Timeline line -->
         <div
-          v-if="index < dateGroups.length - 1"
+          v-if="index < dateGroups.length - 1 || dateGroup.events.length > 1"
           class="absolute left-[3.5px] top-7 bottom-0 w-px bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/30"
         ></div>
 
