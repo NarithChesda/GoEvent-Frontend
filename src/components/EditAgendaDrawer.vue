@@ -130,6 +130,8 @@
               <ScheduleSection
                 v-model:date="formData.date"
                 v-model:agenda-type="formData.agenda_type"
+                v-model:order="formData.order"
+                :max-order="maxOrder"
               />
             </div>
 
@@ -205,11 +207,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, toRef } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, toRef } from 'vue'
 import {
   ArrowRight,
-  Edit2,
-  Calendar,
   AlertCircle,
   CheckCircle,
   Loader,
@@ -253,6 +253,7 @@ const {
   loading,
   isEditMode,
   availableIcons,
+  maxOrder,
   fieldErrors,
   generalError,
   urlValidationError,
@@ -374,6 +375,12 @@ watch(
 onMounted(() => {
   fetchIcons()
   resetErrors()
+})
+
+// Cleanup body styles if component unmounts while drawer is open
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
 })
 </script>
 

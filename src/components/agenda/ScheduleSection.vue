@@ -40,22 +40,129 @@
         </div>
       </div>
     </div>
+
+    <!-- Order Control (Mobile Only) -->
+    <div v-if="maxOrder > 0" class="sm:hidden">
+      <label class="block text-sm font-medium text-slate-700 mb-2">
+        <span class="flex items-center gap-1.5">
+          <ArrowUpDown class="w-3.5 h-3.5" />
+          Display Position
+        </span>
+      </label>
+      <div class="flex items-center gap-2">
+        <!-- Move to First -->
+        <button
+          type="button"
+          @click="moveToFirst"
+          :disabled="order <= 0"
+          class="p-2 rounded-lg border transition-all duration-150"
+          :class="order <= 0
+            ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+            : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+          title="Move to first"
+        >
+          <ChevronsUp class="w-4 h-4" />
+        </button>
+
+        <!-- Move Up -->
+        <button
+          type="button"
+          @click="moveUp"
+          :disabled="order <= 0"
+          class="p-2 rounded-lg border transition-all duration-150"
+          :class="order <= 0
+            ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+            : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+          title="Move up"
+        >
+          <ChevronUp class="w-4 h-4" />
+        </button>
+
+        <!-- Position Display -->
+        <div class="flex-1 text-center">
+          <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 rounded-lg">
+            <span class="text-sm font-semibold text-slate-900">{{ order + 1 }}</span>
+            <span class="text-xs text-slate-500">of {{ maxOrder + 1 }}</span>
+          </span>
+        </div>
+
+        <!-- Move Down -->
+        <button
+          type="button"
+          @click="moveDown"
+          :disabled="order >= maxOrder"
+          class="p-2 rounded-lg border transition-all duration-150"
+          :class="order >= maxOrder
+            ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+            : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+          title="Move down"
+        >
+          <ChevronDownIcon class="w-4 h-4" />
+        </button>
+
+        <!-- Move to Last -->
+        <button
+          type="button"
+          @click="moveToLast"
+          :disabled="order >= maxOrder"
+          class="p-2 rounded-lg border transition-all duration-150"
+          :class="order >= maxOrder
+            ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+            : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+          title="Move to last"
+        >
+          <ChevronsDown class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Clock, ChevronDown } from 'lucide-vue-next'
+import {
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUp,
+  ChevronsDown,
+  ChevronDown as ChevronDownIcon,
+  ArrowUpDown
+} from 'lucide-vue-next'
 
 interface Props {
   date: string
   agendaType: string
+  order: number
+  maxOrder: number
 }
 
 interface Emits {
   'update:date': [value: string]
   'update:agenda-type': [value: string]
+  'update:order': [value: number]
 }
 
-defineProps<Props>()
-defineEmits<Emits>()
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+// Move order control functions
+const moveUp = () => {
+  if (props.order > 0) {
+    emit('update:order', props.order - 1)
+  }
+}
+
+const moveDown = () => {
+  if (props.order < props.maxOrder) {
+    emit('update:order', props.order + 1)
+  }
+}
+
+const moveToFirst = () => {
+  emit('update:order', 0)
+}
+
+const moveToLast = () => {
+  emit('update:order', props.maxOrder)
+}
 </script>

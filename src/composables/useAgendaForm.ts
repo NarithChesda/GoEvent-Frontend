@@ -50,8 +50,19 @@ export function useAgendaForm(
   // Track the current item for edit mode detection
   const currentItem = ref<EventAgendaItem | undefined>(item)
 
+  // Track existing items for order calculation
+  const currentExistingItems = ref<EventAgendaItem[] | undefined>(existingAgendaItems)
+
   // Determine mode
   const isEditMode = computed(() => !!currentItem.value)
+
+  // Calculate max order from existing items
+  const maxOrder = computed(() => {
+    if (!currentExistingItems.value || currentExistingItems.value.length === 0) {
+      return 0
+    }
+    return Math.max(...currentExistingItems.value.map(i => i.order), 0)
+  })
 
   // State
   const loading = ref(false)
@@ -91,6 +102,13 @@ export function useAgendaForm(
   // Get auto-fill data from latest agenda item in create mode
   const latestAgendaItem = !item ? getLatestAgendaItem() : null
 
+  // Calculate initial order for new items (append to end)
+  const getInitialOrder = (): number => {
+    if (item) return item.order
+    if (!existingAgendaItems || existingAgendaItems.length === 0) return 0
+    return Math.max(...existingAgendaItems.map(i => i.order), 0) + 1
+  }
+
   // Form data - initialize with item data (edit mode) or auto-filled values (create mode)
   const formData = reactive<AgendaFormData>({
     title: item?.title || '',
@@ -103,7 +121,7 @@ export function useAgendaForm(
     speaker: item?.speaker || '',
     location: item?.location || '',
     virtual_link: item?.virtual_link || '',
-    order: item?.order || 0,
+    order: getInitialOrder(),
     is_featured: item?.is_featured || false,
     color: item?.color || '#3498db',
     icon_id: item?.icon?.id || null,
@@ -182,6 +200,33 @@ export function useAgendaForm(
     }
   }
 
+  // Helper to calculate reorder updates when inserting at a specific position
+  const calculateReorderUpdates = (
+    targetOrder: number,
+    excludeId?: number,
+    targetDate?: string | null,
+  ): { id: number; order: number }[] => {
+    if (!currentExistingItems.value) return []
+
+    // Filter items that need to be shifted (same date, order >= target, not the current item)
+    const itemsToShift = currentExistingItems.value.filter((item) => {
+      if (excludeId && item.id === excludeId) return false
+      // Only shift items on the same date (or both null/unscheduled)
+      const itemDate = item.date || null
+      const target = targetDate !== undefined ? targetDate : null
+      if (itemDate !== target) return false
+      return item.order >= targetOrder
+    })
+
+    // Sort by current order and assign new orders (shift down by 1)
+    return itemsToShift
+      .sort((a, b) => a.order - b.order)
+      .map((item, index) => ({
+        id: item.id,
+        order: targetOrder + index + 1,
+      }))
+  }
+
   // Create agenda item
   const createAgendaItem = async (): Promise<{
     success: boolean
@@ -201,7 +246,35 @@ export function useAgendaForm(
 
       const response = await agendaService.createAgendaItem(eventId, sanitizedData)
       if (response.success && response.data) {
-        return { success: true, data: response.data }
+        const createdItem = response.data
+
+        // If inserting at a specific position (not at the end), reorder other items
+        const reorderUpdates = calculateReorderUpdates(
+          createdItem.order,
+          createdItem.id,
+          createdItem.date,
+        )
+
+        if (reorderUpdates.length > 0) {
+          // Include the created item in the reorder to ensure consistent ordering
+          const allUpdates = [
+            { id: createdItem.id, order: createdItem.order },
+            ...reorderUpdates,
+          ]
+          try {
+            const reorderResponse = await agendaService.bulkReorderAgendaItems(eventId, { updates: allUpdates })
+            if (!reorderResponse.success) {
+              console.error('Reorder failed after create:', reorderResponse.message)
+              // Item was created but ordering may be incorrect - still return success
+              // The parent component will reload the list to get correct order
+            }
+          } catch (reorderError) {
+            console.error('Error during post-create reorder:', reorderError)
+            // Item was created but ordering may be incorrect - still return success
+          }
+        }
+
+        return { success: true, data: createdItem }
       } else {
         if (response.errors && typeof response.errors === 'object') {
           Object.entries(response.errors).forEach(([field, messages]) => {
@@ -220,6 +293,47 @@ export function useAgendaForm(
     }
   }
 
+  // Helper to calculate full reorder when moving an item to a new position
+  const calculateMoveReorderUpdates = (
+    itemId: number,
+    oldOrder: number,
+    newOrder: number,
+    itemDate: string | null,
+  ): { id: number; order: number }[] => {
+    if (!currentExistingItems.value || oldOrder === newOrder) return []
+
+    // Get all items on the same date, excluding the moving item
+    const sameDate = currentExistingItems.value
+      .filter((item) => {
+        if (item.id === itemId) return false
+        const d = item.date || null
+        return d === itemDate
+      })
+      .sort((a, b) => a.order - b.order)
+
+    // Build new order array by inserting at the target position
+    const result: { id: number; order: number }[] = []
+    let orderIndex = 0
+
+    for (const item of sameDate) {
+      // Skip the target position for the moving item
+      if (orderIndex === newOrder) {
+        orderIndex++
+      }
+      result.push({ id: item.id, order: orderIndex })
+      orderIndex++
+    }
+
+    // Add the moving item at its new position
+    result.push({ id: itemId, order: newOrder })
+
+    // Only return items whose order actually changed
+    return result.filter((update) => {
+      const original = currentExistingItems.value?.find((i) => i.id === update.id)
+      return original && original.order !== update.order
+    })
+  }
+
   // Update agenda item
   const updateAgendaItem = async (): Promise<{
     success: boolean
@@ -235,6 +349,13 @@ export function useAgendaForm(
     fieldErrors.value = {}
     generalError.value = ''
 
+    const originalOrder = currentItem.value.order
+    const originalDate = currentItem.value.date || null
+    const newOrder = formData.order
+    const newDate = formData.date || null
+    const orderChanged = originalOrder !== newOrder
+    const dateChanged = originalDate !== newDate
+
     try {
       const sanitizedData = sanitizeFormData()
       if (!sanitizedData) {
@@ -248,7 +369,55 @@ export function useAgendaForm(
         sanitizedData,
       )
       if (response.success && response.data) {
-        return { success: true, data: response.data }
+        const updatedItem = response.data
+
+        // If order or date changed, we need to reorder items
+        if (orderChanged || dateChanged) {
+          let reorderUpdates: { id: number; order: number }[] = []
+
+          if (dateChanged) {
+            // Moving to a different date - insert at position in new date group
+            reorderUpdates = calculateReorderUpdates(
+              updatedItem.order,
+              updatedItem.id,
+              updatedItem.date,
+            )
+            if (reorderUpdates.length > 0) {
+              const allUpdates = [
+                { id: updatedItem.id, order: updatedItem.order },
+                ...reorderUpdates,
+              ]
+              try {
+                const reorderResponse = await agendaService.bulkReorderAgendaItems(eventId, { updates: allUpdates })
+                if (!reorderResponse.success) {
+                  console.error('Reorder failed after update (date change):', reorderResponse.message)
+                }
+              } catch (reorderError) {
+                console.error('Error during post-update reorder (date change):', reorderError)
+              }
+            }
+          } else if (orderChanged) {
+            // Same date, just moving position
+            reorderUpdates = calculateMoveReorderUpdates(
+              updatedItem.id,
+              originalOrder,
+              newOrder,
+              newDate,
+            )
+            if (reorderUpdates.length > 0) {
+              try {
+                const reorderResponse = await agendaService.bulkReorderAgendaItems(eventId, { updates: reorderUpdates })
+                if (!reorderResponse.success) {
+                  console.error('Reorder failed after update (order change):', reorderResponse.message)
+                }
+              } catch (reorderError) {
+                console.error('Error during post-update reorder (order change):', reorderError)
+              }
+            }
+          }
+        }
+
+        return { success: true, data: updatedItem }
       } else {
         if (response.errors && typeof response.errors === 'object') {
           Object.entries(response.errors).forEach(([field, messages]) => {
@@ -277,6 +446,7 @@ export function useAgendaForm(
   // Reset form with new item data (for when item prop changes)
   const resetForm = (newItem?: EventAgendaItem, newExistingItems?: EventAgendaItem[]) => {
     currentItem.value = newItem
+    currentExistingItems.value = newExistingItems
 
     // Get auto-fill data in create mode
     const latestItem = !newItem && newExistingItems ?
@@ -292,7 +462,11 @@ export function useAgendaForm(
     formData.speaker = newItem?.speaker || ''
     formData.location = newItem?.location || ''
     formData.virtual_link = newItem?.virtual_link || ''
-    formData.order = newItem?.order || 0
+    // For new items, default to maxOrder + 1 so they appear at the end
+    const currentMaxOrder = newExistingItems?.length
+      ? Math.max(...newExistingItems.map(i => i.order), 0)
+      : 0
+    formData.order = newItem?.order ?? (currentMaxOrder + 1)
     formData.is_featured = newItem?.is_featured || false
     formData.color = newItem?.color || '#3498db'
     formData.icon_id = newItem?.icon?.id || null
@@ -360,6 +534,7 @@ export function useAgendaForm(
     loading,
     isEditMode,
     availableIcons,
+    maxOrder,
 
     // Errors
     fieldErrors,

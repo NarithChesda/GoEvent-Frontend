@@ -558,21 +558,34 @@ const deleteAgendaItem = async () => {
   }
 }
 
-const handleAgendaCreated = (newItem: EventAgendaItem) => {
-  agendaItems.value.push(newItem)
+const handleAgendaCreated = async (newItem: EventAgendaItem) => {
+  // Reload agenda to get updated orders for all items after bulk reorder
+  await loadAgenda()
   selectedItem.value = null
+  // Ensure the day containing the new item is expanded
+  const itemDate = newItem.date || 'unscheduled'
+  if (!expandedDays.value.includes(itemDate)) {
+    expandedDays.value.push(itemDate)
+  }
 }
 
-const handleAgendaUpdated = (updatedItem: EventAgendaItem) => {
-  const index = agendaItems.value.findIndex((item) => item.id === updatedItem.id)
-  if (index !== -1) {
-    agendaItems.value[index] = updatedItem
-  }
+const handleAgendaUpdated = async (updatedItem: EventAgendaItem) => {
+  // Reload agenda to get updated orders for all items after bulk reorder
+  await loadAgenda()
   selectedItem.value = null
+  // Ensure the day containing the updated item is expanded
+  const itemDate = updatedItem.date || 'unscheduled'
+  if (!expandedDays.value.includes(itemDate)) {
+    expandedDays.value.push(itemDate)
+  }
 }
 
 // Drag and drop handlers
 const handleDragStart = (item: EventAgendaItem) => {
+  // Prevent starting a new drag while reorder is in progress
+  if (isReordering.value) {
+    return
+  }
   draggedItem.value = item
 }
 
