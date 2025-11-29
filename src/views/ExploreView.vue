@@ -2,6 +2,78 @@
   <MainLayout>
     <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]">
 
+    <!-- Mobile Top Bar -->
+    <header
+      class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b z-40 transition-colors duration-200"
+      :class="isScrolled ? 'border-slate-200/50 shadow-sm' : 'border-transparent'"
+    >
+      <div class="h-full px-4 flex items-center justify-between">
+        <!-- Logo -->
+        <button
+          @click="handleLogoClick"
+          class="flex items-center"
+          aria-label="Go to home page"
+        >
+          <img
+            :src="IconSvg"
+            alt="GoEvent Logo"
+            class="h-5 w-auto"
+          />
+        </button>
+
+        <!-- Right Actions -->
+        <div class="flex items-center gap-1">
+          <!-- Search Button -->
+          <button
+            @click="openSearch"
+            class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
+            aria-label="Search"
+          >
+            <Search class="w-5 h-5" />
+          </button>
+
+          <!-- Notifications Button -->
+          <button
+            class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 relative"
+            aria-label="Notifications"
+          >
+            <Bell class="w-5 h-5" />
+          </button>
+
+          <!-- Language Button -->
+          <button
+            @click="toggleLanguageMenu"
+            class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 relative"
+            aria-label="Change language"
+          >
+            <Globe class="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Language Dropdown -->
+      <Transition name="dropdown">
+        <div
+          v-if="showLanguageMenu"
+          class="absolute right-4 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-w-[140px]"
+        >
+          <button
+            v-for="lang in languages"
+            :key="lang.code"
+            @click="selectLanguage(lang.code)"
+            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
+            :class="currentLanguage === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+          >
+            <span>{{ lang.flag }}</span>
+            <span>{{ lang.name }}</span>
+          </button>
+        </div>
+      </Transition>
+    </header>
+
+    <!-- Mobile Top Bar Spacer -->
+    <div class="lg:hidden h-14"></div>
+
     <!-- Main Content -->
     <section class="py-4 sm:py-6 lg:py-8">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,18 +111,44 @@
 
           <!-- Category Filter Dropdown - Desktop only -->
           <div class="relative hidden sm:block">
-            <select
-              v-model="categoryFilter"
-              @change="handleCategoryChange"
-              class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium pl-4 pr-8 py-2 rounded-full transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-              :class="categoryFilter ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900' : ''"
+            <button
+              @click.stop="toggleCategoryMenu"
+              class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+              :class="categoryFilter
+                ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-900 hover:from-[#2ecc71]/20 hover:to-[#1e90ff]/20'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'"
             >
-              <option value="">All Categories</option>
-              <option v-for="category in categories" :key="category.id" :value="category.name">
-                {{ category.name }}
-              </option>
-            </select>
-            <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <span>{{ categoryFilter || 'All Categories' }}</span>
+              <ChevronDown
+                class="w-4 h-4 transition-transform duration-200"
+                :class="showCategoryMenu ? 'rotate-180' : ''"
+              />
+            </button>
+
+            <!-- Category Dropdown Menu -->
+            <Transition name="dropdown">
+              <div
+                v-if="showCategoryMenu"
+                class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-w-[180px] z-[100]"
+              >
+                <button
+                  @click="selectCategory('')"
+                  class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
+                  :class="!categoryFilter ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+                >
+                  All Categories
+                </button>
+                <button
+                  v-for="category in categories"
+                  :key="category.id"
+                  @click="selectCategory(category.name)"
+                  class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
+                  :class="categoryFilter === category.name ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+                >
+                  {{ category.name }}
+                </button>
+              </div>
+            </Transition>
           </div>
         </div>
 
@@ -407,11 +505,16 @@ import {
   ChevronDown,
   MapPin,
   Users,
+  Search,
+  Bell,
+  Globe,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import PublicEventDrawer from '../components/PublicEventDrawer.vue'
 import AppFooter from '../components/AppFooter.vue'
+import IconSvg from '@/assets/icon.svg'
+import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import {
   eventCategoriesService,
   apiService,
@@ -423,6 +526,55 @@ import { useEventsData } from '../composables/useEventsData'
 
 const route = useRoute()
 const router = useRouter()
+
+// Global search
+const { open: openSearch } = useGlobalSearch()
+
+// Mobile top bar state
+const isScrolled = ref(false)
+const showLanguageMenu = ref(false)
+const currentLanguage = ref('en')
+const showCategoryMenu = ref(false)
+
+// Language options
+const languages = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'km', name: 'ខ្មែរ', flag: '🇰🇭' },
+]
+
+// Handle logo click
+const handleLogoClick = () => {
+  router.push('/events')
+}
+
+// Toggle language menu
+const toggleLanguageMenu = () => {
+  showLanguageMenu.value = !showLanguageMenu.value
+}
+
+// Select language
+const selectLanguage = (code: string) => {
+  currentLanguage.value = code
+  showLanguageMenu.value = false
+  // TODO: Implement actual language switching logic
+}
+
+// Toggle category menu
+const toggleCategoryMenu = () => {
+  showCategoryMenu.value = !showCategoryMenu.value
+}
+
+// Select category
+const selectCategory = (name: string) => {
+  categoryFilter.value = name
+  showCategoryMenu.value = false
+  handleCategoryChange()
+}
+
+// Handle scroll for mobile header
+const handleMobileScroll = () => {
+  isScrolled.value = window.scrollY > 0
+}
 
 const categories = ref<EventCategory[]>([])
 const filters = ref<EventFiltersType>({})
@@ -771,6 +923,18 @@ const setupStickyObserver = () => {
   })
 }
 
+// Close menus when clicking outside
+const handleClickOutsideMenus = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (showLanguageMenu.value && !target.closest('[aria-label="Change language"]')) {
+    showLanguageMenu.value = false
+  }
+  // Close category menu if clicking outside
+  if (showCategoryMenu.value && !target.closest('.relative.hidden.sm\\:block')) {
+    showCategoryMenu.value = false
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   // Load initial data
@@ -790,6 +954,13 @@ onMounted(async () => {
 
   // Check if there's an event to open from query params
   openEventFromQuery()
+
+  // Add scroll listener for mobile header
+  window.addEventListener('scroll', handleMobileScroll)
+  handleMobileScroll() // Check initial scroll position
+
+  // Add click listener for closing menus
+  document.addEventListener('click', handleClickOutsideMenus)
 })
 
 onUnmounted(() => {
@@ -798,6 +969,12 @@ onUnmounted(() => {
   }
   // Clean up sentinel elements
   document.querySelectorAll('.sticky-sentinel').forEach((el) => el.remove())
+
+  // Remove scroll listener
+  window.removeEventListener('scroll', handleMobileScroll)
+
+  // Remove click listener for menus
+  document.removeEventListener('click', handleClickOutsideMenus)
 })
 
 // Re-setup sticky observer when events change
@@ -825,6 +1002,18 @@ watch(
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Dropdown animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 /* Hide scrollbar for horizontal scroll on mobile */

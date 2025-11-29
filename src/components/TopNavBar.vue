@@ -81,6 +81,36 @@
           <!-- <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> -->
         </button>
 
+        <!-- Language Button -->
+        <div class="relative">
+          <button
+            @click.stop="toggleLanguageMenu"
+            class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200"
+            aria-label="Change language"
+          >
+            <Globe class="w-5 h-5" />
+          </button>
+
+          <!-- Language Dropdown -->
+          <Transition name="dropdown">
+            <div
+              v-if="showLanguageMenu"
+              class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-w-[140px] z-[100]"
+            >
+              <button
+                v-for="lang in languages"
+                :key="lang.code"
+                @click="selectLanguage(lang.code)"
+                class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
+                :class="currentLanguage === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+              >
+                <span>{{ lang.flag }}</span>
+                <span>{{ lang.name }}</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
+
         <!-- Profile Button -->
         <div ref="userMenuRef" class="relative">
           <button
@@ -197,7 +227,8 @@ import {
   Briefcase,
   Search,
   Bell,
-  User
+  User,
+  Globe
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
@@ -217,6 +248,14 @@ const userMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement>()
 const currentTime = ref('')
 const isScrolled = ref(false)
+
+// Language state
+const showLanguageMenu = ref(false)
+const currentLanguage = ref('en')
+const languages = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'km', name: 'ខ្មែរ', flag: '🇰🇭' },
+]
 
 // Navigation items matching the screenshot
 const navigationItems = [
@@ -285,6 +324,22 @@ const toggleSearch = () => {
   openSearch()
 }
 
+// Toggle language menu
+const toggleLanguageMenu = () => {
+  showLanguageMenu.value = !showLanguageMenu.value
+  // Close user menu if open
+  if (showLanguageMenu.value) {
+    userMenuOpen.value = false
+  }
+}
+
+// Select language
+const selectLanguage = (code: string) => {
+  currentLanguage.value = code
+  showLanguageMenu.value = false
+  // TODO: Implement actual language switching logic
+}
+
 // Handle logout
 const handleLogout = async () => {
   try {
@@ -306,12 +361,18 @@ const handleClickOutside = (event: MouseEvent) => {
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
     userMenuOpen.value = false
   }
+  // Close language menu if clicking outside
+  const target = event.target as HTMLElement
+  if (showLanguageMenu.value && !target.closest('[aria-label="Change language"]')) {
+    showLanguageMenu.value = false
+  }
 }
 
 // Close menu on Escape
 const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && userMenuOpen.value) {
+  if (event.key === 'Escape') {
     userMenuOpen.value = false
+    showLanguageMenu.value = false
   }
 }
 
