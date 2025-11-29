@@ -102,7 +102,8 @@ export function useGlobalSearch() {
     if (eventWithCategory.category_name) {
       categoryName = eventWithCategory.category_name
     } else if (eventWithCategory.category && typeof eventWithCategory.category === 'object') {
-      categoryName = eventWithCategory.category.name || null
+      const category = eventWithCategory.category as { name?: string }
+      categoryName = category.name || null
     }
 
     return {
