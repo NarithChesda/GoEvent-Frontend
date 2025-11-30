@@ -215,7 +215,8 @@ import type { Event } from '@/services/api'
 import {
   formatEventTime,
   getGuestCount,
-  getEventImage,
+  getEventThumbnail,
+  getEventThumbnailMobile,
   getEventHosts,
   formatHostNames,
   getEventCategory,
@@ -240,7 +241,12 @@ defineEmits<{
   manage: []
 }>()
 
-const imageUrl = computed(() => getEventImage(props.event))
+// Use optimized thumbnails based on variant (mobile uses square crop, desktop uses landscape)
+const imageUrl = computed(() =>
+  props.variant === 'mobile'
+    ? getEventThumbnailMobile(props.event)
+    : getEventThumbnail(props.event)
+)
 const hosts = computed(() => getEventHosts(props.event))
 const hostNames = computed(() => formatHostNames(props.event))
 const guestCount = computed(() => getGuestCount(props.event))

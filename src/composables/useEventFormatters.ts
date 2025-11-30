@@ -50,6 +50,60 @@ export function getGuestCount(event: Event): string {
 }
 
 /**
+ * Convert API server media URL to ImageKit proxy URL
+ * Rewrites api.goevent.online/media/... to ik.imagekit.io/goevent/media/...
+ */
+export function toImageKitUrl(url: string): string {
+  // Rewrite api.goevent.online URLs to ImageKit proxy
+  if (url.includes('api.goevent.online/media/')) {
+    return url.replace(
+      'https://api.goevent.online/media/',
+      'https://ik.imagekit.io/goevent/media/'
+    )
+  }
+  return url
+}
+
+/**
+ * Apply ImageKit.io transformation to resize image
+ * For ImageKit URLs, inserts transformation params after the base path
+ * Also converts API server URLs to ImageKit proxy URLs
+ * @param url - Original image URL
+ * @param width - Target width in pixels
+ * @param height - Target height in pixels (optional)
+ */
+export function applyImageKitTransform(
+  url: string | null,
+  width: number,
+  height?: number
+): string | null {
+  if (!url) return null
+
+  // Convert API server URLs to ImageKit proxy URLs
+  let imageKitUrl = toImageKitUrl(url)
+
+  // Only transform ImageKit URLs
+  if (!imageKitUrl.includes('ik.imagekit.io')) {
+    return url
+  }
+
+  // Build transformation string
+  const transform = height ? `tr:w-${width},h-${height}` : `tr:w-${width}`
+
+  // Insert transformation after the ImageKit base path
+  // URL format: https://ik.imagekit.io/{imagekit_id}/path/to/image.ext
+  // Transformed: https://ik.imagekit.io/{imagekit_id}/tr:w-240,h-126/path/to/image.ext
+  const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
+  const match = imageKitUrl.match(imagekitRegex)
+
+  if (match) {
+    return `${match[1]}/${transform}${match[2]}`
+  }
+
+  return imageKitUrl
+}
+
+/**
  * Get event image URL
  */
 export function getEventImage(event: Event): string | null {
@@ -60,6 +114,68 @@ export function getEventImage(event: Event): string | null {
     return apiService.getProfilePictureUrl(event.photos[0].image)
   }
   return null
+}
+
+/**
+ * Get event thumbnail image URL (optimized for event cards)
+ * Display size is 176x112 (w-44 h-28), using 2x for retina = 352x224
+ */
+export function getEventThumbnail(event: Event): string | null {
+  const imageUrl = getEventImage(event)
+  return applyImageKitTransform(imageUrl, 352, 224)
+}
+
+/**
+ * Get event thumbnail for mobile (square crop)
+ * Display size is 80x80 (w-20 h-20), using 2x for retina = 160x160
+ */
+export function getEventThumbnailMobile(event: Event): string | null {
+  const imageUrl = getEventImage(event)
+  if (!imageUrl) return null
+
+  // Convert API server URLs to ImageKit proxy URLs
+  const imageKitUrl = toImageKitUrl(imageUrl)
+
+  if (!imageKitUrl.includes('ik.imagekit.io')) {
+    return imageUrl
+  }
+
+  // Use fo-auto for smart focus cropping, 160x160 for 2x retina
+  const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
+  const match = imageKitUrl.match(imagekitRegex)
+
+  if (match) {
+    return `${match[1]}/tr:w-160,h-160,fo-auto${match[2]}`
+  }
+
+  return imageKitUrl
+}
+
+/**
+ * Get optimized host avatar URL
+ * Display size is 16-20px, using 2x for retina = 40x40
+ */
+function getHostAvatarUrl(profileImage: string | null | undefined): string | null {
+  if (!profileImage) return null
+
+  const url = apiService.getProfilePictureUrl(profileImage)
+  if (!url) return null
+
+  // Convert and transform through ImageKit
+  const imageKitUrl = toImageKitUrl(url)
+
+  if (!imageKitUrl.includes('ik.imagekit.io')) {
+    return url
+  }
+
+  const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
+  const match = imageKitUrl.match(imagekitRegex)
+
+  if (match) {
+    return `${match[1]}/tr:w-40,h-40,fo-auto${match[2]}`
+  }
+
+  return imageKitUrl
 }
 
 /**
@@ -75,9 +191,7 @@ export function getEventHosts(event: Event): EventHost[] {
     eventWithHosts.hosts.forEach((host) => {
       hosts.push({
         name: host.name,
-        image: host.profile_image
-          ? apiService.getProfilePictureUrl(host.profile_image)
-          : null,
+        image: getHostAvatarUrl(host.profile_image),
       })
     })
   }
@@ -181,6 +295,9 @@ export function useEventFormatters() {
     formatEventTime,
     getGuestCount,
     getEventImage,
+    getEventThumbnail,
+    getEventThumbnailMobile,
+    applyImageKitTransform,
     getEventHosts,
     formatHostNames,
     getEventCategory,
