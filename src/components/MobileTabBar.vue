@@ -48,44 +48,29 @@
             <RouterLink
               to="/settings"
               @click="userMenuOpen = false"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:gradient-text rounded-xl transition-all duration-200 group"
+              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
               role="menuitem"
             >
-              <User class="w-4 h-4 group-hover:gradient-text" aria-hidden="true" />
-              <span class="text-sm font-medium">Profile</span>
-            </RouterLink>
-
-            <RouterLink
-              to="/security"
-              @click="userMenuOpen = false"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:gradient-text rounded-xl transition-all duration-200 group"
-              role="menuitem"
-            >
-              <Lock class="w-4 h-4 group-hover:gradient-text" aria-hidden="true" />
-              <span class="text-sm font-medium">Security</span>
+              <span class="text-sm font-medium">Settings</span>
             </RouterLink>
 
             <RouterLink
               v-if="authStore.user?.is_partner"
               to="/commission"
               @click="userMenuOpen = false"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:gradient-text rounded-xl transition-all duration-200 group"
+              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
               role="menuitem"
             >
-              <Wallet class="w-4 h-4 group-hover:gradient-text" aria-hidden="true" />
               <span class="text-sm font-medium">Commission</span>
             </RouterLink>
 
-            <div class="border-t border-slate-200 pt-2">
-              <button
-                @click="handleLogout"
-                class="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 w-full"
-                role="menuitem"
-              >
-                <LogOut class="w-4 h-4" aria-hidden="true" />
-                <span class="text-sm font-medium">Logout</span>
-              </button>
-            </div>
+            <button
+              @click="handleLogout"
+              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
+              role="menuitem"
+            >
+              <span class="text-sm font-medium">Sign Out</span>
+            </button>
           </div>
         </div>
       </div>
@@ -161,7 +146,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Lock, Wallet, LogOut, Ticket, Globe, Briefcase, User } from 'lucide-vue-next'
+import { Ticket, Compass, Sparkles, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
@@ -175,8 +160,8 @@ const router = useRouter()
 // Navigation items configuration (matching top nav)
 const navigationItems = [
   { path: '/events', label: 'Events', icon: Ticket },
-  { path: '/explore', label: 'Discover', icon: Globe },
-  { path: '/services', label: 'Services', icon: Briefcase }
+  { path: '/explore', label: 'Discover', icon: Compass },
+  { path: '/services', label: 'Services', icon: Sparkles }
 ]
 
 // Check if route is active
@@ -196,7 +181,10 @@ const handleProfilePictureError = () => {
 
 // Sanitized user data to prevent XSS
 const sanitizedUserName = computed(() => {
-  const name = authStore.user?.first_name || authStore.user?.username || 'User'
+  const firstName = authStore.user?.first_name || ''
+  const lastName = authStore.user?.last_name || ''
+  const fullName = `${firstName} ${lastName}`.trim()
+  const name = fullName || authStore.user?.username || 'User'
   return sanitizePlainText(name, 100)
 })
 

@@ -224,7 +224,7 @@ import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   Ticket,
   Compass,
-  Briefcase,
+  Sparkles,
   Search,
   Bell,
   User,
@@ -261,7 +261,7 @@ const languages = [
 const navigationItems = [
   { path: '/events', label: 'Events', icon: Ticket },
   { path: '/explore', label: 'Discover', icon: Compass },
-  { path: '/services', label: 'Services', icon: Briefcase }
+  { path: '/services', label: 'Services', icon: Sparkles }
 ]
 
 // Check if route is active
