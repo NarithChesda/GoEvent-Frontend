@@ -9,7 +9,7 @@
       <button
         v-if="allTexts.length > 0"
         @click="showTextDrawer = true"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500"
+        class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500"
       >
         <Pencil class="w-4 h-4" />
         <span>Edit</span>
@@ -98,7 +98,8 @@
           <div
             v-for="text in textsForSelectedLanguage"
             :key="text.id"
-            class="p-3 sm:p-4 hover:bg-slate-50/50 transition-colors"
+            class="p-3 sm:p-4 hover:bg-slate-50/50 transition-colors cursor-pointer sm:cursor-default"
+            @click="handleTextCardClick"
           >
             <div class="flex items-start justify-between gap-3">
               <!-- Text Info -->
@@ -131,10 +132,10 @@
                 </p>
               </div>
 
-              <!-- Actions -->
-              <div class="flex items-center gap-1 flex-shrink-0">
+              <!-- Actions - Hidden on mobile -->
+              <div class="hidden sm:flex items-center gap-1 flex-shrink-0">
                 <button
-                  @click="deleteText(text.id)"
+                  @click.stop="deleteText(text.id)"
                   class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                   :aria-label="`Delete ${getTextTypeLabel(text.text_type)}`"
                 >
@@ -151,10 +152,10 @@
         </div>
       </div>
 
-      <!-- Add Another Text Button -->
+      <!-- Add Another Text Button - Hidden on mobile when content exists -->
       <div
         @click="showTextDrawer = true"
-        class="border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
+        class="hidden sm:block border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
       >
         <div class="flex flex-col items-center justify-center">
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
@@ -401,6 +402,14 @@ const cancelDelete = () => {
   showDeleteModal.value = false
   textToDelete.value = null
   deleteError.value = null
+}
+
+// Handle text card click - opens drawer on mobile only
+const handleTextCardClick = () => {
+  // Only open drawer on mobile (< 640px)
+  if (window.innerWidth < 640) {
+    showTextDrawer.value = true
+  }
 }
 
 const handleTextsSaved = () => {
