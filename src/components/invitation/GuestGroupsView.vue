@@ -42,7 +42,31 @@
       <!-- Filter and Actions Bar - Clean Minimalist Design -->
       <div class="sticky top-0 z-20 mb-4">
         <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
-          <!-- Single Row Layout -->
+          <!-- Search Row (Mobile Only - appears first on mobile) -->
+          <div class="p-3 pb-0 sm:hidden">
+            <div class="relative">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                ref="searchInputRef"
+                id="guest-search"
+                type="text"
+                v-model="groupSearchQuery"
+                @input="handleGroupSearch"
+                placeholder="Search guests..."
+                aria-label="Search guests by name, email, or phone"
+                class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+              />
+              <button
+                v-if="groupSearchQuery"
+                @click="clearGroupSearch"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
+              >
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter and Actions Row -->
           <div class="flex items-center gap-3 p-3">
             <!-- Select All Checkbox -->
             <label class="flex items-center cursor-pointer group flex-shrink-0">
@@ -133,13 +157,12 @@
             <!-- Divider -->
             <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
 
-            <!-- Search Input -->
-            <div class="flex-1 min-w-0">
+            <!-- Search Input (Desktop Only) -->
+            <div class="hidden sm:block flex-1 min-w-0">
               <div class="relative">
                 <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <input
-                  ref="searchInputRef"
-                  id="guest-search"
+                  id="guest-search-desktop"
                   type="text"
                   v-model="groupSearchQuery"
                   @input="handleGroupSearch"
@@ -158,19 +181,22 @@
             </div>
 
             <!-- Guest Count -->
-            <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+            <div class="flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
               <span class="font-medium text-slate-700">{{ loadedGuestCount }}</span>
               <span>/</span>
               <span>{{ paginationTotal }}</span>
             </div>
 
+            <!-- Spacer to push Add button to the right on mobile -->
+            <div class="flex-1 sm:hidden"></div>
+
             <!-- Add Guest Button -->
             <button
               @click="$emit('add-guest')"
-              class="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
+              class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
             >
               <UserPlus class="w-4 h-4" />
-              <span class="hidden sm:inline">Add</span>
+              <span>Add Guest</span>
             </button>
           </div>
 
