@@ -187,16 +187,17 @@
               <span>{{ paginationTotal }}</span>
             </div>
 
-            <!-- Spacer to push Add button to the right on mobile -->
-            <div class="flex-1 sm:hidden"></div>
+            <!-- Spacer to push Add button to the right -->
+            <div class="flex-1"></div>
 
             <!-- Add Guest Button -->
             <button
               @click="$emit('add-guest')"
               class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
+              :aria-label="'Add Guest'"
             >
               <UserPlus class="w-4 h-4" />
-              <span>Add Guest</span>
+              <span class="hidden sm:inline">Add Guest</span>
             </button>
           </div>
 
