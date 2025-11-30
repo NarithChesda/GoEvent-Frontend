@@ -16,10 +16,11 @@
       <button
         v-if="canEdit"
         @click="openCreateDrawer"
-        class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center"
+        class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold p-2 sm:py-2 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center justify-center"
+        title="Add Agenda Item"
       >
-        <Plus class="w-4 h-4 mr-2" />
-        <span>Add Agenda Item</span>
+        <Plus class="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
+        <span class="hidden sm:inline">Add Agenda Item</span>
       </button>
     </div>
 
@@ -214,6 +215,7 @@
       :existing-agenda-items="agendaItems"
       @created="handleAgendaCreated"
       @updated="handleAgendaUpdated"
+      @delete="confirmDeleteItem"
     />
 
     <!-- Delete Confirmation Modal (Single Item) -->

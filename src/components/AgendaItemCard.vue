@@ -8,11 +8,13 @@
     @dragenter="handleDragEnter"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    @click="handleCardClick"
     class="agenda-card group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-slate-200/60"
     :class="[
       item.is_featured ? 'ring-1 ring-[#87CEEB] bg-[#E6F4FF]/30' : '',
       isDragging ? 'is-dragging' : '',
       isDraggedOver && !isDragging ? 'is-drag-over' : '',
+      canEdit && !isDesktop ? 'cursor-pointer active:scale-[0.98]' : '',
     ]"
     :style="cardStyles"
     role="group"
@@ -112,24 +114,24 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons (Desktop only) -->
       <div
-        v-if="canEdit"
-        class="flex-shrink-0 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity relative z-30"
+        v-if="canEdit && isDesktop"
+        class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity relative z-30"
       >
         <button
           @click.stop="$emit('edit', item)"
-          class="p-1 sm:p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors touch-manipulation"
+          class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF] rounded-md transition-colors"
           title="Edit"
         >
-          <Edit2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <Edit2 class="w-3.5 h-3.5" />
         </button>
         <button
           @click.stop="$emit('delete', item)"
-          class="p-1 sm:p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors touch-manipulation"
+          class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
           title="Delete"
         >
-          <Trash2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <Trash2 class="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
@@ -425,6 +427,14 @@ const handleDragEnd = () => {
   if (dragPreviewElement.value && document.body.contains(dragPreviewElement.value)) {
     document.body.removeChild(dragPreviewElement.value)
     dragPreviewElement.value = null
+  }
+}
+
+// Handle card click on mobile - opens edit drawer
+const handleCardClick = () => {
+  // Only handle clicks on mobile when editing is enabled
+  if (!isDesktop.value && props.canEdit) {
+    emit('edit', props.item)
   }
 }
 </script>

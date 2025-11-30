@@ -154,6 +154,18 @@
               :selected-icon="getSelectedIcon()"
               @select-icon="selectIcon"
             />
+
+            <!-- Delete Section (Mobile only, Edit mode only) -->
+            <div v-if="isEditMode && item" class="sm:hidden border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                @click="handleDelete"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-sm font-semibold rounded-lg transition-colors border border-red-200"
+              >
+                <Trash2 class="w-4 h-4" />
+                <span>Delete Agenda Item</span>
+              </button>
+            </div>
           </form>
         </div>
 
@@ -214,6 +226,7 @@ import {
   CheckCircle,
   Loader,
   Save,
+  Trash2,
 } from 'lucide-vue-next'
 import type { EventAgendaItem, AgendaTranslation } from '@/services/api'
 
@@ -239,6 +252,7 @@ interface Emits {
   (e: 'update:modelValue', value: boolean): void
   (e: 'updated', item: EventAgendaItem): void
   (e: 'created', item: EventAgendaItem): void
+  (e: 'delete', item: EventAgendaItem): void
 }
 
 const props = defineProps<Props>()
@@ -331,6 +345,14 @@ const handleSubmit = async () => {
     }, 1000)
   } else {
     showMessage('error', result.message || 'An error occurred')
+  }
+}
+
+// Handle delete (mobile only)
+const handleDelete = () => {
+  if (props.item) {
+    emit('delete', props.item)
+    closeDrawer()
   }
 }
 
