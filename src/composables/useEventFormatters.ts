@@ -118,11 +118,11 @@ export function getEventImage(event: Event): string | null {
 
 /**
  * Get event thumbnail image URL (optimized for event cards)
- * Display size is 176x112 (w-44 h-28), using 2x for retina = 352x224
+ * Display size is 176x112 (w-44 h-28), using 3x for retina = 528x336
  */
 export function getEventThumbnail(event: Event): string | null {
   const imageUrl = getEventImage(event)
-  return applyImageKitTransform(imageUrl, 352, 224)
+  return applyImageKitTransform(imageUrl, 528, 336)
 }
 
 /**

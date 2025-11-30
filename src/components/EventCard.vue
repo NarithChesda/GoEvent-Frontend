@@ -416,12 +416,12 @@ const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
   }
 
   // Apply ImageKit.io transformation for optimized thumbnails
-  // Card displays at ~300px width, using 2x for retina = 600x315
+  // Using same size as events/EventCard: 528x336 (3x of 176x112)
   if (url.includes('ik.imagekit.io')) {
     const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
     const match = url.match(imagekitRegex)
     if (match) {
-      return `${match[1]}/tr:w-600,h-315${match[2]}`
+      return `${match[1]}/tr:w-528,h-336${match[2]}`
     }
   }
 
