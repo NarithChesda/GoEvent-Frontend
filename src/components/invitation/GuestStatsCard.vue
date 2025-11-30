@@ -70,79 +70,97 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid gap-3 sm:grid-cols-3">
+    <div class="grid grid-cols-3 gap-2 sm:gap-3">
+      <!-- Viewed Card -->
       <div
         :class="[
           'bg-emerald-50',
-          compact ? 'rounded-xl p-3' : 'rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70'
+          compact ? 'rounded-xl p-3' : 'rounded-lg sm:rounded-2xl border border-transparent bg-emerald-50/80 p-2.5 sm:p-4 shadow-sm shadow-emerald-100/70'
         ]"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <p
             :class="[
-              'text-xs',
+              'text-[10px] sm:text-xs mb-1 sm:mb-0',
               compact ? 'font-medium text-emerald-700' : 'font-semibold uppercase tracking-wide text-emerald-600'
             ]"
           >
             Viewed
           </p>
-          <span :class="['text-xs font-semibold', compact ? 'text-emerald-600' : 'text-emerald-600']">
+          <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-emerald-600' : 'text-emerald-600']">
             {{ loading ? '...' : `${viewedPercentage}%` }}
           </span>
         </div>
-        <p :class="['font-semibold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-3 text-lg']">
-          {{ loading ? '...' : (compact ? viewedInvitations : `${viewedInvitations} guests`) }}
+        <p :class="['font-bold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-1 sm:mt-3 text-lg sm:text-xl leading-tight']">
+          {{ loading ? '...' : viewedInvitations }}
         </p>
-        <p v-if="!compact" class="text-xs text-emerald-700/70">Already engaged with their invite.</p>
+        <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-emerald-700/70 leading-tight mt-1">
+          Already engaged with their invite.
+        </p>
+        <p v-if="!compact" class="sm:hidden text-[9px] text-emerald-700/60 leading-tight mt-0.5">
+          Engaged
+        </p>
       </div>
 
+      <!-- Awaiting View Card -->
       <div
         :class="[
           'bg-sky-50',
-          compact ? 'rounded-xl p-3' : 'rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70'
+          compact ? 'rounded-xl p-3' : 'rounded-lg sm:rounded-2xl border border-transparent bg-sky-50/80 p-2.5 sm:p-4 shadow-sm shadow-sky-100/70'
         ]"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <p
             :class="[
-              'text-xs',
+              'text-[10px] sm:text-xs mb-1 sm:mb-0',
               compact ? 'font-medium text-sky-700' : 'font-semibold uppercase tracking-wide text-sky-600'
             ]"
           >
-            Awaiting View
+            Awaiting
           </p>
-          <span :class="['text-xs font-semibold', compact ? 'text-sky-600' : 'text-sky-600']">
+          <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-sky-600' : 'text-sky-600']">
             {{ loading ? '...' : `${awaitingViewPercentage}%` }}
           </span>
         </div>
-        <p :class="['font-semibold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-3 text-lg']">
-          {{ loading ? '...' : (compact ? awaitingViewInvitations : `${awaitingViewInvitations} guests`) }}
+        <p :class="['font-bold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-1 sm:mt-3 text-lg sm:text-xl leading-tight']">
+          {{ loading ? '...' : awaitingViewInvitations }}
         </p>
-        <p v-if="!compact" class="text-xs text-sky-700/70">Haven't opened their invitation yet.</p>
+        <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-sky-700/70 leading-tight mt-1">
+          Haven't opened their invitation yet.
+        </p>
+        <p v-if="!compact" class="sm:hidden text-[9px] text-sky-700/60 leading-tight mt-0.5">
+          Not opened
+        </p>
       </div>
 
+      <!-- Pending Card -->
       <div
         :class="[
-          compact ? 'rounded-xl bg-slate-100 p-3' : 'rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70'
+          compact ? 'rounded-xl bg-slate-100 p-3' : 'rounded-lg sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70'
         ]"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <p
             :class="[
-              'text-xs',
+              'text-[10px] sm:text-xs mb-1 sm:mb-0',
               compact ? 'font-medium text-slate-600' : 'font-semibold uppercase tracking-wide text-slate-600'
             ]"
           >
             Pending
           </p>
-          <span :class="['text-xs font-semibold', compact ? 'text-slate-500' : 'text-slate-600']">
+          <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-slate-500' : 'text-slate-600']">
             {{ loading ? '...' : `${pendingPercentage}%` }}
           </span>
         </div>
-        <p :class="['font-semibold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-3 text-lg']">
-          {{ loading ? '...' : (compact ? pendingInvitations : `${pendingInvitations} guests`) }}
+        <p :class="['font-bold text-slate-900 transition-all duration-300', compact ? 'text-lg' : 'mt-1 sm:mt-3 text-lg sm:text-xl leading-tight']">
+          {{ loading ? '...' : pendingInvitations }}
         </p>
-        <p v-if="!compact" class="text-xs text-slate-500">Still waiting to receive an invite.</p>
+        <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-slate-500 leading-tight mt-1">
+          Still waiting to receive an invite.
+        </p>
+        <p v-if="!compact" class="sm:hidden text-[9px] text-slate-500 leading-tight mt-0.5">
+          Not sent
+        </p>
       </div>
     </div>
   </div>
