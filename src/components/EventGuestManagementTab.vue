@@ -166,6 +166,9 @@
       :is-updating="isUpdatingGuest"
       @close="handleCloseEditGuestModal"
       @update-guest="handleUpdateGuest"
+      @mark-sent="handleMarkAsSent"
+      @delete="handleDeleteFromEditModal"
+      @copy-link="copyShowcaseLink"
     />
 
     <!-- Edit Group Modal -->
@@ -180,7 +183,7 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-4 sm:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-50">
+      <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
@@ -710,6 +713,13 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
   }
 
   isUpdatingGuest.value = false
+}
+
+const handleDeleteFromEditModal = (guest: EventGuest) => {
+  // Close the edit modal first
+  showEditGuestModal.value = false
+  // Then open the delete confirmation modal
+  openDeleteGuestModal(guest)
 }
 
 const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {

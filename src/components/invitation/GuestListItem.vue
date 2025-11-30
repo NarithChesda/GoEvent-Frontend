@@ -1,12 +1,16 @@
 <template>
   <!-- Guest Card - Clean minimalist design -->
-  <div class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group">
+  <div
+    class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group md:cursor-default cursor-pointer"
+    @click="handleCardClick"
+  >
     <div class="flex items-center gap-3 px-4 py-3">
       <!-- Checkbox -->
       <input
         type="checkbox"
         :checked="selected"
         @change="$emit('toggle-select', guest)"
+        @click.stop
         class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
       />
 
@@ -48,8 +52,19 @@
         </div>
       </div>
 
-      <!-- Actions (Always visible, compact) -->
-      <div class="flex items-center gap-0.5 flex-shrink-0">
+      <!-- Mobile Copy Link Button (right side) -->
+      <button
+        @click.stop="handleMobileCopyLink"
+        class="md:hidden px-2.5 py-1.5 text-xs font-medium flex-shrink-0 rounded-lg transition-all duration-200"
+        :class="showCopiedFeedback
+          ? 'text-emerald-700 bg-emerald-100'
+          : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
+      >
+        {{ showCopiedFeedback ? 'Copied!' : 'Copy' }}
+      </button>
+
+      <!-- Actions (Hidden on mobile, visible on desktop) -->
+      <div class="hidden md:flex items-center gap-0.5 flex-shrink-0">
         <!-- Mark Sent (only if not sent) -->
         <button
           v-if="guest.invitation_status === 'not_sent'"
@@ -194,10 +209,44 @@ const linkButton = ref<HTMLElement | null>(null)
 const dropdownMenu = ref<HTMLElement | null>(null)
 const dropdownPosition = ref<'top' | 'bottom'>('bottom')
 const dropdownStyle = ref<Record<string, string>>({})
+const showCopiedFeedback = ref(false)
 
 const dropdownManager = DropdownManager.getInstance()
 
+// Mobile copy link handler with feedback
+const handleMobileCopyLink = () => {
+  emit('copy-link', props.guest, 'kh')
+  showCopiedFeedback.value = true
+  setTimeout(() => {
+    showCopiedFeedback.value = false
+  }, 1500)
+}
+
 // Methods
+const handleCardClick = (event: MouseEvent) => {
+  // Only trigger edit on mobile (< 768px)
+  if (window.innerWidth >= 768) {
+    return
+  }
+
+  // Don't trigger if clicking on interactive elements
+  const target = event.target as HTMLElement
+
+  // Check if click is on checkbox, button, or any interactive element
+  // Use a specific selector for the link menu instead of the generic '.relative'
+  if (
+    target.tagName === 'INPUT' ||
+    target.tagName === 'BUTTON' ||
+    target.closest('button') ||
+    target.closest('input')
+  ) {
+    return
+  }
+
+  // Trigger edit modal
+  emit('edit', props.guest)
+}
+
 const formatCurrency = (amount: string | number, currency: string = 'USD') => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
   if (isNaN(numAmount)) return ''

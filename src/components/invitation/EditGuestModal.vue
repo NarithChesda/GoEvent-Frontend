@@ -1,35 +1,47 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="show" class="fixed inset-0 z-[70] overflow-y-auto">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="$emit('close')"></div>
+    <!-- Backdrop -->
+    <Transition name="fade">
+      <div
+        v-if="show"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70]"
+        @click="$emit('close')"
+      />
+    </Transition>
 
-        <div class="flex min-h-full items-center justify-center p-4">
-          <div
-            class="relative w-full max-w-md bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
-            @click.stop
-          >
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <UserCog class="w-5 h-5" />
-                  </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Edit Guest</h2>
+    <!-- Drawer Panel -->
+    <Transition name="slide-up">
+      <div
+        v-if="show"
+        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[71]"
+        @click.self="$emit('close')"
+      >
+        <div
+          class="relative w-full md:max-w-md bg-white md:rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] md:max-h-[calc(100vh-100px)] flex flex-col rounded-t-3xl md:rounded-b-3xl"
+          @click.stop
+        >
+          <!-- Header -->
+          <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+            <div class="flex items-center justify-between px-4 py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center">
+                  <UserCog class="w-5 h-5" />
                 </div>
-                <button
-                  @click="$emit('close')"
-                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                  aria-label="Close"
-                >
-                  <X class="w-4 h-4" />
-                </button>
+                <h2 class="text-lg font-semibold text-white">Edit Guest</h2>
               </div>
+              <button
+                @click="$emit('close')"
+                class="w-8 h-8 rounded-full hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                aria-label="Close"
+              >
+                <X class="w-5 h-5" />
+              </button>
             </div>
+          </div>
 
-            <!-- Form -->
-            <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <!-- Form Content -->
+          <div class="flex-1 overflow-y-auto overscroll-contain">
+            <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
               <!-- Group Selection -->
               <div>
                 <label for="editGuestGroup" class="block text-sm font-medium text-slate-700 mb-2">
@@ -190,39 +202,100 @@
                 <p class="text-sm text-red-800">{{ errorMessage }}</p>
               </div>
 
-              <!-- Action Buttons -->
-              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                <button
-                  type="button"
-                  @click="$emit('close')"
-                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                  :disabled="isUpdating"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  :disabled="!isFormValid || isUpdating"
-                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <span
-                    v-if="isUpdating"
-                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                  ></span>
-                  {{ isUpdating ? 'Updating...' : 'Update Guest' }}
-                </button>
+              <!-- Quick Actions Section (Mobile Only) -->
+              <div class="md:hidden space-y-3 pt-2">
+                <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <Link class="w-4 h-4" />
+                  Quick Actions
+                </h3>
+
+                <div class="space-y-2">
+                  <!-- Copy Link Buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      @click="handleCopyLink('kh')"
+                      :disabled="isUpdating"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Globe class="w-4 h-4" />
+                      <span>Copy Link (KH)</span>
+                    </button>
+                    <button
+                      type="button"
+                      @click="handleCopyLink('en')"
+                      :disabled="isUpdating"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Globe class="w-4 h-4" />
+                      <span>Copy Link (EN)</span>
+                    </button>
+                  </div>
+
+                  <!-- Mark as Sent Button -->
+                  <button
+                    v-if="guest && guest.invitation_status === 'not_sent'"
+                    type="button"
+                    @click="handleMarkSent"
+                    :disabled="isUpdating"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Send class="w-4 h-4" />
+                    <span>Mark as Sent</span>
+                  </button>
+
+                  <!-- Delete Button -->
+                  <button
+                    v-if="guest"
+                    type="button"
+                    @click="handleDelete"
+                    :disabled="isUpdating"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                    <span>Delete Guest</span>
+                  </button>
+                </div>
               </div>
             </form>
+          </div>
+
+          <!-- Footer with Action Buttons -->
+          <div class="flex-shrink-0 border-t border-slate-200 bg-white">
+            <!-- Primary Actions -->
+            <div class="flex items-center justify-between gap-3 px-4 py-3">
+              <button
+                @click="handleSubmit"
+                :disabled="!isFormValid || isUpdating"
+                class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span
+                  v-if="isUpdating"
+                  class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+                ></span>
+                <span>{{ isUpdating ? 'Updating...' : 'Update Guest' }}</span>
+              </button>
+
+              <button
+                type="button"
+                @click="$emit('close')"
+                class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
+                :disabled="isUpdating"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </Transition>
+
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { UserCog, X, Coins, ChevronDown, ChevronUp, Mail, Phone } from 'lucide-vue-next'
+import { UserCog, X, Coins, ChevronDown, Mail, Send, Link, Trash2, Globe } from 'lucide-vue-next'
 import type { EventGuest, GuestGroup } from '../../services/api'
 
 // Props
@@ -237,6 +310,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   'update-guest': [guestId: number, data: any]
+  'mark-sent': [guest: EventGuest]
+  'delete': [guest: EventGuest]
+  'copy-link': [guest: EventGuest, language: 'en' | 'kh']
 }>()
 
 // Form data
@@ -261,6 +337,25 @@ const formData = ref<FormData>({
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string>>({})
 const isContactInfoExpanded = ref(false)
+
+// Quick action handlers for mobile
+const handleCopyLink = (language: 'en' | 'kh') => {
+  if (props.guest) {
+    emit('copy-link', props.guest, language)
+  }
+}
+
+const handleMarkSent = () => {
+  if (props.guest) {
+    emit('mark-sent', props.guest)
+  }
+}
+
+const handleDelete = () => {
+  if (props.guest) {
+    emit('delete', props.guest)
+  }
+}
 
 // Initialize form data when guest prop changes
 watch(() => props.guest, (newGuest) => {
@@ -349,15 +444,42 @@ defineExpose({
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s ease-out;
 }
 
-.modal-enter-from,
-.modal-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+}
+
+/* Slide from bottom on mobile, scale on desktop */
+.slide-up-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slide-up-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-up-enter-active,
+  .slide-up-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .slide-up-enter-from,
+  .slide-up-leave-to {
+    opacity: 0;
+    transform: scale(0.9) translateY(0);
+  }
 }
 
 /* Collapse transition */
@@ -379,7 +501,19 @@ defineExpose({
   max-height: 500px;
 }
 
-/* Custom scrollbar for modal content */
+/* Dropdown transition for mobile link menu */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
