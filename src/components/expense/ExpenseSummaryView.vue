@@ -31,24 +31,24 @@
       >
         <div class="flex flex-col gap-6">
           <!-- Currency Header with Budget Stats -->
-          <div class="flex flex-wrap items-end justify-between gap-6">
+          <div class="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ currency }} Budget</p>
-              <p class="text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300" aria-live="polite">
+              <p class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300" aria-live="polite">
                 {{ formatCurrency(summary.overall_totals[currency].total_budget, currency) }}
               </p>
-              <p class="mt-1 text-sm text-slate-500">{{ getBudgetedCategoriesCount(currency) }} categories budgeted</p>
+              <p class="mt-1 text-xs sm:text-sm text-slate-500">{{ getBudgetedCategoriesCount(currency) }} categories budgeted</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div
                 :class="[
-                  'inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold ring-1',
+                  'inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-semibold ring-1',
                   isOverBudget(currency)
                     ? 'bg-red-50 text-red-600 ring-red-200'
                     : 'bg-emerald-50 text-emerald-600 ring-emerald-200'
                 ]"
               >
-                <TrendingUp class="h-4 w-4" aria-hidden="true" />
+                <TrendingUp class="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
                 <span>{{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }} spent</span>
               </div>
             </div>
@@ -56,7 +56,7 @@
 
           <!-- Progress Visualization -->
           <div class="space-y-5">
-            <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
+            <div class="flex h-2 sm:h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
               <div
                 :class="[
                   'h-full transition-all duration-700 ease-out',
@@ -68,20 +68,20 @@
               ></div>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-3">
+            <div class="grid grid-cols-3 gap-2 sm:gap-3">
               <!-- Budget Spent -->
               <div
                 :class="[
-                  'rounded-2xl border border-transparent p-4 shadow-sm',
+                  'rounded-lg sm:rounded-2xl border border-transparent p-2.5 sm:p-4 shadow-sm',
                   isOverBudget(currency)
                     ? 'bg-red-50/80 shadow-red-100/70'
                     : 'bg-emerald-50/80 shadow-emerald-100/70'
                 ]"
               >
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <p
                     :class="[
-                      'text-xs font-semibold uppercase tracking-wide',
+                      'text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide',
                       isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600'
                     ]"
                   >
@@ -89,66 +89,81 @@
                   </p>
                   <span
                     :class="[
-                      'text-xs font-semibold',
+                      'text-[10px] sm:text-xs font-semibold',
                       isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600'
                     ]"
                   >
                     {{ getBudgetPercentage(currency) }}%
                   </span>
                 </div>
-                <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">
+                <p class="hidden sm:block mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">
                   {{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }}
                 </p>
-                <p :class="['text-xs', isOverBudget(currency) ? 'text-red-700/70' : 'text-emerald-700/70']">
+                <p class="sm:hidden mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">
+                  {{ formatCurrency(summary.overall_totals[currency].total_expenses, currency, true) }}
+                </p>
+                <p class="hidden sm:block text-[10px] sm:text-xs mt-1 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/70' : 'text-emerald-700/70'">
                   {{ summary.overall_totals[currency].expense_count }} expense{{ summary.overall_totals[currency].expense_count !== 1 ? 's' : '' }} recorded
+                </p>
+                <p class="sm:hidden text-[9px] mt-0.5 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/60' : 'text-emerald-700/60'">
+                  {{ summary.overall_totals[currency].expense_count }} recorded
                 </p>
               </div>
 
               <!-- Remaining/Over Budget -->
               <div
                 :class="[
-                  'rounded-2xl border border-transparent p-4 shadow-sm',
+                  'rounded-lg sm:rounded-2xl border border-transparent p-2.5 sm:p-4 shadow-sm',
                   isOverBudget(currency)
                     ? 'bg-red-50/80 shadow-red-100/70'
                     : 'bg-sky-50/80 shadow-sky-100/70'
                 ]"
               >
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <p
                     :class="[
-                      'text-xs font-semibold uppercase tracking-wide',
+                      'text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide',
                       isOverBudget(currency) ? 'text-red-600' : 'text-sky-600'
                     ]"
                   >
-                    {{ isOverBudget(currency) ? 'Over Budget' : 'Remaining' }}
+                    {{ isOverBudget(currency) ? 'Over' : 'Left' }}
                   </p>
                   <span
                     :class="[
-                      'text-xs font-semibold',
+                      'text-[10px] sm:text-xs font-semibold',
                       isOverBudget(currency) ? 'text-red-600' : 'text-sky-600'
                     ]"
                   >
                     {{ Math.abs(getRemainingBudget(currency)) > 0 ? (isOverBudget(currency) ? '+' : '') : '' }}{{ Math.abs(100 - getBudgetPercentage(currency)) }}%
                   </span>
                 </div>
-                <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">
+                <p class="hidden sm:block mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">
                   {{ formatCurrency(Math.abs(getRemainingBudget(currency)), currency) }}
                 </p>
-                <p :class="['text-xs', isOverBudget(currency) ? 'text-red-700/70' : 'text-sky-700/70']">
-                  {{ isOverBudget(currency) ? 'Exceeded your budget limit' : 'Still available to spend' }}
+                <p class="sm:hidden mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">
+                  {{ formatCurrency(Math.abs(getRemainingBudget(currency)), currency, true) }}
+                </p>
+                <p class="hidden sm:block text-[10px] sm:text-xs mt-1 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/70' : 'text-sky-700/70'">
+                  {{ isOverBudget(currency) ? 'Exceeded budget limit' : 'Available to spend' }}
+                </p>
+                <p class="sm:hidden text-[9px] mt-0.5 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/60' : 'text-sky-700/60'">
+                  {{ isOverBudget(currency) ? 'Exceeded' : 'Available' }}
                 </p>
               </div>
 
               <!-- Budget Status -->
-              <div class="rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70">
-                <div class="flex items-center justify-between">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Status</p>
+              <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-600">Status</p>
                 </div>
-                <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">
-                  {{ isOverBudget(currency) ? 'Over Budget' : 'On Track' }}
+                <p class="mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">
+                  {{ isOverBudget(currency) ? 'Over' : 'On Track' }}
                 </p>
-                <p class="text-xs text-slate-500">
+                <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-500 leading-tight">
                   {{ isOverBudget(currency) ? 'Review spending to get back on track' : 'Budget is under control' }}
+                </p>
+                <p class="sm:hidden text-[9px] mt-0.5 text-slate-500 leading-tight">
+                  {{ isOverBudget(currency) ? 'Review' : 'Good' }}
                 </p>
               </div>
             </div>
@@ -162,17 +177,17 @@
     <div v-else class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
       <div class="flex flex-col gap-6">
         <!-- Header with zero values -->
-        <div class="flex flex-wrap items-end justify-between gap-6">
+        <div class="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Total Budget</p>
-            <p class="text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300">
+            <p class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300">
               $0.00
             </p>
-            <p class="mt-1 text-sm text-slate-500">0 categories budgeted</p>
+            <p class="mt-1 text-xs sm:text-sm text-slate-500">0 categories budgeted</p>
           </div>
           <div class="flex flex-wrap items-center gap-3">
-            <div class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold ring-1 bg-slate-50 text-slate-500 ring-slate-200">
-              <TrendingUp class="h-4 w-4" aria-hidden="true" />
+            <div class="inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-semibold ring-1 bg-slate-50 text-slate-500 ring-slate-200">
+              <TrendingUp class="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               <span>$0.00 spent</span>
             </div>
           </div>
@@ -180,38 +195,43 @@
 
         <!-- Zero Progress Visualization -->
         <div class="space-y-5">
-          <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
+          <div class="flex h-2 sm:h-3 w-full overflow-hidden rounded-full bg-slate-100 shadow-inner" role="img" aria-hidden="true">
             <div class="h-full transition-all duration-700 ease-out bg-slate-200" style="width: 0%"></div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-3">
+          <div class="grid grid-cols-3 gap-2 sm:gap-3">
             <!-- Budget Spent -->
-            <div class="rounded-2xl border border-transparent bg-slate-50/80 p-4 shadow-sm shadow-slate-100/70">
-              <div class="flex items-center justify-between">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Spent</p>
-                <span class="text-xs font-semibold text-slate-500">0%</span>
+            <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50/80 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-500">Spent</p>
+                <span class="text-[10px] sm:text-xs font-semibold text-slate-500">0%</span>
               </div>
-              <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">$0.00</p>
-              <p class="text-xs text-slate-400">0 expenses recorded</p>
+              <p class="hidden sm:block mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0.00</p>
+              <p class="sm:hidden mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0</p>
+              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-400 leading-tight">0 expenses recorded</p>
+              <p class="sm:hidden text-[9px] mt-0.5 text-slate-400 leading-tight">0 recorded</p>
             </div>
 
             <!-- Remaining -->
-            <div class="rounded-2xl border border-transparent bg-slate-50/80 p-4 shadow-sm shadow-slate-100/70">
-              <div class="flex items-center justify-between">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Remaining</p>
-                <span class="text-xs font-semibold text-slate-500">0%</span>
+            <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50/80 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-500">Left</p>
+                <span class="text-[10px] sm:text-xs font-semibold text-slate-500">0%</span>
               </div>
-              <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">$0.00</p>
-              <p class="text-xs text-slate-400">No budget set yet</p>
+              <p class="hidden sm:block mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0.00</p>
+              <p class="sm:hidden mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0</p>
+              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-400 leading-tight">No budget set yet</p>
+              <p class="sm:hidden text-[9px] mt-0.5 text-slate-400 leading-tight">No budget</p>
             </div>
 
             <!-- Budget Status -->
-            <div class="rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70">
-              <div class="flex items-center justify-between">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Status</p>
+            <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-600">Status</p>
               </div>
-              <p class="mt-3 text-lg font-semibold text-slate-900 transition-all duration-300">No Budget</p>
-              <p class="text-xs text-slate-500">Create a budget to start tracking</p>
+              <p class="mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">No Budget</p>
+              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-500 leading-tight">Create a budget to start tracking</p>
+              <p class="sm:hidden text-[9px] mt-0.5 text-slate-500 leading-tight">Create budget</p>
             </div>
           </div>
         </div>
@@ -413,11 +433,13 @@ const loadSummary = async (silent = false) => {
   }
 }
 
-const formatCurrency = (amount: number, currency: string): string => {
+const formatCurrency = (amount: number, currency: string, compact = false): string => {
   if (currency === 'USD') {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      minimumFractionDigits: compact ? 0 : 2,
+      maximumFractionDigits: compact ? 0 : 2,
     }).format(amount)
   } else if (currency === 'KHR') {
     return new Intl.NumberFormat('km-KH', {
@@ -426,7 +448,7 @@ const formatCurrency = (amount: number, currency: string): string => {
       minimumFractionDigits: 0,
     }).format(amount)
   }
-  return `${currency} ${amount.toFixed(2)}`
+  return `${currency} ${compact ? amount.toFixed(0) : amount.toFixed(2)}`
 }
 
 const isOverBudget = (currency: string): boolean => {
