@@ -6,6 +6,7 @@
 export { default as WelcomeHeader } from './WelcomeHeader.vue'
 export { default as HostLogo } from './HostLogo.vue'
 export { default as HostProfilePicture } from './HostProfilePicture.vue'
+export { default as AutoFitText } from './AutoFitText.vue'
 
 // Re-export utilities from composable
 export {

@@ -15,66 +15,70 @@
       <!-- Row 2: Host Parent A Names -->
       <div v-if="showParentARow" class="parent-row">
         <div class="host-parent-left">
-          <p
+          <div
             v-if="hosts[0].parent_a_name || hosts[0].parent_b_name"
             :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-            :style="parentTextStyle"
           >
-            <span
-              v-for="(word, index) in splitToWords(hosts[0].parent_a_name || hosts[0].parent_b_name)"
-              :key="`parent-a-left-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.parentALeft + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[0].parent_a_name || hosts[0].parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
-          </p>
+            <AutoFitText
+              :text="hosts[0].parent_a_name || hosts[0].parent_b_name || ''"
+              :color="primaryColor"
+              :font-family="primaryFont || currentFont"
+              :base-delay="animationDelays.parentALeft"
+              :word-delay="WORD_DELAY"
+              :key-prefix="`parent-a-left-${currentLanguage}`"
+            />
+          </div>
         </div>
         <div class="center-spacer"></div>
         <div class="host-parent-right">
-          <p
+          <div
             v-if="hosts.length > 1 && (hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
             :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-            :style="parentTextStyle"
           >
-            <span
-              v-for="(word, index) in splitToWords(hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
-              :key="`parent-a-right-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.parentARight + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[1]?.parent_a_name || hosts[1]?.parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
-          </p>
+            <AutoFitText
+              :text="hosts[1]?.parent_a_name || hosts[1]?.parent_b_name || ''"
+              :color="primaryColor"
+              :font-family="primaryFont || currentFont"
+              :base-delay="animationDelays.parentARight"
+              :word-delay="WORD_DELAY"
+              :key-prefix="`parent-a-right-${currentLanguage}`"
+            />
+          </div>
         </div>
       </div>
 
       <!-- Row 3: Host Parent B Names -->
       <div v-if="showParentBRow" class="parent-row">
         <div class="host-parent-left">
-          <p
+          <div
             v-if="hosts[0].parent_b_name && hosts[0].parent_a_name"
             :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-            :style="parentTextStyle"
           >
-            <span
-              v-for="(word, index) in splitToWords(hosts[0].parent_b_name)"
-              :key="`parent-b-left-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.parentBLeft + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[0].parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
-          </p>
+            <AutoFitText
+              :text="hosts[0].parent_b_name || ''"
+              :color="primaryColor"
+              :font-family="primaryFont || currentFont"
+              :base-delay="animationDelays.parentBLeft"
+              :word-delay="WORD_DELAY"
+              :key-prefix="`parent-b-left-${currentLanguage}`"
+            />
+          </div>
         </div>
         <div class="center-spacer"></div>
         <div class="host-parent-right">
-          <p
+          <div
             v-if="hosts.length > 1 && hosts[1]?.parent_b_name && hosts[1]?.parent_a_name"
             :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-            :style="parentTextStyle"
           >
-            <span
-              v-for="(word, index) in splitToWords(hosts[1]?.parent_b_name)"
-              :key="`parent-b-right-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.parentBRight + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[1]?.parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
-          </p>
+            <AutoFitText
+              :text="hosts[1]?.parent_b_name || ''"
+              :color="primaryColor"
+              :font-family="primaryFont || currentFont"
+              :base-delay="animationDelays.parentBRight"
+              :word-delay="WORD_DELAY"
+              :key-prefix="`parent-b-right-${currentLanguage}`"
+            />
+          </div>
         </div>
       </div>
 
@@ -189,6 +193,7 @@ import {
   WelcomeHeader,
   HostLogo,
   HostProfilePicture,
+  AutoFitText,
   splitToWords,
   getKhmerClass,
   ANIMATION_CONSTANTS,
@@ -225,13 +230,6 @@ const leftHostTitle = computed(() =>
 const rightHostTitle = computed(() => props.hosts[1]?.title || 'Bride')
 
 // Computed text styles
-const parentTextStyle = computed(() => ({
-  color: props.primaryColor,
-  fontFamily: props.primaryFont || props.currentFont,
-  wordWrap: 'break-word' as const,
-  hyphens: 'auto' as const,
-}))
-
 const titleTextStyle = computed(() => ({
   color: props.primaryColor,
   fontFamily: props.secondaryFont || props.currentFont,
