@@ -247,6 +247,21 @@ export interface BaseShowcaseProps {
   currentLanguage?: string
 }
 
+// Host Info Layout Props - shared across all host layout components
+export interface HostInfoProps {
+  hosts: Host[]
+  logoUrl?: string
+  eventInitial: string
+  primaryColor: string
+  secondaryColor?: string | null
+  accentColor: string
+  currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
+  welcomeMessage?: string
+  currentLanguage?: string
+}
+
 // Error boundary types
 export interface ErrorInfo {
   componentStack: string

@@ -1,35 +1,32 @@
 <template>
   <div class="host-info-default" :class="{ 'khmer-text': currentLanguage === 'kh' }">
     <!-- Welcome Message -->
-    <div class="text-center mb-6 sm:mb-8">
-      <h2
-        :class="[
-          'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight',
-          currentLanguage === 'kh' && 'khmer-text-fix',
-        ]"
-        :style="{
-          fontFamily: primaryFont || currentFont,
-          color: primaryColor,
-        }"
-      >
-        {{ welcomeMessage || 'Welcome to Our Event' }}
-      </h2>
-    </div>
+    <WelcomeHeader
+      :message="welcomeMessage"
+      default-message="Welcome to Our Event"
+      :color="primaryColor"
+      :font-family="primaryFont || currentFont"
+      :current-language="currentLanguage"
+      :animated="true"
+      :base-delay="animationDelays.welcome"
+    />
 
     <!-- Logo (Centered) -->
-    <div class="flex justify-center mb-8 sm:mb-10">
+    <div
+      :key="`logo-${currentLanguage}`"
+      class="flex justify-center mb-8 sm:mb-10"
+    >
       <img
         v-if="logoUrl"
         :src="logoUrl"
         alt="Event Logo"
-        class="default-logo"
+        class="default-logo bounce-in-element"
+        :style="{ animationDelay: `${animationDelays.logo}s` }"
       />
       <div
         v-else
-        class="logo-fallback"
-        :style="{
-          backgroundColor: primaryColor,
-        }"
+        class="logo-fallback bounce-in-element"
+        :style="{ backgroundColor: primaryColor, animationDelay: `${animationDelays.logo}s` }"
       >
         <span class="logo-initial" :style="{ fontFamily: primaryFont || currentFont }">
           {{ eventInitial }}
@@ -40,16 +37,17 @@
     <!-- Hosts Grid - Dynamic based on host count -->
     <div v-if="hosts.length > 0" :class="gridClasses">
       <div
-        v-for="host in hosts"
-        :key="host.id"
+        v-for="(host, hostIndex) in hosts"
+        :key="`${host.id}-${currentLanguage}`"
         class="host-card text-center"
       >
         <!-- Profile Picture -->
         <div v-if="host.profile_image" class="flex justify-center mb-3">
           <div
-            class="profile-wrapper"
+            class="profile-wrapper bounce-in-element"
             :style="{
-              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`
+              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+              animationDelay: `${getHostAnimationDelay(hostIndex, 'profile')}s`
             }"
           >
             <img
@@ -63,45 +61,42 @@
         <!-- Host Title -->
         <p
           v-if="host.title"
-          :class="[
-            'text-xs sm:text-sm opacity-75 mb-1',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            color: primaryColor,
-            fontFamily: secondaryFont || currentFont,
-          }"
+          :class="['text-xs sm:text-sm opacity-75 mb-1', getKhmerClass(currentLanguage)]"
+          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
         >
-          {{ host.title }}
+          <span
+            v-for="(word, index) in splitToWords(host.title)"
+            :key="`title-${hostIndex}-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'title') + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(host.title).length - 1 ? '\u00A0' : '' }}</span>
         </p>
 
         <!-- Host Name -->
         <h4
-          :class="[
-            'text-lg sm:text-xl md:text-2xl font-semibold leading-tight',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            color: primaryColor,
-            fontFamily: primaryFont || currentFont,
-          }"
+          :class="['text-lg sm:text-xl md:text-2xl font-semibold leading-tight', getKhmerClass(currentLanguage)]"
+          :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
         >
-          {{ host.name }}
+          <span
+            v-for="(word, index) in splitToWords(host.name)"
+            :key="`name-${hostIndex}-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'name') + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(host.name).length - 1 ? '\u00A0' : '' }}</span>
         </h4>
 
         <!-- Host Bio -->
         <p
           v-if="host.bio"
-          :class="[
-            'text-xs sm:text-sm mt-2 opacity-80',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            color: primaryColor,
-            fontFamily: currentFont,
-          }"
+          :class="['text-xs sm:text-sm mt-2 opacity-80', getKhmerClass(currentLanguage)]"
+          :style="{ color: primaryColor, fontFamily: currentFont }"
         >
-          {{ host.bio }}
+          <span
+            v-for="(word, index) in splitToWords(host.bio)"
+            :key="`bio-${hostIndex}-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'bio') + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(host.bio).length - 1 ? '\u00A0' : '' }}</span>
         </p>
       </div>
     </div>
@@ -110,28 +105,20 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Host } from '../../../composables/useEventShowcase'
-import { apiService } from '../../../services/api'
+import type { HostInfoProps } from '@/types/showcase'
+import {
+  WelcomeHeader,
+  getKhmerClass,
+  getMediaUrl,
+  splitToWords,
+  ANIMATION_CONSTANTS,
+  getTextAnimationDuration,
+} from './shared'
 
-interface Props {
-  hosts: Host[]
-  logoUrl?: string
-  eventInitial: string
-  primaryColor: string
-  secondaryColor?: string | null
-  accentColor: string
-  currentFont: string
-  primaryFont?: string
-  secondaryFont?: string
-  welcomeMessage?: string
-  currentLanguage?: string
-}
+const props = defineProps<HostInfoProps>()
 
-const props = defineProps<Props>()
-
-const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
-  return apiService.getProfilePictureUrl(mediaUrl) || undefined
-}
+const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
+const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 // Dynamic grid based on host count
 const gridClasses = computed(() => {
@@ -147,6 +134,47 @@ const gridClasses = computed(() => {
     return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'
   }
 })
+
+// Animation delays calculation
+const animationDelays = computed(() => {
+  let currentDelay = 0.1
+
+  const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
+    if (skipIfEmpty && !text) return currentDelay
+    const startDelay = currentDelay
+    const duration = getTextAnimationDuration(text)
+    currentDelay = startDelay + duration + ELEMENT_GAP
+    return startDelay
+  }
+
+  const welcome = getNextDelay(props.welcomeMessage || 'Welcome to Our Event')
+  const logo = currentDelay
+  currentDelay += 0.25
+
+  // Calculate delays for each host
+  const hostDelays: Array<{ profile: number; title: number; name: number; bio: number }> = []
+
+  for (const host of props.hosts) {
+    const profile = currentDelay
+    currentDelay += 0.15
+    const title = getNextDelay(host.title)
+    const name = getNextDelay(host.name)
+    const bio = getNextDelay(host.bio)
+    hostDelays.push({ profile, title, name, bio })
+  }
+
+  return {
+    welcome,
+    logo,
+    hostDelays,
+  }
+})
+
+// Get animation delay for a specific host element
+const getHostAnimationDelay = (hostIndex: number, element: 'profile' | 'title' | 'name' | 'bio'): number => {
+  const delays = animationDelays.value.hostDelays[hostIndex]
+  return delays ? delays[element] : 0
+}
 </script>
 
 <style scoped>
@@ -221,17 +249,51 @@ const gridClasses = computed(() => {
   object-fit: cover;
 }
 
-/* Khmer text adjustments */
-.khmer-text-fix {
-  line-height: 1.8 !important;
-  padding-top: 0.3em !important;
-  padding-bottom: 0.3em !important;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
-  word-break: keep-all !important;
-  overflow-wrap: anywhere !important;
-  hyphens: none !important;
-  -webkit-hyphens: none !important;
+/* Bounce In Animation */
+.bounce-in-element {
+  opacity: 0;
+  animation: bounceInElement 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bounceInElement {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Word-by-word reveal animation */
+.bounce-word {
+  display: inline-block;
+  opacity: 0;
+  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes revealWord {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Responsive adjustments */
@@ -293,17 +355,15 @@ const gridClasses = computed(() => {
   }
 }
 
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .default-logo,
   .logo-fallback,
-  .profile-wrapper {
+  .profile-wrapper,
+  .bounce-in-element,
+  .bounce-word {
     transition: none;
-  }
-
-  .default-logo:hover,
-  .logo-fallback:hover,
-  .profile-wrapper:hover {
+    animation: none;
+    opacity: 1;
     transform: none;
   }
 }
