@@ -104,8 +104,9 @@ export function useOptimizedDecorations(
 /**
  * Optimized Background Images Composable
  *
- * Generates optimized URLs for full-viewport background images
- * (decoration photo and background photo).
+ * Generates optimized URLs for background images sized to the showcase container
+ * (not the full viewport). The container uses a 9:16 aspect ratio on larger devices
+ * and full width on small mobile phones.
  *
  * @param decorationPhoto - URL of the decoration photo
  * @param backgroundPhoto - URL of the background photo
@@ -125,12 +126,36 @@ export function useOptimizedBackgrounds(
   const { getOptimizedMediaUrl } = useTemplateProcessor()
   const { width, height } = useWindowDimensions()
 
+  // Calculate container dimensions based on showcase-container CSS logic:
+  // - Small mobile (≤480px width AND ≤800px height): max-width 480px, full height
+  // - All other devices: width = height * (1080/1920), i.e., 9:16 aspect ratio
+  const containerDimensions = computed(() => {
+    const viewportWidth = width.value
+    const viewportHeight = height.value
+
+    // Small mobile phones - use viewport width (capped at 480px)
+    const isSmallMobile = viewportWidth <= 480 && viewportHeight <= 800
+    if (isSmallMobile) {
+      return {
+        width: Math.min(viewportWidth, 480),
+        height: viewportHeight,
+      }
+    }
+
+    // Larger devices - 9:16 aspect ratio based on viewport height
+    const containerWidth = Math.round(viewportHeight * (1080 / 1920))
+    return {
+      width: containerWidth,
+      height: viewportHeight,
+    }
+  })
+
   const optimizedDecorationPhotoUrl = computed(() => {
     const url = decorationPhoto.value
     return url
       ? getOptimizedMediaUrl(url, {
-          width: width.value,
-          height: height.value,
+          width: containerDimensions.value.width,
+          height: containerDimensions.value.height,
         })
       : null
   })
@@ -139,8 +164,8 @@ export function useOptimizedBackgrounds(
     const url = backgroundPhoto.value
     return url
       ? getOptimizedMediaUrl(url, {
-          width: width.value,
-          height: height.value,
+          width: containerDimensions.value.width,
+          height: containerDimensions.value.height,
         })
       : null
   })
