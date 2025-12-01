@@ -1,5 +1,10 @@
 <template>
-  <div :key="`event-info-${currentLanguage}`" class="text-center space-y-6 sm:space-y-8">
+  <div
+    ref="containerRef"
+    :key="`event-info-${currentLanguage}`"
+    class="text-center space-y-6 sm:space-y-8"
+    :class="{ 'animate-active': isVisible }"
+  >
     <!-- Primary Content Block -->
     <div v-if="descriptionTitle || descriptionText" class="space-y-4">
       <!-- Description Title -->
@@ -92,7 +97,11 @@
           </div>
 
           <!-- Google Map Embed -->
-          <div v-if="hasGoogleMap && googleMapEmbedLink" class="pt-2">
+          <div
+            v-if="hasGoogleMap && googleMapEmbedLink"
+            class="pt-2 bounce-in-element"
+            :style="{ animationDelay: `${animationDelays.map}s` }"
+          >
             <div
               class="aspect-video overflow-hidden"
               :style="{
@@ -113,7 +122,11 @@
           </div>
 
           <!-- Countdown Display - Below Map, Above RSVP -->
-          <div v-if="countdown" class="countdown-container px-4 pt-2 pb-2">
+          <div
+            v-if="countdown"
+            class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
+            :style="{ animationDelay: `${animationDelays.countdown}s` }"
+          >
             <div class="countdown-wrapper">
               <!-- Countdown Header -->
               <div
@@ -179,12 +192,20 @@
           </div>
 
           <!-- Divider between Countdown and RSVP -->
-          <div v-if="countdown && showRsvp" class="countdown-divider">
+          <div
+            v-if="countdown && showRsvp"
+            class="countdown-divider bounce-in-element"
+            :style="{ animationDelay: `${animationDelays.divider}s` }"
+          >
             <div class="divider-line"></div>
           </div>
 
           <!-- RSVP Section Integrated Below Map -->
-          <div v-if="showRsvp">
+          <div
+            v-if="showRsvp"
+            class="bounce-in-element"
+            :style="{ animationDelay: `${animationDelays.rsvp}s` }"
+          >
             <slot name="rsvp"></slot>
           </div>
         </div>
@@ -194,7 +215,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useCountdown } from '../../composables/useCountdown'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import {
@@ -232,9 +253,73 @@ const props = withDefaults(defineProps<Props>(), {
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
+// Intersection Observer for scroll-triggered animations
+const containerRef = ref<HTMLElement | null>(null)
+const isVisible = ref(false)
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (observer) {
+    observer.disconnect()
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isVisible.value = true
+        }
+      })
+    },
+    {
+      threshold: 0.3, // Trigger when 30% of element is visible
+      rootMargin: '0px 0px -100px 0px', // Wait until element is 100px into viewport
+    }
+  )
+
+  if (containerRef.value) {
+    observer.observe(containerRef.value)
+  }
+}
+
+onMounted(() => {
+  setupObserver()
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+})
+
+// Re-setup observer and reset visibility when language changes
+watch(
+  () => props.currentLanguage,
+  async () => {
+    isVisible.value = false
+    // Wait for DOM to update with new key, then re-observe
+    await nextTick()
+    // Additional delay to ensure the new element is fully rendered
+    setTimeout(() => {
+      setupObserver()
+      // If element is already in view, trigger animation immediately
+      if (containerRef.value) {
+        const rect = containerRef.value.getBoundingClientRect()
+        const windowHeight = window.innerHeight
+        // Check if element is already visible in viewport
+        if (rect.top < windowHeight - 100 && rect.bottom > 0) {
+          isVisible.value = true
+        }
+      }
+    }, 100)
+  }
+)
+
 // Animation delays calculation
 const animationDelays = computed(() => {
   let currentDelay = props.baseDelay
+  const BOUNCE_DURATION = 0.2 // Duration for bounce-in elements
 
   const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
     if (skipIfEmpty && !text) return currentDelay
@@ -244,12 +329,21 @@ const animationDelays = computed(() => {
     return startDelay
   }
 
+  const addBounceDelay = (): number => {
+    const startDelay = currentDelay
+    currentDelay += BOUNCE_DURATION
+    return startDelay
+  }
+
   const title = getNextDelay(props.descriptionTitle)
   const description = getNextDelay(props.descriptionText)
-  const card = currentDelay
-  currentDelay += 0.25 // Card bounce-in duration
+  const card = addBounceDelay()
   const date = getNextDelay(props.dateText)
   const location = getNextDelay(props.locationText)
+  const map = props.hasGoogleMap && props.googleMapEmbedLink ? addBounceDelay() : currentDelay
+  const countdown = props.eventStartDate ? addBounceDelay() : currentDelay
+  const divider = props.eventStartDate && props.showRsvp ? addBounceDelay() : currentDelay
+  const rsvp = props.showRsvp ? addBounceDelay() : currentDelay
 
   return {
     title,
@@ -257,6 +351,10 @@ const animationDelays = computed(() => {
     card,
     date,
     location,
+    map,
+    countdown,
+    divider,
+    rsvp,
   }
 })
 
@@ -293,10 +391,13 @@ const hourLabel = computed(() => {
 </script>
 
 <style scoped>
-/* Word-by-word reveal animation */
+/* Word-by-word reveal animation - only active when in view */
 .bounce-word {
   display: inline-block;
   opacity: 0;
+}
+
+.animate-active .bounce-word {
   animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
@@ -314,9 +415,12 @@ const hourLabel = computed(() => {
   }
 }
 
-/* Bounce In Animation for card */
+/* Bounce In Animation for card - only active when in view */
 .bounce-in-element {
   opacity: 0;
+}
+
+.animate-active .bounce-in-element {
   animation: bounceInElement 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
