@@ -306,7 +306,6 @@ const fabButtonStyle = computed(() => ({
   borderTop: `2px solid ${themeColor.value}`,
   borderBottom: `2px solid ${themeColor.value}`,
   borderRight: 'none',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
 }))
 
 const menuButtonStyle = computed(() => ({
@@ -646,7 +645,7 @@ const handleLogout = () => {
 }
 
 .fab-button:hover {
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0.9;
 }
 
 .menu-container {
