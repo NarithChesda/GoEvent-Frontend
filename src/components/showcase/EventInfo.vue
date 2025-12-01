@@ -1,5 +1,5 @@
 <template>
-  <div class="text-center space-y-6 sm:space-y-8">
+  <div :key="`event-info-${currentLanguage}`" class="text-center space-y-6 sm:space-y-8">
     <!-- Primary Content Block -->
     <div v-if="descriptionTitle || descriptionText" class="space-y-4">
       <!-- Description Title -->
@@ -14,7 +14,12 @@
             color: primaryColor,
           }"
         >
-          {{ descriptionTitle }}
+          <span
+            v-for="(word, index) in splitToWords(descriptionTitle)"
+            :key="`title-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
         </h2>
       </div>
 
@@ -32,7 +37,12 @@
             hyphens: 'auto',
           }"
         >
-          {{ capitalizedDescription }}
+          <span
+            v-for="(word, index) in splitToWords(capitalizedDescription)"
+            :key="`desc-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(capitalizedDescription).length - 1 ? '\u00A0' : '' }}</span>
         </p>
       </div>
     </div>
@@ -40,11 +50,12 @@
     <!-- Event Details Block -->
     <div class="space-y-3">
       <div
-        class="block relative gradient-stroke-container"
+        class="block relative gradient-stroke-container bounce-in-element"
         :style="{
           background: `${backgroundColor || primaryColor}60`,
           padding: '2px',
           borderRadius: '2rem',
+          animationDelay: `${animationDelays.card}s`,
         }"
       >
         <div
@@ -57,25 +68,27 @@
           <!-- Date Text -->
           <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
             <span
-              :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
+              v-for="(word, index) in splitToWords(dateText)"
+              :key="`date-${currentLanguage}-${index}`"
+              :class="['text-white bounce-word', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{
                 fontFamily: secondaryFont || currentFont,
+                animationDelay: `${animationDelays.date + index * WORD_DELAY}s`,
               }"
-            >
-              {{ dateText }}
-            </span>
+            >{{ word }}{{ index < splitToWords(dateText).length - 1 ? '\u00A0' : '' }}</span>
           </div>
 
           <!-- Location Text -->
           <div class="text-sm sm:text-base font-medium leading-snug" v-if="locationText">
             <span
-              :class="['text-white', currentLanguage === 'kh' && 'khmer-text-fix']"
+              v-for="(word, index) in splitToWords(locationText)"
+              :key="`location-${currentLanguage}-${index}`"
+              :class="['text-white bounce-word', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{
                 fontFamily: secondaryFont || currentFont,
+                animationDelay: `${animationDelays.location + index * WORD_DELAY}s`,
               }"
-            >
-              {{ locationText }}
-            </span>
+            >{{ word }}{{ index < splitToWords(locationText).length - 1 ? '\u00A0' : '' }}</span>
           </div>
 
           <!-- Google Map Embed -->
@@ -184,6 +197,11 @@
 import { computed } from 'vue'
 import { useCountdown } from '../../composables/useCountdown'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import {
+  splitToWords,
+  ANIMATION_CONSTANTS,
+  getTextAnimationDuration,
+} from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {
   descriptionTitle?: string
@@ -203,10 +221,43 @@ interface Props {
   currentLanguage?: string
   showRsvp?: boolean
   eventStartDate?: string
+  baseDelay?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showRsvp: false
+  showRsvp: false,
+  baseDelay: 0.1,
+})
+
+const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
+const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
+
+// Animation delays calculation
+const animationDelays = computed(() => {
+  let currentDelay = props.baseDelay
+
+  const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
+    if (skipIfEmpty && !text) return currentDelay
+    const startDelay = currentDelay
+    const duration = getTextAnimationDuration(text)
+    currentDelay = startDelay + duration + ELEMENT_GAP
+    return startDelay
+  }
+
+  const title = getNextDelay(props.descriptionTitle)
+  const description = getNextDelay(props.descriptionText)
+  const card = currentDelay
+  currentDelay += 0.25 // Card bounce-in duration
+  const date = getNextDelay(props.dateText)
+  const location = getNextDelay(props.locationText)
+
+  return {
+    title,
+    description,
+    card,
+    date,
+    location,
+  }
 })
 
 // Countdown logic
@@ -242,6 +293,53 @@ const hourLabel = computed(() => {
 </script>
 
 <style scoped>
+/* Word-by-word reveal animation */
+.bounce-word {
+  display: inline-block;
+  opacity: 0;
+  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes revealWord {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Bounce In Animation for card */
+.bounce-in-element {
+  opacity: 0;
+  animation: bounceInElement 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bounceInElement {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .glass-section {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -578,6 +676,16 @@ const hourLabel = computed(() => {
 
   .text-sm {
     font-size: 0.875rem !important; /* Reduced from 1rem */
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .bounce-word,
+  .bounce-in-element {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 </style>
