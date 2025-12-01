@@ -33,7 +33,10 @@ export interface OptimizedDecorationUrls {
  * Optimized Decorations Composable
  *
  * Centralizes the logic for generating optimized decoration image URLs
- * using ImageKit transformations with reactive window dimensions.
+ * using ImageKit transformations sized to the showcase container dimensions.
+ *
+ * The container uses a 9:16 aspect ratio on larger devices and full width
+ * on small mobile phones, matching the showcase-container CSS logic.
  *
  * This eliminates code duplication across CoverContentOverlay, MainContentStage,
  * and VideoContainer components.
@@ -71,26 +74,50 @@ export function useOptimizedDecorations(
   const topKey = prefix === 'cover' ? 'coverTopDecoration' : 'topDecoration'
   const bottomKey = prefix === 'cover' ? 'coverBottomDecoration' : 'bottomDecoration'
 
-  // Left/Right decorations: height = viewport height, width auto-calculated
+  // Calculate container dimensions based on showcase-container CSS logic:
+  // - Small mobile (≤480px width AND ≤800px height): max-width 480px, full height
+  // - All other devices: width = height * (1080/1920), i.e., 9:16 aspect ratio
+  const containerDimensions = computed(() => {
+    const viewportWidth = width.value
+    const viewportHeight = height.value
+
+    // Small mobile phones - use viewport width (capped at 480px)
+    const isSmallMobile = viewportWidth <= 480 && viewportHeight <= 800
+    if (isSmallMobile) {
+      return {
+        width: Math.min(viewportWidth, 480),
+        height: viewportHeight,
+      }
+    }
+
+    // Larger devices - 9:16 aspect ratio based on viewport height
+    const containerWidth = Math.round(viewportHeight * (1080 / 1920))
+    return {
+      width: containerWidth,
+      height: viewportHeight,
+    }
+  })
+
+  // Left/Right decorations: height = container height, width auto-calculated
   const leftDecorationUrl = computed(() => {
     const url = getPropValue(leftKey)
-    return url ? getOptimizedMediaUrl(url, { height: height.value }) : null
+    return url ? getOptimizedMediaUrl(url, { height: containerDimensions.value.height }) : null
   })
 
   const rightDecorationUrl = computed(() => {
     const url = getPropValue(rightKey)
-    return url ? getOptimizedMediaUrl(url, { height: height.value }) : null
+    return url ? getOptimizedMediaUrl(url, { height: containerDimensions.value.height }) : null
   })
 
-  // Top/Bottom decorations: width = viewport width, height auto-calculated
+  // Top/Bottom decorations: width = container width, height auto-calculated
   const topDecorationUrl = computed(() => {
     const url = getPropValue(topKey)
-    return url ? getOptimizedMediaUrl(url, { width: width.value }) : null
+    return url ? getOptimizedMediaUrl(url, { width: containerDimensions.value.width }) : null
   })
 
   const bottomDecorationUrl = computed(() => {
     const url = getPropValue(bottomKey)
-    return url ? getOptimizedMediaUrl(url, { width: width.value }) : null
+    return url ? getOptimizedMediaUrl(url, { width: containerDimensions.value.width }) : null
   })
 
   return {
