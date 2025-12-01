@@ -96,6 +96,29 @@ const wordDelay = ANIMATION_CONSTANTS.WORD_DELAY
   }
 }
 
+/* Small laptops 13-inch (1024px-1365px) - Match agenda header sizing */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  h2 {
+    font-size: 1.25rem !important; /* 20px - match agenda header */
+    line-height: 1.25 !important;
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px-1535px) - Match agenda header sizing */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  h2 {
+    font-size: 1.25rem !important; /* 20px - match agenda header */
+    line-height: 1.25 !important;
+  }
+}
+
+/* Desktop (1536px+) - Match agenda header sizing */
+@media (min-width: 1536px) {
+  h2 {
+    font-size: 1.875rem !important; /* 30px - text-3xl */
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bounce-word {
     animation: none;
