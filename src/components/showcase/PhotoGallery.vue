@@ -73,11 +73,11 @@
           <p class="text-xs mt-2 opacity-60">Failed to load</p>
         </div>
 
-        <!-- Actual Image -->
+        <!-- Actual Image (optimized via ImageKit) -->
         <img
           v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
           :data-photo-id="photo.id"
-          :src="getMediaUrl(photo.image)"
+          :src="getOptimizedPhotoUrl(photo.image)"
           :alt="photo.caption || 'Event Photo'"
           :loading="index < 4 ? 'eager' : 'lazy'"
           :decoding="index < 3 ? 'sync' : 'async'"
@@ -94,6 +94,7 @@
 import { computed, onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
 
 interface EventText {
   text_type: string
@@ -119,6 +120,29 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   openPhoto: [EventPhoto]
 }>()
+
+// Template processor for optimized media URLs
+const { getOptimizedMediaUrl } = useTemplateProcessor()
+
+// Calculate optimal thumbnail width based on actual rendered size
+// Gallery is inside a liquid-glass container with padding, so actual width is smaller than viewport
+// Mobile: ~320-350px rendered width, Desktop: ~400-500px max per image
+const getThumbnailWidth = () => {
+  if (typeof window === 'undefined') return 400
+  // Account for container padding (~48px on mobile, more on desktop)
+  // and use a reasonable max for quality without over-fetching
+  const containerPadding = window.innerWidth < 768 ? 48 : 80
+  const availableWidth = window.innerWidth - containerPadding
+  return Math.min(availableWidth, 500)
+}
+
+// Get optimized photo URL for gallery thumbnails
+const getOptimizedPhotoUrl = (imageUrl: string) => {
+  return getOptimizedMediaUrl(imageUrl, {
+    width: getThumbnailWidth(),
+    retina: 2, // Use fixed 2x for good quality without over-fetching on 3x devices
+  })
+}
 
 // Image loading states
 const imageLoadingStates = reactive<Record<string, boolean>>({})

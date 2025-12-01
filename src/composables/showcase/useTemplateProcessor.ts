@@ -1,6 +1,26 @@
 import { ref, computed } from 'vue'
 import type { TemplateFont, TemplateColor, TemplateAssets } from '../useEventShowcase'
 
+// Regex patterns defined at module level for better performance
+const MEDIA_PATH_REGEX = /\/media\/(.+)$/
+const IMAGEKIT_URL_REGEX = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
+
+/**
+ * Options for image optimization via ImageKit transformations
+ */
+export interface ImageOptimizationOptions {
+  /** Target width in CSS pixels (will be multiplied by retina factor) */
+  width?: number
+  /** Target height in CSS pixels (will be multiplied by retina factor) */
+  height?: number
+  /** Retina multiplier (default: 2). Set to 'auto' to use window.devicePixelRatio */
+  retina?: number | 'auto'
+  /** Image quality (1-100). Defaults to ImageKit's auto quality */
+  quality?: number
+  /** Output format. 'auto' lets ImageKit choose the best format */
+  format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png'
+}
+
 /**
  * Template Processing Composable
  *
@@ -43,6 +63,108 @@ export function useTemplateProcessor() {
     }
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
     return url.startsWith('/') ? `${API_BASE_URL}${url}` : `${API_BASE_URL}/media/${url}`
+  }
+
+  /**
+   * Gets an optimized media URL with ImageKit transformations for resizing
+   *
+   * This function automatically converts GoEvent media URLs to ImageKit URLs
+   * and applies responsive sizing transformations with retina display support.
+   *
+   * @param url - Original media URL (relative or absolute)
+   *              Supports formats: /media/..., http://localhost:8000/media/...,
+   *              https://api.goevent.online/media/...
+   * @param options - Sizing and optimization options
+   * @returns Optimized ImageKit URL with transformations, or original URL if not applicable
+   *
+   * @example
+   * // Basic usage with width
+   * getOptimizedMediaUrl('/media/event/photo.jpg', { width: 800 })
+   * // Returns: https://ik.imagekit.io/goevent/tr:w-1600/media/event/photo.jpg
+   *
+   * @example
+   * // Full viewport image with auto retina detection
+   * getOptimizedMediaUrl(imageUrl, {
+   *   width: window.innerWidth,
+   *   height: window.innerHeight,
+   *   retina: 'auto'
+   * })
+   */
+  const getOptimizedMediaUrl = (
+    url: string,
+    options: ImageOptimizationOptions = {}
+  ): string => {
+    if (!url) return ''
+
+    try {
+      // First resolve to absolute URL
+      let absoluteUrl = getMediaUrl(url)
+
+      // Extract the media path from various URL formats and convert to ImageKit
+      // Handles: /media/..., http://localhost:8000/media/..., https://api.goevent.online/media/...
+      const mediaPathMatch = absoluteUrl.match(MEDIA_PATH_REGEX)
+      if (mediaPathMatch) {
+        // Convert to ImageKit URL
+        absoluteUrl = `https://ik.imagekit.io/goevent/media/${mediaPathMatch[1]}`
+      } else if (import.meta.env.DEV && !absoluteUrl.includes('ik.imagekit.io')) {
+        // Only log in dev mode for non-ImageKit URLs that don't have /media/ path
+        console.debug(`[ImageKit] URL does not contain /media/ path: ${absoluteUrl.substring(0, 100)}`)
+      }
+
+      // Only transform ImageKit URLs
+      if (!absoluteUrl.includes('ik.imagekit.io')) {
+        return absoluteUrl
+      }
+
+      // Calculate retina multiplier
+      const retinaMultiplier =
+        options.retina === 'auto'
+          ? Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 2, 3)
+          : (options.retina ?? 2)
+
+      // Build transformation parameters
+      const parts: string[] = []
+
+      if (options.width) {
+        parts.push(`w-${Math.round(options.width * retinaMultiplier)}`)
+      }
+      if (options.height) {
+        parts.push(`h-${Math.round(options.height * retinaMultiplier)}`)
+      }
+      if (options.quality) {
+        parts.push(`q-${options.quality}`)
+      }
+      if (options.format) {
+        parts.push(`f-${options.format}`)
+      }
+
+      // No transformations specified, return as-is
+      if (parts.length === 0) return absoluteUrl
+
+      const transform = `tr:${parts.join(',')}`
+
+      // Insert transformation after ImageKit base path
+      // URL format: https://ik.imagekit.io/{imagekit_id}/path/to/image.ext
+      // Transformed: https://ik.imagekit.io/{imagekit_id}/tr:w-240,h-126/path/to/image.ext
+      const match = absoluteUrl.match(IMAGEKIT_URL_REGEX)
+
+      if (match) {
+        return `${match[1]}/${transform}${match[2]}`
+      }
+
+      // Regex didn't match expected ImageKit URL structure
+      if (import.meta.env.DEV) {
+        console.warn(`[ImageKit] Could not parse ImageKit URL structure: ${absoluteUrl.substring(0, 100)}`)
+      }
+      return absoluteUrl
+    } catch (error) {
+      // Log error in dev mode and return fallback
+      if (import.meta.env.DEV) {
+        console.error('[ImageKit] Error optimizing media URL:', error, url)
+      }
+      // Return basic resolved URL as fallback
+      return getMediaUrl(url)
+    }
   }
 
   /**
@@ -351,6 +473,7 @@ export function useTemplateProcessor() {
     // Asset processing
     extractTemplateAssets,
     getMediaUrl,
+    getOptimizedMediaUrl,
 
     // SVG processing
     processSVGWithColors,

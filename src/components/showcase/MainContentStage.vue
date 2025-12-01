@@ -3,32 +3,32 @@
     <!-- Background handled by CoverStage - transparent div maintains z-index stacking -->
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
-    <!-- Decoration Images -->
+    <!-- Decoration Images (optimized via ImageKit for viewport size) -->
     <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
     <img
-      v-if="leftDecoration"
-      :src="getMediaUrl(leftDecoration)"
+      v-if="leftDecorationUrl"
+      :src="leftDecorationUrl"
       alt="Left decoration"
       class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromLeft"
       loading="eager"
     />
     <img
-      v-if="rightDecoration"
-      :src="getMediaUrl(rightDecoration)"
+      v-if="rightDecorationUrl"
+      :src="rightDecorationUrl"
       alt="Right decoration"
       class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromRight"
       loading="eager"
     />
     <img
-      v-if="topDecoration"
-      :src="getMediaUrl(topDecoration)"
+      v-if="topDecorationUrl"
+      :src="topDecorationUrl"
       alt="Top decoration"
       class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromTop"
       loading="eager"
     />
     <img
-      v-if="bottomDecoration"
-      :src="getMediaUrl(bottomDecoration)"
+      v-if="bottomDecorationUrl"
+      :src="bottomDecorationUrl"
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromBottom"
       loading="eager"
@@ -849,6 +849,7 @@ import type { EventPaymentMethod } from '../../services/api'
 import type { SupportedLanguage } from '../../utils/translations'
 import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
 import { translateRSVP } from '../../utils/translations'
+import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 
 // Component imports
 import HostInfo from './HostInfo.vue'
@@ -912,6 +913,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Optimized decoration image URLs using reactive window dimensions
+const { leftDecorationUrl, rightDecorationUrl, topDecorationUrl, bottomDecorationUrl } =
+  useOptimizedDecorations(props)
 
 // Extract event type from category for layout detection
 const eventType = computed(() => {

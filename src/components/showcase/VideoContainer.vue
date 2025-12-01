@@ -53,15 +53,15 @@
       :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
     />
 
-    <!-- Decoration Photo - Shows in Cover Stage, swipes up to reveal main content -->
+    <!-- Decoration Photo (optimized via ImageKit) - Shows in Cover Stage, swipes up to reveal main content -->
     <div
-      v-if="templateAssets?.basic_decoration_photo && !templateAssets?.standard_cover_video"
+      v-if="optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0 transition-all duration-700 ease-out"
       :class="{ 'swipe-up-hidden': isContentHidden }"
       style="z-index: 0"
     >
       <img
-        :src="getMediaUrl(templateAssets.basic_decoration_photo)"
+        :src="optimizedDecorationPhotoUrl"
         alt="Decoration"
         class="w-full h-full object-cover"
         loading="eager"
@@ -69,14 +69,14 @@
     </div>
 
     <!-- MAIN CONTENT STAGE BACKGROUND (when decoration is hidden, i.e., isContentHidden) -->
-    <!-- Background Photo Layer for Main Content Stage -->
+    <!-- Background Photo Layer (optimized via ImageKit) for Main Content Stage -->
     <div
-      v-if="isContentHidden && templateAssets?.basic_background_photo && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && optimizedBackgroundPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="z-index: -1"
     >
       <img
-        :src="getMediaUrl(templateAssets.basic_background_photo)"
+        :src="optimizedBackgroundPhotoUrl"
         alt="Background"
         class="w-full h-full object-cover"
         loading="eager"
@@ -113,6 +113,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useOptimizedBackgrounds } from '../../composables/showcase/useOptimizedDecorations'
 
 interface TemplateAssets {
   standard_cover_video?: string
@@ -143,6 +144,12 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Optimized background/decoration photo URLs using reactive window dimensions
+const { optimizedDecorationPhotoUrl, optimizedBackgroundPhotoUrl } = useOptimizedBackgrounds(
+  computed(() => props.templateAssets?.basic_decoration_photo ?? null),
+  computed(() => props.templateAssets?.basic_background_photo ?? null)
+)
 
 // Compute the background color for decoration photo
 const decorationBackgroundColor = computed(() => {

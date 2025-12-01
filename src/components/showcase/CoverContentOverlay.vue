@@ -1,39 +1,39 @@
 <template>
   <!-- Wrapper for decorations and content -->
   <div class="absolute inset-0">
-    <!-- Decoration Images - Animate independently from content -->
+    <!-- Decoration Images (optimized via ImageKit) - Animate independently from content -->
     <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
     <img
-      v-if="coverLeftDecoration"
-      :src="getMediaUrl(coverLeftDecoration)"
+      v-if="coverLeftDecorationUrl"
+      :src="coverLeftDecorationUrl"
       alt="Left decoration"
       class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] cover-decoration-left"
       :class="{ 'slide-out-to-left': isContentHidden }"
-      loading="lazy"
+      loading="eager"
     />
     <img
-      v-if="coverRightDecoration"
-      :src="getMediaUrl(coverRightDecoration)"
+      v-if="coverRightDecorationUrl"
+      :src="coverRightDecorationUrl"
       alt="Right decoration"
       class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] cover-decoration-right"
       :class="{ 'slide-out-to-right': isContentHidden }"
-      loading="lazy"
+      loading="eager"
     />
     <img
-      v-if="coverTopDecoration"
-      :src="getMediaUrl(coverTopDecoration)"
+      v-if="coverTopDecorationUrl"
+      :src="coverTopDecorationUrl"
       alt="Top decoration"
       class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-top"
       :class="{ 'slide-out-to-top': isContentHidden }"
-      loading="lazy"
+      loading="eager"
     />
     <img
-      v-if="coverBottomDecoration"
-      :src="getMediaUrl(coverBottomDecoration)"
+      v-if="coverBottomDecorationUrl"
+      :src="coverBottomDecorationUrl"
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-bottom"
       :class="{ 'slide-out-to-bottom': isContentHidden }"
-      loading="lazy"
+      loading="eager"
     />
 
     <!-- Main Content Container -->
@@ -199,6 +199,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
 import leftFramePng from '../../assets/left-frame.png'
 import middleFramePng from '../../assets/middle-frame.png'
@@ -246,6 +247,14 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   openEnvelope: []
 }>()
+
+// Optimized cover decoration image URLs using reactive window dimensions
+const {
+  leftDecorationUrl: coverLeftDecorationUrl,
+  rightDecorationUrl: coverRightDecorationUrl,
+  topDecorationUrl: coverTopDecorationUrl,
+  bottomDecorationUrl: coverBottomDecorationUrl,
+} = useOptimizedDecorations(props, 'cover')
 
 // Touch gesture detection
 const touchStartY = ref(0)

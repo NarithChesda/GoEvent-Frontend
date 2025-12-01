@@ -44,7 +44,7 @@
       >
         <img
           v-if="currentPhoto"
-          :src="getMediaUrl(currentPhoto.image)"
+          :src="getOptimizedModalPhotoUrl(currentPhoto.image)"
           :alt="currentPhoto.caption || 'Event Photo'"
           :style="{ transform: `translateX(${swipeOffset}px)` }"
           class="photo-image"
@@ -77,6 +77,7 @@
 import { computed, watch, ref, onUnmounted } from 'vue'
 import { X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { EventPhoto } from '../../composables/useEventShowcase'
+import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
 
 interface Props {
   isOpen: boolean
@@ -91,6 +92,26 @@ const emit = defineEmits<{
   close: []
   navigate: [EventPhoto]
 }>()
+
+// Template processor for optimized media URLs
+const { getOptimizedMediaUrl } = useTemplateProcessor()
+
+// Calculate thumbnail width - MUST match PhotoGallery.vue exactly for cache reuse
+const getThumbnailWidth = () => {
+  if (typeof window === 'undefined') return 400
+  const containerPadding = window.innerWidth < 768 ? 48 : 80
+  const availableWidth = window.innerWidth - containerPadding
+  return Math.min(availableWidth, 500)
+}
+
+// Get optimized photo URL - uses same calculation as gallery thumbnails
+// This ensures browser cache is reused when opening the modal
+const getOptimizedModalPhotoUrl = (imageUrl: string) => {
+  return getOptimizedMediaUrl(imageUrl, {
+    width: getThumbnailWidth(),
+    retina: 2,
+  })
+}
 
 const currentIndex = computed(() => {
   if (!props.currentPhoto || props.photos.length === 0) return 0
