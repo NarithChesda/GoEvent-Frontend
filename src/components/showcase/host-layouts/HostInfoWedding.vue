@@ -7,7 +7,7 @@
         <div class="welcome-content mt-2">
           <h2
             :class="[
-              'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight capitalize',
+              'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -15,7 +15,24 @@
               color: primaryColor,
             }"
           >
-            {{ welcomeMessage || 'Welcome to Our Event' }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(welcomeMessage || 'Welcome to Our Event')"
+                :key="'welcome-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.welcome + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(welcomeMessage || 'Welcome to Our Event')"
+                :key="'welcome-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.welcome + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(welcomeMessage || 'Welcome to Our Event').length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </h2>
         </div>
       </div>
@@ -37,7 +54,24 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[0].parent_a_name || hosts[0].parent_b_name }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[0].parent_a_name || hosts[0].parent_b_name)"
+                :key="'parent-a-left-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.parentALeft + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[0].parent_a_name || hosts[0].parent_b_name)"
+                :key="'parent-a-left-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.parentALeft + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[0].parent_a_name || hosts[0].parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </div>
 
@@ -59,7 +93,24 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.parent_a_name || hosts[1]?.parent_b_name }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
+                :key="'parent-a-right-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.parentARight + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
+                :key="'parent-a-right-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.parentARight + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[1]?.parent_a_name || hosts[1]?.parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </div>
       </div>
@@ -81,7 +132,24 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[0].parent_b_name }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[0].parent_b_name)"
+                :key="'parent-b-left-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.parentBLeft + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[0].parent_b_name)"
+                :key="'parent-b-left-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.parentBLeft + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[0].parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </div>
 
@@ -103,14 +171,31 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.parent_b_name }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[1]?.parent_b_name)"
+                :key="'parent-b-right-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.parentBRight + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[1]?.parent_b_name)"
+                :key="'parent-b-right-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.parentBRight + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[1]?.parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </div>
       </div>
 
       <!-- Row 4: Logo -->
       <div class="logo-row my-6">
-        <div class="logo-content">
+        <div class="logo-content bounce-in-element" :style="{ animationDelay: `${animationDelays.logo}s` }">
           <img
             v-if="logoUrl"
             :src="logoUrl"
@@ -148,10 +233,24 @@
               hyphens: 'auto',
             }"
           >
-            {{
-              hosts[0].title ||
-              (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1')
-            }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1'))"
+                :key="'title-left-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.titleLeft + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1'))"
+                :key="'title-left-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.titleLeft + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[0].title || (hosts.length === 2 ? 'Bridegroom' : hosts.length === 1 ? 'Host' : 'Host 1')).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </div>
 
@@ -173,7 +272,24 @@
               hyphens: 'auto',
             }"
           >
-            {{ hosts[1]?.title || 'Bride' }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[1]?.title || 'Bride')"
+                :key="'title-right-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.titleRight + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[1]?.title || 'Bride')"
+                :key="'title-right-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.titleRight + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[1]?.title || 'Bride').length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </div>
       </div>
@@ -184,7 +300,7 @@
         <div class="host-name-left">
           <h3
             :class="[
-              'host-name-text font-regular leading-tight capitalize',
+              'host-name-text font-regular leading-tight',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -192,7 +308,24 @@
               fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
-            {{ hosts[0].name }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[0].name)"
+                :key="'name-left-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.nameLeft + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[0].name)"
+                :key="'name-left-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.nameLeft + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </h3>
         </div>
 
@@ -204,7 +337,7 @@
           <h3
             v-if="hosts.length > 1"
             :class="[
-              'host-name-text font-regular leading-tight capitalize',
+              'host-name-text font-regular leading-tight',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
@@ -212,7 +345,24 @@
               fontFamily: primaryFont || secondaryFont || currentFont,
             }"
           >
-            {{ hosts[1]?.name }}
+            <!-- English: character-by-character animation -->
+            <template v-if="!isKhmerLanguage">
+              <span
+                v-for="(char, index) in splitToChars(hosts[1]?.name)"
+                :key="'name-right-' + index"
+                class="bounce-char"
+                :style="{ animationDelay: `${animationDelays.nameRight + index * CHAR_DELAY}s` }"
+              >{{ char === ' ' ? '\u00A0' : char }}</span>
+            </template>
+            <!-- Khmer: word-by-word animation -->
+            <template v-else>
+              <span
+                v-for="(word, index) in splitToWords(hosts[1]?.name)"
+                :key="'name-right-' + index"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.nameRight + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </h3>
         </div>
       </div>
@@ -224,7 +374,7 @@
       >
         <!-- Host 1 Profile Picture (45% width) -->
         <div class="host-profile-left">
-          <div class="profile-picture-container">
+          <div class="profile-picture-container bounce-in-element" :style="{ animationDelay: `${animationDelays.profileLeft}s` }">
             <div
               v-if="hosts[0].profile_image"
               class="profile-picture-wrapper"
@@ -255,7 +405,7 @@
 
         <!-- Host 2 Profile Picture (45% width) -->
         <div class="host-profile-right">
-          <div v-if="hosts.length > 1" class="profile-picture-container">
+          <div v-if="hosts.length > 1" class="profile-picture-container bounce-in-element" :style="{ animationDelay: `${animationDelays.profileRight}s` }">
             <div
               v-if="hosts[1]?.profile_image"
               class="profile-picture-wrapper"
@@ -307,6 +457,122 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Check if text is English (Latin characters)
+const isEnglishText = (text: string | null | undefined): boolean => {
+  if (!text) return false
+  return /^[a-zA-Z\s\-'.,()&]+$/.test(text.trim())
+}
+
+// Capitalize first letter of each word (Title Case)
+const toTitleCase = (text: string | null | undefined): string => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+// Check if current language is Khmer
+const isKhmerLanguage = computed(() => props.currentLanguage === 'kh')
+
+// Split text into characters for English animation (with title case)
+const splitToChars = (text: string | null | undefined): string[] => {
+  if (!text) return []
+  // Apply title case for English text only
+  const formattedText = isEnglishText(text) ? toTitleCase(text) : text
+  return formattedText.split('')
+}
+
+// Split text into words for Khmer animation
+const splitToWords = (text: string | null | undefined): string[] => {
+  if (!text) return []
+  return text.split(/\s+/).filter(Boolean)
+}
+
+// Animation timing constants
+const CHAR_DELAY = 0.018 // delay between each character (English) - faster
+const WORD_DELAY = 0.08 // delay between each word (Khmer)
+const ELEMENT_GAP = 0.08 // gap between elements
+
+// Calculate animation delay for a text based on its length
+const getTextAnimationDuration = (text: string | null | undefined): number => {
+  if (!text) return 0
+  if (isKhmerLanguage.value) {
+    const wordCount = splitToWords(text).length
+    return wordCount * WORD_DELAY
+  } else {
+    return text.length * CHAR_DELAY
+  }
+}
+
+// Computed animation delays - calculates cumulative delays based on text lengths
+const animationDelays = computed(() => {
+  let currentDelay = 0.1 // starting delay
+
+  const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
+    if (skipIfEmpty && !text) return currentDelay
+    const startDelay = currentDelay
+    const duration = getTextAnimationDuration(text)
+    currentDelay = startDelay + duration + ELEMENT_GAP
+    return startDelay
+  }
+
+  // Row 1: Welcome Message
+  const welcome = getNextDelay(props.welcomeMessage || 'Welcome to Our Event')
+
+  // Row 2: Parent A Names (left then right)
+  const parentALeft = getNextDelay(props.hosts[0]?.parent_a_name || props.hosts[0]?.parent_b_name)
+  const parentARight = getNextDelay(
+    props.hosts.length > 1 ? (props.hosts[1]?.parent_a_name || props.hosts[1]?.parent_b_name) : null
+  )
+
+  // Row 3: Parent B Names (left then right) - only if both parent_a and parent_b exist
+  const parentBLeft = getNextDelay(
+    (props.hosts[0]?.parent_b_name && props.hosts[0]?.parent_a_name) ? props.hosts[0].parent_b_name : null
+  )
+  const parentBRight = getNextDelay(
+    (props.hosts.length > 1 && props.hosts[1]?.parent_b_name && props.hosts[1]?.parent_a_name)
+      ? props.hosts[1].parent_b_name : null
+  )
+
+  // Row 4: Logo
+  const logo = currentDelay
+  currentDelay += 0.25 // logo animation time + gap
+
+  // Row 5: Titles (left then right)
+  const titleLeft = getNextDelay(
+    props.hosts[0]?.title || (props.hosts.length === 2 ? 'Bridegroom' : props.hosts.length === 1 ? 'Host' : 'Host 1')
+  )
+  const titleRight = getNextDelay(
+    props.hosts.length > 1 ? (props.hosts[1]?.title || 'Bride') : null
+  )
+
+  // Row 6: Names (left then right)
+  const nameLeft = getNextDelay(props.hosts[0]?.name)
+  const nameRight = getNextDelay(props.hosts.length > 1 ? props.hosts[1]?.name : null)
+
+  // Row 7: Profile Pictures (left then right)
+  const profileLeft = currentDelay
+  currentDelay += 0.15
+  const profileRight = currentDelay
+
+  return {
+    welcome,
+    parentALeft,
+    parentARight,
+    parentBLeft,
+    parentBRight,
+    logo,
+    titleLeft,
+    titleRight,
+    nameLeft,
+    nameRight,
+    profileLeft,
+    profileRight,
+  }
+})
 
 // Utility method to get full URL for media
 const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
@@ -613,6 +879,99 @@ const fallbackLogoStyle = computed(() => {
   width: 50%;
   height: 50%;
   color: white;
+}
+
+/* Bounce In Animation for non-text elements (logo, profile pictures) */
+.bounce-in-element {
+  opacity: 0;
+  animation: bounceInElement 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bounceInElement {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Character-by-character bounce animation for English text */
+.bounce-char {
+  display: inline-block;
+  opacity: 0;
+  animation: bounceInChar 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bounceInChar {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Word-by-word reveal animation for Khmer text */
+.bounce-word {
+  display: inline-block;
+  opacity: 0;
+  animation: revealKhmerWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes revealKhmerWord {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Reveal Animation for Khmer text on non-text elements */
+.khmer-text .bounce-in-element {
+  animation: revealKhmerElement 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes revealKhmerElement {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(12px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Gleam Animation */
