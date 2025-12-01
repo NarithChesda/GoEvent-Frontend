@@ -54,16 +54,18 @@
           {{ currentTime }}
         </div>
 
-        <!-- Create Event Button -->
+        <!-- Create Event Button (authenticated only) -->
         <RouterLink
+          v-if="authStore.isAuthenticated"
           to="/events?createEvent=true"
           class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-slate-700 transition-colors"
         >
           Create Event
         </RouterLink>
 
-        <!-- Search Button -->
+        <!-- Search Button (authenticated only) -->
         <button
+          v-if="authStore.isAuthenticated"
           @click="toggleSearch"
           class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200"
           aria-label="Search"
@@ -71,8 +73,9 @@
           <Search class="w-5 h-5" />
         </button>
 
-        <!-- Notifications Button -->
+        <!-- Notifications Button (authenticated only) -->
         <button
+          v-if="authStore.isAuthenticated"
           class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 relative"
           aria-label="Notifications"
         >
@@ -138,10 +141,11 @@
           <RouterLink
             v-else
             :to="signinLink"
-            class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 transition-colors"
+            class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold hover:shadow-lg hover:shadow-[#2ecc71]/25 hover:scale-[1.02] transition-all duration-200"
             aria-label="Sign in"
           >
-            <User class="w-5 h-5 text-slate-600" />
+            <User class="w-4 h-4" />
+            <span>Sign In</span>
           </RouterLink>
 
           <!-- User Dropdown Menu -->

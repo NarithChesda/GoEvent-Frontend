@@ -15,23 +15,25 @@
               Events
             </h1>
 
-            <!-- Upcoming/Past/Recent Toggle -->
+            <!-- Upcoming/Past/Recent Toggle (authenticated only) -->
             <TimeFilterToggle
+              v-if="authStore.isAuthenticated"
               v-model="timeFilter"
               :options="timeFilterOptions"
             />
 
-            <!-- Category Filter Dropdown - Desktop only -->
+            <!-- Category Filter Dropdown - Desktop only (authenticated only) -->
             <CategoryFilter
+              v-if="authStore.isAuthenticated"
               v-model="categoryFilter"
               :categories="categories"
               variant="dropdown"
             />
           </div>
 
-          <!-- Mobile Category Filter Pills -->
+          <!-- Mobile Category Filter Pills (authenticated only) -->
           <CategoryFilter
-            v-if="categories.length > 0"
+            v-if="authStore.isAuthenticated && categories.length > 0"
             v-model="categoryFilter"
             :categories="categories"
             variant="pills"
