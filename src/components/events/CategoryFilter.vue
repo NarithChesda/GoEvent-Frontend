@@ -24,7 +24,7 @@
     <Transition name="dropdown">
       <div
         v-if="showMenu"
-        class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[180px] z-[100]"
+        class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden overflow-y-auto min-w-[180px] max-h-[60vh] z-[100]"
       >
         <button
           @click="selectCategory('')"
