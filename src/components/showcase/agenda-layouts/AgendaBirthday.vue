@@ -206,6 +206,12 @@ const setupObserver = () => {
     observer.disconnect()
   }
 
+  // Use lower threshold for laptop views where the section may be taller
+  // and harder to meet the 30% visibility requirement
+  const isLaptopView = window.innerWidth >= 1024 && window.innerWidth < 1536
+  const threshold = isLaptopView ? 0.1 : 0.3
+  const rootMargin = isLaptopView ? '0px 0px -50px 0px' : '0px 0px -100px 0px'
+
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -215,8 +221,8 @@ const setupObserver = () => {
       })
     },
     {
-      threshold: 0.3,
-      rootMargin: '0px 0px -100px 0px',
+      threshold,
+      rootMargin,
     }
   )
 
