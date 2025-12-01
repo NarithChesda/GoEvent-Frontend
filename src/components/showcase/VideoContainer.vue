@@ -83,11 +83,32 @@
       />
     </div>
 
-    <!-- Fallback Background Color for Main Content Stage when no background photo -->
+    <!-- Fallback 1: Template Color for Main Content Stage when no background photo -->
     <div
-      v-if="isContentHidden && !templateAssets?.basic_background_photo && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !optimizedBackgroundPhotoUrl && templateColor && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
-      :style="{ backgroundColor: decorationBackgroundColor, zIndex: -1 }"
+      :style="{ backgroundColor: templateColor, zIndex: -1 }"
+    />
+
+    <!-- Fallback 2: Use Decoration Photo when no background photo AND no templateColor -->
+    <div
+      v-if="isContentHidden && !optimizedBackgroundPhotoUrl && !templateColor && optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      class="absolute inset-0"
+      style="z-index: -1"
+    >
+      <img
+        :src="optimizedDecorationPhotoUrl"
+        alt="Background"
+        class="w-full h-full object-cover"
+        loading="eager"
+      />
+    </div>
+
+    <!-- Fallback 3: White color when no background photo, no templateColor, and no decoration photo -->
+    <div
+      v-if="isContentHidden && !optimizedBackgroundPhotoUrl && !templateColor && !optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      class="absolute inset-0"
+      style="background-color: #ffffff; z-index: -1"
     />
 
     <!-- Standard Cover Video Loop - Only show when not in event/background phase and no decoration photo -->
