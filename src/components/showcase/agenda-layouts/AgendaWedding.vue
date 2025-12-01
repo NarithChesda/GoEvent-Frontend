@@ -1,7 +1,10 @@
 <template>
   <div
     v-if="agendaItems.length > 0"
+    ref="containerRef"
+    :key="`agenda-wedding-${currentLanguage}`"
     class="agenda-wedding mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
+    :class="{ 'animate-active': isVisible }"
   >
     <!-- Header -->
     <div class="text-center mb-4 sm:mb-5 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-6 desktop:mb-5">
@@ -15,7 +18,12 @@
           color: primaryColor,
         }"
       >
-        {{ agendaHeaderText }}
+        <span
+          v-for="(word, index) in splitToWords(agendaHeaderText)"
+          :key="`header-${currentLanguage}-${index}`"
+          class="bounce-word"
+          :style="{ animationDelay: `${animationDelays.header + index * WORD_DELAY}s` }"
+        >{{ word }}{{ index < splitToWords(agendaHeaderText).length - 1 ? '\u00A0' : '' }}</span>
       </h2>
       <p
         :class="[
@@ -27,14 +35,22 @@
           fontFamily: secondaryFont || currentFont,
         }"
       >
-        {{ agendaDescriptionText }}
+        <span
+          v-for="(word, index) in splitToWords(agendaDescriptionText)"
+          :key="`subdesc-${currentLanguage}-${index}`"
+          class="bounce-word"
+          :style="{ animationDelay: `${animationDelays.subDescription + index * WORD_DELAY}s` }"
+        >{{ word }}{{ index < splitToWords(agendaDescriptionText).length - 1 ? '\u00A0' : '' }}</span>
       </p>
     </div>
 
     <!-- Unified Tab Container -->
     <div class="unified-tab-container" :style="{ '--primary-color': primaryColor }">
       <!-- Tab Bar Navigation -->
-      <div class="tab-bar-scroll-wrapper">
+      <div
+        class="tab-bar-scroll-wrapper bounce-in-element"
+        :style="{ animationDelay: `${animationDelays.tabs}s` }"
+      >
         <div class="tab-bar">
           <button
             v-for="date in agendaTabs"
@@ -74,7 +90,12 @@
                 fontFamily: primaryFont || currentFont,
               }"
             >
-              {{ getFirstAgendaDescription(date) }}
+              <span
+                v-for="(word, index) in splitToWords(getFirstAgendaDescription(date))"
+                :key="`desc-${currentLanguage}-${index}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(getFirstAgendaDescription(date)).length - 1 ? '\u00A0' : '' }}</span>
             </h4>
           </div>
 
@@ -83,8 +104,8 @@
             <div
               v-for="(item, index) in agendaByDate[date] || []"
               :key="item.id"
-              class="agenda-item-animate"
-              :style="{ '--item-index': index }"
+              class="agenda-item-animate bounce-in-element"
+              :style="{ animationDelay: `${getItemDelay(index)}s` }"
             >
               <AgendaItem
                 :item="item"
@@ -103,13 +124,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import AgendaItem from '../AgendaItem.vue'
 import {
   translateRSVP,
   formatDateLocalized,
   type SupportedLanguage,
 } from '../../../utils/translations'
+import {
+  splitToWords,
+  ANIMATION_CONSTANTS,
+  getTextAnimationDuration,
+} from '@/composables/showcase/useHostInfoUtils'
 
 interface AgendaItemIcon {
   id: number
@@ -149,6 +175,73 @@ interface EventText {
 
 const props = defineProps<Props>()
 
+const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
+const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
+
+// Intersection Observer for scroll-triggered animations
+const containerRef = ref<HTMLElement | null>(null)
+const isVisible = ref(false)
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (observer) {
+    observer.disconnect()
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isVisible.value = true
+        }
+      })
+    },
+    {
+      threshold: 0.3,
+      rootMargin: '0px 0px -100px 0px',
+    }
+  )
+
+  if (containerRef.value) {
+    observer.observe(containerRef.value)
+  }
+}
+
+// Animation delays calculation
+const animationDelays = computed(() => {
+  let currentDelay = 0.1
+  const BOUNCE_DURATION = 0.2
+
+  const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
+    if (skipIfEmpty && !text) return currentDelay
+    const startDelay = currentDelay
+    const duration = getTextAnimationDuration(text)
+    currentDelay = startDelay + duration + ELEMENT_GAP
+    return startDelay
+  }
+
+  const addBounceDelay = (): number => {
+    const startDelay = currentDelay
+    currentDelay += BOUNCE_DURATION
+    return startDelay
+  }
+
+  const header = getNextDelay(agendaHeaderText.value)
+  const subDescription = getNextDelay(agendaDescriptionText.value)
+  const tabs = addBounceDelay()
+  const description = currentDelay
+  currentDelay += 0.15
+  const items = currentDelay
+
+  return {
+    header,
+    subDescription,
+    tabs,
+    description,
+    items,
+  }
+})
+
 const getTextContent = (textType: string, fallback = ''): string => {
   if (props.eventTexts && props.currentLanguage) {
     const text = props.eventTexts.find(
@@ -180,6 +273,8 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 const activeTab = ref<string | null>(null)
+// Track if user has switched tabs (to use immediate animation on tab switch)
+const hasTabSwitched = ref(false)
 
 const agendaByDate = computed(() => {
   const grouped: Record<string, AgendaItemData[]> = {}
@@ -215,7 +310,18 @@ const agendaDescriptionText = computed(() =>
 )
 
 const selectTab = (date: string) => {
+  hasTabSwitched.value = true
   activeTab.value = date
+}
+
+// Get animation delay for agenda items - immediate on tab switch, delayed on initial scroll
+const getItemDelay = (index: number): number => {
+  if (hasTabSwitched.value) {
+    // Immediate cascade when switching tabs (starts from 0)
+    return index * 0.1
+  }
+  // Use scroll-triggered delay on initial load
+  return animationDelays.value.items + index * 0.1
 }
 
 const formatAgendaDate = (dateString: string): string => {
@@ -260,7 +366,34 @@ onMounted(() => {
   if (agendaTabs.value.length > 0) {
     activeTab.value = agendaTabs.value[0]
   }
+  setupObserver()
 })
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+})
+
+// Re-setup observer and reset visibility when language changes
+watch(
+  () => props.currentLanguage,
+  async () => {
+    isVisible.value = false
+    await nextTick()
+    setTimeout(() => {
+      setupObserver()
+      if (containerRef.value) {
+        const rect = containerRef.value.getBoundingClientRect()
+        const windowHeight = window.innerHeight
+        if (rect.top < windowHeight - 100 && rect.bottom > 0) {
+          isVisible.value = true
+        }
+      }
+    }, 100)
+  }
+)
 </script>
 
 <style scoped>
@@ -357,11 +490,62 @@ onMounted(() => {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Agenda Item Scroll Animation */
-.agenda-item-animate {
+/* Word-by-word reveal animation - only active when in view */
+.bounce-word {
+  display: inline-block;
   opacity: 0;
-  animation: slideInUp 0.5s ease-out forwards;
-  animation-delay: calc(var(--item-index) * 0.1s);
+}
+
+.animate-active .bounce-word {
+  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes revealWord {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Bounce In Animation - only active when in view */
+.bounce-in-element {
+  opacity: 0;
+}
+
+.animate-active .bounce-in-element {
+  animation: bounceInElement 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bounceInElement {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Agenda Item Scroll Animation - kept for tab switching */
+.agenda-item-animate {
+  /* Animation handled by bounce-in-element */
 }
 
 /* Animations */
@@ -369,17 +553,6 @@ onMounted(() => {
   from {
     opacity: 0;
     transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -456,9 +629,12 @@ onMounted(() => {
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .tab-button,
-  .agenda-item-animate {
+  .agenda-item-animate,
+  .bounce-word,
+  .bounce-in-element {
     animation: none;
     opacity: 1;
+    transform: none;
   }
 
   .tab-button:hover {
