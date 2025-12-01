@@ -44,7 +44,10 @@
       <div
         v-for="(photo, index) in photos"
         :key="photo.id"
-        class="photo-item animate-reveal"
+        :ref="(el) => setPhotoRef(el as HTMLElement | null, index)"
+        class="photo-item"
+        :class="{ 'photo-visible': visiblePhotos.has(index) }"
+        :style="{ '--stagger-delay': `${(index % 3) * 0.08}s` }"
         @click="handlePhotoClick(photo)"
       >
         <!-- Loading Placeholder -->
@@ -152,6 +155,20 @@ const MAX_RETRIES = 3
 
 // IntersectionObserver for lazy image loading states
 const lazyImageObserver = ref<IntersectionObserver | null>(null)
+
+// Scroll animation state
+const visiblePhotos = ref<Set<number>>(new Set())
+const photoRefs = ref<Map<number, HTMLElement>>(new Map())
+const scrollAnimationObserver = ref<IntersectionObserver | null>(null)
+
+// Set photo element refs for scroll animation
+const setPhotoRef = (el: HTMLElement | null, index: number) => {
+  if (el) {
+    photoRefs.value.set(index, el)
+  } else {
+    photoRefs.value.delete(index)
+  }
+}
 
 // Initialize loading states for all photos
 const initializeImageStates = () => {
@@ -264,22 +281,63 @@ const setupLazyImageObserver = () => {
   })
 }
 
+// Setup scroll animation observer for photo reveal
+const setupScrollAnimationObserver = () => {
+  // Disconnect existing observer
+  if (scrollAnimationObserver.value) {
+    scrollAnimationObserver.value.disconnect()
+  }
+
+  // Find the scroll container for proper intersection detection
+  const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null
+
+  scrollAnimationObserver.value = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = parseInt(entry.target.getAttribute('data-photo-index') || '-1', 10)
+          if (index >= 0) {
+            visiblePhotos.value.add(index)
+            // Unobserve after animation triggered - no need to track anymore
+            scrollAnimationObserver.value?.unobserve(entry.target)
+          }
+        }
+      })
+    },
+    {
+      root: scrollContainer,
+      threshold: 0.15, // Trigger when 15% visible
+      rootMargin: '0px 0px -50px 0px', // Trigger slightly before fully in view
+    }
+  )
+
+  // Observe all photo items
+  photoRefs.value.forEach((el, index) => {
+    el.setAttribute('data-photo-index', String(index))
+    scrollAnimationObserver.value?.observe(el)
+  })
+}
+
 onMounted(() => {
   // Initialize image loading states
   initializeImageStates()
 
-  // Setup lazy image observer
+  // Setup observers after DOM is ready
   setTimeout(() => {
     setupLazyImageObserver()
+    setupScrollAnimationObserver()
   }, 100)
 })
 
 // Watch for photo changes to reinitialize states
 watch(() => props.photos, (newPhotos, oldPhotos) => {
   if (newPhotos !== oldPhotos) {
-    // Disconnect old observer
+    // Disconnect old observers
     if (lazyImageObserver.value) {
       lazyImageObserver.value.disconnect()
+    }
+    if (scrollAnimationObserver.value) {
+      scrollAnimationObserver.value.disconnect()
     }
 
     // Clear old states
@@ -293,21 +351,30 @@ watch(() => props.photos, (newPhotos, oldPhotos) => {
       delete imageRetryCount[key]
     })
 
+    // Reset scroll animation state
+    visiblePhotos.value.clear()
+    photoRefs.value.clear()
+
     // Initialize new states
     initializeImageStates()
 
-    // Re-setup observer for new photos
+    // Re-setup observers for new photos
     setTimeout(() => {
       setupLazyImageObserver()
+      setupScrollAnimationObserver()
     }, 100)
   }
 }, { deep: false })
 
 onUnmounted(() => {
-  // Disconnect observer
+  // Disconnect observers
   if (lazyImageObserver.value) {
     lazyImageObserver.value.disconnect()
     lazyImageObserver.value = null
+  }
+  if (scrollAnimationObserver.value) {
+    scrollAnimationObserver.value.disconnect()
+    scrollAnimationObserver.value = null
   }
 
   // Clear image states
@@ -320,6 +387,10 @@ onUnmounted(() => {
   Object.keys(imageRetryCount).forEach(key => {
     delete imageRetryCount[key]
   })
+
+  // Clear scroll animation state
+  visiblePhotos.value.clear()
+  photoRefs.value.clear()
 })
 </script>
 
@@ -335,6 +406,16 @@ onUnmounted(() => {
   cursor: pointer;
   overflow: hidden;
   border-radius: 0.5rem;
+  /* Initial state for scroll animation */
+  opacity: 0;
+  transform: translateY(20px) scale(0.97);
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: var(--stagger-delay, 0s);
+}
+
+.photo-item.photo-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .photo-item img {
@@ -422,6 +503,16 @@ onUnmounted(() => {
     animation: none;
     border-top-color: transparent;
     opacity: 0.5;
+  }
+
+  .photo-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .photo-item.photo-visible {
+    transform: none;
   }
 }
 
