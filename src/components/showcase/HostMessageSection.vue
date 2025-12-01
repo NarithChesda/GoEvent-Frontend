@@ -1,5 +1,11 @@
 <template>
-  <div v-if="thankYouMessage || sorryMessage" class="text-center space-y-6 sm:space-y-8">
+  <div
+    v-if="thankYouMessage || sorryMessage"
+    ref="containerRef"
+    :key="`host-message-${currentLanguage}`"
+    class="text-center space-y-6 sm:space-y-8"
+    :class="{ 'animate-active': isVisible }"
+  >
     <!-- Thank You Message -->
     <div v-if="thankYouMessage" class="space-y-4">
       <!-- Thank You Message Title -->
@@ -14,7 +20,12 @@
             color: primaryColor,
           }"
         >
-          {{ thankYouMessage.title }}
+          <span
+            v-for="(word, index) in splitToWords(thankYouMessage.title)"
+            :key="`thank-title-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.thankYouTitle + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(thankYouMessage.title).length - 1 ? '\u00A0' : '' }}</span>
         </h2>
       </div>
 
@@ -32,7 +43,12 @@
             hyphens: 'auto',
           }"
         >
-          {{ thankYouMessage.content }}
+          <span
+            v-for="(word, index) in splitToWords(thankYouMessage.content)"
+            :key="`thank-content-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.thankYouContent + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(thankYouMessage.content).length - 1 ? '\u00A0' : '' }}</span>
         </p>
       </div>
     </div>
@@ -51,7 +67,12 @@
             color: primaryColor,
           }"
         >
-          {{ sorryMessage.title }}
+          <span
+            v-for="(word, index) in splitToWords(sorryMessage.title)"
+            :key="`sorry-title-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.sorryTitle + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(sorryMessage.title).length - 1 ? '\u00A0' : '' }}</span>
         </h2>
       </div>
 
@@ -69,7 +90,12 @@
             hyphens: 'auto',
           }"
         >
-          {{ sorryMessage.content }}
+          <span
+            v-for="(word, index) in splitToWords(sorryMessage.content)"
+            :key="`sorry-content-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.sorryContent + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(sorryMessage.content).length - 1 ? '\u00A0' : '' }}</span>
         </p>
       </div>
     </div>
@@ -77,8 +103,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import type { EventText } from '../../types/showcase'
+import {
+  splitToWords,
+  ANIMATION_CONSTANTS,
+  getTextAnimationDuration,
+} from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {
   eventTexts: EventText[]
@@ -93,6 +124,68 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
+const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
+
+// Intersection Observer for scroll-triggered animations
+const containerRef = ref<HTMLElement | null>(null)
+const isVisible = ref(false)
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (observer) {
+    observer.disconnect()
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isVisible.value = true
+        }
+      })
+    },
+    {
+      threshold: 0.3,
+      rootMargin: '0px 0px -100px 0px',
+    }
+  )
+
+  if (containerRef.value) {
+    observer.observe(containerRef.value)
+  }
+}
+
+onMounted(() => {
+  setupObserver()
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+})
+
+// Re-setup observer and reset visibility when language changes
+watch(
+  () => props.currentLanguage,
+  async () => {
+    isVisible.value = false
+    await nextTick()
+    setTimeout(() => {
+      setupObserver()
+      if (containerRef.value) {
+        const rect = containerRef.value.getBoundingClientRect()
+        const windowHeight = window.innerHeight
+        if (rect.top < windowHeight - 100 && rect.bottom > 0) {
+          isVisible.value = true
+        }
+      }
+    }, 100)
+  }
+)
 
 /**
  * Get thank you message from event texts
@@ -139,9 +232,61 @@ const sorryMessage = computed(() => {
   // Fallback: use any available sorry message
   return props.eventTexts.find((text) => text.text_type === 'sorry_message') || null
 })
+
+// Animation delays calculation
+const animationDelays = computed(() => {
+  let currentDelay = 0.1
+
+  const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
+    if (skipIfEmpty && !text) return currentDelay
+    const startDelay = currentDelay
+    const duration = getTextAnimationDuration(text)
+    currentDelay = startDelay + duration + ELEMENT_GAP
+    return startDelay
+  }
+
+  // Calculate delays for thank you message (if present)
+  const thankYouTitle = getNextDelay(thankYouMessage.value?.title)
+  const thankYouContent = getNextDelay(thankYouMessage.value?.content)
+
+  // Calculate delays for sorry message (if present)
+  const sorryTitle = getNextDelay(sorryMessage.value?.title)
+  const sorryContent = getNextDelay(sorryMessage.value?.content)
+
+  return {
+    thankYouTitle,
+    thankYouContent,
+    sorryTitle,
+    sorryContent,
+  }
+})
 </script>
 
 <style scoped>
+/* Word-by-word reveal animation - only active when in view */
+.bounce-word {
+  display: inline-block;
+  opacity: 0;
+}
+
+.animate-active .bounce-word {
+  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes revealWord {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .khmer-text-fix {
   line-height: 1.8 !important;
   letter-spacing: 0.02em;
@@ -200,6 +345,15 @@ const sorryMessage = computed(() => {
   p.text-sm,
   p.sm\:text-base {
     font-size: 0.875rem !important; /* Match EventInfo description text for large laptops/desktop */
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .bounce-word {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 </style>
