@@ -136,6 +136,14 @@ export type {
   ReviewFilters,
 } from './api/types/review.types'
 
+// Invitation types
+export type {
+  InvitationEventDetails,
+  InvitationInviterDetails,
+  CollaboratorInvitationData,
+  AcceptInvitationResponse,
+} from './api/types/invitation.types'
+
 // ============================================================================
 // SERVICE EXPORTS - All services from original api.ts
 // ============================================================================
@@ -189,6 +197,9 @@ export { dressCodeService } from './api/modules/dress-code.service'
 
 // Reviews service
 export { reviewsService } from './api/modules/reviews.service'
+
+// Invitations service
+export { invitationsService } from './api/modules/invitations.service'
 
 // ============================================================================
 // NOTES FOR DEVELOPERS

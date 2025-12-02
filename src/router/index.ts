@@ -136,6 +136,12 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'), // Redirect to about page for now
       meta: { title: 'Contact - GoEvent' },
     },
+    {
+      path: '/invitation/:token',
+      name: 'invitation',
+      component: () => import('../views/InvitationView.vue'),
+      meta: { title: 'Collaborator Invitation - GoEvent' },
+    },
   ],
 })
 

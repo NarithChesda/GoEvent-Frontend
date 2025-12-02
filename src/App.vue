@@ -1,10 +1,40 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { RouterView } from 'vue-router'
+import { onMounted, watch } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { secureStorage } from './utils/secureStorage'
 
+const router = useRouter()
 const authStore = useAuthStore()
+
+/**
+ * Handle pending collaborator invitation after authentication
+ * This handles the case where a user signs up/in via Google/Telegram
+ * from a different page (e.g., /signin with redirect to /invitation/xxx)
+ *
+ * Note: Backend auto-accepts invitations when user logs in with matching email,
+ * so we just redirect to the invitation page to let it handle the redirect
+ */
+async function handlePendingInvitation() {
+  const token = sessionStorage.getItem('pending_invitation_token')
+  if (!token || !authStore.isAuthenticated) return
+
+  // Clear the token immediately to prevent duplicate attempts
+  sessionStorage.removeItem('pending_invitation_token')
+
+  // Redirect to invitation page - it will validate and redirect to event
+  router.push(`/invitation/${token}`)
+}
+
+// Watch for authentication changes to handle pending invitations
+watch(
+  () => authStore.isAuthenticated,
+  async (isAuthenticated) => {
+    if (isAuthenticated) {
+      await handlePendingInvitation()
+    }
+  }
+)
 
 /**
  * App initialization
