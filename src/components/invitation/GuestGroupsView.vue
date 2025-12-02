@@ -190,6 +190,15 @@
             <!-- Spacer to push Add button to the right -->
             <div class="flex-1"></div>
 
+            <!-- Help Button (Desktop Only) -->
+            <button
+              @click="showInstructionModal = true"
+              class="hidden sm:flex items-center justify-center p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
+              title="How to manage guests"
+            >
+              <Info class="w-4 h-4" />
+            </button>
+
             <!-- Add Guest Button -->
             <button
               @click="$emit('add-guest')"
@@ -283,12 +292,141 @@
         <p class="text-sm text-slate-400">{{ groupSearchQuery ? 'Try adjusting your search' : 'No guests in this group yet' }}</p>
       </div>
     </div>
+
+    <!-- Guest Management Instruction Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showInstructionModal"
+          class="fixed inset-0 z-[70] overflow-y-auto"
+          @click="showInstructionModal = false"
+        >
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <Users class="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-900">Guest Management Guide</h3>
+                </div>
+                <button
+                  @click="showInstructionModal = false"
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <X class="w-5 h-5" />
+                </button>
+              </div>
+
+              <!-- Content -->
+              <div class="space-y-4">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                  <p class="text-sm text-emerald-900 mb-3 font-medium">
+                    Here's how to manage your event guests:
+                  </p>
+
+                  <div class="space-y-3">
+                    <div>
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">1</span>
+                        Add Guests
+                      </h4>
+                      <p class="text-sm text-emerald-800 ml-7">
+                        Click the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><UserPlus class="w-3 h-3" /> Add Guest</span> button to add individual guests with their contact details.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">2</span>
+                        Bulk Import
+                      </h4>
+                      <p class="text-sm text-emerald-800 ml-7">
+                        Use the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><FileSpreadsheet class="w-3 h-3" /> Import</span> feature to add multiple guests at once from a spreadsheet.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">3</span>
+                        Copy Invitation Links
+                      </h4>
+                      <p class="text-sm text-emerald-800 ml-7">
+                        Click the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><Link class="w-3 h-3" /> Link</span> icon on any guest to copy their personalized invitation link.
+                      </p>
+                      <!-- Facebook Messenger Note -->
+                      <div class="ml-7 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p class="text-xs text-amber-800">
+                          <span class="font-semibold">Note:</span> When sharing links via <span class="font-semibold text-amber-900 bg-amber-100 px-1 rounded">Facebook Messenger on desktop</span>, the link preview may not display. For the best experience with preview cards, use the <span class="font-semibold text-amber-900 bg-amber-100 px-1 rounded">Messenger mobile app</span> instead.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">4</span>
+                        Track Invitations
+                      </h4>
+                      <p class="text-sm text-emerald-800 ml-7">
+                        After sending invitations, click <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><Mail class="w-3 h-3" /> Mark Sent</span> to track which guests have received their invites.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">5</span>
+                        Cash Gift Journal
+                      </h4>
+                      <p class="text-sm text-emerald-800 ml-7">
+                        Record cash gifts received from guests by editing their profile. Add the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><DollarSign class="w-3 h-3" /> Amount</span> and currency to track contributions.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">6</span>
+                        Bulk Actions
+                      </h4>
+                      <p class="text-sm text-emerald-800 ml-7">
+                        Select multiple guests using checkboxes to perform bulk actions like marking sent or deleting.
+                      </p>
+                    </div>
+
+                    <div class="pt-3 border-t border-emerald-200">
+                      <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Pro Tip:</span>
+                      </h4>
+                      <p class="text-sm text-emerald-800">
+                        Organize guests into groups to easily manage different invitation lists (e.g., Family, Friends, Colleagues).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Close Button -->
+                <div class="flex justify-end pt-2">
+                  <button
+                    @click="showInstructionModal = false"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors duration-200"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown } from 'lucide-vue-next'
+import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
 import type { GuestGroup, EventGuest, GuestStats } from '../../services/api'
@@ -347,6 +485,7 @@ const groupSearchQuery = ref('')
 const selectedGuestIds = ref<Set<number>>(new Set())
 const isDropdownOpen = ref(false)
 const isSearchExpanded = ref(false)
+const showInstructionModal = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Tab container ref
@@ -812,5 +951,21 @@ defineExpose({
 .selection-bar-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+/* Modal transition */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > div:last-child > div:last-child,
+.modal-leave-to > div:last-child > div:last-child {
+  transform: scale(0.9);
 }
 </style>
