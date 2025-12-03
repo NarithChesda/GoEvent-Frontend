@@ -8,6 +8,7 @@
  */
 
 import { apiService, type Event } from '@/services/api'
+import { isImageKitEnabled } from './useImageKitConfig'
 
 export interface EventHost {
   name: string
@@ -52,8 +53,14 @@ export function getGuestCount(event: Event): string {
 /**
  * Convert API server media URL to ImageKit proxy URL
  * Rewrites api.goevent.online/media/... to ik.imagekit.io/goevent/media/...
+ * Returns original URL if ImageKit is disabled
  */
 export function toImageKitUrl(url: string): string {
+  // Check if ImageKit is enabled
+  if (!isImageKitEnabled()) {
+    return url
+  }
+
   // Rewrite api.goevent.online URLs to ImageKit proxy
   if (url.includes('api.goevent.online/media/')) {
     return url.replace(
@@ -68,6 +75,7 @@ export function toImageKitUrl(url: string): string {
  * Apply ImageKit.io transformation to resize image
  * For ImageKit URLs, inserts transformation params after the base path
  * Also converts API server URLs to ImageKit proxy URLs
+ * Returns original URL if ImageKit is disabled
  * @param url - Original image URL
  * @param width - Target width in pixels
  * @param height - Target height in pixels (optional)
@@ -78,6 +86,11 @@ export function applyImageKitTransform(
   height?: number
 ): string | null {
   if (!url) return null
+
+  // Check if ImageKit is enabled
+  if (!isImageKitEnabled()) {
+    return url
+  }
 
   // Convert API server URLs to ImageKit proxy URLs
   let imageKitUrl = toImageKitUrl(url)

@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import type { TemplateFont, TemplateColor, TemplateAssets } from '../useEventShowcase'
+import { isImageKitEnabled } from '../useImageKitConfig'
 
 // Regex patterns defined at module level for better performance
 const MEDIA_PATH_REGEX = /\/media\/(.+)$/
@@ -99,6 +100,15 @@ export function useTemplateProcessor() {
     try {
       // First resolve to absolute URL
       let absoluteUrl = getMediaUrl(url)
+
+      // Check if ImageKit is enabled
+      if (!isImageKitEnabled()) {
+        // ImageKit disabled - return the resolved URL without transformations
+        if (import.meta.env.DEV) {
+          console.debug('[ImageKit] Disabled - using original URL')
+        }
+        return absoluteUrl
+      }
 
       // Extract the media path from various URL formats and convert to ImageKit
       // Handles: /media/..., http://localhost:8000/media/..., https://api.goevent.online/media/...
