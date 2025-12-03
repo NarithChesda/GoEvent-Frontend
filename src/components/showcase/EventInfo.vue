@@ -64,37 +64,53 @@
         }"
       >
         <div
-          class="px-4 pt-3 pb-4 backdrop-blur-sm space-y-2 relative"
+          class="px-4 pt-3 pb-4 backdrop-blur-sm space-y-1 relative"
           style="border-radius: calc(2rem - 2px); border: 2px solid white"
           :style="{
            background: `${backgroundColor || primaryColor}60`,
           }"
         >
           <!-- Date Text -->
-          <div class="text-sm sm:text-base font-medium leading-snug" v-if="dateText">
+          <p
+            :class="[
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap text-white',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto',
+            }"
+            v-if="dateText"
+          >
             <span
               v-for="(word, index) in splitToWords(dateText)"
               :key="`date-${currentLanguage}-${index}`"
-              :class="['text-white bounce-word', currentLanguage === 'kh' && 'khmer-text-fix']"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-                animationDelay: `${animationDelays.date + index * WORD_DELAY}s`,
-              }"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.date + index * WORD_DELAY}s` }"
             >{{ word }}{{ index < splitToWords(dateText).length - 1 ? '\u00A0' : '' }}</span>
-          </div>
+          </p>
 
           <!-- Location Text -->
-          <div class="text-sm sm:text-base font-medium leading-snug" v-if="locationText">
+          <p
+            :class="[
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap text-white',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              wordWrap: 'break-word',
+              hyphens: 'auto',
+            }"
+            v-if="locationText"
+          >
             <span
               v-for="(word, index) in splitToWords(locationText)"
               :key="`location-${currentLanguage}-${index}`"
-              :class="['text-white bounce-word', currentLanguage === 'kh' && 'khmer-text-fix']"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-                animationDelay: `${animationDelays.location + index * WORD_DELAY}s`,
-              }"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.location + index * WORD_DELAY}s` }"
             >{{ word }}{{ index < splitToWords(locationText).length - 1 ? '\u00A0' : '' }}</span>
-          </div>
+          </p>
 
           <!-- Google Map Embed -->
           <div
