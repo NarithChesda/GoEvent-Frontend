@@ -130,11 +130,11 @@
             <div class="premium-name-frame" :style="premiumFrameStyle">
               <!-- 3-part split frame -->
               <div class="split-frame-container" aria-hidden="true">
-                <img :src="leftFramePng" alt="" class="frame-left" />
+                <img :src="computedLeftFrame" alt="" class="frame-left" />
                 <div class="frame-middle-wrapper">
-                  <img :src="middleFramePng" alt="" class="frame-middle" />
+                  <img :src="computedMiddleFrame" alt="" class="frame-middle" />
                 </div>
-                <img :src="rightFramePng" alt="" class="frame-right" />
+                <img :src="computedRightFrame" alt="" class="frame-right" />
               </div>
               <!-- Guest name positioned over the frame -->
               <h2
@@ -201,12 +201,21 @@ import { computed, ref } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
+// Default liquid glass frames
 import leftFramePng from '../../assets/left-frame.png'
 import middleFramePng from '../../assets/middle-frame.png'
 import rightFramePng from '../../assets/right-frame.png'
+// Transparent fallback frames (when liquid glass is disabled)
+import leftFrameTranPng from '../../assets/left-frame-tran.png'
+import middleFrameTranPng from '../../assets/middle-frame-tran.png'
+import rightFrameTranPng from '../../assets/right-frame-tran.png'
 
 interface TemplateAssets {
   open_envelope_button?: string
+  display_liquid_glass_background?: boolean
+  guest_title_frame_left?: string | null
+  guest_title_frame_mid?: string | null
+  guest_title_frame_right?: string | null
 }
 
 interface EventText {
@@ -412,6 +421,40 @@ const premiumFrameStyle = computed(() => {
     '--primary-color': props.primaryColor,
     '--accent-glow': props.primaryColor,
   }
+})
+
+// Computed frame URLs with fallback logic:
+// 1. Use backend title_frame if available
+// 2. If liquid glass is enabled (or default), use liquid glass frames
+// 3. Otherwise use transparent frames
+const computedLeftFrame = computed(() => {
+  // Check if backend provides a title frame
+  if (props.templateAssets?.guest_title_frame_left) {
+    return props.getMediaUrl(props.templateAssets.guest_title_frame_left)
+  }
+  // Fallback: check liquid glass setting (default to true if undefined)
+  const useLiquidGlass = props.templateAssets?.display_liquid_glass_background !== false
+  return useLiquidGlass ? leftFramePng : leftFrameTranPng
+})
+
+const computedMiddleFrame = computed(() => {
+  // Check if backend provides a title frame
+  if (props.templateAssets?.guest_title_frame_mid) {
+    return props.getMediaUrl(props.templateAssets.guest_title_frame_mid)
+  }
+  // Fallback: check liquid glass setting (default to true if undefined)
+  const useLiquidGlass = props.templateAssets?.display_liquid_glass_background !== false
+  return useLiquidGlass ? middleFramePng : middleFrameTranPng
+})
+
+const computedRightFrame = computed(() => {
+  // Check if backend provides a title frame
+  if (props.templateAssets?.guest_title_frame_right) {
+    return props.getMediaUrl(props.templateAssets.guest_title_frame_right)
+  }
+  // Fallback: check liquid glass setting (default to true if undefined)
+  const useLiquidGlass = props.templateAssets?.display_liquid_glass_background !== false
+  return useLiquidGlass ? rightFramePng : rightFrameTranPng
 })
 
 </script>

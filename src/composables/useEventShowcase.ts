@@ -138,6 +138,9 @@ export interface TemplateAssets {
   fonts?: TemplateFont[]
   cover_content_top_position?: number
   display_liquid_glass_background?: boolean
+  guest_title_frame_left?: string | null
+  guest_title_frame_mid?: string | null
+  guest_title_frame_right?: string | null
 }
 
 export interface EventPhoto {
@@ -336,7 +339,8 @@ export function useEventShowcase() {
     const assets = event.value?.template_assets?.assets || null
     const displayLiquidGlass = event.value?.template_assets?.display_liquid_glass_background
 
-    // If assets exist, spread them and add the display_liquid_glass_background field
+    // If assets exist, spread them and add display_liquid_glass_background
+    // Note: guest_title_frame_* fields are already inside assets, so they're included in the spread
     if (assets) {
       return {
         ...assets,
