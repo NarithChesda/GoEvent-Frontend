@@ -120,6 +120,7 @@
       <!-- Guest Name Row: 16% -->
       <div
         v-if="guestName"
+        ref="guestContainerRef"
         class="content-row-guest flex items-center justify-center"
         style="height: 16%; overflow: visible; z-index: 100; position: relative;"
       >
@@ -138,8 +139,9 @@
               </div>
               <!-- Guest name positioned over the frame -->
               <h2
+                ref="guestNameRef"
                 class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
-                :style="guestNameTextStyle"
+                :style="[guestNameTextStyle, guestNameAutoFitStyle]"
               >
                 <template v-if="isEnglishGuestName">
                   <span
@@ -197,7 +199,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
@@ -455,6 +457,76 @@ const computedRightFrame = computed(() => {
   // Fallback: check liquid glass setting (default to true if undefined)
   const useLiquidGlass = props.templateAssets?.display_liquid_glass_background !== false
   return useLiquidGlass ? rightFramePng : rightFrameTranPng
+})
+
+// Auto-fit text for guest name
+const guestNameRef = ref<HTMLElement | null>(null)
+const guestContainerRef = ref<HTMLElement | null>(null)
+const guestNameScale = ref(1)
+
+// Calculate scale to fit guest name within 75% of container width
+const calculateGuestNameScale = () => {
+  if (!guestNameRef.value || !guestContainerRef.value) return
+
+  // Reset scale to measure natural width
+  guestNameScale.value = 1
+
+  nextTick(() => {
+    if (!guestNameRef.value || !guestContainerRef.value) return
+
+    const containerWidth = guestContainerRef.value.offsetWidth
+    const maxWidth = containerWidth * 0.6 // 60% of container width
+    const textWidth = guestNameRef.value.scrollWidth
+
+    if (textWidth > maxWidth && textWidth > 0) {
+      // Calculate scale factor to fit within maxWidth
+      const scale = maxWidth / textWidth
+      // Clamp scale between 0.4 and 1 to prevent text from becoming too small
+      guestNameScale.value = Math.max(0.4, Math.min(1, scale))
+    } else {
+      guestNameScale.value = 1
+    }
+  })
+}
+
+// Computed style for guest name with dynamic scaling
+const guestNameAutoFitStyle = computed(() => {
+  return {
+    transform: `scale(${guestNameScale.value})`,
+    transformOrigin: 'center center',
+  }
+})
+
+// ResizeObserver for responsive scaling
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  // Initial calculation after mount
+  nextTick(() => {
+    calculateGuestNameScale()
+  })
+
+  // Set up ResizeObserver to recalculate on container resize
+  if (guestContainerRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      calculateGuestNameScale()
+    })
+    resizeObserver.observe(guestContainerRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+})
+
+// Watch for guest name changes
+watch(() => props.guestName, () => {
+  nextTick(() => {
+    calculateGuestNameScale()
+  })
 })
 
 </script>
