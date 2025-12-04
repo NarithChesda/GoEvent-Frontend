@@ -470,7 +470,7 @@ export const rsvpTranslations: Record<
     time_period_night: 'ពេលយប់',
 
     // Gender
-    gender_all: 'ភេទទាំងអស់',
+    gender_all: 'គ្រប់ភេទ',
     gender_male: 'ប្រុស',
     gender_female: 'ស្រី',
   },
