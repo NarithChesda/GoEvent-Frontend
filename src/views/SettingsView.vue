@@ -74,8 +74,94 @@
               </div>
 
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Mobile Profile Section - Shows first on mobile -->
+                <div class="lg:hidden order-first">
+                  <div :class="authStore.user?.is_partner ? 'grid grid-cols-2 gap-4' : 'flex justify-center'">
+                    <!-- Profile Picture for Mobile -->
+                    <div class="flex flex-col items-center">
+                      <label class="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+                      <div class="relative w-28 h-28 mx-auto mb-2">
+                        <!-- Partner Badge Ring -->
+                        <div
+                          v-if="authStore.user?.is_partner"
+                          class="absolute -inset-1 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse"
+                        ></div>
+
+                        <div
+                          v-if="profilePictureUrl"
+                          class="relative w-28 h-28 rounded-full overflow-hidden bg-orange-100 border-4 border-white shadow-lg"
+                        >
+                          <img
+                            :src="profilePictureUrl"
+                            :key="profilePictureUrl"
+                            alt="Profile"
+                            class="w-full h-full object-cover"
+                            @error="handleImageError"
+                            @load="handleImageLoad"
+                          />
+                        </div>
+                        <div
+                          v-else
+                          class="relative w-28 h-28 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-medium text-3xl border-4 border-white shadow-lg"
+                        >
+                          {{ authStore.userInitials }}
+                        </div>
+
+                        <!-- Upload button overlay -->
+                        <button
+                          type="button"
+                          @click="triggerFileUpload"
+                          class="absolute bottom-0 right-0 w-9 h-9 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Partner Logo for Mobile (only for partners) -->
+                    <div v-if="authStore.user?.is_partner" class="flex flex-col items-center">
+                      <label class="block text-sm font-medium text-gray-700 mb-3">Partner Logo</label>
+                      <div class="relative w-28 h-28 mx-auto mb-2">
+                        <div
+                          v-if="logoUrl"
+                          class="relative w-28 h-28 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-300 shadow-lg"
+                        >
+                          <img
+                            :src="logoUrl"
+                            :key="logoUrl"
+                            alt="Logo"
+                            class="w-full h-full object-contain p-2"
+                            @error="handleLogoImageError"
+                            @load="handleLogoImageLoad"
+                          />
+                        </div>
+                        <div
+                          v-else
+                          class="relative w-28 h-28 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 font-medium text-xs border-2 border-gray-300 shadow-lg"
+                        >
+                          No Logo
+                        </div>
+
+                        <!-- Upload button overlay -->
+                        <button
+                          type="button"
+                          @click="triggerLogoUpload"
+                          :disabled="logoUploadLoading"
+                          class="absolute bottom-0 right-0 w-9 h-9 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Left Column - Form Fields (2/3 width) -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-2 space-y-6 order-2 lg:order-1">
                   <!-- Name Fields -->
                   <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -168,8 +254,8 @@
                   </div>
                 </div>
 
-                <!-- Right Column - Profile Picture (1/3 width) -->
-                <div class="lg:col-span-1">
+                <!-- Right Column - Profile Picture (1/3 width) - Desktop only -->
+                <div class="hidden lg:block lg:col-span-1 order-3 lg:order-2">
                   <div class="sticky top-8 space-y-8">
                     <!-- Profile Picture Section -->
                     <div>
