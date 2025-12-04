@@ -464,6 +464,7 @@ const handleEventCreate = async (formData: EventFormData) => {
 
     if (response.success && response.data) {
       showMessage('success', 'Event created successfully!')
+      timeFilter.value = 'recent'
       await loadEvents('my', {})
     } else {
       let errorMessage = response.message || 'Failed to create event'
