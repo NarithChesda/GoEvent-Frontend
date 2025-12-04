@@ -2,48 +2,54 @@
   <footer class="mt-16 mb-20 lg:mb-0">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="border-t border-slate-200 pt-6 pb-6">
-      <!-- Top Row: Navigation and Social -->
+      <!-- Top Row: Logo and Social Icons -->
       <div class="flex items-center justify-between mb-4">
-        <!-- Left: Logo and Navigation -->
-        <div class="flex items-center space-x-6">
-          <button
-            @click="handleLogoClick"
-            class="flex items-center"
-            aria-label="Go to home page"
+        <!-- Left: Logo -->
+        <button
+          @click="handleLogoClick"
+          class="flex items-center"
+          aria-label="Go to home page"
+        >
+          <!-- Mobile: logo.png, Desktop: icon.svg -->
+          <img
+            :src="LogoPng"
+            alt="GoEvent Logo"
+            class="h-5 w-auto sm:hidden"
+          />
+          <img
+            :src="IconSvg"
+            alt="GoEvent Logo"
+            class="h-5 w-auto hidden sm:block"
+          />
+        </button>
+
+        <!-- Desktop Navigation (inline with logo) -->
+        <nav class="hidden sm:flex items-center space-x-4 flex-1 ml-6">
+          <RouterLink
+            to="/home"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
-            <img
-              :src="IconSvg"
-              alt="GoEvent Logo"
-              class="h-5 w-auto"
-            />
-          </button>
-          <nav class="hidden sm:flex items-center space-x-4">
-            <RouterLink
-              to="/home"
-              class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Home
-            </RouterLink>
-            <RouterLink
-              to="/about"
-              class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              About Us
-            </RouterLink>
-            <RouterLink
-              to="/home#pricing"
-              class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Pricing
-            </RouterLink>
-            <RouterLink
-              to="/explore"
-              class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Discover
-            </RouterLink>
-          </nav>
-        </div>
+            Home
+          </RouterLink>
+          <RouterLink
+            to="/about"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            About Us
+          </RouterLink>
+          <RouterLink
+            to="/home#pricing"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            Pricing
+          </RouterLink>
+          <RouterLink
+            to="/explore"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            Discover
+          </RouterLink>
+        </nav>
 
         <!-- Right: Social Icons -->
         <div class="flex items-center">
@@ -94,8 +100,30 @@
         </div>
       </div>
 
+      <!-- Mobile Navigation Row -->
+      <nav class="flex sm:hidden items-center space-x-4 mb-4">
+        <RouterLink
+          to="/home"
+          class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+        >
+          Home
+        </RouterLink>
+        <RouterLink
+          to="/home#pricing"
+          class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+        >
+          Pricing
+        </RouterLink>
+        <RouterLink
+          to="/about"
+          class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+        >
+          About Us
+        </RouterLink>
+      </nav>
+
       <!-- Bottom Row: CTA -->
-      <div class="text-center">
+      <div class="sm:text-center">
         <RouterLink
           to="/events?createEvent=true"
           class="inline-flex items-center text-sm font-medium text-[#2ecc71] hover:text-[#27ae60] transition-colors"
@@ -115,6 +143,7 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router'
 import IconSvg from '@/assets/icon.svg'
+import LogoPng from '@/assets/logo.png'
 
 const router = useRouter()
 
