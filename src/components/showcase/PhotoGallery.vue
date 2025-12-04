@@ -77,17 +77,27 @@
         </div>
 
         <!-- Actual Image (optimized via ImageKit) -->
-        <img
-          v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
-          :data-photo-id="photo.id"
-          :src="getOptimizedPhotoUrl(photo.image)"
-          :alt="photo.caption || 'Event Photo'"
-          :loading="index < 4 ? 'eager' : 'lazy'"
-          :decoding="index < 3 ? 'sync' : 'async'"
-          :fetchpriority="index < 2 ? 'high' : 'auto'"
-          @load="handleImageLoad(String(photo.id))"
-          @error="handleImageError(String(photo.id))"
-        />
+        <div class="relative">
+          <img
+            v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
+            :data-photo-id="photo.id"
+            :src="getOptimizedPhotoUrl(photo.image)"
+            :alt="photo.caption || 'Event Photo'"
+            :loading="index < 4 ? 'eager' : 'lazy'"
+            :decoding="index < 3 ? 'sync' : 'async'"
+            :fetchpriority="index < 2 ? 'high' : 'auto'"
+            class="pointer-events-none"
+            v-bind="protectionAttrs"
+            @load="handleImageLoad(String(photo.id))"
+            @error="handleImageError(String(photo.id))"
+          />
+          <!-- Transparent protection overlay (production-only) -->
+          <div
+            v-if="isProduction && !imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
+            class="absolute inset-0 z-10"
+            @contextmenu.prevent
+          ></div>
+        </div>
       </div>
     </div>
   </div>
@@ -98,6 +108,10 @@ import { computed, onMounted, onUnmounted, ref, reactive, watch, nextTick } from
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
+import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+
+// Asset protection (production-only)
+const { isProduction, protectionAttrs } = useAssetProtection()
 
 interface EventText {
   text_type: string

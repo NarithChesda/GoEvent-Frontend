@@ -10,6 +10,7 @@
       class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] cover-decoration-left"
       :class="{ 'slide-out-to-left': isContentHidden }"
       loading="eager"
+      v-bind="protectionAttrs"
     />
     <img
       v-if="coverRightDecorationUrl"
@@ -18,6 +19,7 @@
       class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] cover-decoration-right"
       :class="{ 'slide-out-to-right': isContentHidden }"
       loading="eager"
+      v-bind="protectionAttrs"
     />
     <img
       v-if="coverTopDecorationUrl"
@@ -26,6 +28,7 @@
       class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-top"
       :class="{ 'slide-out-to-top': isContentHidden }"
       loading="eager"
+      v-bind="protectionAttrs"
     />
     <img
       v-if="coverBottomDecorationUrl"
@@ -34,6 +37,7 @@
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-bottom"
       :class="{ 'slide-out-to-bottom': isContentHidden }"
       loading="eager"
+      v-bind="protectionAttrs"
     />
 
     <!-- Main Content Container -->
@@ -87,6 +91,7 @@
             :alt="eventTitle + ' logo'"
             class="scaled-logo mx-auto"
             fetchpriority="high"
+            v-bind="protectionAttrs"
           />
           <div
             v-else
@@ -131,11 +136,11 @@
             <div class="premium-name-frame" :style="premiumFrameStyle">
               <!-- 3-part split frame -->
               <div class="split-frame-container" aria-hidden="true">
-                <img :src="computedLeftFrame" alt="" class="frame-left" />
+                <img :src="computedLeftFrame" alt="" class="frame-left" v-bind="protectionAttrs" />
                 <div class="frame-middle-wrapper">
-                  <img :src="computedMiddleFrame" alt="" class="frame-middle" />
+                  <img :src="computedMiddleFrame" alt="" class="frame-middle" v-bind="protectionAttrs" />
                 </div>
-                <img :src="computedRightFrame" alt="" class="frame-right" />
+                <img :src="computedRightFrame" alt="" class="frame-right" v-bind="protectionAttrs" />
               </div>
               <!-- Guest name positioned over the frame -->
               <h2
@@ -202,7 +207,11 @@
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
+import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
+
+// Asset protection (production-only)
+const { protectionAttrs } = useAssetProtection()
 // Default liquid glass frames
 import leftFramePng from '../../assets/left-frame.png'
 import middleFramePng from '../../assets/middle-frame.png'

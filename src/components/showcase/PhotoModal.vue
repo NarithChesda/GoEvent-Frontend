@@ -42,15 +42,23 @@
         @touchmove.passive="handleTouchMove"
         @touchend="handleTouchEnd"
       >
-        <img
-          v-if="currentPhoto"
-          :src="getOptimizedModalPhotoUrl(currentPhoto.image)"
-          :alt="currentPhoto.caption || 'Event Photo'"
-          :style="{ transform: `translateX(${swipeOffset}px)` }"
-          class="photo-image"
-          loading="lazy"
-          draggable="false"
-        />
+        <div class="relative">
+          <img
+            v-if="currentPhoto"
+            :src="getOptimizedModalPhotoUrl(currentPhoto.image)"
+            :alt="currentPhoto.caption || 'Event Photo'"
+            :style="{ transform: `translateX(${swipeOffset}px)` }"
+            class="photo-image pointer-events-none"
+            loading="lazy"
+            v-bind="protectionAttrs"
+          />
+          <!-- Transparent protection overlay (production-only) -->
+          <div
+            v-if="isProduction && currentPhoto"
+            class="absolute inset-0 z-10"
+            @contextmenu.prevent
+          ></div>
+        </div>
 
         <!-- Caption -->
         <div v-if="currentPhoto?.caption" class="photo-caption">
@@ -78,6 +86,10 @@ import { computed, watch, ref, onUnmounted } from 'vue'
 import { X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
+import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+
+// Asset protection (production-only)
+const { isProduction, protectionAttrs } = useAssetProtection()
 
 interface Props {
   isOpen: boolean

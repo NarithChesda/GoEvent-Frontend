@@ -3,6 +3,7 @@
     <!-- Sequential Video Container - plays all videos in order -->
     <video
       ref="sequentialVideoContainer"
+      v-bind="videoProtectionAttrs"
       class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none desktop-video-sizing"
       style="z-index: -10"
       data-video-type="sequential"
@@ -17,6 +18,7 @@
     <video
       v-if="eventVideoUrl"
       ref="eventVideoPreloader"
+      v-bind="videoProtectionAttrs"
       muted
       playsinline
       preload="none"
@@ -33,6 +35,7 @@
     <video
       v-if="backgroundVideoUrl"
       ref="backgroundVideoElement"
+      v-bind="videoProtectionAttrs"
       muted
       loop
       playsinline
@@ -65,6 +68,7 @@
         alt="Decoration"
         class="w-full h-full object-cover"
         loading="eager"
+        v-bind="protectionAttrs"
       />
     </div>
 
@@ -80,6 +84,7 @@
         alt="Background"
         class="w-full h-full object-cover"
         loading="eager"
+        v-bind="protectionAttrs"
       />
     </div>
 
@@ -101,6 +106,7 @@
         alt="Background"
         class="w-full h-full object-cover"
         loading="eager"
+        v-bind="protectionAttrs"
       />
     </div>
 
@@ -119,6 +125,7 @@
         !templateAssets?.basic_decoration_photo
       "
       ref="coverVideoElement"
+      v-bind="videoProtectionAttrs"
       :src="getMediaUrl(templateAssets.standard_cover_video)"
       autoplay
       loop
@@ -135,6 +142,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useOptimizedBackgrounds } from '../../composables/showcase/useOptimizedDecorations'
+import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+
+// Asset protection (production-only)
+const { protectionAttrs, videoProtectionAttrs } = useAssetProtection()
 
 interface TemplateAssets {
   standard_cover_video?: string

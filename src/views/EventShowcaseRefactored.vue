@@ -1,5 +1,9 @@
 <template>
-  <div class="showcase-wrapper" :style="{ backgroundColor: backgroundColor || primaryColor || '#000' }">
+  <div
+    class="showcase-wrapper"
+    :class="protectionClasses"
+    :style="[{ backgroundColor: backgroundColor || primaryColor || '#000' }, protectionStyles]"
+  >
     <!-- Loading State -->
     <LoadingSpinner
       v-if="loading"
@@ -11,7 +15,12 @@
     <ErrorDisplay v-else-if="error" :message="error" :show-retry="true" @retry="loadShowcase" />
 
     <!-- Showcase Content -->
-    <div v-else-if="event.id" class="showcase-container relative">
+    <div
+      v-else-if="event.id"
+      class="showcase-container relative"
+      :class="protectionClasses"
+      :style="protectionStyles"
+    >
       <!-- Single Stage: Cover with Sequential Videos and MainContent Overlay -->
       <CoverStage
         ref="coverStageRef"
@@ -121,6 +130,7 @@ import { useRouter } from 'vue-router'
 // Composables & Stores
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
+import { useAssetProtection } from '../composables/showcase/useAssetProtection'
 
 // Meta tags utility
 import {
@@ -142,6 +152,10 @@ import { useAuthModal } from '../composables/useAuthModal'
 // Router and stores
 const router = useRouter()
 const authStore = useAuthStore()
+
+// Asset protection (production-only)
+const { protectionClasses, protectionStyles, setupProtection, cleanupProtection } =
+  useAssetProtection()
 
 // Event showcase composable
 const {
@@ -402,10 +416,15 @@ onMounted(async () => {
   if (event.value?.logo_one) {
     preloadLogo(event.value.logo_one)
   }
+
+  // Setup asset protection (production-only)
+  setupProtection()
 })
 
 onUnmounted(() => {
-  // All cleanup is handled by the composable's onUnmounted hook
+  // Cleanup asset protection event listeners
+  cleanupProtection()
+  // All other cleanup is handled by the composable's onUnmounted hook
   // No additional manual cleanup needed as we're using proper Vue provide/inject pattern
 })
 </script>

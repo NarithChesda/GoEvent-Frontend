@@ -11,6 +11,7 @@
       alt="Left decoration"
       class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromLeft"
       loading="eager"
+      v-bind="protectionAttrs"
     />
     <img
       v-if="rightDecorationUrl"
@@ -18,6 +19,7 @@
       alt="Right decoration"
       class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromRight"
       loading="eager"
+      v-bind="protectionAttrs"
     />
     <img
       v-if="topDecorationUrl"
@@ -25,6 +27,7 @@
       alt="Top decoration"
       class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromTop"
       loading="eager"
+      v-bind="protectionAttrs"
     />
     <img
       v-if="bottomDecorationUrl"
@@ -32,6 +35,7 @@
       alt="Bottom decoration"
       class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromBottom"
       loading="eager"
+      v-bind="protectionAttrs"
     />
 
     <!-- Content Loading Overlay -->
@@ -850,6 +854,10 @@ import type { SupportedLanguage } from '../../utils/translations'
 import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
 import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
+import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+
+// Asset protection (production-only)
+const { protectionAttrs } = useAssetProtection()
 
 // Component imports
 import HostInfo from './HostInfo.vue'
