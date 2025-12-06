@@ -32,64 +32,19 @@
     <!-- Banner Image - 1.9:1 aspect ratio (1200x630) -->
     <div class="relative w-full aspect-[1.9/1] overflow-hidden">
       <img
-        v-if="event.banner_image"
-        :src="getBannerImageUrl(event.banner_image)"
+        v-if="!fallbackImageError"
+        :src="getCurrentImageSrc()"
         :alt="event.title"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        @error="handleImageError"
       />
-      <div v-else class="w-full h-full relative overflow-hidden" :class="getFallbackBgClass()">
-        <!-- Geometric Pattern Background -->
-        <div class="absolute inset-0 opacity-10">
-          <div
-            class="absolute top-4 left-4 w-8 h-8 rounded-full"
-            :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-          ></div>
-          <div
-            class="absolute top-12 right-8 w-4 h-4 rounded-full"
-            :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-          ></div>
-          <div
-            class="absolute bottom-8 left-12 w-6 h-6 rounded-full"
-            :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-          ></div>
-          <div
-            class="absolute bottom-4 right-4 w-3 h-3 rounded-full"
-            :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-          ></div>
-        </div>
-
-        <!-- Central Content -->
-        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-          <div
-            class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-lg"
-            :style="{ backgroundColor: `${event.category_color || '#3B82F6'}20` }"
-          >
-            <component
-              :is="getFallbackIcon()"
-              class="w-6 h-6"
-              :style="{ color: event.category_color || '#3B82F6' }"
-            />
-          </div>
-          <h4
-            class="text-sm sm:text-base font-semibold mb-1 line-clamp-2"
-            :style="{ color: event.category_color || '#3B82F6' }"
-          >
-            {{ event.title }}
-          </h4>
-          <p class="text-xs sm:text-sm text-gray-500 line-clamp-1">
-            {{ event.category_name || 'Event' }}
-          </p>
-        </div>
-
-        <!-- Decorative Elements -->
-        <div
-          class="absolute top-0 right-0 w-16 h-16 opacity-5"
-          :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-        ></div>
-        <div
-          class="absolute bottom-0 left-0 w-12 h-12 opacity-5"
-          :style="{ backgroundColor: event.category_color || '#3B82F6' }"
-        ></div>
+      <!-- Fallback when both primary and fallback images fail to load -->
+      <div
+        v-else
+        class="w-full h-full bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 flex flex-col items-center justify-center"
+      >
+        <Calendar class="w-12 h-12 text-[#2ecc71]/40 mb-2" />
+        <span class="text-sm text-slate-400">{{ event.category_name || 'Event' }}</span>
       </div>
 
       <!-- Category Badge (Top Right) -->
@@ -254,6 +209,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   Calendar,
   MapPin,
@@ -261,22 +217,9 @@ import {
   Monitor,
   Lock,
   Trash2,
-  Music,
-  Briefcase,
-  GraduationCap,
-  Heart,
-  Gamepad2,
-  Camera,
-  Utensils,
-  Dumbbell,
-  Palette,
-  Code,
-  Mic,
-  BookOpen,
-  Plane,
-  Gift,
 } from 'lucide-vue-next'
 import type { Event } from '../services/api'
+import { getEventFallbackImage } from '@/composables/useEventFormatters'
 
 interface Props {
   event: Event
@@ -290,96 +233,30 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-// Fallback banner image helpers
-const getFallbackBgClass = () => {
-  const categoryName = props.event.category_name?.toLowerCase() || ''
-  const gradients = [
-    'bg-gradient-to-br from-[#E6F4FF] to-[#B0E0E6]',
-    'bg-gradient-to-br from-emerald-50 to-emerald-100',
-    'bg-gradient-to-br from-green-50 to-green-100',
-    'bg-gradient-to-br from-orange-50 to-orange-100',
-    'bg-gradient-to-br from-pink-50 to-pink-100',
-    'bg-gradient-to-br from-indigo-50 to-indigo-100',
-    'bg-gradient-to-br from-red-50 to-red-100',
-    'bg-gradient-to-br from-yellow-50 to-yellow-100',
-    'bg-gradient-to-br from-teal-50 to-teal-100',
-    'bg-gradient-to-br from-cyan-50 to-cyan-100',
-  ]
+// Track image load errors - two stages: primary image, then fallback image
+const primaryImageError = ref(false)
+const fallbackImageError = ref(false)
 
-  // Use category name hash or event title hash to consistently pick a gradient
-  const text = categoryName || props.event.title
-  const hash = text.split('').reduce((a, b) => {
-    a = (a << 5) - a + b.charCodeAt(0)
-    return a & a
-  }, 0)
-
-  return gradients[Math.abs(hash) % gradients.length]
+// Get fallback image URL based on event category
+const getFallbackImageUrl = () => {
+  return getEventFallbackImage(props.event)
 }
 
-const getFallbackIcon = () => {
-  const categoryName = props.event.category_name?.toLowerCase() || ''
-
-  // Map category names to appropriate icons
-  const iconMap: Record<string, any> = {
-    music: Music,
-    concert: Music,
-    business: Briefcase,
-    conference: Briefcase,
-    corporate: Briefcase,
-    education: GraduationCap,
-    workshop: GraduationCap,
-    training: GraduationCap,
-    wedding: Heart,
-    party: Heart,
-    celebration: Heart,
-    gaming: Gamepad2,
-    esports: Gamepad2,
-    photography: Camera,
-    photo: Camera,
-    food: Utensils,
-    dining: Utensils,
-    restaurant: Utensils,
-    fitness: Dumbbell,
-    gym: Dumbbell,
-    sports: Dumbbell,
-    art: Palette,
-    design: Palette,
-    creative: Palette,
-    tech: Code,
-    technology: Code,
-    coding: Code,
-    speaking: Mic,
-    presentation: Mic,
-    book: BookOpen,
-    reading: BookOpen,
-    literature: BookOpen,
-    travel: Plane,
-    trip: Plane,
-    vacation: Plane,
-    social: Gift,
-    networking: Gift,
-    meetup: Gift,
+// Handle image load error - try fallback first, then show placeholder
+const handleImageError = () => {
+  if (!primaryImageError.value) {
+    primaryImageError.value = true
+  } else {
+    fallbackImageError.value = true
   }
+}
 
-  // Check for exact matches first
-  if (iconMap[categoryName]) {
-    return iconMap[categoryName]
+// Current image source - primary first, then fallback
+const getCurrentImageSrc = () => {
+  if (!primaryImageError.value) {
+    return getBannerImageUrl(props.event.banner_image) || getFallbackImageUrl()
   }
-
-  // Check for partial matches
-  for (const [key, icon] of Object.entries(iconMap)) {
-    if (categoryName.includes(key) || key.includes(categoryName)) {
-      return icon
-    }
-  }
-
-  // Check if it's virtual to show monitor icon
-  if (props.event.is_virtual) {
-    return Monitor
-  }
-
-  // Default fallback
-  return Calendar
+  return getFallbackImageUrl()
 }
 
 // Handle delete button click

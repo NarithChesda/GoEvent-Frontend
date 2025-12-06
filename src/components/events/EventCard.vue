@@ -80,10 +80,11 @@
         class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100"
       >
         <img
-          v-if="imageUrl"
-          :src="imageUrl"
+          v-if="!fallbackImageError"
+          :src="currentImageSrc"
           :alt="event.title"
           class="w-full h-full object-cover"
+          @error="handleImageError"
         />
         <div
           v-else
@@ -186,10 +187,11 @@
         class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100"
       >
         <img
-          v-if="imageUrl"
-          :src="imageUrl"
+          v-if="!fallbackImageError"
+          :src="currentImageSrc"
           :alt="event.title"
           class="w-full h-full object-cover"
+          @error="handleImageError"
         />
         <div
           v-else
@@ -203,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   MapPin,
   Users,
@@ -220,6 +222,7 @@ import {
   getEventHosts,
   formatHostNames,
   getEventCategory,
+  getEventFallbackImage,
 } from '@/composables/useEventFormatters'
 
 const props = withDefaults(
@@ -241,12 +244,37 @@ defineEmits<{
   manage: []
 }>()
 
+// Track image load errors - two stages: primary image, then fallback image
+const primaryImageError = ref(false)
+const fallbackImageError = ref(false)
+
+// Handle image load error - try fallback first, then show placeholder
+const handleImageError = () => {
+  if (!primaryImageError.value) {
+    primaryImageError.value = true
+  } else {
+    fallbackImageError.value = true
+  }
+}
+
 // Use optimized thumbnails based on variant (mobile uses square crop, desktop uses landscape)
 const imageUrl = computed(() =>
   props.variant === 'mobile'
     ? getEventThumbnailMobile(props.event)
     : getEventThumbnail(props.event)
 )
+
+// Fallback image URL (Unsplash)
+const fallbackImageUrl = computed(() => getEventFallbackImage(props.event))
+
+// Current image source - primary first, then fallback
+const currentImageSrc = computed(() => {
+  if (!primaryImageError.value) {
+    return imageUrl.value
+  }
+  return fallbackImageUrl.value
+})
+
 const hosts = computed(() => getEventHosts(props.event))
 const hostNames = computed(() => formatHostNames(props.event))
 const guestCount = computed(() => getGuestCount(props.event))

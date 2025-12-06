@@ -183,11 +183,11 @@ const { categories, categoryFilter, loadCategories } = useCategoryFilter()
 
 // Time filter
 type TimeFilterValue = 'upcoming' | 'past' | 'recent'
-const timeFilter = ref<TimeFilterValue>('upcoming')
+const timeFilter = ref<TimeFilterValue>('recent')
 const timeFilterOptions = [
+  { value: 'recent', label: 'Recent' },
   { value: 'upcoming', label: 'Upcoming' },
   { value: 'past', label: 'Past' },
-  { value: 'recent', label: 'Recent' },
 ]
 
 // UI state

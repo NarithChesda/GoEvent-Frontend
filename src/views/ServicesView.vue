@@ -1,6 +1,9 @@
 <template>
   <MainLayout>
     <div class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]">
+      <!-- Mobile Top Bar -->
+      <MobileTopBar />
+
       <!-- Main Content -->
       <section class="py-4 sm:py-6 lg:py-8">
         <div class="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -9,20 +12,22 @@
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
               Services
             </h1>
+
+
           </div>
 
-          <!-- Mobile Category Pills -->
-          <div class="sm:hidden -mx-4 px-4 mb-4 overflow-x-auto scrollbar-hide">
-            <div class="flex items-center gap-2 pb-1">
+          <!-- Mobile Category Toggle -->
+          <div class="sm:hidden mb-4 overflow-x-auto scrollbar-hide">
+            <div class="flex items-center glass-toggle rounded-full p-1 w-fit">
               <button
                 v-for="category in serviceCategories"
                 :key="category.id"
                 @click="selectedCategory = category.id"
                 :class="[
-                  'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap',
+                  'px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap',
                   selectedCategory === category.id
                     ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-                    : 'glass-pill text-slate-600'
+                    : 'text-slate-600 hover:text-slate-800'
                 ]"
               >
                 {{ category.name }}
@@ -631,6 +636,7 @@ import MainLayout from '../components/MainLayout.vue'
 import AppFooter from '../components/AppFooter.vue'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import ListingFormDrawer from '../components/services/ListingFormDrawer.vue'
+import { MobileTopBar } from '@/components/events'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()

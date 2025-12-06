@@ -23,7 +23,7 @@
       </div>
 
       <!-- Main Navigation (aligned with page content) -->
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+      <div class="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <nav class="flex items-center">
           <RouterLink
             v-for="(item, index) in navigationItems"
@@ -124,7 +124,7 @@
             aria-label="User menu"
           >
             <img
-              v-if="profilePictureUrl"
+              v-if="profilePictureUrl && !profilePictureError"
               :src="profilePictureUrl"
               :alt="sanitizedUserName"
               class="w-full h-full object-cover"
@@ -162,10 +162,11 @@
                   <!-- Large Avatar -->
                   <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                     <img
-                      v-if="profilePictureUrl"
+                      v-if="profilePictureUrl && !profilePictureError"
                       :src="profilePictureUrl"
                       :alt="sanitizedUserName"
                       class="w-full h-full object-cover"
+                      @error="handleProfilePictureError"
                     />
                     <div
                       v-else
@@ -274,13 +275,14 @@ const isActiveRoute = (path: string) => {
 }
 
 // Profile picture state
+const profilePictureError = ref(false)
 const profilePictureUrl = computed(() => {
   if (!authStore.user?.profile_picture) return null
   return apiService.getProfilePictureUrl(authStore.user.profile_picture)
 })
 
 const handleProfilePictureError = () => {
-  console.warn('Failed to load profile picture')
+  profilePictureError.value = true
 }
 
 // Sanitized user data

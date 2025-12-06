@@ -19,7 +19,7 @@
           <div class="flex items-center space-x-3 px-3 py-2 bg-[#E6F4FF] rounded-xl">
             <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
               <img
-                v-if="profilePictureUrl"
+                v-if="profilePictureUrl && !profilePictureError"
                 :src="profilePictureUrl"
                 :alt="sanitizedUserName"
                 class="w-full h-full object-cover"
@@ -118,7 +118,7 @@
             >
               <div class="w-5 h-5 rounded-full overflow-hidden ring-1 ring-slate-300 flex-shrink-0">
                 <img
-                  v-if="profilePictureUrl"
+                  v-if="profilePictureUrl && !profilePictureError"
                   :src="profilePictureUrl"
                   :alt="sanitizedUserName"
                   class="w-full h-full object-cover"
@@ -170,13 +170,14 @@ const isActiveRoute = (path: string) => {
 }
 
 // Profile picture computed property
+const profilePictureError = ref(false)
 const profilePictureUrl = computed(() => {
   if (!authStore.user?.profile_picture) return null
   return apiService.getProfilePictureUrl(authStore.user.profile_picture)
 })
 
 const handleProfilePictureError = () => {
-  console.warn('Failed to load profile picture')
+  profilePictureError.value = true
 }
 
 // Sanitized user data to prevent XSS

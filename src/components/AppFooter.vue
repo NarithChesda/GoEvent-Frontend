@@ -1,6 +1,6 @@
 <template>
   <footer class="mt-16 mb-20 lg:mb-0">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="border-t border-slate-200 pt-6 pb-6">
       <!-- Top Row: Logo and Social Icons -->
       <div class="flex items-center justify-between mb-4">
