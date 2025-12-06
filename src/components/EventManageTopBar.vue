@@ -20,20 +20,21 @@
         <!-- Host Avatar (hidden on mobile) -->
         <div v-if="organizerAvatar || organizerName" class="hidden md:block flex-shrink-0">
           <div
-            v-if="organizerAvatar"
+            v-if="organizerAvatar && !avatarError"
             class="w-9 h-9 rounded-full overflow-hidden ring-1 ring-slate-200/50"
           >
             <img
               :src="organizerAvatar"
               :alt="organizerName || 'Organizer'"
               class="w-full h-full object-cover"
+              @error="handleAvatarError"
             />
           </div>
           <div
             v-else
-            class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 ring-1 ring-slate-200/50 flex items-center justify-center"
+            class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] ring-1 ring-slate-200/50 flex items-center justify-center"
           >
-            <span class="text-slate-600 font-medium text-xs">
+            <span class="text-white font-medium text-xs">
               {{ organizerInitials }}
             </span>
           </div>
@@ -120,6 +121,12 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   edit: []
 }>()
+
+// Avatar error state
+const avatarError = ref(false)
+const handleAvatarError = () => {
+  avatarError.value = true
+}
 
 // Inject sidebar state from MainLayout (with default values to prevent warnings)
 const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))

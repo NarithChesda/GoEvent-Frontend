@@ -84,12 +84,22 @@
           <!-- Event Content -->
           <div v-else-if="event" class="pb-24">
             <!-- Banner Image (1200x630 ratio = 1.905:1) -->
-            <div v-if="event.banner_image" class="relative w-full" style="aspect-ratio: 1200 / 630;">
+            <div class="relative w-full" style="aspect-ratio: 1200 / 630;">
               <img
-                :src="getBannerUrl(event.banner_image)"
+                v-if="!fallbackBannerError"
+                :src="currentBannerSrc"
                 :alt="event.title"
                 class="w-full h-full object-cover"
+                @error="handleBannerImageError"
               />
+              <!-- Fallback when both primary and fallback images fail -->
+              <div
+                v-else
+                class="w-full h-full bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 flex flex-col items-center justify-center"
+              >
+                <CalendarDays class="w-12 h-12 text-[#2ecc71]/40 mb-2" />
+                <span class="text-sm text-slate-400">{{ event.category_details?.name || 'Event' }}</span>
+              </div>
             </div>
 
             <!-- Event Info -->
@@ -360,11 +370,12 @@ import {
   Video,
   AlertCircle,
   CheckCircle,
-  Calendar,
   CalendarPlus,
   ExternalLink,
+  CalendarDays,
 } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
+import { getEventFallbackImage } from '@/composables/useEventFormatters'
 import { useAuthStore } from '../stores/auth'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
@@ -401,6 +412,25 @@ const error = ref<string | null>(null)
 const isRegistering = ref(false)
 const showCalendarOptions = ref(false)
 const expandedAgendaGroups = ref<Record<string, boolean>>({})
+
+// Banner image fallback state
+const primaryBannerError = ref(false)
+const fallbackBannerError = ref(false)
+
+// Handle banner image load error - try fallback first, then show placeholder
+const handleBannerImageError = () => {
+  if (!primaryBannerError.value) {
+    primaryBannerError.value = true
+  } else {
+    fallbackBannerError.value = true
+  }
+}
+
+// Reset banner error states when event changes
+const resetBannerErrors = () => {
+  primaryBannerError.value = false
+  fallbackBannerError.value = false
+}
 
 // Computed
 const currentUser = computed(() => authStore.user)
@@ -451,6 +481,15 @@ const googleMapEmbedUrl = computed(() => {
   return extractGoogleMapsEmbedUrl(event.value.google_map_embed_link)
 })
 
+// Current banner image source - primary first, then fallback
+const currentBannerSrc = computed(() => {
+  if (!event.value) return ''
+  if (!primaryBannerError.value && event.value.banner_image) {
+    return getBannerUrl(event.value.banner_image)
+  }
+  return getEventFallbackImage(event.value)
+})
+
 import type { EventAgendaItem } from '../services/api/types/event.types'
 
 interface AgendaGroup {
@@ -497,6 +536,7 @@ const loadEvent = async () => {
 
   loading.value = true
   error.value = null
+  resetBannerErrors()
 
   try {
     const response = await eventsService.getEvent(props.eventId)

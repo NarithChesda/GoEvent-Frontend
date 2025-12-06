@@ -27,12 +27,13 @@
             <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
               <div class="flex items-center gap-2">
                 <img
-                  v-if="event.organizer_details.profile_picture"
+                  v-if="event.organizer_details.profile_picture && !organizerAvatarError"
                   :src="getProfileUrl(event.organizer_details.profile_picture)"
                   :alt="organizerName"
                   class="w-7 h-7 rounded-full object-cover"
+                  @error="handleOrganizerAvatarError"
                 />
-                <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
+                <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium">
                   {{ getInitials(organizerName) }}
                 </div>
                 <span class="font-medium">{{ organizerName }}</span>
@@ -205,12 +206,13 @@
               class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl"
             >
               <img
-                v-if="host.profile_image"
+                v-if="host.profile_image && !hostAvatarErrors[host.id]"
                 :src="getProfileUrl(host.profile_image)"
                 :alt="host.name"
                 class="w-12 h-12 rounded-full object-cover"
+                @error="() => handleHostAvatarError(host.id)"
               />
-              <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+              <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                 {{ getInitials(host.name) }}
               </div>
               <div class="flex-1 min-w-0">
@@ -339,6 +341,18 @@ watch(hasTemplatePayment, (isActivated) => {
 // State
 const showCalendarOptions = ref(false)
 const expandedAgendaGroups = ref<Record<string, boolean>>({})
+
+// Avatar error states
+const organizerAvatarError = ref(false)
+const hostAvatarErrors = ref<Record<number, boolean>>({})
+
+const handleOrganizerAvatarError = () => {
+  organizerAvatarError.value = true
+}
+
+const handleHostAvatarError = (hostId: number) => {
+  hostAvatarErrors.value[hostId] = true
+}
 
 const hostname = computed(() => {
   return window.location.hostname

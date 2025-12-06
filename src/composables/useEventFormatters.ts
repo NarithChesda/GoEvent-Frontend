@@ -88,12 +88,15 @@ export function getEventFallbackImage(event: Event): string {
   const eventWithCategory = event as Event & {
     category?: { name?: string } | number | string | null
     category_name?: string
+    category_details?: { name?: string } | null
   }
 
-  // Try to get category name
+  // Try to get category name from various possible fields
   let categoryName = ''
   if (eventWithCategory.category_name) {
     categoryName = eventWithCategory.category_name.toLowerCase()
+  } else if (eventWithCategory.category_details?.name) {
+    categoryName = eventWithCategory.category_details.name.toLowerCase()
   } else if (eventWithCategory.category && typeof eventWithCategory.category === 'object') {
     const categoryObj = eventWithCategory.category as { name?: string }
     if (categoryObj.name) {
