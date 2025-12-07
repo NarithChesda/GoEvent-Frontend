@@ -23,7 +23,7 @@
       </div>
 
       <!-- Main Navigation (aligned with page content) -->
-      <div class="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+      <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <nav class="flex items-center">
           <RouterLink
             v-for="(item, index) in navigationItems"

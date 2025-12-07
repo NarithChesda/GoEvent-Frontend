@@ -1,6 +1,6 @@
 <template>
   <footer class="bg-gradient-to-br from-emerald-50 to-green-50 border-t border-emerald-100">
-    <div class="max-w-7xl mx-auto py-8 sm:py-10 md:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto py-8 sm:py-10 md:py-12 px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-7 md:gap-8">
         <!-- Company Info -->
         <div class="col-span-1 sm:col-span-2">

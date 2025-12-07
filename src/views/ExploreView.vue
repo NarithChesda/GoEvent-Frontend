@@ -8,7 +8,7 @@
 
       <!-- Main Content -->
       <section class="py-4 sm:py-6 lg:py-8">
-        <div class="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header with Toggle -->
           <div class="flex items-center justify-between mb-6 sm:mb-8 lg:mb-10">
             <h1
