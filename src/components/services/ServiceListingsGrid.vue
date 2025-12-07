@@ -8,35 +8,6 @@
 
       <!-- Filter Controls -->
       <div class="flex items-center gap-2">
-        <!-- Category Filter Dropdown -->
-        <div class="relative category-filter-container hidden sm:block">
-          <button
-            @click.stop="showCategoryMenu = !showCategoryMenu"
-            class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            <Filter class="w-4 h-4" />
-            <span>{{ categoryName }}</span>
-          </button>
-          <Transition name="fade">
-            <div
-              v-if="showCategoryMenu"
-              class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 max-h-[60vh] overflow-y-auto"
-            >
-              <button
-                v-for="category in categories"
-                :key="category.id"
-                @click="selectCategory(category.id)"
-                class="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 transition-colors"
-                :class="selectedCategory === category.id
-                  ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5'
-                  : 'text-slate-700'"
-              >
-                {{ category.name }}
-              </button>
-            </div>
-          </Transition>
-        </div>
-
         <!-- Sort Dropdown -->
         <div class="relative">
           <button
@@ -93,7 +64,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Filter, ArrowUpDown, ChevronDown } from 'lucide-vue-next'
+import { ArrowUpDown, ChevronDown } from 'lucide-vue-next'
 import ServiceCard from './ServiceCard.vue'
 import type { Listing, ServiceCategory, SortOption } from './types'
 
@@ -112,7 +83,6 @@ const emit = defineEmits<{
   'sort-change': [sortValue: string]
 }>()
 
-const showCategoryMenu = ref(false)
 const showSortMenu = ref(false)
 
 const categoryName = computed(() => {
@@ -124,11 +94,6 @@ const currentSortLabel = computed(() => {
   return props.sortOptions.find(o => o.value === props.sortBy)?.label || 'Sort'
 })
 
-const selectCategory = (id: string) => {
-  emit('category-change', id)
-  showCategoryMenu.value = false
-}
-
 const selectSort = (value: string) => {
   emit('sort-change', value)
   showSortMenu.value = false
@@ -136,9 +101,6 @@ const selectSort = (value: string) => {
 
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  if (showCategoryMenu.value && !target.closest('.category-filter-container')) {
-    showCategoryMenu.value = false
-  }
   if (showSortMenu.value && !target.closest('.relative')) {
     showSortMenu.value = false
   }

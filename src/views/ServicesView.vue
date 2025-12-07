@@ -12,6 +12,43 @@
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
               Services
             </h1>
+
+            <!-- Category Filter Dropdown - Desktop only -->
+            <div class="relative category-filter-container hidden sm:block">
+              <button
+                @click.stop="showCategoryMenu = !showCategoryMenu"
+                class="glass-button flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+                :class="selectedCategory !== 'all'
+                  ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
+                  : 'text-slate-700'"
+              >
+                <span>{{ selectedCategoryName }}</span>
+                <ChevronDown
+                  class="w-4 h-4 transition-transform duration-200"
+                  :class="showCategoryMenu ? 'rotate-180' : ''"
+                />
+              </button>
+
+              <!-- Dropdown Menu -->
+              <Transition name="dropdown">
+                <div
+                  v-if="showCategoryMenu"
+                  class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden overflow-y-auto min-w-[180px] max-h-[60vh] z-[100]"
+                >
+                  <button
+                    v-for="category in serviceCategories"
+                    :key="category.id"
+                    @click="selectCategory(category.id)"
+                    class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
+                    :class="selectedCategory === category.id
+                      ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5'
+                      : 'text-slate-700'"
+                  >
+                    {{ category.name }}
+                  </button>
+                </div>
+              </Transition>
+            </div>
           </div>
 
           <!-- Mobile Category Toggle -->
@@ -111,8 +148,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Plus, CheckCircle, Info } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { Plus, CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import ContactUsFAB from '@/components/ContactUsFAB.vue'
@@ -139,6 +176,35 @@ const showListingDrawer = ref(false)
 const showVendorDrawer = ref(false)
 const showListingFormDrawer = ref(false)
 const editingListing = ref<Listing | null>(null)
+const showCategoryMenu = ref(false)
+
+// Computed for category name display
+const selectedCategoryName = computed(() => {
+  const cat = serviceCategories.value.find(c => c.id === selectedCategory.value)
+  return cat?.id === 'all' ? 'All Categories' : cat?.name || 'All Categories'
+})
+
+// Category selection method
+const selectCategory = (id: string) => {
+  selectedCategory.value = id
+  showCategoryMenu.value = false
+}
+
+// Handle click outside to close category menu
+const handleCategoryClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (showCategoryMenu.value && !target.closest('.category-filter-container')) {
+    showCategoryMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleCategoryClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleCategoryClickOutside)
+})
 
 // Message state
 const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
@@ -457,5 +523,39 @@ const loadMore = () => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Dropdown animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Glass effect styles */
+.glass-button {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 32px rgba(46, 204, 113, 0.1),
+    0 4px 12px rgba(30, 144, 255, 0.08);
 }
 </style>
