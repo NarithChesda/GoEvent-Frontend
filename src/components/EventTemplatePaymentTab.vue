@@ -223,33 +223,28 @@
                     </span>
                   </div>
 
+                  <!-- Order Summary -->
                   <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
-                    <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div class="flex items-center justify-between gap-3">
                       <div>
-                        <p class="text-xs sm:text-sm text-slate-600">Amount due</p>
-                        <div class="flex items-baseline gap-2">
-                          <p class="text-2xl sm:text-3xl font-semibold text-slate-900">
+                        <p class="text-xs text-slate-500">{{ templatePackageDetails?.name || 'Standard Package' }}</p>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                          <p class="text-xl sm:text-2xl font-bold text-slate-900">
                             ${{ finalAmount }}
                           </p>
                           <p
                             v-if="promoDiscount"
-                            class="text-sm sm:text-base text-slate-400 line-through"
+                            class="text-sm text-slate-400 line-through"
                           >
                             ${{ promoDiscount.original }}
                           </p>
                         </div>
-                        <p
-                          v-if="promoDiscount"
-                          class="text-xs text-emerald-600 font-medium mt-0.5"
-                        >
-                          You save ${{ promoDiscount.discount }}
-                        </p>
                       </div>
-                      <div class="text-right">
-                        <p class="text-xs sm:text-sm font-medium text-slate-700">
-                          {{ templatePackageDetails?.name || 'Standard Package' }}
-                        </p>
-                        <p class="text-[11px] sm:text-xs text-slate-500">USD</p>
+                      <div
+                        v-if="promoDiscount"
+                        class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                      >
+                        Save ${{ promoDiscount.discount }}
                       </div>
                     </div>
                   </section>
@@ -369,141 +364,243 @@
                     </div>
                   </section>
 
+                  <!-- Step-by-Step Payment Guide -->
                   <section
                     v-if="selectedMethod"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 laptop-sm:p-4 space-y-3"
+                    class="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-3 laptop-sm:p-4 space-y-4"
                   >
-                    <div class="flex items-center justify-between">
-                      <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment instructions</h3>
-                      <span class="text-[11px] sm:text-xs text-slate-500">{{ selectedMethod.name }}</span>
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full bg-[#1e90ff]/10 flex items-center justify-center">
+                        <Banknote class="w-4 h-4 text-[#1e90ff]" />
+                      </div>
+                      <div>
+                        <h3 class="text-sm sm:text-base font-semibold text-slate-800">How to Pay</h3>
+                        <p class="text-[11px] text-slate-500">{{ selectedMethod.name }}</p>
+                      </div>
                     </div>
 
-                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
-                      <div
-                        v-if="selectedMethod.bank_name || selectedMethod.account_number || selectedMethod.account_name"
-                        class="flex-1 space-y-1.5 rounded-lg bg-white/70 px-3 py-2.5 text-xs sm:text-sm text-slate-600"
-                      >
-                        <p v-if="selectedMethod.bank_name">
-                          <span class="font-medium text-slate-800">Bank:</span> {{ selectedMethod.bank_name }}
-                        </p>
-                        <p v-if="selectedMethod.account_number">
-                          <span class="font-medium text-slate-800">Account:</span> {{ selectedMethod.account_number }}
-                        </p>
-                        <p v-if="selectedMethod.account_name">
-                          <span class="font-medium text-slate-800">Name:</span> {{ selectedMethod.account_name }}
-                        </p>
+                    <!-- Step 1: Copy Amount -->
+                    <div class="flex gap-3">
+                      <div class="flex flex-col items-center">
+                        <div class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center">1</div>
+                        <div class="w-0.5 flex-1 bg-slate-200 mt-1"></div>
                       </div>
+                      <div class="flex-1 pb-4">
+                        <p class="text-sm font-medium text-slate-800 mb-2">Copy the payment amount</p>
+                        <div class="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2">
+                          <span class="text-lg font-semibold text-slate-900">${{ finalAmount }}</span>
+                          <button
+                            type="button"
+                            @click="copyToClipboard(finalAmount, 'amount')"
+                            class="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all"
+                            :class="copiedField === 'amount'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                          >
+                            <Check v-if="copiedField === 'amount'" class="w-3.5 h-3.5" />
+                            <Copy v-else class="w-3.5 h-3.5" />
+                            {{ copiedField === 'amount' ? 'Copied!' : 'Copy' }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
 
-                      <div
-                        v-if="selectedMethod.qr_code_image || selectedMethod.payment_link"
-                        class="flex flex-col items-center gap-3 md:w-48 laptop-md:w-52 md:self-start"
-                      >
+                    <!-- Step 2: Transfer Payment -->
+                    <div class="flex gap-3">
+                      <div class="flex flex-col items-center">
+                        <div class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center">2</div>
+                        <div class="w-0.5 flex-1 bg-slate-200 mt-1"></div>
+                      </div>
+                      <div class="flex-1 pb-4">
+                        <p class="text-sm font-medium text-slate-800 mb-2">Transfer to this account</p>
+
+                        <!-- QR Code (Primary - always show if available) -->
                         <div
                           v-if="selectedMethod.qr_code_image"
-                          class="w-full rounded-lg border border-slate-200 bg-white p-3 text-center"
+                          class="rounded-xl border border-slate-200 bg-white p-4 text-center"
                         >
                           <img
                             :src="selectedMethod.qr_code_image"
                             :alt="`QR Code for ${selectedMethod.name}`"
-                            class="mx-auto h-24 w-24 laptop-sm:h-28 laptop-sm:w-28 laptop-md:h-32 laptop-md:w-32 object-contain"
+                            class="mx-auto h-40 w-40 laptop-sm:h-44 laptop-sm:w-44 object-contain rounded-lg"
                             loading="lazy"
                             @error="handleImageError"
                           />
-                          <p class="text-[11px] sm:text-xs text-slate-500 mt-2">Scan with your banking app</p>
+                          <p class="text-xs text-slate-500 mt-2">Scan with your banking app</p>
                         </div>
 
+                        <!-- Payment Link Button -->
                         <button
                           v-if="selectedMethod.payment_link"
                           type="button"
                           @click="openPaymentLink(selectedMethod.payment_link)"
-                          class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-sm sm:text-base"
+                          class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] text-white font-semibold px-4 py-3 rounded-xl transition-all shadow-md hover:shadow-lg text-sm mt-3"
                         >
-                          Open Payment Link
+                          <Smartphone class="w-4 h-4" />
+                          {{ isMobileDevice ? 'Open in Bank App' : 'Open Payment Link' }}
+                          <ExternalLink class="w-3.5 h-3.5 ml-1" />
                         </button>
+
+                        <!-- Bank Details (Always show if available) -->
+                        <div
+                          v-if="selectedMethod.bank_name || selectedMethod.account_number || selectedMethod.account_name"
+                          class="mt-3 space-y-2 rounded-xl border border-slate-200 bg-white p-3"
+                        >
+                          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Bank Details</p>
+                          <div v-if="selectedMethod.bank_name" class="text-sm text-slate-700">
+                            <span class="text-slate-500">Bank:</span> {{ selectedMethod.bank_name }}
+                          </div>
+                          <div v-if="selectedMethod.account_number" class="flex items-center justify-between gap-2">
+                            <div class="text-sm">
+                              <span class="text-slate-500">Account:</span>
+                              <span class="font-mono font-medium text-slate-800 ml-1">{{ selectedMethod.account_number }}</span>
+                            </div>
+                            <button
+                              type="button"
+                              @click="copyToClipboard(selectedMethod.account_number, 'account')"
+                              class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
+                              :class="copiedField === 'account'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                            >
+                              <Check v-if="copiedField === 'account'" class="w-3 h-3" />
+                              <Copy v-else class="w-3 h-3" />
+                              {{ copiedField === 'account' ? 'Copied!' : 'Copy' }}
+                            </button>
+                          </div>
+                          <div v-if="selectedMethod.account_name" class="flex items-center justify-between gap-2">
+                            <div class="text-sm">
+                              <span class="text-slate-500">Name:</span>
+                              <span class="font-medium text-slate-800 ml-1">{{ selectedMethod.account_name }}</span>
+                            </div>
+                            <button
+                              type="button"
+                              @click="copyToClipboard(selectedMethod.account_name, 'name')"
+                              class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
+                              :class="copiedField === 'name'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                            >
+                              <Check v-if="copiedField === 'name'" class="w-3 h-3" />
+                              <Copy v-else class="w-3 h-3" />
+                              {{ copiedField === 'name' ? 'Copied!' : 'Copy' }}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </section>
 
-                  <section class="space-y-3">
-                    <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment details</h3>
-
-                    <div
-                      v-if="!selectedMethod"
-                      class="rounded-lg border border-dashed border-slate-300 bg-white/70 px-4 py-3 text-xs sm:text-sm text-slate-500"
-                    >
-                      Choose a payment method above to enable payment submission.
-                    </div>
-
-                    <div
-                      v-if="error"
-                      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs sm:text-sm text-red-600"
-                    >
-                      {{ error }}
-                    </div>
-
-                    <!-- Payment Receipt (Primary) -->
-                    <div class="space-y-1.5">
-                      <label for="paymentProof" class="text-xs sm:text-sm font-medium text-slate-700">
-                        Payment Receipt <span class="text-slate-400">(Optional)</span>
-                      </label>
-                      <input
-                        id="paymentProof"
-                        ref="fileInput"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
-                        @change="handleFileSelect"
-                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#E6F4FF] file:text-[#1873cc] file:text-xs file:font-semibold"
-                      />
-                      <p class="text-[11px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
-                    </div>
-
-                    <!-- Additional Details (Collapsible) -->
-                    <div class="border border-slate-200 rounded-xl overflow-hidden">
-                      <button
-                        type="button"
-                        @click="showAdditionalDetails = !showAdditionalDetails"
-                        class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50/80 hover:bg-slate-100/80 transition-colors text-left"
-                      >
-                        <span class="text-xs sm:text-sm font-medium text-slate-700">
-                          Additional Details <span class="text-slate-400">(Optional)</span>
-                        </span>
-                        <ChevronDown
-                          class="w-4 h-4 text-slate-500 transition-transform duration-200"
-                          :class="{ 'rotate-180': showAdditionalDetails }"
-                        />
-                      </button>
-                      <div
-                        v-show="showAdditionalDetails"
-                        class="px-3 py-3 space-y-3 border-t border-slate-200 bg-white/90"
-                      >
-                        <div class="space-y-1.5">
-                          <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-600">
-                            Transaction Reference
-                          </label>
+                    <!-- Step 3: Upload Receipt -->
+                    <div class="flex gap-3">
+                      <div class="flex flex-col items-center">
+                        <div class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center">3</div>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm font-medium text-slate-800 mb-1">Upload payment receipt</p>
+                        <p class="text-[11px] text-slate-500 mb-2">Screenshot your transfer confirmation for faster verification</p>
+                        <div class="relative">
                           <input
-                            id="transactionRef"
-                            v-model="paymentForm.transaction_reference"
-                            type="text"
-                            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white"
-                            placeholder="Enter transaction ID"
+                            id="paymentProof"
+                            ref="fileInput"
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
+                            @change="handleFileSelect"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                           />
-                        </div>
-
-                        <div class="space-y-1.5">
-                          <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-600">
-                            Notes
-                          </label>
-                          <textarea
-                            id="paymentNotes"
-                            v-model="paymentForm.user_notes"
-                            rows="2"
-                            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white resize-none"
-                            placeholder="Any additional notes for the host"
-                          ></textarea>
+                          <div
+                            class="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed transition-colors"
+                            :class="paymentForm.payment_proof
+                              ? 'border-emerald-300 bg-emerald-50'
+                              : 'border-slate-200 bg-white hover:border-[#1e90ff] hover:bg-[#F1F8FF]'"
+                          >
+                            <div
+                              class="w-10 h-10 rounded-lg flex items-center justify-center"
+                              :class="paymentForm.payment_proof ? 'bg-emerald-100' : 'bg-slate-100'"
+                            >
+                              <Check v-if="paymentForm.payment_proof" class="w-5 h-5 text-emerald-600" />
+                              <Upload v-else class="w-5 h-5 text-slate-400" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <p
+                                class="text-sm font-medium truncate"
+                                :class="paymentForm.payment_proof ? 'text-emerald-700' : 'text-slate-700'"
+                              >
+                                {{ paymentForm.payment_proof ? paymentForm.payment_proof.name : 'Choose file or drag here' }}
+                              </p>
+                              <p class="text-[11px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </section>
+
+                  <!-- Error Display -->
+                  <div
+                    v-if="error"
+                    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs sm:text-sm text-red-600"
+                  >
+                    {{ error }}
+                  </div>
+
+                  <!-- Placeholder when no method selected -->
+                  <div
+                    v-if="!selectedMethod"
+                    class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center"
+                  >
+                    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                      <CreditCard class="w-6 h-6 text-slate-400" />
+                    </div>
+                    <p class="text-sm font-medium text-slate-600">Select a payment method</p>
+                    <p class="text-xs text-slate-500 mt-1">Choose from the options above to see payment instructions</p>
+                  </div>
+
+                  <!-- Additional Details (Collapsible) -->
+                  <div v-if="selectedMethod" class="border border-slate-200 rounded-xl overflow-hidden">
+                    <button
+                      type="button"
+                      @click="showAdditionalDetails = !showAdditionalDetails"
+                      class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50/80 hover:bg-slate-100/80 transition-colors text-left"
+                    >
+                      <span class="text-xs sm:text-sm font-medium text-slate-700">
+                        Additional Details <span class="text-slate-400">(Optional)</span>
+                      </span>
+                      <ChevronDown
+                        class="w-4 h-4 text-slate-500 transition-transform duration-200"
+                        :class="{ 'rotate-180': showAdditionalDetails }"
+                      />
+                    </button>
+                    <div
+                      v-show="showAdditionalDetails"
+                      class="px-3 py-3 space-y-3 border-t border-slate-200 bg-white/90"
+                    >
+                      <div class="space-y-1.5">
+                        <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-600">
+                          Transaction Reference
+                        </label>
+                        <input
+                          id="transactionRef"
+                          v-model="paymentForm.transaction_reference"
+                          type="text"
+                          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white"
+                          placeholder="Enter transaction ID"
+                        />
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-600">
+                          Notes
+                        </label>
+                        <textarea
+                          id="paymentNotes"
+                          v-model="paymentForm.user_notes"
+                          rows="2"
+                          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white resize-none"
+                          placeholder="Any additional notes for the host"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
             </div>
           </div>
 
@@ -645,6 +742,12 @@ import {
   Tag,
   Trash2,
   ChevronDown,
+  Copy,
+  Check,
+  Smartphone,
+  Upload,
+  ExternalLink,
+  Banknote,
 } from 'lucide-vue-next'
 import { type Event, type EventTemplate, apiService } from '../services/api'
 import BrowseTemplateModal from './BrowseTemplateModal.vue'
@@ -745,6 +848,15 @@ const promoCodeError = ref<string | null>(null)
 
 // Additional details collapse state
 const showAdditionalDetails = ref(false)
+
+// Copy to clipboard state
+const copiedField = ref<string | null>(null)
+
+// Mobile device detection
+const isMobileDevice = computed(() => {
+  if (typeof window === 'undefined') return false
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+})
 
 // AbortController for request cancellation
 let abortController: AbortController | null = null
@@ -854,6 +966,19 @@ const showMessage = (type: 'success' | 'error', text: string): void => {
   setTimeout(() => {
     message.value = null
   }, 5000)
+}
+
+const copyToClipboard = async (text: string, fieldName: string): Promise<void> => {
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedField.value = fieldName
+    setTimeout(() => {
+      copiedField.value = null
+    }, 2000)
+  } catch (err) {
+    console.error('Failed to copy:', err)
+    showMessage('error', 'Failed to copy to clipboard')
+  }
 }
 
 // Template management methods
