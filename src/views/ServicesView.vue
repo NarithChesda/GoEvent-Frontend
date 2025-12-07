@@ -90,8 +90,8 @@
       <!-- Contact Us FAB -->
       <ContactUsFAB :has-fab-below="authStore.isAuthenticated" />
 
-      <!-- List Service FAB -->
-      <button
+      <!-- List Service FAB - Temporarily disabled until services API is ready -->
+      <!-- <button
         v-if="authStore.isAuthenticated"
         @click="handleListService"
         class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
@@ -103,7 +103,7 @@
         >
           List Your Service
         </div>
-      </button>
+      </button> -->
 
       <!-- Listing Detail Drawer -->
       <ListingDetailDrawer
@@ -249,10 +249,10 @@ const featuredVendors = ref<Vendor[]>([
     logo: 'https://images.unsplash.com/photo-1554080353-a576cf803bda?w=200&h=200&fit=crop',
     tagline: 'Capturing magical moments',
     description: 'Professional event photography services with over 10 years of experience. We specialize in weddings, corporate events, and special occasions.',
-    city: 'Bangkok',
-    country: 'Thailand',
+    city: 'Phnom Penh',
+    country: 'Cambodia',
     email: 'contact@elitephoto.com',
-    phone: '+66 81 234 5678',
+    phone: '+855 12 234 567',
     listingsCount: 5
   },
   {
@@ -261,10 +261,10 @@ const featuredVendors = ref<Vendor[]>([
     logo: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=200&h=200&fit=crop',
     tagline: 'Exquisite flavors for your events',
     description: 'Premium catering services for all types of events. From intimate gatherings to large corporate functions.',
-    city: 'Bangkok',
-    country: 'Thailand',
+    city: 'Phnom Penh',
+    country: 'Cambodia',
     email: 'hello@gourmetcatering.com',
-    phone: '+66 82 345 6789',
+    phone: '+855 12 345 678',
     listingsCount: 3
   },
   {
@@ -273,10 +273,10 @@ const featuredVendors = ref<Vendor[]>([
     logo: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&h=200&fit=crop',
     tagline: 'Transform your venue',
     description: 'Creative event decoration and styling. We bring your vision to life with stunning designs.',
-    city: 'Chiang Mai',
-    country: 'Thailand',
+    city: 'Siem Reap',
+    country: 'Cambodia',
     email: 'info@dreamdecor.com',
-    phone: '+66 83 456 7890',
+    phone: '+855 12 456 789',
     listingsCount: 4
   },
   {
@@ -285,10 +285,10 @@ const featuredVendors = ref<Vendor[]>([
     logo: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop',
     tagline: 'Sound that moves you',
     description: 'Live bands, DJs, and entertainment for every occasion. Making your event unforgettable.',
-    city: 'Phuket',
-    country: 'Thailand',
+    city: 'Sihanoukville',
+    country: 'Cambodia',
     email: 'book@harmonymusic.com',
-    phone: '+66 84 567 8901',
+    phone: '+855 12 567 890',
     listingsCount: 2
   }
 ])
@@ -307,7 +307,7 @@ const mockListings = ref<Listing[]>([
     vendorLogo: 'https://images.unsplash.com/photo-1554080353-a576cf803bda?w=200&h=200&fit=crop',
     vendorVerified: true,
     tags: ['wedding', 'photography', 'portrait', 'candid'],
-    serviceArea: 'Bangkok, Thailand',
+    serviceArea: 'Phnom Penh, Cambodia',
     views: 1250,
     contactClicks: 87,
     isFeatured: true,
@@ -331,8 +331,8 @@ const mockListings = ref<Listing[]>([
     vendorName: 'Gourmet Catering Co.',
     vendorLogo: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=200&h=200&fit=crop',
     vendorVerified: true,
-    tags: ['catering', 'corporate', 'buffet', 'thai cuisine'],
-    serviceArea: 'Bangkok Metropolitan',
+    tags: ['catering', 'corporate', 'buffet', 'khmer cuisine'],
+    serviceArea: 'Phnom Penh Metropolitan',
     views: 892,
     contactClicks: 54,
     isFeatured: true,
@@ -346,7 +346,7 @@ const mockListings = ref<Listing[]>([
     id: '3',
     title: 'Luxury Wedding Venue',
     tagline: 'Stunning riverside location with panoramic city views',
-    description: 'Our exclusive venue offers breathtaking views of the Chao Phraya River and Bangkok skyline. Perfect for intimate ceremonies or grand celebrations up to 500 guests. Includes dedicated event coordinator, customizable lighting, and premium sound system.',
+    description: 'Our exclusive venue offers breathtaking views of the Mekong River and Phnom Penh skyline. Perfect for intimate ceremonies or grand celebrations up to 500 guests. Includes dedicated event coordinator, customizable lighting, and premium sound system.',
     coverImage: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&h=600&fit=crop',
     category: 'Venue',
     priceDisplay: 'From $2,000',
@@ -354,7 +354,7 @@ const mockListings = ref<Listing[]>([
     vendorLogo: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=200&fit=crop',
     vendorVerified: true,
     tags: ['venue', 'wedding', 'riverside', 'luxury'],
-    serviceArea: 'Bangkok',
+    serviceArea: 'Phnom Penh',
     views: 2341,
     contactClicks: 156,
     isFeatured: false,
@@ -376,7 +376,7 @@ const mockListings = ref<Listing[]>([
     vendorLogo: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop',
     vendorVerified: true,
     tags: ['music', 'band', 'wedding', 'entertainment'],
-    serviceArea: 'All Thailand',
+    serviceArea: 'All Cambodia',
     views: 567,
     contactClicks: 32,
     isFeatured: false,
@@ -398,7 +398,7 @@ const mockListings = ref<Listing[]>([
     vendorLogo: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&h=200&fit=crop',
     vendorVerified: false,
     tags: ['flowers', 'wedding', 'decoration', 'bouquet'],
-    serviceArea: 'Bangkok, Nonthaburi',
+    serviceArea: 'Phnom Penh, Kandal',
     views: 423,
     contactClicks: 28,
     isFeatured: false,
@@ -420,7 +420,7 @@ const mockListings = ref<Listing[]>([
     vendorLogo: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=200&h=200&fit=crop',
     vendorVerified: true,
     tags: ['video', 'wedding', 'cinematic', 'drone'],
-    serviceArea: 'Thailand Wide',
+    serviceArea: 'Cambodia Wide',
     views: 789,
     contactClicks: 45,
     isFeatured: false,

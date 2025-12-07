@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div
         v-if="modelValue"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        class="fixed inset-0 bg-black/50 z-[998]"
         @click="closeDrawer"
       />
     </Transition>
@@ -257,8 +257,8 @@
                       v-model="form.currency"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                     >
-                      <option value="THB">THB (฿)</option>
                       <option value="USD">USD ($)</option>
+                      <option value="KHR">KHR (៛)</option>
                       <option value="EUR">EUR (€)</option>
                     </select>
                     <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -302,8 +302,8 @@
                       v-model="form.currency"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                     >
-                      <option value="THB">THB (฿)</option>
                       <option value="USD">USD ($)</option>
+                      <option value="KHR">KHR (៛)</option>
                       <option value="EUR">EUR (€)</option>
                     </select>
                     <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -348,7 +348,7 @@
                   <input
                     v-model="form.serviceArea"
                     type="text"
-                    placeholder="e.g., Bangkok, Thailand or Nationwide"
+                    placeholder="e.g., Phnom Penh, Cambodia or Nationwide"
                     class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
@@ -471,7 +471,7 @@
                   <input
                     v-model="form.phone"
                     type="tel"
-                    placeholder="+66 81 234 5678"
+                    placeholder="+855 12 345 678"
                     class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                   />
                 </div>
@@ -692,7 +692,7 @@ const form = reactive({
   priceType: 'fixed' as 'fixed' | 'range' | 'quote',
   priceMin: null as number | null,
   priceMax: null as number | null,
-  currency: 'THB',
+  currency: 'USD',
   priceUnit: '',
   serviceArea: '',
   tags: [] as string[],

@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div
         v-if="modelValue"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        class="fixed inset-0 bg-black/50 z-[998]"
         @click="close"
       />
     </Transition>
