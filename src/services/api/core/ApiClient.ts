@@ -235,6 +235,8 @@ export class ApiClient {
 
         if (data.detail) return String(data.detail)
         if (data.message) return String(data.message)
+        // Handle promo code validation error format: { valid: false, error: "..." }
+        if ('error' in data && typeof data.error === 'string') return data.error
         return 'Invalid request. Please check your input and try again.'
 
       case 401:

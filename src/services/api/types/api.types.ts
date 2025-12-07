@@ -47,6 +47,7 @@ export interface ErrorData {
   detail?: string
   message?: string
   code?: string
+  error?: string // For promo code validation errors: { valid: false, error: "..." }
   errors?: Record<string, string[]>
   [key: string]: unknown
 }
@@ -62,6 +63,7 @@ export function isErrorData(data: unknown): data is ErrorData {
       'detail' in data ||
       'message' in data ||
       'code' in data ||
+      'error' in data || // For promo code validation errors
       'errors' in data
     )
   )

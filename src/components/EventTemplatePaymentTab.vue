@@ -227,8 +227,22 @@
                     <div class="flex flex-wrap items-end justify-between gap-3">
                       <div>
                         <p class="text-xs sm:text-sm text-slate-600">Amount due</p>
-                        <p class="text-2xl sm:text-3xl font-semibold text-slate-900">
-                          ${{ templatePackageDetails?.price || '0.00' }}
+                        <div class="flex items-baseline gap-2">
+                          <p class="text-2xl sm:text-3xl font-semibold text-slate-900">
+                            ${{ finalAmount }}
+                          </p>
+                          <p
+                            v-if="promoDiscount"
+                            class="text-sm sm:text-base text-slate-400 line-through"
+                          >
+                            ${{ promoDiscount.original }}
+                          </p>
+                        </div>
+                        <p
+                          v-if="promoDiscount"
+                          class="text-xs text-emerald-600 font-medium mt-0.5"
+                        >
+                          You save ${{ promoDiscount.discount }}
                         </p>
                       </div>
                       <div class="text-right">
@@ -237,6 +251,70 @@
                         </p>
                         <p class="text-[11px] sm:text-xs text-slate-500">USD</p>
                       </div>
+                    </div>
+                  </section>
+
+                  <!-- Promo Code Section -->
+                  <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 space-y-3">
+                    <div class="flex items-center gap-2">
+                      <Tag class="w-4 h-4 text-[#1e90ff]" />
+                      <h3 class="text-sm sm:text-base font-semibold text-slate-800">Promo Code</h3>
+                    </div>
+
+                    <!-- Applied Promo Code Display -->
+                    <div
+                      v-if="appliedPromoCode"
+                      class="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2.5"
+                    >
+                      <div class="flex items-center gap-2 min-w-0">
+                        <CheckCircle class="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        <div class="min-w-0">
+                          <p class="text-sm font-medium text-emerald-700 truncate">
+                            {{ appliedPromoCode.code }}
+                          </p>
+                          <p class="text-[11px] text-emerald-600 truncate">
+                            {{ appliedPromoCode.discount_type === 'percentage'
+                              ? `${appliedPromoCode.discount_value}% off`
+                              : `$${appliedPromoCode.discount_value} off` }}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        @click="removePromoCode"
+                        class="p-1.5 hover:bg-emerald-100 rounded-lg transition-colors"
+                        title="Remove promo code"
+                      >
+                        <Trash2 class="w-4 h-4 text-emerald-600" />
+                      </button>
+                    </div>
+
+                    <!-- Promo Code Input -->
+                    <div v-else class="space-y-2">
+                      <div class="flex gap-2">
+                        <input
+                          v-model="promoCodeInput"
+                          type="text"
+                          class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase"
+                          placeholder="Enter promo code"
+                          @keyup.enter="validatePromoCode"
+                        />
+                        <button
+                          type="button"
+                          @click="validatePromoCode"
+                          :disabled="validatingPromoCode || !promoCodeInput.trim()"
+                          class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                          <Loader v-if="validatingPromoCode" class="w-3.5 h-3.5 animate-spin" />
+                          <span>{{ validatingPromoCode ? 'Checking...' : 'Apply' }}</span>
+                        </button>
+                      </div>
+                      <p
+                        v-if="promoCodeError"
+                        class="text-xs text-red-600"
+                      >
+                        {{ promoCodeError }}
+                      </p>
                     </div>
                   </section>
 
@@ -363,20 +441,7 @@
                       {{ error }}
                     </div>
 
-                    <div class="space-y-1.5">
-                      <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-700">
-                        Transaction Reference <span class="text-red-500">*</span>
-                      </label>
-                      <input
-                        id="transactionRef"
-                        v-model="paymentForm.transaction_reference"
-                        type="text"
-                        required
-                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90"
-                        placeholder="Enter transaction ID"
-                      />
-                    </div>
-
+                    <!-- Payment Receipt (Primary) -->
                     <div class="space-y-1.5">
                       <label for="paymentProof" class="text-xs sm:text-sm font-medium text-slate-700">
                         Payment Receipt <span class="text-slate-400">(Optional)</span>
@@ -392,17 +457,51 @@
                       <p class="text-[11px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
                     </div>
 
-                    <div class="space-y-1.5">
-                      <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-700">
-                        Notes <span class="text-slate-400">(Optional)</span>
-                      </label>
-                      <textarea
-                        id="paymentNotes"
-                        v-model="paymentForm.user_notes"
-                        rows="2"
-                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 resize-none"
-                        placeholder="Any additional notes for the host"
-                      ></textarea>
+                    <!-- Additional Details (Collapsible) -->
+                    <div class="border border-slate-200 rounded-xl overflow-hidden">
+                      <button
+                        type="button"
+                        @click="showAdditionalDetails = !showAdditionalDetails"
+                        class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50/80 hover:bg-slate-100/80 transition-colors text-left"
+                      >
+                        <span class="text-xs sm:text-sm font-medium text-slate-700">
+                          Additional Details <span class="text-slate-400">(Optional)</span>
+                        </span>
+                        <ChevronDown
+                          class="w-4 h-4 text-slate-500 transition-transform duration-200"
+                          :class="{ 'rotate-180': showAdditionalDetails }"
+                        />
+                      </button>
+                      <div
+                        v-show="showAdditionalDetails"
+                        class="px-3 py-3 space-y-3 border-t border-slate-200 bg-white/90"
+                      >
+                        <div class="space-y-1.5">
+                          <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-600">
+                            Transaction Reference
+                          </label>
+                          <input
+                            id="transactionRef"
+                            v-model="paymentForm.transaction_reference"
+                            type="text"
+                            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white"
+                            placeholder="Enter transaction ID"
+                          />
+                        </div>
+
+                        <div class="space-y-1.5">
+                          <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-600">
+                            Notes
+                          </label>
+                          <textarea
+                            id="paymentNotes"
+                            v-model="paymentForm.user_notes"
+                            rows="2"
+                            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white resize-none"
+                            placeholder="Any additional notes for the host"
+                          ></textarea>
+                        </div>
+                      </div>
                     </div>
                   </section>
             </div>
@@ -457,13 +556,13 @@
               <form @submit.prevent="updatePayment" class="space-y-4 sm:space-y-6">
                 <div>
                   <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                    Transaction Reference <span class="text-red-500">*</span>
+                    Transaction Reference <span class="text-slate-400">(Optional)</span>
                   </label>
                   <input
                     v-model="updateForm.transaction_reference"
                     type="text"
-                    required
                     class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm text-sm sm:text-base"
+                    placeholder="Enter transaction ID"
                   />
                 </div>
 
@@ -543,6 +642,9 @@ import {
   Pencil,
   ArrowRight,
   Loader,
+  Tag,
+  Trash2,
+  ChevronDown,
 } from 'lucide-vue-next'
 import { type Event, type EventTemplate, apiService } from '../services/api'
 import BrowseTemplateModal from './BrowseTemplateModal.vue'
@@ -553,6 +655,27 @@ import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplate
 import { useNotifications } from '../composables/useNotifications'
 import { useTemplateLoader } from '../composables/useTemplateLoader'
 import type { Payment, PaymentMethod, PaymentFormData, UpdateFormData } from '../types/payment'
+
+// Promo code types
+interface PromoCodeValidation {
+  valid: boolean
+  promo_code?: {
+    id: string
+    code: string
+    description: string
+    discount_type: 'percentage' | 'fixed'
+    discount_value: string
+    max_discount_amount: string | null
+    minimum_purchase_amount: string
+    valid_until: string | null
+  }
+  calculation?: {
+    original_amount: string
+    discount_amount: string
+    final_amount: string
+  }
+  error?: string
+}
 
 // Types
 interface Props {
@@ -612,6 +735,16 @@ const updateForm = ref<UpdateFormData>({
 // File inputs
 const fileInput = ref<HTMLInputElement | null>(null)
 const updateFileInput = ref<HTMLInputElement | null>(null)
+
+// Promo code state
+const promoCodeInput = ref('')
+const validatingPromoCode = ref(false)
+const appliedPromoCode = ref<PromoCodeValidation['promo_code'] | null>(null)
+const promoDiscount = ref<{ original: string; discount: string; final: string } | null>(null)
+const promoCodeError = ref<string | null>(null)
+
+// Additional details collapse state
+const showAdditionalDetails = ref(false)
 
 // AbortController for request cancellation
 let abortController: AbortController | null = null
@@ -691,11 +824,7 @@ const currentPayment = computed(() => {
 const canStartNewPayment = computed(() => !currentPayment.value)
 
 const isFormValid = computed(() => {
-  return Boolean(
-    selectedMethod.value &&
-      paymentForm.value.transaction_reference.trim() &&
-      templatePackageDetails.value,
-  )
+  return Boolean(selectedMethod.value && templatePackageDetails.value)
 })
 
 // Helper functions
@@ -803,6 +932,8 @@ const closePaymentModal = () => {
     fileInput.value.value = ''
   }
   error.value = null
+  // Reset promo code state
+  removePromoCode()
 }
 
 const loadPaymentMethods = async (): Promise<void> => {
@@ -849,12 +980,15 @@ const openPaymentLink = (paymentLink: string): void => {
   }
 
   try {
-    const url = new URL(paymentLink)
-    if (!url.protocol) {
-      console.warn('Invalid protocol in payment link')
-      return
-    }
-    window.location.href = paymentLink
+    // Replace amount parameter with actual payment amount using regex
+    // This preserves the original URL structure for deep links
+    const actualAmount = finalAmount.value
+    const processedLink = paymentLink.replace(
+      /([?&])amount=[^&]*/,
+      `$1amount=${actualAmount}`
+    )
+
+    window.location.href = processedLink
   } catch (err) {
     console.error('Invalid payment link format:', err)
   }
@@ -867,6 +1001,81 @@ const handleImageError = (event: globalThis.Event): void => {
     img.style.display = 'none'
   }
 }
+
+// Promo code methods
+const validatePromoCode = async (): Promise<void> => {
+  const code = promoCodeInput.value.trim().toUpperCase()
+  if (!code) {
+    promoCodeError.value = 'Please enter a promo code'
+    return
+  }
+
+  if (!templatePackageDetails.value) {
+    promoCodeError.value = 'Please select a template first'
+    return
+  }
+
+  validatingPromoCode.value = true
+  promoCodeError.value = null
+
+  try {
+    const response = await apiService.post<PromoCodeValidation>(
+      '/api/payment/promo-codes/validate/',
+      {
+        code,
+        pricing_plan_id: templatePackageDetails.value.id,
+        amount: templatePackageDetails.value.price,
+      },
+    )
+
+    // Check if the response contains valid promo code data
+    if (response.success && response.data?.valid) {
+      appliedPromoCode.value = response.data.promo_code || null
+      if (response.data.calculation) {
+        promoDiscount.value = {
+          original: response.data.calculation.original_amount,
+          discount: response.data.calculation.discount_amount,
+          final: response.data.calculation.final_amount,
+        }
+      }
+      promoCodeInput.value = ''
+      showSuccess('Promo Code Applied', `Promo code "${code}" applied successfully!`)
+    } else {
+      // Handle validation failure - check for error in data or response message
+      // Backend returns: { valid: false, error: "error message" }
+      promoCodeError.value =
+        response.data?.error || response.message || 'Invalid promo code'
+    }
+  } catch (err: unknown) {
+    console.error('Error validating promo code:', err)
+    // Try to extract error message from the API error response
+    // The backend returns 400 with { valid: false, error: "..." }
+    if (err && typeof err === 'object' && 'response' in err) {
+      const errorResponse = err as { response?: { data?: { error?: string; valid?: boolean } } }
+      if (errorResponse.response?.data?.error) {
+        promoCodeError.value = errorResponse.response.data.error
+        return
+      }
+    }
+    promoCodeError.value = err instanceof Error ? err.message : 'Failed to validate promo code'
+  } finally {
+    validatingPromoCode.value = false
+  }
+}
+
+const removePromoCode = (): void => {
+  appliedPromoCode.value = null
+  promoDiscount.value = null
+  promoCodeError.value = null
+  promoCodeInput.value = ''
+}
+
+const finalAmount = computed(() => {
+  if (promoDiscount.value) {
+    return promoDiscount.value.final
+  }
+  return templatePackageDetails.value?.price || '0.00'
+})
 
 // Validation helpers
 const validateTransactionReference = (ref: string): string | null => {
@@ -955,16 +1164,19 @@ const submitPayment = async (): Promise<void> => {
 
   const templatePackage = templatePackageDetails.value
   if (!isFormValid.value || !templatePackage) {
-    error.value = 'Please fill in all required fields.'
-    showMessage('error', 'Please fill in all required fields')
+    error.value = 'Please select a payment method.'
+    showMessage('error', 'Please select a payment method')
     return
   }
 
-  const transactionRefError = validateTransactionReference(paymentForm.value.transaction_reference)
-  if (transactionRefError) {
-    error.value = transactionRefError
-    showMessage('error', transactionRefError)
-    return
+  // Only validate transaction reference if provided
+  if (paymentForm.value.transaction_reference.trim()) {
+    const transactionRefError = validateTransactionReference(paymentForm.value.transaction_reference)
+    if (transactionRefError) {
+      error.value = transactionRefError
+      showMessage('error', transactionRefError)
+      return
+    }
   }
 
   if (paymentForm.value.payment_proof) {
@@ -985,10 +1197,30 @@ const submitPayment = async (): Promise<void> => {
     formData.append('event', sanitizeInput(props.event.id))
     formData.append('pricing_plan', templatePackage.id.toString())
     formData.append('payment_method', selectedMethod.value!.id.toString())
-    formData.append('amount', templatePackage.price)
-    formData.append('original_price', templatePackage.price)
-    formData.append('transaction_reference', sanitizeInput(paymentForm.value.transaction_reference))
-    formData.append('user_notes', sanitizeInput(paymentForm.value.user_notes))
+
+    // Use promo-discounted amount if available
+    if (promoDiscount.value) {
+      formData.append('amount', promoDiscount.value.final)
+      formData.append('original_price', promoDiscount.value.original)
+      formData.append('promo_discount', promoDiscount.value.discount)
+    } else {
+      formData.append('amount', templatePackage.price)
+      formData.append('original_price', templatePackage.price)
+    }
+
+    // Include promo code string if applied (backend expects the code itself, not UUID)
+    if (appliedPromoCode.value?.code) {
+      formData.append('promo_code_string', appliedPromoCode.value.code)
+    }
+
+    // Only include transaction_reference if provided
+    if (paymentForm.value.transaction_reference.trim()) {
+      formData.append('transaction_reference', sanitizeInput(paymentForm.value.transaction_reference))
+    }
+
+    if (paymentForm.value.user_notes.trim()) {
+      formData.append('user_notes', sanitizeInput(paymentForm.value.user_notes))
+    }
 
     if (paymentForm.value.payment_proof) {
       formData.append('payment_proof', paymentForm.value.payment_proof)
@@ -1010,17 +1242,16 @@ const submitPayment = async (): Promise<void> => {
       payment_proof: null,
     }
 
+    // Reset promo code state
+    removePromoCode()
+
     if (fileInput.value) {
       fileInput.value.value = ''
     }
 
     await refreshPayments()
 
-    const successMessage = paymentForm.value.payment_proof
-      ? 'Your payment has been submitted successfully and is pending review.'
-      : 'Your payment has been submitted successfully. Please upload your payment receipt later for verification.'
-
-    showSuccess('Payment Submitted', successMessage)
+    showSuccess('Payment Submitted', 'Your payment has been submitted successfully and is pending review.')
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : 'Error submitting payment. Please try again.'
@@ -1045,11 +1276,14 @@ const startUpdatePayment = (payment: Payment) => {
 const updatePayment = async (): Promise<void> => {
   if (!paymentToUpdate.value || updatingPayment.value) return
 
-  const transactionRefError = validateTransactionReference(updateForm.value.transaction_reference)
-  if (transactionRefError) {
-    error.value = transactionRefError
-    showMessage('error', transactionRefError)
-    return
+  // Only validate transaction reference if provided
+  if (updateForm.value.transaction_reference.trim()) {
+    const transactionRefError = validateTransactionReference(updateForm.value.transaction_reference)
+    if (transactionRefError) {
+      error.value = transactionRefError
+      showMessage('error', transactionRefError)
+      return
+    }
   }
 
   if (updateForm.value.payment_proof) {
@@ -1066,8 +1300,15 @@ const updatePayment = async (): Promise<void> => {
 
   try {
     const formData = new FormData()
-    formData.append('transaction_reference', sanitizeInput(updateForm.value.transaction_reference))
-    formData.append('user_notes', sanitizeInput(updateForm.value.user_notes))
+
+    // Only include transaction_reference if provided
+    if (updateForm.value.transaction_reference.trim()) {
+      formData.append('transaction_reference', sanitizeInput(updateForm.value.transaction_reference))
+    }
+
+    if (updateForm.value.user_notes.trim()) {
+      formData.append('user_notes', sanitizeInput(updateForm.value.user_notes))
+    }
 
     if (updateForm.value.payment_proof) {
       formData.append('payment_proof', updateForm.value.payment_proof)
