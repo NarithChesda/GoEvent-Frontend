@@ -226,38 +226,38 @@
 
                   <!-- Order Summary & Promo Code - Combined Row -->
                   <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div class="flex flex-row items-center gap-2 sm:gap-3">
                       <!-- Amount Display -->
-                      <div class="flex items-center gap-3 sm:flex-shrink-0">
+                      <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                         <div>
-                          <p class="text-[11px] text-slate-500 uppercase tracking-wide">{{ templatePackageDetails?.name || 'Total' }}</p>
-                          <div class="flex items-baseline gap-1.5">
-                            <p class="text-xl font-bold text-slate-900">${{ finalAmount }}</p>
-                            <p v-if="promoDiscount" class="text-xs text-slate-400 line-through">${{ promoDiscount.original }}</p>
+                          <p class="text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wide">{{ templatePackageDetails?.name || 'Total' }}</p>
+                          <div class="flex items-baseline gap-1">
+                            <p class="text-base sm:text-xl font-bold text-slate-900">${{ finalAmount }}</p>
+                            <p v-if="promoDiscount" class="text-[10px] sm:text-xs text-slate-400 line-through">${{ promoDiscount.original }}</p>
                           </div>
                         </div>
                         <div
                           v-if="promoDiscount"
-                          class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-medium whitespace-nowrap"
+                          class="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] sm:text-[11px] font-medium whitespace-nowrap"
                         >
                           -${{ promoDiscount.discount }}
                         </div>
                       </div>
 
                       <!-- Divider -->
-                      <div class="hidden sm:block w-px h-10 bg-slate-200"></div>
+                      <div class="w-px h-8 sm:h-10 bg-slate-200 flex-shrink-0"></div>
 
                       <!-- Promo Code Input/Display -->
                       <div class="flex-1 min-w-0">
                         <!-- Applied Promo Code -->
                         <div
                           v-if="appliedPromoCode"
-                          class="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-2.5 py-2"
+                          class="flex items-center justify-between gap-1.5 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-2 sm:px-2.5 py-1.5 sm:py-2"
                         >
-                          <div class="flex items-center gap-2 min-w-0">
-                            <CheckCircle class="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                            <span class="text-sm font-medium text-emerald-700 truncate">{{ appliedPromoCode.code }}</span>
-                            <span class="text-[11px] text-emerald-600 flex-shrink-0">
+                          <div class="flex items-center gap-1 sm:gap-2 min-w-0">
+                            <CheckCircle class="w-3 sm:w-4 h-3 sm:h-4 text-emerald-500 flex-shrink-0" />
+                            <span class="text-xs sm:text-sm font-medium text-emerald-700 truncate">{{ appliedPromoCode.code }}</span>
+                            <span class="text-[10px] sm:text-[11px] text-emerald-600 flex-shrink-0">
                               ({{ appliedPromoCode.discount_type === 'percentage'
                                 ? `${appliedPromoCode.discount_value}%`
                                 : `$${appliedPromoCode.discount_value}` }})
@@ -266,23 +266,23 @@
                           <button
                             type="button"
                             @click="removePromoCode"
-                            class="p-1 hover:bg-emerald-100 rounded-md transition-colors flex-shrink-0"
+                            class="p-0.5 sm:p-1 hover:bg-emerald-100 rounded-md transition-colors flex-shrink-0"
                             title="Remove promo code"
                           >
-                            <X class="w-3.5 h-3.5 text-emerald-600" />
+                            <X class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-emerald-600" />
                           </button>
                         </div>
 
                         <!-- Promo Code Input -->
                         <div v-else class="space-y-1">
-                          <div class="flex gap-2">
-                            <div class="relative flex-1">
-                              <Tag class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                          <div class="flex gap-1.5 sm:gap-2">
+                            <div class="relative flex-1 min-w-0">
+                              <Tag class="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-400" />
                               <input
                                 v-model="promoCodeInput"
                                 type="text"
-                                class="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase placeholder:normal-case"
-                                placeholder="Promo code"
+                                class="w-full pl-6 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase placeholder:normal-case"
+                                placeholder="Promo"
                                 @keyup.enter="validatePromoCode"
                               />
                             </div>
@@ -290,13 +290,13 @@
                               type="button"
                               @click="validatePromoCode"
                               :disabled="validatingPromoCode || !promoCodeInput.trim()"
-                              class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 flex-shrink-0"
+                              class="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
                             >
-                              <Loader v-if="validatingPromoCode" class="w-3.5 h-3.5 animate-spin" />
+                              <Loader v-if="validatingPromoCode" class="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-spin" />
                               <span>{{ validatingPromoCode ? '...' : 'Apply' }}</span>
                             </button>
                           </div>
-                          <p v-if="promoCodeError" class="text-[11px] text-red-600 pl-1">{{ promoCodeError }}</p>
+                          <p v-if="promoCodeError" class="text-[10px] sm:text-[11px] text-red-600 pl-1">{{ promoCodeError }}</p>
                         </div>
                       </div>
                     </div>
