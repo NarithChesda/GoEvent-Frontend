@@ -49,11 +49,22 @@
         </span>
       </div>
 
-      <!-- Selection Indicator -->
-      <div v-if="isSelected" class="absolute top-2 left-2 z-10">
+      <!-- Selection Indicator with Owned Badge -->
+      <div v-if="isSelected" class="absolute top-2 left-2 z-10 flex items-center gap-1.5">
         <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center shadow-lg">
           <Check class="w-4 h-4 text-white" />
         </div>
+        <span v-if="isOwned" class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-500 text-white shadow-lg">
+          Owned
+        </span>
+      </div>
+
+      <!-- Owned Badge (when not selected) -->
+      <div v-else-if="isOwned" class="absolute top-2 left-2 z-10">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-white shadow-lg">
+          <Check class="w-3 h-3" />
+          Owned
+        </span>
       </div>
 
       <!-- Minimal Info Overlay -->
@@ -102,9 +113,12 @@ import TemplateCategoryBadge from './TemplateCategoryBadge.vue'
 interface Props {
   template: EventTemplate
   isSelected: boolean
+  isOwned?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isOwned: false,
+})
 
 const emit = defineEmits<{
   select: [template: EventTemplate]

@@ -264,6 +264,7 @@
                     v-if="filteredTemplates.length > 0"
                     :templates="filteredTemplates"
                     :selected-template-id="selectedTemplateId"
+                    :owned-template-ids="ownedTemplateIds"
                     @select-template="handleTemplateSelection"
                   />
 
@@ -309,7 +310,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { watch, onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
 import type { EventTemplate } from '../services/api'
 import { useTemplateApi } from '../composables/useTemplateApi'
 import { useTemplateFiltering } from '../composables/useTemplateFiltering'
@@ -344,6 +345,7 @@ interface Props {
   isOpen: boolean
   eventId: string
   eventCategory?: number
+  ownedTemplateNames?: Set<string>
 }
 
 const props = defineProps<Props>()
@@ -376,16 +378,49 @@ const {
   resetState,
 } = useTemplateApi()
 
+/**
+ * Compute owned template IDs by matching template names from payment history.
+ * Uses normalized names (lowercase, trimmed) for robust matching.
+ */
+const ownedTemplateIds = computed(() => {
+  if (!props.ownedTemplateNames || props.ownedTemplateNames.size === 0) {
+    return new Set<number>()
+  }
+  const ids = new Set<number>()
+  for (const template of templates.value) {
+    // Normalize template name the same way as payment names
+    const normalizedName = template.name.trim().toLowerCase()
+    if (props.ownedTemplateNames.has(normalizedName)) {
+      ids.add(template.id)
+    }
+  }
+  return ids
+})
+
 const {
   searchQuery,
   selectedCategoryId,
   selectedPlan,
   categories,
-  filteredTemplates,
+  filteredTemplates: baseFilteredTemplates,
   clearFilters,
   setCategoryFilter,
   setPlanFilter,
 } = useTemplateFiltering(templates)
+
+// Sort filtered templates: owned templates first
+const filteredTemplates = computed(() => {
+  if (ownedTemplateIds.value.size === 0) {
+    return baseFilteredTemplates.value
+  }
+  return [...baseFilteredTemplates.value].sort((a, b) => {
+    const aOwned = ownedTemplateIds.value.has(a.id)
+    const bOwned = ownedTemplateIds.value.has(b.id)
+    if (aOwned && !bOwned) return -1
+    if (!aOwned && bOwned) return 1
+    return 0
+  })
+})
 
 const { selectedTemplateId, selectedTemplate, hasSelection, selectTemplate, clearSelection } =
   useTemplateSelection(templates)

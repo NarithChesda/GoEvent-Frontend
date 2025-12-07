@@ -5,6 +5,7 @@
       :key="template.id"
       :template="template"
       :is-selected="selectedTemplateId === template.id"
+      :is-owned="props.ownedTemplateIds.has(template.id)"
       @select="handleTemplateSelect"
     />
   </div>
@@ -17,9 +18,12 @@ import TemplateCard from './TemplateCard.vue'
 interface Props {
   templates: EventTemplate[]
   selectedTemplateId: number | null
+  ownedTemplateIds?: Set<number>
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  ownedTemplateIds: () => new Set<number>(),
+})
 
 const emit = defineEmits<{
   selectTemplate: [template: EventTemplate]
