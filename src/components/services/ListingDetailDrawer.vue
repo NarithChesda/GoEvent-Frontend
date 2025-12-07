@@ -247,8 +247,12 @@ watch(
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
     } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      // Defer body style resets until after transition completes (350ms)
+      // to prevent layout recalculation during animation
+      setTimeout(() => {
+        document.body.style.overflow = ''
+        document.body.style.paddingRight = ''
+      }, 350)
     }
   }
 )
@@ -277,13 +281,13 @@ watch(
 
 .slide-right-enter-from,
 .slide-right-leave-to {
-  transform: translateY(100%);
+  transform: translateY(100%) translateZ(0);
 }
 
 @media (min-width: 768px) {
   .slide-right-enter-from,
   .slide-right-leave-to {
-    transform: translateX(100%);
+    transform: translateX(100%) translateZ(0);
   }
 }
 </style>

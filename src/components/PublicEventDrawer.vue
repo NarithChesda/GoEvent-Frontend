@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div
         v-if="modelValue"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        class="fixed inset-0 bg-black/50 z-[998]"
         @click="closeDrawer"
       />
     </Transition>
@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="modelValue"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] lg:w-[580px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] lg:w-[580px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden will-change-transform"
         @click.stop
       >
         <!-- Header -->
@@ -808,8 +808,12 @@ watch(
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
     } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      // Defer body style resets until after transition completes (350ms)
+      // to prevent layout recalculation during animation
+      setTimeout(() => {
+        document.body.style.overflow = ''
+        document.body.style.paddingRight = ''
+      }, 350)
     }
   }
 )
@@ -844,13 +848,13 @@ onMounted(() => {
 
 .slide-right-enter-from,
 .slide-right-leave-to {
-  transform: translateY(100%);
+  transform: translateY(100%) translateZ(0);
 }
 
 @media (min-width: 768px) {
   .slide-right-enter-from,
   .slide-right-leave-to {
-    transform: translateX(100%);
+    transform: translateX(100%) translateZ(0);
   }
 }
 
