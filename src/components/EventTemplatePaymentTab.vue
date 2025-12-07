@@ -988,18 +988,15 @@ const openPaymentLink = (paymentLink: string): void => {
       `$1amount=${actualAmount}`
     )
 
-    // Create a temporary anchor element and simulate a click
-    // This approach works better across different mobile browsers (Chrome, Samsung Internet, etc.)
-    // as it mimics a natural user click on a link rather than programmatic navigation
-    const anchor = document.createElement('a')
-    anchor.href = processedLink
-    anchor.target = '_blank'
-    anchor.rel = 'noopener noreferrer'
+    // For ABA pay short links, open in new window/tab to trigger app deep link
+    // Using window.open with specific features helps trigger the OS app handler
+    // rather than navigating within the current browser context
+    const newWindow = window.open(processedLink, '_blank', 'noopener,noreferrer')
 
-    // Append to body, click, and remove
-    document.body.appendChild(anchor)
-    anchor.click()
-    document.body.removeChild(anchor)
+    // Fallback: if popup was blocked, try location change
+    if (!newWindow) {
+      window.location.href = processedLink
+    }
   } catch (err) {
     console.error('Invalid payment link format:', err)
   }
