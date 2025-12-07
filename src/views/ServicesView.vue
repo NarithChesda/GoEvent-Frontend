@@ -87,9 +87,6 @@
       <!-- Footer -->
       <AppFooter />
 
-      <!-- Contact Us FAB -->
-      <ContactUsFAB :has-fab-below="authStore.isAuthenticated" />
-
       <!-- List Service FAB - Temporarily disabled until services API is ready -->
       <!-- <button
         v-if="authStore.isAuthenticated"
@@ -152,7 +149,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Plus, CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import ContactUsFAB from '@/components/ContactUsFAB.vue'
 import { MobileTopBar } from '@/components/events'
 import {
   FeaturedVendors,
