@@ -122,23 +122,35 @@
         </button>
       </div>
 
+      <!-- Confirmed Status -->
       <div
         v-if="currentPayment.status === 'confirmed'"
-        class="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-xs sm:text-sm text-emerald-700"
+        class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3"
       >
-        <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
-        <span class="text-center">
-          Payment confirmed for {{ currentPayment.plan_name || templatePackageDetails?.name || 'this package' }}. You're all set!
-        </span>
+        <CheckCircle class="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-emerald-800">Payment Confirmed</p>
+          <p class="text-xs text-emerald-600 mt-0.5">
+            {{ currentPayment.plan_name || templatePackageDetails?.name || 'Template package' }} - ${{ currentPayment.amount }}
+          </p>
+        </div>
       </div>
+
+      <!-- Pending Status -->
       <div
         v-else
-        class="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-xs sm:text-sm text-slate-600"
+        class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3"
       >
-        <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
-        <span class="text-center">
-          Your payment is awaiting review. You can update the existing payment instead of creating a new one.
-        </span>
+        <Clock class="w-5 h-5 text-amber-500 flex-shrink-0" />
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-amber-800">Payment Pending Review</p>
+          <p class="text-xs text-amber-600 mt-0.5">
+            {{ currentPayment.plan_name || templatePackageDetails?.name || 'Template package' }} - ${{ currentPayment.amount }}
+          </p>
+          <p class="text-xs text-slate-500 mt-1">
+            You can update the existing payment or submit a new one.
+          </p>
+        </div>
       </div>
     </div>
 

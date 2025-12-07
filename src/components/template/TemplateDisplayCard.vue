@@ -25,14 +25,17 @@
               <Package class="w-3.5 h-3.5 mr-1.5" />
               {{ template.package_plan?.name || 'Template Plan' }}
             </span>
-            <span
-              v-if="status === 'preview'"
-              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
-            >
-              <Eye class="w-3.5 h-3.5 mr-1.5" />
-              Preview
-            </span>
           </div>
+          <!-- Play button overlay for video preview -->
+          <button
+            v-if="template.youtube_preview_url"
+            @click="$emit('preview-video', template.youtube_preview_url)"
+            class="absolute inset-0 flex items-center justify-center group"
+          >
+            <div class="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200">
+              <PlayCircle class="w-8 h-8 text-slate-800" />
+            </div>
+          </button>
         </div>
         <div
           v-else
@@ -47,16 +50,13 @@
       <div class="flex-1 flex flex-col">
         <!-- Header -->
         <div class="mb-4">
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex-1 min-w-0">
               <h3 class="text-xl sm:text-2xl font-bold text-slate-900">
                 {{ template.name }}
               </h3>
               <p class="text-sm sm:text-base text-slate-600 mt-1">
                 {{ template.package_plan?.name || 'Plan' }}
-                <span v-if="status === 'preview' && template.package_plan?.price">
-                  &bull; ${{ template.package_plan.price }}
-                </span>
               </p>
             </div>
             <span
@@ -68,18 +68,23 @@
             </span>
             <span
               v-else-if="status === 'preview'"
-              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 flex-shrink-0"
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800 flex-shrink-0"
             >
               <Eye class="w-4 h-4 mr-1.5" />
               Preview
             </span>
+          </div>
+          <!-- Price display for preview mode -->
+          <div v-if="status === 'preview' && template.package_plan?.price" class="mt-2">
+            <span class="text-2xl sm:text-3xl font-bold text-slate-900">${{ template.package_plan.price }}</span>
+            <span class="text-sm text-slate-500 ml-2">one-time</span>
           </div>
         </div>
 
         <!-- Features -->
         <div v-if="template.package_plan?.features" class="flex-1">
           <h4 class="text-base font-semibold text-slate-900 mb-3">Included Features:</h4>
-          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <li
               v-for="feature in template.package_plan.features"
               :key="feature"
@@ -89,33 +94,38 @@
               <span>{{ feature }}</span>
             </li>
           </ul>
+        </div>
 
-          <!-- Action Buttons (only show if there are actions) -->
-          <div
-            v-if="template.youtube_preview_url || (status === 'preview' && showPaymentButton)"
-            class="pt-4 border-t border-slate-200 space-y-3"
-          >
-            <div class="flex gap-2">
-              <button
-                v-if="template.youtube_preview_url"
-                @click="$emit('preview-video', template.youtube_preview_url)"
-                class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 laptop-sm:py-2.5 laptop-sm:px-5 desktop:py-3.5 desktop:px-8 2xl:py-4 2xl:px-10 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-xs laptop-sm:text-sm desktop:text-base 2xl:text-lg"
-              >
-                <PlayCircle class="w-4 h-4 laptop-sm:w-5 laptop-sm:h-5 desktop:w-6 desktop:h-6 2xl:w-7 2xl:h-7 mr-1.5 laptop-sm:mr-2 desktop:mr-2.5 2xl:mr-3" />
-                Preview
-              </button>
-              <button
-                v-if="status === 'preview' && showPaymentButton"
-                @click="$emit('make-payment')"
-                class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 laptop-sm:py-2.5 laptop-sm:px-5 desktop:py-3.5 desktop:px-8 2xl:py-4 2xl:px-10 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-xs laptop-sm:text-sm desktop:text-base 2xl:text-lg"
-              >
-                <CreditCard class="w-4 h-4 laptop-sm:w-5 laptop-sm:h-5 desktop:w-6 desktop:h-6 2xl:w-7 2xl:h-7 mr-1.5 laptop-sm:mr-2 desktop:mr-2.5 2xl:mr-3" />
-                Make Payment
-              </button>
-            </div>
-            <p v-if="status === 'preview' && showPaymentButton" class="text-xs laptop-sm:text-sm desktop:text-base 2xl:text-lg text-slate-500 text-center">
+        <!-- Action Buttons - Always at bottom -->
+        <div class="mt-6 pt-4 border-t border-slate-200">
+          <!-- Preview Mode: Make Payment CTA -->
+          <div v-if="status === 'preview' && showPaymentButton">
+            <button
+              @click="$emit('make-payment')"
+              class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm sm:text-base"
+            >
+              <CreditCard class="w-5 h-5 mr-2" />
+              Make Payment
+            </button>
+            <p class="text-xs sm:text-sm text-slate-500 text-center mt-2">
               Complete payment to activate this template
             </p>
+          </div>
+
+          <!-- Active Mode: Just show video preview button if available -->
+          <div v-else-if="status === 'active' && template.youtube_preview_url">
+            <button
+              @click="$emit('preview-video', template.youtube_preview_url)"
+              class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center text-sm"
+            >
+              <PlayCircle class="w-5 h-5 mr-2" />
+              Watch Template Preview
+            </button>
+          </div>
+
+          <!-- Active Mode: No video available -->
+          <div v-else-if="status === 'active'" class="text-center">
+            <p class="text-sm text-slate-500">Template is active and ready to use</p>
           </div>
         </div>
       </div>
