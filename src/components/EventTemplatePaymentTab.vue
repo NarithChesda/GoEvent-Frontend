@@ -988,7 +988,15 @@ const openPaymentLink = (paymentLink: string): void => {
       `$1amount=${actualAmount}`
     )
 
-    window.location.href = processedLink
+    // For ABA pay short links, open in new window/tab to trigger app deep link
+    // Using window.open with specific features helps trigger the OS app handler
+    // rather than navigating within the current browser context
+    const newWindow = window.open(processedLink, '_blank', 'noopener,noreferrer')
+
+    // Fallback: if popup was blocked, try location change
+    if (!newWindow) {
+      window.location.href = processedLink
+    }
   } catch (err) {
     console.error('Invalid payment link format:', err)
   }
