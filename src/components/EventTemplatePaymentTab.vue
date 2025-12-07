@@ -1105,23 +1105,12 @@ const openPaymentLink = (paymentLink: string): void => {
   }
 
   try {
-    // Replace amount parameter with actual payment amount using regex
-    // This preserves the original URL structure for deep links
-    const actualAmount = finalAmount.value
-    const processedLink = paymentLink.replace(
-      /([?&])amount=[^&]*/,
-      `$1amount=${actualAmount}`
-    )
-
-    // For ABA pay short links, open in new window/tab to trigger app deep link
-    // Using window.open with specific features helps trigger the OS app handler
-    // rather than navigating within the current browser context
-    const newWindow = window.open(processedLink, '_blank', 'noopener,noreferrer')
-
-    // Fallback: if popup was blocked, try location change
-    if (!newWindow) {
-      window.location.href = processedLink
+    const url = new URL(paymentLink)
+    if (!url.protocol) {
+      console.warn('Invalid protocol in payment link')
+      return
     }
+    window.location.href = paymentLink
   } catch (err) {
     console.error('Invalid payment link format:', err)
   }
