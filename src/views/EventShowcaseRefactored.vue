@@ -46,6 +46,7 @@
         :should-skip-to-main-content="shouldSkipToMainContent"
         :video-state-preserved="videoStatePreserved"
         :content-top-position="event.template_assets?.cover_content_top_position"
+        :cover-stage-layout="event.template_assets?.cover_stage_layout"
         :cover-top-decoration="event.template_assets?.assets?.cover_top_decoration"
         :cover-bottom-decoration="event.template_assets?.assets?.cover_bottom_decoration"
         :cover-left-decoration="event.template_assets?.assets?.cover_left_decoration"

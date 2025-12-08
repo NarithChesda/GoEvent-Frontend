@@ -60,6 +60,31 @@ export interface TemplateAssets {
   [key: string]: unknown
 }
 
+/**
+ * Cover stage layout configuration
+ * All values are optional with sensible defaults applied in components
+ */
+export interface CoverStageLayout {
+  // Container positioning (vh units)
+  contentTopPosition?: number       // default: 23.5
+  innerContainerHeight?: number     // default: 53
+
+  // Row heights (% of inner container)
+  eventTitleHeight?: number         // default: 18.75
+  logoHeight?: number               // default: 48
+  inviteTextHeight?: number         // default: 8.75
+  guestNameHeight?: number          // default: 16
+
+  // Swipe arrow positioning (vh units)
+  swipeArrowBottom?: number         // default: 5
+
+  // Decoration z-indexes
+  leftDecorationZIndex?: number     // default: 24
+  rightDecorationZIndex?: number    // default: 24
+  topDecorationZIndex?: number      // default: 25
+  bottomDecorationZIndex?: number   // default: 25
+}
+
 export interface BrowseTemplatesResponse {
   message: string
   templates: EventTemplate[]

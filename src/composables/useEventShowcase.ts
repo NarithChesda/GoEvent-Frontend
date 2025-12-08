@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 
 // Imports - Services & API
 import { eventsService, type EventPaymentMethod } from '../services/api'
+import type { CoverStageLayout } from '../services/api/types/template.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -136,7 +137,10 @@ export interface TemplateAssets {
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
+  /** @deprecated Use cover_stage_layout.contentTopPosition instead */
   cover_content_top_position?: number
+  /** Comprehensive cover stage layout configuration */
+  cover_stage_layout?: CoverStageLayout
   display_liquid_glass_background?: boolean
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null

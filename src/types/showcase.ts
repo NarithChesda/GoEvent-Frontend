@@ -3,6 +3,8 @@
  * These types ensure type safety across the refactored showcase system
  */
 
+import type { CoverStageLayout } from '@/services/api/types/template.types'
+
 // Core showcase data types
 export interface Host {
   id: number
@@ -85,7 +87,10 @@ export interface TemplateAssets {
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
+  /** @deprecated Use cover_stage_layout.contentTopPosition instead */
   cover_content_top_position?: number
+  /** Comprehensive cover stage layout configuration */
+  cover_stage_layout?: CoverStageLayout
   display_liquid_glass_background?: boolean
 }
 

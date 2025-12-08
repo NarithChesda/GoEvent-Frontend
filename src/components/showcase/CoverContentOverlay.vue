@@ -7,8 +7,9 @@
       v-if="coverLeftDecorationUrl"
       :src="coverLeftDecorationUrl"
       alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] cover-decoration-left"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none cover-decoration-left"
       :class="{ 'slide-out-to-left': isContentHidden }"
+      :style="{ zIndex: decorationZIndexes.left }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -16,8 +17,9 @@
       v-if="coverRightDecorationUrl"
       :src="coverRightDecorationUrl"
       alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] cover-decoration-right"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none cover-decoration-right"
       :class="{ 'slide-out-to-right': isContentHidden }"
+      :style="{ zIndex: decorationZIndexes.right }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -25,8 +27,9 @@
       v-if="coverTopDecorationUrl"
       :src="coverTopDecorationUrl"
       alt="Top decoration"
-      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-top"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none cover-decoration-top"
       :class="{ 'slide-out-to-top': isContentHidden }"
+      :style="{ zIndex: decorationZIndexes.top }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -34,8 +37,9 @@
       v-if="coverBottomDecorationUrl"
       :src="coverBottomDecorationUrl"
       alt="Bottom decoration"
-      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] cover-decoration-bottom"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none cover-decoration-bottom"
       :class="{ 'slide-out-to-bottom': isContentHidden }"
+      :style="{ zIndex: decorationZIndexes.bottom }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -55,16 +59,15 @@
       style="z-index: 30; touch-action: none;"
     >
 
-    <!-- Inner Container with Dynamic Top Position -->
+    <!-- Inner Container with Dynamic Top Position and Height -->
     <div
       class="inner-container-rows flex flex-col w-full mx-auto absolute"
-      style="height: 53vh"
       :style="containerStyle"
     >
-      <!-- Event Title Row: 18.75% -->
+      <!-- Event Title Row -->
       <div
         class="content-row-header flex items-center justify-center animate-fadeIn"
-        style="height: 18.75%"
+        :style="rowStyles.eventTitle"
       >
         <div
           class="header-content-container flex items-center justify-center px-4 w-full"
@@ -79,10 +82,10 @@
         </div>
       </div>
 
-      <!-- Event Logo Row: 48% -->
+      <!-- Event Logo Row -->
       <div
         class="content-row-logo flex items-center justify-center animate-fadeIn animation-delay-200"
-        style="height: 48%"
+        :style="rowStyles.logo"
       >
         <div class="flex items-center justify-center h-full w-full px-4">
           <img
@@ -106,11 +109,11 @@
         </div>
       </div>
 
-      <!-- Invite Text Row: 8.75% -->
+      <!-- Invite Text Row -->
       <div
         v-if="guestName"
         class="content-row-invite flex items-center justify-center animate-fadeIn animation-delay-400"
-        style="height: 8.75%; overflow: visible;"
+        :style="{ ...rowStyles.inviteText, overflow: 'visible' }"
       >
         <div
           class="invite-content-container flex items-center justify-center px-4 w-full"
@@ -122,12 +125,12 @@
         </div>
       </div>
 
-      <!-- Guest Name Row: 16% -->
+      <!-- Guest Name Row -->
       <div
         v-if="guestName"
         ref="guestContainerRef"
         class="content-row-guest flex items-center justify-center"
-        style="height: 16%; overflow: visible; z-index: 100; position: relative;"
+        :style="{ ...rowStyles.guestName, overflow: 'visible', zIndex: 100, position: 'relative' }"
       >
         <div
           class="guest-content-container flex items-center justify-center px-4 w-full"
@@ -173,7 +176,7 @@
     </div>
 
     <!-- Swipe Up Arrow Indicator -->
-    <div class="swipe-up-arrow animation-delay-800">
+    <div class="swipe-up-arrow animation-delay-800" :style="swipeArrowStyle">
       <div class="arrow-stack">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -208,6 +211,8 @@ import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
+import type { CoverStageLayout } from '../../services/api/types/template.types'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
 
 // Asset protection (production-only)
@@ -255,7 +260,10 @@ interface Props {
   shouldShowButtonLoading: boolean
   isInteractionDisabled?: boolean // Disables tap/swipe when true
   getMediaUrl: (url: string) => string
+  /** @deprecated Use coverStageLayout.contentTopPosition instead */
   contentTopPosition?: number // Vertical position in vh units (0-100)
+  /** Comprehensive cover stage layout configuration from backend */
+  coverStageLayout?: CoverStageLayout
   coverTopDecoration?: string | null
   coverBottomDecoration?: string | null
   coverLeftDecoration?: string | null
@@ -275,6 +283,17 @@ const {
   topDecorationUrl: coverTopDecorationUrl,
   bottomDecorationUrl: coverBottomDecorationUrl,
 } = useOptimizedDecorations(props, 'cover')
+
+// Cover stage layout configuration with backward compatibility
+const {
+  containerStyle,
+  rowStyles,
+  swipeArrowStyle,
+  decorationZIndexes,
+} = useCoverStageLayout(
+  computed(() => props.coverStageLayout),
+  computed(() => props.contentTopPosition) // Legacy fallback
+)
 
 // Touch gesture detection
 const touchStartY = ref(0)
@@ -401,15 +420,6 @@ const guestNameWords = computed(() => formattedGuestName.value?.split(/\s+/).fil
 // Detect if guest name is English (for character bounce animation)
 const isEnglishGuestName = computed(() => {
   return props.guestName ? /^[a-zA-Z\s\-'.,()&]+$/.test(props.guestName.trim()) : false
-})
-
-// Computed style for container positioning
-const containerStyle = computed(() => {
-  // Default to centered (23.5vh top position for 53vh content = roughly centered on 100vh screen)
-  const topPosition = props.contentTopPosition ?? 23.5
-  return {
-    top: `${topPosition}vh`,
-  }
 })
 
 // Computed property to process SVG content and add fill="currentColor"

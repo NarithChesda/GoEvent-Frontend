@@ -49,6 +49,7 @@
       :isInteractionDisabled="isEnvelopeInteractionDisabled"
       :getMediaUrl="getMediaUrl"
       :contentTopPosition="contentTopPosition"
+      :coverStageLayout="coverStageLayout"
       :coverTopDecoration="coverTopDecoration"
       :coverBottomDecoration="coverBottomDecoration"
       :coverLeftDecoration="coverLeftDecoration"
@@ -73,6 +74,7 @@ import {
   useCoverStageVideo,
   type ShowcaseStage,
 } from '../../composables/showcase/useCoverStageVideo'
+import type { CoverStageLayout } from '../../services/api/types/template.types'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 
@@ -122,7 +124,10 @@ interface Props {
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
   getMediaUrl: (url: string) => string
+  /** @deprecated Use coverStageLayout.contentTopPosition instead */
   contentTopPosition?: number // Vertical position in vh units (0-100)
+  /** Comprehensive cover stage layout configuration from backend */
+  coverStageLayout?: CoverStageLayout
   coverTopDecoration?: string | null
   coverBottomDecoration?: string | null
   coverLeftDecoration?: string | null
