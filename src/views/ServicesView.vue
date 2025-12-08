@@ -59,22 +59,46 @@
 
           <!-- Featured Vendors Section -->
           <FeaturedVendors
+            v-if="!isLoadingVendors && featuredVendors.length > 0"
             :vendors="featuredVendors"
             @vendor-click="openVendorProfile"
           />
 
+          <!-- Loading State for Listings -->
+          <div v-if="isLoadingListings && filteredListings.length === 0" class="py-12">
+            <div class="flex flex-col items-center justify-center gap-4">
+              <div class="w-12 h-12 border-4 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-slate-600">Loading services...</p>
+            </div>
+          </div>
+
           <!-- Service Listings Grid -->
           <ServiceListingsGrid
+            v-else
             :listings="filteredListings"
             :categories="serviceCategories"
             :selected-category="selectedCategory"
             :sort-by="sortBy"
             :sort-options="sortOptions"
+            :has-more="hasMore"
             @listing-click="openListingDetail"
             @load-more="loadMore"
             @category-change="selectedCategory = $event"
             @sort-change="sortBy = $event"
           />
+
+          <!-- Loading More State -->
+          <div v-if="isLoadingListings && filteredListings.length > 0" class="py-6">
+            <div class="flex justify-center">
+              <div class="w-8 h-8 border-4 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="!isLoadingListings && filteredListings.length === 0" class="py-12 text-center">
+            <p class="text-slate-600 text-lg">No services found.</p>
+            <p class="text-slate-500 text-sm mt-2">Try adjusting your filters or check back later.</p>
+          </div>
 
           <!-- Become a Vendor CTA -->
           <VendorCTA
@@ -145,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Plus, CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -162,17 +186,65 @@ import {
   type Listing
 } from '@/components/services'
 import { useAuthStore } from '@/stores/auth'
+import { useServices } from '@/composables/useServices'
 
 const authStore = useAuthStore()
 
+// Use the services composable
+const {
+  // State
+  featuredVendors,
+  selectedListing: composableSelectedListing,
+  selectedVendor: composableSelectedVendor,
+  vendorListings: composableVendorListings,
+  selectedCategory,
+  sortBy,
+  isLoadingListings,
+  isLoadingVendors,
+  hasMore,
+
+  // Methods
+  fetchCategories,
+  fetchListings,
+  fetchFeaturedVendors,
+  fetchListingDetail,
+  fetchVendorDetail,
+  fetchVendorListings,
+  loadMore: composableLoadMore,
+  trackView,
+  trackContact,
+
+  // Computed
+  filteredListings,
+  serviceCategoriesForUI,
+} = useServices()
+
 // UI State
-const selectedCategory = ref('all')
-const sortBy = ref('featured')
 const showListingDrawer = ref(false)
 const showVendorDrawer = ref(false)
 const showListingFormDrawer = ref(false)
 const editingListing = ref<Listing | null>(null)
 const showCategoryMenu = ref(false)
+
+// Message state
+const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
+
+// Local refs for drawer state (synced with composable)
+const selectedListing = ref<Listing | null>(null)
+const selectedVendor = ref<Vendor | null>(null)
+const vendorListings = computed(() => composableVendorListings.value)
+
+// Service categories from composable
+const serviceCategories = computed(() => serviceCategoriesForUI.value)
+
+// Sort options
+const sortOptions = [
+  { value: 'featured', label: 'Featured First' },
+  { value: '-created_at', label: 'Newest First' },
+  { value: 'price_min', label: 'Price: Low to High' },
+  { value: '-price_min', label: 'Price: High to Low' },
+  { value: 'title', label: 'A to Z' },
+]
 
 // Computed for category name display
 const selectedCategoryName = computed(() => {
@@ -194,262 +266,25 @@ const handleCategoryClickOutside = (event: MouseEvent) => {
   }
 }
 
-onMounted(() => {
+// Initialize data on mount
+onMounted(async () => {
   document.addEventListener('click', handleCategoryClickOutside)
+
+  // Fetch initial data
+  await Promise.all([
+    fetchCategories(),
+    fetchFeaturedVendors(),
+    fetchListings(),
+  ])
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleCategoryClickOutside)
 })
 
-// Message state
-const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
-
-// Selected items
-const selectedListing = ref<Listing | null>(null)
-const selectedVendor = ref<Vendor | null>(null)
-
-// Service categories
-const serviceCategories = ref([
-  { id: 'all', name: 'All' },
-  { id: 'photography', name: 'Photography' },
-  { id: 'videography', name: 'Videography' },
-  { id: 'catering', name: 'Catering' },
-  { id: 'venue', name: 'Venue' },
-  { id: 'music', name: 'Music' },
-  { id: 'decoration', name: 'Decoration' },
-  { id: 'florist', name: 'Florist' },
-  { id: 'planning', name: 'Planning' },
-  { id: 'rentals', name: 'Rentals' },
-  { id: 'makeup', name: 'Makeup' },
-  { id: 'transport', name: 'Transport' },
-  { id: 'mc', name: 'MC & Host' },
-  { id: 'printing', name: 'Printing' },
-  { id: 'security', name: 'Security' },
-])
-
-// Sort options
-const sortOptions = [
-  { value: 'featured', label: 'Featured First' },
-  { value: '-created_at', label: 'Newest First' },
-  { value: 'price_min', label: 'Price: Low to High' },
-  { value: '-price_min', label: 'Price: High to Low' },
-  { value: 'title', label: 'A to Z' },
-]
-
-// Mock featured vendors
-const featuredVendors = ref<Vendor[]>([
-  {
-    id: '1',
-    name: 'Elite Photography',
-    logo: 'https://images.unsplash.com/photo-1554080353-a576cf803bda?w=200&h=200&fit=crop',
-    tagline: 'Capturing magical moments',
-    description: 'Professional event photography services with over 10 years of experience. We specialize in weddings, corporate events, and special occasions.',
-    city: 'Phnom Penh',
-    country: 'Cambodia',
-    email: 'contact@elitephoto.com',
-    phone: '+855 12 234 567',
-    listingsCount: 5
-  },
-  {
-    id: '2',
-    name: 'Gourmet Catering Co.',
-    logo: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=200&h=200&fit=crop',
-    tagline: 'Exquisite flavors for your events',
-    description: 'Premium catering services for all types of events. From intimate gatherings to large corporate functions.',
-    city: 'Phnom Penh',
-    country: 'Cambodia',
-    email: 'hello@gourmetcatering.com',
-    phone: '+855 12 345 678',
-    listingsCount: 3
-  },
-  {
-    id: '3',
-    name: 'Dream Decor Studio',
-    logo: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&h=200&fit=crop',
-    tagline: 'Transform your venue',
-    description: 'Creative event decoration and styling. We bring your vision to life with stunning designs.',
-    city: 'Siem Reap',
-    country: 'Cambodia',
-    email: 'info@dreamdecor.com',
-    phone: '+855 12 456 789',
-    listingsCount: 4
-  },
-  {
-    id: '4',
-    name: 'Harmony Music Events',
-    logo: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop',
-    tagline: 'Sound that moves you',
-    description: 'Live bands, DJs, and entertainment for every occasion. Making your event unforgettable.',
-    city: 'Sihanoukville',
-    country: 'Cambodia',
-    email: 'book@harmonymusic.com',
-    phone: '+855 12 567 890',
-    listingsCount: 2
-  }
-])
-
-// Mock service listings
-const mockListings = ref<Listing[]>([
-  {
-    id: '1',
-    title: 'Wedding Photography Package',
-    tagline: 'Complete coverage from preparation to reception with artistic storytelling',
-    description: 'Our comprehensive wedding photography package includes full-day coverage starting from bridal preparation through to the last dance. We capture every precious moment with a blend of photojournalistic and artistic styles. Package includes a lead photographer and assistant, 500+ edited photos, online gallery, and a beautiful photo album.',
-    coverImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop',
-    category: 'Photography',
-    priceDisplay: 'From $500',
-    vendorName: 'Elite Photography',
-    vendorLogo: 'https://images.unsplash.com/photo-1554080353-a576cf803bda?w=200&h=200&fit=crop',
-    vendorVerified: true,
-    tags: ['wedding', 'photography', 'portrait', 'candid'],
-    serviceArea: 'Phnom Penh, Cambodia',
-    views: 1250,
-    contactClicks: 87,
-    isFeatured: true,
-    gallery: [
-      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=400&fit=crop'
-    ]
-  },
-  {
-    id: '2',
-    title: 'Corporate Event Catering',
-    tagline: 'Premium dining experiences for business events and conferences',
-    description: 'Elevate your corporate events with our professional catering service. We offer customizable menus ranging from elegant plated dinners to casual buffets. Our experienced team handles everything from setup to cleanup, ensuring a seamless dining experience.',
-    coverImage: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&h=600&fit=crop',
-    category: 'Catering',
-    priceDisplay: '$25-50/person',
-    vendorName: 'Gourmet Catering Co.',
-    vendorLogo: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=200&h=200&fit=crop',
-    vendorVerified: true,
-    tags: ['catering', 'corporate', 'buffet', 'khmer cuisine'],
-    serviceArea: 'Phnom Penh Metropolitan',
-    views: 892,
-    contactClicks: 54,
-    isFeatured: true,
-    gallery: [
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=400&fit=crop'
-    ]
-  },
-  {
-    id: '3',
-    title: 'Luxury Wedding Venue',
-    tagline: 'Stunning riverside location with panoramic city views',
-    description: 'Our exclusive venue offers breathtaking views of the Mekong River and Phnom Penh skyline. Perfect for intimate ceremonies or grand celebrations up to 500 guests. Includes dedicated event coordinator, customizable lighting, and premium sound system.',
-    coverImage: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&h=600&fit=crop',
-    category: 'Venue',
-    priceDisplay: 'From $2,000',
-    vendorName: 'Grand Riverside Events',
-    vendorLogo: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=200&fit=crop',
-    vendorVerified: true,
-    tags: ['venue', 'wedding', 'riverside', 'luxury'],
-    serviceArea: 'Phnom Penh',
-    views: 2341,
-    contactClicks: 156,
-    isFeatured: false,
-    gallery: [
-      'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=400&h=400&fit=crop'
-    ]
-  },
-  {
-    id: '4',
-    title: 'Live Band Entertainment',
-    tagline: 'Professional musicians for weddings and parties',
-    description: 'Our versatile 6-piece band brings energy and elegance to any event. We perform a wide range of genres from classic jazz to modern pop hits. All equipment included with professional sound engineering.',
-    coverImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&h=600&fit=crop',
-    category: 'Music',
-    priceDisplay: '$800-1,500',
-    vendorName: 'Harmony Music Events',
-    vendorLogo: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop',
-    vendorVerified: true,
-    tags: ['music', 'band', 'wedding', 'entertainment'],
-    serviceArea: 'All Cambodia',
-    views: 567,
-    contactClicks: 32,
-    isFeatured: false,
-    gallery: [
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=400&fit=crop'
-    ]
-  },
-  {
-    id: '5',
-    title: 'Floral Design & Arrangements',
-    tagline: 'Beautiful blooms for your special day',
-    description: 'From bridal bouquets to venue centerpieces, we create stunning floral arrangements tailored to your style and color palette. Fresh flowers sourced daily with eco-friendly options available.',
-    coverImage: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&h=600&fit=crop',
-    category: 'Florist',
-    priceDisplay: 'From $150',
-    vendorName: 'Bloom & Blossom',
-    vendorLogo: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&h=200&fit=crop',
-    vendorVerified: false,
-    tags: ['flowers', 'wedding', 'decoration', 'bouquet'],
-    serviceArea: 'Phnom Penh, Kandal',
-    views: 423,
-    contactClicks: 28,
-    isFeatured: false,
-    gallery: [
-      'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=400&h=400&fit=crop'
-    ]
-  },
-  {
-    id: '6',
-    title: 'Event Videography',
-    tagline: 'Cinematic wedding films that tell your story',
-    description: 'We create beautiful, cinematic wedding films that capture the emotion and joy of your special day. Full-day coverage with multiple cameras, drone footage, and professional editing.',
-    coverImage: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&h=600&fit=crop',
-    category: 'Videography',
-    priceDisplay: 'From $800',
-    vendorName: 'Cinematic Stories',
-    vendorLogo: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=200&h=200&fit=crop',
-    vendorVerified: true,
-    tags: ['video', 'wedding', 'cinematic', 'drone'],
-    serviceArea: 'Cambodia Wide',
-    views: 789,
-    contactClicks: 45,
-    isFeatured: false,
-    gallery: [
-      'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=400&fit=crop'
-    ]
-  }
-])
-
-// Vendor listings for profile view
-const vendorListings = computed(() => {
-  if (!selectedVendor.value) return []
-  return mockListings.value.filter(l => l.vendorName === selectedVendor.value?.name)
-})
-
-// Filtered listings
-const filteredListings = computed(() => {
-  let listings = [...mockListings.value]
-
-  // Filter by category
-  if (selectedCategory.value !== 'all') {
-    const categoryName = serviceCategories.value.find(c => c.id === selectedCategory.value)?.name
-    listings = listings.filter(l => l.category.toLowerCase() === categoryName?.toLowerCase())
-  }
-
-  // Sort
-  if (sortBy.value === 'featured') {
-    listings.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
-  }
-
-  return listings
+// Watch for category and sort changes to refetch listings
+watch([selectedCategory, sortBy], async () => {
+  await fetchListings()
 })
 
 // Methods
@@ -460,19 +295,29 @@ const showMessage = (type: 'success' | 'info', text: string) => {
   }, 5000)
 }
 
-const openListingDetail = (listing: Listing) => {
-  selectedListing.value = listing
+const openListingDetail = async (listing: Listing) => {
+  // Fetch full listing details
+  await fetchListingDetail(listing.id)
+  selectedListing.value = composableSelectedListing.value
   showListingDrawer.value = true
+
+  // Track view
+  await trackView(listing.id, 'browse')
 }
 
-const openVendorProfile = (vendor: Vendor) => {
-  selectedVendor.value = vendor
+const openVendorProfile = async (vendor: Vendor) => {
+  // Fetch full vendor details and listings
+  await Promise.all([
+    fetchVendorDetail(vendor.id),
+    fetchVendorListings(vendor.id),
+  ])
+  selectedVendor.value = composableSelectedVendor.value
   showVendorDrawer.value = true
 }
 
-const handleVendorListingClick = (listing: Listing) => {
+const handleVendorListingClick = async (listing: Listing) => {
   showVendorDrawer.value = false
-  openListingDetail(listing)
+  await openListingDetail(listing)
 }
 
 const handleListService = () => {
@@ -482,26 +327,36 @@ const handleListService = () => {
 
 const handleListingCreated = (listing: Listing) => {
   showMessage('success', `Listing "${listing.title}" created successfully!`)
+  // Refresh listings
+  fetchListings()
 }
 
 const handleListingUpdated = (listing: Listing) => {
   showMessage('success', `Listing "${listing.title}" updated successfully!`)
+  // Refresh listings
+  fetchListings()
 }
 
 const handleListingDeleted = () => {
   showMessage('info', `Listing deleted successfully`)
+  // Refresh listings
+  fetchListings()
 }
 
 const handleLearnMore = () => {
   showMessage('info', 'Vendor information page coming soon!')
 }
 
-const handleContactVendor = (type: string) => {
-  showMessage('success', `Contact via ${type} - Feature coming soon!`)
+const handleContactVendor = async (type: string) => {
+  if (selectedListing.value) {
+    // Track contact click
+    await trackContact(selectedListing.value.id, type)
+  }
+  showMessage('success', `Contact via ${type} initiated!`)
 }
 
-const loadMore = () => {
-  showMessage('info', 'Loading more services...')
+const loadMore = async () => {
+  await composableLoadMore()
 }
 </script>
 

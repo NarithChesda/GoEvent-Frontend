@@ -144,6 +144,30 @@ export type {
   AcceptInvitationResponse,
 } from './api/types/invitation.types'
 
+// Services types
+export type {
+  VendorProfile,
+  VendorProfileBrief,
+  VendorVerificationStatus,
+  ServiceCategory,
+  ServiceListing,
+  ServiceListingBrief,
+  ServiceListingStatus,
+  ServiceMedia,
+  ServiceListingAnalytics,
+  CreateVendorProfileData,
+  UpdateVendorProfileData,
+  CreateServiceListingData,
+  UpdateServiceListingData,
+  VendorFilters,
+  ListingFilters,
+  ListingAnalyticsParams,
+  TrackViewData,
+  TrackContactData,
+  UploadServiceMediaData,
+  BulkReorderServiceMediaData,
+} from './api/types/services.types'
+
 // ============================================================================
 // SERVICE EXPORTS - All services from original api.ts
 // ============================================================================
@@ -200,6 +224,13 @@ export { reviewsService } from './api/modules/reviews.service'
 
 // Invitations service
 export { invitationsService } from './api/modules/invitations.service'
+
+// Services (vendor profiles, service listings, categories)
+export {
+  vendorService,
+  serviceCategoriesService,
+  serviceListingsService,
+} from './api/modules/services.service'
 
 // ============================================================================
 // NOTES FOR DEVELOPERS

@@ -50,7 +50,7 @@
     </div>
 
     <!-- Load More Button -->
-    <div class="flex justify-center mt-8">
+    <div v-if="hasMore" class="flex justify-center mt-8">
       <button
         @click="$emit('load-more')"
         class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors flex items-center gap-2"
@@ -68,13 +68,19 @@ import { ArrowUpDown, ChevronDown } from 'lucide-vue-next'
 import ServiceCard from './ServiceCard.vue'
 import type { Listing, ServiceCategory, SortOption } from './types'
 
-const props = defineProps<{
-  listings: Listing[]
-  categories: ServiceCategory[]
-  selectedCategory: string
-  sortBy: string
-  sortOptions: SortOption[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    listings: Listing[]
+    categories: ServiceCategory[]
+    selectedCategory: string
+    sortBy: string
+    sortOptions: SortOption[]
+    hasMore?: boolean
+  }>(),
+  {
+    hasMore: true,
+  }
+)
 
 const emit = defineEmits<{
   'listing-click': [listing: Listing]

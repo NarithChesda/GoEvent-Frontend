@@ -19,3 +19,8 @@ export { eventCategoriesService } from './categories.service'
 export { eventTextsService } from './texts.service'
 export { coreDataService, teamMembersService, userService } from './core-data.service'
 export { invitationsService } from './invitations.service'
+export {
+  vendorService,
+  serviceCategoriesService,
+  serviceListingsService,
+} from './services.service'
