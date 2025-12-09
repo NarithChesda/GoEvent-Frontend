@@ -630,6 +630,22 @@ export class ApiClient {
     return this.handleNetworkRequest<T>(
       async (signal) => {
         const isFormData = data instanceof FormData
+        const body = data ? (isFormData ? data : JSON.stringify(data)) : undefined
+
+        // Debug logging for PATCH requests
+        if (IS_DEV_MODE) {
+          const headers = {
+            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...this.getAuthHeaders(),
+          }
+          console.log('[ApiClient] PATCH request:', {
+            url: `${this.baseURL}${endpoint}`,
+            isFormData,
+            body: isFormData ? '[FormData]' : body,
+            headers: Object.keys(headers),
+            contentType: headers['Content-Type'],
+          })
+        }
 
         return fetch(`${this.baseURL}${endpoint}`, {
           method: 'PATCH',
@@ -638,7 +654,7 @@ export class ApiClient {
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
             ...this.getAuthHeaders(),
           },
-          body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
+          body,
           signal,
         })
       },

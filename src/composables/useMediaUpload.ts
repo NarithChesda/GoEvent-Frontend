@@ -147,6 +147,7 @@ export function useMediaUpload(
 
   /**
    * Remove a media file from the API
+   * Sends null via JSON to clear the file field on Django backend
    */
   const removeMedia = async (fieldName: MediaFieldName): Promise<boolean> => {
     if (!eventData.value?.id) {
@@ -158,8 +159,22 @@ export function useMediaUpload(
     error.value = null
 
     try {
+      // Send null via JSON to clear the file field
+      // Django REST Framework should handle null as a signal to clear the file
       const updateData = { [fieldName]: null }
-      const response = await eventsService.patchEvent(eventData.value.id, updateData)
+
+      console.log('[useMediaUpload] removeMedia called:', {
+        fieldName,
+        eventId: eventData.value.id,
+        updateData: JSON.stringify(updateData),
+      })
+
+      const response = await eventsService.patchEvent(eventData.value.id, updateData as Partial<ApiEvent>)
+      console.log('[useMediaUpload] removeMedia response:', {
+        success: response.success,
+        fieldValue: response.data?.[fieldName as keyof ApiEvent],
+        message: response.message
+      })
 
       if (response.success && response.data) {
         onUpdate?.(response.data)

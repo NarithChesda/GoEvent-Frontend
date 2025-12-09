@@ -207,6 +207,7 @@ export {
   coreDataService,
   teamMembersService,
   userService,
+  backgroundMusicService,
 } from './api/modules/core-data.service'
 
 // Expense tracking services

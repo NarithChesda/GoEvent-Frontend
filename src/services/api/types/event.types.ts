@@ -3,6 +3,7 @@
  */
 
 import type { QueryParams } from './api.types'
+import type { BackgroundMusic } from './core-data.types'
 
 export interface EventCategory {
   id: number
@@ -56,6 +57,8 @@ export interface Event {
   logo_two?: string | null
   event_video?: string | null
   music?: string | null
+  selected_music?: number | null
+  selected_music_details?: BackgroundMusic | null
   google_map_embed_link?: string | null
   youtube_embed_link?: string | null
   event_template?: number | null

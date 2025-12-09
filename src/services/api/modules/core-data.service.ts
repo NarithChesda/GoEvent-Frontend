@@ -10,6 +10,9 @@ import type {
   AgendaIcon,
   TeamMember,
   UserDetails,
+  BackgroundMusic,
+  BackgroundMusicFilters,
+  BackgroundMusicCategoryInfo,
 } from '../types'
 
 // Core Data Service
@@ -85,5 +88,54 @@ export const userService = {
   // Clear cache (useful for testing or when needed)
   clearCache() {
     this.userCache.clear()
+  },
+}
+
+// Background Music Service
+export const backgroundMusicService = {
+  /**
+   * Get all background music tracks from the library
+   * This is a public endpoint - no authentication required
+   */
+  async getBackgroundMusic(
+    filters?: BackgroundMusicFilters
+  ): Promise<ApiResponse<PaginatedResponse<BackgroundMusic>>> {
+    const params = new URLSearchParams()
+
+    if (filters?.category) {
+      params.append('category', filters.category)
+    }
+    if (filters?.is_active !== undefined) {
+      params.append('is_active', String(filters.is_active))
+    }
+    if (filters?.search) {
+      params.append('search', filters.search)
+    }
+    if (filters?.ordering) {
+      params.append('ordering', filters.ordering)
+    }
+
+    const queryString = params.toString()
+    const url = `/api/core-data/background-music/${queryString ? `?${queryString}` : ''}`
+
+    return apiClient.getPublic<PaginatedResponse<BackgroundMusic>>(url)
+  },
+
+  /**
+   * Get details of a specific background music track
+   * This is a public endpoint - no authentication required
+   */
+  async getBackgroundMusicById(id: number): Promise<ApiResponse<BackgroundMusic>> {
+    return apiClient.getPublic<BackgroundMusic>(`/api/core-data/background-music/${id}/`)
+  },
+
+  /**
+   * Get all available music categories with track counts
+   * This is a public endpoint - no authentication required
+   */
+  async getMusicCategories(): Promise<ApiResponse<BackgroundMusicCategoryInfo[]>> {
+    return apiClient.getPublic<BackgroundMusicCategoryInfo[]>(
+      '/api/core-data/background-music/categories/'
+    )
   },
 }

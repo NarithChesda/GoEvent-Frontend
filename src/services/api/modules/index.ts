@@ -17,7 +17,12 @@ export {
 export { commentsService } from './comments.service'
 export { eventCategoriesService } from './categories.service'
 export { eventTextsService } from './texts.service'
-export { coreDataService, teamMembersService, userService } from './core-data.service'
+export {
+  coreDataService,
+  teamMembersService,
+  userService,
+  backgroundMusicService,
+} from './core-data.service'
 export { invitationsService } from './invitations.service'
 export {
   vendorService,

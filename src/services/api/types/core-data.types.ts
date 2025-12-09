@@ -30,3 +30,44 @@ export interface UserDetails {
   last_name?: string
   profile_picture?: string
 }
+
+/**
+ * Background music from the admin-managed music library
+ */
+export interface BackgroundMusic {
+  id: number
+  name: string
+  description?: string
+  audio_file: string
+  duration_seconds: number
+  duration_display: string
+  category: BackgroundMusicCategory
+  category_display: string
+  is_active: boolean
+  order: number
+  uploaded_at?: string
+  updated_at?: string
+}
+
+export type BackgroundMusicCategory =
+  | 'wedding'
+  | 'corporate'
+  | 'party'
+  | 'ambient'
+  | 'classical'
+  | 'jazz'
+  | 'pop'
+  | 'traditional'
+
+export interface BackgroundMusicCategoryInfo {
+  value: BackgroundMusicCategory
+  label: string
+  count: number
+}
+
+export interface BackgroundMusicFilters {
+  category?: BackgroundMusicCategory
+  is_active?: boolean
+  search?: string
+  ordering?: 'order' | 'name' | 'category' | 'uploaded_at' | '-uploaded_at'
+}
