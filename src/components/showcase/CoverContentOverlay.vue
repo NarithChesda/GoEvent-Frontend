@@ -141,7 +141,11 @@
               <div class="split-frame-container" aria-hidden="true">
                 <img :src="computedLeftFrame" alt="" class="frame-left" v-bind="protectionAttrs" />
                 <div class="frame-middle-wrapper">
-                  <img :src="computedMiddleFrame" alt="" class="frame-middle" v-bind="protectionAttrs" />
+                  <div
+                    class="frame-middle"
+                    :style="{ backgroundImage: `url(${computedMiddleFrame})` }"
+                    v-bind="protectionAttrs"
+                  ></div>
                 </div>
                 <img :src="computedRightFrame" alt="" class="frame-right" v-bind="protectionAttrs" />
               </div>
@@ -624,8 +628,9 @@ watch(() => props.guestName, () => {
 .frame-middle {
   width: 100%;
   height: 100%;
-  object-fit: fill;
-  display: block;
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  background-position: center;
 }
 
 @keyframes frameEntrance {
