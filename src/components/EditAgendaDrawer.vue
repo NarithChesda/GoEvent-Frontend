@@ -126,14 +126,20 @@
             </div>
 
             <!-- Schedule Section -->
-            <div class="border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <ScheduleSection
-                v-model:date="formData.date"
-                v-model:agenda-type="formData.agenda_type"
-                v-model:order="formData.order"
-                :max-order="maxOrder"
-              />
-            </div>
+            <ScheduleSection
+              v-model:date="formData.date"
+              v-model:agenda-type="formData.agenda_type"
+              v-model:order="formData.order"
+              :max-order="maxOrder"
+            />
+
+            <!-- Icon Selection (moved outside of Display Options for easy access) -->
+            <IconSelectionDropdown
+              :icon-id="formData.icon_id"
+              :available-icons="availableIcons"
+              :selected-icon="getSelectedIcon()"
+              @select-icon="selectIcon"
+            />
 
             <!-- Location Section -->
             <LocationSection
@@ -148,11 +154,6 @@
               v-model:color="formData.color"
               v-model:is-featured="formData.is_featured"
               v-model:display-open="displayOpen"
-              v-model:show-icon-picker="showIconPicker"
-              :icon-id="formData.icon_id"
-              :available-icons="availableIcons"
-              :selected-icon="getSelectedIcon()"
-              @select-icon="selectIcon"
             />
 
             <!-- Delete Section (Mobile only, Edit mode only) -->
@@ -240,6 +241,7 @@ import AgendaFormFields from './agenda/AgendaFormFields.vue'
 import ScheduleSection from './agenda/ScheduleSection.vue'
 import LocationSection from './agenda/LocationSection.vue'
 import DisplayOptionsSection from './agenda/DisplayOptionsSection.vue'
+import IconSelectionDropdown from './agenda/IconSelectionDropdown.vue'
 
 interface Props {
   modelValue: boolean
@@ -307,12 +309,10 @@ const descriptionOpen = ref(false)
 const speakerOpen = ref(false)
 const locationOpen = ref(false)
 const displayOpen = ref(false)
-const showIconPicker = ref(false)
 
 // Select icon handler
 const selectIcon = (iconId: number | null) => {
   formData.icon_id = iconId
-  showIconPicker.value = false
 }
 
 // Show toast message
@@ -374,7 +374,6 @@ watch(
       speakerOpen.value = false
       locationOpen.value = false
       displayOpen.value = false
-      showIconPicker.value = false
 
       // Initialize translations for create mode
       if (!props.item) {

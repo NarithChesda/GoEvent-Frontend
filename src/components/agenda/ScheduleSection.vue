@@ -1,10 +1,5 @@
 <template>
   <div class="space-y-3 sm:space-y-4">
-    <h4 class="text-sm font-semibold text-slate-900 flex items-center">
-      <Clock class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-      Schedule
-    </h4>
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <!-- Date -->
       <div>
@@ -120,7 +115,6 @@
 
 <script setup lang="ts">
 import {
-  Clock,
   ChevronDown,
   ChevronUp,
   ChevronsUp,
