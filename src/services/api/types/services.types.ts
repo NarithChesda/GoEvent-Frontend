@@ -44,6 +44,8 @@ export interface VendorProfile {
   country: string
   verification_status: VendorVerificationStatus
   verified_at: string | null
+  is_featured: boolean // Read-only, admin-controlled
+  featured_until: string | null // Read-only, ISO date string
   listings_count: number
   created_at: string
   updated_at: string
@@ -63,6 +65,7 @@ export interface VendorProfileBrief {
   country: string
   telegram_link: string | null
   verification_status: VendorVerificationStatus
+  is_featured: boolean // Read-only
   listings_count: number
 }
 

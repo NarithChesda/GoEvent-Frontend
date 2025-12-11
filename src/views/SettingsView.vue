@@ -4,7 +4,7 @@
 
     <!-- Main Content -->
     <section class="py-4 sm:py-6 lg:py-8">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header with Tabs -->
         <div class="mb-8 sm:mb-10">
           <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
@@ -37,6 +37,8 @@
         <BaseCard v-if="activeTab === 'payment'">
           <PaymentTab />
         </BaseCard>
+
+        <VendorTab v-if="activeTab === 'vendor'" />
       </div> <!-- Close max-w-4xl container -->
     </section> <!-- Close py-4 section -->
     </div> <!-- Close gradient background -->
@@ -51,10 +53,11 @@ import BaseCard from '@/components/BaseCard.vue'
 import AccountTab from '@/components/settings/AccountTab.vue'
 import SecurityTab from '@/components/settings/SecurityTab.vue'
 import PaymentTab from '@/components/settings/PaymentTab.vue'
+import VendorTab from '@/components/settings/VendorTab.vue'
 import { useAuthStore } from '@/stores/auth'
 
 // Types
-type TabId = 'account' | 'security' | 'payment'
+type TabId = 'account' | 'security' | 'payment' | 'vendor'
 
 interface Tab {
   id: TabId
@@ -70,6 +73,7 @@ const tabs: Tab[] = [
   { id: 'account', label: 'Account' },
   { id: 'security', label: 'Security' },
   { id: 'payment', label: 'Payment' },
+  { id: 'vendor', label: 'Vendor' },
 ]
 
 // Active tab state
