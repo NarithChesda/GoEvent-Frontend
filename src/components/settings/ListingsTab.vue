@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="space-y-6">
     <!-- Loading State -->
     <div v-if="isLoading && listings.length === 0" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
@@ -8,7 +8,9 @@
     <!-- Error State -->
     <div v-else-if="error" class="text-center py-12">
       <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-        <AlertCircle class="w-8 h-8 text-red-600" />
+        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
       </div>
       <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load listings</h3>
       <p class="text-gray-500 mb-4">{{ error }}</p>
@@ -21,25 +23,25 @@
     </div>
 
     <!-- Not Verified State -->
-    <div v-else-if="!isVerifiedVendor" class="space-y-6">
-      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <ShieldAlert class="w-6 h-6 text-amber-600" />
+    <div v-else-if="!isVerifiedVendor">
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <ShieldAlert class="w-7 h-7 text-amber-600" />
           </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Verification Required</h3>
-            <p class="text-gray-600 mb-4">
+          <div class="flex-1">
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Verification Required</h2>
+            <p class="text-gray-600">
               You need to be a verified vendor to create and manage service listings.
               Please complete your vendor profile and wait for verification.
             </p>
-            <div class="flex items-center gap-2 text-sm">
+            <div class="flex items-center gap-2 text-sm mt-3">
               <span class="text-gray-500">Current status:</span>
               <span
                 :class="[
-                  'px-2 py-0.5 rounded-full text-xs font-medium',
-                  vendorState === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                  vendorState === 'unverified' ? 'bg-gray-100 text-gray-700' :
+                  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
+                  vendorState === 'pending' ? 'bg-amber-100 text-amber-700' :
+                  vendorState === 'unverified' ? 'bg-slate-100 text-slate-600' :
                   'bg-red-100 text-red-700'
                 ]"
               >
@@ -53,70 +55,66 @@
 
     <!-- Listings Content -->
     <div v-else class="space-y-6">
-      <!-- Header with Stats -->
-      <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 class="text-xl font-semibold text-gray-900">My Listings</h2>
-            <p class="text-sm text-gray-500 mt-1">
-              Manage your service listings and track their performance
-            </p>
-          </div>
-          <button
-            @click="openCreateDrawer"
-            class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-medium rounded-lg hover:opacity-90 transition-all shadow-sm"
-          >
-            <Plus class="w-5 h-5" />
-            <span>New Listing</span>
-          </button>
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1">
+          <h2 class="text-xl font-semibold text-gray-900">My Listings</h2>
+          <p class="text-sm text-gray-500 mt-1">
+            Manage your service listings and track their performance
+          </p>
         </div>
-
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-          <div class="bg-slate-50 rounded-lg p-3">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Total</p>
-            <p class="text-2xl font-bold text-slate-900">{{ listings.length }}</p>
-          </div>
-          <div class="bg-emerald-50 rounded-lg p-3">
-            <p class="text-xs text-emerald-600 uppercase tracking-wider">Active</p>
-            <p class="text-2xl font-bold text-emerald-700">{{ activeCount }}</p>
-          </div>
-          <div class="bg-amber-50 rounded-lg p-3">
-            <p class="text-xs text-amber-600 uppercase tracking-wider">Pending</p>
-            <p class="text-2xl font-bold text-amber-700">{{ pendingCount }}</p>
-          </div>
-          <div class="bg-slate-50 rounded-lg p-3">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Draft</p>
-            <p class="text-2xl font-bold text-slate-700">{{ draftCount }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-if="listings.length === 0 && !isLoading" class="bg-white border border-slate-200 rounded-xl p-8 text-center">
-        <div class="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-          <Package class="w-8 h-8 text-slate-400" />
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No listings yet</h3>
-        <p class="text-gray-500 mb-6 max-w-sm mx-auto">
-          Create your first service listing to start reaching potential clients.
-        </p>
         <button
           @click="openCreateDrawer"
-          class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-medium rounded-lg hover:opacity-90 transition-all"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
         >
           <Plus class="w-5 h-5" />
-          <span>Create Your First Listing</span>
+          <span>New Listing</span>
         </button>
       </div>
 
-      <!-- Listings Grid -->
-      <div v-else class="space-y-3 sm:space-y-4">
-        <!-- Mobile Card -->
+      <!-- Quick Stats (inline) -->
+      <div v-if="listings.length > 0" class="flex items-center gap-6 text-sm">
+        <span class="text-gray-500">
+          <span class="font-medium text-emerald-600">{{ activeCount }}</span> active
+        </span>
+        <span class="text-gray-500">
+          <span class="font-medium text-amber-600">{{ pendingCount }}</span> pending
+        </span>
+        <span class="text-gray-500">
+          <span class="font-medium text-gray-600">{{ draftCount }}</span> draft
+        </span>
+      </div>
+
+      <!-- Empty State -->
+      <div v-if="listings.length === 0 && !isLoading" class="bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-100 rounded-xl p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div class="w-14 h-14 bg-sky-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Package class="w-7 h-7 text-sky-600" />
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No listings yet</h3>
+            <p class="text-gray-600">
+              Create your first service listing to start reaching potential clients.
+            </p>
+          </div>
+        </div>
+        <div class="mt-8">
+          <button
+            @click="openCreateDrawer"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
+          >
+            <Plus class="w-5 h-5" />
+            <span>Create Your First Listing</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Listings List -->
+      <div v-else class="space-y-4">
         <div
           v-for="listing in listings"
           :key="listing.id"
-          class="glass-card rounded-2xl overflow-hidden"
+          class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition-colors"
         >
           <!-- Mobile Layout -->
           <div class="sm:hidden p-4">
@@ -124,10 +122,10 @@
               <!-- Content -->
               <div class="flex-1 min-w-0">
                 <!-- Status Badge -->
-                <div class="flex items-center gap-2 mb-1">
+                <div class="flex items-center gap-2 mb-2">
                   <span
                     :class="[
-                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
                       getStatusClass(listing.status)
                     ]"
                   >
@@ -135,30 +133,30 @@
                   </span>
                   <span
                     v-if="listing.is_featured"
-                    class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
                   >
                     Featured
                   </span>
                 </div>
 
                 <!-- Title -->
-                <h3 class="text-base font-semibold text-slate-900 mb-1.5 line-clamp-2">
+                <h3 class="text-base font-medium text-gray-900 mb-1 line-clamp-2">
                   {{ listing.title }}
                 </h3>
 
                 <!-- Price -->
-                <p class="text-sm font-medium text-[#2ecc71] mb-1.5">
+                <p class="text-sm font-medium text-sky-600 mb-1">
                   {{ listing.price_display_text || 'Contact for price' }}
                 </p>
 
                 <!-- Category -->
-                <div class="flex items-center gap-1.5 text-sm text-slate-500 mb-1.5">
-                  <Tag class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                <div class="flex items-center gap-1.5 text-sm text-gray-500 mb-2">
+                  <Tag class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                   <span class="truncate">{{ getCategoryName(listing) }}</span>
                 </div>
 
                 <!-- Stats -->
-                <div class="flex items-center gap-3 text-sm text-slate-400">
+                <div class="flex items-center gap-3 text-xs text-gray-400">
                   <span class="flex items-center gap-1">
                     <Eye class="w-3.5 h-3.5" />
                     {{ listing.views_count || 0 }}
@@ -170,8 +168,8 @@
                 </div>
               </div>
 
-              <!-- Cover Image (square on mobile) -->
-              <div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+              <!-- Cover Image -->
+              <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                 <img
                   v-if="listing.cover_image_url"
                   :src="getImageUrl(listing.cover_image_url)"
@@ -180,18 +178,18 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                  class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
                 >
-                  <ImageIcon class="w-6 h-6 text-[#2ecc71]/60" />
+                  <ImageIcon class="w-6 h-6 text-gray-400" />
                 </div>
               </div>
             </div>
 
             <!-- Mobile Actions -->
-            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100/50">
+            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
               <button
                 @click="editListing(listing)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <Pencil class="w-3.5 h-3.5" />
                 Edit
@@ -200,7 +198,7 @@
                 v-if="listing.status === 'draft'"
                 @click="submitForReview(listing)"
                 :disabled="isSubmitting === listing.id"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors disabled:opacity-50"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 border border-sky-300 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Send class="w-3.5 h-3.5" />
                 {{ isSubmitting === listing.id ? '...' : 'Submit' }}
@@ -210,14 +208,14 @@
 
           <!-- Desktop Layout -->
           <div class="hidden sm:block p-5">
-            <div class="flex gap-4">
+            <div class="flex gap-5">
               <!-- Content -->
               <div class="flex-1 min-w-0">
                 <!-- Status and Category -->
-                <div class="flex items-center gap-2 text-sm mb-1">
+                <div class="flex items-center gap-2 mb-2">
                   <span
                     :class="[
-                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
                       getStatusClass(listing.status)
                     ]"
                   >
@@ -225,32 +223,32 @@
                   </span>
                   <span
                     v-if="listing.is_featured"
-                    class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
                   >
                     Featured
                   </span>
-                  <span class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium">
+                  <span class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
                     {{ getCategoryName(listing) }}
                   </span>
                 </div>
 
                 <!-- Title -->
-                <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors">
+                <h3 class="text-lg font-medium text-gray-900 mb-1">
                   {{ listing.title }}
                 </h3>
 
                 <!-- Description -->
-                <p class="text-sm text-slate-600 mb-2 line-clamp-1">
+                <p class="text-sm text-gray-500 mb-2 line-clamp-1">
                   {{ listing.short_tagline || listing.description }}
                 </p>
 
                 <!-- Price -->
-                <div class="flex items-center gap-2 text-sm mb-2">
-                  <span class="font-medium text-[#2ecc71]">{{ listing.price_display_text || 'Contact for price' }}</span>
-                </div>
+                <p class="text-sm font-medium text-sky-600 mb-3">
+                  {{ listing.price_display_text || 'Contact for price' }}
+                </p>
 
                 <!-- Stats -->
-                <div class="flex items-center gap-4 text-sm text-slate-500">
+                <div class="flex items-center gap-4 text-sm text-gray-500">
                   <span class="flex items-center gap-1.5">
                     <Eye class="w-4 h-4" />
                     {{ listing.views_count || 0 }} views
@@ -262,10 +260,10 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center gap-2 mt-3">
+                <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
                   <button
                     @click="editListing(listing)"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <Pencil class="w-4 h-4" />
                     Edit
@@ -274,14 +272,14 @@
                     v-if="listing.status === 'draft'"
                     @click="submitForReview(listing)"
                     :disabled="isSubmitting === listing.id"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-sky-700 border border-sky-200 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-sky-700 border border-sky-300 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Send class="w-4 h-4" />
                     {{ isSubmitting === listing.id ? 'Submitting...' : 'Submit for Review' }}
                   </button>
                   <button
                     @click="viewAnalytics(listing)"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <BarChart3 class="w-4 h-4" />
                     Analytics
@@ -289,8 +287,8 @@
                 </div>
               </div>
 
-              <!-- Cover Image (landscape on desktop) -->
-              <div class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+              <!-- Cover Image -->
+              <div class="w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                 <img
                   v-if="listing.cover_image_url"
                   :src="getImageUrl(listing.cover_image_url)"
@@ -299,9 +297,9 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                  class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
                 >
-                  <ImageIcon class="w-8 h-8 text-[#2ecc71]/60" />
+                  <ImageIcon class="w-8 h-8 text-gray-400" />
                 </div>
               </div>
             </div>
@@ -313,7 +311,7 @@
           <button
             @click="loadMore"
             :disabled="isLoading"
-            class="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+            class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors disabled:opacity-50"
           >
             {{ isLoading ? 'Loading...' : 'Load More' }}
           </button>
@@ -439,12 +437,23 @@
         <div
           :class="[
             'px-4 py-3 rounded-lg shadow-lg flex items-center gap-2',
-            toastMessage.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+            toastMessage.type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'
           ]"
         >
-          <CheckCircle v-if="toastMessage.type === 'success'" class="w-5 h-5" />
-          <AlertCircle v-else class="w-5 h-5" />
-          <span class="text-sm font-medium">{{ toastMessage.text }}</span>
+          <div
+            :class="[
+              'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0',
+              toastMessage.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'
+            ]"
+          >
+            <svg v-if="toastMessage.type === 'success'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg v-else class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <span class="font-medium">{{ toastMessage.text }}</span>
         </div>
       </div>
     </Transition>
@@ -460,8 +469,6 @@ import {
   Tag,
   BarChart3,
   Package,
-  AlertCircle,
-  CheckCircle,
   ShieldAlert,
   Send,
   X,
@@ -714,22 +721,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow:
-    0 4px 6px -1px rgba(46, 204, 113, 0.05),
-    0 2px 4px -1px rgba(30, 144, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(46, 204, 113, 0.3);
-}
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
