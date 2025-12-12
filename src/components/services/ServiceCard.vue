@@ -111,14 +111,13 @@ const coverImageSrc = ref(props.listing.coverImage || getCategoryFallbackImage(p
 // Vendor logo with fallback support
 const vendorLogoSrc = ref(props.listing.vendorLogo || getVendorLogoFallback())
 
-// Watch for listing changes to update images
+// Watch for specific image-related property changes (avoid deep watching entire object)
 watch(
-  () => props.listing,
-  (newListing) => {
-    coverImageSrc.value = newListing.coverImage || getCategoryFallbackImage(newListing.category)
-    vendorLogoSrc.value = newListing.vendorLogo || getVendorLogoFallback()
-  },
-  { deep: true }
+  () => [props.listing.coverImage, props.listing.vendorLogo, props.listing.category] as const,
+  ([newCoverImage, newVendorLogo, newCategory]) => {
+    coverImageSrc.value = newCoverImage || getCategoryFallbackImage(newCategory)
+    vendorLogoSrc.value = newVendorLogo || getVendorLogoFallback()
+  }
 )
 
 // Handle cover image load error - use category-based fallback

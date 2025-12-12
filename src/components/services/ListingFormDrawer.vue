@@ -692,7 +692,7 @@ const form = reactive({
   priceType: 'fixed' as 'fixed' | 'range' | 'quote',
   priceMin: null as number | null,
   priceMax: null as number | null,
-  currency: 'USD',
+  currency: 'THB',
   priceUnit: '',
   serviceArea: '',
   tags: [] as string[],
@@ -714,7 +714,7 @@ const resetForm = () => {
   form.priceType = 'fixed'
   form.priceMin = null
   form.priceMax = null
-  form.currency = 'THB'
+  form.currency = 'USD'
   form.priceUnit = ''
   form.serviceArea = ''
   form.tags = []
@@ -734,7 +734,7 @@ const populateForm = (listing: Listing) => {
   form.priceType = listing.priceType || 'fixed'
   form.priceMin = listing.priceMin
   form.priceMax = listing.priceMax
-  form.currency = listing.currency || 'THB'
+  form.currency = listing.currency || 'USD'
   form.priceUnit = listing.priceUnit || ''
   form.serviceArea = listing.serviceArea || ''
   form.tags = [...(listing.tags || [])]

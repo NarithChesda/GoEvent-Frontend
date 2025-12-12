@@ -116,21 +116,6 @@
       <!-- Footer -->
       <AppFooter />
 
-      <!-- List Service FAB - Temporarily disabled until services API is ready -->
-      <!-- <button
-        v-if="authStore.isAuthenticated"
-        @click="handleListService"
-        class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
-        aria-label="List Your Service"
-      >
-        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
-        <div
-          class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
-        >
-          List Your Service
-        </div>
-      </button> -->
-
       <!-- Listing Detail Drawer -->
       <ListingDetailDrawer
         v-model="showListingDrawer"
@@ -175,7 +160,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Plus, CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
+import { CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { MobileTopBar } from '@/components/events'
@@ -190,10 +175,7 @@ import {
   type Vendor,
   type Listing
 } from '@/components/services'
-import { useAuthStore } from '@/stores/auth'
 import { useServices } from '@/composables/useServices'
-
-const authStore = useAuthStore()
 
 // Use the services composable
 const {
@@ -240,9 +222,9 @@ const showAllVendors = ref(false)
 // Message state
 const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
 
-// Local refs for drawer state (synced with composable)
-const selectedListing = ref<Listing | null>(null)
-const selectedVendor = ref<Vendor | null>(null)
+// Use composable state directly for drawers
+const selectedListing = computed(() => composableSelectedListing.value)
+const selectedVendor = computed(() => composableSelectedVendor.value)
 const vendorListings = computed(() => composableVendorListings.value)
 
 // Service categories from composable
@@ -317,7 +299,6 @@ const showMessage = (type: 'success' | 'info', text: string) => {
 const openListingDetail = async (listing: Listing) => {
   // Fetch full listing details
   await fetchListingDetail(listing.id)
-  selectedListing.value = composableSelectedListing.value
   showListingDrawer.value = true
 
   // Track view
@@ -330,7 +311,6 @@ const openVendorProfile = async (vendor: Vendor) => {
     fetchVendorDetail(vendor.id),
     fetchVendorListings(vendor.id),
   ])
-  selectedVendor.value = composableSelectedVendor.value
   showVendorDrawer.value = true
 }
 
@@ -368,10 +348,15 @@ const handleLearnMore = () => {
 
 // Toggle between featured and all vendors
 const handleToggleVendorView = async () => {
-  showAllVendors.value = !showAllVendors.value
-  if (showAllVendors.value && allVendors.value.length === 0) {
+  // Prevent rapid toggling during fetch
+  if (isLoadingAllVendors.value) return
+
+  const willShowAll = !showAllVendors.value
+  if (willShowAll && allVendors.value.length === 0) {
+    // Fetch data first, then toggle view
     await fetchAllVendors()
   }
+  showAllVendors.value = willShowAll
 }
 
 // Load more vendors when showing all
