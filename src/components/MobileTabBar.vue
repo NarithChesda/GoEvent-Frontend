@@ -46,6 +46,16 @@
           <!-- Menu Items -->
           <div class="space-y-2">
             <RouterLink
+              v-if="isVerifiedVendor"
+              to="/settings?tab=listings"
+              @click="userMenuOpen = false"
+              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
+              role="menuitem"
+            >
+              <span class="text-sm font-medium">My Listings</span>
+            </RouterLink>
+
+            <RouterLink
               to="/settings"
               @click="userMenuOpen = false"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
@@ -150,12 +160,17 @@ import { Ticket, Compass, Sparkles, User } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
+import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 
 const userMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement>()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+
+// Vendor profile for showing listings link
+const { vendorState } = useVendorProfile({ autoLoad: true })
+const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // Navigation items configuration (matching top nav)
 const navigationItems = [

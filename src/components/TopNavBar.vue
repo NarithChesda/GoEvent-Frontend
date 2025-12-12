@@ -188,6 +188,15 @@
               <!-- Menu Items -->
               <div class="py-1">
                 <RouterLink
+                  v-if="isVerifiedVendor"
+                  to="/settings?tab=listings"
+                  @click="userMenuOpen = false"
+                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  My Listings
+                </RouterLink>
+                <RouterLink
                   to="/settings"
                   @click="userMenuOpen = false"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
@@ -241,10 +250,15 @@ import IconSvg from '@/assets/icon.svg'
 import { sanitizePlainText } from '@/utils/sanitize'
 import GlobalSearchModal from './GlobalSearchModal.vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
+import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+
+// Vendor profile for showing listings link
+const { vendorState } = useVendorProfile({ autoLoad: true })
+const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
