@@ -34,11 +34,9 @@
 
         <SecurityTab v-if="activeTab === 'security'" />
 
-        <BaseCard v-if="activeTab === 'payment'">
-          <PaymentTab />
-        </BaseCard>
-
         <VendorTab v-if="activeTab === 'vendor'" />
+
+        <ListingsTab v-if="activeTab === 'listings'" />
       </div> <!-- Close max-w-4xl container -->
     </section> <!-- Close py-4 section -->
     </div> <!-- Close gradient background -->
@@ -49,15 +47,14 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/components/MainLayout.vue'
-import BaseCard from '@/components/BaseCard.vue'
 import AccountTab from '@/components/settings/AccountTab.vue'
 import SecurityTab from '@/components/settings/SecurityTab.vue'
-import PaymentTab from '@/components/settings/PaymentTab.vue'
 import VendorTab from '@/components/settings/VendorTab.vue'
+import ListingsTab from '@/components/settings/ListingsTab.vue'
 import { useAuthStore } from '@/stores/auth'
 
 // Types
-type TabId = 'account' | 'security' | 'payment' | 'vendor'
+type TabId = 'account' | 'security' | 'vendor' | 'listings'
 
 interface Tab {
   id: TabId
@@ -73,12 +70,12 @@ const authStore = useAuthStore()
 const tabs: Tab[] = [
   { id: 'account', label: 'Account' },
   { id: 'security', label: 'Security' },
-  { id: 'payment', label: 'Payment' },
   { id: 'vendor', label: 'Vendor' },
+  { id: 'listings', label: 'Listings' },
 ]
 
 // Valid tab IDs for validation
-const validTabIds: TabId[] = ['account', 'security', 'payment', 'vendor']
+const validTabIds: TabId[] = ['account', 'security', 'vendor', 'listings']
 
 // Get initial tab from URL query or default to 'account'
 const getInitialTab = (): TabId => {
@@ -96,6 +93,16 @@ const activeTab = ref<TabId>(getInitialTab())
 watch(activeTab, (newTab) => {
   router.replace({ query: { ...route.query, tab: newTab } })
 })
+
+// Watch for URL query changes (e.g., when navigating from menu)
+watch(
+  () => route.query.tab,
+  (newTab) => {
+    if (newTab && validTabIds.includes(newTab as TabId)) {
+      activeTab.value = newTab as TabId
+    }
+  }
+)
 
 // Authentication check on mount
 onMounted(() => {
