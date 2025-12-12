@@ -113,8 +113,8 @@ export const serviceCategoriesService = {
    * List all service categories (public endpoint)
    * Returns hierarchical category structure with subcategories
    */
-  async listCategories(): Promise<ApiResponse<ServiceCategory[]>> {
-    return apiClient.getPublic<ServiceCategory[]>('/api/services/categories/')
+  async listCategories(): Promise<ApiResponse<PaginatedResponse<ServiceCategory>>> {
+    return apiClient.getPublic<PaginatedResponse<ServiceCategory>>('/api/services/categories/')
   },
 }
 

@@ -189,11 +189,10 @@ export function useServices() {
     isLoadingCategories.value = true
 
     try {
-      const response: ApiResponse<ApiServiceCategory[]> =
-        await serviceCategoriesService.listCategories()
+      const response = await serviceCategoriesService.listCategories()
 
       if (response.success && response.data) {
-        categories.value = response.data
+        categories.value = response.data.results
       } else {
         if (import.meta.env.DEV) {
           console.error('Failed to fetch categories:', response.message)
