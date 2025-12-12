@@ -1,11 +1,10 @@
 <template>
   <Teleport to="body">
-    <!-- Backdrop -->
+    <!-- Backdrop - no click to close, user must use close button -->
     <Transition name="fade">
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/50 z-[998]"
-        @click="closeDrawer"
       />
     </Transition>
 
@@ -52,82 +51,8 @@
 
           <!-- Form -->
           <div v-else class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
-            <!-- Cover Image Upload -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cover Image</h3>
-                <!-- Options button when image exists -->
-                <div v-if="form.coverImage" class="relative">
-                  <button
-                    @click.stop="showCoverDropdown = !showCoverDropdown"
-                    class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
-                  >
-                    <MoreHorizontal class="w-4 h-4" />
-                  </button>
-                  <!-- Dropdown menu -->
-                  <div
-                    v-if="showCoverDropdown"
-                    @click.stop
-                    class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-20 min-w-[120px]"
-                  >
-                    <button
-                      @click="triggerCoverUpload(); showCoverDropdown = false"
-                      class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                    >
-                      <Upload class="w-4 h-4" />
-                      <span>Replace</span>
-                    </button>
-                    <button
-                      @click="form.coverImage = ''; form.coverImageFile = null; showCoverDropdown = false"
-                      class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <X class="w-4 h-4" />
-                      <span>Remove</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hidden file input -->
-              <input
-                ref="coverFileInput"
-                type="file"
-                accept="image/*"
-                @change="handleCoverFileSelect"
-                class="hidden"
-              />
-
-              <!-- Cover Preview or Upload Area -->
-              <div
-                v-if="form.coverImage"
-                class="relative rounded-lg overflow-hidden"
-                style="padding-bottom: 56.25%;"
-              >
-                <img
-                  :src="form.coverImage"
-                  alt="Cover Image"
-                  class="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-              <div
-                v-else
-                @click="triggerCoverUpload"
-                class="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#2ecc71] hover:bg-slate-50 transition-all group"
-              >
-                <div class="flex flex-col items-center gap-1.5">
-                  <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                    <ImageIcon class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
-                  </div>
-                  <div>
-                    <p class="text-xs font-medium text-slate-600 group-hover:text-slate-900">Click to upload cover image</p>
-                    <p class="text-[10px] text-slate-400">16:9 ratio recommended</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Basic Information -->
-            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
+            <div class="space-y-3">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
 
               <!-- Title -->
@@ -317,24 +242,6 @@
                 </p>
               </div>
 
-              <!-- Price Unit -->
-              <div v-if="form.priceType !== 'quote'">
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Price Unit</label>
-                <div class="relative">
-                  <select
-                    v-model="form.priceUnit"
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
-                  >
-                    <option value="">No unit</option>
-                    <option value="per_event">Per Event</option>
-                    <option value="per_hour">Per Hour</option>
-                    <option value="per_day">Per Day</option>
-                    <option value="per_person">Per Person</option>
-                    <option value="per_item">Per Item</option>
-                  </select>
-                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              </div>
             </div>
 
             <!-- Service Area -->
@@ -402,7 +309,10 @@
 
             <!-- Gallery -->
             <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gallery</h3>
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gallery</h3>
+                <span class="text-xs text-slate-400">Click star to set cover</span>
+              </div>
 
               <!-- Hidden file input for gallery -->
               <input
@@ -410,7 +320,7 @@
                 type="file"
                 accept="image/*"
                 multiple
-                @change="handleGalleryFileSelect"
+                @change.stop="handleGalleryFileSelect"
                 class="hidden"
               />
 
@@ -419,21 +329,54 @@
                 <div
                   v-for="(image, index) in form.gallery"
                   :key="index"
-                  class="relative aspect-square rounded-lg overflow-hidden bg-slate-100 group"
+                  :class="[
+                    'relative aspect-square rounded-lg overflow-hidden bg-slate-100 group',
+                    form.coverIndex === index ? 'ring-2 ring-[#2ecc71] ring-offset-1' : ''
+                  ]"
                 >
-                  <img :src="image" alt="Gallery" class="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    @click="removeGalleryImage(index)"
-                    class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  <img :src="image.url" alt="Gallery" class="w-full h-full object-cover" />
+
+                  <!-- Cover badge -->
+                  <div
+                    v-if="form.coverIndex === index"
+                    class="absolute top-1 left-1 px-1.5 py-0.5 bg-[#2ecc71] text-white text-[10px] font-medium rounded"
                   >
-                    <X class="w-3 h-3" />
-                  </button>
+                    Cover
+                  </div>
+
+                  <!-- Action buttons overlay -->
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <!-- Set as cover button -->
+                    <button
+                      type="button"
+                      @click="setCoverImage(index)"
+                      :class="[
+                        'w-8 h-8 rounded-full flex items-center justify-center transition-colors',
+                        form.coverIndex === index
+                          ? 'bg-[#2ecc71] text-white'
+                          : 'bg-white/90 hover:bg-[#2ecc71] text-slate-600 hover:text-white'
+                      ]"
+                      :title="form.coverIndex === index ? 'Current cover' : 'Set as cover'"
+                    >
+                      <Star :class="['w-4 h-4', form.coverIndex === index ? 'fill-current' : '']" />
+                    </button>
+
+                    <!-- Delete button -->
+                    <button
+                      type="button"
+                      @click="removeGalleryImage(index)"
+                      class="w-8 h-8 bg-white/90 hover:bg-red-500 text-slate-600 hover:text-white rounded-full flex items-center justify-center transition-colors"
+                      title="Remove image"
+                    >
+                      <X class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Add More Button -->
                 <div
-                  @click="triggerGalleryUpload"
+                  v-if="form.gallery.length < 10"
+                  @click.stop.prevent="triggerGalleryUpload"
                   class="aspect-square border-2 border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#2ecc71] hover:bg-slate-50 transition-all group"
                 >
                   <Plus class="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
@@ -441,56 +384,10 @@
                 </div>
               </div>
               <p class="text-xs text-slate-500">
-                Add up to 10 images to showcase your work
+                Add up to 10 images. The starred image will be used as your listing cover.
               </p>
             </div>
 
-            <!-- Contact Information -->
-            <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Information</h3>
-
-              <!-- Telegram -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Telegram Username</label>
-                <div class="relative">
-                  <Send class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    v-model="form.telegramUsername"
-                    type="text"
-                    placeholder="@username"
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
-                </div>
-              </div>
-
-              <!-- Phone -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
-                <div class="relative">
-                  <Phone class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    v-model="form.phone"
-                    type="tel"
-                    placeholder="+855 12 345 678"
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
-                </div>
-              </div>
-
-              <!-- Website -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Website</label>
-                <div class="relative">
-                  <Globe class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    v-model="form.website"
-                    type="url"
-                    placeholder="https://example.com"
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -583,9 +480,6 @@ import {
   CheckCircle,
   MapPin,
   Save,
-  ImageIcon,
-  Upload,
-  MoreHorizontal,
   ArrowRight,
   Trash2,
   ChevronDown,
@@ -593,58 +487,45 @@ import {
   TrendingUp,
   MessageSquare,
   Plus,
-  Send,
-  Phone,
-  Globe,
+  Star,
 } from 'lucide-vue-next'
+import {
+  serviceCategoriesService,
+  serviceListingsService,
+  apiClient,
+  type ServiceCategory,
+  type ServiceListing,
+  type CreateServiceListingData,
+  type UpdateServiceListingData,
+} from '@/services/api'
 
-interface Category {
-  id: string
-  name: string
-}
-
-interface Listing {
-  id: string
-  title: string
-  tagline: string
-  description: string
-  coverImage: string
-  category: string
-  priceType: 'fixed' | 'range' | 'quote'
-  priceMin: number | null
-  priceMax: number | null
-  currency: string
-  priceUnit: string
-  serviceArea: string
-  tags: string[]
-  gallery: string[]
-  telegramUsername: string
-  phone: string
-  website: string
+interface GalleryImage {
+  id?: number // From API when editing existing
+  url: string
+  file?: File // For new uploads
+  is_cover: boolean
 }
 
 interface Props {
   modelValue: boolean
   listingId?: string | null
-  listing?: Listing | null
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
-  (e: 'created', listing: Listing): void
-  (e: 'updated', listing: Listing): void
+  (e: 'created', listing: ServiceListing): void
+  (e: 'updated', listing: ServiceListing): void
   (e: 'deleted', listingId: string): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   listingId: null,
-  listing: null,
 })
 
 const emit = defineEmits<Emits>()
 
 // Computed
-const isEditMode = computed(() => !!props.listingId || !!props.listing)
+const isEditMode = computed(() => !!props.listingId)
 
 // State
 const loading = ref(false)
@@ -652,120 +533,137 @@ const isSubmitting = ref(false)
 const showDeleteConfirm = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
-// Cover upload state
-const coverFileInput = ref<HTMLInputElement | null>(null)
-const showCoverDropdown = ref(false)
-
 // Gallery upload state
 const galleryFileInput = ref<HTMLInputElement | null>(null)
 
 // Tag input
 const newTag = ref('')
 
-// Mock categories
-const categories = ref<Category[]>([
-  { id: 'photography', name: 'Photography' },
-  { id: 'videography', name: 'Videography' },
-  { id: 'catering', name: 'Catering' },
-  { id: 'venue', name: 'Venue' },
-  { id: 'music', name: 'Music & Entertainment' },
-  { id: 'decoration', name: 'Decoration' },
-  { id: 'florist', name: 'Florist' },
-  { id: 'planning', name: 'Event Planning' },
-  { id: 'rentals', name: 'Rentals' },
-  { id: 'makeup', name: 'Makeup & Styling' },
-  { id: 'transport', name: 'Transportation' },
-  { id: 'mc', name: 'MC & Host' },
-  { id: 'printing', name: 'Printing & Stationery' },
-  { id: 'security', name: 'Security' },
-  { id: 'other', name: 'Other Services' },
-])
+// Categories from API
+const categories = ref<ServiceCategory[]>([])
+const isLoadingCategories = ref(false)
+
+// Current listing data when editing
+const currentListing = ref<ServiceListing | null>(null)
 
 // Form data
 const form = reactive({
   title: '',
   tagline: '',
   description: '',
-  coverImage: '',
-  coverImageFile: null as File | null,
-  category: '',
+  category: null as number | null, // API uses numeric IDs
   priceType: 'fixed' as 'fixed' | 'range' | 'quote',
   priceMin: null as number | null,
   priceMax: null as number | null,
   currency: 'USD',
-  priceUnit: '',
+  priceDisplayText: '', // Custom price display text
   serviceArea: '',
   tags: [] as string[],
-  gallery: [] as string[],
-  galleryFiles: [] as File[],
-  telegramUsername: '',
-  phone: '',
-  website: '',
+  gallery: [] as GalleryImage[],
+  coverIndex: 0, // Index of the cover image in gallery
 })
+
+// Pending files to upload after listing creation
+const pendingFiles = ref<File[]>([])
 
 // Methods
 const resetForm = () => {
   form.title = ''
   form.tagline = ''
   form.description = ''
-  form.coverImage = ''
-  form.coverImageFile = null
-  form.category = ''
+  form.category = null
   form.priceType = 'fixed'
   form.priceMin = null
   form.priceMax = null
   form.currency = 'USD'
-  form.priceUnit = ''
+  form.priceDisplayText = ''
   form.serviceArea = ''
   form.tags = []
   form.gallery = []
-  form.galleryFiles = []
-  form.telegramUsername = ''
-  form.phone = ''
-  form.website = ''
+  form.coverIndex = 0
+  pendingFiles.value = []
+  currentListing.value = null
 }
 
-const populateForm = (listing: Listing) => {
+/**
+ * Fetch categories from API
+ */
+const fetchCategories = async () => {
+  if (categories.value.length > 0) return // Already loaded
+
+  isLoadingCategories.value = true
+  try {
+    const response = await serviceCategoriesService.listCategories()
+    if (response.success && response.data) {
+      categories.value = response.data.results
+    }
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+/**
+ * Fetch listing data when editing
+ */
+const fetchListing = async (listingId: string) => {
+  loading.value = true
+  try {
+    const response = await serviceListingsService.getListing(listingId)
+    if (response.success && response.data) {
+      currentListing.value = response.data
+      populateFormFromListing(response.data)
+    } else {
+      showMessage('error', response.message || 'Failed to load listing')
+    }
+  } catch (error) {
+    console.error('Failed to fetch listing:', error)
+    showMessage('error', 'Failed to load listing data')
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * Populate form from API listing data
+ */
+const populateFormFromListing = (listing: ServiceListing) => {
   form.title = listing.title || ''
-  form.tagline = listing.tagline || ''
+  form.tagline = listing.short_tagline || ''
   form.description = listing.description || ''
-  form.coverImage = listing.coverImage || ''
-  form.category = listing.category || ''
-  form.priceType = listing.priceType || 'fixed'
-  form.priceMin = listing.priceMin
-  form.priceMax = listing.priceMax
+  form.category = listing.category
+
+  // Determine price type from data
+  const priceMin = parseFloat(listing.price_min) || 0
+  const priceMax = parseFloat(listing.price_max) || 0
+
+  if (priceMin === 0 && priceMax === 0) {
+    form.priceType = 'quote'
+  } else if (priceMin === priceMax || priceMax === 0) {
+    form.priceType = 'fixed'
+    form.priceMin = priceMin
+  } else {
+    form.priceType = 'range'
+    form.priceMin = priceMin
+    form.priceMax = priceMax
+  }
+
   form.currency = listing.currency || 'USD'
-  form.priceUnit = listing.priceUnit || ''
-  form.serviceArea = listing.serviceArea || ''
-  form.tags = [...(listing.tags || [])]
-  form.gallery = [...(listing.gallery || [])]
-  form.telegramUsername = listing.telegramUsername || ''
-  form.phone = listing.phone || ''
-  form.website = listing.website || ''
-}
+  form.priceDisplayText = listing.price_display_text || ''
+  form.serviceArea = listing.service_area || ''
+  form.tags = listing.tags_list || []
 
-const triggerCoverUpload = () => {
-  coverFileInput.value?.click()
-}
+  // Map media to gallery
+  form.gallery = (listing.media || []).map((media) => ({
+    id: media.id,
+    url: apiClient.getProfilePictureUrl(media.image) || media.image,
+    is_cover: media.is_cover,
+  }))
 
-const handleCoverFileSelect = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  const file = target.files?.[0]
-  target.value = ''
-
-  if (!file) return
-
-  if (!file.type.startsWith('image/')) {
-    showMessage('error', 'Please select an image file')
-    return
-  }
-
-  form.coverImageFile = file
-  const reader = new FileReader()
-  reader.onload = (ev) => {
-    form.coverImage = ev.target?.result as string
-  }
-  reader.readAsDataURL(file)
+  // Find cover index
+  const coverIdx = form.gallery.findIndex((img) => img.is_cover)
+  form.coverIndex = coverIdx >= 0 ? coverIdx : 0
 }
 
 const triggerGalleryUpload = () => {
@@ -773,30 +671,59 @@ const triggerGalleryUpload = () => {
 }
 
 const handleGalleryFileSelect = (e: Event) => {
+  e.stopPropagation()
+  e.preventDefault()
+
   const target = e.target as HTMLInputElement
   const files = target.files
-  target.value = ''
 
-  if (!files || files.length === 0) return
+  if (!files || files.length === 0) {
+    target.value = ''
+    return
+  }
 
   const remainingSlots = 10 - form.gallery.length
   const filesToAdd = Array.from(files).slice(0, remainingSlots)
+  const isFirstImage = form.gallery.length === 0
 
-  filesToAdd.forEach((file) => {
+  filesToAdd.forEach((file, idx) => {
     if (!file.type.startsWith('image/')) return
 
-    form.galleryFiles.push(file)
     const reader = new FileReader()
     reader.onload = (ev) => {
-      form.gallery.push(ev.target?.result as string)
+      const newImage: GalleryImage = {
+        url: ev.target?.result as string,
+        file: file,
+        is_cover: isFirstImage && idx === 0, // First image becomes cover by default
+      }
+      form.gallery.push(newImage)
     }
     reader.readAsDataURL(file)
   })
+
+  // Clear input value after processing to allow selecting same file again
+  target.value = ''
 }
 
 const removeGalleryImage = (index: number) => {
   form.gallery.splice(index, 1)
-  form.galleryFiles.splice(index, 1)
+  // Adjust cover index if needed
+  if (form.coverIndex === index) {
+    form.coverIndex = form.gallery.length > 0 ? 0 : -1
+    if (form.gallery.length > 0) {
+      form.gallery[0].is_cover = true
+    }
+  } else if (form.coverIndex > index) {
+    form.coverIndex--
+  }
+}
+
+const setCoverImage = (index: number) => {
+  // Update is_cover flags
+  form.gallery.forEach((img, idx) => {
+    img.is_cover = idx === index
+  })
+  form.coverIndex = index
 }
 
 const addTag = () => {
@@ -809,6 +736,49 @@ const addTag = () => {
 
 const removeTag = (index: number) => {
   form.tags.splice(index, 1)
+}
+
+/**
+ * Build price display text based on price type
+ */
+const buildPriceDisplayText = (): string => {
+  if (form.priceDisplayText) return form.priceDisplayText
+
+  const currencySymbol = form.currency === 'USD' ? '$' : form.currency === 'EUR' ? '€' : '៛'
+
+  if (form.priceType === 'quote') {
+    return 'Contact for Quote'
+  } else if (form.priceType === 'fixed') {
+    return `${currencySymbol}${form.priceMin || 0}`
+  } else {
+    return `${currencySymbol}${form.priceMin || 0} - ${currencySymbol}${form.priceMax || 0}`
+  }
+}
+
+/**
+ * Upload pending media files to a listing
+ */
+const uploadPendingMedia = async (listingId: string): Promise<void> => {
+  const filesToUpload = form.gallery.filter((img) => img.file).map((img) => img.file as File)
+
+  if (filesToUpload.length === 0) return
+
+  try {
+    const response = await serviceListingsService.bulkUploadMedia(listingId, filesToUpload)
+
+    if (response.success && response.data?.media) {
+      // Find the cover image and set it
+      const coverIdx = form.coverIndex
+      if (coverIdx >= 0 && coverIdx < response.data.media.length) {
+        const coverMediaId = response.data.media[coverIdx].id
+        await serviceListingsService.setCoverImage(listingId, coverMediaId)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to upload media:', error)
+    // Don't throw - listing was created, just media upload failed
+    showMessage('error', 'Listing saved but some images failed to upload')
+  }
 }
 
 const handleSubmit = async () => {
@@ -841,40 +811,98 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    // Mock API call - simulate delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Build API payload
+    const priceMin = form.priceType === 'quote' ? '0' : String(form.priceMin || 0)
+    const priceMax =
+      form.priceType === 'quote'
+        ? '0'
+        : form.priceType === 'fixed'
+          ? priceMin
+          : String(form.priceMax || 0)
 
-    const listingData: Listing = {
-      id: props.listingId || `listing-${Date.now()}`,
-      title: form.title.trim(),
-      tagline: form.tagline.trim(),
-      description: form.description.trim(),
-      coverImage: form.coverImage,
-      category: form.category,
-      priceType: form.priceType,
-      priceMin: form.priceMin,
-      priceMax: form.priceMax,
-      currency: form.currency,
-      priceUnit: form.priceUnit,
-      serviceArea: form.serviceArea.trim(),
-      tags: form.tags,
-      gallery: form.gallery,
-      telegramUsername: form.telegramUsername.trim(),
-      phone: form.phone.trim(),
-      website: form.website.trim(),
-    }
+    if (isEditMode.value && props.listingId) {
+      // Update existing listing
+      const updateData: UpdateServiceListingData = {
+        category: form.category!,
+        title: form.title.trim(),
+        description: form.description.trim(),
+        short_tagline: form.tagline.trim(),
+        price_min: priceMin,
+        price_max: priceMax,
+        price_display_text: buildPriceDisplayText(),
+        currency: form.currency,
+        service_area: form.serviceArea.trim(),
+        tags: form.tags.join(', '),
+      }
 
-    if (isEditMode.value) {
-      showMessage('success', 'Listing updated successfully!')
-      emit('updated', listingData)
+      const response = await serviceListingsService.updateListing(props.listingId, updateData)
+
+      if (response.success && response.data) {
+        // Handle new media uploads
+        const newFiles = form.gallery.filter((img) => img.file)
+        if (newFiles.length > 0) {
+          await uploadPendingMedia(props.listingId)
+        }
+
+        // Handle deleted media (existing media that was removed)
+        if (currentListing.value) {
+          const existingIds = currentListing.value.media.map((m) => m.id)
+          const currentIds = form.gallery.filter((img) => img.id).map((img) => img.id!)
+          const deletedIds = existingIds.filter((id) => !currentIds.includes(id))
+
+          for (const mediaId of deletedIds) {
+            await serviceListingsService.deleteMedia(props.listingId, mediaId)
+          }
+        }
+
+        // Update cover image if changed
+        const coverImage = form.gallery[form.coverIndex]
+        if (coverImage?.id) {
+          await serviceListingsService.setCoverImage(props.listingId, coverImage.id)
+        }
+
+        showMessage('success', 'Listing updated successfully!')
+        emit('updated', response.data)
+
+        setTimeout(() => {
+          closeDrawer()
+        }, 1000)
+      } else {
+        showMessage('error', response.message || 'Failed to update listing')
+      }
     } else {
-      showMessage('success', 'Listing created successfully!')
-      emit('created', listingData)
-    }
+      // Create new listing
+      const createData: CreateServiceListingData = {
+        category: form.category!,
+        title: form.title.trim(),
+        description: form.description.trim(),
+        short_tagline: form.tagline.trim(),
+        price_min: priceMin,
+        price_max: priceMax,
+        price_display_text: buildPriceDisplayText(),
+        currency: form.currency,
+        service_area: form.serviceArea.trim(),
+        tags: form.tags.join(', '),
+      }
 
-    setTimeout(() => {
-      closeDrawer()
-    }, 1000)
+      const response = await serviceListingsService.createListing(createData)
+
+      if (response.success && response.data) {
+        // Upload media if any
+        if (form.gallery.length > 0) {
+          await uploadPendingMedia(response.data.id)
+        }
+
+        showMessage('success', 'Listing created successfully!')
+        emit('created', response.data)
+
+        setTimeout(() => {
+          closeDrawer()
+        }, 1000)
+      } else {
+        showMessage('error', response.message || 'Failed to create listing')
+      }
+    }
   } catch (err) {
     console.error('Error saving listing:', err)
     showMessage('error', 'An error occurred while saving')
@@ -884,15 +912,18 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = async () => {
-  if (!props.listingId && !props.listing?.id) return
+  if (!props.listingId) return
 
   try {
-    // Mock API call
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const response = await serviceListingsService.deleteListing(props.listingId)
 
-    showDeleteConfirm.value = false
-    emit('deleted', props.listingId || props.listing?.id || '')
-    closeDrawer()
+    if (response.success) {
+      showDeleteConfirm.value = false
+      emit('deleted', props.listingId)
+      closeDrawer()
+    } else {
+      showMessage('error', response.message || 'Failed to delete listing')
+    }
   } catch (err) {
     console.error('Error deleting listing:', err)
     showMessage('error', 'Failed to delete listing')
@@ -918,10 +949,14 @@ const getScrollbarWidth = (): number => {
 // Watch for drawer open/close
 watch(
   () => props.modelValue,
-  (isOpen) => {
+  async (isOpen) => {
     if (isOpen) {
-      if (props.listing) {
-        populateForm(props.listing)
+      // Load categories if not already loaded
+      await fetchCategories()
+
+      // If editing, fetch listing data
+      if (props.listingId) {
+        await fetchListing(props.listingId)
       } else {
         resetForm()
       }
@@ -942,12 +977,12 @@ watch(
   }
 )
 
-// Watch for listing prop changes
+// Watch for listingId prop changes
 watch(
-  () => props.listing,
-  (newListing) => {
-    if (newListing && props.modelValue) {
-      populateForm(newListing)
+  () => props.listingId,
+  async (newListingId) => {
+    if (newListingId && props.modelValue) {
+      await fetchListing(newListingId)
     }
   }
 )
