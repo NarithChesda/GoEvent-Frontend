@@ -98,11 +98,11 @@
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Category *</label>
                 <div class="relative">
                   <select
-                    v-model="form.category"
+                    v-model.number="form.category"
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                   >
-                    <option value="">Select a category</option>
-                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                    <option :value="null">Select a category</option>
+                    <option v-for="category in categories" :key="category.id" :value="Number(category.id)">
                       {{ category.name }}
                     </option>
                   </select>
@@ -434,41 +434,14 @@
   </Teleport>
 
   <!-- Delete Confirmation Modal -->
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="showDeleteConfirm"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000] flex items-center justify-center p-4"
-        @click.self="showDeleteConfirm = false"
-      >
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
-          <div class="text-center">
-            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trash2 class="w-6 h-6 text-red-500" />
-            </div>
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">Delete Listing</h3>
-            <p class="text-sm text-slate-600 mb-6">
-              Are you sure you want to delete "{{ form.title }}"? This action cannot be undone.
-            </p>
-            <div class="flex gap-3">
-              <button
-                @click="showDeleteConfirm = false"
-                class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                @click="handleDelete"
-                class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <DeleteConfirmModal
+    :show="showDeleteConfirm"
+    :loading="isDeleting"
+    title="Delete Listing"
+    :item-name="form.title"
+    @confirm="handleDelete"
+    @cancel="showDeleteConfirm = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -489,6 +462,7 @@ import {
   Plus,
   Star,
 } from 'lucide-vue-next'
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import {
   serviceCategoriesService,
   serviceListingsService,
@@ -531,6 +505,7 @@ const isEditMode = computed(() => !!props.listingId)
 const loading = ref(false)
 const isSubmitting = ref(false)
 const showDeleteConfirm = ref(false)
+const isDeleting = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Gallery upload state
@@ -632,7 +607,8 @@ const populateFormFromListing = (listing: ServiceListing) => {
   form.title = listing.title || ''
   form.tagline = listing.short_tagline || ''
   form.description = listing.description || ''
-  form.category = listing.category
+  // Ensure category is a number for proper v-model binding with select option values
+  form.category = listing.category != null ? Number(listing.category) : null
 
   // Determine price type from data
   const priceMin = parseFloat(listing.price_min) || 0
@@ -756,28 +732,46 @@ const buildPriceDisplayText = (): string => {
 }
 
 /**
- * Upload pending media files to a listing
+ * Upload pending media files to a listing and return the uploaded media with their IDs
  */
-const uploadPendingMedia = async (listingId: string): Promise<void> => {
-  const filesToUpload = form.gallery.filter((img) => img.file).map((img) => img.file as File)
+const uploadPendingMedia = async (listingId: string): Promise<number | null> => {
+  const newImageIndices: number[] = []
+  const filesToUpload: File[] = []
 
-  if (filesToUpload.length === 0) return
+  // Track which gallery indices have new files
+  form.gallery.forEach((img, idx) => {
+    if (img.file) {
+      newImageIndices.push(idx)
+      filesToUpload.push(img.file)
+    }
+  })
+
+  if (filesToUpload.length === 0) return null
 
   try {
     const response = await serviceListingsService.bulkUploadMedia(listingId, filesToUpload)
 
     if (response.success && response.data?.media) {
-      // Find the cover image and set it
-      const coverIdx = form.coverIndex
-      if (coverIdx >= 0 && coverIdx < response.data.media.length) {
-        const coverMediaId = response.data.media[coverIdx].id
-        await serviceListingsService.setCoverImage(listingId, coverMediaId)
+      // Map uploaded media IDs back to gallery items
+      response.data.media.forEach((media, uploadIdx) => {
+        const galleryIdx = newImageIndices[uploadIdx]
+        if (galleryIdx !== undefined) {
+          form.gallery[galleryIdx].id = media.id
+        }
+      })
+
+      // Check if the cover image is one of the newly uploaded images
+      const coverImage = form.gallery[form.coverIndex]
+      if (coverImage?.id) {
+        return coverImage.id
       }
     }
+    return null
   } catch (error) {
     console.error('Failed to upload media:', error)
     // Don't throw - listing was created, just media upload failed
     showMessage('error', 'Listing saved but some images failed to upload')
+    return null
   }
 }
 
@@ -855,14 +849,20 @@ const handleSubmit = async () => {
           }
         }
 
-        // Update cover image if changed
+        // Update cover image - the gallery items now have IDs after upload
         const coverImage = form.gallery[form.coverIndex]
         if (coverImage?.id) {
           await serviceListingsService.setCoverImage(props.listingId, coverImage.id)
         }
 
+        // Re-fetch the listing to get updated data including media changes
+        const updatedResponse = await serviceListingsService.getListing(props.listingId)
+        const finalListing = updatedResponse.success && updatedResponse.data
+          ? updatedResponse.data
+          : response.data
+
         showMessage('success', 'Listing updated successfully!')
-        emit('updated', response.data)
+        emit('updated', finalListing)
 
         setTimeout(() => {
           closeDrawer()
@@ -888,13 +888,27 @@ const handleSubmit = async () => {
       const response = await serviceListingsService.createListing(createData)
 
       if (response.success && response.data) {
+        const listingId = response.data.id
+
         // Upload media if any
         if (form.gallery.length > 0) {
-          await uploadPendingMedia(response.data.id)
+          await uploadPendingMedia(listingId)
+
+          // Set cover image after upload (gallery items now have IDs)
+          const coverImage = form.gallery[form.coverIndex]
+          if (coverImage?.id) {
+            await serviceListingsService.setCoverImage(listingId, coverImage.id)
+          }
         }
 
+        // Re-fetch the listing to get complete data including media
+        const updatedResponse = await serviceListingsService.getListing(listingId)
+        const finalListing = updatedResponse.success && updatedResponse.data
+          ? updatedResponse.data
+          : response.data
+
         showMessage('success', 'Listing created successfully!')
-        emit('created', response.data)
+        emit('created', finalListing)
 
         setTimeout(() => {
           closeDrawer()
@@ -914,6 +928,7 @@ const handleSubmit = async () => {
 const handleDelete = async () => {
   if (!props.listingId) return
 
+  isDeleting.value = true
   try {
     const response = await serviceListingsService.deleteListing(props.listingId)
 
@@ -927,6 +942,8 @@ const handleDelete = async () => {
   } catch (err) {
     console.error('Error deleting listing:', err)
     showMessage('error', 'Failed to delete listing')
+  } finally {
+    isDeleting.value = false
   }
 }
 

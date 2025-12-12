@@ -111,101 +111,198 @@
       </div>
 
       <!-- Listings Grid -->
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-3 sm:space-y-4">
+        <!-- Mobile Card -->
         <div
           v-for="listing in listings"
           :key="listing.id"
-          class="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+          class="glass-card rounded-2xl overflow-hidden"
         >
-          <div class="flex flex-col sm:flex-row">
-            <!-- Cover Image -->
-            <div class="sm:w-40 sm:h-32 flex-shrink-0">
-              <img
-                v-if="listing.cover_image_url"
-                :src="getImageUrl(listing.cover_image_url)"
-                :alt="listing.title"
-                class="w-full h-32 sm:h-full object-cover"
-              />
-              <div v-else class="w-full h-32 sm:h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                <ImageIcon class="w-8 h-8 text-slate-300" />
+          <!-- Mobile Layout -->
+          <div class="sm:hidden p-4">
+            <div class="flex gap-3">
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <!-- Status Badge -->
+                <div class="flex items-center gap-2 mb-1">
+                  <span
+                    :class="[
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      getStatusClass(listing.status)
+                    ]"
+                  >
+                    {{ getStatusLabel(listing.status) }}
+                  </span>
+                  <span
+                    v-if="listing.is_featured"
+                    class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
+                  >
+                    Featured
+                  </span>
+                </div>
+
+                <!-- Title -->
+                <h3 class="text-base font-semibold text-slate-900 mb-1.5 line-clamp-2">
+                  {{ listing.title }}
+                </h3>
+
+                <!-- Price -->
+                <p class="text-sm font-medium text-[#2ecc71] mb-1.5">
+                  {{ listing.price_display_text || 'Contact for price' }}
+                </p>
+
+                <!-- Category -->
+                <div class="flex items-center gap-1.5 text-sm text-slate-500 mb-1.5">
+                  <Tag class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  <span class="truncate">{{ getCategoryName(listing) }}</span>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-3 text-sm text-slate-400">
+                  <span class="flex items-center gap-1">
+                    <Eye class="w-3.5 h-3.5" />
+                    {{ listing.views_count || 0 }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <MousePointerClick class="w-3.5 h-3.5" />
+                    {{ listing.contact_clicks_count || 0 }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Cover Image (square on mobile) -->
+              <div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+                <img
+                  v-if="listing.cover_image_url"
+                  :src="getImageUrl(listing.cover_image_url)"
+                  :alt="listing.title"
+                  class="w-full h-full object-cover"
+                />
+                <div
+                  v-else
+                  class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+                >
+                  <ImageIcon class="w-6 h-6 text-[#2ecc71]/60" />
+                </div>
               </div>
             </div>
 
-            <!-- Content -->
-            <div class="flex-1 p-4">
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <h3 class="font-semibold text-gray-900 truncate">{{ listing.title }}</h3>
-                    <span
-                      :class="[
-                        'px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
-                        getStatusClass(listing.status)
-                      ]"
-                    >
-                      {{ getStatusLabel(listing.status) }}
-                    </span>
-                    <span
-                      v-if="listing.is_featured"
-                      class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
-                    >
-                      Featured
-                    </span>
-                  </div>
-                  <p class="text-sm text-gray-500 mt-1 line-clamp-1">{{ listing.short_tagline || listing.description }}</p>
-                  <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                    <span class="flex items-center gap-1">
-                      <Tag class="w-3.5 h-3.5" />
-                      {{ getCategoryName(listing) }}
-                    </span>
-                    <span class="flex items-center gap-1">
-                      <Eye class="w-3.5 h-3.5" />
-                      {{ listing.views_count || 0 }} views
-                    </span>
-                    <span class="flex items-center gap-1">
-                      <MousePointerClick class="w-3.5 h-3.5" />
-                      {{ listing.contact_clicks_count || 0 }} clicks
-                    </span>
-                  </div>
+            <!-- Mobile Actions -->
+            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100/50">
+              <button
+                @click="editListing(listing)"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+              >
+                <Pencil class="w-3.5 h-3.5" />
+                Edit
+              </button>
+              <button
+                v-if="listing.status === 'draft'"
+                @click="submitForReview(listing)"
+                :disabled="isSubmitting === listing.id"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Send class="w-3.5 h-3.5" />
+                {{ isSubmitting === listing.id ? '...' : 'Submit' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Desktop Layout -->
+          <div class="hidden sm:block p-5">
+            <div class="flex gap-4">
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <!-- Status and Category -->
+                <div class="flex items-center gap-2 text-sm mb-1">
+                  <span
+                    :class="[
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      getStatusClass(listing.status)
+                    ]"
+                  >
+                    {{ getStatusLabel(listing.status) }}
+                  </span>
+                  <span
+                    v-if="listing.is_featured"
+                    class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
+                  >
+                    Featured
+                  </span>
+                  <span class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium">
+                    {{ getCategoryName(listing) }}
+                  </span>
                 </div>
 
+                <!-- Title -->
+                <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors">
+                  {{ listing.title }}
+                </h3>
+
+                <!-- Description -->
+                <p class="text-sm text-slate-600 mb-2 line-clamp-1">
+                  {{ listing.short_tagline || listing.description }}
+                </p>
+
                 <!-- Price -->
-                <div class="text-right flex-shrink-0">
-                  <p class="font-semibold text-gray-900">{{ listing.price_display_text || 'Contact for price' }}</p>
+                <div class="flex items-center gap-2 text-sm mb-2">
+                  <span class="font-medium text-[#2ecc71]">{{ listing.price_display_text || 'Contact for price' }}</span>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-4 text-sm text-slate-500">
+                  <span class="flex items-center gap-1.5">
+                    <Eye class="w-4 h-4" />
+                    {{ listing.views_count || 0 }} views
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <MousePointerClick class="w-4 h-4" />
+                    {{ listing.contact_clicks_count || 0 }} clicks
+                  </span>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2 mt-3">
+                  <button
+                    @click="editListing(listing)"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                  >
+                    <Pencil class="w-4 h-4" />
+                    Edit
+                  </button>
+                  <button
+                    v-if="listing.status === 'draft'"
+                    @click="submitForReview(listing)"
+                    :disabled="isSubmitting === listing.id"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-sky-700 border border-sky-200 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Send class="w-4 h-4" />
+                    {{ isSubmitting === listing.id ? 'Submitting...' : 'Submit for Review' }}
+                  </button>
+                  <button
+                    @click="viewAnalytics(listing)"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                  >
+                    <BarChart3 class="w-4 h-4" />
+                    Analytics
+                  </button>
                 </div>
               </div>
 
-              <!-- Actions -->
-              <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
-                <button
-                  @click="editListing(listing)"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              <!-- Cover Image (landscape on desktop) -->
+              <div class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+                <img
+                  v-if="listing.cover_image_url"
+                  :src="getImageUrl(listing.cover_image_url)"
+                  :alt="listing.title"
+                  class="w-full h-full object-cover"
+                />
+                <div
+                  v-else
+                  class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
                 >
-                  <Pencil class="w-4 h-4" />
-                  Edit
-                </button>
-                <button
-                  v-if="listing.status === 'draft'"
-                  @click="submitForReview(listing)"
-                  :disabled="isSubmitting === listing.id"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  <Send class="w-4 h-4" />
-                  {{ isSubmitting === listing.id ? 'Submitting...' : 'Submit for Review' }}
-                </button>
-                <button
-                  @click="viewAnalytics(listing)"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <BarChart3 class="w-4 h-4" />
-                  Analytics
-                </button>
-                <button
-                  @click="confirmDelete(listing)"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-auto"
-                >
-                  <Trash2 class="w-4 h-4" />
-                </button>
+                  <ImageIcon class="w-8 h-8 text-[#2ecc71]/60" />
+                </div>
               </div>
             </div>
           </div>
@@ -336,44 +433,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Delete Confirmation Modal -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="showDeleteConfirm && listingToDelete"
-          class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000] flex items-center justify-center p-4"
-          @click.self="showDeleteConfirm = false"
-        >
-          <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
-            <div class="text-center">
-              <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 class="w-6 h-6 text-red-500" />
-              </div>
-              <h3 class="text-lg font-semibold text-slate-900 mb-2">Delete Listing</h3>
-              <p class="text-sm text-slate-600 mb-6">
-                Are you sure you want to delete "{{ listingToDelete.title }}"? This action cannot be undone.
-              </p>
-              <div class="flex gap-3">
-                <button
-                  @click="showDeleteConfirm = false"
-                  class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  @click="deleteListing"
-                  :disabled="isDeleting"
-                  class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
-                >
-                  {{ isDeleting ? 'Deleting...' : 'Delete' }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
     <!-- Toast Messages -->
     <Transition name="slide-up">
       <div v-if="toastMessage" class="fixed bottom-20 lg:bottom-4 right-4 z-[1001]">
@@ -397,7 +456,6 @@ import { ref, computed, onMounted } from 'vue'
 import {
   Plus,
   Pencil,
-  Trash2,
   Eye,
   Tag,
   BarChart3,
@@ -434,9 +492,6 @@ const currentPage = ref(1)
 // UI state
 const showFormDrawer = ref(false)
 const editingListingId = ref<string | null>(null)
-const showDeleteConfirm = ref(false)
-const listingToDelete = ref<ServiceListing | null>(null)
-const isDeleting = ref(false)
 const isSubmitting = ref<string | null>(null)
 
 // Analytics state
@@ -586,33 +641,6 @@ const editListing = (listing: ServiceListing) => {
   showFormDrawer.value = true
 }
 
-const confirmDelete = (listing: ServiceListing) => {
-  listingToDelete.value = listing
-  showDeleteConfirm.value = true
-}
-
-const deleteListing = async () => {
-  if (!listingToDelete.value) return
-
-  isDeleting.value = true
-  try {
-    const response = await serviceListingsService.deleteListing(listingToDelete.value.id)
-
-    if (response.success) {
-      listings.value = listings.value.filter(l => l.id !== listingToDelete.value!.id)
-      showToast('success', 'Listing deleted successfully')
-      showDeleteConfirm.value = false
-      listingToDelete.value = null
-    } else {
-      showToast('error', response.message || 'Failed to delete listing')
-    }
-  } catch (err: any) {
-    showToast('error', err?.message || 'Failed to delete listing')
-  } finally {
-    isDeleting.value = false
-  }
-}
-
 const submitForReview = async (listing: ServiceListing) => {
   isSubmitting.value = listing.id
   try {
@@ -686,6 +714,22 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 6px -1px rgba(46, 204, 113, 0.05),
+    0 2px 4px -1px rgba(30, 144, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(46, 204, 113, 0.3);
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -714,6 +758,13 @@ onMounted(async () => {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
