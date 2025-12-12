@@ -46,8 +46,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/components/MainLayout.vue'
 import BaseCard from '@/components/BaseCard.vue'
 import AccountTab from '@/components/settings/AccountTab.vue'
@@ -66,6 +66,7 @@ interface Tab {
 
 // Router and store
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 // Tab configuration - easily extensible for future tabs
@@ -76,8 +77,25 @@ const tabs: Tab[] = [
   { id: 'vendor', label: 'Vendor' },
 ]
 
+// Valid tab IDs for validation
+const validTabIds: TabId[] = ['account', 'security', 'payment', 'vendor']
+
+// Get initial tab from URL query or default to 'account'
+const getInitialTab = (): TabId => {
+  const tabParam = route.query.tab as string
+  if (tabParam && validTabIds.includes(tabParam as TabId)) {
+    return tabParam as TabId
+  }
+  return 'account'
+}
+
 // Active tab state
-const activeTab = ref<TabId>('account')
+const activeTab = ref<TabId>(getInitialTab())
+
+// Update URL when tab changes
+watch(activeTab, (newTab) => {
+  router.replace({ query: { ...route.query, tab: newTab } })
+})
 
 // Authentication check on mount
 onMounted(() => {

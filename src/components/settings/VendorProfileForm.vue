@@ -329,15 +329,6 @@
         mode === 'create' ? 'justify-between' : 'justify-start'
       ]">
         <button
-          v-if="mode === 'create'"
-          type="button"
-          @click="$emit('cancel')"
-          class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
-        >
-          Cancel
-        </button>
-
-        <button
           type="submit"
           :disabled="isSaving || !isFormValid"
           class="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
@@ -350,6 +341,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
           </svg>
           {{ isSaving ? 'Saving...' : (mode === 'create' ? 'Create Profile' : 'Save Changes') }}
+        </button>
+
+        <button
+          v-if="mode === 'create'"
+          type="button"
+          @click="$emit('cancel')"
+          class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+        >
+          Cancel
         </button>
       </div>
     </form>
