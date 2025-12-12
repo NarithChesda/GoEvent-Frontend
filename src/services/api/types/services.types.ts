@@ -257,6 +257,7 @@ export interface VendorFilters extends QueryParams {
   search?: string
   city?: string
   country?: string
+  is_featured?: boolean
   page?: number
   page_size?: number
 }

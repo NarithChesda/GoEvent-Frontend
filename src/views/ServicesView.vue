@@ -59,9 +59,14 @@
 
           <!-- Featured Vendors Section -->
           <FeaturedVendors
-            v-if="!isLoadingVendors && featuredVendors.length > 0"
-            :vendors="featuredVendors"
+            v-if="!isLoadingDisplayedVendors && displayedVendors.length > 0 || showAllVendors"
+            :vendors="displayedVendors"
+            :show-all="showAllVendors"
+            :loading="isLoadingDisplayedVendors"
+            :has-more="hasMoreVendors"
             @vendor-click="openVendorProfile"
+            @toggle-view="handleToggleVendorView"
+            @load-more="handleLoadMoreVendors"
           />
 
           <!-- Loading State for Listings -->
@@ -194,6 +199,7 @@ const authStore = useAuthStore()
 const {
   // State
   featuredVendors,
+  allVendors,
   selectedListing: composableSelectedListing,
   selectedVendor: composableSelectedVendor,
   vendorListings: composableVendorListings,
@@ -201,12 +207,16 @@ const {
   sortBy,
   isLoadingListings,
   isLoadingVendors,
+  isLoadingAllVendors,
   hasMore,
+  hasMoreVendors,
 
   // Methods
   fetchCategories,
   fetchListings,
   fetchFeaturedVendors,
+  fetchAllVendors,
+  loadMoreVendors,
   fetchListingDetail,
   fetchVendorDetail,
   fetchVendorListings,
@@ -225,6 +235,7 @@ const showVendorDrawer = ref(false)
 const showListingFormDrawer = ref(false)
 const editingListing = ref<Listing | null>(null)
 const showCategoryMenu = ref(false)
+const showAllVendors = ref(false)
 
 // Message state
 const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
@@ -236,6 +247,14 @@ const vendorListings = computed(() => composableVendorListings.value)
 
 // Service categories from composable
 const serviceCategories = computed(() => serviceCategoriesForUI.value)
+
+// Vendors to display (featured or all based on toggle)
+const displayedVendors = computed(() =>
+  showAllVendors.value ? allVendors.value : featuredVendors.value
+)
+const isLoadingDisplayedVendors = computed(() =>
+  showAllVendors.value ? isLoadingAllVendors.value : isLoadingVendors.value
+)
 
 // Sort options
 const sortOptions = [
@@ -345,6 +364,19 @@ const handleListingDeleted = () => {
 
 const handleLearnMore = () => {
   showMessage('info', 'Vendor information page coming soon!')
+}
+
+// Toggle between featured and all vendors
+const handleToggleVendorView = async () => {
+  showAllVendors.value = !showAllVendors.value
+  if (showAllVendors.value && allVendors.value.length === 0) {
+    await fetchAllVendors()
+  }
+}
+
+// Load more vendors when showing all
+const handleLoadMoreVendors = async () => {
+  await loadMoreVendors()
 }
 
 const handleContactVendor = async (type: string) => {

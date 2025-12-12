@@ -166,6 +166,12 @@ export function useServices() {
   const featuredVendors = ref<Vendor[]>([])
   const isLoadingVendors = ref(false)
 
+  // State - All Vendors
+  const allVendors = ref<Vendor[]>([])
+  const isLoadingAllVendors = ref(false)
+  const allVendorsPage = ref(1)
+  const hasMoreVendors = ref(false)
+
   // State - Selected items
   const selectedListing = ref<Listing | null>(null)
   const selectedVendor = ref<Vendor | null>(null)
@@ -287,7 +293,7 @@ export function useServices() {
   }
 
   /**
-   * Fetch featured vendors
+   * Fetch featured vendors (only vendors with is_featured = true)
    */
   const fetchFeaturedVendors = async (): Promise<void> => {
     isLoadingVendors.value = true
@@ -295,6 +301,7 @@ export function useServices() {
     try {
       const response: ApiResponse<PaginatedResponse<VendorProfileBrief>> =
         await vendorService.listVendors({
+          is_featured: true,
           page: 1,
           page_size: 8, // Fetch top 8 featured vendors
         })
@@ -315,6 +322,66 @@ export function useServices() {
     } finally {
       isLoadingVendors.value = false
     }
+  }
+
+  /**
+   * Fetch all vendors (paginated, includes both featured and non-featured)
+   */
+  const fetchAllVendors = async (reset = true): Promise<void> => {
+    isLoadingAllVendors.value = true
+
+    if (reset) {
+      allVendorsPage.value = 1
+      allVendors.value = []
+    }
+
+    try {
+      const response: ApiResponse<PaginatedResponse<VendorProfileBrief>> =
+        await vendorService.listVendors({
+          page: allVendorsPage.value,
+          page_size: 12,
+        })
+
+      if (response.success && response.data) {
+        const mappedVendors = response.data.results.map(mapBriefToVendor)
+
+        if (reset) {
+          allVendors.value = mappedVendors
+        } else {
+          allVendors.value = [...allVendors.value, ...mappedVendors]
+        }
+
+        hasMoreVendors.value = !!response.data.next
+      } else {
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch all vendors:', response.message)
+        }
+        if (reset) {
+          allVendors.value = []
+        }
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error fetching all vendors:', error)
+      }
+      if (reset) {
+        allVendors.value = []
+      }
+    } finally {
+      isLoadingAllVendors.value = false
+    }
+  }
+
+  /**
+   * Load more vendors (pagination)
+   */
+  const loadMoreVendors = async (): Promise<void> => {
+    if (!hasMoreVendors.value || isLoadingAllVendors.value) {
+      return
+    }
+
+    allVendorsPage.value++
+    await fetchAllVendors(false)
   }
 
   /**
@@ -472,6 +539,9 @@ export function useServices() {
     // State - Vendors
     featuredVendors,
     isLoadingVendors,
+    allVendors,
+    isLoadingAllVendors,
+    hasMoreVendors,
 
     // State - Selected items
     selectedListing,
@@ -487,6 +557,8 @@ export function useServices() {
     fetchCategories,
     fetchListings,
     fetchFeaturedVendors,
+    fetchAllVendors,
+    loadMoreVendors,
     fetchListingDetail,
     fetchVendorDetail,
     fetchVendorListings,

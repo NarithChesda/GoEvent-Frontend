@@ -2,14 +2,25 @@
   <div class="mb-8">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
-        <Sparkles class="w-5 h-5 text-amber-500" />
-        Featured Vendors
+        <Sparkles v-if="!showAll" class="w-5 h-5 text-amber-500" />
+        <Store v-else class="w-5 h-5 text-[#2ecc71]" />
+        {{ showAll ? 'All Vendors' : 'Featured Vendors' }}
       </h2>
-      <button class="text-sm text-[#2ecc71] hover:text-[#27ae60] font-medium">
-        View All
+      <button
+        @click="$emit('toggle-view')"
+        class="text-sm text-[#2ecc71] hover:text-[#27ae60] font-medium"
+      >
+        {{ showAll ? 'Show Featured' : 'View All' }}
       </button>
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+    <!-- Loading State -->
+    <div v-if="loading" class="flex justify-center py-8">
+      <div class="w-8 h-8 border-4 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Vendors Grid -->
+    <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div
         v-for="vendor in vendors"
         :key="vendor.id"
@@ -39,18 +50,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Load More Button (only when showing all) -->
+    <div v-if="showAll && hasMore && !loading" class="flex justify-center mt-4">
+      <button
+        @click="$emit('load-more')"
+        class="px-4 py-2 text-sm font-medium text-[#2ecc71] hover:text-[#27ae60] border border-[#2ecc71] hover:border-[#27ae60] rounded-lg transition-colors"
+      >
+        Load More
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Sparkles, Star, MapPin } from 'lucide-vue-next'
+import { Sparkles, Star, MapPin, Store } from 'lucide-vue-next'
 import type { Vendor } from './types'
 
 defineProps<{
   vendors: Vendor[]
+  showAll?: boolean
+  loading?: boolean
+  hasMore?: boolean
 }>()
 
 defineEmits<{
   'vendor-click': [vendor: Vendor]
+  'toggle-view': []
+  'load-more': []
 }>()
 </script>
