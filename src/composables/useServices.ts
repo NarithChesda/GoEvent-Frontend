@@ -24,18 +24,43 @@ import {
   type ListingFilters,
 } from '@/services/api'
 import type { Listing, Vendor, ServiceCategory } from '@/components/services/types'
+import {
+  getCategoryFallbackImage,
+  getVendorLogoFallback,
+} from '@/utils/serviceFallbackImages'
 
 /**
  * Get full URL for image from API
+ * @param imageUrl - The image URL from API
+ * @param fallback - Optional fallback URL if image is missing
  */
-const getFullImageUrl = (imageUrl: string | null | undefined): string => {
+const getFullImageUrl = (imageUrl: string | null | undefined, fallback?: string): string => {
   if (!imageUrl) {
-    // Return a default placeholder image
-    return 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&h=600&fit=crop'
+    return fallback || getCategoryFallbackImage(null)
   }
 
   // Use ApiClient's helper method
   return apiClient.getProfilePictureUrl(imageUrl) || imageUrl
+}
+
+/**
+ * Get cover image URL with category-based fallback
+ */
+const getCoverImageUrl = (imageUrl: string | null | undefined, categoryName: string): string => {
+  if (!imageUrl) {
+    return getCategoryFallbackImage(categoryName)
+  }
+  return apiClient.getProfilePictureUrl(imageUrl) || imageUrl
+}
+
+/**
+ * Get vendor logo URL with fallback
+ */
+const getVendorLogoUrl = (logoUrl: string | null | undefined): string => {
+  if (!logoUrl) {
+    return getVendorLogoFallback()
+  }
+  return apiClient.getProfilePictureUrl(logoUrl) || logoUrl
 }
 
 /**
@@ -47,11 +72,11 @@ const mapBriefToListing = (brief: ServiceListingBrief): Listing => {
     title: brief.title,
     tagline: brief.short_tagline,
     description: '', // Not available in brief, will be filled when fetching full listing
-    coverImage: getFullImageUrl(brief.cover_image_url),
+    coverImage: getCoverImageUrl(brief.cover_image_url, brief.category_name),
     category: brief.category_name,
     priceDisplay: brief.price_display_text || `$${brief.price_min} - $${brief.price_max}`,
     vendorName: brief.vendor_name,
-    vendorLogo: '', // Not available in brief
+    vendorLogo: getVendorLogoFallback(), // Not available in brief, use fallback
     vendorVerified: true, // Assume verified since only approved listings are shown
     tags: [], // Not in brief
     serviceArea: '', // Not in brief
@@ -71,11 +96,11 @@ const mapFullToListing = (listing: ServiceListing): Listing => {
     title: listing.title,
     tagline: listing.short_tagline,
     description: listing.description,
-    coverImage: getFullImageUrl(listing.cover_image_url),
+    coverImage: getCoverImageUrl(listing.cover_image_url, listing.category_details.name),
     category: listing.category_details.name,
     priceDisplay: listing.price_display_text || `$${listing.price_min} - $${listing.price_max}`,
     vendorName: listing.vendor_details.business_name,
-    vendorLogo: getFullImageUrl(listing.vendor_details.logo),
+    vendorLogo: getVendorLogoUrl(listing.vendor_details.logo),
     vendorVerified: listing.vendor_details.verification_status === 'verified',
     tags: listing.tags_list || [],
     serviceArea: listing.service_area,
@@ -93,7 +118,7 @@ const mapBriefToVendor = (vendor: VendorProfileBrief): Vendor => {
   return {
     id: vendor.id,
     name: vendor.business_name,
-    logo: getFullImageUrl(vendor.logo),
+    logo: getVendorLogoUrl(vendor.logo),
     tagline: vendor.short_tagline,
     description: '', // Not in brief
     city: vendor.city,
@@ -111,7 +136,7 @@ const mapFullToVendor = (vendor: VendorProfile): Vendor => {
   return {
     id: vendor.id,
     name: vendor.business_name,
-    logo: getFullImageUrl(vendor.logo),
+    logo: getVendorLogoUrl(vendor.logo),
     tagline: vendor.short_tagline,
     description: vendor.description,
     city: vendor.city,

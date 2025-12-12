@@ -6,9 +6,10 @@
     <!-- Cover Image -->
     <div class="aspect-[16/9] relative overflow-hidden bg-slate-100">
       <img
-        :src="listing.coverImage"
+        :src="coverImageSrc"
         :alt="listing.title"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        @error="handleCoverError"
       />
       <!-- Featured Badge -->
       <div v-if="listing.isFeatured" class="absolute top-2 left-2">
@@ -36,9 +37,10 @@
       <!-- Vendor Info -->
       <div class="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-2">
         <img
-          :src="listing.vendorLogo"
+          :src="vendorLogoSrc"
           :alt="listing.vendorName"
           class="w-5 h-5 lg:w-6 lg:h-6 rounded-full object-cover border border-slate-200"
+          @error="handleVendorLogoError"
         />
         <span class="text-[10px] lg:text-xs text-slate-500 truncate">{{ listing.vendorName }}</span>
         <BadgeCheck v-if="listing.vendorVerified" class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-[#2ecc71] flex-shrink-0" />
@@ -87,16 +89,55 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { Sparkles, BadgeCheck, MapPin, Eye } from 'lucide-vue-next'
 import type { Listing } from './types'
+import {
+  getCategoryFallbackImage,
+  getVendorLogoFallback,
+} from '@/utils/serviceFallbackImages'
 
-defineProps<{
+const props = defineProps<{
   listing: Listing
 }>()
 
 defineEmits<{
   click: [listing: Listing]
 }>()
+
+// Cover image with fallback support
+const coverImageSrc = ref(props.listing.coverImage || getCategoryFallbackImage(props.listing.category))
+
+// Vendor logo with fallback support
+const vendorLogoSrc = ref(props.listing.vendorLogo || getVendorLogoFallback())
+
+// Watch for listing changes to update images
+watch(
+  () => props.listing,
+  (newListing) => {
+    coverImageSrc.value = newListing.coverImage || getCategoryFallbackImage(newListing.category)
+    vendorLogoSrc.value = newListing.vendorLogo || getVendorLogoFallback()
+  },
+  { deep: true }
+)
+
+// Handle cover image load error - use category-based fallback
+const handleCoverError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  const fallback = getCategoryFallbackImage(props.listing.category)
+  if (target.src !== fallback) {
+    target.src = fallback
+  }
+}
+
+// Handle vendor logo load error - use default vendor logo
+const handleVendorLogoError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  const fallback = getVendorLogoFallback()
+  if (target.src !== fallback) {
+    target.src = fallback
+  }
+}
 </script>
 
 <style scoped>
