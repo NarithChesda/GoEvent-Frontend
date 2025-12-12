@@ -692,7 +692,7 @@ const form = reactive({
   priceType: 'fixed' as 'fixed' | 'range' | 'quote',
   priceMin: null as number | null,
   priceMax: null as number | null,
-  currency: 'THB',
+  currency: 'USD',
   priceUnit: '',
   serviceArea: '',
   tags: [] as string[],

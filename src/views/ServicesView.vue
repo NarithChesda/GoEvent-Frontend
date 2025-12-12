@@ -105,16 +105,26 @@
             <p class="text-slate-500 text-sm mt-2">Try adjusting your filters or check back later.</p>
           </div>
 
-          <!-- Become a Vendor CTA -->
-          <VendorCTA
-            @list-service="handleListService"
-            @learn-more="handleLearnMore"
-          />
         </div>
       </section>
 
       <!-- Footer -->
       <AppFooter />
+
+      <!-- Create Listing FAB - Only visible for verified vendors -->
+      <button
+        v-if="isVerifiedVendor"
+        @click="handleListService"
+        class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
+        aria-label="List Your Service"
+      >
+        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+        <div
+          class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+        >
+          List Your Service
+        </div>
+      </button>
 
       <!-- Listing Detail Drawer -->
       <ListingDetailDrawer
@@ -160,14 +170,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
+import { Plus, CheckCircle, Info, ChevronDown } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { MobileTopBar } from '@/components/events'
 import {
   FeaturedVendors,
   ServiceListingsGrid,
-  VendorCTA,
   ListingDetailDrawer,
   VendorProfileDrawer,
   ListingFormDrawer,
@@ -176,6 +185,7 @@ import {
   type Listing
 } from '@/components/services'
 import { useServices } from '@/composables/useServices'
+import { useVendorProfile } from '@/composables/settings'
 
 // Use the services composable
 const {
@@ -210,6 +220,10 @@ const {
   filteredListings,
   serviceCategoriesForUI,
 } = useServices()
+
+// Vendor profile for checking verification status
+const { vendorState, loadProfile: loadVendorProfile } = useVendorProfile()
+const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // UI State
 const showListingDrawer = ref(false)
@@ -276,6 +290,7 @@ onMounted(async () => {
     fetchCategories(),
     fetchFeaturedVendors(),
     fetchListings(),
+    loadVendorProfile(), // Load vendor profile to check verification status
   ])
 })
 
@@ -340,10 +355,6 @@ const handleListingDeleted = () => {
   showMessage('info', `Listing deleted successfully`)
   // Refresh listings
   fetchListings()
-}
-
-const handleLearnMore = () => {
-  showMessage('info', 'Vendor information page coming soon!')
 }
 
 // Toggle between featured and all vendors
