@@ -125,6 +125,8 @@ const mapBriefToVendor = (vendor: VendorProfileBrief): Vendor => {
     country: vendor.country,
     email: '', // Not in brief
     phone: '', // Not in brief
+    website: '', // Not in brief
+    telegramUsername: vendor.telegram_username,
     listingsCount: vendor.listings_count,
   }
 }
@@ -143,6 +145,8 @@ const mapFullToVendor = (vendor: VendorProfile): Vendor => {
     country: vendor.country,
     email: vendor.email,
     phone: vendor.phone,
+    website: vendor.website,
+    telegramUsername: vendor.telegram_username,
     listingsCount: vendor.listings_count,
   }
 }

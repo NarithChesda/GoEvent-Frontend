@@ -14,6 +14,8 @@ export interface Vendor {
   country: string
   email: string
   phone: string
+  website: string
+  telegramUsername: string
   listingsCount: number
 }
 

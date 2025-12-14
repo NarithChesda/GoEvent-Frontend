@@ -38,7 +38,6 @@ export interface VendorProfile {
   email: string
   website: string
   telegram_username: string
-  telegram_link: string | null
   address: string
   city: string
   country: string
@@ -63,7 +62,7 @@ export interface VendorProfileBrief {
   logo: string | null
   city: string
   country: string
-  telegram_link: string | null
+  telegram_username: string
   verification_status: VendorVerificationStatus
   is_featured: boolean // Read-only
   listings_count: number

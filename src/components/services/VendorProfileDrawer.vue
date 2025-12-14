@@ -66,14 +66,40 @@
 
               <!-- Contact Buttons -->
               <div class="flex gap-3">
-                <button class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-xl text-sm font-medium transition-colors">
+                <a
+                  v-if="vendor.telegramUsername"
+                  :href="`https://t.me/${vendor.telegramUsername}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-xl text-sm font-medium transition-colors"
+                >
                   <Send class="w-4 h-4" />
                   Telegram
-                </button>
-                <button class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">
+                </a>
+                <span
+                  v-else
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-200 text-slate-400 rounded-xl text-sm font-medium cursor-not-allowed"
+                >
+                  <Send class="w-4 h-4" />
+                  Telegram
+                </span>
+                <a
+                  v-if="vendor.website"
+                  :href="vendor.website.startsWith('http') ? vendor.website : `https://${vendor.website}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+                >
                   <Globe class="w-4 h-4" />
                   Website
-                </button>
+                </a>
+                <span
+                  v-else
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-sm font-medium cursor-not-allowed"
+                >
+                  <Globe class="w-4 h-4" />
+                  Website
+                </span>
               </div>
 
               <!-- Contact Info -->
