@@ -111,14 +111,20 @@
                 <!-- Date Icon (Calendar Page Style) -->
                 <div
                   v-if="!isUnscheduled(date)"
-                  class="w-12 h-12 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0 border border-emerald-200/50"
+                  class="w-12 h-12 rounded-xl flex-shrink-0 shadow-md shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5"
                 >
-                  <span class="text-[10px] font-semibold text-emerald-600 uppercase leading-none">{{ getMonthAbbr(date) }}</span>
-                  <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(date) }}</span>
+                  <!-- Month Header -->
+                  <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
+                    <span class="text-[8px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(date) }}</span>
+                  </div>
+                  <!-- Day Number -->
+                  <div class="h-[62%] bg-white flex items-center justify-center">
+                    <span class="text-lg font-bold text-slate-800 leading-none">{{ getDayOfMonth(date) }}</span>
+                  </div>
                 </div>
                 <div
                   v-else
-                  class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200/50"
+                  class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-50 shadow-md shadow-slate-900/5 ring-1 ring-black/5"
                 >
                   <Calendar class="w-6 h-6 text-slate-400" />
                 </div>

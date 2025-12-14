@@ -50,9 +50,15 @@
 
         <!-- Date & Time -->
         <div class="flex items-start gap-4">
-          <div class="w-12 h-12 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
-            <span class="text-[10px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(event.start_date) }}</span>
-            <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
+          <div class="w-12 h-12 rounded-xl flex-shrink-0 shadow-md shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
+            <!-- Month Header -->
+            <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
+              <span class="text-[8px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(event.start_date) }}</span>
+            </div>
+            <!-- Day Number -->
+            <div class="h-[62%] bg-white flex items-center justify-center">
+              <span class="text-lg font-bold text-slate-800 leading-none">{{ getDayOfMonth(event.start_date) }}</span>
+            </div>
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
@@ -141,9 +147,15 @@
                 class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
               >
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-white rounded-lg flex flex-col items-center justify-center border border-slate-200">
-                    <span class="text-[9px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(group.date) }}</span>
-                    <span class="text-sm font-bold text-slate-900 leading-tight">{{ getDayOfMonth(group.date) }}</span>
+                  <div class="w-10 h-10 rounded-lg flex-shrink-0 shadow-sm shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
+                    <!-- Month Header -->
+                    <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
+                      <span class="text-[7px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(group.date) }}</span>
+                    </div>
+                    <!-- Day Number -->
+                    <div class="h-[62%] bg-white flex items-center justify-center">
+                      <span class="text-sm font-bold text-slate-800 leading-none">{{ getDayOfMonth(group.date) }}</span>
+                    </div>
                   </div>
                   <div class="text-left">
                     <p class="font-medium text-slate-900 text-sm">{{ group.displayDate }}</p>
