@@ -108,6 +108,10 @@ const mapFullToListing = (listing: ServiceListing): Listing => {
     contactClicks: listing.contact_clicks_count,
     isFeatured: listing.is_featured,
     gallery: listing.media.map((m) => getFullImageUrl(m.image)),
+    // Contact info from vendor
+    telegramUsername: listing.vendor_details.telegram_username || '',
+    phone: listing.vendor_details.phone || '',
+    website: listing.vendor_details.website || '',
   }
 }
 
@@ -389,13 +393,33 @@ export function useServices() {
 
   /**
    * Fetch full listing detail
+   * Also fetches vendor details to get complete contact information
    */
   const fetchListingDetail = async (id: string): Promise<void> => {
     try {
       const response: ApiResponse<ServiceListing> = await serviceListingsService.getListing(id)
 
       if (response.success && response.data) {
-        selectedListing.value = mapFullToListing(response.data)
+        const listing = mapFullToListing(response.data)
+
+        // Fetch vendor details to get complete contact info (phone, website, telegram)
+        // since vendor_details in listing may not include all contact fields
+        try {
+          const vendorResponse = await vendorService.getVendor(response.data.vendor)
+          if (vendorResponse.success && vendorResponse.data) {
+            // Merge vendor contact info into listing
+            listing.telegramUsername = vendorResponse.data.telegram_username || ''
+            listing.phone = vendorResponse.data.phone || ''
+            listing.website = vendorResponse.data.website || ''
+          }
+        } catch (vendorError) {
+          // If vendor fetch fails, use what we have from listing's vendor_details
+          if (import.meta.env.DEV) {
+            console.error('Error fetching vendor details:', vendorError)
+          }
+        }
+
+        selectedListing.value = listing
       } else {
         if (import.meta.env.DEV) {
           console.error('Failed to fetch listing detail:', response.message)

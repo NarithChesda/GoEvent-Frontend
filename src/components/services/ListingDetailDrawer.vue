@@ -178,20 +178,56 @@
         <!-- Fixed Bottom CTA -->
         <div class="flex-shrink-0 bg-white border-t border-slate-100 p-4">
           <div class="flex gap-3">
-            <button
+            <!-- Telegram Button -->
+            <a
+              v-if="listing.telegramUsername"
+              :href="`https://t.me/${listing.telegramUsername}`"
+              target="_blank"
+              rel="noopener noreferrer"
               @click="$emit('contact', 'telegram')"
               class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-xl font-medium transition-colors"
             >
               <Send class="w-5 h-5" />
               <span>Telegram</span>
-            </button>
-            <button
+            </a>
+            <span
+              v-else
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 text-slate-400 rounded-xl font-medium cursor-not-allowed"
+            >
+              <Send class="w-5 h-5" />
+              <span>Telegram</span>
+            </span>
+
+            <!-- Phone Button -->
+            <a
+              v-if="listing.phone"
+              :href="`tel:${listing.phone.replace(/[\s\-\(\)]/g, '')}`"
               @click="$emit('contact', 'phone')"
               class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
             >
               <Phone class="w-5 h-5" />
               <span>Call</span>
-            </button>
+            </a>
+            <span
+              v-else
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 text-slate-400 rounded-xl font-medium cursor-not-allowed"
+            >
+              <Phone class="w-5 h-5" />
+              <span>Call</span>
+            </span>
+
+            <!-- Website Button -->
+            <a
+              v-if="listing.website"
+              :href="formatWebsiteUrl(listing.website)"
+              target="_blank"
+              rel="noopener noreferrer"
+              @click="$emit('contact', 'website')"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+            >
+              <Globe class="w-5 h-5" />
+              <span>Website</span>
+            </a>
           </div>
         </div>
       </div>
@@ -213,7 +249,8 @@ import {
   Eye,
   MessageCircle,
   Send,
-  Phone
+  Phone,
+  Globe
 } from 'lucide-vue-next'
 import type { Listing } from './types'
 
@@ -229,6 +266,28 @@ const emit = defineEmits<{
 
 const close = () => {
   emit('update:modelValue', false)
+}
+
+/**
+ * Format website URL properly
+ * Handles cases where URL might have spaces, missing protocol, etc.
+ */
+const formatWebsiteUrl = (url: string): string => {
+  if (!url) return ''
+
+  // Trim whitespace
+  let formatted = url.trim()
+
+  // If it already has a protocol, return as-is
+  if (formatted.startsWith('http://') || formatted.startsWith('https://')) {
+    return formatted
+  }
+
+  // Remove any leading slashes
+  formatted = formatted.replace(/^\/+/, '')
+
+  // Add https:// prefix
+  return `https://${formatted}`
 }
 
 // Calculate scrollbar width to prevent layout shift

@@ -62,6 +62,8 @@ export interface VendorProfileBrief {
   logo: string | null
   city: string
   country: string
+  phone?: string
+  website?: string
   telegram_username: string
   verification_status: VendorVerificationStatus
   is_featured: boolean // Read-only
