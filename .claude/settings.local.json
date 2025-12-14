@@ -186,7 +186,8 @@
       "Bash(timeout 90 npx vue-tsc:*)",
       "Bash(timeout 120 npx vue-tsc:*)",
       "Bash(python3:*)",
-      "Bash(timeout 30 npm run build-skip-typecheck:*)"
+      "Bash(timeout 30 npm run build-skip-typecheck:*)",
+      "Bash(git diff:*)"
     ],
     "deny": [],
     "additionalDirectories": [

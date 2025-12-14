@@ -116,19 +116,21 @@
 
         <!-- Footer with Action Buttons -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
-          <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center justify-between">
             <button
               @click="handleSubmit"
               :disabled="isSubmitting"
-              class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+              <Save v-else class="w-4 h-4" />
               <span>{{ isSubmitting ? 'Creating...' : 'Create Event' }}</span>
             </button>
+
             <button
               type="button"
               @click="$emit('close')"
-              class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -141,7 +143,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
-import { ArrowRight, Loader, ChevronDown } from 'lucide-vue-next'
+import { ArrowRight, Loader, ChevronDown, Save } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'

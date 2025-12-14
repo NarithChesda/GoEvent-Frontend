@@ -17,7 +17,7 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center px-3 py-2.5">
+          <div class="flex items-center justify-between px-3 py-2.5">
             <!-- Left: Close button & Title -->
             <div class="flex items-center gap-2">
               <button
@@ -31,6 +31,17 @@
                 {{ isEditMode ? 'Edit Listing' : 'Create Listing' }}
               </h2>
             </div>
+
+            <!-- Right: Delete button (edit mode only) -->
+            <button
+              v-if="isEditMode"
+              @click="showDeleteConfirm = true"
+              :disabled="isSubmitting"
+              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Delete listing"
+            >
+              <Trash2 class="w-5 h-5 text-white" />
+            </button>
           </div>
         </div>
 
@@ -405,13 +416,11 @@
             </button>
 
             <button
-              v-if="isEditMode"
-              @click="showDeleteConfirm = true"
-              :disabled="isSubmitting"
-              class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              @click="closeDrawer"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              <Trash2 class="w-4 h-4" />
-              <span>Delete</span>
+              Cancel
             </button>
           </div>
         </div>

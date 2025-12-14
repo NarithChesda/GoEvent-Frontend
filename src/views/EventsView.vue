@@ -112,8 +112,8 @@
         </div>
       </button>
 
-      <!-- Event Create Modal -->
-      <EventCreateModal
+      <!-- Event Create Drawer -->
+      <EventCreateDrawer
         :is-visible="showCreateModal"
         @close="showCreateModal = false"
         @submit="handleEventCreate"
@@ -150,7 +150,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Plus, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
-import EventCreateModal from '@/components/EventCreateModal.vue'
+import EventCreateDrawer from '@/components/EventCreateDrawer.vue'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import ContactUsFAB from '@/components/ContactUsFAB.vue'
 import PublicEventDrawer from '@/components/PublicEventDrawer.vue'

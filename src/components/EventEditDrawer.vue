@@ -18,7 +18,7 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center px-3 py-2.5">
+          <div class="flex items-center justify-between px-3 py-2.5">
             <!-- Left: Close button & Title -->
             <div class="flex items-center gap-2">
               <button
@@ -30,6 +30,17 @@
               </button>
               <h2 class="text-base font-semibold text-white">Edit Event</h2>
             </div>
+
+            <!-- Right: Delete button -->
+            <button
+              v-if="event"
+              @click="showDeleteConfirm = true"
+              :disabled="isSubmitting || isDeleting"
+              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Delete event"
+            >
+              <Trash2 class="w-5 h-5 text-white" />
+            </button>
           </div>
         </div>
 
@@ -424,7 +435,7 @@
           </div>
         </div>
 
-        <!-- Footer with Save and Delete Buttons -->
+        <!-- Footer with Action Buttons -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
           <div class="flex items-center justify-between">
             <button
@@ -438,13 +449,11 @@
             </button>
 
             <button
-              v-if="event"
-              @click="showDeleteConfirm = true"
-              :disabled="isSubmitting || isDeleting"
-              class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              @click="closeDrawer"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              <Trash2 class="w-4 h-4" />
-              <span>Delete</span>
+              Cancel
             </button>
           </div>
         </div>
