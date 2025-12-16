@@ -148,7 +148,7 @@ import { X, Loader2, AlertCircle, Send } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
-import { isDesktopDevice } from '../utils/browserDetection'
+import { isDesktopDevice, isMessagingAppBrowser } from '../utils/browserDetection'
 import { useTelegramBotLogin } from '../composables/useTelegramBotLogin'
 
 interface Props {
@@ -315,8 +315,14 @@ watch(telegramBotStatus, async (newStatus) => {
     )
 
     if (result.success) {
-      emit('authenticated')
-      closeModal()
+      // On messaging app browsers (like Telegram's in-app browser),
+      // reload the page to ensure the authenticated state is reflected
+      if (isMessagingAppBrowser()) {
+        window.location.reload()
+      } else {
+        emit('authenticated')
+        closeModal()
+      }
     } else {
       errorMessage.value = result.error || 'Telegram login failed'
       resetTelegramBotLogin()
