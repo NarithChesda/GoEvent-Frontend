@@ -71,8 +71,72 @@
           </span>
         </button>
 
-        <!-- Telegram Login Widget -->
-        <div id="telegram-login-widget" class="flex justify-center"></div>
+        <!-- Telegram Login Widget (legacy - commented out) -->
+        <!-- <div id="telegram-login-widget" class="flex justify-center"></div> -->
+
+        <!-- Telegram Bot Login Button (new - works everywhere) -->
+        <div v-if="telegramBotStatus === 'pending'" class="p-4 bg-sky-50 border-2 border-sky-200 rounded-xl telegram-pending-pulse">
+          <div class="text-center space-y-3">
+            <!-- Animated indicator -->
+            <div class="flex items-center justify-center space-x-2">
+              <div class="relative">
+                <Loader2 class="animate-spin h-6 w-6 text-sky-500" />
+                <div class="absolute inset-0 animate-ping opacity-30">
+                  <Loader2 class="h-6 w-6 text-sky-500" />
+                </div>
+              </div>
+              <span class="text-sm font-semibold text-sky-700">Waiting for confirmation...</span>
+            </div>
+
+            <!-- Instructions -->
+            <div class="bg-white/60 rounded-lg p-3 space-y-2">
+              <p class="text-xs font-medium text-sky-800">
+                1. Open Telegram and tap "Start" in the bot
+              </p>
+              <p class="text-xs font-medium text-sky-800">
+                2. Return to this page - you'll be logged in automatically
+              </p>
+            </div>
+
+            <!-- Countdown timer -->
+            <div v-if="telegramCountdown > 0" class="text-xs text-sky-600">
+              Session expires in <span class="font-mono font-semibold">{{ formatCountdown(telegramCountdown) }}</span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center justify-center space-x-2">
+              <button
+                type="button"
+                @click="openTelegram"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-lg transition-colors shadow-sm"
+              >
+                <Send class="h-4 w-4 mr-2" />
+                Open Telegram
+              </button>
+              <button
+                type="button"
+                @click="resetTelegramBotLogin"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-colors border border-slate-200"
+              >
+                <X class="h-4 w-4 mr-2" />
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        <button
+          v-else
+          type="button"
+          @click="handleTelegramBotLogin"
+          :disabled="isTelegramBotLoading"
+          class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl bg-white/50 hover:bg-sky-50 transition-all duration-200 hover:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 disabled:opacity-50 disabled:cursor-not-allowed group"
+        >
+          <Loader2 v-if="isTelegramBotLoading" class="animate-spin h-5 w-5 mr-3 text-sky-500" />
+          <Send v-else class="h-5 w-5 mr-3 text-sky-500 group-hover:text-sky-600" />
+          <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+            {{ isTelegramBotLoading ? 'Opening Telegram...' : 'Continue with Telegram' }}
+          </span>
+        </button>
       </div>
     </div>
   </div>
@@ -80,11 +144,12 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
-import { X, Loader2, AlertCircle } from 'lucide-vue-next'
+import { X, Loader2, AlertCircle, Send } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '../stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
-import { isDesktopDevice, getBrowserType } from '../utils/browserDetection'
+import { isDesktopDevice } from '../utils/browserDetection'
+import { useTelegramBotLogin } from '../composables/useTelegramBotLogin'
 
 interface Props {
   isVisible: boolean
@@ -99,12 +164,46 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore()
 
+// Telegram Bot Login
+const {
+  status: telegramBotStatus,
+  error: telegramBotError,
+  user: telegramBotUser,
+  tokens: telegramBotTokens,
+  initiateLogin: initiateTelegramBotLogin,
+  openTelegram,
+  reset: resetTelegramBotLogin,
+} = useTelegramBotLogin()
+
+// Countdown timer for Telegram bot login
+const telegramCountdown = ref(0)
+let countdownInterval: ReturnType<typeof setInterval> | null = null
+
+const startCountdown = (seconds: number) => {
+  telegramCountdown.value = seconds
+  if (countdownInterval) clearInterval(countdownInterval)
+  countdownInterval = setInterval(() => {
+    if (telegramCountdown.value > 0) {
+      telegramCountdown.value--
+    } else {
+      if (countdownInterval) clearInterval(countdownInterval)
+    }
+  }, 1000)
+}
+
+const formatCountdown = (seconds: number) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
 // Modal state
 const modalContent = ref<HTMLElement | null>(null)
 const modalAnimation = ref('scale-95 opacity-0')
 
 // Loading states
 const isGoogleLoading = ref(false)
+const isTelegramBotLoading = ref(false)
 
 // Error handling
 const errorMessage = ref('')
@@ -179,6 +278,64 @@ const handleTelegramAuth = async (user: any) => {
   }
 }
 
+// Handle Telegram Bot Login
+const handleTelegramBotLogin = async () => {
+  if (isTelegramBotLoading.value || telegramBotStatus.value === 'pending') return
+
+  isTelegramBotLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const tokenData = await initiateTelegramBotLogin()
+    if (tokenData) {
+      // Start countdown timer
+      startCountdown(tokenData.expires_in)
+      // Automatically open Telegram
+      window.open(tokenData.deep_link, '_blank')
+    }
+  } catch (error: any) {
+    console.error('Telegram bot login error:', error)
+    errorMessage.value = 'Failed to initiate Telegram login. Please try again.'
+  } finally {
+    isTelegramBotLoading.value = false
+  }
+}
+
+// Watch for Telegram bot login completion
+watch(telegramBotStatus, async (newStatus) => {
+  if (newStatus === 'completed' && telegramBotUser.value && telegramBotTokens.value) {
+    // Clear countdown
+    if (countdownInterval) clearInterval(countdownInterval)
+    telegramCountdown.value = 0
+
+    const result = await authStore.telegramBotLogin(
+      telegramBotUser.value,
+      telegramBotTokens.value.access,
+      telegramBotTokens.value.refresh
+    )
+
+    if (result.success) {
+      emit('authenticated')
+      closeModal()
+    } else {
+      errorMessage.value = result.error || 'Telegram login failed'
+      resetTelegramBotLogin()
+    }
+  } else if (newStatus === 'expired') {
+    if (countdownInterval) clearInterval(countdownInterval)
+    telegramCountdown.value = 0
+    errorMessage.value = 'Telegram login session expired. Please try again.'
+  } else if (newStatus === 'error' && telegramBotError.value) {
+    if (countdownInterval) clearInterval(countdownInterval)
+    telegramCountdown.value = 0
+    errorMessage.value = telegramBotError.value
+  } else if (newStatus === 'idle') {
+    // Reset was called
+    if (countdownInterval) clearInterval(countdownInterval)
+    telegramCountdown.value = 0
+  }
+})
+
 const loadTelegramWidget = () => {
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'goevent_authentication_bot'
 
@@ -233,6 +390,8 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleEscapeKey)
   // Clean up global callback
   delete (window as any).onTelegramAuth
+  // Clean up countdown interval
+  if (countdownInterval) clearInterval(countdownInterval)
 })
 </script>
 
@@ -275,6 +434,20 @@ input:focus {
   }
   .backdrop-blur-md {
     background-color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* Telegram pending state pulse animation */
+.telegram-pending-pulse {
+  animation: telegram-pulse 2s ease-in-out infinite;
+}
+
+@keyframes telegram-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(14, 165, 233, 0);
   }
 }
 </style>

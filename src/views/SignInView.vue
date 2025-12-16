@@ -65,12 +65,14 @@
             </button>
 
             <!-- Telegram Login Widget (legacy - domain restricted) -->
+            <!-- Commented out: Using Telegram Bot Login instead
             <div v-if="isRegisteredDomain" id="telegram-login-widget" class="flex justify-center"></div>
             <div v-else class="p-4 bg-amber-50 border border-amber-100 rounded-xl">
               <p class="text-sm text-amber-700 text-center">
                 Telegram login is only available on registered domains
               </p>
             </div>
+            -->
 
             <!-- Telegram Bot Login Button (new - works everywhere) -->
             <div v-if="telegramBotStatus === 'pending'" class="p-4 bg-sky-50 border-2 border-sky-200 rounded-xl telegram-pending-pulse">
