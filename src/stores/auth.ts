@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authService, type User, type LoginRequest, type RegisterRequest } from '../services/auth'
+import type { TelegramBotLoginUser } from '../composables/useTelegramBotLogin'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -281,6 +282,71 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Handle successful Telegram bot login
+   * This is called after the useTelegramBotLogin composable completes authentication
+   */
+  const telegramBotLogin = async (
+    telegramUser: TelegramBotLoginUser,
+    accessToken: string,
+    refreshToken: string
+  ) => {
+    try {
+      setLoading(true)
+      clearError()
+
+      // Store tokens using the auth service
+      authService.setUser({
+        id: telegramUser.id,
+        email: telegramUser.email,
+        username: telegramUser.username,
+        first_name: telegramUser.first_name,
+        last_name: telegramUser.last_name,
+        profile_picture: telegramUser.profile_picture || undefined,
+        logo: telegramUser.logo || undefined,
+        bio: telegramUser.bio,
+        date_joined: telegramUser.created_at,
+        is_active: true,
+        is_verified: telegramUser.is_verified,
+        is_partner: telegramUser.is_partner,
+        phone_number: telegramUser.phone_number || undefined,
+        telegram_link: telegramUser.telegram_link || undefined,
+        payment_link: telegramUser.payment_link || undefined,
+      })
+
+      // Import and use tokenManager to set the tokens
+      const { tokenManager } = await import('../services/tokenManager')
+      tokenManager.setTokens(accessToken, refreshToken)
+
+      // Set user in the store
+      setUser({
+        id: telegramUser.id,
+        email: telegramUser.email,
+        username: telegramUser.username,
+        first_name: telegramUser.first_name,
+        last_name: telegramUser.last_name,
+        profile_picture: telegramUser.profile_picture || undefined,
+        logo: telegramUser.logo || undefined,
+        bio: telegramUser.bio,
+        date_joined: telegramUser.created_at,
+        is_active: true,
+        is_verified: telegramUser.is_verified,
+        is_partner: telegramUser.is_partner,
+        phone_number: telegramUser.phone_number || undefined,
+        telegram_link: telegramUser.telegram_link || undefined,
+        payment_link: telegramUser.payment_link || undefined,
+      })
+
+      return { success: true }
+    } catch (err) {
+      const errorMsg = 'Failed to complete Telegram bot login'
+      setError(errorMsg)
+      return { success: false, error: errorMsg }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     // State
     user,
@@ -302,5 +368,6 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     googleLogin,
     telegramLogin,
+    telegramBotLogin,
   }
 })
