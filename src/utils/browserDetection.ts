@@ -50,6 +50,16 @@ export function isMessagingAppBrowser(): boolean {
 }
 
 /**
+ * Detects if the user is accessing the page from Facebook Messenger's in-app browser
+ */
+export function isFacebookMessenger(): boolean {
+  const userAgent = navigator.userAgent || ''
+  // FB_IAB = Facebook In-App Browser, FBAN = Facebook App Name, FBAV = Facebook App Version
+  // Messenger = Facebook Messenger standalone app
+  return /FB_IAB|FBAN|FBAV|Messenger/i.test(userAgent)
+}
+
+/**
  * Detects if the user is on a mobile device
  */
 export function isMobileDevice(): boolean {

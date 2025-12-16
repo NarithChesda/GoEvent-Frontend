@@ -170,9 +170,11 @@ const {
   error: telegramBotError,
   user: telegramBotUser,
   tokens: telegramBotTokens,
+  hasPendingLogin,
   initiateLogin: initiateTelegramBotLogin,
   openTelegram,
   reset: resetTelegramBotLogin,
+  resumePolling,
 } = useTelegramBotLogin()
 
 // Countdown timer for Telegram bot login
@@ -365,6 +367,18 @@ const loadTelegramWidget = () => {
   container.appendChild(script)
 }
 
+// Check for pending Telegram login and resume polling if found
+const checkAndResumePendingLogin = () => {
+  // Only resume if not already in pending state and there's a pending login
+  if (telegramBotStatus.value !== 'pending' && hasPendingLogin.value) {
+    const remainingSecs = resumePolling()
+    if (remainingSecs > 0) {
+      // Restart countdown timer with remaining time
+      startCountdown(remainingSecs)
+    }
+  }
+}
+
 // Handle modal animation
 watch(
   () => props.isVisible,
@@ -373,6 +387,9 @@ watch(
       nextTick(() => {
         modalAnimation.value = 'scale-100 opacity-100'
         loadTelegramWidget()
+        // Check for pending Telegram login when modal becomes visible
+        // (e.g., user navigated back from Telegram in Messenger)
+        checkAndResumePendingLogin()
       })
     }
   },
@@ -389,6 +406,8 @@ onMounted(() => {
   document.addEventListener('keydown', handleEscapeKey)
   if (props.isVisible) {
     loadTelegramWidget()
+    // Check for pending Telegram login on mount
+    checkAndResumePendingLogin()
   }
 })
 

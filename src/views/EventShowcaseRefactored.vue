@@ -132,6 +132,7 @@ import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 import { useAssetProtection } from '../composables/showcase/useAssetProtection'
+import { getPendingLogin } from '../composables/useTelegramBotLogin'
 
 // Meta tags utility
 import {
@@ -409,6 +410,16 @@ const preloadLogo = (logoUrl: string | null | undefined) => {
 // Lifecycle hooks
 onMounted(async () => {
   await authStore.initializeAuth()
+
+  // Check for pending Telegram login (e.g., user navigated back from Telegram in Messenger)
+  // If there's a pending login and user is not authenticated, open the auth modal
+  // The AuthModal will automatically resume polling for the pending login
+  if (!authStore.isAuthenticated && getPendingLogin()) {
+    // Defer opening auth modal to after showcase loads for better UX
+    nextTick(() => {
+      openAuthModal()
+    })
+  }
 
   // Initialize showcase - video resource manager is provided via Vue's provide/inject pattern
   await loadShowcase()

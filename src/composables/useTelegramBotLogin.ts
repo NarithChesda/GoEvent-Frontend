@@ -1,6 +1,17 @@
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
+// Storage key for persisting pending login state (survives page navigation)
+const TELEGRAM_LOGIN_STORAGE_KEY = 'goevent_telegram_pending_login'
+
+// Interface for persisted login state
+interface TelegramPendingLoginState {
+  token: string
+  deepLink: string
+  expiresAt: number // Unix timestamp when login session expires
+  showcaseUrl: string // URL to return to after login
+}
 
 export interface TelegramBotLoginToken {
   token: string
@@ -42,6 +53,52 @@ export interface TelegramBotLoginStatus {
 }
 
 export type TelegramBotLoginState = 'idle' | 'pending' | 'completed' | 'expired' | 'error'
+
+// Persistence functions (outside composable to be shared across instances)
+function persistPendingLogin(tokenStr: string, deepLinkStr: string, expiresInSec: number): void {
+  const state: TelegramPendingLoginState = {
+    token: tokenStr,
+    deepLink: deepLinkStr,
+    expiresAt: Date.now() + expiresInSec * 1000,
+    showcaseUrl: window.location.href,
+  }
+  try {
+    localStorage.setItem(TELEGRAM_LOGIN_STORAGE_KEY, JSON.stringify(state))
+  } catch (e) {
+    console.warn('[TelegramBotLogin] Failed to persist pending login state:', e)
+  }
+}
+
+function getPendingLogin(): TelegramPendingLoginState | null {
+  try {
+    const stored = localStorage.getItem(TELEGRAM_LOGIN_STORAGE_KEY)
+    if (!stored) return null
+
+    const state: TelegramPendingLoginState = JSON.parse(stored)
+
+    // Check if expired
+    if (Date.now() >= state.expiresAt) {
+      clearPendingLogin()
+      return null
+    }
+
+    return state
+  } catch (e) {
+    clearPendingLogin()
+    return null
+  }
+}
+
+function clearPendingLogin(): void {
+  try {
+    localStorage.removeItem(TELEGRAM_LOGIN_STORAGE_KEY)
+  } catch (e) {
+    // Silent fail
+  }
+}
+
+// Export for use in other components
+export { getPendingLogin, clearPendingLogin }
 
 export function useTelegramBotLogin() {
   const token = ref<string | null>(null)
@@ -91,6 +148,9 @@ export function useTelegramBotLogin() {
       token.value = data.token
       deepLink.value = data.deep_link
       expiresIn.value = data.expires_in
+
+      // Persist state for recovery after navigation (important for in-app browsers like Messenger)
+      persistPendingLogin(data.token, data.deep_link, data.expires_in)
 
       // Start polling for completion
       startPolling(data.token, data.expires_in)
@@ -142,12 +202,14 @@ export function useTelegramBotLogin() {
 
       if (result.is_expired) {
         status.value = 'expired'
+        clearPendingLogin() // Clear persisted state on expiration
         stopPolling()
       } else if (result.is_completed && result.tokens && result.user) {
         status.value = 'completed'
         user.value = result.user
         tokens.value = result.tokens
         linkedInvitations.value = result.linked_invitations || 0
+        clearPendingLogin() // Clear persisted state on success
         stopPolling()
       }
     }, 2000)
@@ -169,6 +231,7 @@ export function useTelegramBotLogin() {
 
   const reset = () => {
     stopPolling()
+    clearPendingLogin() // Also clear persisted state on reset
     token.value = null
     deepLink.value = null
     expiresIn.value = 0
@@ -179,7 +242,41 @@ export function useTelegramBotLogin() {
     linkedInvitations.value = 0
   }
 
-  // Clean up on unmount
+  /**
+   * Resume polling from persisted state.
+   * This is called when the page loads and there's a pending login session
+   * (e.g., user navigated away to Telegram and came back).
+   * Returns the remaining seconds if resumed successfully, or 0 if no pending login.
+   */
+  const resumePolling = (): number => {
+    const pendingLogin = getPendingLogin()
+    if (!pendingLogin) return 0
+
+    // Calculate remaining time
+    const remainingMs = pendingLogin.expiresAt - Date.now()
+    if (remainingMs <= 0) {
+      clearPendingLogin()
+      return 0
+    }
+
+    const remainingSecs = Math.ceil(remainingMs / 1000)
+
+    // Restore state
+    token.value = pendingLogin.token
+    deepLink.value = pendingLogin.deepLink
+    expiresIn.value = remainingSecs
+    status.value = 'pending'
+
+    // Resume polling with remaining time
+    startPolling(pendingLogin.token, remainingSecs)
+
+    return remainingSecs
+  }
+
+  // Computed property to check if there's a pending login
+  const hasPendingLogin = computed(() => getPendingLogin() !== null)
+
+  // Clean up on unmount (but don't clear persisted state - that survives navigation)
   onUnmounted(stopPolling)
 
   return {
@@ -192,9 +289,12 @@ export function useTelegramBotLogin() {
     user,
     tokens,
     linkedInvitations,
+    // Computed
+    hasPendingLogin,
     // Actions
     initiateLogin,
     openTelegram,
     reset,
+    resumePolling,
   }
 }
