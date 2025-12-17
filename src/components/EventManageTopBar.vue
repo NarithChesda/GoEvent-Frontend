@@ -78,9 +78,9 @@
           <span class="hidden md:inline">Preview</span>
         </button>
 
-        <!-- Publish Button (for public events) -->
+        <!-- Publish Button (for public draft events) -->
         <button
-          v-if="canEdit && eventId && eventPrivacy === 'public'"
+          v-if="canEdit && eventId && eventPrivacy === 'public' && actualEventStatus === 'draft'"
           @click="publishEvent"
           class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
           title="Publish event"
@@ -116,6 +116,8 @@ interface Props {
   eventTitle?: string
   eventStatus?: 'upcoming' | 'ongoing' | 'past' | 'draft' | null
   eventPrivacy?: 'public' | 'private'
+  /** The actual backend status of the event (draft, published, cancelled, completed) */
+  actualEventStatus?: 'draft' | 'published' | 'cancelled' | 'completed'
   canEdit?: boolean
   organizerName?: string
   organizerAvatar?: string
@@ -126,6 +128,7 @@ const props = withDefaults(defineProps<Props>(), {
   eventTitle: '',
   eventStatus: null,
   eventPrivacy: 'private',
+  actualEventStatus: 'draft',
   canEdit: false,
   organizerName: '',
   organizerAvatar: ''
