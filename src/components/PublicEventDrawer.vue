@@ -142,13 +142,7 @@
                 <div class="flex-1 min-w-0">
                   <p class="font-medium text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
                   <p class="text-sm text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
-                  <button
-                    @click="showCalendarOptions = !showCalendarOptions"
-                    class="mt-1.5 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                  >
-                    <CalendarPlus class="w-4 h-4" />
-                    Add to Calendar
-                  </button>
+
                   <!-- Calendar Options Dropdown -->
                   <div v-if="showCalendarOptions" class="mt-2 flex flex-wrap gap-2">
                     <button
@@ -194,8 +188,108 @@
                 </div>
               </div>
 
-              <!-- Registration Section -->
-              <div v-if="event.registration_required" class="bg-slate-50 rounded-xl p-4">
+              <!-- Registration Section - Already Registered (You're In) -->
+              <div v-if="event.registration_required && isUserRegistered" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <!-- Header with avatar and status -->
+                <div class="p-4 pb-3">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-lg font-medium shadow-md">
+                      {{ getInitials(currentUser?.first_name || currentUser?.username || 'U') }}
+                    </div>
+                    <!-- Status Badge -->
+                    <span :class="registrationStatusBadgeClass" class="px-2.5 py-1 text-xs font-medium rounded-full">
+                      {{ registrationStatusLabel }}
+                    </span>
+                  </div>
+                  <h3 class="text-xl font-bold text-slate-900">You're In</h3>
+                </div>
+
+                <!-- Event countdown -->
+                <div v-if="timeUntilEvent || event.is_ongoing" class="mx-4 mb-3 bg-slate-50 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-600">
+                      <Clock class="w-4 h-4" />
+                      <span class="text-sm">{{ event.is_ongoing ? 'Event is happening now' : 'Event starting in' }}</span>
+                    </div>
+                    <span v-if="timeUntilEvent" class="text-sm font-semibold text-orange-500">{{ timeUntilEvent }}</span>
+                  </div>
+                  <p v-if="event.is_virtual && event.virtual_link" class="text-xs text-slate-500 mt-1.5 border-t border-slate-200 pt-2">
+                    The join button will be shown when the event is about to start.
+                  </p>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="px-4 pb-3 flex gap-2">
+                  <button
+                    @click="showCalendarOptions = !showCalendarOptions"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <CalendarPlus class="w-4 h-4" />
+                    Add to Calendar
+                  </button>
+                  <button
+                    @click="shareEvent"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Share2 class="w-4 h-4" />
+                    Invite a Friend
+                  </button>
+                </div>
+
+                <!-- Calendar Options Dropdown -->
+                <div v-if="showCalendarOptions" class="px-4 pb-3 flex flex-wrap gap-2">
+                  <button
+                    @click="addToGoogleCalendar"
+                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    Google
+                  </button>
+                  <button
+                    @click="addToOutlookCalendar"
+                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    Outlook
+                  </button>
+                  <button
+                    @click="downloadICSFile"
+                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    Download .ics
+                  </button>
+                </div>
+
+                <!-- Cancel registration link -->
+                <div class="px-4 pb-4 text-sm text-slate-600">
+                  No longer able to attend? Notify the host by
+                  <button
+                    @click="handleCancelRegistration"
+                    :disabled="isCancelling"
+                    class="text-pink-500 hover:text-pink-600 underline underline-offset-2 disabled:opacity-50"
+                  >
+                    {{ isCancelling ? 'cancelling...' : 'canceling your registration' }}
+                  </button>.
+                </div>
+
+                <!-- Confirmation code (if available) -->
+                <div v-if="userRegistration?.confirmation_code" class="border-t border-slate-100 px-4 py-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-slate-500 mb-0.5">Confirmation Code</p>
+                      <p class="font-mono font-semibold text-slate-900">{{ userRegistration.confirmation_code }}</p>
+                    </div>
+                    <button
+                      @click="showQRModal = true"
+                      class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                      title="Show QR Code"
+                    >
+                      <QrCode class="w-5 h-5 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Registration Section - Not Registered -->
+              <div v-else-if="event.registration_required" class="bg-slate-50 rounded-xl p-4">
                 <h3 class="text-sm font-semibold text-slate-700 mb-3">Registration</h3>
                 <p class="text-sm text-slate-600 mb-4">
                   {{ registrationMessage }}
@@ -221,15 +315,6 @@
                 >
                   {{ isRegistering ? 'Registering...' : 'Register' }}
                 </button>
-
-                <!-- Already Registered -->
-                <div
-                  v-else-if="event.is_registered"
-                  class="w-full bg-green-50 text-green-700 font-semibold py-3 px-4 rounded-xl text-center flex items-center justify-center gap-2"
-                >
-                  <CheckCircle class="w-5 h-5" />
-                  You're Registered
-                </div>
 
                 <!-- Login to Register -->
                 <button
@@ -361,6 +446,42 @@
         </div>
       </div>
     </Transition>
+
+    <!-- QR Code Modal -->
+    <Transition name="fade">
+      <div
+        v-if="showQRModal && userRegistration?.confirmation_code"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1000]"
+        @click="showQRModal = false"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-xs w-full"
+          @click.stop
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-900">Check-in QR Code</h3>
+            <button
+              @click="showQRModal = false"
+              class="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <X class="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 mb-4">
+              <img
+                :src="qrCodeUrl"
+                :alt="userRegistration.confirmation_code"
+                class="w-48 h-48"
+              />
+            </div>
+            <p class="text-xs text-slate-500 mb-1">Confirmation Code</p>
+            <p class="font-mono font-bold text-lg text-slate-900">{{ userRegistration.confirmation_code }}</p>
+            <p class="text-xs text-slate-500 mt-3 text-center">Show this QR code at the event for quick check-in</p>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -375,12 +496,15 @@ import {
   MapPin,
   Video,
   AlertCircle,
-  CheckCircle,
   CalendarPlus,
   ExternalLink,
   CalendarDays,
+  Clock,
+  Share2,
+  QrCode,
+  X,
 } from 'lucide-vue-next'
-import { eventsService, type Event } from '../services/api'
+import { eventsService, type Event, type EventRegistration } from '../services/api'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
 import { useAuthStore } from '../stores/auth'
 import { apiClient } from '../services/api'
@@ -416,8 +540,11 @@ const event = ref<Event | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const isRegistering = ref(false)
+const isCancelling = ref(false)
 const showCalendarOptions = ref(false)
 const expandedAgendaGroups = ref<Record<string, boolean>>({})
+const userRegistration = ref<EventRegistration | null>(null)
+const showQRModal = ref(false)
 
 // Banner image fallback state
 const primaryBannerError = ref(false)
@@ -466,9 +593,61 @@ const isRegistrationClosed = computed(() => {
   return new Date(event.value.registration_deadline) < new Date()
 })
 
+// Track if registration was explicitly checked (to differentiate from initial state)
+const registrationChecked = ref(false)
+
+// Statuses that mean user is NOT actively registered/attending (lowercase for comparison)
+const NON_ATTENDING_STATUSES = ['not_coming', 'declined', 'cancelled', 'withdrawn', 'no']
+
+// Registration status label for display
+const registrationStatusLabel = computed(() => {
+  const status = userRegistration.value?.status || ''
+  // Capitalize first letter of each word
+  return status.replace(/\b\w/g, (c) => c.toUpperCase())
+})
+
+// Registration status badge styling
+const registrationStatusBadgeClass = computed(() => {
+  const status = userRegistration.value?.status?.toLowerCase() || ''
+  switch (status) {
+    case 'confirmed':
+      return 'bg-green-100 text-green-700'
+    case 'checked in':
+    case 'checked_in':
+      return 'bg-blue-100 text-blue-700'
+    case 'registered':
+      return 'bg-amber-100 text-amber-700'
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-700'
+    default:
+      return 'bg-slate-100 text-slate-700'
+  }
+})
+
+// Check if user is registered and attending - combine event data and separate registration check
+const isUserRegistered = computed(() => {
+  // If we explicitly checked registration status, use that as source of truth
+  if (registrationChecked.value) {
+    if (!userRegistration.value) {
+      // User has no registration or registration was deleted
+      return false
+    }
+    // User is only considered "registered" if status indicates active attendance
+    // Backend returns: 'Registered', 'Confirmed', 'Checked In', 'Cancelled'
+    const status = userRegistration.value.status?.toLowerCase() || ''
+    if (NON_ATTENDING_STATUSES.includes(status)) {
+      return false
+    }
+    return true
+  }
+  // Fallback to event data before registration is checked
+  if (event.value?.is_registered) return true
+  return false
+})
+
 const canRegister = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
-  if (event.value.is_registered || event.value.is_past) return false
+  if (isUserRegistered.value || event.value.is_past) return false
   if (!event.value.registration_required) return false
   if (isEventFull.value || isRegistrationClosed.value) return false
   return true
@@ -476,7 +655,7 @@ const canRegister = computed(() => {
 
 const registrationMessage = computed(() => {
   if (!event.value?.registration_required) return ''
-  if (event.value.is_registered) return 'You are registered for this event.'
+  if (isUserRegistered.value) return 'You are registered for this event.'
   if (isEventFull.value) return 'This event has reached capacity.'
   if (isRegistrationClosed.value) return 'Registration for this event has closed.'
   return 'Welcome! To join the event, please register below.'
@@ -485,6 +664,38 @@ const registrationMessage = computed(() => {
 const googleMapEmbedUrl = computed(() => {
   if (!event.value?.google_map_embed_link) return ''
   return extractGoogleMapsEmbedUrl(event.value.google_map_embed_link)
+})
+
+// Generate QR code URL for confirmation code
+const qrCodeUrl = computed(() => {
+  if (!userRegistration.value?.confirmation_code) return ''
+  const code = encodeURIComponent(userRegistration.value.confirmation_code)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${code}`
+})
+
+// Calculate time until event starts
+const timeUntilEvent = computed(() => {
+  if (!event.value?.start_date) return null
+
+  const now = new Date()
+  const eventStart = new Date(event.value.start_date)
+  const diff = eventStart.getTime() - now.getTime()
+
+  if (diff <= 0) return null // Event has started or passed
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+
+  if (days > 0) {
+    return `${days}d ${hours}h`
+  }
+
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`
+  }
+
+  return `${minutes}m`
 })
 
 // Current banner image source - primary first, then fallback
@@ -543,13 +754,37 @@ const loadEvent = async () => {
   loading.value = true
   error.value = null
   resetBannerErrors()
+  userRegistration.value = null
+  registrationChecked.value = false
 
   try {
-    const response = await eventsService.getEvent(props.eventId)
-    if (response.success && response.data) {
-      event.value = response.data
+    // Fetch event data and user's registration status in parallel
+    const eventPromise = eventsService.getEvent(props.eventId)
+    const registrationPromise = authStore.isAuthenticated
+      ? eventsService.getMyRegistration(props.eventId)
+      : Promise.resolve(null)
+
+    const [eventResponse, registrationResponse] = await Promise.all([
+      eventPromise,
+      registrationPromise,
+    ])
+
+    if (eventResponse.success && eventResponse.data) {
+      event.value = eventResponse.data
+
+      // Mark that we've checked registration status
+      if (authStore.isAuthenticated) {
+        registrationChecked.value = true
+      }
+
+      // Store the full registration data if user is registered
+      // If registrationResponse is null/error/empty, userRegistration stays null
+      // which means isUserRegistered will return false
+      if (registrationResponse && registrationResponse.success && registrationResponse.data) {
+        userRegistration.value = registrationResponse.data
+      }
     } else {
-      error.value = response.message || 'Event not found'
+      error.value = eventResponse.message || 'Event not found'
     }
   } catch (err) {
     error.value = 'Failed to load event details'
@@ -581,7 +816,9 @@ const handleRegister = async () => {
       notes: '',
     })
 
-    if (response.success) {
+    if (response.success && response.data) {
+      // Update local registration state with the returned registration data
+      userRegistration.value = response.data
       emit('registered')
       await loadEvent()
     }
@@ -596,6 +833,67 @@ const handleLoginToRegister = () => {
   emit('login-required')
   closeDrawer()
   router.push(`/signin?redirect=${encodeURIComponent(`/events/${props.eventId}`)}`)
+}
+
+const handleCancelRegistration = async () => {
+  if (!event.value || !authStore.isAuthenticated) return
+
+  isCancelling.value = true
+
+  try {
+    // Use unregister endpoint to cancel registration (same as RSVPSection)
+    const response = await eventsService.unregisterFromEvent(event.value.id)
+
+    console.log('Unregister response:', response)
+
+    if (response.success) {
+      // Handle the response - backend may return updated registration or nothing
+      if (response.data) {
+        // Backend returns wrapped response { registration } or direct registration object
+        const registrationData = (response.data as { registration?: EventRegistration }).registration || response.data
+
+        console.log('Registration data after cancel:', registrationData)
+        console.log('Registration status:', registrationData.status)
+
+        // Store the updated registration data
+        userRegistration.value = registrationData
+      } else {
+        console.log('No registration data returned - registration deleted')
+        // No registration data returned - registration was deleted
+        userRegistration.value = null
+      }
+
+      // Ensure registrationChecked is true so isUserRegistered uses our updated state
+      registrationChecked.value = true
+      console.log('isUserRegistered after cancel:', isUserRegistered.value)
+    }
+  } catch (err) {
+    console.error('Cancel registration failed:', err)
+  } finally {
+    isCancelling.value = false
+  }
+}
+
+const shareEvent = async () => {
+  if (!event.value) return
+
+  const shareUrl = `${window.location.origin}/events/${event.value.id}`
+  const shareData = {
+    title: event.value.title,
+    text: event.value.short_description || event.value.title,
+    url: shareUrl,
+  }
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData)
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+      // Could show a toast here
+    }
+  } catch {
+    // User cancelled or share failed
+  }
 }
 
 const openMap = () => {
