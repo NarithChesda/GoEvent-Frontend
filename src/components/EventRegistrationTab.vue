@@ -8,106 +8,204 @@
         </h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage registrations and check-ins</p>
       </div>
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <!-- Admin Check-in Button -->
-        <button
-          v-if="canEdit"
-          @click="showCheckinModal = true"
-          class="hidden sm:flex bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 flex items-center text-sm sm:text-base"
-        >
-          <UserCheck class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-          <span class="hidden sm:inline">Check-in Attendee</span>
-
-        </button>
-        <!-- Refresh Button -->
-        <button
-          @click="loadRegistrations(true)"
-          class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl p-2 hover:bg-white/90 transition-all duration-200 hover:scale-[1.02] shadow-lg"
-          :disabled="loading"
-        >
-          <RefreshCw class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" :class="{ 'animate-spin': loading }" />
-        </button>
-        <!-- Live Toggle -->
-        <button
-          @click="liveUpdates = !liveUpdates"
-          class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl px-2.5 py-2 hover:bg-white/90 transition-all duration-200 shadow-lg flex items-center gap-1.5 text-slate-700 text-sm"
-          :aria-pressed="liveUpdates"
-          title="Toggle live updates"
-        >
-          <span
-            class="inline-block w-2.5 h-2.5 rounded-full"
-            :class="liveUpdates ? 'bg-green-500 animate-pulse' : 'bg-slate-300'"
-          ></span>
-          <span class="hidden sm:inline">Live</span>
-        </button>
-        <div v-if="liveUpdates && lastUpdatedText" class="hidden sm:block text-xs text-slate-500">
-          Updated {{ lastUpdatedText }}
-        </div>
-      </div>
+      <!-- Admin Check-in Button -->
+      <button
+        v-if="canEdit"
+        @click="showCheckinModal = true"
+        class="flex bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 items-center text-sm sm:text-base"
+      >
+        <UserCheck class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span class="hidden sm:inline">Check-in Attendee</span>
+      </button>
     </div>
 
     <!-- Removed stats cards for a cleaner, action-focused UI -->
 
-    <!-- Search and Filter -->
-    <div class="flex flex-col gap-2 sm:gap-3">
-      <div class="flex gap-2 sm:gap-4">
-        <div class="flex-1">
+    <!-- Search and Filter Bar - Clean Minimalist Design -->
+    <div class="sticky top-0 z-20">
+      <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+        <!-- Search Row (Mobile Only - appears first on mobile) -->
+        <div class="p-3 pb-0 sm:hidden">
           <div class="relative">
-            <Search
-              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] pointer-events-none z-10"
-            />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search registrations..."
-              class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff]/30 transition-all duration-200 text-sm sm:text-base relative text-slate-800 placeholder-slate-400 shadow-sm"
+              aria-label="Search registrations by name, username, or code"
+              class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
             />
             <button
               v-if="searchQuery"
               @click="searchQuery = ''"
-              class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-600 hover:text-[#1e90ff] rounded-lg hover:bg-white/60 active:bg-white/70"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
               aria-label="Clear search"
             >
-              <X class="w-4 h-4" />
+              <X class="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Status Filter Chips -->
-      <div class="flex flex-wrap gap-2">
-        <button
-          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
-          :class="{ 'bg-[#B0E0E6] text-[#1873cc] border-[#B0E0E6]': statusFilter === '' }"
-          @click="statusFilter = ''"
-          aria-label="Filter: All"
-        >
-          All ({{ allCount }})
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
-          :class="{ 'bg-[#B0E0E6] text-[#1873cc] border-[#B0E0E6]': statusFilter === 'registered' }"
-          @click="statusFilter = 'registered'"
-          aria-label="Filter: Not Checked In"
-        >
-          Not Checked In ({{ pendingCount }})
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
-          :class="{ 'bg-emerald-100 text-emerald-700 border-emerald-200': statusFilter === 'checked_in' }"
-          @click="statusFilter = 'checked_in'"
-          aria-label="Filter: Checked In"
-        >
-          Checked In ({{ checkedInCount }})
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-full border border-white/30 bg-white/60 text-xs sm:text-sm font-medium text-slate-700 hover:bg-white/80 transition-colors"
-          :class="{ 'bg-red-100 text-red-800 border-red-200': statusFilter === 'cancelled' }"
-          @click="statusFilter = 'cancelled'"
-          aria-label="Filter: Cancelled"
-        >
-          Cancelled ({{ cancelledCount }})
-        </button>
+        <!-- Filter and Actions Row -->
+        <div class="flex items-center gap-3 p-3">
+          <!-- Status Filter Dropdown -->
+          <div class="relative" ref="filterDropdownContainer">
+            <button
+              @click="isFilterDropdownOpen = !isFilterDropdownOpen"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+              :class="getFilterButtonClass()"
+              :style="getFilterButtonStyle()"
+            >
+              <Filter class="w-4 h-4 flex-shrink-0" :class="statusFilter === '' ? 'text-slate-500' : 'text-white/80'" />
+              <span class="truncate max-w-[100px] sm:max-w-[160px]">
+                {{ getFilterLabel() }}
+              </span>
+              <ChevronDown class="w-4 h-4 transition-transform flex-shrink-0" :class="[{ 'rotate-180': isFilterDropdownOpen }, statusFilter === '' ? 'text-slate-400' : 'text-white/80']" />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <Transition name="dropdown">
+              <div
+                v-if="isFilterDropdownOpen"
+                class="absolute top-full left-0 mt-2 min-w-[200px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                @click.stop
+              >
+                <div class="p-1.5">
+                  <!-- All Option -->
+                  <button
+                    @click="selectStatusFilter('')"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      statusFilter === ''
+                        ? 'bg-slate-100 text-slate-900'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <span class="flex-1 text-left">All</span>
+                    <span class="text-xs text-slate-400 tabular-nums">{{ allCount }}</span>
+                  </button>
+
+                  <!-- Divider -->
+                  <div class="my-1.5 border-t border-slate-100"></div>
+
+                  <!-- Not Checked In -->
+                  <button
+                    @click="selectStatusFilter('registered')"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                    :class="statusFilter === 'registered' ? 'bg-sky-500 text-white' : 'text-slate-700 hover:bg-slate-50'"
+                  >
+                    <div
+                      v-if="statusFilter !== 'registered'"
+                      class="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-sky-500"
+                    />
+                    <span class="flex-1 text-left">Not Checked In</span>
+                    <span class="text-xs tabular-nums" :class="statusFilter === 'registered' ? 'text-white/70' : 'text-slate-400'">{{ pendingCount }}</span>
+                  </button>
+
+                  <!-- Checked In -->
+                  <button
+                    @click="selectStatusFilter('checked_in')"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                    :class="statusFilter === 'checked_in' ? 'bg-emerald-500 text-white' : 'text-slate-700 hover:bg-slate-50'"
+                  >
+                    <div
+                      v-if="statusFilter !== 'checked_in'"
+                      class="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-emerald-500"
+                    />
+                    <span class="flex-1 text-left">Checked In</span>
+                    <span class="text-xs tabular-nums" :class="statusFilter === 'checked_in' ? 'text-white/70' : 'text-slate-400'">{{ checkedInCount }}</span>
+                  </button>
+
+                  <!-- Cancelled -->
+                  <button
+                    @click="selectStatusFilter('cancelled')"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                    :class="statusFilter === 'cancelled' ? 'bg-red-500 text-white' : 'text-slate-700 hover:bg-slate-50'"
+                  >
+                    <div
+                      v-if="statusFilter !== 'cancelled'"
+                      class="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-red-500"
+                    />
+                    <span class="flex-1 text-left">Cancelled</span>
+                    <span class="text-xs tabular-nums" :class="statusFilter === 'cancelled' ? 'text-white/70' : 'text-slate-400'">{{ cancelledCount }}</span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Click outside to close dropdown -->
+            <div
+              v-if="isFilterDropdownOpen"
+              @click="isFilterDropdownOpen = false"
+              class="fixed inset-0 z-[90]"
+            ></div>
+          </div>
+
+          <!-- Divider -->
+          <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
+
+          <!-- Search Input (Desktop Only) -->
+          <div class="hidden sm:block flex-1 min-w-0">
+            <div class="relative">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search registrations..."
+                aria-label="Search registrations by name, username, or code"
+                class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+              />
+              <button
+                v-if="searchQuery"
+                @click="searchQuery = ''"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
+                aria-label="Clear search"
+              >
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Registration Count -->
+          <div class="flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+            <span class="font-medium text-slate-700">{{ filteredRegistrations.length }}</span>
+            <span>/</span>
+            <span>{{ allCount }}</span>
+          </div>
+
+          <!-- Spacer -->
+          <div class="flex-1 sm:hidden"></div>
+
+          <!-- Refresh Button -->
+          <button
+            @click="loadRegistrations(true)"
+            class="flex items-center justify-center p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
+            :disabled="loading"
+            title="Refresh registrations"
+          >
+            <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': loading }" />
+          </button>
+
+          <!-- Live Toggle -->
+          <button
+            @click="liveUpdates = !liveUpdates"
+            class="flex items-center justify-center gap-1.5 px-2 py-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
+            :class="{ 'bg-emerald-50 text-emerald-600': liveUpdates }"
+            :aria-pressed="liveUpdates"
+            title="Toggle live updates"
+          >
+            <span
+              class="inline-block w-2.5 h-2.5 rounded-full"
+              :class="liveUpdates ? 'bg-green-500 animate-pulse' : 'bg-slate-300'"
+            ></span>
+            <span class="hidden sm:inline text-sm">Live</span>
+          </button>
+
+          <!-- Last Updated Text -->
+          <div v-if="liveUpdates && lastUpdatedText" class="hidden sm:block text-xs text-slate-400 flex-shrink-0">
+            {{ lastUpdatedText }}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -415,8 +513,10 @@ import {
   CheckCircle,
   AlertCircle,
   X,
+  Copy,
+  Filter,
+  ChevronDown,
 } from 'lucide-vue-next'
-import { Copy } from 'lucide-vue-next'
 import {
   eventsService,
   type EventRegistration,
@@ -447,6 +547,8 @@ const showQRScanner = ref(false)
 const rowChecking = ref<Record<string, boolean>>({})
 const liveUpdates = ref(false)
 let liveInterval: number | undefined
+const isFilterDropdownOpen = ref(false)
+const filterDropdownContainer = ref<HTMLElement | null>(null)
 const lastUpdated = ref<Date | null>(null)
 const lastUpdatedText = computed(() =>
   lastUpdated.value
@@ -668,6 +770,45 @@ const clearFilters = () => {
   statusFilter.value = ''
 }
 
+// Filter dropdown methods
+const selectStatusFilter = (filter: string) => {
+  statusFilter.value = filter
+  isFilterDropdownOpen.value = false
+}
+
+const getFilterLabel = (): string => {
+  switch (statusFilter.value) {
+    case 'registered':
+      return 'Not Checked In'
+    case 'checked_in':
+      return 'Checked In'
+    case 'cancelled':
+      return 'Cancelled'
+    default:
+      return 'All'
+  }
+}
+
+const getFilterButtonClass = (): string => {
+  if (statusFilter.value === '') {
+    return 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+  }
+  return 'text-white border-transparent'
+}
+
+const getFilterButtonStyle = (): Record<string, string> => {
+  switch (statusFilter.value) {
+    case 'registered':
+      return { backgroundColor: '#0ea5e9' } // sky-500
+    case 'checked_in':
+      return { backgroundColor: '#10b981' } // emerald-500
+    case 'cancelled':
+      return { backgroundColor: '#ef4444' } // red-500
+    default:
+      return {}
+  }
+}
+
 const getInitials = (firstName: string, lastName: string): string => {
   const first = firstName?.charAt(0)?.toUpperCase() || ''
   const last = lastName?.charAt(0)?.toUpperCase() || ''
@@ -845,5 +986,17 @@ defineExpose({
 .modal-leave-to .relative {
   opacity: 0;
   transform: scale(0.95) translateY(-20px);
+}
+
+/* Dropdown transition */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
