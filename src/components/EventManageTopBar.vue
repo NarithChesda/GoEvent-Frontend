@@ -71,18 +71,29 @@
         <button
           v-if="canEdit && eventId"
           @click="previewShowcase"
-          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50/80 rounded-lg transition-all duration-200"
+          class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
           title="Preview showcase"
         >
-          <Eye class="w-4.5 h-4.5" />
+          <Eye class="w-4 h-4" />
           <span class="hidden md:inline">Preview</span>
+        </button>
+
+        <!-- Publish Button (for public events) -->
+        <button
+          v-if="canEdit && eventId && eventPrivacy === 'public'"
+          @click="publishEvent"
+          class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
+          title="Publish event"
+        >
+          <Globe class="w-4 h-4" />
+          <span class="hidden md:inline">Publish</span>
         </button>
 
         <!-- Edit Event Button -->
         <button
           v-if="canEdit && eventId"
           @click="editEvent"
-          class="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] rounded-lg transition-all duration-200 shadow-sm"
+          class="flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] rounded-lg transition-all duration-200 shadow-sm"
         >
           <Pencil class="w-4 h-4" />
           <span class="hidden sm:inline">Edit</span>
@@ -98,12 +109,13 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Pencil, Eye, ArrowLeft } from 'lucide-vue-next'
+import { Pencil, Eye, ArrowLeft, Globe } from 'lucide-vue-next'
 
 interface Props {
   eventId?: string
   eventTitle?: string
   eventStatus?: 'upcoming' | 'ongoing' | 'past' | 'draft' | null
+  eventPrivacy?: 'public' | 'private'
   canEdit?: boolean
   organizerName?: string
   organizerAvatar?: string
@@ -113,6 +125,7 @@ const props = withDefaults(defineProps<Props>(), {
   eventId: '',
   eventTitle: '',
   eventStatus: null,
+  eventPrivacy: 'private',
   canEdit: false,
   organizerName: '',
   organizerAvatar: ''
@@ -120,6 +133,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   edit: []
+  publish: []
 }>()
 
 // Avatar error state
@@ -204,6 +218,12 @@ const editEvent = () => {
   }
 }
 
+const publishEvent = () => {
+  if (props.eventId) {
+    emit('publish')
+  }
+}
+
 const previewShowcase = () => {
   if (props.eventId) {
     // Open showcase in new tab with guest name and language params
@@ -241,5 +261,14 @@ const goBackToEvents = () => {
     padding-bottom: 1px;
     margin-bottom: -1px;
   }
+}
+
+/* Thin outline button style */
+.topbar-outline-btn {
+  border: 1px solid rgba(203, 213, 225, 0.5);
+}
+
+.topbar-outline-btn:hover {
+  border-color: rgba(203, 213, 225, 0.8);
 }
 </style>

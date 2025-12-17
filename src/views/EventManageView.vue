@@ -8,10 +8,12 @@
       :event-id="event.id"
       :event-title="event.title"
       :event-status="computedEventStatus"
+      :event-privacy="event.privacy"
       :can-edit="event.can_edit"
       :organizer-name="event.organizer_details?.first_name && event.organizer_details?.last_name ? `${event.organizer_details.first_name} ${event.organizer_details.last_name}`.trim() : event.organizer_details?.username"
       :organizer-avatar="getOrganizerAvatarUrl(event.organizer_details?.profile_picture)"
       @edit="handleEditEvent(event.id)"
+      @publish="handlePublishEvent"
     />
 
     <!-- Desktop Sidebar Navigation -->
@@ -624,6 +626,91 @@ const loadEvent = async () => {
 
 const handleEditEvent = (_eventId: string) => {
   showEditDrawer.value = true
+}
+
+const handlePublishEvent = async () => {
+  if (!event.value) return
+
+  try {
+    const eventTitle = event.value.title
+    const eventId = event.value.id
+    const userEmail = authStore.user?.email || 'Unknown'
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const adminUrl = `${backendUrl}/admin/events/event/${eventId}/change/`
+
+    // Invite admin as collaborator with publish review request message
+    const publishMessage = `${eventTitle} requests review for publish`
+    const response = await eventsService.inviteCollaborator(eventId, {
+      email: 'admin@goevent.com',
+      role: 'admin',
+      message: publishMessage,
+    })
+
+    if (response.success) {
+      // Send Telegram notification to admin
+      const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
+      const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
+
+      if (telegramBotToken && telegramChatId) {
+        try {
+          const telegramMessage = `📢 Event Publish Request\n\n📌 Event: ${eventTitle}\n🆔 Event ID: ${eventId}\n👤 Requested by: ${userEmail}\n🔗 Admin: ${adminUrl}\n\n📝 Message: ${publishMessage}`
+
+          const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
+          await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chat_id: telegramChatId,
+              text: telegramMessage,
+              parse_mode: 'HTML',
+            }),
+          })
+        } catch (telegramError) {
+          console.error('Failed to send Telegram notification:', telegramError)
+          // Don't show error to user - the invite was successful
+        }
+      }
+
+      showMessage('success', 'Event submitted for review! Admin will be notified.')
+    } else {
+      // Check if admin is already a collaborator
+      if (response.message?.toLowerCase().includes('already') || response.message?.toLowerCase().includes('exists')) {
+        showMessage('success', 'Event review request sent to admin!')
+
+        // Still send Telegram notification even if already a collaborator
+        const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
+        const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
+
+        if (telegramBotToken && telegramChatId) {
+          try {
+            const telegramMessage = `📢 Event Publish Request (Follow-up)\n\n📌 Event: ${eventTitle}\n🆔 Event ID: ${eventId}\n👤 Requested by: ${userEmail}\n🔗 Admin: ${adminUrl}\n\n📝 Please review this event for publishing.`
+
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
+            await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                chat_id: telegramChatId,
+                text: telegramMessage,
+                parse_mode: 'HTML',
+              }),
+            })
+          } catch (telegramError) {
+            console.error('Failed to send Telegram notification:', telegramError)
+          }
+        }
+      } else {
+        showMessage('error', response.message || 'Failed to submit event for review')
+      }
+    }
+  } catch (err) {
+    console.error('Error submitting event for review:', err)
+    showMessage('error', 'An error occurred while submitting event for review')
+  }
 }
 
 const handleEventUpdatedFromDrawer = (updatedEvent: Event) => {

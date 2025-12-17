@@ -310,54 +310,37 @@
             <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
 
-              <!-- Location Type Toggle Buttons -->
-              <div class="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  @click="form.is_virtual = false"
+              <!-- Virtual Event Toggle -->
+              <div
+                @click="form.is_virtual = !form.is_virtual"
+                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-white rounded-lg shadow-sm">
+                    <component :is="form.is_virtual ? Video : MapPin" class="w-4 h-4 text-sky-500" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">{{ form.is_virtual ? 'Virtual Event' : 'In-Person Event' }}</p>
+                    <p class="text-xs text-slate-500">{{ form.is_virtual ? 'Event will be held online' : 'Event will be held at a physical location' }}</p>
+                  </div>
+                </div>
+                <div
+                  role="switch"
+                  :aria-checked="form.is_virtual"
                   :class="[
-                    'flex items-center gap-2 px-3.5 py-3 rounded-lg border-2 transition-all',
-                    !form.is_virtual
-                      ? 'border-[#2ecc71] bg-white'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
+                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                    form.is_virtual ? 'bg-sky-500' : 'bg-slate-200'
                   ]"
                 >
-                  <div :class="[
-                    'w-6 h-6 rounded flex items-center justify-center',
-                    !form.is_virtual ? 'bg-[#2ecc71]' : 'bg-slate-100'
-                  ]">
-                    <MapPin :class="['w-3.5 h-3.5', !form.is_virtual ? 'text-white' : 'text-slate-500']" />
-                  </div>
-                  <span :class="['font-medium text-sm flex-1', !form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
-                    In Person
-                  </span>
-                  <Check v-if="!form.is_virtual" class="w-4 h-4 text-[#2ecc71]" />
-                </button>
-
-                <button
-                  type="button"
-                  @click="form.is_virtual = true"
-                  :class="[
-                    'flex items-center gap-2 px-3.5 py-3 rounded-lg border-2 transition-all',
-                    form.is_virtual
-                      ? 'border-[#1e90ff] bg-white'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
-                  ]"
-                >
-                  <div :class="[
-                    'w-6 h-6 rounded flex items-center justify-center',
-                    form.is_virtual ? 'bg-[#1e90ff]' : 'bg-slate-100'
-                  ]">
-                    <Video :class="['w-3.5 h-3.5', form.is_virtual ? 'text-white' : 'text-slate-500']" />
-                  </div>
-                  <span :class="['font-medium text-sm flex-1', form.is_virtual ? 'text-slate-900' : 'text-slate-600']">
-                    Virtual
-                  </span>
-                  <Check v-if="form.is_virtual" class="w-4 h-4 text-[#1e90ff]" />
-                </button>
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                    :style="{ transform: form.is_virtual ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </div>
               </div>
 
               <!-- Location Input (In Person) -->
+              <Transition name="slide-fade">
               <div v-if="!form.is_virtual" class="space-y-3">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
@@ -417,9 +400,11 @@
                   </p>
                 </div>
               </div>
+              </Transition>
 
               <!-- Virtual Link Input -->
-              <div v-else>
+              <Transition name="slide-fade">
+              <div v-if="form.is_virtual">
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Meeting Link</label>
                 <div class="relative">
                   <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -431,6 +416,105 @@
                   />
                 </div>
               </div>
+              </Transition>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Privacy</h3>
+
+              <div
+                @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
+                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-white rounded-lg shadow-sm">
+                    <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? 'Public Event' : 'Private Event' }}</p>
+                    <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? 'Anyone can view and register' : 'Only invited guests can access' }}</p>
+                  </div>
+                </div>
+                <div
+                  role="switch"
+                  :aria-checked="form.privacy === 'public'"
+                  :class="[
+                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                    form.privacy === 'public' ? 'bg-sky-500' : 'bg-slate-200'
+                  ]"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                    :style="{ transform: form.privacy === 'public' ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Registration Settings -->
+            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registration</h3>
+
+              <!-- Require Registration Toggle -->
+              <div
+                @click="form.registration_required = !form.registration_required"
+                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-white rounded-lg shadow-sm">
+                    <ClipboardList class="w-4 h-4 text-sky-500" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">Require Registration</p>
+                    <p class="text-xs text-slate-500">Attendees must register to join</p>
+                  </div>
+                </div>
+                <div
+                  role="switch"
+                  :aria-checked="form.registration_required"
+                  :class="[
+                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                    form.registration_required ? 'bg-sky-500' : 'bg-slate-200'
+                  ]"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                    :style="{ transform: form.registration_required ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </div>
+              </div>
+
+              <!-- Registration Details (shown when registration is required) -->
+              <Transition name="slide-fade">
+                <div v-if="form.registration_required" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <!-- Registration Deadline -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Registration Deadline</label>
+                    <input
+                      v-model="form.registration_deadline"
+                      type="datetime-local"
+                      :max="form.start_date"
+                      class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      placeholder="Optional deadline"
+                    />
+                    <p class="text-xs text-slate-500 mt-1">Leave empty for no deadline</p>
+                  </div>
+
+                  <!-- Max Attendees -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Max Attendees</label>
+                    <input
+                      v-model.number="form.max_attendees"
+                      type="number"
+                      min="1"
+                      class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      placeholder="Unlimited"
+                    />
+                    <p class="text-xs text-slate-500 mt-1">Leave empty for unlimited</p>
+                  </div>
+                </div>
+              </Transition>
             </div>
           </div>
         </div>
@@ -506,7 +590,6 @@
 import { ref, reactive, watch, computed } from 'vue'
 import {
   X,
-  Check,
   Loader,
   AlertCircle,
   CheckCircle,
@@ -522,6 +605,9 @@ import {
   ArrowRight,
   Trash2,
   ChevronDown,
+  Globe,
+  Lock,
+  ClipboardList,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
 import ImageCropperModal from './common/ImageCropperModal.vue'
@@ -591,6 +677,10 @@ const form = reactive({
   privacy: 'public' as 'public' | 'private',
   status: 'published' as 'draft' | 'published' | 'cancelled' | 'completed',
   category: '' as string | number | null,
+  // Registration fields
+  registration_required: false,
+  registration_deadline: '',
+  max_attendees: null as number | null,
 })
 
 // Original form values for dirty tracking
@@ -674,6 +764,10 @@ const populateForm = (eventData: Event) => {
   form.privacy = eventData.privacy
   form.status = eventData.status
   form.category = eventData.category ? eventData.category.toString() : ''
+  // Registration fields
+  form.registration_required = eventData.registration_required || false
+  form.registration_deadline = eventData.registration_deadline ? eventData.registration_deadline.slice(0, 16) : ''
+  form.max_attendees = eventData.max_attendees || null
 
   // Store original values for dirty tracking
   originalForm.value = { ...form }
@@ -775,6 +869,33 @@ const handleSubmit = async () => {
     // Clear virtual_link if it had a value
     if (original.virtual_link) {
       updateData.virtual_link = ''
+    }
+  }
+
+  // Check registration fields
+  if (form.registration_required !== original.registration_required) {
+    updateData.registration_required = form.registration_required
+  }
+
+  // Handle registration deadline - convert to ISO or null
+  if (form.registration_required) {
+    const currentDeadline = form.registration_deadline ? new Date(form.registration_deadline).toISOString() : null
+    const originalDeadline = original.registration_deadline ? new Date(original.registration_deadline).toISOString() : null
+    if (currentDeadline !== originalDeadline) {
+      updateData.registration_deadline = currentDeadline
+    }
+
+    // Handle max attendees
+    if (form.max_attendees !== original.max_attendees) {
+      updateData.max_attendees = form.max_attendees
+    }
+  } else if (original.registration_required) {
+    // If registration was disabled, clear the fields
+    if (original.registration_deadline) {
+      updateData.registration_deadline = null
+    }
+    if (original.max_attendees) {
+      updateData.max_attendees = null
     }
   }
 
@@ -1067,5 +1188,20 @@ watch(
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Slide fade transition for registration details */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
