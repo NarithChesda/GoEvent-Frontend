@@ -446,9 +446,9 @@ const handleEventCreate = async (formData: EventFormData) => {
       is_virtual: formData.is_virtual || false,
       virtual_link: formData.virtual_link || '',
       privacy: formData.privacy,
-      status:
-        (formData.status as 'draft' | 'published' | 'cancelled' | 'completed') ||
-        ('published' as const),
+      ...(formData.status && {
+        status: formData.status as 'draft' | 'published' | 'cancelled' | 'completed',
+      }),
       category: formData.category
         ? typeof formData.category === 'string'
           ? parseInt(formData.category)

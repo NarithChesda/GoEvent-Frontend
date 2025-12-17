@@ -297,7 +297,6 @@ const handleSubmit = async () => {
       category: categoryValue,
       banner_image: null,
       timezone: formData.timezone || getUserTimezone(),
-      status: 'published',
     }
 
     emit('submit', eventData)
