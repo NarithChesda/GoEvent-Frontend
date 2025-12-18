@@ -50,13 +50,6 @@
               <Copy class="w-4 h-4" />
               <span class="hidden sm:inline">{{ linkCopied ? 'Copied!' : 'Copy Link' }}</span>
             </button>
-            <button
-              @click="openShowcase"
-              class="p-2 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1.5 text-sm text-slate-600"
-            >
-              <span>Showcase</span>
-              <ExternalLink class="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>
@@ -77,49 +70,53 @@
           <div class="px-5 py-6 space-y-6">
             <!-- Title & Category -->
             <div>
-              <div class="flex items-start justify-between gap-3 mb-3">
+              <!-- Title -->
+              <div class="mb-3">
                 <h1 class="text-2xl font-bold text-slate-900 leading-tight">
                   {{ event.title }}
                 </h1>
-                <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full flex-shrink-0">
-                  <span class="text-slate-400">#</span>
-                  {{ event.category_details.name }}
-                </span>
               </div>
 
-              <!-- Organizer -->
-              <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
-                <div class="flex items-center gap-2">
+              <!-- Organizer & Category -->
+              <div class="flex items-center justify-between gap-3">
+                <!-- Organizer -->
+                <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
                   <img
                     v-if="event.organizer_details.profile_picture"
                     :src="getProfileUrl(event.organizer_details.profile_picture)"
                     :alt="organizerName"
                     class="w-7 h-7 rounded-full object-cover"
                   />
-                  <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
+                  <div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium">
                     {{ getInitials(organizerName) }}
                   </div>
                   <span class="font-medium">{{ organizerName }}</span>
                 </div>
+
+                <!-- Category Badge -->
+                <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full flex-shrink-0">
+                  <span class="text-slate-400">#</span>
+                  {{ event.category_details.name }}
+                </span>
               </div>
             </div>
 
             <!-- Date & Time -->
             <div class="flex items-start gap-4">
-              <div class="w-12 h-12 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
-                <span class="text-[10px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(event.start_date) }}</span>
-                <span class="text-xl font-bold text-slate-900 leading-tight">{{ getDayOfMonth(event.start_date) }}</span>
+              <div class="w-12 h-12 rounded-xl flex-shrink-0 shadow-md shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
+                <!-- Month Header -->
+                <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
+                  <span class="text-[8px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(event.start_date) }}</span>
+                </div>
+                <!-- Day Number -->
+                <div class="h-[62%] bg-white flex items-center justify-center">
+                  <span class="text-lg font-bold text-slate-800 leading-none">{{ getDayOfMonth(event.start_date) }}</span>
+                </div>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="font-semibold text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
                 <p class="text-sm text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
-                <button
-                  @click="showCalendarOptions = !showCalendarOptions"
-                  class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
-                >
-                  <Calendar class="w-4 h-4" />
-                  Add to Calendar
-                </button>
+
                 <!-- Calendar Options Dropdown -->
                 <div v-if="showCalendarOptions" class="mt-2 flex flex-wrap gap-2">
                   <button
@@ -176,8 +173,110 @@
               </div>
             </div>
 
-            <!-- Registration Section -->
-            <div v-if="event.registration_required" class="border-t border-slate-100 pt-6">
+            <!-- Registration Section - Already Registered (You're In) -->
+            <div v-if="event.registration_required && isUserRegistered" class="pt-2">
+              <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <!-- Header with avatar and status -->
+                <div class="p-5 pb-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xl font-medium shadow-md">
+                      {{ getInitials(currentUser?.first_name || currentUser?.username || 'U') }}
+                    </div>
+                    <!-- Status Badge -->
+                    <span :class="registrationStatusBadgeClass" class="px-3 py-1 text-xs font-medium rounded-full">
+                      {{ registrationStatusLabel }}
+                    </span>
+                  </div>
+                  <h3 class="text-2xl font-bold text-slate-900">You're In</h3>
+                </div>
+
+                <!-- Event countdown -->
+                <div v-if="timeUntilEvent || event.is_ongoing" class="mx-5 mb-4 bg-slate-50 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-600">
+                      <Clock class="w-4 h-4" />
+                      <span class="text-sm">{{ event.is_ongoing ? 'Event is happening now' : 'Event starting in' }}</span>
+                    </div>
+                    <span v-if="timeUntilEvent" class="text-sm font-semibold text-orange-500">{{ timeUntilEvent }}</span>
+                  </div>
+                  <p v-if="event.is_virtual && event.virtual_link" class="text-xs text-slate-500 mt-1.5 border-t border-slate-200 pt-2">
+                    The join button will be shown when the event is about to start.
+                  </p>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="px-5 pb-4 flex gap-2">
+                  <button
+                    @click="showCalendarOptions = !showCalendarOptions"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <CalendarPlus class="w-4 h-4" />
+                    Add to Calendar
+                  </button>
+                  <button
+                    @click="shareEvent"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Share2 class="w-4 h-4" />
+                    Invite a Friend
+                  </button>
+                </div>
+
+                <!-- Calendar Options Dropdown -->
+                <div v-if="showCalendarOptions" class="px-5 pb-4 flex flex-wrap gap-2">
+                  <button
+                    @click="addToGoogleCalendar"
+                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+                  >
+                    Google
+                  </button>
+                  <button
+                    @click="addToOutlookCalendar"
+                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+                  >
+                    Outlook
+                  </button>
+                  <button
+                    @click="downloadICSFile"
+                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+                  >
+                    Download .ics
+                  </button>
+                </div>
+
+                <!-- Cancel registration link -->
+                <div class="px-5 pb-4 text-sm text-slate-600">
+                  No longer able to attend? Notify the host by
+                  <button
+                    @click="handleCancelRegistration"
+                    :disabled="isCancelling"
+                    class="text-pink-500 hover:text-pink-600 underline underline-offset-2 disabled:opacity-50"
+                  >
+                    {{ isCancelling ? 'cancelling...' : 'canceling your registration' }}
+                  </button>.
+                </div>
+
+                <!-- Confirmation code (if available) -->
+                <div v-if="userRegistration?.confirmation_code" class="border-t border-slate-100 px-5 py-4">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-slate-500 mb-0.5">Confirmation Code</p>
+                      <p class="font-mono font-semibold text-slate-900">{{ userRegistration.confirmation_code }}</p>
+                    </div>
+                    <button
+                      @click="showQRModal = true"
+                      class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                      title="Show QR Code"
+                    >
+                      <QrCode class="w-5 h-5 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Registration Section - Not Registered -->
+            <div v-else-if="event.registration_required" class="pt-2">
               <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-100">
                 <h3 class="text-base font-semibold text-slate-800 mb-3">Registration</h3>
                 <p class="text-sm text-slate-600 mb-4">
@@ -205,15 +304,6 @@
                   {{ isRegistering ? 'Registering...' : 'Register for Event' }}
                 </button>
 
-                <!-- Already Registered -->
-                <div
-                  v-else-if="event.is_registered"
-                  class="w-full bg-white text-green-700 font-semibold py-3.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 border border-green-200"
-                >
-                  <CheckCircle class="w-5 h-5" />
-                  You're Registered
-                </div>
-
                 <!-- Login to Register -->
                 <button
                   v-else-if="!currentUser"
@@ -237,6 +327,82 @@
             <div v-if="event.description" class="border-t border-slate-100 pt-6">
               <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">About Event</h3>
               <div class="prose prose-sm max-w-none text-slate-700" v-html="sanitizedDescription" />
+            </div>
+
+            <!-- Agenda -->
+            <div v-if="event.agenda_items && event.agenda_items.length > 0" class="border-t border-slate-100 pt-6">
+              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Agenda</h3>
+              <div class="space-y-3">
+                <div
+                  v-for="(group, dateKey) in groupedAgendaItems"
+                  :key="dateKey"
+                  class="border border-slate-200 rounded-xl overflow-hidden"
+                >
+                  <!-- Date Group Header -->
+                  <button
+                    @click="toggleAgendaGroup(dateKey)"
+                    class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-lg flex-shrink-0 shadow-sm shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
+                        <!-- Month Header -->
+                        <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
+                          <span class="text-[7px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(group.date) }}</span>
+                        </div>
+                        <!-- Day Number -->
+                        <div class="h-[62%] bg-white flex items-center justify-center">
+                          <span class="text-sm font-bold text-slate-800 leading-none">{{ getDayOfMonth(group.date) }}</span>
+                        </div>
+                      </div>
+                      <div class="text-left">
+                        <p class="font-medium text-slate-900 text-sm">{{ group.displayDate }}</p>
+                        <p class="text-xs text-slate-500">{{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'items' }}</p>
+                      </div>
+                    </div>
+                    <ChevronDown
+                      class="w-5 h-5 text-slate-400 transition-transform duration-200"
+                      :class="{ 'rotate-180': expandedAgendaGroups[dateKey] }"
+                    />
+                  </button>
+
+                  <!-- Agenda Items -->
+                  <div
+                    v-show="expandedAgendaGroups[dateKey]"
+                    class="divide-y divide-slate-100"
+                  >
+                    <div
+                      v-for="item in group.items"
+                      :key="item.id"
+                      class="flex items-center justify-between gap-3 px-4 py-3"
+                    >
+                      <div class="min-w-0 flex-1">
+                        <p class="font-medium text-slate-900">{{ item.title }}</p>
+                        <p v-if="item.description" class="text-sm text-slate-500 line-clamp-1">{{ item.description }}</p>
+                      </div>
+                      <p v-if="item.start_time_text || item.end_time_text" class="text-sm text-slate-500 flex-shrink-0">
+                        {{ formatAgendaTime(item) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location Map -->
+            <div v-if="googleMapEmbedUrl" class="border-t border-slate-100 pt-6">
+              <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Location</h3>
+              <div class="rounded-xl overflow-hidden border border-slate-200">
+                <iframe
+                  :src="googleMapEmbedUrl"
+                  width="100%"
+                  height="250"
+                  style="border:0;"
+                  allowfullscreen
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  class="w-full"
+                />
+              </div>
             </div>
 
             <!-- Hosts -->
@@ -282,6 +448,42 @@
         </div>
       </div>
     </Transition>
+
+    <!-- QR Code Modal -->
+    <Transition name="fade">
+      <div
+        v-if="showQRModal && userRegistration?.confirmation_code"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100]"
+        @click="showQRModal = false"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-xs w-full"
+          @click.stop
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-900">Check-in QR Code</h3>
+            <button
+              @click="showQRModal = false"
+              class="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <X class="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 mb-4">
+              <img
+                :src="qrCodeUrl"
+                :alt="userRegistration.confirmation_code"
+                class="w-48 h-48"
+              />
+            </div>
+            <p class="text-xs text-slate-500 mb-1">Confirmation Code</p>
+            <p class="font-mono font-bold text-lg text-slate-900">{{ userRegistration.confirmation_code }}</p>
+            <p class="text-xs text-slate-500 mt-3 text-center">Show this QR code at the event for quick check-in</p>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -298,10 +500,18 @@ import {
   Calendar,
   AlertCircle,
   CheckCircle,
+  Clock,
+  CalendarPlus,
+  Share2,
+  QrCode,
+  X,
+  ChevronDown,
 } from 'lucide-vue-next'
-import { eventsService, type Event } from '../services/api'
+import { eventsService, type Event, type EventRegistration } from '../services/api'
 import { useAuthStore } from '../stores/auth'
 import { apiClient } from '../services/api'
+import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import type { EventAgendaItem } from '../services/api/types/event.types'
 
 const route = useRoute()
 const router = useRouter()
@@ -312,9 +522,17 @@ const event = ref<Event | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const isRegistering = ref(false)
+const isCancelling = ref(false)
 const linkCopied = ref(false)
 const showCalendarOptions = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const userRegistration = ref<EventRegistration | null>(null)
+const registrationChecked = ref(false)
+const showQRModal = ref(false)
+const expandedAgendaGroups = ref<Record<string, boolean>>({})
+
+// Statuses that mean user is NOT actively registered/attending
+const NON_ATTENDING_STATUSES = ['not_coming', 'declined', 'cancelled', 'withdrawn', 'no']
 
 // Computed
 const currentUser = computed(() => authStore.user)
@@ -344,21 +562,132 @@ const isRegistrationClosed = computed(() => {
   return new Date(event.value.registration_deadline) < new Date()
 })
 
+// Registration status label for display
+const registrationStatusLabel = computed(() => {
+  const status = userRegistration.value?.status || ''
+  return status.replace(/\b\w/g, (c) => c.toUpperCase())
+})
+
+// Registration status badge styling
+const registrationStatusBadgeClass = computed(() => {
+  const status = userRegistration.value?.status?.toLowerCase() || ''
+  switch (status) {
+    case 'confirmed':
+      return 'bg-green-100 text-green-700'
+    case 'checked in':
+    case 'checked_in':
+      return 'bg-blue-100 text-blue-700'
+    case 'registered':
+      return 'bg-amber-100 text-amber-700'
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-700'
+    default:
+      return 'bg-slate-100 text-slate-700'
+  }
+})
+
+// Check if user is registered and attending
+const isUserRegistered = computed(() => {
+  if (registrationChecked.value) {
+    if (!userRegistration.value) return false
+    const status = userRegistration.value.status?.toLowerCase() || ''
+    if (NON_ATTENDING_STATUSES.includes(status)) return false
+    return true
+  }
+  if (event.value?.is_registered) return true
+  return false
+})
+
 const canRegister = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
-  if (event.value.is_registered || event.value.is_past) return false
+  if (isUserRegistered.value || event.value.is_past) return false
   if (!event.value.registration_required) return false
   if (isEventFull.value || isRegistrationClosed.value) return false
   return true
 })
 
+// Calculate time until event starts
+const timeUntilEvent = computed(() => {
+  if (!event.value?.start_date) return null
+  const now = new Date()
+  const eventStart = new Date(event.value.start_date)
+  const diff = eventStart.getTime() - now.getTime()
+  if (diff <= 0) return null
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  if (days > 0) return `${days}d ${hours}h`
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  if (hours > 0) return `${hours}h ${minutes}m`
+  return `${minutes}m`
+})
+
+// Generate QR code URL for confirmation code
+const qrCodeUrl = computed(() => {
+  if (!userRegistration.value?.confirmation_code) return ''
+  const code = encodeURIComponent(userRegistration.value.confirmation_code)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${code}`
+})
+
 const registrationMessage = computed(() => {
   if (!event.value?.registration_required) return ''
-  if (event.value.is_registered) return 'You are registered for this event.'
+  if (isUserRegistered.value) return 'You are registered for this event.'
   if (isEventFull.value) return 'This event has reached capacity.'
   if (isRegistrationClosed.value) return 'Registration for this event has closed.'
   return 'Welcome! To join the event, please register below.'
 })
+
+// Google Map embed URL
+const googleMapEmbedUrl = computed(() => {
+  if (!event.value?.google_map_embed_link) return ''
+  return extractGoogleMapsEmbedUrl(event.value.google_map_embed_link)
+})
+
+// Grouped agenda items
+interface AgendaGroup {
+  date: string
+  displayDate: string
+  items: EventAgendaItem[]
+}
+
+const groupedAgendaItems = computed(() => {
+  if (!event.value?.agenda_items) return {} as Record<string, AgendaGroup>
+
+  const sorted = [...event.value.agenda_items].sort((a, b) => a.order - b.order)
+  const groups: Record<string, AgendaGroup> = {}
+
+  sorted.forEach((item) => {
+    const dateKey = item.date_text || item.date || event.value?.start_date || 'unknown'
+    const dateForDisplay = item.date || event.value?.start_date || new Date().toISOString()
+
+    if (!groups[dateKey]) {
+      groups[dateKey] = {
+        date: dateForDisplay,
+        displayDate: item.date_text || getFormattedDate(dateForDisplay),
+        items: []
+      }
+      // Auto-expand first group
+      if (Object.keys(groups).length === 1 && expandedAgendaGroups.value[dateKey] === undefined) {
+        expandedAgendaGroups.value[dateKey] = true
+      }
+    }
+    groups[dateKey].items.push(item)
+  })
+
+  return groups
+})
+
+const toggleAgendaGroup = (dateKey: string) => {
+  expandedAgendaGroups.value[dateKey] = !expandedAgendaGroups.value[dateKey]
+}
+
+const formatAgendaTime = (item: { start_time_text?: string; end_time_text?: string }): string => {
+  const start = item.start_time_text || ''
+  const end = item.end_time_text || ''
+  if (start && end) {
+    return `${start} - ${end}`
+  }
+  return start || end
+}
 
 // Methods
 const loadEvent = async () => {
@@ -370,19 +699,41 @@ const loadEvent = async () => {
 
   loading.value = true
   error.value = null
+  userRegistration.value = null
+  registrationChecked.value = false
 
   try {
-    const response = await eventsService.getEvent(eventId)
-    if (response.success && response.data) {
-      event.value = response.data
+    // Fetch event data and user's registration status in parallel
+    const eventPromise = eventsService.getEvent(eventId)
+    const registrationPromise = authStore.isAuthenticated
+      ? eventsService.getMyRegistration(eventId)
+      : Promise.resolve(null)
+
+    const [eventResponse, registrationResponse] = await Promise.all([
+      eventPromise,
+      registrationPromise,
+    ])
+
+    if (eventResponse.success && eventResponse.data) {
+      event.value = eventResponse.data
 
       // If user can edit this event, redirect to manage page
       if (event.value.can_edit) {
         router.replace(`/events/${eventId}/manage`)
         return
       }
+
+      // Mark that we've checked registration status
+      if (authStore.isAuthenticated) {
+        registrationChecked.value = true
+      }
+
+      // Store the full registration data if user is registered
+      if (registrationResponse && registrationResponse.success && registrationResponse.data) {
+        userRegistration.value = registrationResponse.data
+      }
     } else {
-      error.value = response.message || 'Event not found'
+      error.value = eventResponse.message || 'Event not found'
     }
   } catch (err) {
     error.value = 'Failed to load event details'
@@ -405,11 +756,6 @@ const copyLink = async () => {
   }
 }
 
-const openShowcase = () => {
-  const eventId = route.params.id as string
-  router.push(`/events/${eventId}/showcase`)
-}
-
 const handleRegister = async () => {
   if (!event.value || !authStore.isAuthenticated) return
 
@@ -421,7 +767,8 @@ const handleRegister = async () => {
       notes: '',
     })
 
-    if (response.success) {
+    if (response.success && response.data) {
+      userRegistration.value = response.data
       showMessage('success', 'Successfully registered for the event!')
       await loadEvent()
     } else {
@@ -431,6 +778,56 @@ const handleRegister = async () => {
     showMessage('error', 'An error occurred while registering')
   } finally {
     isRegistering.value = false
+  }
+}
+
+const handleCancelRegistration = async () => {
+  if (!event.value || !authStore.isAuthenticated) return
+
+  isCancelling.value = true
+
+  try {
+    const response = await eventsService.unregisterFromEvent(event.value.id)
+
+    if (response.success) {
+      if (response.data) {
+        const registrationData = (response.data as { registration?: EventRegistration }).registration || response.data
+        userRegistration.value = registrationData
+      } else {
+        userRegistration.value = null
+      }
+      registrationChecked.value = true
+      showMessage('success', 'Registration cancelled successfully')
+    } else {
+      showMessage('error', response.message || 'Failed to cancel registration')
+    }
+  } catch (err) {
+    showMessage('error', 'An error occurred while cancelling')
+  } finally {
+    isCancelling.value = false
+  }
+}
+
+const shareEvent = async () => {
+  if (!event.value) return
+
+  const eventId = route.params.id as string
+  const shareUrl = `${window.location.origin}/events/${eventId}`
+  const shareData = {
+    title: event.value.title,
+    text: event.value.short_description || event.value.title,
+    url: shareUrl,
+  }
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData)
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+      showMessage('success', 'Link copied to clipboard!')
+    }
+  } catch {
+    // User cancelled or share failed
   }
 }
 
@@ -656,6 +1053,17 @@ watch(
   transform: translateY(-20px);
 }
 
+/* Fade transition for QR modal */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 /* Prose styling for description */
 .prose :deep(p) {
   @apply mb-3 leading-relaxed;
@@ -688,5 +1096,13 @@ watch(
 
 .prose :deep(h3) {
   @apply text-base font-semibold text-slate-900 mb-2 mt-3;
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
