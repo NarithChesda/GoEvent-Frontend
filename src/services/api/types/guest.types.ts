@@ -49,10 +49,14 @@ export interface EventGuest {
   showcase_link: string
   /**
    * Backend-generated shortlink path (e.g., "/g/CKZNuy")
-   * Used for social media sharing with proper meta tags and analytics
-   * Format: /g/{6-character alphanumeric code}
+   * @deprecated Use short_url instead which contains the full URL
    */
   short_link: string
+  /**
+   * Full shortlink URL (e.g., "https://goevent.online/g/CKZNuy")
+   * Used for social media sharing with proper meta tags and analytics
+   */
+  short_url: string
   group: number
   group_details?: {
     id: number

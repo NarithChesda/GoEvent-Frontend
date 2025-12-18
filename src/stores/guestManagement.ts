@@ -427,6 +427,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       invitation_status: 'not_sent',
       invitation_status_display: 'Not Sent',
       short_link: '',
+      short_url: '',
       showcase_link: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
