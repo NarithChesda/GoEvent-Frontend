@@ -1,39 +1,44 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
+    <!-- Backdrop -->
+    <Transition name="fade">
       <div
         v-if="show"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[70]"
-        :class="{ 'md:items-center items-end': showQRScanner }"
-        @click="handleBackdropClick"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        @click="handleClose"
+      />
+    </Transition>
+
+    <!-- Drawer Panel -->
+    <Transition name="slide-right">
+      <div
+        v-if="show"
+        class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] max-h-[85vh] md:max-h-none bg-white rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        @click.stop
       >
-        <div
-          class="bg-white/95 backdrop-blur-sm border border-white/20 shadow-2xl w-full overflow-hidden relative"
-          :class="showQRScanner ? 'h-full md:h-auto md:max-w-lg md:mx-4 md:rounded-3xl' : 'rounded-3xl max-w-lg mx-4'"
-          @click.stop
-        >
-          <!-- Header -->
-          <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
-                  <UserCheck class="w-4.5 h-4.5" />
-                </div>
-                <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Check-in Attendee</h2>
-              </div>
+        <!-- Header -->
+        <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+          <div class="flex items-center px-3 py-2.5">
+            <!-- Left: Close button & Title -->
+            <div class="flex items-center gap-2">
               <button
                 @click="handleClose"
-                class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                aria-label="Close"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                title="Close"
               >
-                <X class="w-4 h-4" />
+                <ArrowRight class="w-5 h-5 text-white" />
               </button>
+              <div class="flex items-center gap-2">
+                <h2 class="text-base font-semibold text-white">Check-in Attendee</h2>
+              </div>
             </div>
           </div>
+        </div>
 
-          <!-- Content -->
-          <div class="p-6">
-            <!-- QR Scanner View (Mobile Only) -->
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto overscroll-contain">
+          <div class="p-4 space-y-5 pb-24">
+            <!-- QR Scanner View -->
             <div v-if="showQRScanner" class="space-y-4">
               <QRCodeScanner
                 @scan-success="handleQRScanSuccess"
@@ -44,18 +49,29 @@
 
             <!-- Manual Input View -->
             <div v-else class="space-y-5">
+              <!-- Info Card -->
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-slate-600">
+                <UserCheck class="w-4 h-4 inline-block mr-1.5 text-emerald-600" />
+                Enter the attendee's confirmation code to check them in to the event.
+              </div>
+
+              <!-- Confirmation Code Input -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Confirmation Code <span class="text-red-500">*</span></label
-                >
+                <label for="confirmationCode" class="block text-sm font-medium text-slate-700 mb-2">
+                  Confirmation Code <span class="text-red-500">*</span>
+                </label>
                 <div class="relative">
                   <input
+                    id="confirmationCode"
                     ref="codeInput"
                     v-model="localCode"
                     type="text"
                     placeholder="Enter confirmation code..."
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-                    :class="isMobile ? 'pr-12' : ''"
+                    :class="[
+                      'w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200',
+                      isMobile ? 'pr-12' : '',
+                      'border-slate-300 focus:ring-emerald-500/20 focus:border-emerald-400 hover:border-emerald-300'
+                    ]"
                     :disabled="isChecking"
                     @keyup.enter="handleSubmit"
                   />
@@ -64,30 +80,11 @@
                     v-if="isMobile"
                     type="button"
                     @click.prevent="showQRScanner = true"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-sky-600 transition-colors duration-200 rounded-lg hover:bg-slate-100 active:bg-slate-200"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-emerald-600 transition-colors duration-200 rounded-lg hover:bg-slate-100 active:bg-slate-200"
                     :disabled="isChecking"
                     title="Scan QR Code"
                   >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                      ></path>
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
+                    <Camera class="w-5 h-5" />
                   </button>
                 </div>
                 <p class="text-xs text-slate-500 mt-2">
@@ -95,28 +92,45 @@
                 </p>
               </div>
 
-              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
-                <button
-                  @click="handleClose"
-                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                  :disabled="isChecking"
-                >
-                  Cancel
-                </button>
-                <button
-                  @click="handleSubmit"
-                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  :disabled="!localCode.trim() || isChecking"
-                >
-                  <span
-                    v-if="isChecking"
-                    class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
-                  ></span>
-                  <UserCheck v-else class="w-4 h-4 mr-2" />
-                  {{ isChecking ? 'Checking in...' : 'Check In' }}
-                </button>
-              </div>
+              <!-- QR Scan Button for Desktop -->
+              <button
+                v-if="!isMobile"
+                type="button"
+                @click="showQRScanner = true"
+                class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+              >
+                <Camera class="w-4 h-4" />
+                Scan QR Code
+              </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Footer with Action Buttons -->
+        <div v-if="!showQRScanner" class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+          <div class="flex items-center justify-between">
+            <button
+              type="button"
+              @click="handleSubmit"
+              :disabled="!localCode.trim() || isChecking"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span
+                v-if="isChecking"
+                class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+              ></span>
+              <UserCheck v-else class="w-4 h-4" />
+              <span>{{ isChecking ? 'Checking in...' : 'Check In' }}</span>
+            </button>
+
+            <button
+              type="button"
+              @click="handleClose"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
+              :disabled="isChecking"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -126,7 +140,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { UserCheck, X } from 'lucide-vue-next'
+import { UserCheck, ArrowRight, Camera } from 'lucide-vue-next'
 import QRCodeScanner from '../QRCodeScanner.vue'
 
 // Props
@@ -160,15 +174,30 @@ const handleResize = () => {
   windowWidth.value = window.innerWidth
 }
 
+// Calculate scrollbar width to prevent layout shift
+const getScrollbarWidth = (): number => {
+  return window.innerWidth - document.documentElement.clientWidth
+}
+
 // Watch for show changes to reset state and focus input
 watch(() => props.show, (newVal) => {
   if (newVal) {
     localCode.value = ''
     showQRScanner.value = false
-    // Focus input after modal opens
+    // Lock body scroll when drawer opens
+    const scrollbarWidth = getScrollbarWidth()
+    document.body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+    // Focus input after drawer opens
     nextTick(() => {
       codeInput.value?.focus()
     })
+  } else {
+    // Restore body scroll when drawer closes
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
   }
 })
 
@@ -177,10 +206,6 @@ const handleClose = () => {
   localCode.value = ''
   showQRScanner.value = false
   emit('close')
-}
-
-const handleBackdropClick = () => {
-  handleClose()
 }
 
 const handleSubmit = () => {
@@ -212,6 +237,9 @@ onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('resize', handleResize)
   }
+  // Ensure body scroll is restored on unmount
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
 })
 
 // Expose method to set code externally (e.g., after successful scan)
@@ -226,25 +254,53 @@ defineExpose({
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s ease-out;
 }
 
-.modal-enter-from,
-.modal-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.modal-enter-active .relative,
-.modal-leave-active .relative {
-  transition: all 0.3s ease;
-  transform-origin: center;
+/* Slide from right on desktop, from bottom on mobile */
+.slide-right-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.modal-enter-from .relative,
-.modal-leave-to .relative {
-  opacity: 0;
-  transform: scale(0.95) translateY(-20px);
+.slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: translateX(100%);
+  }
+}
+
+/* Custom scrollbar */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>

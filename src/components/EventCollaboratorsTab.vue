@@ -328,124 +328,14 @@
       </div>
     </div>
 
-    <!-- Invite Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showInviteModal"
-          class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          @click="closeInviteModal"
-        >
-          <div
-            class="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
-            @click.stop
-          >
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-slate-200 bg-white/90">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <UserPlus class="w-4.5 h-4.5" />
-                  </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Invite Collaborator</h2>
-                </div>
-                <button
-                  @click="closeInviteModal"
-                  class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
-                >
-                  <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Content -->
-            <div class="p-4 sm:p-8">
-              <form @submit.prevent="inviteCollaborator">
-                <div class="space-y-4 sm:space-y-6">
-                  <div>
-                    <div class="flex items-center justify-between mb-1.5 sm:mb-2">
-                      <label class="block text-xs sm:text-sm font-semibold text-slate-700"
-                        >Email Address</label
-                      >
-                      <button
-                        type="button"
-                        @click="askAdminHelp"
-                        class="text-xs text-[#1e90ff] hover:text-[#1873cc] font-medium flex items-center gap-1 transition-colors"
-                      >
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        Ask Admin Help
-                      </button>
-                    </div>
-                    <input
-                      v-model="inviteForm.email"
-                      type="email"
-                      required
-                      @blur="validateEmailField"
-                      :aria-invalid="!!emailError"
-                      :aria-describedby="emailError ? 'email-error' : undefined"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border rounded-xl focus:ring-2 transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                      :class="emailError ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-200 focus:ring-[#1e90ff] focus:border-[#1e90ff]'"
-                      placeholder="collaborator@example.com"
-                    />
-                    <p
-                      v-if="emailError"
-                      id="email-error"
-                      class="mt-1.5 text-xs text-red-600 flex items-center"
-                    >
-                      <AlertCircle class="w-3 h-3 mr-1" />
-                      {{ emailError }}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">Role</label>
-                    <select
-                      v-model="inviteForm.role"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23475569%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpolyline points%3D%226 9 12 15 18 9%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
-                    >
-                      <option value="viewer">Viewer - Read-only access</option>
-                      <option value="editor">Editor - Can edit event details</option>
-                      <option value="admin">Admin - Full permissions</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"
-                      >Message (Optional)</label
-                    >
-                    <textarea
-                      v-model="inviteForm.message"
-                      rows="3"
-                      class="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
-                      placeholder="Add a personal message to your invitation..."
-                    ></textarea>
-                  </div>
-                </div>
-
-                <div class="flex space-x-3 sm:space-x-4 pt-4 sm:pt-6">
-                  <button
-                    type="button"
-                    @click="closeInviteModal"
-                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-200 text-xs sm:text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    :disabled="isInviting"
-                    class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-                  >
-                    {{ isInviting ? 'Inviting...' : 'Send Invitation' }}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <!-- Invite Collaborator Drawer -->
+    <InviteCollaboratorDrawer
+      :show="showInviteModal"
+      :is-inviting="isInviting"
+      :event-title="eventTitle"
+      @close="closeInviteModal"
+      @invite="handleInvite"
+    />
 
     <!-- Remove Confirmation Modal -->
     <DeleteConfirmModal
@@ -500,6 +390,7 @@ import { inputValidator } from '@/utils/inputValidation'
 import { sanitizePlainText } from '@/utils/sanitize'
 import { useCollaboratorRole } from '@/composables/useCollaboratorRole'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import { InviteCollaboratorDrawer } from './collaborator'
 
 interface Props {
   eventId: string
@@ -529,13 +420,6 @@ const isRemoving = ref(false)
 const collaboratorToRemove = ref<EventCollaborator | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const messageTimer = ref<number | null>(null)
-const emailError = ref<string | null>(null)
-
-const inviteForm = ref({
-  email: '',
-  role: 'editor' as 'admin' | 'editor' | 'viewer',
-  message: '',
-})
 
 /**
  * Show a temporary message to the user
@@ -727,35 +611,20 @@ const retryLoadCollaborators = async (): Promise<void> => {
 }
 
 /**
- * Validate email field in real-time
- * Provides immediate feedback to the user
+ * Handle invite from drawer component
+ * Validates and sanitizes data before sending to API
  */
-const validateEmailField = (): void => {
-  if (!inviteForm.value.email) {
-    emailError.value = null
-    return
-  }
-
-  const validation = inputValidator.validateEmail(inviteForm.value.email)
-  emailError.value = validation.isValid ? null : validation.errors[0]
-}
-
-/**
- * Invite a new collaborator with input validation and sanitization
- * Validates email and sanitizes message before sending to API
- */
-const inviteCollaborator = async (): Promise<void> => {
+const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'viewer'; message?: string }): Promise<void> => {
   // Validate email
-  const emailValidation = inputValidator.validateEmail(inviteForm.value.email)
+  const emailValidation = inputValidator.validateEmail(data.email)
   if (!emailValidation.isValid) {
-    emailError.value = emailValidation.errors[0]
     showMessage('error', emailValidation.errors[0])
     return
   }
 
   // Sanitize message if provided
-  const sanitizedMessage = inviteForm.value.message
-    ? sanitizePlainText(inviteForm.value.message, 500)
+  const sanitizedMessage = data.message
+    ? sanitizePlainText(data.message, 500)
     : ''
 
   // Check message length after sanitization
@@ -768,7 +637,7 @@ const inviteCollaborator = async (): Promise<void> => {
   try {
     const response = await eventsService.inviteCollaborator(props.eventId, {
       email: emailValidation.sanitizedValue!,
-      role: inviteForm.value.role,
+      role: data.role,
       message: sanitizedMessage || undefined,
     })
 
@@ -817,26 +686,10 @@ const inviteCollaborator = async (): Promise<void> => {
 }
 
 /**
- * Close the invite modal and reset form state
+ * Close the invite modal
  */
 const closeInviteModal = (): void => {
   showInviteModal.value = false
-  emailError.value = null
-  inviteForm.value = {
-    email: '',
-    role: 'editor',
-    message: '',
-  }
-}
-
-/**
- * Ask admin for help - pre-fills form so user can review and confirm before sending
- */
-const askAdminHelp = (): void => {
-  // Pre-fill the form
-  inviteForm.value.email = 'admin@goevent.com'
-  inviteForm.value.role = 'admin'
-  inviteForm.value.message = `${props.eventTitle} asks admin for help`
 }
 
 const confirmRemoveCollaborator = (collaborator: EventCollaborator) => {
@@ -953,28 +806,6 @@ defineExpose({
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-active .relative,
-.modal-leave-active .relative {
-  transition: all 0.3s ease;
-  transform-origin: center;
-}
-
-.modal-enter-from .relative,
-.modal-leave-to .relative {
-  opacity: 0;
-  transform: scale(0.95) translateY(-20px);
 }
 </style>
 
