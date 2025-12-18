@@ -398,6 +398,10 @@ export function groupEventsByDate(
           return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
         })
 
+  // Get today's date key for comparison
+  const now = new Date()
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
   sortedEvents.forEach((event) => {
     const eventDate = new Date(event.start_date)
     // Use local date for grouping key to match local display formatting
@@ -406,12 +410,20 @@ export function groupEventsByDate(
     const day = String(eventDate.getDate()).padStart(2, '0')
     const dateKey = `${year}-${month}-${day}`
 
+    // Check if this event is today
+    const isToday = dateKey === todayKey
+
     // Format date parts (uses local timezone)
-    const monthDay = eventDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    })
-    const weekday = eventDate.toLocaleDateString('en-US', { weekday: 'long' })
+    // Show "Today" for today's events, otherwise show month and day
+    const monthDay = isToday
+      ? 'Today'
+      : eventDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })
+    const weekday = isToday
+      ? ''
+      : eventDate.toLocaleDateString('en-US', { weekday: 'long' })
 
     const existingGroup = groups.find((g) => g.date === dateKey)
     if (existingGroup) {

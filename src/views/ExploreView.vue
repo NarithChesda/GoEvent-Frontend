@@ -184,12 +184,17 @@ const { events, loading, hasMore, isLoadingMore, loadEvents, loadMoreEvents } =
 const groupedByDate = computed(() => {
   // Filter events based on date filter
   const now = new Date()
+  // Get start of today (midnight) for date-only comparison
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   let filteredEvents = events.value
 
   if (dateFilter.value === 'upcoming') {
     filteredEvents = events.value.filter((event) => {
       const eventDate = new Date(event.start_date)
-      return eventDate >= now
+      // Get start of event day for date-only comparison
+      const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
+      // Include today and future events
+      return eventDay >= startOfToday
     })
   }
 
@@ -200,7 +205,12 @@ const groupedByDate = computed(() => {
 const hasEvents = computed(() => {
   if (dateFilter.value === 'upcoming') {
     const now = new Date()
-    return events.value.some((event) => new Date(event.start_date) >= now)
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    return events.value.some((event) => {
+      const eventDate = new Date(event.start_date)
+      const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
+      return eventDay >= startOfToday
+    })
   }
   return events.value.length > 0
 })

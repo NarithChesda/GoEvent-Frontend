@@ -210,6 +210,8 @@ const { events, loading, loadEvents } = useEventsData(
 // Filter events based on time filter and category
 const filteredEvents = computed(() => {
   const now = new Date()
+  // Get start of today (midnight) for date-only comparison
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   return events.value.filter((event) => {
     // Time filter
     let passesTimeFilter = true
@@ -217,8 +219,11 @@ const filteredEvents = computed(() => {
       passesTimeFilter = true
     } else {
       const eventDate = new Date(event.start_date)
+      // Get start of event day for date-only comparison
+      const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
+      // "Upcoming" includes today and future, "Past" is before today
       passesTimeFilter =
-        timeFilter.value === 'upcoming' ? eventDate >= now : eventDate < now
+        timeFilter.value === 'upcoming' ? eventDay >= startOfToday : eventDay < startOfToday
     }
 
     // Category filter
