@@ -48,78 +48,87 @@
       </div>
 
       <!-- Right Section: Time, Actions, Profile (absolute right) -->
-      <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center space-x-4">
+      <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
         <!-- Current Time -->
-        <div class="text-sm text-slate-600 font-medium">
+        <div class="text-sm text-slate-500 font-medium tabular-nums">
           {{ currentTime }}
         </div>
+
+        <!-- Divider -->
+        <div class="h-4 w-px bg-slate-200"></div>
 
         <!-- Create Event Button (authenticated only) -->
         <RouterLink
           v-if="authStore.isAuthenticated"
           to="/events?createEvent=true"
-          class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-slate-700 transition-colors"
+          class="px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200"
         >
           Create Event
         </RouterLink>
 
-        <!-- Search Button (authenticated only) -->
-        <button
-          v-if="authStore.isAuthenticated"
-          @click="toggleSearch"
-          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200"
-          aria-label="Search"
-        >
-          <Search class="w-5 h-5" />
-        </button>
-
-        <!-- Notifications Button (authenticated only) -->
-        <button
-          v-if="authStore.isAuthenticated"
-          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 relative"
-          aria-label="Notifications"
-        >
-          <Bell class="w-5 h-5" />
-          <!-- Notification badge (hidden for now) -->
-          <!-- <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> -->
-        </button>
-
-        <!-- Language Button -->
-        <div class="relative">
+        <!-- Icon Button Group -->
+        <div class="flex items-center gap-0.5">
+          <!-- Search Button (authenticated only) -->
           <button
-            @click.stop="toggleLanguageMenu"
-            class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200"
-            aria-label="Change language"
+            v-if="authStore.isAuthenticated"
+            @click="toggleSearch"
+            class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
+            aria-label="Search"
           >
-            <Globe class="w-5 h-5" />
+            <Search class="w-[18px] h-[18px]" />
           </button>
 
-          <!-- Language Dropdown -->
-          <Transition name="dropdown">
-            <div
-              v-if="showLanguageMenu"
-              class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[140px] z-[100]"
+          <!-- Notifications Button (authenticated only) -->
+          <button
+            v-if="authStore.isAuthenticated"
+            class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200 relative"
+            aria-label="Notifications"
+          >
+            <Bell class="w-[18px] h-[18px]" />
+            <!-- Notification badge (hidden for now) -->
+            <!-- <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span> -->
+          </button>
+
+          <!-- Language Button -->
+          <div class="relative">
+            <button
+              @click.stop="toggleLanguageMenu"
+              class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
+              aria-label="Change language"
             >
-              <button
-                v-for="lang in languages"
-                :key="lang.code"
-                @click="selectLanguage(lang.code)"
-                class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
-                :class="currentLanguage === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+              <Globe class="w-[18px] h-[18px]" />
+            </button>
+
+            <!-- Language Dropdown -->
+            <Transition name="dropdown">
+              <div
+                v-if="showLanguageMenu"
+                class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[140px] z-[100]"
               >
-                <span>{{ lang.flag }}</span>
-                <span>{{ lang.name }}</span>
-              </button>
-            </div>
-          </Transition>
+                <button
+                  v-for="lang in languages"
+                  :key="lang.code"
+                  @click="selectLanguage(lang.code)"
+                  class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
+                  :class="currentLanguage === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+                >
+                  <span>{{ lang.flag }}</span>
+                  <span>{{ lang.name }}</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
         </div>
+
+        <!-- Divider before Profile -->
+        <div class="h-4 w-px bg-slate-200"></div>
 
         <!-- Profile Button -->
         <div ref="userMenuRef" class="relative">
           <button
             v-if="authStore.isAuthenticated"
             @click.stop="userMenuOpen = !userMenuOpen"
-            class="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
+            class="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
             :aria-expanded="userMenuOpen"
             aria-label="User menu"
           >
@@ -141,10 +150,10 @@
           <RouterLink
             v-else
             :to="signinLink"
-            class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold hover:shadow-lg hover:shadow-[#2ecc71]/25 hover:scale-[1.02] transition-all duration-200"
+            class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium hover:shadow-md hover:shadow-[#2ecc71]/20 transition-all duration-200"
             aria-label="Sign in"
           >
-            <User class="w-4 h-4" />
+            <User class="w-3.5 h-3.5" />
             <span>Sign In</span>
           </RouterLink>
 
