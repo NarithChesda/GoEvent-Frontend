@@ -170,6 +170,12 @@ Required env vars (see [.env.example](.env.example)):
 - `VITE_TELEGRAM_BOT_USERNAME`: Telegram bot username for login
 - `VITE_GENERATE_SOURCEMAP`: Generate source maps (true/false)
 
+Optional env vars:
+- `VITE_TELEGRAM_BOT_TOKEN`: Bot token for admin notifications
+- `VITE_TELEGRAM_ADMIN_CHAT_ID`: Admin chat ID for notifications
+- `VITE_IMAGEKIT_ENABLED`: Enable ImageKit CDN image optimization (default: true, can toggle via `localStorage.setItem('imagekit_enabled', 'false')`)
+- `VITE_ASSET_PROTECTION_ENABLED`: Enable asset protection in dev mode (default: false, auto-enabled in production)
+
 ### Authentication Flow
 1. User authenticates via email/password, Google OAuth, or Telegram
 2. Backend returns `{ tokens: { access, refresh }, user }`
