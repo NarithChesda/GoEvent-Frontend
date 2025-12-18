@@ -400,9 +400,13 @@ export function groupEventsByDate(
 
   sortedEvents.forEach((event) => {
     const eventDate = new Date(event.start_date)
-    const dateKey = eventDate.toISOString().split('T')[0]
+    // Use local date for grouping key to match local display formatting
+    const year = eventDate.getFullYear()
+    const month = String(eventDate.getMonth() + 1).padStart(2, '0')
+    const day = String(eventDate.getDate()).padStart(2, '0')
+    const dateKey = `${year}-${month}-${day}`
 
-    // Format date parts
+    // Format date parts (uses local timezone)
     const monthDay = eventDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
