@@ -221,116 +221,115 @@
     </div>
 
     <!-- Registration List -->
-    <div v-else-if="filteredRegistrations.length > 0" class="space-y-3 sm:space-y-4">
+    <div v-else-if="filteredRegistrations.length > 0" class="space-y-2">
+      <!-- Registration Card - Clean minimalist design matching GuestListItem -->
       <div
         v-for="registration in filteredRegistrations"
         :key="registration.id"
-        class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+        class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group"
       >
-        <div class="flex items-center justify-between gap-3 sm:gap-4">
-          <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-            <!-- Avatar -->
-            <div class="relative flex-shrink-0">
-              <div
-                class="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-600 to-sky-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm"
-              >
-                {{
-                  getInitials(
-                    registration.user_details?.first_name || '',
-                    registration.user_details?.last_name || '',
-                  )
-                }}
-              </div>
-              <!-- Status Indicator -->
-              <div
-                class="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full border-2 border-white flex items-center justify-center"
-                :class="getStatusBadgeColor(registration.status)"
-              >
-                <CheckCircle
-                  v-if="registration.status === 'checked_in'"
-                  class="w-2 h-2 sm:w-3 sm:h-3 text-white"
-                />
-                <Clock
-                  v-else-if="registration.status === 'registered'"
-                  class="w-2 h-2 sm:w-3 sm:h-3 text-white"
-                />
-                <X v-else class="w-2 h-2 sm:w-3 sm:h-3 text-white" />
-              </div>
+        <div class="flex items-center gap-3 px-4 py-3">
+          <!-- Avatar (compact) -->
+          <div
+            class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-sky-500 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
+          >
+            {{
+              getInitials(
+                registration.user_details?.first_name || '',
+                registration.user_details?.last_name || '',
+              )
+            }}
+          </div>
+
+          <!-- User Info (grows to fill space) -->
+          <div class="flex-1 min-w-0">
+            <!-- Name -->
+            <div class="font-semibold text-slate-900 truncate">
+              {{ registration.user_details?.first_name }}
+              {{ registration.user_details?.last_name }}
             </div>
 
-            <!-- User Info -->
-            <div class="min-w-0 flex-1">
-              <h4 class="font-semibold text-slate-800 text-sm sm:text-lg mb-0.5 leading-tight truncate">
-                {{ registration.user_details?.first_name }}
-                {{ registration.user_details?.last_name }}
-              </h4>
-              <p class="text-xs sm:text-base text-slate-600 leading-tight truncate">
-                @{{ registration.user_details?.username }}
-              </p>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-1 sm:mt-2 space-y-0.5 sm:space-y-0">
-                <span v-if="registration.registered_at" class="text-xs sm:text-sm text-slate-500">
-                  Registered: {{ formatDate(registration.registered_at) }}
-                </span>
-                <span v-if="registration.checked_in_at" class="text-xs sm:text-sm text-green-600">
-                  Checked in: {{ formatDate(registration.checked_in_at) }}
-                </span>
+            <!-- Badges row -->
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+              <!-- Status badge -->
+              <div
+                class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium"
+                :class="getStatusBadgeClass(registration.status)"
+              >
+                <CheckCircle v-if="registration.status === 'checked_in'" class="w-3 h-3" />
+                <Clock v-else-if="registration.status === 'registered'" class="w-3 h-3" />
+                <X v-else class="w-3 h-3" />
+                <span>{{ getStatusLabel(registration.status) }}</span>
+              </div>
+
+              <!-- Attendee count badge -->
+              <div
+                v-if="registration.total_attendees > 1"
+                class="flex items-center gap-1 px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium"
+              >
+                <Users class="w-3 h-3" />
+                <span>{{ registration.total_attendees }}</span>
+              </div>
+
+              <!-- Confirmation code badge -->
+              <div
+                class="hidden sm:flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-lg text-xs font-mono cursor-pointer hover:bg-slate-100 transition-colors"
+                @click="copyToClipboard(registration.confirmation_code)"
+                title="Click to copy"
+              >
+                <span>{{ registration.confirmation_code }}</span>
+                <Copy class="w-3 h-3" />
               </div>
             </div>
           </div>
 
-          <!-- Registration Details -->
-          <div class="text-right space-y-0.5 sm:space-y-2 flex-shrink-0">
-            <!-- Attendee Count -->
-            <div class="text-xs sm:text-base font-semibold text-slate-800 leading-tight whitespace-nowrap">
-              {{ registration.total_attendees }}
-              {{ registration.total_attendees === 1 ? 'person' : 'people' }}
-            </div>
+          <!-- Mobile: Check-in button (shown first on mobile for registered attendees) -->
+          <button
+            v-if="registration.status === 'registered' && canEdit"
+            @click="performRowCheckin(registration)"
+            class="sm:hidden px-2.5 py-1.5 text-xs font-medium flex-shrink-0 rounded-lg transition-all duration-200 text-white bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="rowChecking[registration.id] === true"
+          >
+            <span v-if="rowChecking[registration.id]" class="flex items-center gap-1">
+              <span class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></span>
+            </span>
+            <span v-else>Check In</span>
+          </button>
 
-            <!-- Confirmation Code -->
-            <div
-              class="text-xs sm:text-sm font-mono text-slate-500 tracking-wide bg-slate-100 px-2 py-1 rounded inline-block"
-            >
-              {{ registration.confirmation_code }}
-            </div>
+          <!-- Mobile: Copy code button (for already checked-in or cancelled) -->
+          <button
+            v-else
+            @click="copyToClipboard(registration.confirmation_code)"
+            class="sm:hidden px-2 py-1.5 text-xs font-mono text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex-shrink-0"
+            title="Copy code"
+          >
+            {{ registration.confirmation_code }}
+          </button>
+
+          <!-- Actions (desktop) -->
+          <div class="hidden sm:flex items-center gap-0.5 flex-shrink-0">
+            <!-- Check-in button (only for registered status) -->
             <button
-              class="inline-flex items-center p-1.5 ml-1 rounded-lg bg-white/70 border border-white/40 text-slate-600 hover:text-slate-800 hover:bg-white/90 transition-colors"
-              @click="copyToClipboard(registration.confirmation_code)"
-              aria-label="Copy confirmation code"
-              title="Copy code"
+              v-if="registration.status === 'registered' && canEdit"
+              @click="performRowCheckin(registration)"
+              title="Check in attendee"
+              class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="rowChecking[registration.id] === true"
             >
-              <Copy class="w-3.5 h-3.5" />
+              <div v-if="rowChecking[registration.id]" class="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
+              <UserCheck v-else class="w-4 h-4" />
             </button>
-
-            <!-- Status Badge -->
-            <div class="flex justify-end">
-              <span
-                class="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium"
-                :class="getStatusTextColor(registration.status)"
-              >
-                {{ getStatusLabel(registration.status) }}
-              </span>
-            </div>
-
-            <!-- Inline Actions -->
-            <div class="flex justify-end gap-2">
-              <button
-                v-if="registration.status === 'registered' && canEdit"
-                @click="performRowCheckin(registration)"
-                class="inline-flex items-center px-2.5 py-1 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="rowChecking[registration.id] === true"
-                aria-label="Check in attendee"
-              >
-                <div v-if="rowChecking[registration.id]" class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                <UserCheck v-else class="w-3.5 h-3.5 mr-1" />
-                Check In
-              </button>
-            </div>
-
-            <!-- Notes -->
-            <div v-if="registration.notes" class="text-xs sm:text-sm text-slate-600 italic max-w-xs">
-              "{{ registration.notes }}"
-            </div>
           </div>
+        </div>
+
+        <!-- Notes (if present) - separate row -->
+        <div
+          v-if="registration.notes"
+          class="px-4 pb-3 -mt-1"
+        >
+          <p class="text-xs text-slate-500 italic truncate pl-12">
+            "{{ registration.notes }}"
+          </p>
         </div>
       </div>
     </div>
@@ -486,14 +485,14 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
+          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
         >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
+          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <span class="flex-1">{{ message.text }}</span>
         </div>
       </div>
     </Transition>
@@ -568,18 +567,8 @@ const handleResize = () => {
 }
 
 // Computed
-const totalRegistrations = computed(
-  () => registrations.value.filter((r) => r.status !== 'cancelled').length,
-)
-
 const checkedInCount = computed(
   () => registrations.value.filter((r) => r.status === 'checked_in').length,
-)
-
-const totalAttendees = computed(() =>
-  registrations.value
-    .filter((r) => r.status !== 'cancelled')
-    .reduce((sum, r) => sum + (r.total_attendees || 1), 0),
 )
 
 const pendingCount = computed(
@@ -815,29 +804,16 @@ const getInitials = (firstName: string, lastName: string): string => {
   return `${first}${last}` || '?'
 }
 
-const getStatusBadgeColor = (status: string): string => {
+const getStatusBadgeClass = (status: string): string => {
   switch (status) {
     case 'checked_in':
-      return 'bg-green-500'
+      return 'bg-emerald-50 text-emerald-700'
     case 'registered':
-      return 'bg-[#1e90ff]'
+      return 'bg-sky-50 text-sky-700'
     case 'cancelled':
-      return 'bg-red-500'
+      return 'bg-red-50 text-red-700'
     default:
-      return 'bg-slate-500'
-  }
-}
-
-const getStatusTextColor = (status: string): string => {
-  switch (status) {
-    case 'checked_in':
-      return 'bg-green-100 text-green-800'
-    case 'registered':
-      return 'bg-[#B0E0E6] text-[#1873cc]'
-    case 'cancelled':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-slate-100 text-slate-800'
+      return 'bg-slate-50 text-slate-700'
   }
 }
 
@@ -852,17 +828,6 @@ const getStatusLabel = (status: string): string => {
     default:
       return status || 'Unknown'
   }
-}
-
-const formatDate = (dateString: string): string => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
