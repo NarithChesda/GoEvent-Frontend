@@ -76,17 +76,31 @@
 
             <!-- Music List -->
             <div
-              class="flex-1 overflow-y-auto min-h-0 overscroll-contain"
+              ref="scrollContainerRef"
+              class="flex-1 overflow-y-auto min-h-0 overscroll-contain relative"
               @scroll="handleScroll"
             >
-              <!-- Initial Loading State -->
-              <div v-if="initialLoading" class="flex flex-col items-center justify-center py-16">
+              <!-- Refreshing Overlay (shown when changing filters with existing content) -->
+              <Transition name="fade">
+                <div
+                  v-if="isRefreshing && musicList.length > 0"
+                  class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center"
+                >
+                  <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md">
+                    <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-sm text-slate-600">Updating...</span>
+                  </div>
+                </div>
+              </Transition>
+
+              <!-- Initial Loading State (only when no content exists) -->
+              <div v-if="initialLoading && musicList.length === 0" class="flex flex-col items-center justify-center py-16">
                 <div class="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                 <p class="text-sm text-slate-500 mt-3">Loading music...</p>
               </div>
 
               <!-- Empty State -->
-              <div v-else-if="musicList.length === 0" class="flex flex-col items-center justify-center py-16 px-5">
+              <div v-else-if="!initialLoading && musicList.length === 0" class="flex flex-col items-center justify-center py-16 px-5">
                 <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                   <Music class="w-7 h-7 text-slate-400" />
                 </div>
@@ -276,10 +290,12 @@ const currentlyPlaying = ref<BackgroundMusic | null>(null)
 const isPlaying = ref(false)
 const audioRef = ref<HTMLAudioElement | null>(null)
 const searchQuery = ref('')
+const scrollContainerRef = ref<HTMLElement | null>(null)
 
 // Pagination state
 const initialLoading = ref(false)
 const loadingMore = ref(false)
+const isRefreshing = ref(false)
 const hasMore = ref(false)
 const currentOffset = ref(0)
 const totalCount = ref(0)
@@ -294,8 +310,9 @@ watch(
     if (isShown) {
       searchQuery.value = ''
       selectedCategory.value = undefined
-      resetPagination()
-      await Promise.all([loadCategories(), loadMusic(true)])
+      musicList.value = []
+      resetPaginationState()
+      await Promise.all([loadCategories(), refreshMusic()])
       // Pre-select current track if exists
       if (props.currentMusicId) {
         const track = musicList.value.find((t) => t.id === props.currentMusicId)
@@ -309,15 +326,15 @@ watch(
       selectedTrack.value = null
       selectedCategory.value = undefined
       searchQuery.value = ''
-      resetPagination()
+      musicList.value = []
+      resetPaginationState()
     }
   }
 )
 
 // Reload music when category changes
 watch(selectedCategory, () => {
-  resetPagination()
-  loadMusic(true)
+  refreshMusic()
 })
 
 // Debounced search
@@ -327,14 +344,12 @@ watch(searchQuery, () => {
   }
 
   searchDebounceTimer = setTimeout(() => {
-    resetPagination()
-    loadMusic(true)
+    refreshMusic()
   }, 300)
 })
 
 // Methods
-function resetPagination() {
-  musicList.value = []
+function resetPaginationState() {
   currentOffset.value = 0
   hasMore.value = false
   totalCount.value = 0
@@ -347,12 +362,47 @@ async function loadCategories() {
   }
 }
 
-async function loadMusic(isInitialLoad: boolean = false) {
-  if (isInitialLoad) {
-    initialLoading.value = true
+async function refreshMusic() {
+  // Show refreshing overlay if we have existing content, otherwise show initial loading
+  const hasExistingContent = musicList.value.length > 0
+  if (hasExistingContent) {
+    isRefreshing.value = true
   } else {
-    loadingMore.value = true
+    initialLoading.value = true
   }
+
+  resetPaginationState()
+
+  try {
+    const response = await backgroundMusicService.getBackgroundMusic({
+      category: selectedCategory.value,
+      search: searchQuery.value.trim() || undefined,
+      limit: PAGE_SIZE,
+      offset: 0,
+    })
+
+    if (response.success && response.data) {
+      const { results, has_more, count } = response.data
+      musicList.value = results
+      hasMore.value = has_more
+      totalCount.value = count
+      currentOffset.value = results.length
+
+      // Scroll to top after content updates
+      if (scrollContainerRef.value) {
+        scrollContainerRef.value.scrollTop = 0
+      }
+    }
+  } finally {
+    initialLoading.value = false
+    isRefreshing.value = false
+  }
+}
+
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value) return
+
+  loadingMore.value = true
 
   try {
     const response = await backgroundMusicService.getBackgroundMusic({
@@ -364,19 +414,12 @@ async function loadMusic(isInitialLoad: boolean = false) {
 
     if (response.success && response.data) {
       const { results, has_more, count } = response.data
-
-      if (isInitialLoad) {
-        musicList.value = results
-      } else {
-        musicList.value = [...musicList.value, ...results]
-      }
-
+      musicList.value = [...musicList.value, ...results]
       hasMore.value = has_more
       totalCount.value = count
       currentOffset.value += results.length
     }
   } finally {
-    initialLoading.value = false
     loadingMore.value = false
   }
 }
@@ -389,7 +432,7 @@ function handleScroll(event: Event) {
 
   // Load more when user scrolls within 100px of bottom
   if (scrollHeight - scrollTop - clientHeight < 100) {
-    loadMusic(false)
+    loadMore()
   }
 }
 
@@ -495,5 +538,16 @@ onUnmounted(() => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Fade transition for refreshing overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
