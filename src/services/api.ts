@@ -108,6 +108,11 @@ export type {
 export type {
   TeamMember,
   UserDetails,
+  BackgroundMusic,
+  BackgroundMusicCategory,
+  BackgroundMusicCategoryInfo,
+  BackgroundMusicFilters,
+  BackgroundMusicPaginatedResponse,
 } from './api/types/core-data.types'
 
 // Dress code types

@@ -10,9 +10,9 @@ import type {
   AgendaIcon,
   TeamMember,
   UserDetails,
-  BackgroundMusic,
   BackgroundMusicFilters,
   BackgroundMusicCategoryInfo,
+  BackgroundMusicPaginatedResponse,
 } from '../types'
 
 // Core Data Service
@@ -94,14 +94,26 @@ export const userService = {
 // Background Music Service
 export const backgroundMusicService = {
   /**
-   * Get all background music tracks from the library
+   * Get background music tracks with infinite scroll pagination
    * This is a public endpoint - no authentication required
+   *
+   * @param filters - Optional filters including limit, offset, category, search
+   * @returns Paginated response with has_more flag for infinite scroll
    */
   async getBackgroundMusic(
     filters?: BackgroundMusicFilters
-  ): Promise<ApiResponse<PaginatedResponse<BackgroundMusic>>> {
+  ): Promise<ApiResponse<BackgroundMusicPaginatedResponse>> {
     const params = new URLSearchParams()
 
+    // Pagination params
+    if (filters?.limit !== undefined) {
+      params.append('limit', String(filters.limit))
+    }
+    if (filters?.offset !== undefined) {
+      params.append('offset', String(filters.offset))
+    }
+
+    // Filter params
     if (filters?.category) {
       params.append('category', filters.category)
     }
@@ -118,15 +130,7 @@ export const backgroundMusicService = {
     const queryString = params.toString()
     const url = `/api/core-data/background-music/${queryString ? `?${queryString}` : ''}`
 
-    return apiClient.getPublic<PaginatedResponse<BackgroundMusic>>(url)
-  },
-
-  /**
-   * Get details of a specific background music track
-   * This is a public endpoint - no authentication required
-   */
-  async getBackgroundMusicById(id: number): Promise<ApiResponse<BackgroundMusic>> {
-    return apiClient.getPublic<BackgroundMusic>(`/api/core-data/background-music/${id}/`)
+    return apiClient.getPublic<BackgroundMusicPaginatedResponse>(url)
   },
 
   /**

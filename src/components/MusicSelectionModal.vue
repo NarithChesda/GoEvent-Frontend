@@ -75,15 +75,18 @@
             </div>
 
             <!-- Music List -->
-            <div class="flex-1 overflow-y-auto min-h-0 overscroll-contain">
-              <!-- Loading State -->
-              <div v-if="loading" class="flex flex-col items-center justify-center py-16">
+            <div
+              class="flex-1 overflow-y-auto min-h-0 overscroll-contain"
+              @scroll="handleScroll"
+            >
+              <!-- Initial Loading State -->
+              <div v-if="initialLoading" class="flex flex-col items-center justify-center py-16">
                 <div class="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                 <p class="text-sm text-slate-500 mt-3">Loading music...</p>
               </div>
 
               <!-- Empty State -->
-              <div v-else-if="filteredMusicList.length === 0" class="flex flex-col items-center justify-center py-16 px-5">
+              <div v-else-if="musicList.length === 0" class="flex flex-col items-center justify-center py-16 px-5">
                 <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                   <Music class="w-7 h-7 text-slate-400" />
                 </div>
@@ -111,7 +114,7 @@
               <!-- Music List -->
               <div v-else class="divide-y divide-slate-100">
                 <div
-                  v-for="track in filteredMusicList"
+                  v-for="track in musicList"
                   :key="track.id"
                   @click="selectTrack(track)"
                   :class="[
@@ -172,6 +175,22 @@
                     <Check v-if="selectedTrack?.id === track.id" class="w-3 h-3 text-white" />
                   </div>
                 </div>
+
+                <!-- Load More Indicator -->
+                <div
+                  v-if="hasMore"
+                  class="flex items-center justify-center py-4"
+                >
+                  <div v-if="loadingMore" class="flex items-center gap-2 text-slate-500">
+                    <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-sm">Loading more...</span>
+                  </div>
+                </div>
+
+                <!-- End of List -->
+                <div v-if="!hasMore && musicList.length > 0" class="py-4 text-center">
+                  <span class="text-xs text-slate-400">{{ totalCount }} tracks loaded</span>
+                </div>
               </div>
             </div>
 
@@ -219,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted, computed } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { X, Music, Play, Pause, Check, Search } from 'lucide-vue-next'
 import { backgroundMusicService } from '@/services/api'
 import type { BackgroundMusic, BackgroundMusicCategory, BackgroundMusicCategoryInfo } from '@/services/api'
@@ -245,8 +264,10 @@ const emit = defineEmits<Emits>()
 
 const { getMediaUrl } = useMediaUrl()
 
+// Constants
+const PAGE_SIZE = 20
+
 // State
-const loading = ref(false)
 const categories = ref<BackgroundMusicCategoryInfo[]>([])
 const musicList = ref<BackgroundMusic[]>([])
 const selectedCategory = ref<BackgroundMusicCategory | undefined>(undefined)
@@ -256,17 +277,15 @@ const isPlaying = ref(false)
 const audioRef = ref<HTMLAudioElement | null>(null)
 const searchQuery = ref('')
 
-// Computed - filtered music list based on search
-const filteredMusicList = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return musicList.value
-  }
-  const query = searchQuery.value.toLowerCase().trim()
-  return musicList.value.filter(track =>
-    track.name.toLowerCase().includes(query) ||
-    track.category_display.toLowerCase().includes(query)
-  )
-})
+// Pagination state
+const initialLoading = ref(false)
+const loadingMore = ref(false)
+const hasMore = ref(false)
+const currentOffset = ref(0)
+const totalCount = ref(0)
+
+// Debounce timer for search
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 // Load data when modal opens
 watch(
@@ -274,7 +293,9 @@ watch(
   async (isShown) => {
     if (isShown) {
       searchQuery.value = ''
-      await Promise.all([loadCategories(), loadMusic()])
+      selectedCategory.value = undefined
+      resetPagination()
+      await Promise.all([loadCategories(), loadMusic(true)])
       // Pre-select current track if exists
       if (props.currentMusicId) {
         const track = musicList.value.find((t) => t.id === props.currentMusicId)
@@ -288,16 +309,37 @@ watch(
       selectedTrack.value = null
       selectedCategory.value = undefined
       searchQuery.value = ''
+      resetPagination()
     }
   }
 )
 
 // Reload music when category changes
 watch(selectedCategory, () => {
-  loadMusic()
+  resetPagination()
+  loadMusic(true)
+})
+
+// Debounced search
+watch(searchQuery, () => {
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer)
+  }
+
+  searchDebounceTimer = setTimeout(() => {
+    resetPagination()
+    loadMusic(true)
+  }, 300)
 })
 
 // Methods
+function resetPagination() {
+  musicList.value = []
+  currentOffset.value = 0
+  hasMore.value = false
+  totalCount.value = 0
+}
+
 async function loadCategories() {
   const response = await backgroundMusicService.getMusicCategories()
   if (response.success && response.data) {
@@ -305,18 +347,49 @@ async function loadCategories() {
   }
 }
 
-async function loadMusic() {
-  loading.value = true
+async function loadMusic(isInitialLoad: boolean = false) {
+  if (isInitialLoad) {
+    initialLoading.value = true
+  } else {
+    loadingMore.value = true
+  }
+
   try {
     const response = await backgroundMusicService.getBackgroundMusic({
       category: selectedCategory.value,
-      ordering: 'order',
+      search: searchQuery.value.trim() || undefined,
+      limit: PAGE_SIZE,
+      offset: currentOffset.value,
     })
+
     if (response.success && response.data) {
-      musicList.value = response.data.results
+      const { results, has_more, count } = response.data
+
+      if (isInitialLoad) {
+        musicList.value = results
+      } else {
+        musicList.value = [...musicList.value, ...results]
+      }
+
+      hasMore.value = has_more
+      totalCount.value = count
+      currentOffset.value += results.length
     }
   } finally {
-    loading.value = false
+    initialLoading.value = false
+    loadingMore.value = false
+  }
+}
+
+function handleScroll(event: Event) {
+  if (loadingMore.value || !hasMore.value) return
+
+  const container = event.target as HTMLElement
+  const { scrollTop, scrollHeight, clientHeight } = container
+
+  // Load more when user scrolls within 100px of bottom
+  if (scrollHeight - scrollTop - clientHeight < 100) {
+    loadMusic(false)
   }
 }
 
@@ -384,6 +457,9 @@ function clearFilters() {
 // Cleanup on unmount
 onUnmounted(() => {
   stopAudio()
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer)
+  }
 })
 </script>
 

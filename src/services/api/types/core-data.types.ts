@@ -70,4 +70,19 @@ export interface BackgroundMusicFilters {
   is_active?: boolean
   search?: string
   ordering?: 'order' | 'name' | 'category' | 'uploaded_at' | '-uploaded_at'
+  limit?: number
+  offset?: number
+}
+
+/**
+ * Infinite scroll pagination response for background music
+ */
+export interface BackgroundMusicPaginatedResponse {
+  count: number
+  limit: number
+  offset: number
+  has_more: boolean
+  next: string | null
+  previous: string | null
+  results: BackgroundMusic[]
 }
