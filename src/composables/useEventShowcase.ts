@@ -214,6 +214,9 @@ export interface EventData {
   google_map_embed_link?: string
   youtube_embed_link?: string
   registration_required?: boolean
+  rsvp_enabled?: boolean
+  comments_enabled?: boolean
+  countdown_enabled?: boolean
   category?: number | null
   category_name?: string | null
   category_color?: string | null

@@ -52,6 +52,9 @@ export interface Event {
   max_attendees: number | null
   registration_required?: boolean
   registration_deadline?: string | null
+  rsvp_enabled?: boolean
+  comments_enabled?: boolean
+  countdown_enabled?: boolean
   banner_image: string | null
   logo_one?: string | null
   logo_two?: string | null

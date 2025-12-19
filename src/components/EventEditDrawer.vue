@@ -516,6 +516,98 @@
                 </div>
               </Transition>
             </div>
+
+            <!-- Display Settings -->
+            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Display Settings</h3>
+
+              <!-- RSVP Enabled Toggle -->
+              <div
+                @click="form.rsvp_enabled = !form.rsvp_enabled"
+                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-white rounded-lg shadow-sm">
+                    <UserCheck class="w-4 h-4 text-sky-500" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">Show RSVP Section</p>
+                    <p class="text-xs text-slate-500">Allow guests to RSVP on event page</p>
+                  </div>
+                </div>
+                <div
+                  role="switch"
+                  :aria-checked="form.rsvp_enabled"
+                  :class="[
+                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                    form.rsvp_enabled ? 'bg-sky-500' : 'bg-slate-200'
+                  ]"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                    :style="{ transform: form.rsvp_enabled ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </div>
+              </div>
+
+              <!-- Comments Enabled Toggle -->
+              <div
+                @click="form.comments_enabled = !form.comments_enabled"
+                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-white rounded-lg shadow-sm">
+                    <MessageSquare class="w-4 h-4 text-sky-500" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">Show Comments Section</p>
+                    <p class="text-xs text-slate-500">Allow comments on event page</p>
+                  </div>
+                </div>
+                <div
+                  role="switch"
+                  :aria-checked="form.comments_enabled"
+                  :class="[
+                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                    form.comments_enabled ? 'bg-sky-500' : 'bg-slate-200'
+                  ]"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                    :style="{ transform: form.comments_enabled ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </div>
+              </div>
+
+              <!-- Countdown Enabled Toggle -->
+              <div
+                @click="form.countdown_enabled = !form.countdown_enabled"
+                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-white rounded-lg shadow-sm">
+                    <Timer class="w-4 h-4 text-sky-500" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-700">Show Countdown Timer</p>
+                    <p class="text-xs text-slate-500">Display countdown to event start</p>
+                  </div>
+                </div>
+                <div
+                  role="switch"
+                  :aria-checked="form.countdown_enabled"
+                  :class="[
+                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                    form.countdown_enabled ? 'bg-sky-500' : 'bg-slate-200'
+                  ]"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                    :style="{ transform: form.countdown_enabled ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -608,6 +700,9 @@ import {
   Globe,
   Lock,
   ClipboardList,
+  UserCheck,
+  MessageSquare,
+  Timer,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
 import ImageCropperModal from './common/ImageCropperModal.vue'
@@ -681,6 +776,10 @@ const form = reactive({
   registration_required: false,
   registration_deadline: '',
   max_attendees: null as number | null,
+  // Feature toggles
+  rsvp_enabled: true,
+  comments_enabled: true,
+  countdown_enabled: true,
 })
 
 // Original form values for dirty tracking
@@ -768,6 +867,10 @@ const populateForm = (eventData: Event) => {
   form.registration_required = eventData.registration_required || false
   form.registration_deadline = eventData.registration_deadline ? eventData.registration_deadline.slice(0, 16) : ''
   form.max_attendees = eventData.max_attendees || null
+  // Feature toggles (default to true for backward compatibility)
+  form.rsvp_enabled = eventData.rsvp_enabled ?? true
+  form.comments_enabled = eventData.comments_enabled ?? true
+  form.countdown_enabled = eventData.countdown_enabled ?? true
 
   // Store original values for dirty tracking
   originalForm.value = { ...form }
@@ -897,6 +1000,17 @@ const handleSubmit = async () => {
     if (original.max_attendees) {
       updateData.max_attendees = null
     }
+  }
+
+  // Check feature toggle fields
+  if (form.rsvp_enabled !== original.rsvp_enabled) {
+    updateData.rsvp_enabled = form.rsvp_enabled
+  }
+  if (form.comments_enabled !== original.comments_enabled) {
+    updateData.comments_enabled = form.comments_enabled
+  }
+  if (form.countdown_enabled !== original.countdown_enabled) {
+    updateData.countdown_enabled = form.countdown_enabled
   }
 
   // If nothing changed, inform user and return early

@@ -53,7 +53,7 @@
         </div>
 
         <!-- RSVP with Location -->
-        <div class="menu-item">
+        <div v-if="props.hasRsvp" class="menu-item">
           <button
             @click="handleRSVPWithLocation"
             class="menu-button glass-section"
@@ -125,7 +125,7 @@
         </div>
 
         <!-- Comment -->
-        <div class="menu-item">
+        <div v-if="props.hasComments" class="menu-item">
           <button
             @click="handleComment"
             class="menu-button glass-section"
@@ -216,6 +216,8 @@ interface Props {
   hasVideo?: boolean
   hasGallery?: boolean
   hasPayment?: boolean
+  hasRsvp?: boolean
+  hasComments?: boolean
 }
 
 interface Language {
@@ -235,6 +237,8 @@ const props = withDefaults(defineProps<Props>(), {
   hasVideo: true,
   hasGallery: true,
   hasPayment: true,
+  hasRsvp: true,
+  hasComments: true,
 })
 
 const emit = defineEmits<{

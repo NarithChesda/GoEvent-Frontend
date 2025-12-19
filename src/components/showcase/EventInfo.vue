@@ -139,7 +139,7 @@
 
           <!-- Countdown Display - Below Map, Above RSVP -->
           <div
-            v-if="countdown"
+            v-if="countdown && showCountdown"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
           >
@@ -209,7 +209,7 @@
 
           <!-- Divider between Countdown and RSVP -->
           <div
-            v-if="countdown && showRsvp"
+            v-if="countdown && showCountdown && showRsvp"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
@@ -257,12 +257,14 @@ interface Props {
   secondaryFont?: string
   currentLanguage?: string
   showRsvp?: boolean
+  showCountdown?: boolean
   eventStartDate?: string
   baseDelay?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showRsvp: false,
+  showCountdown: true,
   baseDelay: 0.1,
 })
 

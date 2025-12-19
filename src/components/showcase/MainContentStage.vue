@@ -73,6 +73,8 @@
       :has-video="!!event.youtube_embed_link"
       :has-gallery="eventPhotos.length > 0"
       :has-payment="paymentMethods.length > 0"
+      :has-rsvp="event.rsvp_enabled !== false"
+      :has-comments="event.comments_enabled !== false"
       @language-change="handleLanguageChange"
       @music-toggle="handleMusicToggle"
       @rsvp="handleRSVP"
@@ -142,7 +144,8 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :current-language="currentLanguage"
-                    :show-rsvp="true"
+                    :show-rsvp="event.rsvp_enabled !== false"
+                    :show-countdown="event.countdown_enabled !== false"
                     :event-start-date="event.start_date"
                     @open-map="$emit('openMap')"
                   >
@@ -326,6 +329,7 @@
 
                 <!-- Comment Section -->
                 <div
+                  v-if="event.comments_enabled !== false"
                   id="comment-section"
                   ref="commentSectionRef"
                   class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal"
