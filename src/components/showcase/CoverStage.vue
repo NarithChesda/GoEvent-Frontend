@@ -132,6 +132,7 @@ interface Props {
   coverBottomDecoration?: string | null
   coverLeftDecoration?: string | null
   coverRightDecoration?: string | null
+  /** Showcase animation type from template_assets.showcase_animation_type */
   animationType?: ShowcaseAnimationType
 }
 
@@ -158,6 +159,11 @@ const displayMode = computed<DisplayMode>(() => {
   return props.templateAssets?.standard_cover_video ? 'standard' : 'basic'
 })
 
+// Animation type from prop with fallback to 'decoration'
+const animationType = computed<ShowcaseAnimationType>(() => {
+  return props.animationType || 'decoration'
+})
+
 // Video state management composable
 const videoState = useCoverStageVideo(
   {
@@ -182,7 +188,7 @@ const videoState = useCoverStageVideo(
 
 // Door animation state management
 const { isDoorAnimation, isDoorAnimationInProgress, startDoorAnimation, clearAfterTimeout } = useDoorAnimation({
-  animationType: computed(() => props.animationType),
+  animationType,
   currentVideoPhase: videoState.currentVideoPhase,
 })
 

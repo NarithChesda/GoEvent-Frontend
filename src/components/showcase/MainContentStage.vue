@@ -863,7 +863,6 @@ import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimatio
 import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
-import { getAnimationType } from '../../composables/showcase/useShowcaseAnimation'
 
 // Asset protection (production-only)
 const { protectionAttrs } = useAssetProtection()
@@ -927,14 +926,14 @@ interface Props {
   bottomDecoration?: string | null
   leftDecoration?: string | null
   rightDecoration?: string | null
-  /** Animation type for entrance animations (defaults to env variable) */
+  /** Showcase animation type from template_assets.showcase_animation_type */
   animationType?: 'decoration' | 'door'
 }
 
 const props = defineProps<Props>()
 
-// Animation type (from prop or env)
-const currentAnimationType = computed(() => getAnimationType(props.animationType))
+// Animation type from prop with fallback to 'decoration'
+const currentAnimationType = computed(() => props.animationType || 'decoration')
 const isDoorAnimation = computed(() => currentAnimationType.value === 'door')
 
 // Animation classes for decorations based on animation type
