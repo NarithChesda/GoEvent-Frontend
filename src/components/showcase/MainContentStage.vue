@@ -1006,8 +1006,9 @@ const injectedVideoResourceManager = inject<VideoResourceManager | null>('videoR
 
 const videoResourceManager = ref<VideoResourceManager | null>(null)
 
-// Mobile detection function - called at usage time to handle resize/rotation
-const getIsMobile = (): boolean => window.innerWidth < 768
+// Mobile/tablet detection function - called at usage time to handle resize/rotation
+// Tablets (768-1024px) also use nested scroll container like mobile, so need same IntersectionObserver root
+const getUseScrollContainerRoot = (): boolean => window.innerWidth < 1024
 
 // Create IntersectionObserver ref
 const revealObserver = ref<IntersectionObserver | null>(null)
@@ -1024,11 +1025,11 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Determine if mobile at mount time
-  const isMobile = getIsMobile()
+  // Determine if we should use scroll container as root (mobile/tablet)
+  const useScrollContainerRoot = getUseScrollContainerRoot()
 
-  // Create observer with proper configuration for mobile/desktop
-  const observerConfig: IntersectionObserverInit = isMobile
+  // Create observer with proper configuration for mobile+tablet vs desktop
+  const observerConfig: IntersectionObserverInit = useScrollContainerRoot
     ? {
         threshold: 0.05,
         rootMargin: '0px 0px -20px 0px',
@@ -1724,8 +1725,8 @@ onUnmounted(() => {
   }
 }
 
-/* Mobile fallback: Auto-reveal gallery section if JavaScript observer fails */
-@media (max-width: 768px) {
+/* Mobile/tablet fallback: Auto-reveal gallery section if JavaScript observer fails */
+@media (max-width: 1023px) {
   /* Ensure gallery section becomes visible even if IntersectionObserver doesn't fire */
   .animate-reveal[data-reveal-id='gallery-section'] {
     animation: mobile-gallery-reveal 0.6s cubic-bezier(0.19, 1, 0.22, 1) 1.5s forwards;
