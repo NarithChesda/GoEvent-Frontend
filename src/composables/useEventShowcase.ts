@@ -145,8 +145,6 @@ export interface TemplateAssets {
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null
   guest_title_frame_right?: string | null
-  /** Showcase animation type: 'decoration' (default) or 'door' */
-  showcase_animation_type?: 'decoration' | 'door'
 }
 
 export interface EventPhoto {

@@ -83,6 +83,9 @@ export interface CoverStageLayout {
   rightDecorationZIndex?: number    // default: 24
   topDecorationZIndex?: number      // default: 25
   bottomDecorationZIndex?: number   // default: 25
+
+  // Animation settings
+  showcaseAnimationType?: 'decoration' | 'door'  // default: 'decoration'
 }
 
 export interface BrowseTemplatesResponse {
