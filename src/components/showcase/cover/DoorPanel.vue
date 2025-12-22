@@ -237,39 +237,88 @@ const doorBackgroundStyle = computed(() => {
   transform: perspective(1500px) rotateY(105deg);
 }
 
-/* Inner shadow on doors when opening */
+/* Door edge shadow - creates depth illusion at the hinge side */
 .door-panel::before {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 50px;
+  width: 15%;
+  max-width: 80px;
+  min-width: 30px;
   opacity: 0;
-  transition: opacity 0.6s ease-out;
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   pointer-events: none;
   z-index: 100;
 }
 
-.door-panel-left::before {
-  right: 0;
-  background: linear-gradient(
-    to left,
-    rgba(0, 0, 0, 0.5),
-    rgba(0, 0, 0, 0)
-  );
+/* Center gap shadow - appears between doors when opening */
+.door-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8%;
+  max-width: 40px;
+  min-width: 15px;
+  opacity: 0;
+  transition: opacity 0.6s ease-out 0.2s;
+  pointer-events: none;
+  z-index: 101;
 }
 
-.door-panel-right::before {
+/* Left door shadows */
+.door-panel-left::before {
   left: 0;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.5),
-    rgba(0, 0, 0, 0)
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.08) 40%,
+    transparent 100%
   );
 }
 
+.door-panel-left::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.15) 30%,
+    rgba(0, 0, 0, 0.05) 60%,
+    transparent 100%
+  );
+}
+
+/* Right door shadows */
+.door-panel-right::before {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.08) 40%,
+    transparent 100%
+  );
+}
+
+.door-panel-right::after {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.15) 30%,
+    rgba(0, 0, 0, 0.05) 60%,
+    transparent 100%
+  );
+}
+
+/* Open state - show shadows */
 .door-open-left::before,
 .door-open-right::before {
+  opacity: 0.7;
+}
+
+.door-open-left::after,
+.door-open-right::after {
   opacity: 1;
 }
 
