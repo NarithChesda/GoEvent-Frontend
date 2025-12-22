@@ -57,11 +57,12 @@
     />
 
     <!-- Decoration Photo (optimized via ImageKit) - Shows in Cover Stage, swipes up to reveal main content -->
+    <!-- For door animation: don't apply swipe-up, just hide instantly when content is hidden -->
     <div
       v-if="optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0 transition-all duration-700 ease-out"
-      :class="{ 'swipe-up-hidden': isContentHidden }"
-      style="z-index: 0"
+      :class="{ 'swipe-up-hidden': isContentHidden && isDecorationAnimation }"
+      :style="{ zIndex: 0, opacity: isContentHidden && !isDecorationAnimation ? 0 : 1 }"
     >
       <img
         :src="optimizedDecorationPhotoUrl"
@@ -143,6 +144,7 @@
 import { ref, computed } from 'vue'
 import { useOptimizedBackgrounds } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { getAnimationType, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
 
 // Asset protection (production-only)
 const { protectionAttrs, videoProtectionAttrs } = useAssetProtection()
@@ -173,9 +175,14 @@ interface Props {
   currentVideoPhase?: VideoPhase
   isContentHidden?: boolean
   getMediaUrl: (url: string) => string
+  /** Animation type for cover-to-content transition */
+  animationType?: ShowcaseAnimationType
 }
 
 const props = defineProps<Props>()
+
+// Animation type detection - only apply swipe-up for decoration animation
+const isDecorationAnimation = computed(() => getAnimationType(props.animationType) === 'decoration')
 
 // Optimized background/decoration photo URLs using reactive window dimensions
 const { optimizedDecorationPhotoUrl, optimizedBackgroundPhotoUrl } = useOptimizedBackgrounds(

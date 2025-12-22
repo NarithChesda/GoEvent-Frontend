@@ -17,6 +17,7 @@
       :currentVideoPhase="videoState.currentVideoPhase.value"
       :getMediaUrl="getMediaUrl"
       :isContentHidden="videoState.isContentHidden.value"
+      :animationType="animationType"
       @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
       @sequentialVideoError="videoState.handleSequentialVideoError"
       @eventVideoPreloaded="videoState.handleEventVideoPreloaded"
