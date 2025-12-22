@@ -7,85 +7,81 @@
     <!-- VideoContainer - stays visible for background -->
     <VideoContainer
       ref="videoContainerRef"
-      :templateAssets="templateAssets"
-      :templateColors="templateColors"
-      :templateColor="templateColor"
-      :eventTitle="eventTitle"
-      :eventVideoUrl="eventVideoUrl"
-      :backgroundVideoUrl="backgroundVideoUrl"
-      :isCoverVideoPlaying="videoState.isCoverVideoPlaying.value"
-      :currentVideoPhase="videoState.currentVideoPhase.value"
-      :getMediaUrl="getMediaUrl"
-      :isContentHidden="videoState.isContentHidden.value"
-      :animationType="animationType"
-      @sequentialVideoEnded="videoState.handleSequentialVideoEnded"
-      @sequentialVideoError="videoState.handleSequentialVideoError"
-      @eventVideoPreloaded="videoState.handleEventVideoPreloaded"
-      @eventVideoReady="videoState.handleEventVideoReady"
-      @backgroundVideoPreloaded="videoState.handleBackgroundVideoPreloaded"
-      @backgroundVideoReady="videoState.handleBackgroundVideoReady"
-      @coverVideoLoaded="videoState.handleCoverVideoLoaded"
+      :template-assets="templateAssets"
+      :template-colors="templateColors"
+      :template-color="templateColor"
+      :event-title="eventTitle"
+      :event-video-url="eventVideoUrl"
+      :background-video-url="backgroundVideoUrl"
+      :is-cover-video-playing="videoState.isCoverVideoPlaying.value"
+      :current-video-phase="videoState.currentVideoPhase.value"
+      :get-media-url="getMediaUrl"
+      :is-content-hidden="videoState.isContentHidden.value"
+      :animation-type="animationType"
+      @sequential-video-ended="videoState.handleSequentialVideoEnded"
+      @sequential-video-error="videoState.handleSequentialVideoError"
+      @event-video-preloaded="videoState.handleEventVideoPreloaded"
+      @event-video-ready="videoState.handleEventVideoReady"
+      @background-video-preloaded="videoState.handleBackgroundVideoPreloaded"
+      @background-video-ready="videoState.handleBackgroundVideoReady"
+      @cover-video-loaded="videoState.handleCoverVideoLoaded"
     />
 
-    <!-- Cover Content Overlay (Stage 1) - Hidden when redirecting to main content -->
-    <!-- For door animation: keep visible during animation even after phase changes -->
+    <!-- Cover Content Overlay (Stage 1) -->
     <CoverContentOverlay
-      v-if="(videoState.currentVideoPhase.value === 'none' || isDoorAnimationInProgress) && !shouldSkipToMainContent"
-      :isContentHidden="videoState.isContentHidden.value"
-      :eventTitle="eventTitle"
-      :eventLogo="eventLogo"
-      :guestName="guestName || null"
-      :templateAssets="templateAssets"
-      :primaryColor="primaryColor"
-      :secondaryColor="secondaryColor"
-      :accentColor="accentColor"
-      :backgroundColor="backgroundColor"
-      :guestnameColor="guestnameColor"
-      :templateColor="templateColor"
-      :currentFont="currentFont"
-      :primaryFont="primaryFont"
-      :secondaryFont="secondaryFont"
-      :eventTexts="eventTexts"
-      :currentLanguage="currentLanguage"
-      :shouldShowButtonLoading="videoState.shouldShowButtonLoading.value"
-      :isInteractionDisabled="isEnvelopeInteractionDisabled"
-      :getMediaUrl="getMediaUrl"
-      :contentTopPosition="contentTopPosition"
-      :coverStageLayout="coverStageLayout"
-      :coverTopDecoration="coverTopDecoration"
-      :coverBottomDecoration="coverBottomDecoration"
-      :coverLeftDecoration="coverLeftDecoration"
-      :coverRightDecoration="coverRightDecoration"
-      :animationType="animationType"
-      @openEnvelope="handleOpenEnvelope"
+      v-if="shouldShowCoverContent"
+      :is-content-hidden="videoState.isContentHidden.value"
+      :event-title="eventTitle"
+      :event-logo="eventLogo"
+      :guest-name="guestName || null"
+      :template-assets="templateAssets"
+      :primary-color="primaryColor"
+      :secondary-color="secondaryColor"
+      :accent-color="accentColor"
+      :background-color="backgroundColor"
+      :guestname-color="guestnameColor"
+      :template-color="templateColor"
+      :current-font="currentFont"
+      :primary-font="primaryFont"
+      :secondary-font="secondaryFont"
+      :event-texts="eventTexts"
+      :current-language="currentLanguage"
+      :should-show-button-loading="videoState.shouldShowButtonLoading.value"
+      :is-interaction-disabled="isEnvelopeInteractionDisabled"
+      :get-media-url="getMediaUrl"
+      :content-top-position="contentTopPosition"
+      :cover-stage-layout="coverStageLayout"
+      :cover-top-decoration="coverTopDecoration"
+      :cover-bottom-decoration="coverBottomDecoration"
+      :cover-left-decoration="coverLeftDecoration"
+      :cover-right-decoration="coverRightDecoration"
+      :animation-type="animationType"
+      @open-envelope="handleOpenEnvelope"
     />
 
     <!-- Main Content Overlay (Stage 3 - Background Video) -->
-    <!-- For door animation: show main content behind doors during animation -->
     <div
-      v-if="videoState.currentVideoPhase.value === 'background' || shouldSkipToMainContent || isDoorAnimationInProgress"
+      v-if="shouldShowMainContent"
       class="absolute inset-0 z-20"
     >
-      <!-- MainContentStage content will be inserted here -->
       <slot name="main-content"></slot>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted, watch } from 'vue'
-import {
-  useCoverStageVideo,
-  type ShowcaseStage,
-} from '../../composables/showcase/useCoverStageVideo'
-import type { CoverStageLayout } from '../../services/api/types/template.types'
-import { getAnimationType, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
+import { ref, computed, onUnmounted } from 'vue'
+import { useCoverStageVideo, type ShowcaseStage } from '@/composables/showcase/useCoverStageVideo'
+import { useDoorAnimation } from '@/composables/showcase/useDoorAnimation'
+import type { CoverStageLayout } from '@/services/api/types/template.types'
+import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 
 export type DisplayMode = 'basic' | 'standard'
 
-interface TemplateAssets {
+// Local interface for template assets used by this component
+interface CoverStageTemplateAssets {
   standard_cover_video?: string
   basic_background_photo?: string
   basic_decoration_photo?: string
@@ -106,7 +102,7 @@ interface TemplateColor {
 }
 
 interface Props {
-  templateAssets?: TemplateAssets | null
+  templateAssets?: CoverStageTemplateAssets | null
   templateColors?: TemplateColor[] | null
   guestName: string
   eventTitle: string
@@ -130,14 +126,12 @@ interface Props {
   videoStatePreserved?: boolean
   getMediaUrl: (url: string) => string
   /** @deprecated Use coverStageLayout.contentTopPosition instead */
-  contentTopPosition?: number // Vertical position in vh units (0-100)
-  /** Comprehensive cover stage layout configuration from backend */
+  contentTopPosition?: number
   coverStageLayout?: CoverStageLayout
   coverTopDecoration?: string | null
   coverBottomDecoration?: string | null
   coverLeftDecoration?: string | null
   coverRightDecoration?: string | null
-  /** Animation type for cover-to-content transition */
   animationType?: ShowcaseAnimationType
 }
 
@@ -156,38 +150,15 @@ const emit = defineEmits<{
   playBackgroundVideo: []
 }>()
 
-// Template refs for video elements
+// Template ref for video container
 const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
 
-// Compute display mode based on whether standard_cover_video exists
+// Display mode based on whether standard_cover_video exists
 const displayMode = computed<DisplayMode>(() => {
   return props.templateAssets?.standard_cover_video ? 'standard' : 'basic'
 })
 
-// Animation type detection
-const currentAnimationType = computed(() => getAnimationType(props.animationType))
-const isDoorAnimation = computed(() => currentAnimationType.value === 'door')
-
-// Track door animation state - keep overlay visible during animation
-const isDoorAnimationInProgress = ref(false)
-const doorAnimationDuration = 1200 // 1.2s door animation
-
-// Disable envelope interaction in standard mode until event video is ready
-const isEnvelopeInteractionDisabled = computed(() => {
-  // In basic mode, never disable interaction (no video to wait for)
-  if (displayMode.value === 'basic') {
-    return false
-  }
-
-  // In standard mode, disable if there's an event video that's not ready yet
-  if (props.eventVideoUrl && !videoState.eventVideoReady.value) {
-    return true
-  }
-
-  return false
-})
-
-// Use the video management composable
+// Video state management composable
 const videoState = useCoverStageVideo(
   {
     eventVideoPreloader: () => videoContainerRef.value?.eventVideoPreloader || null,
@@ -205,79 +176,73 @@ const videoState = useCoverStageVideo(
     displayMode: displayMode.value,
   },
   (event, ...args) => {
-    // Forward events from composable to parent
-    ;(emit as any)(event, ...args)
+    (emit as any)(event, ...args)
   },
 )
 
+// Door animation state management
+const { isDoorAnimation, isDoorAnimationInProgress, startDoorAnimation, clearAfterTimeout } = useDoorAnimation({
+  animationType: computed(() => props.animationType),
+  currentVideoPhase: videoState.currentVideoPhase,
+})
+
+// Computed visibility flags
+const shouldShowCoverContent = computed(() => {
+  return (videoState.currentVideoPhase.value === 'none' || isDoorAnimationInProgress.value)
+    && !props.shouldSkipToMainContent
+})
+
+const shouldShowMainContent = computed(() => {
+  return videoState.currentVideoPhase.value === 'background'
+    || props.shouldSkipToMainContent
+    || isDoorAnimationInProgress.value
+})
+
+// Disable envelope interaction in standard mode until event video is ready
+const isEnvelopeInteractionDisabled = computed(() => {
+  if (displayMode.value === 'basic') {
+    return false
+  }
+  return props.eventVideoUrl ? !videoState.eventVideoReady.value : false
+})
+
 // Handle envelope opening - different behavior based on display mode
 const handleOpenEnvelope = () => {
-  // Always emit openEnvelope to ensure music starts playing
   emit('openEnvelope')
 
   if (isDoorAnimation.value) {
-    // For door animation: set isContentHidden immediately to trigger CSS animation
     videoState.isContentHidden.value = true
-    isDoorAnimationInProgress.value = true
+    startDoorAnimation()
 
     if (displayMode.value === 'basic') {
-      // For basic mode with door animation:
-      // Call skipToMainContent immediately - it will set phase to 'background' after 500ms
-      // Keep isDoorAnimationInProgress true until AFTER skipToMainContent has set the phase
-      // This prevents the MainContentStage from unmounting during the transition
       videoState.skipToMainContent()
-
-      // The watcher below will clear isDoorAnimationInProgress when phase becomes 'background'
     } else {
-      // For standard mode with door animation:
-      // Wait for door animation to complete before transitioning
-      setTimeout(() => {
-        isDoorAnimationInProgress.value = false
-      }, doorAnimationDuration)
+      clearAfterTimeout()
     }
   } else if (displayMode.value === 'basic') {
-    // In basic mode with decoration animation: skip videos, go directly to main content
     videoState.skipToMainContent()
   }
-  // In standard mode: video will be started by parent component
 }
-
-// Watch for phase changes to safely clear door animation flag
-// This ensures MainContentStage never unmounts during the transition
-watch(
-  () => videoState.currentVideoPhase.value,
-  (newPhase) => {
-    if (newPhase === 'background' && isDoorAnimationInProgress.value) {
-      // Phase is now 'background', safe to clear the animation flag
-      // Add a small delay to ensure Vue has fully processed the phase change
-      setTimeout(() => {
-        isDoorAnimationInProgress.value = false
-      }, 50)
-    }
-  }
-)
-
-// Initialize video state immediately
-emit('coverStageReady')
-videoState.initializeVideoState()
 
 // Expose methods for parent component
 const startEventVideo = () => {
   videoState.startEventVideo()
 }
 
-// Expose to parent via defineExpose
 defineExpose({
   startEventVideo,
 })
 
-// Cleanup on component unmount
+// Initialize video state and notify parent
+emit('coverStageReady')
+videoState.initializeVideoState()
+
+// Cleanup on unmount
 onUnmounted(() => {
   videoState.cleanupAllVideoResources()
 })
 </script>
 
 <style scoped>
-/* Import shared cover stage styles */
 @import './cover-stage-styles.css';
 </style>
