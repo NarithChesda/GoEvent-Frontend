@@ -204,7 +204,7 @@ export function applyImageKitTransform(
   }
 
   // Convert API server URLs to ImageKit proxy URLs
-  let imageKitUrl = toImageKitUrl(url)
+  const imageKitUrl = toImageKitUrl(url)
 
   // Only transform ImageKit URLs
   if (!imageKitUrl.includes('ik.imagekit.io')) {

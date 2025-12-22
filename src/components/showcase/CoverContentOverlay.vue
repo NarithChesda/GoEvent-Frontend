@@ -93,7 +93,7 @@
       @touchmove.passive="handleTouchMove"
       @touchend="handleTouchEnd"
       class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
-      :class="[animationClasses.mainContentClasses, cursorClasses]"
+      :class="[animationClasses.mainContentClasses.value, cursorClasses]"
       style="z-index: 30; touch-action: none;"
     >
       <CoverContentRows
