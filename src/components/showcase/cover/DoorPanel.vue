@@ -7,7 +7,7 @@
       { 'door-open-right': side === 'right' && isOpen }
     ]"
   >
-    <div class="door-full-content">
+    <div class="door-full-content" :style="doorBackgroundStyle">
       <!-- All decorations at full screen size -->
       <img
         v-if="leftDecorationUrl"
@@ -126,13 +126,34 @@ interface Props {
   guestTitleFrameLeft?: string | null
   guestTitleFrameMid?: string | null
   guestTitleFrameRight?: string | null
+  // Door background
+  backgroundColor?: string
+  backgroundImageUrl?: string | null
 }
 
-withDefaults(defineProps<Props>(), {
+import { computed } from 'vue'
+
+const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
+  backgroundColor: '#000000',
 })
 
 const { protectionAttrs } = useAssetProtection()
+
+// Compute door background style - use image if available, otherwise solid color
+const doorBackgroundStyle = computed(() => {
+  if (props.backgroundImageUrl) {
+    return {
+      backgroundImage: `url(${props.backgroundImageUrl})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }
+  }
+  return {
+    backgroundColor: props.backgroundColor,
+  }
+})
 </script>
 
 <style scoped>

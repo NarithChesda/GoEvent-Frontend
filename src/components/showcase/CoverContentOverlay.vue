@@ -41,6 +41,8 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :background-color="backgroundColor"
+        :background-image-url="doorBackgroundImageUrl"
       />
 
       <!-- Right Door Panel -->
@@ -70,6 +72,8 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :background-color="backgroundColor"
+        :background-image-url="doorBackgroundImageUrl"
       />
     </div>
 
@@ -126,7 +130,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useOptimizedDecorations } from '@/composables/showcase/useOptimizedDecorations'
+import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/showcase/useOptimizedDecorations'
 import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
@@ -140,6 +144,7 @@ interface CoverTemplateAssets {
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null
   guest_title_frame_right?: string | null
+  basic_decoration_photo?: string | null
 }
 
 interface EventText {
@@ -191,6 +196,12 @@ const {
   topDecorationUrl: coverTopDecorationUrl,
   bottomDecorationUrl: coverBottomDecorationUrl,
 } = useOptimizedDecorations(props, 'cover')
+
+// Optimized decoration photo URL for door panel background
+const { optimizedDecorationPhotoUrl: doorBackgroundImageUrl } = useOptimizedBackgrounds(
+  computed(() => props.templateAssets?.basic_decoration_photo ?? null),
+  computed(() => null) // We don't need background photo here
+)
 
 // Cover stage layout configuration
 const {
