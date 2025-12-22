@@ -27,8 +27,9 @@
     />
 
     <!-- Cover Content Overlay (Stage 1) - Hidden when redirecting to main content -->
+    <!-- For door animation: keep visible during animation even after phase changes -->
     <CoverContentOverlay
-      v-if="videoState.currentVideoPhase.value === 'none' && !shouldSkipToMainContent"
+      v-if="(videoState.currentVideoPhase.value === 'none' || isDoorAnimationInProgress) && !shouldSkipToMainContent"
       :isContentHidden="videoState.isContentHidden.value"
       :eventTitle="eventTitle"
       :eventLogo="eventLogo"
@@ -54,12 +55,14 @@
       :coverBottomDecoration="coverBottomDecoration"
       :coverLeftDecoration="coverLeftDecoration"
       :coverRightDecoration="coverRightDecoration"
+      :animationType="animationType"
       @openEnvelope="handleOpenEnvelope"
     />
 
     <!-- Main Content Overlay (Stage 3 - Background Video) -->
+    <!-- For door animation: show main content behind doors during animation -->
     <div
-      v-if="videoState.currentVideoPhase.value === 'background' || shouldSkipToMainContent"
+      v-if="videoState.currentVideoPhase.value === 'background' || shouldSkipToMainContent || isDoorAnimationInProgress"
       class="absolute inset-0 z-20"
     >
       <!-- MainContentStage content will be inserted here -->
@@ -69,12 +72,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted, watch } from 'vue'
 import {
   useCoverStageVideo,
   type ShowcaseStage,
 } from '../../composables/showcase/useCoverStageVideo'
 import type { CoverStageLayout } from '../../services/api/types/template.types'
+import { getAnimationType, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 
@@ -132,6 +136,8 @@ interface Props {
   coverBottomDecoration?: string | null
   coverLeftDecoration?: string | null
   coverRightDecoration?: string | null
+  /** Animation type for cover-to-content transition */
+  animationType?: ShowcaseAnimationType
 }
 
 const props = defineProps<Props>()
@@ -156,6 +162,14 @@ const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
 const displayMode = computed<DisplayMode>(() => {
   return props.templateAssets?.standard_cover_video ? 'standard' : 'basic'
 })
+
+// Animation type detection
+const currentAnimationType = computed(() => getAnimationType(props.animationType))
+const isDoorAnimation = computed(() => currentAnimationType.value === 'door')
+
+// Track door animation state - keep overlay visible during animation
+const isDoorAnimationInProgress = ref(false)
+const doorAnimationDuration = 1200 // 1.2s door animation
 
 // Disable envelope interaction in standard mode until event video is ready
 const isEnvelopeInteractionDisabled = computed(() => {
@@ -200,12 +214,47 @@ const handleOpenEnvelope = () => {
   // Always emit openEnvelope to ensure music starts playing
   emit('openEnvelope')
 
-  if (displayMode.value === 'basic') {
-    // In basic mode: skip videos, go directly to main content
+  if (isDoorAnimation.value) {
+    // For door animation: set isContentHidden immediately to trigger CSS animation
+    videoState.isContentHidden.value = true
+    isDoorAnimationInProgress.value = true
+
+    if (displayMode.value === 'basic') {
+      // For basic mode with door animation:
+      // Call skipToMainContent immediately - it will set phase to 'background' after 500ms
+      // Keep isDoorAnimationInProgress true until AFTER skipToMainContent has set the phase
+      // This prevents the MainContentStage from unmounting during the transition
+      videoState.skipToMainContent()
+
+      // The watcher below will clear isDoorAnimationInProgress when phase becomes 'background'
+    } else {
+      // For standard mode with door animation:
+      // Wait for door animation to complete before transitioning
+      setTimeout(() => {
+        isDoorAnimationInProgress.value = false
+      }, doorAnimationDuration)
+    }
+  } else if (displayMode.value === 'basic') {
+    // In basic mode with decoration animation: skip videos, go directly to main content
     videoState.skipToMainContent()
   }
   // In standard mode: video will be started by parent component
 }
+
+// Watch for phase changes to safely clear door animation flag
+// This ensures MainContentStage never unmounts during the transition
+watch(
+  () => videoState.currentVideoPhase.value,
+  (newPhase) => {
+    if (newPhase === 'background' && isDoorAnimationInProgress.value) {
+      // Phase is now 'background', safe to clear the animation flag
+      // Add a small delay to ensure Vue has fully processed the phase change
+      setTimeout(() => {
+        isDoorAnimationInProgress.value = false
+      }, 50)
+    }
+  }
+)
 
 // Initialize video state immediately
 emit('coverStageReady')

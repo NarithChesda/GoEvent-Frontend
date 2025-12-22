@@ -1,61 +1,350 @@
 <template>
   <!-- Wrapper for decorations and content -->
   <div class="absolute inset-0">
-    <!-- Decoration Images (optimized via ImageKit) - Animate independently from content -->
-    <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
-    <img
-      v-if="coverLeftDecorationUrl"
-      :src="coverLeftDecorationUrl"
-      alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none cover-decoration-left"
-      :class="{ 'slide-out-to-left': isContentHidden }"
-      :style="{ zIndex: decorationZIndexes.left }"
-      loading="eager"
-      v-bind="protectionAttrs"
-    />
-    <img
-      v-if="coverRightDecorationUrl"
-      :src="coverRightDecorationUrl"
-      alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none cover-decoration-right"
-      :class="{ 'slide-out-to-right': isContentHidden }"
-      :style="{ zIndex: decorationZIndexes.right }"
-      loading="eager"
-      v-bind="protectionAttrs"
-    />
-    <img
-      v-if="coverTopDecorationUrl"
-      :src="coverTopDecorationUrl"
-      alt="Top decoration"
-      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none cover-decoration-top"
-      :class="{ 'slide-out-to-top': isContentHidden }"
-      :style="{ zIndex: decorationZIndexes.top }"
-      loading="eager"
-      v-bind="protectionAttrs"
-    />
-    <img
-      v-if="coverBottomDecorationUrl"
-      :src="coverBottomDecorationUrl"
-      alt="Bottom decoration"
-      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none cover-decoration-bottom"
-      :class="{ 'slide-out-to-bottom': isContentHidden }"
-      :style="{ zIndex: decorationZIndexes.bottom }"
-      loading="eager"
-      v-bind="protectionAttrs"
-    />
+    <!-- DECORATION ANIMATION: Individual decoration images that slide out -->
+    <template v-if="isDecorationAnimation">
+      <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
+      <img
+        v-if="coverLeftDecorationUrl"
+        :src="coverLeftDecorationUrl"
+        alt="Left decoration"
+        class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none cover-decoration-left"
+        :class="animationClasses.decorationClasses.left"
+        :style="{ zIndex: decorationZIndexes.left }"
+        loading="eager"
+        v-bind="protectionAttrs"
+      />
+      <img
+        v-if="coverRightDecorationUrl"
+        :src="coverRightDecorationUrl"
+        alt="Right decoration"
+        class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none cover-decoration-right"
+        :class="animationClasses.decorationClasses.right"
+        :style="{ zIndex: decorationZIndexes.right }"
+        loading="eager"
+        v-bind="protectionAttrs"
+      />
+      <img
+        v-if="coverTopDecorationUrl"
+        :src="coverTopDecorationUrl"
+        alt="Top decoration"
+        class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none cover-decoration-top"
+        :class="animationClasses.decorationClasses.top"
+        :style="{ zIndex: decorationZIndexes.top }"
+        loading="eager"
+        v-bind="protectionAttrs"
+      />
+      <img
+        v-if="coverBottomDecorationUrl"
+        :src="coverBottomDecorationUrl"
+        alt="Bottom decoration"
+        class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none cover-decoration-bottom"
+        :class="animationClasses.decorationClasses.bottom"
+        :style="{ zIndex: decorationZIndexes.bottom }"
+        loading="eager"
+        v-bind="protectionAttrs"
+      />
+    </template>
 
-    <!-- Main Content Container -->
+    <!-- DOOR ANIMATION: 3D perspective container for door panels -->
+    <div v-if="isDoorAnimation" class="door-perspective-container">
+      <!-- Left Door Panel with full cover content (shows left half) -->
+      <div
+        class="door-panel door-panel-left"
+        :class="{ 'door-open-left': isContentHidden }"
+      >
+        <!-- Full background and content - viewport shows left half -->
+        <div class="door-full-content">
+          <!-- All decorations at full screen size -->
+          <img
+            v-if="coverLeftDecorationUrl"
+            :src="coverLeftDecorationUrl"
+            alt="Left decoration"
+            class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.left }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+          <img
+            v-if="coverRightDecorationUrl"
+            :src="coverRightDecorationUrl"
+            alt="Right decoration"
+            class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.right }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+          <img
+            v-if="coverTopDecorationUrl"
+            :src="coverTopDecorationUrl"
+            alt="Top decoration"
+            class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.top }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+          <img
+            v-if="coverBottomDecorationUrl"
+            :src="coverBottomDecorationUrl"
+            alt="Bottom decoration"
+            class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.bottom }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+
+          <!-- All content elements at full screen size -->
+          <div class="door-content-layer">
+            <div class="inner-container-rows flex flex-col w-full mx-auto absolute" :style="containerStyle">
+              <!-- Event Title Row -->
+              <div class="content-row-header flex items-center justify-center" :style="rowStyles.eventTitle">
+                <div class="header-content-container flex items-center justify-center px-4 w-full" style="height: 60%">
+                  <h1 class="scaled-header font-regular capitalize khmer-text-fix text-center" :style="headerTextStyle">
+                    {{ coverHeader || eventTitle }}
+                  </h1>
+                </div>
+              </div>
+
+              <!-- Event Logo Row -->
+              <div class="content-row-logo flex items-center justify-center" :style="rowStyles.logo">
+                <div class="flex items-center justify-center h-full w-full px-4">
+                  <img
+                    v-if="eventLogo"
+                    :src="getMediaUrl(eventLogo)"
+                    :alt="eventTitle + ' logo'"
+                    class="scaled-logo mx-auto"
+                    fetchpriority="high"
+                    v-bind="protectionAttrs"
+                  />
+                  <div
+                    v-else
+                    class="fallback-logo-container"
+                    :style="fallbackLogoStyle"
+                  >
+                    <div class="fallback-logo" v-html="fallbackLogoSvgContent" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Invite Text Row -->
+              <div v-if="guestName" class="content-row-invite flex items-center justify-center" :style="{ ...rowStyles.inviteText, overflow: 'visible' }">
+                <div class="invite-content-container flex items-center justify-center px-4 w-full" style="height: 60%">
+                  <p class="scaled-invite-text khmer-text-fix text-center" :style="inviteTextStyle">
+                    {{ inviteText }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Guest Name Row -->
+              <div
+                v-if="guestName"
+                class="content-row-guest flex items-center justify-center"
+                :style="{ ...rowStyles.guestName, overflow: 'visible', zIndex: 100, position: 'relative' }"
+              >
+                <div class="guest-content-container flex items-center justify-center px-4 w-full">
+                  <div class="guest-name-container" :class="{ 'english-name': isEnglishGuestName }">
+                    <div class="premium-name-frame" :style="premiumFrameStyle">
+                      <div class="split-frame-container" aria-hidden="true">
+                        <img :src="computedLeftFrame" alt="" class="frame-left" v-bind="protectionAttrs" />
+                        <div class="frame-middle-wrapper">
+                          <div class="frame-middle" :style="{ backgroundImage: `url(${computedMiddleFrame})` }" v-bind="protectionAttrs"></div>
+                        </div>
+                        <img :src="computedRightFrame" alt="" class="frame-right" v-bind="protectionAttrs" />
+                      </div>
+                      <h2
+                        class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
+                        :style="[guestNameTextStyle, guestNameAutoFitStyle]"
+                      >
+                        <template v-if="isEnglishGuestName">
+                          <span
+                            v-for="(char, index) in guestNameChars"
+                            :key="index"
+                            class="bounce-char"
+                            :style="{ animationDelay: `${1 + index * 0.05}s` }"
+                          >{{ char === ' ' ? '\u00A0' : char }}</span>
+                        </template>
+                        <template v-else>
+                          <span
+                            v-for="(word, index) in guestNameWords"
+                            :key="index"
+                            class="bounce-word"
+                            :style="{ animationDelay: `${1 + index * 0.15}s` }"
+                          >{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span>
+                        </template>
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Door Panel with full cover content (shows right half) -->
+      <div
+        class="door-panel door-panel-right"
+        :class="{ 'door-open-right': isContentHidden }"
+      >
+        <!-- Full background and content - viewport shows right half -->
+        <div class="door-full-content">
+          <!-- All decorations at full screen size -->
+          <img
+            v-if="coverLeftDecorationUrl"
+            :src="coverLeftDecorationUrl"
+            alt="Left decoration"
+            class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.left }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+          <img
+            v-if="coverRightDecorationUrl"
+            :src="coverRightDecorationUrl"
+            alt="Right decoration"
+            class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.right }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+          <img
+            v-if="coverTopDecorationUrl"
+            :src="coverTopDecorationUrl"
+            alt="Top decoration"
+            class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.top }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+          <img
+            v-if="coverBottomDecorationUrl"
+            :src="coverBottomDecorationUrl"
+            alt="Bottom decoration"
+            class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none"
+            :style="{ zIndex: decorationZIndexes.bottom }"
+            loading="eager"
+            v-bind="protectionAttrs"
+          />
+
+          <!-- All content elements at full screen size -->
+          <div class="door-content-layer">
+            <div class="inner-container-rows flex flex-col w-full mx-auto absolute" :style="containerStyle">
+              <!-- Event Title Row -->
+              <div class="content-row-header flex items-center justify-center" :style="rowStyles.eventTitle">
+                <div class="header-content-container flex items-center justify-center px-4 w-full" style="height: 60%">
+                  <h1 class="scaled-header font-regular capitalize khmer-text-fix text-center" :style="headerTextStyle">
+                    {{ coverHeader || eventTitle }}
+                  </h1>
+                </div>
+              </div>
+
+              <!-- Event Logo Row -->
+              <div class="content-row-logo flex items-center justify-center" :style="rowStyles.logo">
+                <div class="flex items-center justify-center h-full w-full px-4">
+                  <img
+                    v-if="eventLogo"
+                    :src="getMediaUrl(eventLogo)"
+                    :alt="eventTitle + ' logo'"
+                    class="scaled-logo mx-auto"
+                    fetchpriority="high"
+                    v-bind="protectionAttrs"
+                  />
+                  <div
+                    v-else
+                    class="fallback-logo-container"
+                    :style="fallbackLogoStyle"
+                  >
+                    <div class="fallback-logo" v-html="fallbackLogoSvgContent" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Invite Text Row -->
+              <div v-if="guestName" class="content-row-invite flex items-center justify-center" :style="{ ...rowStyles.inviteText, overflow: 'visible' }">
+                <div class="invite-content-container flex items-center justify-center px-4 w-full" style="height: 60%">
+                  <p class="scaled-invite-text khmer-text-fix text-center" :style="inviteTextStyle">
+                    {{ inviteText }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Guest Name Row -->
+              <div
+                v-if="guestName"
+                class="content-row-guest flex items-center justify-center"
+                :style="{ ...rowStyles.guestName, overflow: 'visible', zIndex: 100, position: 'relative' }"
+              >
+                <div class="guest-content-container flex items-center justify-center px-4 w-full">
+                  <div class="guest-name-container" :class="{ 'english-name': isEnglishGuestName }">
+                    <div class="premium-name-frame" :style="premiumFrameStyle">
+                      <div class="split-frame-container" aria-hidden="true">
+                        <img :src="computedLeftFrame" alt="" class="frame-left" v-bind="protectionAttrs" />
+                        <div class="frame-middle-wrapper">
+                          <div class="frame-middle" :style="{ backgroundImage: `url(${computedMiddleFrame})` }" v-bind="protectionAttrs"></div>
+                        </div>
+                        <img :src="computedRightFrame" alt="" class="frame-right" v-bind="protectionAttrs" />
+                      </div>
+                      <h2
+                        class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
+                        :style="[guestNameTextStyle, guestNameAutoFitStyle]"
+                      >
+                        <template v-if="isEnglishGuestName">
+                          <span
+                            v-for="(char, index) in guestNameChars"
+                            :key="index"
+                            class="bounce-char"
+                            :style="{ animationDelay: `${1 + index * 0.05}s` }"
+                          >{{ char === ' ' ? '\u00A0' : char }}</span>
+                        </template>
+                        <template v-else>
+                          <span
+                            v-for="(word, index) in guestNameWords"
+                            :key="index"
+                            class="bounce-word"
+                            :style="{ animationDelay: `${1 + index * 0.15}s` }"
+                          >{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span>
+                        </template>
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clickable overlay for door animation (invisible but captures clicks) -->
     <div
+      v-if="isDoorAnimation && !isContentHidden"
+      @click="handleClick"
+      @touchstart.passive="handleTouchStart"
+      @touchmove.passive="handleTouchMove"
+      @touchend="handleTouchEnd"
+      class="absolute inset-0"
+      :class="{
+        'cursor-pointer': !isInteractionDisabled,
+        'cursor-not-allowed': isInteractionDisabled
+      }"
+      style="z-index: 29; touch-action: none; background: transparent;"
+    ></div>
+
+    <!-- Main Content Container (for decoration animation only) -->
+    <div
+      v-if="isDecorationAnimation"
       @click="handleClick"
       @touchstart.passive="handleTouchStart"
       @touchmove.passive="handleTouchMove"
       @touchend="handleTouchEnd"
       class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
-      :class="{
-        'swipe-up-hidden': isContentHidden,
-        'cursor-pointer': !isInteractionDisabled,
-        'cursor-not-allowed': isInteractionDisabled
-      }"
+      :class="[
+        animationClasses.mainContentClasses,
+        {
+          'cursor-pointer': !isInteractionDisabled,
+          'cursor-not-allowed': isInteractionDisabled
+        }
+      ]"
       style="z-index: 30; touch-action: none;"
     >
 
@@ -216,6 +505,7 @@ import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
+import { useShowcaseAnimation, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
 import type { CoverStageLayout } from '../../services/api/types/template.types'
 import fallbackLogoSvg from '../../assets/temp-showcase-logo.svg?raw'
 
@@ -272,6 +562,8 @@ interface Props {
   coverBottomDecoration?: string | null
   coverLeftDecoration?: string | null
   coverRightDecoration?: string | null
+  /** Animation type for cover-to-content transition (defaults to env variable) */
+  animationType?: ShowcaseAnimationType
 }
 
 const props = defineProps<Props>()
@@ -298,6 +590,15 @@ const {
   computed(() => props.coverStageLayout),
   computed(() => props.contentTopPosition) // Legacy fallback
 )
+
+// Showcase animation configuration
+const animationClasses = useShowcaseAnimation({
+  animationType: computed(() => props.animationType),
+  isContentHidden: computed(() => props.isContentHidden),
+})
+
+// Destructure for template usage
+const { isDecorationAnimation, isDoorAnimation } = animationClasses
 
 // Touch gesture detection
 const touchStartY = ref(0)
@@ -960,5 +1261,174 @@ watch(() => props.guestName, () => {
   max-height: 100% !important;
   object-fit: contain;
   margin: 0 auto;
+}
+
+/* ===================
+   DOOR ANIMATION STYLES
+   =================== */
+
+/* 3D Perspective container for door animation */
+.door-perspective-container {
+  position: absolute;
+  inset: 0;
+  perspective: 1500px;
+  perspective-origin: center center;
+  z-index: 28;
+  overflow: hidden;
+}
+
+/* Door panel base styles */
+.door-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              width 0s 0s,
+              left 0s 0s,
+              right 0s 0s,
+              opacity 0s 0s;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Door full content - holds full viewport content */
+.door-full-content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: width 0s 0s, left 0s 0s;
+}
+
+/* Door content layer - positions content elements */
+.door-content-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+}
+
+/* ==========================================
+   CLOSED STATE - Full width unified display
+   ========================================== */
+
+/* Left door - CLOSED: covers full viewport, shows complete content */
+.door-panel-left {
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  transform-origin: left center;
+}
+
+.door-panel-left .door-full-content {
+  width: 100%;
+  left: 0;
+}
+
+/* Right door - CLOSED: hidden behind left panel */
+.door-panel-right {
+  right: 0;
+  width: 50%;
+  z-index: 1;
+  transform-origin: right center;
+  opacity: 0;
+}
+
+.door-panel-right .door-full-content {
+  width: 200%;
+  left: -100%;
+}
+
+/* ==========================================
+   OPEN STATE - Split into two halves
+   ========================================== */
+
+/* Left door opens from center to left */
+.door-open-left {
+  width: 50%;
+  transform: perspective(1500px) rotateY(-105deg);
+}
+
+.door-open-left .door-full-content {
+  width: 200%;
+  left: 0;
+}
+
+/* Right door becomes visible and opens from center to right */
+.door-open-right {
+  opacity: 1;
+  transform: perspective(1500px) rotateY(105deg);
+}
+
+/* Main content visibility for door animation */
+.door-content-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+}
+
+.door-content-reveal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out 0.8s;
+}
+
+/* Inner shadow on doors when opening for depth effect */
+.door-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.door-panel-left::before {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(0, 0, 0, 0.5),
+    rgba(0, 0, 0, 0)
+  );
+}
+
+.door-panel-right::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.5),
+    rgba(0, 0, 0, 0)
+  );
+}
+
+.door-open-left::before,
+.door-open-right::before {
+  opacity: 1;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .door-panel {
+    transition: opacity 0.3s ease-out;
+  }
+
+  .door-open-left,
+  .door-open-right {
+    transform: none;
+    opacity: 0;
+  }
+
+  .door-perspective-container {
+    perspective: none;
+  }
 }
 </style>

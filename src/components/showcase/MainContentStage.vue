@@ -9,7 +9,8 @@
       v-if="leftDecorationUrl"
       :src="leftDecorationUrl"
       alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromLeft"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24]"
+      :class="decorationAnimationClasses.left"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -17,7 +18,8 @@
       v-if="rightDecorationUrl"
       :src="rightDecorationUrl"
       alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24] animate-slideInFromRight"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24]"
+      :class="decorationAnimationClasses.right"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -25,7 +27,8 @@
       v-if="topDecorationUrl"
       :src="topDecorationUrl"
       alt="Top decoration"
-      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromTop"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      :class="decorationAnimationClasses.top"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -33,7 +36,8 @@
       v-if="bottomDecorationUrl"
       :src="bottomDecorationUrl"
       alt="Bottom decoration"
-      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25] animate-slideInFromBottom"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      :class="decorationAnimationClasses.bottom"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -93,7 +97,7 @@
       <div class="absolute inset-0 overflow-y-auto custom-scrollbar z-20">
         <div :class="containerClasses">
           <!-- Liquid Glass Card -->
-          <div class="liquid-glass-card animate-slideUp">
+          <div class="liquid-glass-card" :class="cardAnimationClass">
             <!-- Glass Background Effects -->
             <div v-if="showLiquidGlass" class="glass-background"></div>
 
@@ -859,6 +863,7 @@ import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimatio
 import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { getAnimationType } from '../../composables/showcase/useShowcaseAnimation'
 
 // Asset protection (production-only)
 const { protectionAttrs } = useAssetProtection()
@@ -922,9 +927,28 @@ interface Props {
   bottomDecoration?: string | null
   leftDecoration?: string | null
   rightDecoration?: string | null
+  /** Animation type for entrance animations (defaults to env variable) */
+  animationType?: 'decoration' | 'door'
 }
 
 const props = defineProps<Props>()
+
+// Animation type (from prop or env)
+const currentAnimationType = computed(() => getAnimationType(props.animationType))
+const isDoorAnimation = computed(() => currentAnimationType.value === 'door')
+
+// Animation classes for decorations based on animation type
+const decorationAnimationClasses = computed(() => ({
+  left: isDoorAnimation.value ? 'animate-fadeIn' : 'animate-slideInFromLeft',
+  right: isDoorAnimation.value ? 'animate-fadeIn' : 'animate-slideInFromRight',
+  top: isDoorAnimation.value ? 'animate-fadeIn' : 'animate-slideInFromTop',
+  bottom: isDoorAnimation.value ? 'animate-fadeIn' : 'animate-slideInFromBottom',
+}))
+
+// Animation class for main card based on animation type
+const cardAnimationClass = computed(() =>
+  isDoorAnimation.value ? 'animate-fadeInUp' : 'animate-slideUp'
+)
 
 // Optimized decoration image URLs using reactive window dimensions
 const { leftDecorationUrl, rightDecorationUrl, topDecorationUrl, bottomDecorationUrl } =
@@ -1489,6 +1513,38 @@ onUnmounted(() => {
   animation: slideUp 0.8s ease-out forwards;
 }
 
+/* ===================
+   DOOR ANIMATION STYLES
+   =================== */
+
+/* Fade in animation for door animation decorations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade in without movement for door animation card - content is revealed as doors open */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
 /* Decoration slide-in animation classes with staggered timing */
 /* Order: left → right → top → bottom */
 .animate-slideInFromLeft {
@@ -1714,6 +1770,11 @@ onUnmounted(() => {
   }
 
   .animate-slideUp {
+    animation: none;
+  }
+
+  .animate-fadeIn,
+  .animate-fadeInUp {
     animation: none;
   }
 

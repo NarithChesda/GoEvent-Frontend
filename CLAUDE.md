@@ -113,6 +113,7 @@ The showcase system is a complex, multi-stage component system for displaying ev
   - `useVideoResourceManager.ts`: Video preloading and memory management
   - `useCoverStageVideo.ts`: Cover video handling
   - `useShowcaseRedirect.ts`: Redirect logic for showcase navigation
+  - `useShowcaseAnimation.ts`: Showcase transition animation management (decoration vs door animations)
 
 - **Showcase components** ([src/components/showcase/](src/components/showcase/)):
   - Stage-specific components for different showcase phases
@@ -175,6 +176,7 @@ Optional env vars:
 - `VITE_TELEGRAM_ADMIN_CHAT_ID`: Admin chat ID for notifications
 - `VITE_IMAGEKIT_ENABLED`: Enable ImageKit CDN image optimization (default: true, can toggle via `localStorage.setItem('imagekit_enabled', 'false')`)
 - `VITE_ASSET_PROTECTION_ENABLED`: Enable asset protection in dev mode (default: false, auto-enabled in production)
+- `VITE_SHOWCASE_ANIMATION_TYPE`: Showcase transition animation type. Options: `decoration` (default - decorations slide out individually), `door` (cover splits in half like opening doors)
 
 ### Authentication Flow
 1. User authenticates via email/password, Google OAuth, or Telegram
