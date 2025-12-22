@@ -206,11 +206,12 @@ const isEnvelopeInteractionDisabled = computed(() => {
   return props.eventVideoUrl ? !videoState.eventVideoReady.value : false
 })
 
-// Handle envelope opening - different behavior based on display mode
+// Handle envelope opening - different behavior based on display mode and animation type
 const handleOpenEnvelope = () => {
   emit('openEnvelope')
 
   if (isDoorAnimation.value) {
+    // Door animation: set content hidden to trigger door opening animation
     videoState.isContentHidden.value = true
     startDoorAnimation()
 
@@ -219,8 +220,15 @@ const handleOpenEnvelope = () => {
     } else {
       clearAfterTimeout()
     }
-  } else if (displayMode.value === 'basic') {
-    videoState.skipToMainContent()
+  } else {
+    // Decoration animation: set content hidden to trigger slide-out animations
+    videoState.isContentHidden.value = true
+
+    if (displayMode.value === 'basic') {
+      // Basic mode: skip directly to main content (no videos)
+      videoState.skipToMainContent()
+    }
+    // Standard mode: video will be started by parent component via startEventVideo()
   }
 }
 

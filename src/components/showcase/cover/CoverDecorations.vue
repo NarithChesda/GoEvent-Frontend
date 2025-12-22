@@ -80,7 +80,7 @@ const { protectionAttrs } = useAssetProtection()
 </script>
 
 <style scoped>
-/* Decoration slide-out animations */
+/* Decoration slide-out animations - base transition on decoration elements */
 .cover-decoration-left,
 .cover-decoration-right,
 .cover-decoration-top,
@@ -88,25 +88,26 @@ const { protectionAttrs } = useAssetProtection()
   transition: transform 0.8s ease-out, opacity 0.8s ease-out;
 }
 
-:deep(.slide-out-to-left) {
+/* Slide-out animation classes - applied directly on the same element */
+.slide-out-to-left {
   transform: translateX(-100%);
   opacity: 0;
   transition-delay: 0.1s;
 }
 
-:deep(.slide-out-to-right) {
+.slide-out-to-right {
   transform: translateX(100%);
   opacity: 0;
   transition-delay: 0.2s;
 }
 
-:deep(.slide-out-to-top) {
+.slide-out-to-top {
   transform: translateY(-100%);
   opacity: 0;
   transition-delay: 0.3s;
 }
 
-:deep(.slide-out-to-bottom) {
+.slide-out-to-bottom {
   transform: translateY(100%);
   opacity: 0;
   transition-delay: 0.4s;
