@@ -180,7 +180,7 @@
             v-for="(comment, index) in comments"
             :key="comment.id"
             :ref="(el) => setupCommentAnimation(el, `comment-${comment.id}`, index)"
-            class="comment-card-liquid p-4 mb-3 last:mb-0 animate-comment-reveal"
+            class="comment-card-liquid p-4 mb-3 last:mb-0 animate-comment-reveal relative"
             :class="{ 'mt-6': index === 0 }"
             :style="
               isUserCommentOwner(comment)
@@ -195,96 +195,54 @@
                   }
             "
           >
-            <!-- Comment Header -->
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <!-- User Avatar -->
-                <div
-                  class="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center relative"
-                >
-                  <img
-                    v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
-                    :src="getCommentAvatarUrl(comment)!"
-                    :alt="getCommentDisplayName(comment)"
-                    class="w-full h-full object-cover"
-                    @error="() => setAvatarError(comment.id)"
-                  />
-                  <div
-                    v-else
-                    class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
-                    :style="{ backgroundColor: backgroundColor }"
-                  >
-                    {{ getCommentInitial(comment) }}
-                  </div>
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <p
-                      class="text-sm font-medium"
-                      :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
-                    >
-                      {{ getCommentDisplayName(comment) }}
-                    </p>
-                    <span
-                      v-if="isUserCommentOwner(comment)"
-                      class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium"
-                      :style="{
-                        backgroundColor: backgroundColor + '80',
-                        fontFamily: secondaryFont || currentFont,
-                      }"
-                    >
-                      {{ commentYouBadgeText }}
-                    </span>
-                  </div>
-                  <p
-                    class="text-xs"
-                    :style="{
-                      color: primaryColor,
-                      opacity: 0.7,
-                      fontFamily: secondaryFont || currentFont,
-                    }"
-                  >
-                    {{ formatCommentDate(comment.created_at) }}
-                  </p>
-                </div>
-              </div>
+            <!-- Quote Mark -->
+            <div
+              class="absolute top-2 left-3 text-5xl leading-none select-none pointer-events-none opacity-50"
+              :style="{ color: backgroundColor, fontFamily: 'Georgia, serif' }"
+            >
+              "
+            </div>
 
-              <!-- Action Buttons (only for comment owner) -->
-              <div v-if="isUserCommentOwner(comment)" class="flex items-center gap-1">
+            <!-- Options Button (only for comment owner) - Top Right -->
+            <div
+              v-if="isUserCommentOwner(comment)"
+              class="absolute top-2 right-2 z-10 comment-options-menu"
+            >
+              <button
+                @click.stop="toggleCommentMenu(comment.id)"
+                class="p-1.5 rounded-full transition-all duration-200 hover:scale-110 hover:bg-white/10"
+                :style="{
+                  color: primaryColor,
+                }"
+                title="Options"
+              >
+                <MoreVertical class="w-4 h-4" />
+              </button>
+              <!-- Dropdown Menu -->
+              <div
+                v-if="openMenuId === comment.id"
+                class="absolute right-0 top-7 py-1 rounded-lg shadow-xl min-w-[100px] z-20 backdrop-blur-sm"
+                :style="{
+                  backgroundColor: backgroundColor,
+                  border: `1px solid ${backgroundColor}80`,
+                }"
+              >
                 <button
-                  @click="startEditComment(comment)"
-                  class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110"
-                  :style="{
-                    backgroundColor: `${backgroundColor}08`,
-                    color: primaryColor,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${backgroundColor}15`,
-                  }"
-                  title="Edit comment"
+                  @click="handleEditFromMenu(comment)"
+                  class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
+                  :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
                 >
-                  <Edit class="w-3.5 h-3.5" />
+                  <Edit class="w-3 h-3" />
+                  Edit
                 </button>
                 <button
-                  @click="
-                    openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')
-                  "
-                  class="liquid-glass-action-button p-1.5 transition-all duration-200 hover:scale-110 group"
-                  :style="{
-                    backgroundColor: `${backgroundColor}08`,
-                    color: primaryColor,
-                    boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 2px 6px ${backgroundColor}15`,
-                  }"
-                  title="Delete comment"
+                  @click="handleDeleteFromMenu(comment)"
+                  class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
+                  :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
                   :disabled="isDeletingComment === comment.id"
                 >
-                  <Trash2
-                    v-if="isDeletingComment !== comment.id"
-                    class="w-3.5 h-3.5 group-hover:text-red-400 transition-colors"
-                  />
-                  <div
-                    v-else
-                    class="w-3.5 h-3.5 border border-t-transparent rounded-full animate-spin"
-                    :style="{ borderColor: `${primaryColor}60` }"
-                  ></div>
+                  <Trash2 class="w-3 h-3" />
+                  Delete
                 </button>
               </div>
             </div>
@@ -292,18 +250,19 @@
             <!-- Comment Message (Read Mode) -->
             <p
               v-if="editingCommentId !== comment.id"
-              class="text-sm leading-relaxed"
+              class="text-sm leading-relaxed pl-7 mb-4 italic pt-1"
+              :class="isUserCommentOwner(comment) ? 'pr-8' : 'pr-3'"
               :style="{
                 color: primaryColor,
-                opacity: 0.9,
                 fontFamily: secondaryFont || currentFont,
+                lineHeight: '1.8',
               }"
             >
               {{ capitalizeFirstLetter(comment.comment_text) }}
             </p>
 
             <!-- Comment Message (Edit Mode) -->
-            <div v-else class="space-y-3">
+            <div v-else class="space-y-3 pl-7 pr-8 mb-4 pt-1">
               <textarea
                 v-model="editCommentText"
                 class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
@@ -369,6 +328,65 @@
                   </button>
                 </div>
               </div>
+            </div>
+
+            <!-- Author Info (Bottom) -->
+            <div
+              class="flex items-center justify-between pl-3 pr-2 pt-3"
+              :style="{ borderTop: `1px solid ${backgroundColor}30` }"
+            >
+              <!-- Avatar + Name -->
+              <div class="flex items-center gap-2">
+                <!-- User Avatar -->
+                <div
+                  class="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center"
+                >
+                  <img
+                    v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
+                    :src="getCommentAvatarUrl(comment)!"
+                    :alt="getCommentDisplayName(comment)"
+                    class="w-full h-full object-cover"
+                    @error="() => setAvatarError(comment.id)"
+                  />
+                  <div
+                    v-else
+                    class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
+                    :style="{ backgroundColor: backgroundColor }"
+                  >
+                    {{ getCommentInitial(comment) }}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <p
+                    class="text-sm font-medium"
+                    :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
+                  >
+                    {{ getCommentDisplayName(comment) }}
+                  </p>
+                  <span
+                    v-if="isUserCommentOwner(comment)"
+                    class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium"
+                    :style="{
+                      backgroundColor: backgroundColor + '80',
+                      fontFamily: secondaryFont || currentFont,
+                    }"
+                  >
+                    {{ commentYouBadgeText }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Date -->
+              <p
+                class="text-xs"
+                :style="{
+                  color: primaryColor,
+                  opacity: 0.6,
+                  fontFamily: secondaryFont || currentFont,
+                }"
+              >
+                {{ formatCommentDate(comment.created_at) }}
+              </p>
             </div>
           </div>
 
@@ -441,7 +459,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted, watch } from 'vue'
-import { MessageCircle, Edit, Trash2 } from 'lucide-vue-next'
+import { MessageCircle, Edit, Trash2, MoreVertical } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
@@ -601,6 +619,7 @@ const hasAlreadyCommented = ref(false)
 // Edit/Delete state
 const editingCommentId = ref<number | null>(null)
 const editCommentText = ref('')
+const openMenuId = ref<number | null>(null)
 const isUpdatingComment = ref(false)
 const isDeletingComment = ref<number | null>(null)
 
@@ -801,6 +820,29 @@ const validateCommentOnBlur = () => {
   if (newComment.value.message.trim()) {
     commentValidation.value = validateCommentInput(newComment.value.message)
   }
+}
+
+// Menu toggle functions
+const toggleCommentMenu = (commentId: number) => {
+  if (openMenuId.value === commentId) {
+    openMenuId.value = null
+  } else {
+    openMenuId.value = commentId
+  }
+}
+
+const closeCommentMenu = () => {
+  openMenuId.value = null
+}
+
+const handleEditFromMenu = (comment: EventComment) => {
+  closeCommentMenu()
+  startEditComment(comment)
+}
+
+const handleDeleteFromMenu = (comment: EventComment) => {
+  closeCommentMenu()
+  openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')
 }
 
 const startEditComment = (comment: EventComment) => {
@@ -1205,6 +1247,14 @@ const setupCommentAnimation = (el: any, id: string, index: number) => {
   }
 }
 
+// Click outside handler to close menu
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (openMenuId.value !== null && !target.closest('.comment-options-menu')) {
+    closeCommentMenu()
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   await loadComments()
@@ -1217,12 +1267,16 @@ onMounted(async () => {
     // Add scroll listener regardless of initial comment count
     commentsContainer.value.addEventListener('scroll', handleScroll, { passive: true })
   }
+
+  // Add click outside listener to close menus
+  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
   if (commentsContainer.value) {
     commentsContainer.value.removeEventListener('scroll', handleScroll)
   }
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
@@ -1335,7 +1389,7 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
 }
