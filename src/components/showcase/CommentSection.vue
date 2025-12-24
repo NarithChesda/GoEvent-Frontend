@@ -207,6 +207,7 @@
             <div
               v-if="isUserCommentOwner(comment)"
               class="absolute top-2 right-2 z-10 comment-options-menu"
+              :ref="(el) => setMenuButtonRef(el, comment.id)"
             >
               <button
                 @click.stop="toggleCommentMenu(comment.id)"
@@ -218,33 +219,6 @@
               >
                 <MoreVertical class="w-4 h-4" />
               </button>
-              <!-- Dropdown Menu -->
-              <div
-                v-if="openMenuId === comment.id"
-                class="absolute right-0 top-7 py-1 rounded-lg shadow-xl min-w-[100px] z-20 backdrop-blur-sm"
-                :style="{
-                  backgroundColor: backgroundColor,
-                  border: `1px solid ${backgroundColor}80`,
-                }"
-              >
-                <button
-                  @click="handleEditFromMenu(comment)"
-                  class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-                  :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
-                >
-                  <Edit class="w-3 h-3" />
-                  Edit
-                </button>
-                <button
-                  @click="handleDeleteFromMenu(comment)"
-                  class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-                  :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
-                  :disabled="isDeletingComment === comment.id"
-                >
-                  <Trash2 class="w-3 h-3" />
-                  Delete
-                </button>
-              </div>
             </div>
 
             <!-- Comment Message (Read Mode) -->
@@ -455,10 +429,42 @@
       @authenticated="handleUserAuthenticated"
     />
   </Teleport>
+
+  <!-- Teleported Dropdown Menu (to escape overflow clipping) -->
+  <Teleport to="body">
+    <div
+      v-if="openMenuId !== null"
+      class="comment-dropdown-menu fixed py-1 rounded-lg shadow-xl min-w-[100px] z-[9999] backdrop-blur-sm"
+      :style="{
+        backgroundColor: backgroundColor,
+        border: `1px solid ${backgroundColor}80`,
+        top: `${dropdownPosition.top}px`,
+        left: `${dropdownPosition.left}px`,
+      }"
+    >
+      <button
+        @click="handleEditFromMenu(getCommentById(openMenuId))"
+        class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
+        :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
+      >
+        <Edit class="w-3 h-3" />
+        Edit
+      </button>
+      <button
+        @click="handleDeleteFromMenu(getCommentById(openMenuId))"
+        class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
+        :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
+        :disabled="isDeletingComment === openMenuId"
+      >
+        <Trash2 class="w-3 h-3" />
+        Delete
+      </button>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, onUnmounted, watch, type ComponentPublicInstance } from 'vue'
 import { MessageCircle, Edit, Trash2, MoreVertical } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
@@ -630,6 +636,10 @@ const commentToDeleteName = ref<string>('')
 
 // Avatar error tracking
 const avatarErrors = ref<Set<number>>(new Set())
+
+// Dropdown menu positioning for Teleport
+const menuButtonRefs = ref<Map<number, HTMLElement>>(new Map())
+const dropdownPosition = ref({ top: 0, left: 0 })
 
 // Auth modal using composable
 const {
@@ -828,6 +838,10 @@ const toggleCommentMenu = (commentId: number) => {
     openMenuId.value = null
   } else {
     openMenuId.value = commentId
+    // Calculate dropdown position after menu opens
+    nextTick(() => {
+      updateDropdownPosition(commentId)
+    })
   }
 }
 
@@ -835,12 +849,41 @@ const closeCommentMenu = () => {
   openMenuId.value = null
 }
 
-const handleEditFromMenu = (comment: EventComment) => {
+// Set ref for menu button to calculate dropdown position
+const setMenuButtonRef = (el: Element | ComponentPublicInstance | null, commentId: number) => {
+  if (el) {
+    menuButtonRefs.value.set(commentId, el as HTMLElement)
+  } else {
+    menuButtonRefs.value.delete(commentId)
+  }
+}
+
+// Update dropdown position based on button location
+const updateDropdownPosition = (commentId: number) => {
+  const buttonEl = menuButtonRefs.value.get(commentId)
+  if (buttonEl) {
+    const rect = buttonEl.getBoundingClientRect()
+    dropdownPosition.value = {
+      top: rect.bottom + 4, // 4px gap below button
+      left: rect.right - 100, // Align right edge with button (100px is min-width)
+    }
+  }
+}
+
+// Get comment by ID for teleported dropdown
+const getCommentById = (commentId: number | null): EventComment | undefined => {
+  if (commentId === null) return undefined
+  return comments.value.find(c => c.id === commentId)
+}
+
+const handleEditFromMenu = (comment: EventComment | undefined) => {
+  if (!comment) return
   closeCommentMenu()
   startEditComment(comment)
 }
 
-const handleDeleteFromMenu = (comment: EventComment) => {
+const handleDeleteFromMenu = (comment: EventComment | undefined) => {
+  if (!comment) return
   closeCommentMenu()
   openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')
 }
@@ -1608,190 +1651,466 @@ textarea::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* Laptop-only responsive styles (exclude desktop 1536px+) */
-@media (min-width: 1024px) and (max-width: 1535px) {
-
-  /* Remove the custom laptop sizing to match mobile */
+/* Small laptops 13-inch (1024px-1365px) - scaled to 67.5% matching RSVPSection */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  /* Comment form container - 67.5% scale */
   .comment-form-liquid {
-    border-radius: 1rem !important; /* Reduced from 1.5rem for laptop */
-    padding: 0.75rem !important; /* Reduced from 1rem for laptop */
-    margin-bottom: 0.5rem !important; /* Reduced from 0.75rem for laptop */
+    border-radius: 1.01rem !important; /* 1.5rem * 0.675 */
+    padding: 0.675rem !important; /* 1rem * 0.675 */
+    margin-bottom: 0.5rem !important;
   }
 
-  /* Text sizing - reduced for laptop */
+  /* Text sizing - 67.5% scale */
   .text-sm {
-    font-size: 0.75rem !important; /* 12px - reduced more for laptop */
+    font-size: 0.6rem !important; /* Match RSVPSection location text size */
   }
 
   .text-xs {
-    font-size: 0.625rem !important; /* 10px - reduced more for laptop */
+    font-size: 0.5rem !important; /* 8px */
   }
 
-  /* Button sizing - match mobile */
+  /* Sign-in button - Match RSVPSection exactly */
   .liquid-glass-button {
-    padding: 0.625rem 1.25rem !important; /* Reduced vertical and horizontal padding for laptop */
-    border-radius: 0.75rem !important; /* Reduced from 1rem for laptop */
-    font-size: 0.75rem !important; /* 12px - reduced button text */
+    padding: 0.5rem 1rem !important; /* Match RSVPSection */
+    border-radius: 1.2rem !important; /* Match RSVPSection */
+    font-size: 0.7rem !important; /* 11.2px - Match RSVPSection */
   }
 
-  /* Textarea sizing - match mobile */
+  /* Textarea sizing - 67.5% scale */
   .liquid-glass-textarea {
-    border-radius: 0.75rem !important; /* Reduced from 1rem for laptop */
-    padding: 0.375rem 0.625rem !important; /* Reduced from 0.5rem 0.75rem for laptop */
-    font-size: 0.75rem !important; /* 12px - reduced more for laptop */
+    border-radius: 0.675rem !important; /* 1rem * 0.675 */
+    padding: 0.34rem 0.5rem !important; /* Scaled down */
+    font-size: 0.6rem !important; /* Match text-sm */
   }
 
   /* Comment text content */
   .comment-card-liquid p {
-    font-size: 0.625rem !important; /* 10px - reduced comment text further */
+    font-size: 0.5rem !important; /* 8px */
   }
 
-  /* User name text */
-  .comment-card-liquid .text-sm.font-medium {
-    font-size: 0.75rem !important; /* 12px - reduced user name */
-  }
-
-  /* Comment cards - match mobile */
+  /* Comment cards - 67.5% scale */
   .comment-card-liquid {
-    border-radius: 1rem !important; /* Reduced from 1.5rem for laptop */
-    padding: 0.75rem !important; /* Reduced from 1rem for laptop */
-    margin-bottom: 0.5rem !important; /* Reduced margin between cards for laptop */
+    border-radius: 1.01rem !important; /* 1.5rem * 0.675 */
+    padding: 0.5rem !important; /* Reduced */
+    margin-bottom: 0.4rem !important;
   }
 
-  /* Action buttons - match mobile */
+  /* Action buttons */
   .liquid-glass-action-button {
-    padding: 0.25rem !important; /* Reduced from 0.375rem for laptop */
-    border-radius: 0.5rem !important; /* Reduced from 0.75rem for laptop */
+    padding: 0.2rem !important;
+    border-radius: 0.4rem !important;
   }
 
   .liquid-glass-edit-button {
-    padding: 0.25rem 0.625rem !important; /* Reduced from 0.375rem 0.75rem for laptop */
-    font-size: 0.625rem !important; /* 10px - reduced for laptop */
-    border-radius: 0.5rem !important; /* Reduced from 0.75rem for laptop */
+    padding: 0.2rem 0.5rem !important;
+    font-size: 0.5rem !important; /* 8px */
+    border-radius: 0.4rem !important;
   }
 
-  /* Edit mode container - reduced padding for laptop */
+  /* Edit mode container */
   .comment-card-liquid .space-y-3 {
-    padding-left: 0.5rem !important; /* Reduced from pl-7 */
-    padding-right: 0.5rem !important; /* Reduced from pr-8 */
-    margin-bottom: 0.5rem !important; /* Reduced from mb-4 */
-    padding-top: 0.25rem !important; /* Reduced from pt-1 */
+    padding-left: 0.4rem !important;
+    padding-right: 0.4rem !important;
+    margin-bottom: 0.4rem !important;
+    padding-top: 0.2rem !important;
   }
 
-  /* Edit mode textarea - match comment text size */
+  /* Edit mode textarea */
   .comment-card-liquid .space-y-3 .liquid-glass-textarea {
-    font-size: 0.625rem !important; /* 10px - same as comment text */
+    font-size: 0.5rem !important; /* 8px */
   }
 
   .comment-card-liquid .space-y-3 > * + * {
-    margin-top: 0.5rem !important; /* Reduced from space-y-3 (0.75rem) */
+    margin-top: 0.4rem !important;
   }
 
   /* Edit mode buttons container */
   .comment-card-liquid .space-y-3 .flex.items-center.gap-2 {
-    gap: 0.375rem !important; /* Reduced gap between buttons */
+    gap: 0.3rem !important;
   }
 
   /* Character counter in edit mode */
   .comment-card-liquid .space-y-3 .text-xs {
-    font-size: 0.5rem !important; /* 8px */
+    font-size: 0.4rem !important; /* 6.4px */
   }
 
-  /* Avatar sizing - reduced by 1.5x for laptop */
+  /* Avatar sizing - 67.5% scale */
   .w-8.h-8 {
-    width: 1.33rem !important; /* 21.3px - reduced from 32px by 1.5x */
-    height: 1.33rem !important; /* 21.3px - reduced from 32px by 1.5x */
+    width: 1.35rem !important; /* 2rem * 0.675 */
+    height: 1.35rem !important;
   }
 
-  /* Author info section alignment - reduced gaps and padding for laptop */
+  /* Author info section alignment */
   .comment-card-liquid .flex.items-center.justify-between {
-    padding-left: 0.5rem !important; /* Reduced from pl-3 */
-    padding-right: 0.375rem !important; /* Reduced from pr-2 */
-    padding-top: 0.5rem !important; /* Reduced from pt-3 */
+    padding-left: 0.4rem !important;
+    padding-right: 0.3rem !important;
+    padding-top: 0.4rem !important;
   }
 
   /* Avatar + Name container gap */
   .comment-card-liquid .flex.items-center.gap-2 {
-    gap: 0.375rem !important; /* Reduced from gap-2 (0.5rem) */
+    gap: 0.3rem !important;
   }
 
-  /* Quote mark sizing - reduced by 1.5x for laptop */
+  /* Quote mark sizing - 67.5% scale */
   .comment-card-liquid .text-5xl {
-    font-size: 2rem !important; /* 32px - reduced from 48px (text-5xl) by 1.5x */
+    font-size: 2rem !important; /* Reduced from 3rem */
   }
 
-  /* User name sizing - reduced for laptop */
+  /* User name sizing */
   .comment-card-liquid .text-sm.font-medium {
-    font-size: 0.5rem !important; /* 8px - reduced further */
+    font-size: 0.5rem !important; /* 8px */
   }
 
-  /* "You" badge sizing - reduced for laptop */
+  /* "You" badge sizing */
   .comment-card-liquid .text-\[0\.625rem\] {
-    font-size: 0.4375rem !important; /* 7px - reduced further */
-    padding: 0.0625rem 0.25rem !important; /* Reduced padding further */
+    font-size: 0.4rem !important; /* 6.4px */
+    padding: 0.05rem 0.2rem !important;
   }
 
-  /* Timestamp sizing - reduced for laptop */
+  /* Timestamp sizing */
   .comment-card-liquid .text-xs {
-    font-size: 0.5rem !important; /* 8px - reduced further */
+    font-size: 0.4rem !important; /* 6.4px */
   }
 
-  /* State containers - match mobile */
+  /* State containers - 67.5% scale */
   .liquid-glass-state {
-    border-radius: 1rem !important; /* Reduced from 1.5rem for laptop */
-    padding: 1.5rem !important; /* Reduced from 2rem for laptop */
+    border-radius: 1.01rem !important;
+    padding: 1.35rem !important; /* 2rem * 0.675 */
   }
 
   .liquid-glass-error {
-    border-radius: 0.75rem !important; /* Reduced from 1rem for laptop */
-    padding: 0.625rem !important; /* Reduced from 0.75rem for laptop */
+    border-radius: 0.675rem !important;
+    padding: 0.5rem !important;
   }
 
-  /* Icons sizing - preserve original mobile sizes */
+  /* Icons sizing - 67.5% scale */
   svg.w-6 {
-    width: 1.5rem !important;
-    height: 1.5rem !important;
+    width: 1.01rem !important; /* 1.5rem * 0.675 */
+    height: 1.01rem !important;
   }
 
   svg.w-4 {
-    width: 1rem !important;
-    height: 1rem !important;
+    width: 0.675rem !important; /* 1rem * 0.675 */
+    height: 0.675rem !important;
   }
 
   svg.w-3\.5 {
-    width: 0.875rem !important;
-    height: 0.875rem !important;
+    width: 0.59rem !important;
+    height: 0.59rem !important;
   }
 
   svg.w-3 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
+    width: 0.5rem !important;
+    height: 0.5rem !important;
   }
 
-  /* Comments container - match mobile */
+  /* Comments container height - 67.5% scale */
   .h-\[26rem\] {
-    height: 26rem !important; /* Keep same height as mobile */
+    height: 17.55rem !important; /* 26rem * 0.675 */
   }
 
-  /* Overall comment section spacing - match mobile */
+  /* Overall comment section spacing */
   #comment-section.mb-8 {
-    margin-bottom: 2rem !important; /* mb-8 */
+    margin-bottom: 1.35rem !important; /* 2rem * 0.675 */
   }
 
   /* Character counter and validation messages */
   .text-right.mt-1 {
-    margin-top: 0.25rem !important;
+    margin-top: 0.2rem !important;
   }
 
-  /* Loading spinner sizing */
+  /* Loading spinner sizing - 67.5% scale */
   .w-4.h-4 {
-    width: 1rem !important;
-    height: 1rem !important;
+    width: 0.675rem !important;
+    height: 0.675rem !important;
   }
 
   .w-12.h-12 {
-    width: 3rem !important;
-    height: 3rem !important;
+    width: 2rem !important; /* 3rem * 0.675 */
+    height: 2rem !important;
+  }
+
+  /* Sign-in prompt text in form */
+  .comment-form-liquid .text-center.py-4 {
+    padding-top: 0.675rem !important; /* 1rem * 0.675 */
+    padding-bottom: 0.675rem !important;
+  }
+
+  .comment-form-liquid .text-center .mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Options menu button - keep visible */
+  .comment-options-menu {
+    top: 0.4rem !important;
+    right: 0.4rem !important;
+    z-index: 50 !important;
+  }
+
+  .comment-options-menu button.p-1\.5 {
+    padding: 0.25rem !important;
+  }
+
+  .comment-options-menu button.p-1\.5 svg {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px-1535px) - scaled to 75% */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  /* Comment form container - 75% scale */
+  .comment-form-liquid {
+    border-radius: 1.125rem !important; /* 1.5rem * 0.75 */
+    padding: 0.75rem !important; /* 1rem * 0.75 */
+    margin-bottom: 0.56rem !important;
+  }
+
+  /* Text sizing - 75% scale */
+  .text-sm {
+    font-size: 0.66rem !important; /* Match RSVPSection proportions */
+  }
+
+  .text-xs {
+    font-size: 0.56rem !important;
+  }
+
+  /* Sign-in button - Match RSVPSection proportions for medium laptop */
+  .liquid-glass-button {
+    padding: 0.56rem 1.125rem !important; /* 75% scale */
+    border-radius: 1.125rem !important;
+    font-size: 0.75rem !important; /* 12px */
+  }
+
+  /* Textarea sizing - 75% scale */
+  .liquid-glass-textarea {
+    border-radius: 0.75rem !important;
+    padding: 0.375rem 0.56rem !important;
+    font-size: 0.66rem !important;
+  }
+
+  /* Comment text content */
+  .comment-card-liquid p {
+    font-size: 0.56rem !important;
+  }
+
+  /* Comment cards - 75% scale */
+  .comment-card-liquid {
+    border-radius: 1.125rem !important;
+    padding: 0.56rem !important;
+    margin-bottom: 0.45rem !important;
+  }
+
+  /* Action buttons */
+  .liquid-glass-action-button {
+    padding: 0.225rem !important;
+    border-radius: 0.45rem !important;
+  }
+
+  .liquid-glass-edit-button {
+    padding: 0.225rem 0.56rem !important;
+    font-size: 0.56rem !important;
+    border-radius: 0.45rem !important;
+  }
+
+  /* Edit mode container */
+  .comment-card-liquid .space-y-3 {
+    padding-left: 0.45rem !important;
+    padding-right: 0.45rem !important;
+    margin-bottom: 0.45rem !important;
+    padding-top: 0.225rem !important;
+  }
+
+  /* Edit mode textarea */
+  .comment-card-liquid .space-y-3 .liquid-glass-textarea {
+    font-size: 0.56rem !important;
+  }
+
+  .comment-card-liquid .space-y-3 > * + * {
+    margin-top: 0.45rem !important;
+  }
+
+  /* Edit mode buttons container */
+  .comment-card-liquid .space-y-3 .flex.items-center.gap-2 {
+    gap: 0.34rem !important;
+  }
+
+  /* Character counter in edit mode */
+  .comment-card-liquid .space-y-3 .text-xs {
+    font-size: 0.45rem !important;
+  }
+
+  /* Avatar sizing - 75% scale */
+  .w-8.h-8 {
+    width: 1.5rem !important; /* 2rem * 0.75 */
+    height: 1.5rem !important;
+  }
+
+  /* Author info section alignment */
+  .comment-card-liquid .flex.items-center.justify-between {
+    padding-left: 0.45rem !important;
+    padding-right: 0.34rem !important;
+    padding-top: 0.45rem !important;
+  }
+
+  /* Avatar + Name container gap */
+  .comment-card-liquid .flex.items-center.gap-2 {
+    gap: 0.34rem !important;
+  }
+
+  /* Quote mark sizing - 75% scale */
+  .comment-card-liquid .text-5xl {
+    font-size: 2.25rem !important; /* 3rem * 0.75 */
+  }
+
+  /* User name sizing */
+  .comment-card-liquid .text-sm.font-medium {
+    font-size: 0.56rem !important;
+  }
+
+  /* "You" badge sizing */
+  .comment-card-liquid .text-\[0\.625rem\] {
+    font-size: 0.45rem !important;
+    padding: 0.06rem 0.225rem !important;
+  }
+
+  /* Timestamp sizing */
+  .comment-card-liquid .text-xs {
+    font-size: 0.45rem !important;
+  }
+
+  /* State containers - 75% scale */
+  .liquid-glass-state {
+    border-radius: 1.125rem !important;
+    padding: 1.5rem !important; /* 2rem * 0.75 */
+  }
+
+  .liquid-glass-error {
+    border-radius: 0.75rem !important;
+    padding: 0.56rem !important;
+  }
+
+  /* Icons sizing - 75% scale */
+  svg.w-6 {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+
+  svg.w-4 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
+  svg.w-3\.5 {
+    width: 0.66rem !important;
+    height: 0.66rem !important;
+  }
+
+  svg.w-3 {
+    width: 0.56rem !important;
+    height: 0.56rem !important;
+  }
+
+  /* Comments container height - 75% scale */
+  .h-\[26rem\] {
+    height: 19.5rem !important; /* 26rem * 0.75 */
+  }
+
+  /* Overall comment section spacing */
+  #comment-section.mb-8 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Character counter and validation messages */
+  .text-right.mt-1 {
+    margin-top: 0.225rem !important;
+  }
+
+  /* Loading spinner sizing - 75% scale */
+  .w-4.h-4 {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
+  .w-12.h-12 {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  /* Sign-in prompt text in form */
+  .comment-form-liquid .text-center.py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .comment-form-liquid .text-center .mb-3 {
+    margin-bottom: 0.56rem !important;
+  }
+
+  /* Options menu button - keep visible */
+  .comment-options-menu {
+    top: 0.45rem !important;
+    right: 0.45rem !important;
+  }
+
+  .comment-options-menu button.p-1\.5 {
+    padding: 0.28rem !important;
+  }
+
+  .comment-options-menu button.p-1\.5 svg {
+    width: 0.8rem !important;
+    height: 0.8rem !important;
+  }
+}
+
+/* Teleported dropdown menu - global styles (not scoped) */
+</style>
+
+<style>
+/* Teleported dropdown menu styles - must be unscoped to affect teleported content */
+.comment-dropdown-menu {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Small laptops dropdown sizing */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .comment-dropdown-menu {
+    min-width: 70px !important;
+    padding: 0.25rem 0 !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .comment-dropdown-menu button {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.5rem !important;
+    gap: 0.25rem !important;
+  }
+
+  .comment-dropdown-menu button svg {
+    width: 0.5rem !important;
+    height: 0.5rem !important;
+  }
+}
+
+/* Medium laptops dropdown sizing */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  .comment-dropdown-menu {
+    min-width: 75px !important;
+    padding: 0.28rem 0 !important;
+    border-radius: 0.56rem !important;
+  }
+
+  .comment-dropdown-menu button {
+    padding: 0.34rem 0.56rem !important;
+    font-size: 0.56rem !important;
+    gap: 0.28rem !important;
+  }
+
+  .comment-dropdown-menu button svg {
+    width: 0.56rem !important;
+    height: 0.56rem !important;
   }
 }
 </style>
