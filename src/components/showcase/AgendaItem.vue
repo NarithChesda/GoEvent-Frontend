@@ -205,107 +205,107 @@ const timeText = computed(() => {
 
 /* Small laptops 13-inch (laptop-sm: 1024px) - Scaled to 77.625% (67.5% * 1.15) */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Wrapper gap - 77.625% of mobile 2rem = 1.5525rem */
+  /* Wrapper gap - reduced to give more space to text */
   .agenda-card-wrapper {
-    gap: 1.5525rem; /* 2rem * 0.77625 - increased by 15% */
+    gap: 0.75rem; /* Reduced from 1.5525rem */
   }
 
-  /* Card styling - 77.625% of mobile values */
+  /* Card styling - reduced margins for more text space */
   .agenda-card {
-    padding: 0.77625rem !important; /* 1rem * 0.77625 (p-4 scaled) */
+    padding: 0.5rem !important; /* Reduced padding */
     padding-left: 0 !important; /* Keep padding-left: 0 from mobile */
-    margin-left: 0.77625rem !important; /* 1rem * 0.77625 - increased by 15% */
+    margin-left: 0.5rem !important; /* Reduced from 0.77625rem */
   }
 
   /* Icon sizing - 77.625% of mobile 3rem = 2.32875rem */
   .agenda-icon-large {
-    width: 2.32875rem !important; /* 3rem * 0.77625 - increased by 15% */
-    height: 2.32875rem !important; /* 3rem * 0.77625 - increased by 15% */
+    width: 2rem !important; /* Slightly smaller icon */
+    height: 2rem !important;
   }
 
   /* Min height for content - scaled to 77.625% from 3rem */
   .min-h-\[3rem\] {
-    min-height: 2.32875rem !important; /* 3rem * 0.77625 */
+    min-height: 2rem !important;
   }
 
   /* Title - match tab date text */
   h3 {
     font-size: 0.625rem !important; /* 10px - match AgendaWedding tab date text */
-    line-height: 1.8 !important; /* Match mobile line-height */
-    padding-top: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
-    padding-bottom: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
+    line-height: 1.6 !important; /* Reduced from 1.8 */
+    padding-top: 0.25rem !important; /* Reduced padding */
+    padding-bottom: 0.25rem !important;
   }
 
   /* Time text - match description text */
   .text-sm {
-    font-size: 0.75rem !important; /* 12px - match AgendaWedding description text */
+    font-size: 0.625rem !important; /* 10px - smaller for laptop */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
-  /* Divider elements - 77.625% of mobile to maintain ratio */
+  /* Divider elements - reduced width for tighter layout */
   .vertical-divider {
-    width: 0.77625px; /* 1px * 0.77625 */
-    min-height: 46.575px; /* 60px * 0.77625 */
-    opacity: 0.4; /* Match mobile opacity */
+    width: 1px;
+    min-height: 40px; /* Reduced from 46.575px */
+    opacity: 0.4;
   }
 
   .horizontal-connector {
-    width: 19.40625px; /* 25px * 0.77625 - increased by 15% */
-    height: 0.77625px; /* 1px * 0.77625 */
-    opacity: 0.4; /* Match mobile opacity */
+    width: 12px; /* Reduced from 19.40625px */
+    height: 1px;
+    opacity: 0.4;
   }
 }
 
 /* Medium laptops 14-15 inch (laptop-md: 1366px+) - Scaled to 86.25% (75% * 1.15) */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Wrapper gap - 86.25% of mobile 2rem = 1.725rem */
+  /* Wrapper gap - reduced to give more space to text */
   .agenda-card-wrapper {
-    gap: 1.725rem; /* 2rem * 0.8625 - increased by 15% */
+    gap: 1rem; /* Reduced from 1.725rem */
   }
 
-  /* Card styling - 86.25% of mobile values */
+  /* Card styling - reduced margins for more text space */
   .agenda-card {
-    padding: 0.8625rem !important; /* 1rem * 0.8625 (p-4 scaled) */
+    padding: 0.625rem !important; /* Reduced padding */
     padding-left: 0 !important; /* Keep padding-left: 0 from mobile */
-    margin-left: 0.8625rem !important; /* 1rem * 0.8625 - increased by 15% */
+    margin-left: 0.625rem !important; /* Reduced from 0.8625rem */
   }
 
-  /* Icon sizing - 86.25% of mobile 3rem = 2.5875rem */
+  /* Icon sizing - slightly reduced */
   .agenda-icon-large {
-    width: 2.5875rem !important; /* 3rem * 0.8625 - increased by 15% */
-    height: 2.5875rem !important; /* 3rem * 0.8625 - increased by 15% */
+    width: 2.25rem !important; /* Reduced from 2.5875rem */
+    height: 2.25rem !important;
   }
 
-  /* Min height for content - scaled to 86.25% from 3rem */
+  /* Min height for content */
   .min-h-\[3rem\] {
-    min-height: 2.5875rem !important; /* 3rem * 0.8625 */
+    min-height: 2.25rem !important;
   }
 
   /* Title - match tab date text */
   h3 {
     font-size: 0.625rem !important; /* 10px - match AgendaWedding tab date text */
-    line-height: 1.8 !important; /* Match mobile line-height */
-    padding-top: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
-    padding-bottom: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
+    line-height: 1.6 !important; /* Reduced from 1.8 */
+    padding-top: 0.3rem !important; /* Reduced padding */
+    padding-bottom: 0.3rem !important;
   }
 
   /* Time text - match description text */
   .text-sm {
-    font-size: 0.75rem !important; /* 12px - match AgendaWedding description text */
+    font-size: 0.6875rem !important; /* 11px - slightly larger than small laptop */
     margin-top: 0 !important; /* Match mobile mt-0 */
   }
 
-  /* Divider elements - 86.25% of mobile to maintain ratio */
+  /* Divider elements - reduced width for tighter layout */
   .vertical-divider {
-    width: 0.8625px; /* 1px * 0.8625 */
-    min-height: 51.75px; /* 60px * 0.8625 */
-    opacity: 0.4; /* Match mobile opacity */
+    width: 1px;
+    min-height: 45px; /* Reduced from 51.75px */
+    opacity: 0.4;
   }
 
   .horizontal-connector {
-    width: 21.5625px; /* 25px * 0.8625 - increased by 15% */
-    height: 0.8625px; /* 1px * 0.8625 */
-    opacity: 0.4; /* Match mobile opacity */
+    width: 15px; /* Reduced from 21.5625px */
+    height: 1px;
+    opacity: 0.4;
   }
 }
 

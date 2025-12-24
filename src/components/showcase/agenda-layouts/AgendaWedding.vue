@@ -590,13 +590,17 @@ watch(
     font-size: 0.75rem !important; /* 12px - match DressCodeSection description */
   }
 
-  /* Tab bar compact sizing */
+  /* Tab bar compact sizing - scaled down for laptop */
+  .tab-bar {
+    gap: 0.375rem !important; /* Reduced gap between tabs */
+  }
+
   .tab-button {
-    padding: 0.625rem 1.25rem !important;
+    padding: 0.4rem 0.875rem !important; /* Scaled down from 0.625rem 1.25rem */
   }
 
   .tab-date {
-    font-size: 0.625rem !important; /* 10px - match DressCodeSection tab text */
+    font-size: 0.5625rem !important; /* 9px - scaled down from 10px */
   }
 }
 
@@ -615,9 +619,13 @@ watch(
     font-size: 0.75rem !important; /* 12px - match DressCodeSection description */
   }
 
-  /* Tab bar larger gap like DressCodeSection */
+  /* Tab bar compact sizing - scaled down for laptop */
+  .tab-bar {
+    gap: 0.5rem !important; /* Reduced gap between tabs */
+  }
+
   .tab-button {
-    padding: 0.75rem 1.75rem !important; /* 640px+ sizing */
+    padding: 0.5rem 1rem !important; /* Scaled down from 0.75rem 1.75rem */
   }
 
   .tab-date {
