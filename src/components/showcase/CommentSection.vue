@@ -1643,7 +1643,7 @@ textarea::-webkit-scrollbar-thumb:hover {
 
   /* Comment text content */
   .comment-card-liquid p {
-    font-size: 0.75rem !important; /* 12px - reduced comment text */
+    font-size: 0.625rem !important; /* 10px - reduced comment text further */
   }
 
   /* User name text */
@@ -1666,14 +1666,74 @@ textarea::-webkit-scrollbar-thumb:hover {
 
   .liquid-glass-edit-button {
     padding: 0.25rem 0.625rem !important; /* Reduced from 0.375rem 0.75rem for laptop */
-    font-size: 0.75rem !important; /* text-xs */
+    font-size: 0.625rem !important; /* 10px - reduced for laptop */
     border-radius: 0.5rem !important; /* Reduced from 0.75rem for laptop */
   }
 
-  /* Avatar sizing - match mobile */
+  /* Edit mode container - reduced padding for laptop */
+  .comment-card-liquid .space-y-3 {
+    padding-left: 0.5rem !important; /* Reduced from pl-7 */
+    padding-right: 0.5rem !important; /* Reduced from pr-8 */
+    margin-bottom: 0.5rem !important; /* Reduced from mb-4 */
+    padding-top: 0.25rem !important; /* Reduced from pt-1 */
+  }
+
+  /* Edit mode textarea - match comment text size */
+  .comment-card-liquid .space-y-3 .liquid-glass-textarea {
+    font-size: 0.625rem !important; /* 10px - same as comment text */
+  }
+
+  .comment-card-liquid .space-y-3 > * + * {
+    margin-top: 0.5rem !important; /* Reduced from space-y-3 (0.75rem) */
+  }
+
+  /* Edit mode buttons container */
+  .comment-card-liquid .space-y-3 .flex.items-center.gap-2 {
+    gap: 0.375rem !important; /* Reduced gap between buttons */
+  }
+
+  /* Character counter in edit mode */
+  .comment-card-liquid .space-y-3 .text-xs {
+    font-size: 0.5rem !important; /* 8px */
+  }
+
+  /* Avatar sizing - reduced by 1.5x for laptop */
   .w-8.h-8 {
-    width: 2rem !important; /* 32px - w-8 */
-    height: 2rem !important; /* 32px - h-8 */
+    width: 1.33rem !important; /* 21.3px - reduced from 32px by 1.5x */
+    height: 1.33rem !important; /* 21.3px - reduced from 32px by 1.5x */
+  }
+
+  /* Author info section alignment - reduced gaps and padding for laptop */
+  .comment-card-liquid .flex.items-center.justify-between {
+    padding-left: 0.5rem !important; /* Reduced from pl-3 */
+    padding-right: 0.375rem !important; /* Reduced from pr-2 */
+    padding-top: 0.5rem !important; /* Reduced from pt-3 */
+  }
+
+  /* Avatar + Name container gap */
+  .comment-card-liquid .flex.items-center.gap-2 {
+    gap: 0.375rem !important; /* Reduced from gap-2 (0.5rem) */
+  }
+
+  /* Quote mark sizing - reduced by 1.5x for laptop */
+  .comment-card-liquid .text-5xl {
+    font-size: 2rem !important; /* 32px - reduced from 48px (text-5xl) by 1.5x */
+  }
+
+  /* User name sizing - reduced for laptop */
+  .comment-card-liquid .text-sm.font-medium {
+    font-size: 0.5rem !important; /* 8px - reduced further */
+  }
+
+  /* "You" badge sizing - reduced for laptop */
+  .comment-card-liquid .text-\[0\.625rem\] {
+    font-size: 0.4375rem !important; /* 7px - reduced further */
+    padding: 0.0625rem 0.25rem !important; /* Reduced padding further */
+  }
+
+  /* Timestamp sizing - reduced for laptop */
+  .comment-card-liquid .text-xs {
+    font-size: 0.5rem !important; /* 8px - reduced further */
   }
 
   /* State containers - match mobile */
