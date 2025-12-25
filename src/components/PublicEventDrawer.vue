@@ -877,7 +877,8 @@ const handleCancelRegistration = async () => {
 const shareEvent = async () => {
   if (!event.value) return
 
-  const shareUrl = `${window.location.origin}/events/${event.value.id}`
+  // Use SSR redirect URL for proper meta tags when shared
+  const shareUrl = `https://goevent.online/e/${event.value.id}`
   const shareData = {
     title: event.value.title,
     text: event.value.short_description || event.value.title,

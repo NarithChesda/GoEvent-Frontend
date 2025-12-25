@@ -744,7 +744,8 @@ const loadEvent = async () => {
 
 const copyLink = async () => {
   const eventId = route.params.id as string
-  const url = `${window.location.origin}/events/${eventId}`
+  // Use SSR redirect URL for proper meta tags when shared
+  const url = `https://goevent.online/e/${eventId}`
   try {
     await navigator.clipboard.writeText(url)
     linkCopied.value = true
@@ -812,7 +813,8 @@ const shareEvent = async () => {
   if (!event.value) return
 
   const eventId = route.params.id as string
-  const shareUrl = `${window.location.origin}/events/${eventId}`
+  // Use SSR redirect URL for proper meta tags when shared
+  const shareUrl = `https://goevent.online/e/${eventId}`
   const shareData = {
     title: event.value.title,
     text: event.value.short_description || event.value.title,
