@@ -182,25 +182,61 @@
                   </span>
                 </div>
 
-                <!-- Actions for pending -->
-                <div v-if="donation.status === 'pending' && canEdit" class="flex items-center gap-1.5">
+                <!-- Actions when host can edit -->
+                <div v-if="canEdit" class="flex items-center gap-1.5">
+                  <!-- Receipt button -->
                   <button
-                    @click.stop="$emit('verify', donation)"
-                    class="px-2.5 py-1 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-1"
+                    v-if="donation.receipt_image"
+                    @click.stop="$emit('view-receipt', donation)"
+                    class="px-2.5 py-1 text-xs font-medium text-sky-600 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors flex items-center gap-1"
+                    title="View receipt"
                   >
-                    <Check class="w-3 h-3" />
-                    <span class="hidden sm:inline">Verify</span>
+                    <ImageIcon class="w-3 h-3" />
+                    <span class="hidden sm:inline">Receipt</span>
                   </button>
+
+                  <!-- Pending: Show both Verify and Reject -->
+                  <template v-if="donation.status === 'pending'">
+                    <button
+                      @click.stop="$emit('verify', donation)"
+                      class="px-2.5 py-1 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <Check class="w-3 h-3" />
+                      <span class="hidden sm:inline">Verify</span>
+                    </button>
+                    <button
+                      @click.stop="$emit('reject', donation)"
+                      class="px-2.5 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <X class="w-3 h-3" />
+                      <span class="hidden sm:inline">Reject</span>
+                    </button>
+                  </template>
+
+                  <!-- Verified: Allow changing to Rejected -->
                   <button
+                    v-else-if="donation.status === 'verified'"
                     @click.stop="$emit('reject', donation)"
-                    class="px-2.5 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center gap-1"
+                    class="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors flex items-center gap-1"
+                    title="Change to rejected"
                   >
                     <X class="w-3 h-3" />
                     <span class="hidden sm:inline">Reject</span>
                   </button>
+
+                  <!-- Rejected: Allow changing to Verified -->
+                  <button
+                    v-else-if="donation.status === 'rejected'"
+                    @click.stop="$emit('verify', donation)"
+                    class="px-2.5 py-1 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors flex items-center gap-1"
+                    title="Change to verified"
+                  >
+                    <Check class="w-3 h-3" />
+                    <span class="hidden sm:inline">Verify</span>
+                  </button>
                 </div>
 
-                <!-- Receipt link -->
+                <!-- Receipt link when host cannot edit -->
                 <button
                   v-else-if="donation.receipt_image"
                   @click.stop="$emit('view-receipt', donation)"

@@ -141,6 +141,29 @@ export type {
   ReviewFilters,
 } from './api/types/review.types'
 
+// Donation types
+export type {
+  DonationStatus,
+  DonationType,
+  DonationCurrency,
+  DonationUserInfo,
+  DonationPaymentMethodInfo,
+  DonationItemCategoryInfo,
+  DonationItemCategory,
+  CreateDonationItemCategoryRequest,
+  DonationCategorySummary,
+  EventDonation,
+  CreateCashDonationRequest,
+  CreateItemDonationRequest,
+  CreateDonationRequest,
+  UpdateDonationRequest,
+  VerifyDonationRequest,
+  VerifyDonationResponse,
+  FundraisingProgress,
+  DonationFilters,
+  EventFundraisingSettings,
+} from './api/types/donation.types'
+
 // Invitation types
 export type {
   InvitationEventDetails,
@@ -237,6 +260,9 @@ export {
   serviceCategoriesService,
   serviceListingsService,
 } from './api/modules/services.service'
+
+// Donation service
+export { donationService } from './api/modules/donation.service'
 
 // ============================================================================
 // NOTES FOR DEVELOPERS

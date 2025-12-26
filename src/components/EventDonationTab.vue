@@ -26,21 +26,50 @@
       </button>
     </div>
 
-    <!-- Main Content (when fundraising is enabled) -->
+    <!-- Loading State -->
+    <div
+      v-else-if="isLoading"
+      class="rounded-3xl border border-white/70 bg-white p-8 sm:p-12 shadow-lg shadow-slate-200/60 text-center"
+    >
+      <Loader2 class="w-12 h-12 sm:w-16 sm:h-16 text-emerald-500 mx-auto mb-3 sm:mb-4 animate-spin" />
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Loading Donations</h3>
+      <p class="text-xs sm:text-sm text-slate-600">Fetching fundraising data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div
+      v-else-if="error"
+      class="rounded-3xl border border-red-200/70 bg-red-50 p-8 sm:p-12 shadow-lg shadow-red-200/60 text-center"
+    >
+      <AlertCircle class="w-12 h-12 sm:w-16 sm:h-16 text-red-400 mx-auto mb-3 sm:mb-4" />
+      <h3 class="text-base sm:text-lg font-semibold text-red-900 mb-1.5 sm:mb-2">Failed to Load Donations</h3>
+      <p class="text-xs sm:text-sm text-red-700 mb-4 sm:mb-6 max-w-md mx-auto">
+        {{ error }}
+      </p>
+      <button
+        @click="loadData"
+        class="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-all duration-200 mx-auto"
+      >
+        <RefreshCw class="w-4 h-4" />
+        Retry
+      </button>
+    </div>
+
+    <!-- Main Content (when fundraising is enabled and data loaded) -->
     <template v-else>
       <!-- Unified Content Area -->
       <div class="space-y-6">
         <!-- Summary View -->
         <DonationSummaryView
-          :progress="mockProgress"
-          :cash-donations-count="mockCashDonationsCount"
-          :item-donations-count="mockItemDonationsCount"
-          :pending-donations-count="mockPendingDonationsCount"
+          :progress="progress"
+          :cash-donations-count="cashDonationsCount"
+          :item-donations-count="itemDonationsCount"
+          :pending-donations-count="pendingDonationsCount"
         />
 
         <!-- Donations List View -->
         <DonationListView
-          :donations="mockDonations"
+          :donations="donations"
           :can-edit="canEdit"
           @verify="handleVerifyDonation"
           @reject="handleRejectDonation"
@@ -49,7 +78,7 @@
 
         <!-- Item Categories View -->
         <DonationCategoriesView
-          :categories="mockCategories"
+          :categories="categories"
           :can-edit="canEdit"
           @add-category="handleAddCategory"
           @edit-category="handleEditCategory"
@@ -57,15 +86,107 @@
         />
       </div>
     </template>
+
+    <!-- Rejection Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showRejectModal"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <!-- Backdrop -->
+          <div
+            class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            @click="closeRejectModal"
+          ></div>
+
+          <!-- Modal Content -->
+          <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 z-10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <X class="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900">Reject Donation</h3>
+                <p class="text-sm text-slate-500">Provide a reason for rejection</p>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                Rejection Reason <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                v-model="rejectionReason"
+                rows="3"
+                class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none text-sm"
+                placeholder="Explain why this donation is being rejected..."
+              ></textarea>
+              <p v-if="rejectError" class="mt-1.5 text-xs text-red-600">{{ rejectError }}</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+              <button
+                @click="closeRejectModal"
+                :disabled="isRejecting"
+                class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                @click="confirmRejectDonation"
+                :disabled="isRejecting || !rejectionReason.trim()"
+                class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Loader2 v-if="isRejecting" class="w-4 h-4 animate-spin" />
+                <span>{{ isRejecting ? 'Rejecting...' : 'Reject Donation' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Receipt Image Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showReceiptModal && receiptImageUrl"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <!-- Backdrop -->
+          <div
+            class="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            @click="closeReceiptModal"
+          ></div>
+
+          <!-- Modal Content -->
+          <div class="relative max-w-3xl max-h-[90vh] z-10">
+            <button
+              @click="closeReceiptModal"
+              class="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors"
+            >
+              <X class="w-6 h-6" />
+            </button>
+            <img
+              :src="receiptImageUrl"
+              alt="Donation Receipt"
+              class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain"
+            />
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Heart } from 'lucide-vue-next'
+import { ref, computed, onMounted, watch } from 'vue'
+import { Heart, Loader2, AlertCircle, RefreshCw, X } from 'lucide-vue-next'
 import DonationSummaryView from './donation/DonationSummaryView.vue'
 import DonationListView from './donation/DonationListView.vue'
 import DonationCategoriesView from './donation/DonationCategoriesView.vue'
+import { donationService, apiClient } from '@/services/api'
 import type { Event } from '@/services/api'
 import type {
   EventDonation,
@@ -85,298 +206,322 @@ const emit = defineEmits<{
   'enable-fundraising': []
 }>()
 
+// ============================================
+// STATE
+// ============================================
+
+// Loading and error states
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+
+// Data
+const donations = ref<EventDonation[]>([])
+const categories = ref<DonationItemCategory[]>([])
+const progress = ref<FundraisingProgress>({
+  goal: null,
+  currency: 'USD',
+  total_raised: '0.00',
+  total_donors: 0,
+  percentage: 0,
+  recent_donations: []
+})
+
+// Rejection modal state
+const showRejectModal = ref(false)
+const donationToReject = ref<EventDonation | null>(null)
+const rejectionReason = ref('')
+const isRejecting = ref(false)
+const rejectError = ref<string | null>(null)
+
+// Receipt modal state
+const showReceiptModal = ref(false)
+const receiptImageUrl = ref<string | null>(null)
+
+// ============================================
+// COMPUTED
+// ============================================
+
 // Check if fundraising is enabled
 const isFundraisingEnabled = computed(() => {
   return props.event.is_fundraising === true
 })
 
+// Count donations by type and status
+const cashDonationsCount = computed(() => {
+  return donations.value.filter(d => d.donation_type === 'cash' && d.status === 'verified').length
+})
+
+const itemDonationsCount = computed(() => {
+  return donations.value.filter(d => d.donation_type === 'item' && d.status === 'verified').length
+})
+
+const pendingDonationsCount = computed(() => {
+  return donations.value.filter(d => d.status === 'pending').length
+})
+
 // ============================================
-// MOCK DATA - Replace with API calls later
+// DATA FETCHING
 // ============================================
 
-const mockProgress: FundraisingProgress = {
-  goal: '50000.00',
-  currency: 'USD',
-  total_raised: '12500.00',
-  total_donors: 45,
-  percentage: 25,
-  recent_donations: [
-    {
-      id: 1,
-      display_name: 'John Smith',
-      donation_type: 'cash',
-      amount: '500.00',
-      currency: 'USD',
-      item_category: null,
-      item_category_info: null,
-      item_name: '',
-      item_quantity: null,
-      item_unit: '',
-      estimated_value: null,
-      message: 'Happy to support this cause!',
-      is_anonymous: false,
-      donation_display: '$500.00 USD',
-      verified_at: new Date(Date.now() - 3600000).toISOString(),
-      created_at: new Date(Date.now() - 7200000).toISOString()
-    },
-    {
-      id: 2,
-      display_name: 'Local Grocery Store',
-      donation_type: 'item',
-      amount: null,
-      currency: 'USD',
-      item_category: 1,
-      item_category_info: { id: 1, name: 'Instant Noodles', unit: 'pack' },
-      item_name: 'Mama Shrimp Flavor',
-      item_quantity: 50,
-      item_unit: '',
-      estimated_value: '25.00',
-      message: 'Hope this helps the families!',
-      is_anonymous: false,
-      donation_display: 'Instant Noodles: 50 pack',
-      verified_at: new Date(Date.now() - 86400000).toISOString(),
-      created_at: new Date(Date.now() - 90000000).toISOString()
-    },
-    {
-      id: 3,
-      display_name: 'Anonymous',
-      donation_type: 'cash',
-      amount: '1000.00',
-      currency: 'USD',
-      item_category: null,
-      item_category_info: null,
-      item_name: '',
-      item_quantity: null,
-      item_unit: '',
-      estimated_value: null,
-      message: '',
-      is_anonymous: true,
-      donation_display: '$1,000.00 USD',
-      verified_at: new Date(Date.now() - 172800000).toISOString(),
-      created_at: new Date(Date.now() - 180000000).toISOString()
+/**
+ * Load all donation data from the API
+ * Fetches donations, progress, and item categories in parallel
+ */
+async function loadData(): Promise<void> {
+  if (!isFundraisingEnabled.value) return
+
+  isLoading.value = true
+  error.value = null
+
+  try {
+    // Fetch all data in parallel for better performance
+    const [donationsResponse, progressResponse, categoriesResponse] = await Promise.all([
+      donationService.getDonations(props.eventId, {
+        ordering: '-created_at'
+      }),
+      donationService.getFundraisingProgress(props.eventId),
+      donationService.getItemCategories(props.eventId, {
+        ordering: 'display_order'
+      })
+    ])
+
+    // Handle donations response
+    if (donationsResponse.success && donationsResponse.data) {
+      donations.value = donationsResponse.data.results
+    } else {
+      throw new Error(donationsResponse.message || 'Failed to load donations')
     }
-  ]
+
+    // Handle progress response
+    if (progressResponse.success && progressResponse.data) {
+      progress.value = progressResponse.data
+    } else {
+      // Progress endpoint might fail if no donations yet - use defaults
+      console.warn('Could not load progress:', progressResponse.message)
+    }
+
+    // Handle categories response
+    if (categoriesResponse.success && categoriesResponse.data) {
+      categories.value = categoriesResponse.data.results
+    } else {
+      // Categories might be empty - this is OK
+      console.warn('Could not load categories:', categoriesResponse.message)
+    }
+  } catch (err) {
+    console.error('Error loading donation data:', err)
+    error.value = err instanceof Error ? err.message : 'An unexpected error occurred'
+  } finally {
+    isLoading.value = false
+  }
 }
-
-const mockCashDonationsCount = 32
-const mockItemDonationsCount = 13
-const mockPendingDonationsCount = 5
-
-const mockDonations: EventDonation[] = [
-  {
-    id: 1,
-    event: props.eventId,
-    user: 42,
-    user_info: {
-      id: 42,
-      email: 'john@example.com',
-      username: 'john_donor',
-      first_name: 'John',
-      last_name: 'Smith'
-    },
-    donor_name: 'John Smith',
-    donor_email: 'john@example.com',
-    donor_phone: '+1234567890',
-    donation_type: 'cash',
-    amount: '500.00',
-    currency: 'USD',
-    item_category: null,
-    item_category_info: null,
-    item_name: '',
-    item_description: '',
-    item_quantity: null,
-    item_unit: '',
-    estimated_value: null,
-    message: 'Happy to support this cause!',
-    receipt_image: '/media/donation_receipts/receipt_001.webp',
-    is_anonymous: false,
-    status: 'verified',
-    verified_by: 1,
-    verified_at: new Date(Date.now() - 3600000).toISOString(),
-    rejection_reason: '',
-    display_name: 'John Smith',
-    donation_display: '$500.00 USD',
-    can_be_edited: false,
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-    updated_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: 2,
-    event: props.eventId,
-    user: 43,
-    user_info: {
-      id: 43,
-      email: 'jane@example.com',
-      username: 'jane_doe'
-    },
-    donor_name: 'Jane Doe',
-    donor_email: 'jane@example.com',
-    donation_type: 'cash',
-    amount: '250.00',
-    currency: 'USD',
-    item_category: null,
-    item_category_info: null,
-    is_anonymous: false,
-    status: 'pending',
-    display_name: 'Jane Doe',
-    donation_display: '$250.00 USD',
-    can_be_edited: true,
-    created_at: new Date(Date.now() - 1800000).toISOString(),
-    updated_at: new Date(Date.now() - 1800000).toISOString()
-  },
-  {
-    id: 3,
-    event: props.eventId,
-    donor_name: 'Local Grocery Store',
-    donor_email: 'store@example.com',
-    donation_type: 'item',
-    amount: null,
-    currency: 'USD',
-    item_category: 1,
-    item_category_info: { id: 1, name: 'Instant Noodles', unit: 'pack' },
-    item_name: 'Mama Shrimp Flavor',
-    item_description: 'Popular Thai instant noodles',
-    item_quantity: 50,
-    item_unit: '',
-    estimated_value: '25.00',
-    message: 'Hope this helps!',
-    receipt_image: '/media/donation_receipts/noodles_photo.webp',
-    is_anonymous: false,
-    status: 'verified',
-    verified_by: 1,
-    verified_at: new Date(Date.now() - 86400000).toISOString(),
-    display_name: 'Local Grocery Store',
-    donation_display: 'Instant Noodles: 50 pack',
-    can_be_edited: false,
-    created_at: new Date(Date.now() - 90000000).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: 4,
-    event: props.eventId,
-    donor_name: 'Water Company Inc',
-    donor_email: 'water@example.com',
-    donation_type: 'item',
-    amount: null,
-    currency: 'USD',
-    item_category: 2,
-    item_category_info: { id: 2, name: 'Bottled Water', unit: 'case' },
-    item_name: 'Spring Water',
-    item_description: '24-bottle cases of drinking water',
-    item_quantity: 30,
-    item_unit: '',
-    estimated_value: '150.00',
-    message: 'Stay hydrated!',
-    is_anonymous: false,
-    status: 'pending',
-    display_name: 'Water Company Inc',
-    donation_display: 'Bottled Water: 30 case',
-    can_be_edited: true,
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    updated_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: 5,
-    event: props.eventId,
-    donor_name: 'Anonymous Donor',
-    donor_email: 'anon@example.com',
-    donation_type: 'cash',
-    amount: '100.00',
-    currency: 'USD',
-    item_category: null,
-    item_category_info: null,
-    is_anonymous: true,
-    status: 'rejected',
-    rejection_reason: 'Receipt image is unclear. Please upload a clearer image.',
-    display_name: 'Anonymous',
-    donation_display: '$100.00 USD',
-    can_be_edited: false,
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  }
-]
-
-const mockCategories: DonationItemCategory[] = [
-  {
-    id: 1,
-    event: props.eventId,
-    name: 'Instant Noodles',
-    unit: 'pack',
-    target_quantity: 500,
-    description: 'Any brand of instant noodles',
-    display_order: 0,
-    is_active: true,
-    total_quantity: 245,
-    donation_count: 12,
-    progress_percentage: 49.0,
-    created_at: new Date(Date.now() - 604800000).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: 2,
-    event: props.eventId,
-    name: 'Bottled Water',
-    unit: 'case',
-    target_quantity: 100,
-    description: '24-bottle cases of drinking water',
-    display_order: 1,
-    is_active: true,
-    total_quantity: 85,
-    donation_count: 8,
-    progress_percentage: 85.0,
-    created_at: new Date(Date.now() - 604800000).toISOString(),
-    updated_at: new Date(Date.now() - 172800000).toISOString()
-  },
-  {
-    id: 3,
-    event: props.eventId,
-    name: 'Canned Food',
-    unit: 'can',
-    target_quantity: 200,
-    description: 'Canned fish, meat, or vegetables',
-    display_order: 2,
-    is_active: true,
-    total_quantity: 45,
-    donation_count: 5,
-    progress_percentage: 22.5,
-    created_at: new Date(Date.now() - 432000000).toISOString(),
-    updated_at: new Date(Date.now() - 259200000).toISOString()
-  }
-]
 
 // ============================================
-// EVENT HANDLERS (placeholder for future API)
+// DONATION VERIFICATION
 // ============================================
 
-const handleVerifyDonation = (donation: EventDonation) => {
-  console.log('Verify donation:', donation.id)
-  // TODO: Call API to verify donation
+/**
+ * Verify a pending donation
+ * Updates the donation status optimistically and syncs with API
+ */
+async function handleVerifyDonation(donation: EventDonation): Promise<void> {
+  // Optimistic update
+  const originalStatus = donation.status
+  const donationIndex = donations.value.findIndex(d => d.id === donation.id)
+  if (donationIndex !== -1) {
+    donations.value[donationIndex] = {
+      ...donations.value[donationIndex],
+      status: 'verified'
+    }
+  }
+
+  try {
+    const response = await donationService.verifyDonation(props.eventId, donation.id)
+
+    if (response.success && response.data) {
+      // Update with the actual response data
+      if (donationIndex !== -1) {
+        donations.value[donationIndex] = response.data.donation
+      }
+
+      // Refresh progress to reflect the new verified donation
+      await refreshProgress()
+    } else {
+      // Revert optimistic update on failure
+      if (donationIndex !== -1) {
+        donations.value[donationIndex] = {
+          ...donations.value[donationIndex],
+          status: originalStatus
+        }
+      }
+      console.error('Failed to verify donation:', response.message)
+    }
+  } catch (err) {
+    // Revert optimistic update on error
+    if (donationIndex !== -1) {
+      donations.value[donationIndex] = {
+        ...donations.value[donationIndex],
+        status: originalStatus
+      }
+    }
+    console.error('Error verifying donation:', err)
+  }
 }
 
-const handleRejectDonation = (donation: EventDonation) => {
-  console.log('Reject donation:', donation.id)
-  // TODO: Show rejection modal and call API
+/**
+ * Open the rejection modal for a donation
+ */
+function handleRejectDonation(donation: EventDonation): void {
+  donationToReject.value = donation
+  rejectionReason.value = ''
+  rejectError.value = null
+  showRejectModal.value = true
 }
 
-const handleViewReceipt = (donation: EventDonation) => {
-  console.log('View receipt:', donation.receipt_image)
-  // TODO: Open image modal
+/**
+ * Close the rejection modal
+ */
+function closeRejectModal(): void {
+  if (isRejecting.value) return
+  showRejectModal.value = false
+  donationToReject.value = null
+  rejectionReason.value = ''
+  rejectError.value = null
 }
 
-const handleAddCategory = () => {
-  console.log('Add category')
-  // TODO: Show add category modal
+/**
+ * Confirm and process the donation rejection
+ */
+async function confirmRejectDonation(): Promise<void> {
+  if (!donationToReject.value || !rejectionReason.value.trim()) {
+    rejectError.value = 'Please provide a rejection reason'
+    return
+  }
+
+  isRejecting.value = true
+  rejectError.value = null
+
+  const donation = donationToReject.value
+  const donationIndex = donations.value.findIndex(d => d.id === donation.id)
+
+  try {
+    const response = await donationService.rejectDonation(
+      props.eventId,
+      donation.id,
+      rejectionReason.value.trim()
+    )
+
+    if (response.success && response.data) {
+      // Update the donation in the list
+      if (donationIndex !== -1) {
+        donations.value[donationIndex] = response.data.donation
+      }
+
+      // Reset state and close modal
+      isRejecting.value = false
+      showRejectModal.value = false
+      donationToReject.value = null
+      rejectionReason.value = ''
+      rejectError.value = null
+    } else {
+      rejectError.value = response.message || 'Failed to reject donation'
+    }
+  } catch (err) {
+    console.error('Error rejecting donation:', err)
+    rejectError.value = err instanceof Error ? err.message : 'An unexpected error occurred'
+  } finally {
+    isRejecting.value = false
+  }
 }
 
-const handleEditCategory = (category: DonationItemCategory) => {
+// ============================================
+// RECEIPT VIEWING
+// ============================================
+
+/**
+ * Open the receipt image modal
+ */
+function handleViewReceipt(donation: EventDonation): void {
+  if (!donation.receipt_image) return
+
+  // Build the full URL for the receipt image
+  receiptImageUrl.value = apiClient.getProfilePictureUrl(donation.receipt_image)
+  showReceiptModal.value = true
+}
+
+/**
+ * Close the receipt modal
+ */
+function closeReceiptModal(): void {
+  showReceiptModal.value = false
+  receiptImageUrl.value = null
+}
+
+// ============================================
+// CATEGORY MANAGEMENT (placeholder handlers)
+// ============================================
+
+function handleAddCategory(): void {
+  console.log('Add category - to be implemented')
+  // TODO: Implement category creation modal
+}
+
+function handleEditCategory(category: DonationItemCategory): void {
   console.log('Edit category:', category.id)
-  // TODO: Show edit category modal
+  // TODO: Implement category edit modal
 }
 
-const handleDeleteCategory = (category: DonationItemCategory) => {
+function handleDeleteCategory(category: DonationItemCategory): void {
   console.log('Delete category:', category.id)
-  // TODO: Show delete confirmation modal
+  // TODO: Implement category deletion confirmation
 }
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Refresh only the fundraising progress data
+ */
+async function refreshProgress(): Promise<void> {
+  try {
+    const response = await donationService.getFundraisingProgress(props.eventId)
+    if (response.success && response.data) {
+      progress.value = response.data
+    }
+  } catch (err) {
+    console.error('Error refreshing progress:', err)
+  }
+}
+
+// ============================================
+// LIFECYCLE
+// ============================================
+
+onMounted(() => {
+  if (isFundraisingEnabled.value) {
+    loadData()
+  }
+})
+
+// Watch for changes to fundraising status
+watch(
+  () => props.event.is_fundraising,
+  (newValue) => {
+    if (newValue && donations.value.length === 0) {
+      loadData()
+    }
+  }
+)
+
+// Watch for eventId changes (in case component is reused)
+watch(
+  () => props.eventId,
+  () => {
+    if (isFundraisingEnabled.value) {
+      loadData()
+    }
+  }
+)
 </script>
 
 <style scoped>
@@ -387,5 +532,21 @@ const handleDeleteCategory = (category: DonationItemCategory) => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Modal transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+  transform: scale(0.95);
 }
 </style>

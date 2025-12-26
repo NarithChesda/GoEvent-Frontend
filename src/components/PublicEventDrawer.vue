@@ -53,8 +53,18 @@
 
         <!-- Content -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
+          <!-- Donation Form (Inline) -->
+          <div v-if="showDonationForm && event" class="p-4">
+            <PublicDonationForm
+              :event-id="event.id"
+              :currency="event.fundraising_currency || 'USD'"
+              @back="showDonationForm = false"
+              @donated="handleDonationComplete"
+            />
+          </div>
+
           <!-- Loading State -->
-          <div v-if="loading" class="p-6">
+          <div v-else-if="loading" class="p-6">
             <div class="animate-pulse space-y-4">
               <div class="h-48 bg-slate-200 rounded-xl"></div>
               <div class="h-6 bg-slate-200 rounded w-3/4"></div>
@@ -67,7 +77,7 @@
           </div>
 
           <!-- Error State -->
-          <div v-else-if="error" class="p-6 text-center">
+          <div v-else-if="!showDonationForm && error" class="p-6 text-center">
             <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle class="w-8 h-8 text-red-500" />
             </div>
@@ -82,7 +92,7 @@
           </div>
 
           <!-- Event Content -->
-          <div v-else-if="event" class="pb-24">
+          <div v-else-if="!showDonationForm && event" class="pb-24">
             <!-- Banner Image (1200x630 ratio = 1.905:1) -->
             <div class="relative w-full" style="aspect-ratio: 1200 / 630;">
               <img
@@ -334,6 +344,52 @@
                 </div>
               </div>
 
+              <!-- Donation/Fundraising Section -->
+              <div v-if="isFundraisingEnabled" class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                    <Heart class="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-base font-semibold text-slate-900">Support This Event</h3>
+                    <p class="text-xs text-slate-600">Help make this event a success</p>
+                  </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div v-if="fundraisingProgress" class="mb-4">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-medium text-slate-600">
+                      {{ fundraisingProgress.total_donors }} {{ fundraisingProgress.total_donors === 1 ? 'donor' : 'donors' }}
+                    </span>
+                    <span class="text-xs font-semibold text-emerald-600">
+                      {{ fundraisingProgress.percentage }}% raised
+                    </span>
+                  </div>
+                  <div class="w-full h-2 bg-emerald-100 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-500"
+                      :style="{ width: `${Math.min(fundraisingProgress.percentage, 100)}%` }"
+                    ></div>
+                  </div>
+                  <div class="flex items-center justify-between mt-1.5 text-xs text-slate-500">
+                    <span>{{ formatDonationAmount(fundraisingProgress.total_raised, fundraisingProgress.currency) }}</span>
+                    <span v-if="fundraisingProgress.goal">
+                      of {{ formatDonationAmount(fundraisingProgress.goal, fundraisingProgress.currency) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Donate Button -->
+                <button
+                  @click="showDonationForm = true"
+                  class="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25"
+                >
+                  <Heart class="w-4 h-4" />
+                  Make a Donation
+                </button>
+              </div>
+
               <!-- About Event -->
               <div class="border-t border-slate-100 pt-5">
                 <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">About Event</h3>
@@ -482,7 +538,8 @@
         </div>
       </div>
     </Transition>
-  </Teleport>
+
+    </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -503,12 +560,15 @@ import {
   Share2,
   QrCode,
   X,
+  Heart,
 } from 'lucide-vue-next'
-import { eventsService, type Event, type EventRegistration } from '../services/api'
+import { eventsService, donationService, type Event, type EventRegistration } from '../services/api'
+import type { FundraisingProgress } from '../services/api/types/donation.types'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
 import { useAuthStore } from '../stores/auth'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import PublicDonationForm from './PublicDonationForm.vue'
 
 interface Props {
   modelValue: boolean
@@ -545,6 +605,10 @@ const showCalendarOptions = ref(false)
 const expandedAgendaGroups = ref<Record<string, boolean>>({})
 const userRegistration = ref<EventRegistration | null>(null)
 const showQRModal = ref(false)
+
+// Donation state
+const showDonationForm = ref(false)
+const fundraisingProgress = ref<FundraisingProgress | null>(null)
 
 // Banner image fallback state
 const primaryBannerError = ref(false)
@@ -666,6 +730,11 @@ const googleMapEmbedUrl = computed(() => {
   return extractGoogleMapsEmbedUrl(event.value.google_map_embed_link)
 })
 
+// Check if event has fundraising enabled
+const isFundraisingEnabled = computed(() => {
+  return event.value?.is_fundraising === true
+})
+
 // Generate QR code URL for confirmation code
 const qrCodeUrl = computed(() => {
   if (!userRegistration.value?.confirmation_code) return ''
@@ -783,6 +852,18 @@ const loadEvent = async () => {
       if (registrationResponse && registrationResponse.success && registrationResponse.data) {
         userRegistration.value = registrationResponse.data
       }
+
+      // Load fundraising progress if fundraising is enabled
+      if (event.value.is_fundraising) {
+        try {
+          const progressResponse = await donationService.getFundraisingProgress(props.eventId!)
+          if (progressResponse.success && progressResponse.data) {
+            fundraisingProgress.value = progressResponse.data
+          }
+        } catch (err) {
+          console.warn('Could not load fundraising progress:', err)
+        }
+      }
     } else {
       error.value = eventResponse.message || 'Event not found'
     }
@@ -833,6 +914,23 @@ const handleLoginToRegister = () => {
   emit('login-required')
   closeDrawer()
   router.push(`/signin?redirect=${encodeURIComponent(`/events/${props.eventId}`)}`)
+}
+
+const handleDonationComplete = async () => {
+  // Close the donation form
+  showDonationForm.value = false
+
+  // Refresh fundraising progress after a donation
+  if (event.value?.is_fundraising && props.eventId) {
+    try {
+      const progressResponse = await donationService.getFundraisingProgress(props.eventId)
+      if (progressResponse.success && progressResponse.data) {
+        fundraisingProgress.value = progressResponse.data
+      }
+    } catch (err) {
+      console.warn('Could not refresh fundraising progress:', err)
+    }
+  }
 }
 
 const handleCancelRegistration = async () => {
@@ -958,6 +1056,14 @@ const getInitials = (name: string): string => {
     return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
   }
   return name.substring(0, 2).toUpperCase()
+}
+
+const formatDonationAmount = (amount: string | number, currency: string): string => {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount
+  if (currency === 'KHR') {
+    return `៛${num.toLocaleString()}`
+  }
+  return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 const formatAgendaTime = (item: { start_time_text?: string; end_time_text?: string }): string => {

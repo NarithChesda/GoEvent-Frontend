@@ -29,3 +29,4 @@ export {
   serviceCategoriesService,
   serviceListingsService,
 } from './services.service'
+export { donationService } from './donation.service'

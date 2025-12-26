@@ -323,6 +323,54 @@
               </div>
             </div>
 
+            <!-- Donation/Fundraising Section -->
+            <div v-if="isFundraisingEnabled" class="pt-2">
+              <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-100">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                    <Heart class="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold text-slate-900">Support This Event</h3>
+                    <p class="text-sm text-slate-600">Help make this event a success</p>
+                  </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div v-if="fundraisingProgress" class="mb-5">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-slate-600">
+                      {{ fundraisingProgress.total_donors }} {{ fundraisingProgress.total_donors === 1 ? 'donor' : 'donors' }}
+                    </span>
+                    <span class="text-sm font-semibold text-emerald-600">
+                      {{ fundraisingProgress.percentage }}% raised
+                    </span>
+                  </div>
+                  <div class="w-full h-3 bg-emerald-100 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-500"
+                      :style="{ width: `${Math.min(fundraisingProgress.percentage, 100)}%` }"
+                    ></div>
+                  </div>
+                  <div class="flex items-center justify-between mt-2 text-sm text-slate-500">
+                    <span>{{ formatDonationAmount(fundraisingProgress.total_raised, fundraisingProgress.currency) }}</span>
+                    <span v-if="fundraisingProgress.goal">
+                      of {{ formatDonationAmount(fundraisingProgress.goal, fundraisingProgress.currency) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Donate Button -->
+                <button
+                  @click="showDonationForm = true"
+                  class="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25"
+                >
+                  <Heart class="w-5 h-5" />
+                  Make a Donation
+                </button>
+              </div>
+            </div>
+
             <!-- About Event -->
             <div v-if="event.description" class="border-t border-slate-100 pt-6">
               <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">About Event</h3>
@@ -484,6 +532,33 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Inline Donation Form Drawer -->
+    <Transition name="slide-up-form">
+      <div
+        v-if="showDonationForm && event"
+        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[100]"
+        @click.self="showDonationForm = false"
+      >
+        <!-- Backdrop for mobile -->
+        <div class="hidden md:block fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showDonationForm = false"></div>
+
+        <div
+          class="relative w-full md:max-w-md bg-white md:rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] md:max-h-[85vh] flex flex-col rounded-t-3xl md:rounded-b-2xl z-10"
+          @click.stop
+        >
+          <!-- Scrollable Content -->
+          <div class="flex-1 overflow-y-auto overscroll-contain p-4 pb-8">
+            <PublicDonationForm
+              :event-id="event.id"
+              :currency="event.fundraising_currency || 'USD'"
+              @back="showDonationForm = false"
+              @donated="handleDonationComplete"
+            />
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -506,8 +581,11 @@ import {
   QrCode,
   X,
   ChevronDown,
+  Heart,
 } from 'lucide-vue-next'
-import { eventsService, type Event, type EventRegistration } from '../services/api'
+import { eventsService, donationService, type Event, type EventRegistration } from '../services/api'
+import type { FundraisingProgress } from '../services/api/types/donation.types'
+import PublicDonationForm from '../components/PublicDonationForm.vue'
 import { useAuthStore } from '../stores/auth'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
@@ -530,6 +608,10 @@ const userRegistration = ref<EventRegistration | null>(null)
 const registrationChecked = ref(false)
 const showQRModal = ref(false)
 const expandedAgendaGroups = ref<Record<string, boolean>>({})
+
+// Donation state
+const showDonationForm = ref(false)
+const fundraisingProgress = ref<FundraisingProgress | null>(null)
 
 // Statuses that mean user is NOT actively registered/attending
 const NON_ATTENDING_STATUSES = ['not_coming', 'declined', 'cancelled', 'withdrawn', 'no']
@@ -642,6 +724,11 @@ const googleMapEmbedUrl = computed(() => {
   return extractGoogleMapsEmbedUrl(event.value.google_map_embed_link)
 })
 
+// Check if event has fundraising enabled
+const isFundraisingEnabled = computed(() => {
+  return event.value?.is_fundraising === true
+})
+
 // Grouped agenda items
 interface AgendaGroup {
   date: string
@@ -731,6 +818,19 @@ const loadEvent = async () => {
       // Store the full registration data if user is registered
       if (registrationResponse && registrationResponse.success && registrationResponse.data) {
         userRegistration.value = registrationResponse.data
+      }
+
+      // Load fundraising progress if fundraising is enabled
+      if (event.value.is_fundraising) {
+        try {
+          const eventId = route.params.id as string
+          const progressResponse = await donationService.getFundraisingProgress(eventId)
+          if (progressResponse.success && progressResponse.data) {
+            fundraisingProgress.value = progressResponse.data
+          }
+        } catch (err) {
+          console.warn('Could not load fundraising progress:', err)
+        }
       }
     } else {
       error.value = eventResponse.message || 'Event not found'
@@ -836,6 +936,32 @@ const shareEvent = async () => {
 const handleLoginToRegister = () => {
   const eventId = route.params.id as string
   router.push(`/signin?redirect=${encodeURIComponent(`/events/${eventId}`)}`)
+}
+
+const handleDonationComplete = async () => {
+  // Close the donation form
+  showDonationForm.value = false
+
+  // Refresh fundraising progress after a donation
+  if (event.value?.is_fundraising) {
+    try {
+      const eventId = route.params.id as string
+      const progressResponse = await donationService.getFundraisingProgress(eventId)
+      if (progressResponse.success && progressResponse.data) {
+        fundraisingProgress.value = progressResponse.data
+      }
+    } catch (err) {
+      console.warn('Could not refresh fundraising progress:', err)
+    }
+  }
+}
+
+const formatDonationAmount = (amount: string | number, currency: string): string => {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount
+  if (currency === 'KHR') {
+    return `៛${num.toLocaleString()}`
+  }
+  return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 const openMap = () => {
@@ -1064,6 +1190,33 @@ watch(
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Slide up transition for donation form */
+.slide-up-form-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slide-up-form-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.slide-up-form-enter-from,
+.slide-up-form-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .slide-up-form-enter-active,
+  .slide-up-form-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .slide-up-form-enter-from,
+  .slide-up-form-leave-to {
+    opacity: 0;
+    transform: scale(0.95) translateY(0);
+  }
 }
 
 /* Prose styling for description */
