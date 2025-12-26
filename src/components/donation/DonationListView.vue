@@ -170,6 +170,80 @@
             ></div>
           </div>
 
+          <!-- Category Filter Dropdown (only show when categories exist) -->
+          <div v-if="categories.length > 0" class="relative hidden sm:block" ref="categoryFilterContainer">
+            <button
+              @click="isCategoryDropdownOpen = !isCategoryDropdownOpen"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+              :class="selectedCategory === ''
+                ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                : 'bg-purple-500 text-white border-purple-500'"
+            >
+              <Package class="w-4 h-4 flex-shrink-0" :class="selectedCategory === '' ? 'text-slate-500' : ''" />
+              <span class="truncate max-w-[80px] sm:max-w-[120px]">
+                {{ selectedCategoryName }}
+              </span>
+              <ChevronDown
+                class="w-4 h-4 transition-transform flex-shrink-0"
+                :class="{ 'rotate-180': isCategoryDropdownOpen }"
+              />
+            </button>
+
+            <!-- Category Dropdown Menu -->
+            <Transition name="dropdown">
+              <div
+                v-if="isCategoryDropdownOpen"
+                class="absolute top-full left-0 mt-2 min-w-[200px] max-h-[280px] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                @click.stop
+              >
+                <div class="p-1.5">
+                  <button
+                    @click="selectCategory('')"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      selectedCategory === ''
+                        ? 'bg-slate-100 text-slate-900'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <Package class="w-4 h-4 text-slate-400" />
+                    <span class="flex-1 text-left">All Categories</span>
+                  </button>
+
+                  <div class="my-1.5 border-t border-slate-100"></div>
+
+                  <button
+                    v-for="category in categories"
+                    :key="category.id"
+                    @click="selectCategory(category.id)"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      selectedCategory === category.id
+                        ? 'bg-purple-500 text-white'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <div
+                      class="w-4 h-4 rounded-full flex items-center justify-center"
+                      :class="selectedCategory === category.id ? 'bg-purple-400' : 'bg-purple-100'"
+                    >
+                      <Package class="w-2.5 h-2.5" :class="selectedCategory === category.id ? 'text-white' : 'text-purple-600'" />
+                    </div>
+                    <span class="flex-1 text-left truncate">{{ category.name }}</span>
+                    <span class="text-xs opacity-70">{{ category.total_quantity }} {{ category.unit }}</span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Click outside to close -->
+            <div
+              v-if="isCategoryDropdownOpen"
+              @click="isCategoryDropdownOpen = false"
+              class="fixed inset-0 z-[90]"
+            ></div>
+          </div>
+
           <!-- Divider -->
           <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
 
@@ -401,7 +475,7 @@ import {
   Filter,
   ChevronDown
 } from 'lucide-vue-next'
-import type { EventDonation, DonationStatus, DonationType } from '@/services/api/types/donation.types'
+import type { EventDonation, DonationStatus, DonationType, DonationItemCategory } from '@/services/api/types/donation.types'
 
 interface Props {
   donations: EventDonation[]
@@ -409,12 +483,14 @@ interface Props {
   hasMore?: boolean
   isLoadingMore?: boolean
   totalCount?: number
+  categories?: DonationItemCategory[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   hasMore: false,
   isLoadingMore: false,
-  totalCount: 0
+  totalCount: 0,
+  categories: () => []
 })
 
 const emit = defineEmits<{
@@ -422,7 +498,7 @@ const emit = defineEmits<{
   'reject': [donation: EventDonation]
   'view-receipt': [donation: EventDonation]
   'load-more': []
-  'filter-change': [filters: { status: DonationStatus | '', type: DonationType | '', search: string }]
+  'filter-change': [filters: { status: DonationStatus | '', type: DonationType | '', search: string, category: number | '' }]
 }>()
 
 // Infinite scroll
@@ -472,10 +548,13 @@ watch(loadMoreTrigger, (newTrigger) => {
 const searchTerm = ref('')
 const selectedStatus = ref<DonationStatus | ''>('')
 const selectedType = ref<DonationType | ''>('')
+const selectedCategory = ref<number | ''>('')
 const isStatusDropdownOpen = ref(false)
 const isTypeDropdownOpen = ref(false)
+const isCategoryDropdownOpen = ref(false)
 const statusFilterContainer = ref<HTMLElement>()
 const typeFilterContainer = ref<HTMLElement>()
+const categoryFilterContainer = ref<HTMLElement>()
 
 // Status options
 const statusOptions: DonationStatus[] = ['pending', 'verified', 'rejected']
@@ -545,6 +624,18 @@ const selectType = (type: DonationType | '') => {
   isTypeDropdownOpen.value = false
 }
 
+// Category filter functions
+const selectedCategoryName = computed(() => {
+  if (!selectedCategory.value) return 'All Categories'
+  const cat = props.categories.find(c => c.id === selectedCategory.value)
+  return cat?.name || 'All Categories'
+})
+
+const selectCategory = (categoryId: number | '') => {
+  selectedCategory.value = categoryId
+  isCategoryDropdownOpen.value = false
+}
+
 // Emit filter changes for server-side filtering (with debounce for search)
 let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -552,11 +643,12 @@ const emitFilterChange = () => {
   emit('filter-change', {
     status: selectedStatus.value,
     type: selectedType.value,
-    search: searchTerm.value
+    search: searchTerm.value,
+    category: selectedCategory.value
   })
 }
 
-watch([selectedStatus, selectedType], () => {
+watch([selectedStatus, selectedType, selectedCategory], () => {
   emitFilterChange()
 })
 
@@ -581,13 +673,18 @@ const filteredDonations = computed(() => {
     result = result.filter(d => d.donation_type === selectedType.value)
   }
 
+  if (selectedCategory.value) {
+    result = result.filter(d => d.item_category === selectedCategory.value)
+  }
+
   if (searchTerm.value) {
     const term = searchTerm.value.toLowerCase()
     result = result.filter(d =>
       d.donor_name.toLowerCase().includes(term) ||
       d.donor_email?.toLowerCase().includes(term) ||
       d.message?.toLowerCase().includes(term) ||
-      d.item_name?.toLowerCase().includes(term)
+      d.item_name?.toLowerCase().includes(term) ||
+      d.item_category_info?.name?.toLowerCase().includes(term)
     )
   }
 

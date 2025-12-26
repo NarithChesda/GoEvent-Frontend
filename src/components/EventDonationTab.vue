@@ -72,6 +72,7 @@
           :donations="donations"
           :can-edit="canEdit"
           :total-count="donations.length"
+          :categories="categories"
           @verify="handleVerifyDonation"
           @reject="handleRejectDonation"
           @view-receipt="handleViewReceipt"
@@ -178,6 +179,27 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Item Category Drawer (Add/Edit) -->
+    <ItemCategoryDrawer
+      ref="categoryDrawerRef"
+      v-model="showCategoryDrawer"
+      :category="categoryToEdit"
+      @submit="handleCategorySubmit"
+    />
+
+    <!-- Delete Category Confirmation Modal -->
+    <DeleteConfirmModal
+      :show="showDeleteCategoryModal && !!categoryToDelete"
+      title="Delete Category"
+      :item-name="categoryToDelete?.name"
+      :warning-message="categoryToDelete && categoryToDelete.donation_count > 0
+        ? `This category has ${categoryToDelete.donation_count} donation${categoryToDelete.donation_count !== 1 ? 's' : ''} linked to it. They will have their category set to none.`
+        : undefined"
+      :loading="isDeletingCategory"
+      @confirm="confirmDeleteCategory"
+      @cancel="closeDeleteCategoryModal"
+    />
   </div>
 </template>
 
@@ -187,12 +209,15 @@ import { Heart, Loader2, AlertCircle, RefreshCw, X } from 'lucide-vue-next'
 import DonationSummaryView from './donation/DonationSummaryView.vue'
 import DonationListView from './donation/DonationListView.vue'
 import DonationCategoriesView from './donation/DonationCategoriesView.vue'
+import ItemCategoryDrawer from './donation/ItemCategoryDrawer.vue'
+import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { donationService, apiClient } from '@/services/api'
 import type { Event } from '@/services/api'
 import type {
   EventDonation,
   DonationItemCategory,
-  FundraisingProgress
+  FundraisingProgress,
+  CreateDonationItemCategoryRequest
 } from '@/services/api/types/donation.types'
 
 interface Props {
@@ -237,6 +262,16 @@ const rejectError = ref<string | null>(null)
 // Receipt modal state
 const showReceiptModal = ref(false)
 const receiptImageUrl = ref<string | null>(null)
+
+// Category drawer state
+const showCategoryDrawer = ref(false)
+const categoryToEdit = ref<DonationItemCategory | null>(null)
+const categoryDrawerRef = ref<InstanceType<typeof ItemCategoryDrawer> | null>(null)
+
+// Delete category confirmation state
+const showDeleteCategoryModal = ref(false)
+const categoryToDelete = ref<DonationItemCategory | null>(null)
+const isDeletingCategory = ref(false)
 
 // ============================================
 // COMPUTED
@@ -458,22 +493,131 @@ function closeReceiptModal(): void {
 }
 
 // ============================================
-// CATEGORY MANAGEMENT (placeholder handlers)
+// CATEGORY MANAGEMENT
 // ============================================
 
+/**
+ * Open the category drawer for adding a new category
+ */
 function handleAddCategory(): void {
-  console.log('Add category - to be implemented')
-  // TODO: Implement category creation modal
+  categoryToEdit.value = null
+  showCategoryDrawer.value = true
 }
 
+/**
+ * Open the category drawer for editing an existing category
+ */
 function handleEditCategory(category: DonationItemCategory): void {
-  console.log('Edit category:', category.id)
-  // TODO: Implement category edit modal
+  categoryToEdit.value = category
+  showCategoryDrawer.value = true
 }
 
+/**
+ * Close the category drawer
+ */
+function closeCategoryDrawer(): void {
+  showCategoryDrawer.value = false
+  categoryToEdit.value = null
+}
+
+/**
+ * Handle category form submission (create or update)
+ */
+async function handleCategorySubmit(data: CreateDonationItemCategoryRequest): Promise<void> {
+  categoryDrawerRef.value?.setSubmitting(true)
+  categoryDrawerRef.value?.setError(null)
+
+  try {
+    if (categoryToEdit.value) {
+      // Update existing category
+      const response = await donationService.updateItemCategory(
+        props.eventId,
+        categoryToEdit.value.id,
+        data
+      )
+
+      if (response.success && response.data) {
+        // Update the category in the list
+        const index = categories.value.findIndex(c => c.id === categoryToEdit.value!.id)
+        if (index !== -1) {
+          categories.value[index] = response.data
+        }
+        categoryDrawerRef.value?.showToast('success', 'Category updated successfully!')
+        setTimeout(() => closeCategoryDrawer(), 1000)
+      } else {
+        categoryDrawerRef.value?.setError(response.message || 'Failed to update category')
+        if (response.errors) {
+          categoryDrawerRef.value?.setFieldErrors(response.errors)
+        }
+      }
+    } else {
+      // Create new category
+      const response = await donationService.createItemCategory(props.eventId, data)
+
+      if (response.success && response.data) {
+        // Add the new category to the list
+        categories.value.push(response.data)
+        categoryDrawerRef.value?.showToast('success', 'Category created successfully!')
+        setTimeout(() => closeCategoryDrawer(), 1000)
+      } else {
+        categoryDrawerRef.value?.setError(response.message || 'Failed to create category')
+        if (response.errors) {
+          categoryDrawerRef.value?.setFieldErrors(response.errors)
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error saving category:', err)
+    categoryDrawerRef.value?.setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+  } finally {
+    categoryDrawerRef.value?.setSubmitting(false)
+  }
+}
+
+/**
+ * Open the delete confirmation modal for a category
+ */
 function handleDeleteCategory(category: DonationItemCategory): void {
-  console.log('Delete category:', category.id)
-  // TODO: Implement category deletion confirmation
+  categoryToDelete.value = category
+  showDeleteCategoryModal.value = true
+}
+
+/**
+ * Close the delete category confirmation modal
+ */
+function closeDeleteCategoryModal(): void {
+  if (isDeletingCategory.value) return
+  showDeleteCategoryModal.value = false
+  categoryToDelete.value = null
+}
+
+/**
+ * Confirm and delete the category
+ */
+async function confirmDeleteCategory(): Promise<void> {
+  if (!categoryToDelete.value) return
+
+  isDeletingCategory.value = true
+
+  try {
+    const response = await donationService.deleteItemCategory(
+      props.eventId,
+      categoryToDelete.value.id
+    )
+
+    if (response.success) {
+      // Remove the category from the list
+      categories.value = categories.value.filter(c => c.id !== categoryToDelete.value!.id)
+      closeDeleteCategoryModal()
+    } else {
+      console.error('Failed to delete category:', response.message)
+      // Could show an error toast here
+    }
+  } catch (err) {
+    console.error('Error deleting category:', err)
+  } finally {
+    isDeletingCategory.value = false
+  }
 }
 
 // ============================================
