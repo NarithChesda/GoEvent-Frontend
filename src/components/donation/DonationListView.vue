@@ -77,15 +77,98 @@
             ></div>
           </div>
 
-          <!-- Type Filter -->
-          <select
-            v-model="selectedType"
-            class="px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white hidden sm:block"
-          >
-            <option value="">All Types</option>
-            <option value="cash">Cash</option>
-            <option value="item">Item</option>
-          </select>
+          <!-- Type Filter Dropdown -->
+          <div class="relative hidden sm:block" ref="typeFilterContainer">
+            <button
+              @click="isTypeDropdownOpen = !isTypeDropdownOpen"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+              :class="selectedType === ''
+                ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                : typeButtonClass"
+            >
+              <component
+                :is="selectedType === 'cash' ? DollarSign : selectedType === 'item' ? Package : Package"
+                class="w-4 h-4 flex-shrink-0"
+                :class="selectedType === '' ? 'text-slate-500' : ''"
+              />
+              <span class="truncate max-w-[80px] sm:max-w-[120px]">
+                {{ selectedType === '' ? 'All Types' : typeLabels[selectedType as DonationType] }}
+              </span>
+              <ChevronDown
+                class="w-4 h-4 transition-transform flex-shrink-0"
+                :class="{ 'rotate-180': isTypeDropdownOpen }"
+              />
+            </button>
+
+            <!-- Type Dropdown Menu -->
+            <Transition name="dropdown">
+              <div
+                v-if="isTypeDropdownOpen"
+                class="absolute top-full left-0 mt-2 min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                @click.stop
+              >
+                <div class="p-1.5">
+                  <button
+                    @click="selectType('')"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      selectedType === ''
+                        ? 'bg-slate-100 text-slate-900'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <Package class="w-4 h-4 text-slate-400" />
+                    <span class="flex-1 text-left">All Types</span>
+                  </button>
+
+                  <div class="my-1.5 border-t border-slate-100"></div>
+
+                  <button
+                    @click="selectType('cash')"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      selectedType === 'cash'
+                        ? 'bg-emerald-500 text-white'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <div
+                      class="w-4 h-4 rounded-full flex items-center justify-center"
+                      :class="selectedType === 'cash' ? 'bg-emerald-400' : 'bg-emerald-100'"
+                    >
+                      <DollarSign class="w-2.5 h-2.5" :class="selectedType === 'cash' ? 'text-white' : 'text-emerald-600'" />
+                    </div>
+                    <span class="flex-1 text-left">Cash</span>
+                  </button>
+
+                  <button
+                    @click="selectType('item')"
+                    :class="[
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                      selectedType === 'item'
+                        ? 'bg-purple-500 text-white'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    ]"
+                  >
+                    <div
+                      class="w-4 h-4 rounded-full flex items-center justify-center"
+                      :class="selectedType === 'item' ? 'bg-purple-400' : 'bg-purple-100'"
+                    >
+                      <Package class="w-2.5 h-2.5" :class="selectedType === 'item' ? 'text-white' : 'text-purple-600'" />
+                    </div>
+                    <span class="flex-1 text-left">Item</span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Click outside to close -->
+            <div
+              v-if="isTypeDropdownOpen"
+              @click="isTypeDropdownOpen = false"
+              class="fixed inset-0 z-[90]"
+            ></div>
+          </div>
 
           <!-- Divider -->
           <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
@@ -308,7 +391,9 @@ const searchTerm = ref('')
 const selectedStatus = ref<DonationStatus | ''>('')
 const selectedType = ref<DonationType | ''>('')
 const isStatusDropdownOpen = ref(false)
+const isTypeDropdownOpen = ref(false)
 const statusFilterContainer = ref<HTMLElement>()
+const typeFilterContainer = ref<HTMLElement>()
 
 // Status options
 const statusOptions: DonationStatus[] = ['pending', 'verified', 'rejected']
@@ -358,6 +443,24 @@ const statusDotInnerClass = (status: DonationStatus): string => {
 const selectStatus = (status: DonationStatus | '') => {
   selectedStatus.value = status
   isStatusDropdownOpen.value = false
+}
+
+// Type display config
+const typeLabels: Record<DonationType, string> = {
+  cash: 'Cash',
+  item: 'Item'
+}
+
+// Button class based on selected type
+const typeButtonClass = computed(() => {
+  if (selectedType.value === 'cash') return 'bg-emerald-500 text-white border-emerald-500'
+  if (selectedType.value === 'item') return 'bg-purple-500 text-white border-purple-500'
+  return ''
+})
+
+const selectType = (type: DonationType | '') => {
+  selectedType.value = type
+  isTypeDropdownOpen.value = false
 }
 
 // Filtered donations
