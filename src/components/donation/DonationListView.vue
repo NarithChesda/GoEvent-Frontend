@@ -342,6 +342,31 @@
       </div>
     </div>
 
+    <!-- Load More / Infinite Scroll Trigger -->
+    <div
+      v-if="filteredDonations.length > 0"
+      ref="loadMoreTrigger"
+      class="flex justify-center py-4"
+    >
+      <template v-if="isLoadingMore">
+        <div class="flex items-center gap-2 text-slate-500">
+          <Loader2 class="w-5 h-5 animate-spin" />
+          <span class="text-sm">Loading more...</span>
+        </div>
+      </template>
+      <template v-else-if="hasMore">
+        <button
+          @click="$emit('load-more')"
+          class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+        >
+          Load more donations
+        </button>
+      </template>
+      <template v-else-if="filteredDonations.length > 0">
+        <p class="text-sm text-slate-400">All donations loaded</p>
+      </template>
+    </div>
+
     <!-- Empty State -->
     <div v-else class="rounded-3xl border border-white/70 bg-white p-8 sm:p-12 shadow-lg shadow-slate-200/60 text-center">
       <Heart class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
@@ -357,7 +382,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import {
   Search,
   DollarSign,
@@ -369,13 +394,16 @@ import {
   X,
   Heart,
   Filter,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-vue-next'
 import type { EventDonation, DonationStatus, DonationType } from '@/services/api/types/donation.types'
 
 interface Props {
   donations: EventDonation[]
   canEdit: boolean
+  hasMore?: boolean
+  isLoadingMore?: boolean
 }
 
 const props = defineProps<Props>()
@@ -384,7 +412,52 @@ const emit = defineEmits<{
   'verify': [donation: EventDonation]
   'reject': [donation: EventDonation]
   'view-receipt': [donation: EventDonation]
+  'load-more': []
+  'filter-change': [filters: { status: DonationStatus | '', type: DonationType | '', search: string }]
 }>()
+
+// Infinite scroll
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  setupIntersectionObserver()
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+})
+
+const setupIntersectionObserver = () => {
+  if (!loadMoreTrigger.value) return
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && props.hasMore && !props.isLoadingMore) {
+        emit('load-more')
+      }
+    },
+    {
+      rootMargin: '100px',
+      threshold: 0.1
+    }
+  )
+
+  observer.observe(loadMoreTrigger.value)
+}
+
+// Re-setup observer when loadMoreTrigger becomes available
+watch(loadMoreTrigger, (newTrigger) => {
+  if (observer) {
+    observer.disconnect()
+  }
+  if (newTrigger) {
+    setupIntersectionObserver()
+  }
+})
 
 // Local state
 const searchTerm = ref('')
@@ -462,6 +535,30 @@ const selectType = (type: DonationType | '') => {
   selectedType.value = type
   isTypeDropdownOpen.value = false
 }
+
+// Emit filter changes for server-side filtering (with debounce for search)
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+const emitFilterChange = () => {
+  emit('filter-change', {
+    status: selectedStatus.value,
+    type: selectedType.value,
+    search: searchTerm.value
+  })
+}
+
+watch([selectedStatus, selectedType], () => {
+  emitFilterChange()
+})
+
+watch(searchTerm, () => {
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer)
+  }
+  searchDebounceTimer = setTimeout(() => {
+    emitFilterChange()
+  }, 300)
+})
 
 // Filtered donations
 const filteredDonations = computed(() => {
