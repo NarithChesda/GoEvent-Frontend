@@ -67,9 +67,9 @@
 
       <!-- Right Section: Actions -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Preview Showcase Button -->
+        <!-- Preview Showcase Button (only for wedding, birthday, housewarming) -->
         <button
-          v-if="canEdit && eventId"
+          v-if="canEdit && eventId && canPreviewShowcase"
           @click="previewShowcase"
           class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
           title="Preview showcase"
@@ -121,6 +121,8 @@ interface Props {
   canEdit?: boolean
   organizerName?: string
   organizerAvatar?: string
+  /** Event category name (e.g., 'wedding', 'birthday', 'housewarming') */
+  eventCategory?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -131,7 +133,8 @@ const props = withDefaults(defineProps<Props>(), {
   actualEventStatus: 'draft',
   canEdit: false,
   organizerName: '',
-  organizerAvatar: ''
+  organizerAvatar: '',
+  eventCategory: null
 })
 
 const emit = defineEmits<{
@@ -212,6 +215,15 @@ const statusClasses = computed(() => {
 const statusLabel = computed(() => {
   if (!props.eventStatus) return ''
   return props.eventStatus.charAt(0).toUpperCase() + props.eventStatus.slice(1)
+})
+
+// Categories that support showcase preview
+const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming']
+
+// Check if event category supports showcase preview
+const canPreviewShowcase = computed(() => {
+  if (!props.eventCategory) return false
+  return SHOWCASE_CATEGORIES.includes(props.eventCategory.toLowerCase())
 })
 
 // Actions

@@ -13,6 +13,7 @@
       :can-edit="event.can_edit"
       :organizer-name="event.organizer_details?.first_name && event.organizer_details?.last_name ? `${event.organizer_details.first_name} ${event.organizer_details.last_name}`.trim() : event.organizer_details?.username"
       :organizer-avatar="getOrganizerAvatarUrl(event.organizer_details?.profile_picture)"
+      :event-category="event.category_details?.name || event.category_name"
       @edit="handleEditEvent(event.id)"
       @publish="handlePublishEvent"
     />
