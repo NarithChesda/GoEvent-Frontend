@@ -88,6 +88,12 @@ export interface Event {
   can_delete?: boolean
   is_registered?: boolean
   payment_lock?: boolean
+  // Fundraising fields
+  is_fundraising?: boolean
+  fundraising_goal?: number | null
+  fundraising_currency?: 'USD' | 'KHR'
+  show_donation_progress?: boolean
+  show_donor_list?: boolean
   created_at: string
   updated_at: string
   // Additional fields from detailed event response
