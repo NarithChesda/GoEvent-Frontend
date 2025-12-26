@@ -30,6 +30,7 @@
       :can-view-guest-management="canViewGuestManagement"
       :can-view-analytics="canViewAnalytics"
       :can-view-expenses="canViewExpenses"
+      :can-view-donation="canViewDonation"
       :can-view-review="canViewReview"
       :can-edit="event?.can_edit"
       @tab-change="activeTab = $event"
@@ -83,6 +84,7 @@
       :can-view-guest-management="canViewGuestManagement"
       :can-view-analytics="canViewAnalytics"
       :can-view-expenses="canViewExpenses"
+      :can-view-donation="canViewDonation"
       :can-view-review="canViewReview"
       @tab-change="activeTab = $event"
     />
@@ -265,6 +267,28 @@
               />
             </div>
 
+            <!-- Donation Tab -->
+            <div v-if="activeTab === 'donation'">
+              <div v-if="!canViewDonation" class="text-center py-12">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  Only the event organizer and collaborators can view and manage donations.
+                </p>
+              </div>
+              <EventDonationTab
+                v-else-if="event?.id"
+                :event-id="event.id"
+                :event="event"
+                :can-edit="event.can_edit || false"
+                @enable-fundraising="handleEditEvent(event.id)"
+              />
+            </div>
+
             <!-- Template & Payment Tab (Combined) -->
             <div v-if="activeTab === 'template-payment'">
               <div v-if="!canViewTemplate" class="text-center py-12">
@@ -409,6 +433,7 @@ const EventGuestManagementTab = defineAsyncComponent(() => import('../components
 const EventAnalyticsTab = defineAsyncComponent(() => import('../components/EventAnalyticsTab.vue'))
 const EventExpenseTab = defineAsyncComponent(() => import('../components/EventExpenseTab.vue'))
 const EventReviewTab = defineAsyncComponent(() => import('../components/EventReviewTab.vue'))
+const EventDonationTab = defineAsyncComponent(() => import('../components/EventDonationTab.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -490,6 +515,7 @@ const navigationTabs = ref<TabConfig[]>([
   { id: 'template-payment', label: 'Template & Payment', icon: 'credit-card', mobileLabel: 'Template' },
   { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
   { id: 'expenses', label: 'Expense Tracking', icon: 'wallet', mobileLabel: 'Expenses' },
+  { id: 'donation', label: 'Donations', icon: 'heart', mobileLabel: 'Donations' },
   { id: 'registration', label: 'Registration', icon: 'user-plus' },
   { id: 'analytics', label: 'Analytics', icon: 'bar-chart', mobileLabel: 'Analytics' },
   { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
@@ -510,8 +536,14 @@ const canViewRestrictedTabs = computed(() => {
   return event.value.can_edit
 })
 
+// Categories that support showcase/template features
+const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming']
+
 const canViewMedia = computed(() => {
-  return canViewRestrictedTabs.value
+  // Only show showcase/media tab for wedding, birthday, housewarming events
+  const category = event.value?.category_details?.name || event.value?.category_name
+  if (!category) return false
+  return canViewRestrictedTabs.value && SHOWCASE_CATEGORIES.includes(category.toLowerCase())
 })
 
 const canViewCollaborators = computed(() => {
@@ -519,7 +551,10 @@ const canViewCollaborators = computed(() => {
 })
 
 const canViewTemplate = computed(() => {
-  return canViewRestrictedTabs.value
+  // Only show template tab for wedding, birthday, housewarming events
+  const category = event.value?.category_details?.name || event.value?.category_name
+  if (!category) return false
+  return canViewRestrictedTabs.value && SHOWCASE_CATEGORIES.includes(category.toLowerCase())
 })
 
 const canViewPayment = computed(() => {
@@ -527,7 +562,10 @@ const canViewPayment = computed(() => {
 })
 
 const canViewGuestManagement = computed(() => {
-  return canViewRestrictedTabs.value
+  // Only show guest management tab for wedding, birthday, housewarming events
+  const category = event.value?.category_details?.name || event.value?.category_name
+  if (!category) return false
+  return canViewRestrictedTabs.value && SHOWCASE_CATEGORIES.includes(category.toLowerCase())
 })
 
 const canViewAnalytics = computed(() => {
@@ -536,6 +574,11 @@ const canViewAnalytics = computed(() => {
 
 const canViewExpenses = computed(() => {
   return canViewRestrictedTabs.value
+})
+
+const canViewDonation = computed(() => {
+  // Only show donation tab if event has fundraising enabled
+  return canViewRestrictedTabs.value && event.value?.is_fundraising === true
 })
 
 const canViewReview = computed(() => {
