@@ -173,31 +173,47 @@
           <!-- Divider -->
           <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
 
-          <!-- Count -->
-          <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
-            <span class="font-medium text-slate-700">{{ filteredDonations.length }}</span>
-            <span>donation{{ filteredDonations.length !== 1 ? 's' : '' }}</span>
+          <!-- Search Input (Desktop) -->
+          <div class="hidden sm:block flex-1 min-w-0">
+            <div class="relative">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                v-model="searchTerm"
+                type="text"
+                placeholder="Search donations..."
+                class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+              />
+            </div>
           </div>
 
-          <!-- Spacer -->
-          <div class="flex-1"></div>
+          <!-- Count -->
+          <div class="flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+            <span class="font-medium text-slate-700">{{ filteredDonations.length }}</span>
+            <span>/</span>
+            <span>{{ totalCount }}</span>
+          </div>
+        </div>
 
-          <!-- Search -->
+        <!-- Mobile Search Row -->
+        <div class="p-3 pt-0 sm:hidden">
           <div class="relative">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               v-model="searchTerm"
               type="text"
-              placeholder="Search..."
-              class="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-32 sm:w-48"
+              placeholder="Search donations..."
+              class="w-full pl-9 pr-4 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
             />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Donations List -->
-    <div v-if="filteredDonations.length > 0" class="space-y-3">
+    <!-- Scrollable Donations List Container -->
+    <div
+      v-if="filteredDonations.length > 0"
+      class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0"
+    >
       <div
         v-for="donation in filteredDonations"
         :key="donation.id"
@@ -340,38 +356,27 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Load More / Infinite Scroll Trigger -->
-    <div
-      v-if="filteredDonations.length > 0"
-      ref="loadMoreTrigger"
-      class="flex justify-center py-4"
-    >
-      <template v-if="isLoadingMore">
-        <div class="flex items-center gap-2 text-slate-500">
-          <Loader2 class="w-5 h-5 animate-spin" />
-          <span class="text-sm">Loading more...</span>
+      <!-- Load More / Infinite Scroll Trigger -->
+      <div
+        ref="loadMoreTrigger"
+        class="py-4 flex justify-center"
+      >
+        <div v-if="isLoadingMore" class="flex items-center gap-2">
+          <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-sm text-slate-500">Loading more donations...</span>
         </div>
-      </template>
-      <template v-else-if="hasMore">
-        <button
-          @click="$emit('load-more')"
-          class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
-        >
-          Load more donations
-        </button>
-      </template>
-      <template v-else-if="filteredDonations.length > 0">
-        <p class="text-sm text-slate-400">All donations loaded</p>
-      </template>
+        <div v-else-if="!hasMore && filteredDonations.length > 0" class="text-sm text-slate-400">
+          All {{ totalCount }} donations loaded
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
-    <div v-else class="rounded-3xl border border-white/70 bg-white p-8 sm:p-12 shadow-lg shadow-slate-200/60 text-center">
-      <Heart class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-      <h4 class="text-lg font-semibold text-slate-900 mb-1">No donations found</h4>
-      <p class="text-sm text-slate-500">
+    <div v-else class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 text-center">
+      <Heart class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+      <h4 class="font-semibold text-slate-600 mb-1">No Donations Found</h4>
+      <p class="text-sm text-slate-400">
         {{ searchTerm || selectedStatus || selectedType
           ? 'Try adjusting your filters'
           : 'Donations will appear here when people contribute'
@@ -394,8 +399,7 @@ import {
   X,
   Heart,
   Filter,
-  ChevronDown,
-  Loader2
+  ChevronDown
 } from 'lucide-vue-next'
 import type { EventDonation, DonationStatus, DonationType } from '@/services/api/types/donation.types'
 
@@ -404,9 +408,14 @@ interface Props {
   canEdit: boolean
   hasMore?: boolean
   isLoadingMore?: boolean
+  totalCount?: number
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  hasMore: false,
+  isLoadingMore: false,
+  totalCount: 0
+})
 
 const emit = defineEmits<{
   'verify': [donation: EventDonation]
@@ -605,5 +614,28 @@ const formatDate = (dateString: string): string => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+/* Custom scrollbar - matches guest list style */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #cbd5e1;
 }
 </style>
