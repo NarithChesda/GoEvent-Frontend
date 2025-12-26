@@ -71,6 +71,7 @@
         <DonationListView
           :donations="donations"
           :can-edit="canEdit"
+          :total-count="donations.length"
           @verify="handleVerifyDonation"
           @reject="handleRejectDonation"
           @view-receipt="handleViewReceipt"
