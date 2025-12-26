@@ -36,6 +36,8 @@
 
         <VendorTab v-if="activeTab === 'vendor'" />
 
+        <DonationsTab v-if="activeTab === 'donations'" />
+
         <ListingsTab v-if="activeTab === 'listings'" />
       </div> <!-- Close max-w-4xl container -->
     </section> <!-- Close py-4 section -->
@@ -51,10 +53,11 @@ import AccountTab from '@/components/settings/AccountTab.vue'
 import SecurityTab from '@/components/settings/SecurityTab.vue'
 import VendorTab from '@/components/settings/VendorTab.vue'
 import ListingsTab from '@/components/settings/ListingsTab.vue'
+import DonationsTab from '@/components/settings/DonationsTab.vue'
 import { useAuthStore } from '@/stores/auth'
 
 // Types
-type TabId = 'account' | 'security' | 'vendor' | 'listings'
+type TabId = 'account' | 'security' | 'vendor' | 'donations' | 'listings'
 
 interface Tab {
   id: TabId
@@ -71,11 +74,12 @@ const tabs: Tab[] = [
   { id: 'account', label: 'Account' },
   { id: 'security', label: 'Security' },
   { id: 'vendor', label: 'Vendor' },
+  { id: 'donations', label: 'Donations' },
   { id: 'listings', label: 'Listings' },
 ]
 
 // Valid tab IDs for validation
-const validTabIds: TabId[] = ['account', 'security', 'vendor', 'listings']
+const validTabIds: TabId[] = ['account', 'security', 'vendor', 'donations', 'listings']
 
 // Get initial tab from URL query or default to 'account'
 const getInitialTab = (): TabId => {

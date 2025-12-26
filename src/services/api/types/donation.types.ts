@@ -104,6 +104,21 @@ export interface DonationCategorySummary {
 }
 
 /**
+ * Event info embedded in user donation history responses
+ * Note: API returns this as event_info
+ */
+export interface DonationEventInfo {
+  id: string
+  title: string
+  start_date: string
+  end_date?: string
+  banner_image?: string | null
+  is_fundraising?: boolean
+  fundraising_goal?: string | null
+  fundraising_currency?: string
+}
+
+/**
  * Event Donation - cash or item donation
  */
 export interface EventDonation {
@@ -139,6 +154,14 @@ export interface EventDonation {
   can_be_edited: boolean
   created_at: string
   updated_at: string
+}
+
+/**
+ * User donation with event info - for user's donation history
+ * Used by GET /api/events/my-donations/
+ */
+export interface UserDonation extends EventDonation {
+  event_info?: DonationEventInfo
 }
 
 /**

@@ -26,12 +26,21 @@
             <p class="text-xs text-emerald-600">Your donation has been submitted successfully.</p>
           </div>
         </div>
-        <button
-          @click="handleSuccessClose"
-          class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          Done
-        </button>
+        <div class="flex flex-col gap-2">
+          <button
+            @click="handleSuccessClose"
+            class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Done
+          </button>
+          <button
+            v-if="currentUser"
+            @click="goToMyDonations"
+            class="w-full py-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 text-sm font-medium rounded-lg transition-colors"
+          >
+            View My Donations
+          </button>
+        </div>
       </div>
     </Transition>
 
@@ -456,6 +465,8 @@ import {
   X,
 } from 'lucide-vue-next'
 import { donationService, paymentMethodsService } from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import type {
   FundraisingProgress,
   DonationItemCategory,
@@ -478,6 +489,13 @@ const emit = defineEmits<{
   back: []
   donated: []
 }>()
+
+// Router and auth store
+const router = useRouter()
+const authStore = useAuthStore()
+
+// Get current user for auto-fill
+const currentUser = computed(() => authStore.user)
 
 // State
 const donationType = ref<'cash' | 'item'>('cash')
@@ -531,9 +549,33 @@ const selectedCategory = computed(() => {
   return itemCategories.value.find(c => c.id === form.value.item_category) || null
 })
 
+// Auto-fill donor info from user profile
+function autoFillFromUser() {
+  const user = currentUser.value
+  if (!user || form.value.donor_name) return // Don't overwrite if already filled
+
+  // Auto-fill name
+  if (user.first_name && user.last_name) {
+    form.value.donor_name = `${user.first_name} ${user.last_name}`
+  } else if (user.first_name) {
+    form.value.donor_name = user.first_name
+  } else if (user.username) {
+    form.value.donor_name = user.username
+  }
+
+  // Auto-fill contact info
+  if (user.email && !form.value.donor_email) {
+    form.value.donor_email = user.email
+  }
+  if (user.phone_number && !form.value.donor_phone) {
+    form.value.donor_phone = user.phone_number
+  }
+}
+
 // Load data on mount
 onMounted(async () => {
   await loadData()
+  autoFillFromUser()
 })
 
 // Methods
@@ -736,6 +778,10 @@ function handleSuccessClose() {
   showSuccess.value = false
   emit('donated')
   emit('back')
+}
+
+function goToMyDonations() {
+  router.push({ path: '/settings', query: { tab: 'donations' } })
 }
 </script>
 

@@ -153,6 +153,8 @@ export type {
   CreateDonationItemCategoryRequest,
   DonationCategorySummary,
   EventDonation,
+  UserDonation,
+  DonationEventDetails,
   CreateCashDonationRequest,
   CreateItemDonationRequest,
   CreateDonationRequest,

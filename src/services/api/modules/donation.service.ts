@@ -8,6 +8,7 @@ import type {
   ApiResponse,
   PaginatedResponse,
   EventDonation,
+  UserDonation,
   DonationFilters,
   FundraisingProgress,
   VerifyDonationRequest,
@@ -54,6 +55,19 @@ export const donationService = {
   ): Promise<ApiResponse<EventDonation>> {
     return apiClient.get<EventDonation>(
       `/api/events/${eventId}/donations/${donationId}/`,
+    )
+  },
+
+  /**
+   * Get current user's donations across all events
+   * @param filters - Optional filters (status, donation_type, ordering, etc.)
+   */
+  async getMyDonations(
+    filters?: DonationFilters,
+  ): Promise<ApiResponse<PaginatedResponse<UserDonation>>> {
+    return apiClient.get<PaginatedResponse<UserDonation>>(
+      `/api/events/my-donations/`,
+      filters,
     )
   },
 
