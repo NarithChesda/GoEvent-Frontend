@@ -93,50 +93,160 @@
 
           <!-- Event Content -->
           <div v-else-if="!showDonationForm && event" class="pb-24">
-            <!-- Banner Image (1200x630 ratio = 1.905:1) -->
-            <div class="relative w-full" style="aspect-ratio: 1200 / 630;">
-              <img
-                v-if="!fallbackBannerError"
-                :src="currentBannerSrc"
-                :alt="event.title"
-                class="w-full h-full object-cover"
-                @error="handleBannerImageError"
-              />
-              <!-- Fallback when both primary and fallback images fail -->
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 flex flex-col items-center justify-center"
-              >
-                <CalendarDays class="w-12 h-12 text-[#2ecc71]/40 mb-2" />
-                <span class="text-sm text-slate-400">{{ event.category_details?.name || 'Event' }}</span>
-              </div>
-            </div>
+            <!-- Banner Image - Unified design with overlay for all events -->
+            <div class="relative">
+              <!-- Banner Image (1200x630 ratio = 1.905:1 for non-fundraising, 16:9 for fundraising) -->
+              <div class="relative w-full" :style="isFundraisingEnabled ? 'aspect-ratio: 16/9;' : 'aspect-ratio: 1200 / 630;'">
+                <img
+                  v-if="!fallbackBannerError"
+                  :src="currentBannerSrc"
+                  :alt="event.title"
+                  class="w-full h-full object-cover"
+                  @error="handleBannerImageError"
+                />
+                <!-- Fallback when both primary and fallback images fail -->
+                <div
+                  v-else
+                  class="w-full h-full bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 flex flex-col items-center justify-center"
+                >
+                  <CalendarDays class="w-12 h-12 text-[#2ecc71]/40 mb-2" />
+                  <span class="text-sm text-slate-400">{{ event.category_details?.name || 'Event' }}</span>
+                </div>
 
-            <!-- Event Info -->
-            <div class="px-4 py-5 space-y-5">
-              <!-- Title & Category -->
-              <div>
-                <div class="flex items-start justify-between gap-3 mb-3">
-                  <h1 class="text-xl font-bold text-slate-900 leading-tight">
-                    {{ event.title }}
-                  </h1>
-                  <span v-if="event.category_details" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full flex-shrink-0">
+                <!-- Gradient overlay for all events -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+
+                <!-- Category/Fundraiser Badge (Top Left) -->
+                <div class="absolute top-4 left-4">
+                  <span
+                    v-if="isFundraisingEnabled"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full text-xs font-semibold text-emerald-700 shadow-lg"
+                  >
+                    <Heart class="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
+                    Fundraiser
+                  </span>
+                  <span
+                    v-else-if="event.category_details"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full text-xs font-semibold text-slate-700 shadow-lg"
+                  >
                     <span class="text-slate-400">#</span>
                     {{ event.category_details.name }}
                   </span>
                 </div>
 
-                <!-- Organizer -->
-                <div v-if="event.organizer_details" class="flex items-center gap-2 text-sm text-slate-600">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
-                      {{ getInitials(organizerName) }}
+                <!-- Title & Organizer Overlay (Bottom with spacing for fundraising card) -->
+                <div class="absolute bottom-0 left-0 right-0 p-5" :class="isFundraisingEnabled ? 'pb-8' : 'pb-5'">
+                  <h1 class="text-2xl md:text-3xl font-bold text-white leading-tight mb-2 drop-shadow-lg">
+                    {{ event.title }}
+                  </h1>
+                  <div class="flex items-center gap-2 text-white/90 text-sm">
+                    <div class="w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <span class="text-xs font-medium">{{ getInitials(organizerName) }}</span>
                     </div>
-                    <span>{{ organizerName }}</span>
+                    <span>by {{ organizerName }}</span>
                   </div>
                 </div>
               </div>
+            </div>
 
+            <!-- Donation/Fundraising Section - Floating Card Above Content -->
+            <div v-if="isFundraisingEnabled" class="px-4 -mt-6 mb-6 relative z-10">
+              <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                <!-- Progress Stats -->
+                <div class="p-5">
+                  <!-- Amount Raised -->
+                  <div class="flex items-baseline gap-2 mb-1">
+                    <span class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                      {{ formatCurrency(parseFloat(fundraisingProgress?.total_raised || '0'), fundraisingProgress?.currency || event.fundraising_currency || 'USD') }}
+                    </span>
+                    <span class="text-slate-500 text-sm">
+                      raised of {{ formatCurrency(parseFloat(fundraisingProgress?.goal || event.fundraising_goal || '0'), fundraisingProgress?.currency || event.fundraising_currency || 'USD') }}
+                    </span>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="relative h-3 bg-slate-100 rounded-full overflow-hidden mt-4 mb-4">
+                    <div
+                      class="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000 ease-out"
+                      :style="{ width: `${Math.min(fundraisingProgressPercentage, 100)}%` }"
+                    />
+                    <!-- Animated shimmer -->
+                    <div
+                      class="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full animate-shimmer"
+                      :style="{ width: `${Math.min(fundraisingProgressPercentage, 100)}%` }"
+                    />
+                  </div>
+
+                  <!-- Stats Row -->
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-4">
+                      <div class="flex items-center gap-1.5 text-slate-600">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                        </svg>
+                        <span class="font-medium">{{ fundraisingProgress?.total_donors || 0 }}</span>
+                        <span class="text-slate-400">donors</span>
+                      </div>
+                      <div v-if="fundraisingDaysLeft !== null" class="flex items-center gap-1.5 text-slate-600">
+                        <Clock class="w-4 h-4 text-slate-400" />
+                        <span class="font-medium">{{ fundraisingDaysLeft }}</span>
+                        <span class="text-slate-400">days left</span>
+                      </div>
+                    </div>
+                    <span class="text-emerald-600 font-semibold">{{ fundraisingProgressPercentage }}%</span>
+                  </div>
+                </div>
+
+                <!-- Donate CTA -->
+                <div class="px-5 pb-5">
+                  <button
+                    @click="showDonationForm = true"
+                    class="w-full relative overflow-hidden group bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5"
+                  >
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                      <Heart class="w-5 h-5" />
+                      Donate Now
+                    </span>
+                    <!-- Hover glow effect -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  </button>
+                </div>
+
+                <!-- Recent Donors -->
+                <div v-if="fundraisingProgress?.recent_donations && fundraisingProgress.recent_donations.length > 0" class="border-t border-slate-100 px-5 py-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recent Supporters</h3>
+                  </div>
+                  <div class="space-y-3">
+                    <div
+                      v-for="donation in fundraisingProgress.recent_donations.slice(0, 3)"
+                      :key="donation.id"
+                      class="flex items-center gap-3"
+                    >
+                      <div
+                        class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium text-white flex-shrink-0"
+                        :style="{ background: getDonorGradient(donation.display_name || 'Anonymous') }"
+                      >
+                        {{ getInitials(donation.display_name || 'Anonymous') }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium text-slate-900 text-sm truncate">{{ donation.display_name || 'Anonymous' }}</p>
+                        <p class="text-xs text-slate-400">{{ formatRelativeTime(donation.created_at) }}</p>
+                      </div>
+                      <span v-if="donation.amount" class="text-sm font-semibold text-slate-700">
+                        {{ formatCurrency(parseFloat(donation.amount), donation.currency) }}
+                      </span>
+                      <span v-else-if="donation.item_quantity" class="text-sm font-semibold text-slate-700">
+                        {{ donation.item_quantity }} {{ donation.item_unit }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Event Info -->
+            <div class="px-4 space-y-5" :class="isFundraisingEnabled ? 'pt-0' : 'pt-5'">
               <!-- Date & Time -->
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-xl flex-shrink-0 shadow-md shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
@@ -335,59 +445,16 @@
                   Login to Register
                 </button>
 
-                <!-- Registration Closed/Full -->
+                <!-- Registration Closed/Full/Past -->
                 <div
-                  v-else-if="isRegistrationClosed || isEventFull"
+                  v-else
                   class="w-full bg-slate-100 text-slate-500 font-semibold py-3 px-4 rounded-xl text-center"
                 >
-                  {{ isEventFull ? 'Event is Full' : 'Registration Closed' }}
+                  <template v-if="isEventFull">Event is Full</template>
+                  <template v-else-if="isRegistrationClosed">Registration Closed</template>
+                  <template v-else-if="event && event.is_past">Event Has Ended</template>
+                  <template v-else>Registration Unavailable</template>
                 </div>
-              </div>
-
-              <!-- Donation/Fundraising Section -->
-              <div v-if="isFundraisingEnabled" class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100">
-                <div class="flex items-center gap-3 mb-3">
-                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-                    <Heart class="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-base font-semibold text-slate-900">Support This Event</h3>
-                    <p class="text-xs text-slate-600">Help make this event a success</p>
-                  </div>
-                </div>
-
-                <!-- Progress Bar -->
-                <div v-if="fundraisingProgress" class="mb-4">
-                  <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-xs font-medium text-slate-600">
-                      {{ fundraisingProgress.total_donors }} {{ fundraisingProgress.total_donors === 1 ? 'donor' : 'donors' }}
-                    </span>
-                    <span class="text-xs font-semibold text-emerald-600">
-                      {{ fundraisingProgress.percentage }}% raised
-                    </span>
-                  </div>
-                  <div class="w-full h-2 bg-emerald-100 rounded-full overflow-hidden">
-                    <div
-                      class="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-500"
-                      :style="{ width: `${Math.min(fundraisingProgress.percentage, 100)}%` }"
-                    ></div>
-                  </div>
-                  <div class="flex items-center justify-between mt-1.5 text-xs text-slate-500">
-                    <span>{{ formatDonationAmount(fundraisingProgress.total_raised, fundraisingProgress.currency) }}</span>
-                    <span v-if="fundraisingProgress.goal">
-                      of {{ formatDonationAmount(fundraisingProgress.goal, fundraisingProgress.currency) }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Donate Button -->
-                <button
-                  @click="showDonationForm = true"
-                  class="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25"
-                >
-                  <Heart class="w-4 h-4" />
-                  Make a Donation
-                </button>
               </div>
 
               <!-- About Event -->
@@ -471,28 +538,55 @@
                 </div>
               </div>
 
-              <!-- Hosts -->
+              <!-- Hosts - Unified Card Style for All Events -->
               <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-100 pt-5">
-                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Hosted By</h3>
-                <div class="space-y-3">
-                  <div
-                    v-for="host in event.hosts"
-                    :key="host.id"
-                    class="flex items-center gap-3"
-                  >
-                    <img
-                      v-if="host.profile_image"
-                      :src="getProfileUrl(host.profile_image)"
-                      :alt="host.name"
-                      class="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-                      {{ getInitials(host.name) }}
+                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  {{ isFundraisingEnabled ? 'Campaign Organizer' : 'Hosted By' }}
+                </h3>
+                <div class="bg-slate-50 rounded-xl p-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      v-if="event.hosts[0].profile_image"
+                      class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-semibold overflow-hidden"
+                    >
+                      <img
+                        :src="getProfileUrl(event.hosts[0].profile_image)"
+                        :alt="event.hosts[0].name"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-semibold">
+                      {{ getInitials(event.hosts[0].name) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-medium text-slate-900 truncate">{{ host.name }}</p>
-                      <p v-if="host.title" class="text-sm text-slate-500 truncate">{{ host.title }}</p>
+                      <p class="font-medium text-slate-900 truncate">{{ event.hosts[0].name }}</p>
+                      <p class="text-sm text-slate-500">{{ isFundraisingEnabled ? 'Campaign Organizer' : 'Event Organizer' }}</p>
                     </div>
+                    <button
+                      v-if="event.hosts[0].title"
+                      class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      Contact
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Share Banner - Unified CTA Footer for All Events -->
+              <div class="border-t border-slate-100 pt-5">
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-5 text-white">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-semibold mb-1">Help spread the word</h4>
+                      <p class="text-slate-400 text-sm">{{ isFundraisingEnabled ? 'Share this campaign with friends' : 'Share this event with friends' }}</p>
+                    </div>
+                    <button
+                      @click="shareEvent"
+                      class="flex items-center gap-2 px-4 py-2.5 bg-white text-slate-900 rounded-xl font-medium text-sm hover:bg-slate-100 transition-colors"
+                    >
+                      <Share2 class="w-4 h-4" />
+                      Share
+                    </button>
                   </div>
                 </div>
               </div>
@@ -733,6 +827,29 @@ const googleMapEmbedUrl = computed(() => {
 // Check if event has fundraising enabled
 const isFundraisingEnabled = computed(() => {
   return event.value?.is_fundraising === true
+})
+
+// Fundraising progress percentage
+const fundraisingProgressPercentage = computed(() => {
+  if (!fundraisingProgress.value) return 0
+  // Use the percentage from API if available
+  if (fundraisingProgress.value.percentage !== undefined) {
+    return Math.round(fundraisingProgress.value.percentage)
+  }
+  // Otherwise calculate it
+  const current = parseFloat(fundraisingProgress.value.total_raised || '0')
+  const goal = parseFloat(fundraisingProgress.value.goal || event.value?.fundraising_goal || '1')
+  return Math.round((current / goal) * 100)
+})
+
+// Calculate days remaining for fundraising
+const fundraisingDaysLeft = computed(() => {
+  if (!event.value?.fundraising_deadline) return null
+  const deadline = new Date(event.value.fundraising_deadline)
+  const now = new Date()
+  const diffTime = deadline.getTime() - now.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return Math.max(0, diffDays)
 })
 
 // Generate QR code URL for confirmation code
@@ -1058,14 +1175,6 @@ const getInitials = (name: string): string => {
   return name.substring(0, 2).toUpperCase()
 }
 
-const formatDonationAmount = (amount: string | number, currency: string): string => {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount
-  if (currency === 'KHR') {
-    return `៛${num.toLocaleString()}`
-  }
-  return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
 const formatAgendaTime = (item: { start_time_text?: string; end_time_text?: string }): string => {
   const start = item.start_time_text || ''
   const end = item.end_time_text || ''
@@ -1188,6 +1297,46 @@ END:VCALENDAR`
   showCalendarOptions.value = false
 }
 
+// Fundraising helper functions
+const formatCurrency = (amount: number, currency: string): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+const getDonorGradient = (name: string): string => {
+  const gradients = [
+    'linear-gradient(135deg, #10b981, #0d9488)', // emerald to teal
+    'linear-gradient(135deg, #0ea5e9, #0284c7)', // sky to blue
+    'linear-gradient(135deg, #8b5cf6, #7c3aed)', // violet to purple
+    'linear-gradient(135deg, #f59e0b, #d97706)', // amber to orange
+    'linear-gradient(135deg, #ec4899, #db2777)', // pink to rose
+    'linear-gradient(135deg, #06b6d4, #0891b2)', // cyan
+  ]
+  // Simple hash to pick consistent gradient for same name
+  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return gradients[hash % gradients.length]
+}
+
+const formatRelativeTime = (dateString: string): string => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`
+  if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`
+  if (diffDays < 30) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`
+
+  const diffMonths = Math.floor(diffDays / 30)
+  return `${diffMonths} ${diffMonths === 1 ? 'month' : 'months'} ago`
+}
+
 // Watchers
 watch(
   () => props.eventId,
@@ -1267,6 +1416,20 @@ onMounted(() => {
   .slide-right-leave-to {
     transform: translateX(100%) translateZ(0);
   }
+}
+
+/* Shimmer animation for progress bar */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
 }
 
 /* Prose styling for description */
