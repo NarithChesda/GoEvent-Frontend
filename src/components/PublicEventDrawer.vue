@@ -151,72 +151,62 @@
 
             <!-- Donation/Fundraising Section - Floating Card Above Content -->
             <div v-if="isFundraisingEnabled" class="px-4 -mt-6 mb-6 relative z-10">
-              <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+              <div class="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
                 <!-- Progress Stats -->
-                <div class="p-5">
+                <div class="p-4">
                   <!-- Amount Raised -->
-                  <div class="flex items-baseline gap-2 mb-1">
-                    <span class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                      {{ formatCurrency(parseFloat(fundraisingProgress?.total_raised || '0'), fundraisingProgress?.currency || event.fundraising_currency || 'USD') }}
-                    </span>
-                    <span class="text-slate-500 text-sm">
-                      raised of {{ formatCurrency(parseFloat(fundraisingProgress?.goal || event.fundraising_goal || '0'), fundraisingProgress?.currency || event.fundraising_currency || 'USD') }}
-                    </span>
+                  <div class="mb-4">
+                    <div class="flex items-baseline gap-2 mb-1">
+                      <span class="text-2xl md:text-3xl font-bold text-slate-900">
+                        {{ formatCurrency(parseFloat(fundraisingProgress?.total_raised || '0'), fundraisingProgress?.currency || event.fundraising_currency || 'USD') }}
+                      </span>
+                      <span class="text-sm text-slate-500">raised</span>
+                    </div>
+                    <p class="text-sm text-slate-600">
+                      of {{ formatCurrency(parseFloat(String(fundraisingProgress?.goal || event.fundraising_goal || '0')), fundraisingProgress?.currency || event.fundraising_currency || 'USD') }} goal
+                    </p>
                   </div>
 
                   <!-- Progress Bar -->
-                  <div class="relative h-3 bg-slate-100 rounded-full overflow-hidden mt-4 mb-4">
+                  <div class="relative h-2.5 bg-slate-100 rounded-full overflow-hidden mb-3">
                     <div
-                      class="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000 ease-out"
-                      :style="{ width: `${Math.min(fundraisingProgressPercentage, 100)}%` }"
-                    />
-                    <!-- Animated shimmer -->
-                    <div
-                      class="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full animate-shimmer"
+                      class="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-green-600 rounded-full transition-all duration-1000 ease-out"
                       :style="{ width: `${Math.min(fundraisingProgressPercentage, 100)}%` }"
                     />
                   </div>
 
                   <!-- Stats Row -->
-                  <div class="flex items-center justify-between text-sm">
-                    <div class="flex items-center gap-4">
-                      <div class="flex items-center gap-1.5 text-slate-600">
+                  <div class="flex items-center justify-between text-sm mb-4">
+                    <div class="flex items-center gap-4 text-slate-600">
+                      <div class="flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                         </svg>
                         <span class="font-medium">{{ fundraisingProgress?.total_donors || 0 }}</span>
-                        <span class="text-slate-400">donors</span>
+                        <span class="text-slate-500">donors</span>
                       </div>
-                      <div v-if="fundraisingDaysLeft !== null" class="flex items-center gap-1.5 text-slate-600">
+                      <div v-if="fundraisingDaysLeft !== null" class="flex items-center gap-1.5">
                         <Clock class="w-4 h-4 text-slate-400" />
                         <span class="font-medium">{{ fundraisingDaysLeft }}</span>
-                        <span class="text-slate-400">days left</span>
+                        <span class="text-slate-500">days left</span>
                       </div>
                     </div>
-                    <span class="text-emerald-600 font-semibold">{{ fundraisingProgressPercentage }}%</span>
+                    <span class="text-sm font-semibold text-emerald-600">{{ fundraisingProgressPercentage }}%</span>
                   </div>
-                </div>
 
-                <!-- Donate CTA -->
-                <div class="px-5 pb-5">
+                  <!-- Donate CTA -->
                   <button
                     @click="showDonationForm = true"
-                    class="w-full relative overflow-hidden group bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5"
+                    class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
                   >
-                    <span class="relative z-10 flex items-center justify-center gap-2">
-                      <Heart class="w-5 h-5" />
-                      Donate Now
-                    </span>
-                    <!-- Hover glow effect -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                    <Heart class="w-5 h-5" />
+                    Donate Now
                   </button>
                 </div>
 
                 <!-- Recent Donors -->
-                <div v-if="fundraisingProgress?.recent_donations && fundraisingProgress.recent_donations.length > 0" class="border-t border-slate-100 px-5 py-4">
-                  <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recent Supporters</h3>
-                  </div>
+                <div v-if="fundraisingProgress?.recent_donations && fundraisingProgress.recent_donations.length > 0" class="border-t border-slate-100 px-4 py-4 bg-slate-50">
+                  <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Recent Supporters</h3>
                   <div class="space-y-3">
                     <div
                       v-for="donation in fundraisingProgress.recent_donations.slice(0, 3)"
@@ -224,14 +214,13 @@
                       class="flex items-center gap-3"
                     >
                       <div
-                        class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium text-white flex-shrink-0"
-                        :style="{ background: getDonorGradient(donation.display_name || 'Anonymous') }"
+                        class="w-9 h-9 bg-slate-200 rounded-lg flex items-center justify-center text-sm font-semibold text-slate-700 flex-shrink-0"
                       >
                         {{ getInitials(donation.display_name || 'Anonymous') }}
                       </div>
                       <div class="flex-1 min-w-0">
-                        <p class="font-medium text-slate-900 text-sm truncate">{{ donation.display_name || 'Anonymous' }}</p>
-                        <p class="text-xs text-slate-400">{{ formatRelativeTime(donation.created_at) }}</p>
+                        <p class="text-sm font-medium text-slate-900 truncate">{{ donation.display_name || 'Anonymous' }}</p>
+                        <p class="text-xs text-slate-500">{{ formatRelativeTime(donation.created_at) }}</p>
                       </div>
                       <span v-if="donation.amount" class="text-sm font-semibold text-slate-700">
                         {{ formatCurrency(parseFloat(donation.amount), donation.currency) }}
@@ -246,40 +235,34 @@
             </div>
 
             <!-- Event Info -->
-            <div class="px-4 space-y-5" :class="isFundraisingEnabled ? 'pt-0' : 'pt-5'">
+            <div class="px-4 space-y-4" :class="isFundraisingEnabled ? 'pt-0' : 'pt-5'">
               <!-- Date & Time -->
-              <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-xl flex-shrink-0 shadow-md shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
-                  <!-- Month Header -->
-                  <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
-                    <span class="text-[8px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(event.start_date) }}</span>
-                  </div>
-                  <!-- Day Number -->
-                  <div class="h-[62%] bg-white flex items-center justify-center">
-                    <span class="text-lg font-bold text-slate-800 leading-none">{{ getDayOfMonth(event.start_date) }}</span>
-                  </div>
+              <div class="flex items-start gap-3">
+                <div class="w-12 h-12 bg-slate-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0">
+                  <span class="text-[9px] font-semibold text-slate-500 uppercase leading-none">{{ getMonthAbbr(event.start_date) }}</span>
+                  <span class="text-lg font-bold text-slate-900 leading-tight mt-0.5">{{ getDayOfMonth(event.start_date) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
+                  <p class="text-sm font-medium text-slate-900">{{ getFormattedDate(event.start_date) }}</p>
                   <p class="text-sm text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
 
                   <!-- Calendar Options Dropdown -->
                   <div v-if="showCalendarOptions" class="mt-2 flex flex-wrap gap-2">
                     <button
                       @click="addToGoogleCalendar"
-                      class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                      class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                     >
                       Google
                     </button>
                     <button
                       @click="addToOutlookCalendar"
-                      class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                      class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                     >
                       Outlook
                     </button>
                     <button
                       @click="downloadICSFile"
-                      class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                      class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                     >
                       Download .ics
                     </button>
@@ -288,19 +271,19 @@
               </div>
 
               <!-- Location -->
-              <div v-if="event.location || event.is_virtual" class="flex items-start gap-4">
-                <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div v-if="event.location || event.is_virtual" class="flex items-start gap-3">
+                <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Video v-if="event.is_virtual" class="w-5 h-5 text-slate-600" />
                   <MapPin v-else class="w-5 h-5 text-slate-600" />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-slate-900">
+                  <p class="text-sm font-medium text-slate-900">
                     {{ event.is_virtual ? 'Virtual Event' : event.location }}
                   </p>
                   <button
                     v-if="!event.is_virtual && event.location"
                     @click="openMap"
-                    class="mt-1.5 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    class="mt-1.5 text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors"
                   >
                     <ExternalLink class="w-4 h-4" />
                     View on Map
@@ -311,117 +294,119 @@
               <!-- Registration Section - Already Registered (You're In) -->
               <div v-if="event.registration_required && isUserRegistered" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
                 <!-- Header with avatar and status -->
-                <div class="p-4 pb-3">
-                  <div class="flex items-center justify-between mb-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-lg font-medium shadow-md">
+                <div class="p-4">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700 text-lg font-semibold">
                       {{ getInitials(currentUser?.first_name || currentUser?.username || 'U') }}
                     </div>
-                    <!-- Status Badge -->
-                    <span :class="registrationStatusBadgeClass" class="px-2.5 py-1 text-xs font-medium rounded-full">
-                      {{ registrationStatusLabel }}
-                    </span>
-                  </div>
-                  <h3 class="text-xl font-bold text-slate-900">You're In</h3>
-                </div>
-
-                <!-- Event countdown -->
-                <div v-if="timeUntilEvent || event.is_ongoing" class="mx-4 mb-3 bg-slate-50 rounded-lg p-3">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2 text-slate-600">
-                      <Clock class="w-4 h-4" />
-                      <span class="text-sm">{{ event.is_ongoing ? 'Event is happening now' : 'Event starting in' }}</span>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-sm font-semibold text-slate-900">You're Registered</h3>
+                      <!-- Status Badge -->
+                      <span :class="registrationStatusBadgeClass" class="inline-block px-2 py-0.5 text-xs font-medium rounded-full mt-1">
+                        {{ registrationStatusLabel }}
+                      </span>
                     </div>
-                    <span v-if="timeUntilEvent" class="text-sm font-semibold text-orange-500">{{ timeUntilEvent }}</span>
                   </div>
-                  <p v-if="event.is_virtual && event.virtual_link" class="text-xs text-slate-500 mt-1.5 border-t border-slate-200 pt-2">
-                    The join button will be shown when the event is about to start.
-                  </p>
-                </div>
 
-                <!-- Action buttons -->
-                <div class="px-4 pb-3 flex gap-2">
-                  <button
-                    @click="showCalendarOptions = !showCalendarOptions"
-                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <CalendarPlus class="w-4 h-4" />
-                    Add to Calendar
-                  </button>
-                  <button
-                    @click="shareEvent"
-                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <Share2 class="w-4 h-4" />
-                    Invite a Friend
-                  </button>
-                </div>
+                  <!-- Event countdown -->
+                  <div v-if="timeUntilEvent || event.is_ongoing" class="bg-slate-50 rounded-lg p-3 mb-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2 text-slate-600">
+                        <Clock class="w-4 h-4" />
+                        <span class="text-sm">{{ event.is_ongoing ? 'Event is happening now' : 'Event starts in' }}</span>
+                      </div>
+                      <span v-if="timeUntilEvent" class="text-sm font-semibold text-emerald-600">{{ timeUntilEvent }}</span>
+                    </div>
+                    <p v-if="event.is_virtual && event.virtual_link" class="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200">
+                      The join button will appear when the event is about to start
+                    </p>
+                  </div>
 
-                <!-- Calendar Options Dropdown -->
-                <div v-if="showCalendarOptions" class="px-4 pb-3 flex flex-wrap gap-2">
-                  <button
-                    @click="addToGoogleCalendar"
-                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-                  >
-                    Google
-                  </button>
-                  <button
-                    @click="addToOutlookCalendar"
-                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-                  >
-                    Outlook
-                  </button>
-                  <button
-                    @click="downloadICSFile"
-                    class="px-3 py-1.5 text-xs bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-                  >
-                    Download .ics
-                  </button>
-                </div>
+                  <!-- Action buttons -->
+                  <div class="flex gap-2">
+                    <button
+                      @click="showCalendarOptions = !showCalendarOptions"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 transition-colors"
+                    >
+                      <CalendarPlus class="w-4 h-4" />
+                      Calendar
+                    </button>
+                    <button
+                      @click="shareEvent"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 transition-colors"
+                    >
+                      <Share2 class="w-4 h-4" />
+                      Share
+                    </button>
+                  </div>
 
-                <!-- Cancel registration link -->
-                <div class="px-4 pb-4 text-sm text-slate-600">
-                  No longer able to attend? Notify the host by
-                  <button
-                    @click="handleCancelRegistration"
-                    :disabled="isCancelling"
-                    class="text-pink-500 hover:text-pink-600 underline underline-offset-2 disabled:opacity-50"
-                  >
-                    {{ isCancelling ? 'cancelling...' : 'canceling your registration' }}
-                  </button>.
+                  <!-- Calendar Options Dropdown -->
+                  <div v-if="showCalendarOptions" class="mt-3 flex flex-wrap gap-2">
+                    <button
+                      @click="addToGoogleCalendar"
+                      class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      Google
+                    </button>
+                    <button
+                      @click="addToOutlookCalendar"
+                      class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      Outlook
+                    </button>
+                    <button
+                      @click="downloadICSFile"
+                      class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      Download .ics
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Confirmation code (if available) -->
-                <div v-if="userRegistration?.confirmation_code" class="border-t border-slate-100 px-4 py-3">
+                <div v-if="userRegistration?.confirmation_code" class="border-t border-slate-100 px-4 py-3 bg-slate-50">
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-xs text-slate-500 mb-0.5">Confirmation Code</p>
-                      <p class="font-mono font-semibold text-slate-900">{{ userRegistration.confirmation_code }}</p>
+                      <p class="text-sm font-mono font-semibold text-slate-900">{{ userRegistration.confirmation_code }}</p>
                     </div>
                     <button
                       @click="showQRModal = true"
-                      class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                      class="p-2 hover:bg-slate-200 rounded-lg transition-colors"
                       title="Show QR Code"
                     >
                       <QrCode class="w-5 h-5 text-slate-600" />
                     </button>
                   </div>
                 </div>
+
+                <!-- Cancel registration link -->
+                <div class="border-t border-slate-100 px-4 py-3 text-sm text-slate-600 text-center">
+                  Can't attend?
+                  <button
+                    @click="handleCancelRegistration"
+                    :disabled="isCancelling"
+                    class="text-slate-700 hover:text-slate-900 font-medium underline underline-offset-2 disabled:opacity-50"
+                  >
+                    {{ isCancelling ? 'Cancelling...' : 'Cancel registration' }}
+                  </button>
+                </div>
               </div>
 
               <!-- Registration Section - Not Registered -->
-              <div v-else-if="event.registration_required" class="bg-slate-50 rounded-xl p-4">
-                <h3 class="text-sm font-semibold text-slate-700 mb-3">Registration</h3>
+              <div v-else-if="event.registration_required" class="bg-white rounded-xl border border-slate-200 p-4">
+                <h3 class="text-sm font-semibold text-slate-900 mb-2">Registration Required</h3>
                 <p class="text-sm text-slate-600 mb-4">
                   {{ registrationMessage }}
                 </p>
 
                 <!-- User Info (if logged in) -->
-                <div v-if="currentUser" class="flex items-center gap-3 mb-4 p-3 bg-white rounded-lg border border-slate-200">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-medium">
+                <div v-if="currentUser" class="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div class="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-slate-700 text-sm font-semibold">
                     {{ getInitials(currentUser.first_name || currentUser.username || 'U') }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-medium text-slate-900 truncate">{{ currentUser.first_name || currentUser.username }}</p>
+                    <p class="text-sm font-medium text-slate-900 truncate">{{ currentUser.first_name || currentUser.username }}</p>
                     <p class="text-sm text-slate-500 truncate">{{ currentUser.email }}</p>
                   </div>
                 </div>
@@ -431,24 +416,24 @@
                   v-if="canRegister"
                   @click="handleRegister"
                   :disabled="isRegistering"
-                  class="w-full bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {{ isRegistering ? 'Registering...' : 'Register' }}
+                  {{ isRegistering ? 'Registering...' : 'Register for Event' }}
                 </button>
 
                 <!-- Login to Register -->
                 <button
                   v-else-if="!currentUser"
                   @click="handleLoginToRegister"
-                  class="w-full bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-800 transition-colors"
+                  class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
                 >
-                  Login to Register
+                  Sign in to Register
                 </button>
 
                 <!-- Registration Closed/Full/Past -->
                 <div
                   v-else
-                  class="w-full bg-slate-100 text-slate-500 font-semibold py-3 px-4 rounded-xl text-center"
+                  class="w-full bg-slate-100 text-slate-600 font-medium py-3 px-4 rounded-xl text-center text-sm"
                 >
                   <template v-if="isEventFull">Event is Full</template>
                   <template v-else-if="isRegistrationClosed">Registration Closed</template>
@@ -458,23 +443,23 @@
               </div>
 
               <!-- About Event -->
-              <div class="border-t border-slate-100 pt-5">
-                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">About Event</h3>
+              <div class="border-t border-slate-100 pt-4">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">About Event</h3>
                 <div
                   v-if="event.description"
                   class="prose prose-sm max-w-none text-slate-700"
                   v-html="sanitizedDescription"
                 />
-                <p v-else-if="event.short_description" class="text-slate-700 leading-relaxed">
+                <p v-else-if="event.short_description" class="text-sm text-slate-700 leading-relaxed">
                   {{ event.short_description }}
                 </p>
-                <p v-else class="text-slate-500 italic">No description provided.</p>
+                <p v-else class="text-sm text-slate-500">No description provided</p>
               </div>
 
               <!-- Agenda -->
-              <div v-if="event.agenda_items && event.agenda_items.length > 0" class="border-t border-slate-100 pt-5">
-                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Agenda</h3>
-                <div class="space-y-3">
+              <div v-if="event.agenda_items && event.agenda_items.length > 0" class="border-t border-slate-100 pt-4">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Agenda</h3>
+                <div class="space-y-2">
                   <div
                     v-for="(group, dateKey) in groupedAgendaItems"
                     :key="dateKey"
@@ -491,7 +476,7 @@
                           <span class="text-sm font-bold text-slate-900 leading-tight">{{ getDayOfMonth(group.date) }}</span>
                         </div>
                         <div class="text-left">
-                          <p class="font-medium text-slate-900 text-sm">{{ group.displayDate }}</p>
+                          <p class="text-sm font-medium text-slate-900">{{ group.displayDate }}</p>
                           <p class="text-xs text-slate-500">{{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'items' }}</p>
                         </div>
                       </div>
@@ -504,14 +489,14 @@
                     <!-- Agenda Items -->
                     <div
                       v-show="expandedAgendaGroups[dateKey]"
-                      class="divide-y divide-slate-100"
+                      class="divide-y divide-slate-100 bg-white"
                     >
                       <div
                         v-for="item in group.items"
                         :key="item.id"
-                        class="flex items-center justify-between gap-3 px-4 py-2.5"
+                        class="flex items-center justify-between gap-3 px-4 py-3"
                       >
-                        <p class="font-medium text-slate-900 truncate">{{ item.title }}</p>
+                        <p class="text-sm font-medium text-slate-900 truncate">{{ item.title }}</p>
                         <p v-if="item.start_time_text || item.end_time_text" class="text-sm text-slate-500 flex-shrink-0">
                           {{ formatAgendaTime(item) }}
                         </p>
@@ -522,8 +507,8 @@
               </div>
 
               <!-- Location Map -->
-              <div v-if="googleMapEmbedUrl" class="border-t border-slate-100 pt-5">
-                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Location</h3>
+              <div v-if="googleMapEmbedUrl" class="border-t border-slate-100 pt-4">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Location</h3>
                 <div class="rounded-xl overflow-hidden border border-slate-200">
                   <iframe
                     :src="googleMapEmbedUrl"
@@ -539,15 +524,15 @@
               </div>
 
               <!-- Hosts - Unified Card Style for All Events -->
-              <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-100 pt-5">
-                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
+              <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-100 pt-4">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
                   {{ isFundraisingEnabled ? 'Campaign Organizer' : 'Hosted By' }}
                 </h3>
-                <div class="bg-slate-50 rounded-xl p-4">
+                <div class="bg-white border border-slate-200 rounded-xl p-4">
                   <div class="flex items-center gap-3">
                     <div
                       v-if="event.hosts[0].profile_image"
-                      class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-semibold overflow-hidden"
+                      class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden"
                     >
                       <img
                         :src="getProfileUrl(event.hosts[0].profile_image)"
@@ -555,16 +540,16 @@
                         class="w-full h-full object-cover"
                       />
                     </div>
-                    <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-semibold">
+                    <div v-else class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 text-lg font-semibold">
                       {{ getInitials(event.hosts[0].name) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-medium text-slate-900 truncate">{{ event.hosts[0].name }}</p>
+                      <p class="text-sm font-medium text-slate-900 truncate">{{ event.hosts[0].name }}</p>
                       <p class="text-sm text-slate-500">{{ isFundraisingEnabled ? 'Campaign Organizer' : 'Event Organizer' }}</p>
                     </div>
                     <button
                       v-if="event.hosts[0].title"
-                      class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                      class="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors"
                     >
                       Contact
                     </button>
@@ -573,16 +558,16 @@
               </div>
 
               <!-- Share Banner - Unified CTA Footer for All Events -->
-              <div class="border-t border-slate-100 pt-5">
-                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-5 text-white">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h4 class="font-semibold mb-1">Help spread the word</h4>
-                      <p class="text-slate-400 text-sm">{{ isFundraisingEnabled ? 'Share this campaign with friends' : 'Share this event with friends' }}</p>
+              <div class="border-t border-slate-100 pt-4">
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-5 text-white">
+                  <div class="flex items-center justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <h4 class="text-sm font-semibold mb-1">Help spread the word</h4>
+                      <p class="text-sm text-slate-400">{{ isFundraisingEnabled ? 'Share this campaign' : 'Share this event' }}</p>
                     </div>
                     <button
                       @click="shareEvent"
-                      class="flex items-center gap-2 px-4 py-2.5 bg-white text-slate-900 rounded-xl font-medium text-sm hover:bg-slate-100 transition-colors"
+                      class="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-sm font-semibold transition-colors flex-shrink-0"
                     >
                       <Share2 class="w-4 h-4" />
                       Share
@@ -1304,20 +1289,6 @@ const formatCurrency = (amount: number, currency: string): string => {
     currency: currency,
     maximumFractionDigits: 0,
   }).format(amount)
-}
-
-const getDonorGradient = (name: string): string => {
-  const gradients = [
-    'linear-gradient(135deg, #10b981, #0d9488)', // emerald to teal
-    'linear-gradient(135deg, #0ea5e9, #0284c7)', // sky to blue
-    'linear-gradient(135deg, #8b5cf6, #7c3aed)', // violet to purple
-    'linear-gradient(135deg, #f59e0b, #d97706)', // amber to orange
-    'linear-gradient(135deg, #ec4899, #db2777)', // pink to rose
-    'linear-gradient(135deg, #06b6d4, #0891b2)', // cyan
-  ]
-  // Simple hash to pick consistent gradient for same name
-  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  return gradients[hash % gradients.length]
 }
 
 const formatRelativeTime = (dateString: string): string => {
