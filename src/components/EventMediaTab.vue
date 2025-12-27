@@ -10,8 +10,8 @@
 
     <!-- All Sections Stacked -->
     <div class="space-y-6">
-      <!-- Basic Media Section -->
-      <div>
+      <!-- Basic Media Section (Category-specific: wedding, birthday, housewarming) -->
+      <div v-if="props.showCategorySpecificSections">
         <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
           <div class="flex items-center justify-center">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
@@ -151,8 +151,8 @@
         />
       </div>
 
-      <!-- Event Texts Section -->
-      <div v-if="localEventData?.id">
+      <!-- Event Texts Section (Category-specific: wedding, birthday, housewarming) -->
+      <div v-if="props.showCategorySpecificSections && localEventData?.id">
         <EventTextTab
           ref="eventTextTabRef"
           :event-id="localEventData.id"
@@ -213,6 +213,7 @@ interface Props {
   canEdit: boolean
   initialMedia?: EventPhoto[]
   eventData?: Event
+  showCategorySpecificSections?: boolean // Controls visibility of category-specific sections
 }
 
 const props = defineProps<Props>()

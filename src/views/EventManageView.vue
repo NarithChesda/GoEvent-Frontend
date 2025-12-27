@@ -171,6 +171,7 @@
                 :can-edit="event.can_edit || false"
                 :initial-media="event.photos || []"
                 :event-data="event"
+                :show-category-specific-sections="showCategorySpecificSections"
                 @media-updated="handleMediaUpdated"
                 @event-updated="handleEventUpdated"
                 @sub-tab-change="activeSubTab = $event"
@@ -540,10 +541,15 @@ const canViewRestrictedTabs = computed(() => {
 const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming']
 
 const canViewMedia = computed(() => {
-  // Only show showcase/media tab for wedding, birthday, housewarming events
+  // Show showcase/media tab for all events that the user can edit
+  return canViewRestrictedTabs.value
+})
+
+// Check if event category supports category-specific showcase features
+const showCategorySpecificSections = computed(() => {
   const category = event.value?.category_details?.name || event.value?.category_name
   if (!category) return false
-  return canViewRestrictedTabs.value && SHOWCASE_CATEGORIES.includes(category.toLowerCase())
+  return SHOWCASE_CATEGORIES.includes(category.toLowerCase())
 })
 
 const canViewCollaborators = computed(() => {
