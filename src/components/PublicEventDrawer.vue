@@ -117,6 +117,7 @@
               :recent-item-donations="recentItemDonations"
               :item-category-summary="itemCategorySummary"
               @donate="showDonationForm = true"
+              @see-all-donors="handleSeeAllDonors"
             />
 
             <!-- Event Info -->
@@ -234,6 +235,15 @@
                 </div>
               </div>
 
+              <!-- Top Donors (Fundraising only) -->
+              <TopDonorsSection
+                v-if="isFundraisingEnabled && topDonors.length > 0"
+                :top-donors="topDonors"
+                :currency="fundraisingProgress?.currency || event.fundraising_currency || 'USD'"
+                :show-see-all="(fundraisingProgress?.total_donors || 0) > 10"
+                @see-all="handleSeeAllDonors('cash')"
+              />
+
               <!-- Share Banner -->
               <div class="border-t border-slate-100 pt-4">
                 <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-5 text-white">
@@ -264,6 +274,19 @@
       :confirmation-code="userRegistration?.confirmation_code"
       @close="showQRModal = false"
     />
+
+    <!-- All Donors Modal -->
+    <AllDonorsModal
+      v-if="isFundraisingEnabled && event"
+      :show="showAllDonorsModal"
+      :event-id="event.id"
+      :currency="fundraisingProgress?.currency || event.fundraising_currency || 'USD'"
+      :total-cash-donors="fundraisingProgress?.total_donors || 0"
+      :total-item-donors="itemCategorySummary?.totals?.total_item_donors || 0"
+      :has-item-donations="(itemCategorySummary?.categories?.length || 0) > 0"
+      :initial-tab="allDonorsInitialTab"
+      @close="showAllDonorsModal = false"
+    />
   </Teleport>
 </template>
 
@@ -286,6 +309,8 @@ import PublicEventInfo from './event/PublicEventInfo.vue'
 import PublicEventRegistrationCard from './event/PublicEventRegistrationCard.vue'
 import PublicEventAgenda from './event/PublicEventAgenda.vue'
 import PublicEventQRModal from './event/PublicEventQRModal.vue'
+import AllDonorsModal from './event/AllDonorsModal.vue'
+import TopDonorsSection from './event/TopDonorsSection.vue'
 
 // Composables
 import {
@@ -323,6 +348,8 @@ const router = useRouter()
 // Local state
 const showDonationForm = ref(false)
 const showQRModal = ref(false)
+const showAllDonorsModal = ref(false)
+const allDonorsInitialTab = ref<'cash' | 'item'>('cash')
 
 // Composables
 const eventData = usePublicEventData()
@@ -335,6 +362,7 @@ const {
   itemCategorySummary,
   recentCashDonations,
   recentItemDonations,
+  topDonors: topDonorsData,
   currentUser,
   organizerName,
   isEventFull,
@@ -416,6 +444,25 @@ const handleDonationComplete = async () => {
     await refreshFundraisingProgress(props.eventId)
   }
 }
+
+const handleSeeAllDonors = (tab: 'cash' | 'item') => {
+  allDonorsInitialTab.value = tab
+  showAllDonorsModal.value = true
+}
+
+// Top donors computed - map from API data
+const topDonors = computed(() => {
+  if (!topDonorsData.value || topDonorsData.value.length === 0) return []
+
+  return topDonorsData.value
+    .filter(d => d.amount && parseFloat(d.amount) > 0)
+    .map(d => ({
+      id: d.id,
+      display_name: d.display_name,
+      amount: d.amount,
+      currency: d.currency,
+    }))
+})
 
 // Calculate scrollbar width to prevent layout shift
 const getScrollbarWidth = (): number => {

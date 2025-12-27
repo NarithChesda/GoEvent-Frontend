@@ -27,6 +27,7 @@ export function usePublicEventData() {
   const itemCategorySummary = ref<DonationCategorySummary | null>(null)
   const recentCashDonations = ref<EventDonation[]>([])
   const recentItemDonations = ref<EventDonation[]>([])
+  const topDonors = ref<EventDonation[]>([])
 
   // Banner image fallback state
   const primaryBannerError = ref(false)
@@ -183,7 +184,7 @@ export function usePublicEventData() {
         // Load fundraising progress and item categories if fundraising is enabled
         if (event.value.is_fundraising) {
           try {
-            const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse] = await Promise.all([
+            const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse, topDonorsResponse] = await Promise.all([
               donationService.getFundraisingProgress(eventId),
               donationService.getItemCategorySummary(eventId),
               donationService.getDonations(eventId, {
@@ -197,6 +198,13 @@ export function usePublicEventData() {
                 status: 'verified',
                 ordering: '-created_at',
                 page_size: 5
+              }),
+              // Fetch top donors sorted by amount
+              donationService.getDonations(eventId, {
+                donation_type: 'cash',
+                status: 'verified',
+                ordering: '-amount',
+                page_size: 10
               })
             ])
 
@@ -214,6 +222,10 @@ export function usePublicEventData() {
 
             if (itemDonationsResponse.success && itemDonationsResponse.data?.results) {
               recentItemDonations.value = itemDonationsResponse.data.results
+            }
+
+            if (topDonorsResponse.success && topDonorsResponse.data?.results) {
+              topDonors.value = topDonorsResponse.data.results
             }
           } catch (err) {
             console.warn('Could not load fundraising data:', err)
@@ -233,7 +245,7 @@ export function usePublicEventData() {
     if (!event.value?.is_fundraising) return
 
     try {
-      const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse] = await Promise.all([
+      const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse, topDonorsResponse] = await Promise.all([
         donationService.getFundraisingProgress(eventId),
         donationService.getItemCategorySummary(eventId),
         donationService.getDonations(eventId, {
@@ -247,6 +259,13 @@ export function usePublicEventData() {
           status: 'verified',
           ordering: '-created_at',
           page_size: 5
+        }),
+        // Fetch top donors sorted by amount
+        donationService.getDonations(eventId, {
+          donation_type: 'cash',
+          status: 'verified',
+          ordering: '-amount',
+          page_size: 10
         })
       ])
 
@@ -264,6 +283,10 @@ export function usePublicEventData() {
 
       if (itemDonationsResponse.success && itemDonationsResponse.data?.results) {
         recentItemDonations.value = itemDonationsResponse.data.results
+      }
+
+      if (topDonorsResponse.success && topDonorsResponse.data?.results) {
+        topDonors.value = topDonorsResponse.data.results
       }
     } catch (err) {
       console.warn('Could not refresh fundraising data:', err)
@@ -297,6 +320,7 @@ export function usePublicEventData() {
     itemCategorySummary,
     recentCashDonations,
     recentItemDonations,
+    topDonors,
     primaryBannerError,
     fallbackBannerError,
 

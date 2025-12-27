@@ -160,9 +160,19 @@
         v-if="displayedRecentDonations.length > 0"
         class="border-t border-slate-100 px-4 py-4 bg-slate-50"
       >
-        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-          Recent Supporters
-        </h3>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            Recent Supporters
+          </h3>
+          <button
+            v-if="hasMoreDonations"
+            @click="emit('see-all-donors', activeTab)"
+            class="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+          >
+            See All
+            <ChevronRight class="w-3 h-3" />
+          </button>
+        </div>
         <div class="space-y-3">
           <div
             v-for="donation in displayedRecentDonations"
@@ -202,7 +212,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Heart, Clock } from 'lucide-vue-next'
+import { Heart, Clock, ChevronRight } from 'lucide-vue-next'
 import { useEventDateFormatters } from '@/composables/event'
 import type { DonationCategorySummary } from '@/services/api/types/donation.types'
 
@@ -241,6 +251,7 @@ interface Props {
 
 interface Emits {
   (e: 'donate'): void
+  (e: 'see-all-donors', tab: 'cash' | 'item'): void
 }
 
 const props = defineProps<Props>()
@@ -308,6 +319,19 @@ const displayedRecentDonations = computed(() => {
 
   // Otherwise show cash donations (when no tabs/item categories)
   return props.recentCashDonations.slice(0, 5)
+})
+
+// Check if there are more donations than displayed (to show "See All" button)
+const hasMoreDonations = computed(() => {
+  if (hasItemDonations.value) {
+    if (activeTab.value === 'cash') {
+      return props.totalDonors > 5 || props.recentCashDonations.length >= 5
+    } else {
+      const itemDonorCount = props.itemCategorySummary?.totals?.total_item_donors || 0
+      return itemDonorCount > 5 || props.recentItemDonations.length >= 5
+    }
+  }
+  return props.totalDonors > 5 || props.recentCashDonations.length >= 5
 })
 </script>
 
