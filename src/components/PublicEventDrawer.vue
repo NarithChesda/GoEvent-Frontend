@@ -113,7 +113,9 @@
               :progress-percentage="fundraisingProgressPercentage"
               :total-donors="fundraisingProgress.total_donors || 0"
               :days-left="fundraisingDaysLeft"
-              :recent-donations="fundraisingProgress.recent_donations || null"
+              :recent-cash-donations="recentCashDonations"
+              :recent-item-donations="recentItemDonations"
+              :item-category-summary="itemCategorySummary"
               @donate="showDonationForm = true"
             />
 
@@ -330,6 +332,9 @@ const {
   error,
   userRegistration,
   fundraisingProgress,
+  itemCategorySummary,
+  recentCashDonations,
+  recentItemDonations,
   currentUser,
   organizerName,
   isEventFull,

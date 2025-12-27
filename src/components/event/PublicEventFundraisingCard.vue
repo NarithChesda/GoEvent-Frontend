@@ -1,8 +1,28 @@
 <template>
   <div class="px-4 -mt-6 mb-6 relative z-10">
     <div class="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
-      <!-- Progress Stats -->
-      <div class="p-4">
+      <!-- Tabs (only show if item donations are available) -->
+      <div v-if="hasItemDonations" class="border-b border-slate-200">
+        <div class="flex">
+          <button
+            @click="activeTab = 'cash'"
+            class="flex-1 px-4 py-3 text-sm font-medium transition-colors"
+            :class="activeTab === 'cash' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
+          >
+            Money Donations
+          </button>
+          <button
+            @click="activeTab = 'item'"
+            class="flex-1 px-4 py-3 text-sm font-medium transition-colors"
+            :class="activeTab === 'item' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'"
+          >
+            Item Donations
+          </button>
+        </div>
+      </div>
+
+      <!-- Cash Donations Tab Content -->
+      <div v-if="activeTab === 'cash'" class="p-4">
         <!-- Amount Raised -->
         <div class="mb-4">
           <div class="flex items-baseline gap-2 mb-1">
@@ -61,9 +81,83 @@
         </button>
       </div>
 
+      <!-- Item Donations Tab Content -->
+      <div v-else-if="activeTab === 'item' && itemCategorySummary" class="p-4">
+        <!-- Item Categories Progress -->
+        <div class="space-y-4 mb-4">
+          <div
+            v-for="category in itemCategorySummary.categories"
+            :key="category.id"
+            class="p-3 bg-slate-50 rounded-lg border border-slate-200"
+          >
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="text-sm font-semibold text-slate-900">{{ category.name }}</h4>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  {{ category.total_quantity }} {{ category.unit }}
+                  <span v-if="category.target_quantity">
+                    of {{ category.target_quantity }} {{ category.unit }}
+                  </span>
+                  donated
+                </p>
+              </div>
+              <span
+                v-if="category.progress_percentage !== null"
+                class="text-xs font-semibold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700"
+              >
+                {{ Math.round(category.progress_percentage) }}%
+              </span>
+            </div>
+
+            <!-- Progress Bar (only if target quantity is set) -->
+            <div v-if="category.target_quantity" class="relative h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                class="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out progress-bar-fill"
+                :style="{ width: `${Math.min(category.progress_percentage || 0, 100)}%` }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Stats -->
+        <div class="flex items-center gap-4 text-sm text-slate-600 mb-4 pb-4 border-b border-slate-200">
+          <div class="flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+              />
+            </svg>
+            <span class="font-medium">{{ itemCategorySummary.totals.total_item_donors }}</span>
+            <span class="text-slate-500">donors</span>
+          </div>
+          <div v-if="daysLeft !== null" class="flex items-center gap-1.5">
+            <Clock class="w-4 h-4 text-slate-400" />
+            <span class="font-medium">{{ daysLeft }}</span>
+            <span class="text-slate-500">days left</span>
+          </div>
+        </div>
+
+        <!-- Donate CTA -->
+        <button
+          @click="emit('donate')"
+          class="w-full text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 donate-button"
+        >
+          <Heart class="w-5 h-5" />
+          Donate Items
+        </button>
+      </div>
+
       <!-- Recent Donors -->
       <div
-        v-if="recentDonations && recentDonations.length > 0"
+        v-if="displayedRecentDonations.length > 0"
         class="border-t border-slate-100 px-4 py-4 bg-slate-50"
       >
         <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
@@ -71,7 +165,7 @@
         </h3>
         <div class="space-y-3">
           <div
-            v-for="donation in recentDonations.slice(0, 3)"
+            v-for="donation in displayedRecentDonations"
             :key="donation.id"
             class="flex items-center gap-3"
           >
@@ -86,12 +180,19 @@
               </p>
               <p class="text-xs text-slate-500">{{ formatRelativeTime(donation.created_at) }}</p>
             </div>
-            <span v-if="donation.amount" class="text-sm font-semibold text-slate-700">
-              {{ formatCurrency(parseFloat(donation.amount), donation.currency) }}
-            </span>
-            <span v-else-if="donation.item_quantity" class="text-sm font-semibold text-slate-700">
-              {{ donation.item_quantity }} {{ donation.item_unit }}
-            </span>
+            <div v-if="donation.amount" class="text-right">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ formatCurrency(parseFloat(donation.amount), donation.currency) }}
+              </span>
+            </div>
+            <div v-else-if="donation.item_quantity" class="text-right">
+              <p class="text-xs text-slate-500 mb-0.5">
+                {{ getItemDisplayName(donation) }}
+              </p>
+              <p class="text-sm font-semibold text-slate-700">
+                {{ donation.item_quantity }} {{ donation.item_unit }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -100,18 +201,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Heart, Clock } from 'lucide-vue-next'
 import { useEventDateFormatters } from '@/composables/event'
+import type { DonationCategorySummary } from '@/services/api/types/donation.types'
+
+interface DonationItemCategoryInfo {
+  id: number
+  name: string
+  unit: string
+  target_quantity?: number
+}
 
 interface Donation {
-  id: string
+  id: string | number
   display_name: string | null
   created_at: string
-  amount?: string
+  amount?: string | null
   currency: string
-  item_quantity?: number
+  item_quantity?: number | null
   item_unit?: string
+  item_name?: string
+  item_category_info?: DonationItemCategoryInfo | null
+  donation_type?: 'cash' | 'item'
+  donation_display?: string
 }
 
 interface Props {
@@ -121,7 +234,9 @@ interface Props {
   progressPercentage: number
   totalDonors: number
   daysLeft: number | null
-  recentDonations: Donation[] | null
+  recentCashDonations: Donation[]
+  recentItemDonations: Donation[]
+  itemCategorySummary: DonationCategorySummary | null
 }
 
 interface Emits {
@@ -131,6 +246,9 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Active tab state
+const activeTab = ref<'cash' | 'item'>('cash')
+
 const { getInitials } = useEventDateFormatters()
 
 const formatCurrency = (amount: number, currency: string): string => {
@@ -139,6 +257,17 @@ const formatCurrency = (amount: number, currency: string): string => {
     currency: currency,
     maximumFractionDigits: 0,
   }).format(amount)
+}
+
+const getItemDisplayName = (donation: Donation): string => {
+  // Priority: item_name > category_name > 'Item'
+  if (donation.item_name) {
+    return donation.item_name
+  }
+  if (donation.item_category_info?.name) {
+    return donation.item_category_info.name
+  }
+  return 'Item'
 }
 
 const formatRelativeTime = (dateString: string): string => {
@@ -160,6 +289,26 @@ const formatRelativeTime = (dateString: string): string => {
 
 const formattedTotalRaised = computed(() => formatCurrency(parseFloat(props.totalRaised || '0'), props.currency))
 const formattedGoal = computed(() => formatCurrency(parseFloat(props.goal || '0'), props.currency))
+
+// Check if event has item donations enabled
+const hasItemDonations = computed(() => {
+  return props.itemCategorySummary && props.itemCategorySummary.categories.length > 0
+})
+
+// Display donations based on active tab
+const displayedRecentDonations = computed(() => {
+  // If tabs are shown, return donations based on active tab
+  if (hasItemDonations.value) {
+    if (activeTab.value === 'cash') {
+      return props.recentCashDonations.slice(0, 5)
+    } else {
+      return props.recentItemDonations.slice(0, 5)
+    }
+  }
+
+  // Otherwise show cash donations (when no tabs/item categories)
+  return props.recentCashDonations.slice(0, 5)
+})
 </script>
 
 <style scoped>

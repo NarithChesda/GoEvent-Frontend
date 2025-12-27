@@ -9,7 +9,7 @@
 
 import { ref, computed } from 'vue'
 import { eventsService, donationService, type Event, type EventRegistration } from '@/services/api'
-import type { FundraisingProgress } from '@/services/api/types/donation.types'
+import type { FundraisingProgress, DonationCategorySummary, EventDonation } from '@/services/api/types/donation.types'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
 import { useAuthStore } from '@/stores/auth'
 import { apiClient } from '@/services/api'
@@ -24,6 +24,9 @@ export function usePublicEventData() {
   const userRegistration = ref<EventRegistration | null>(null)
   const registrationChecked = ref(false)
   const fundraisingProgress = ref<FundraisingProgress | null>(null)
+  const itemCategorySummary = ref<DonationCategorySummary | null>(null)
+  const recentCashDonations = ref<EventDonation[]>([])
+  const recentItemDonations = ref<EventDonation[]>([])
 
   // Banner image fallback state
   const primaryBannerError = ref(false)
@@ -177,15 +180,43 @@ export function usePublicEventData() {
           userRegistration.value = registrationResponse.data
         }
 
-        // Load fundraising progress if fundraising is enabled
+        // Load fundraising progress and item categories if fundraising is enabled
         if (event.value.is_fundraising) {
           try {
-            const progressResponse = await donationService.getFundraisingProgress(eventId)
+            const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse] = await Promise.all([
+              donationService.getFundraisingProgress(eventId),
+              donationService.getItemCategorySummary(eventId),
+              donationService.getDonations(eventId, {
+                donation_type: 'cash',
+                status: 'verified',
+                ordering: '-created_at',
+                page_size: 5
+              }),
+              donationService.getDonations(eventId, {
+                donation_type: 'item',
+                status: 'verified',
+                ordering: '-created_at',
+                page_size: 5
+              })
+            ])
+
             if (progressResponse.success && progressResponse.data) {
               fundraisingProgress.value = progressResponse.data
             }
+
+            if (categoriesResponse.success && categoriesResponse.data) {
+              itemCategorySummary.value = categoriesResponse.data
+            }
+
+            if (cashDonationsResponse.success && cashDonationsResponse.data?.results) {
+              recentCashDonations.value = cashDonationsResponse.data.results
+            }
+
+            if (itemDonationsResponse.success && itemDonationsResponse.data?.results) {
+              recentItemDonations.value = itemDonationsResponse.data.results
+            }
           } catch (err) {
-            console.warn('Could not load fundraising progress:', err)
+            console.warn('Could not load fundraising data:', err)
           }
         }
       } else {
@@ -202,12 +233,40 @@ export function usePublicEventData() {
     if (!event.value?.is_fundraising) return
 
     try {
-      const progressResponse = await donationService.getFundraisingProgress(eventId)
+      const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse] = await Promise.all([
+        donationService.getFundraisingProgress(eventId),
+        donationService.getItemCategorySummary(eventId),
+        donationService.getDonations(eventId, {
+          donation_type: 'cash',
+          status: 'verified',
+          ordering: '-created_at',
+          page_size: 5
+        }),
+        donationService.getDonations(eventId, {
+          donation_type: 'item',
+          status: 'verified',
+          ordering: '-created_at',
+          page_size: 5
+        })
+      ])
+
       if (progressResponse.success && progressResponse.data) {
         fundraisingProgress.value = progressResponse.data
       }
+
+      if (categoriesResponse.success && categoriesResponse.data) {
+        itemCategorySummary.value = categoriesResponse.data
+      }
+
+      if (cashDonationsResponse.success && cashDonationsResponse.data?.results) {
+        recentCashDonations.value = cashDonationsResponse.data.results
+      }
+
+      if (itemDonationsResponse.success && itemDonationsResponse.data?.results) {
+        recentItemDonations.value = itemDonationsResponse.data.results
+      }
     } catch (err) {
-      console.warn('Could not refresh fundraising progress:', err)
+      console.warn('Could not refresh fundraising data:', err)
     }
   }
 
@@ -235,6 +294,9 @@ export function usePublicEventData() {
     userRegistration,
     registrationChecked,
     fundraisingProgress,
+    itemCategorySummary,
+    recentCashDonations,
+    recentItemDonations,
     primaryBannerError,
     fallbackBannerError,
 
