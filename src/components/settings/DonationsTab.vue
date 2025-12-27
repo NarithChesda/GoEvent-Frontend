@@ -224,7 +224,7 @@
 
                     <!-- Edit (for pending donations) -->
                     <button
-                      v-if="donation.status === 'pending' && donation.can_be_edited"
+                      v-if="donation.status === 'pending'"
                       @click="editDonation(donation)"
                       class="px-2.5 py-1 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center gap-1"
                     >

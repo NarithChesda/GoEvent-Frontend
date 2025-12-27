@@ -80,6 +80,28 @@
             <form id="edit-donation-form" @submit.prevent="handleSubmit" class="space-y-4">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Update Details</h3>
 
+              <!-- Amount (for cash donations) -->
+              <div v-if="donation?.donation_type === 'cash'">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                  Amount <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    v-model.number="form.amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    class="w-full px-3 py-2 pr-14 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white"
+                    placeholder="0.00"
+                    required
+                  />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500">
+                    {{ form.currency || 'USD' }}
+                  </span>
+                </div>
+                <p v-if="errors.amount" class="mt-1.5 text-xs text-red-600">{{ errors.amount }}</p>
+              </div>
+
               <!-- Donor Name -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -93,6 +115,31 @@
                   required
                 />
                 <p v-if="errors.donor_name" class="mt-1.5 text-xs text-red-600">{{ errors.donor_name }}</p>
+              </div>
+
+              <!-- Anonymous Toggle -->
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div class="flex-1">
+                  <label class="text-sm font-medium text-slate-700">Show my name publicly</label>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    {{ form.is_anonymous ? 'Your name will be hidden' : 'Your name will be visible to others' }}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  @click="form.is_anonymous = !form.is_anonymous"
+                  :class="[
+                    'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2',
+                    form.is_anonymous ? 'bg-slate-300' : 'bg-emerald-500'
+                  ]"
+                >
+                  <span
+                    :class="[
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                      form.is_anonymous ? 'translate-x-0' : 'translate-x-5'
+                    ]"
+                  />
+                </button>
               </div>
 
               <!-- Contact Info -->
@@ -290,11 +337,13 @@ const emit = defineEmits<{
 }>()
 
 // Form state
-const form = ref<UpdateDonationRequest>({
+const form = ref<UpdateDonationRequest & { currency?: string }>({
   donor_name: '',
   donor_email: '',
   donor_phone: '',
-  message: ''
+  message: '',
+  amount: undefined,
+  is_anonymous: false,
 })
 
 const errors = ref<Record<string, string>>({})
@@ -311,7 +360,12 @@ const showReplaceReceipt = ref(false)
 
 // Computed
 const isFormValid = computed(() => {
-  return form.value.donor_name?.trim() !== ''
+  const hasValidName = form.value.donor_name?.trim() !== ''
+  // For cash donations, also require a valid amount
+  if (props.donation?.donation_type === 'cash') {
+    return hasValidName && form.value.amount !== undefined && form.value.amount > 0
+  }
+  return hasValidName
 })
 
 // Watch for donation changes to populate form
@@ -323,7 +377,10 @@ watch(
         donor_name: newDonation.donor_name,
         donor_email: newDonation.donor_email || '',
         donor_phone: newDonation.donor_phone || '',
-        message: newDonation.message || ''
+        message: newDonation.message || '',
+        amount: newDonation.amount ? parseFloat(newDonation.amount) : undefined,
+        is_anonymous: newDonation.is_anonymous,
+        currency: newDonation.currency,
       }
       // Reset receipt upload state
       newReceiptFile.value = null
@@ -454,6 +511,14 @@ async function handleSubmit() {
     return
   }
 
+  // Validate amount for cash donations
+  if (props.donation.donation_type === 'cash') {
+    if (!form.value.amount || form.value.amount <= 0) {
+      errors.value.amount = 'Please enter a valid amount'
+      return
+    }
+  }
+
   isSubmitting.value = true
 
   try {
@@ -462,7 +527,13 @@ async function handleSubmit() {
       donor_name: form.value.donor_name?.trim(),
       donor_email: form.value.donor_email?.trim() || undefined,
       donor_phone: form.value.donor_phone?.trim() || undefined,
-      message: form.value.message?.trim() || undefined
+      message: form.value.message?.trim() || undefined,
+      is_anonymous: form.value.is_anonymous,
+    }
+
+    // Include amount for cash donations
+    if (props.donation.donation_type === 'cash' && form.value.amount) {
+      updateData.amount = form.value.amount
     }
 
     const response = await donationService.updateDonation(
