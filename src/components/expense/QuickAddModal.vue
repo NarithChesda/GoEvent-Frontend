@@ -602,6 +602,35 @@
                     </div>
                   </Transition>
                 </div>
+
+                <!-- Public Expense Toggle -->
+                <div
+                  @click="formData.is_public = !formData.is_public"
+                  class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                      <Eye class="w-4 h-4 text-sky-500" />
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-slate-700">Public Expense</p>
+                      <p class="text-xs text-slate-500">Show this expense in public transparency view</p>
+                    </div>
+                  </div>
+                  <div
+                    role="switch"
+                    :aria-checked="formData.is_public"
+                    :class="[
+                      'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                      formData.is_public ? 'bg-sky-500' : 'bg-slate-200'
+                    ]"
+                  >
+                    <span
+                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                      :style="{ transform: formData.is_public ? 'translateX(20px)' : 'translateX(0)' }"
+                    />
+                  </div>
+                </div>
               </template>
 
               <!-- BUDGET FIELDS -->
@@ -727,7 +756,8 @@ import {
   Sparkles,
   ArrowRight,
   Edit2,
-  Trash2
+  Trash2,
+  Eye
 } from 'lucide-vue-next'
 import {
   expensesService,
@@ -825,6 +855,7 @@ const formData = ref({
   date: new Date().toISOString().split('T')[0],
   payment_method: 'cash' as 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other',
   paid_to: '',
+  is_public: false,
 
   // Budget fields
   budgeted_amount: null as number | null,
@@ -1155,7 +1186,8 @@ const submitExpense = async () => {
     date: formData.value.date,
     payment_method: formData.value.payment_method,
     paid_to: formData.value.paid_to || undefined,
-    notes: formData.value.notes || undefined
+    notes: formData.value.notes || undefined,
+    is_public: formData.value.is_public
   }
 
   const response = await expensesService.createExpense(
@@ -1213,7 +1245,8 @@ const updateExpense = async () => {
     date: formData.value.date,
     payment_method: formData.value.payment_method,
     paid_to: formData.value.paid_to || undefined,
-    notes: formData.value.notes || undefined
+    notes: formData.value.notes || undefined,
+    is_public: formData.value.is_public
   }
 
   const response = await expensesService.updateExpense(
@@ -1291,6 +1324,7 @@ const resetForm = () => {
     date: new Date().toISOString().split('T')[0],
     payment_method: 'cash',
     paid_to: '',
+    is_public: false,
     budgeted_amount: null,
     name: '',
     category_description: '',
@@ -1341,6 +1375,7 @@ const populateEditData = () => {
       date: props.editData.date || new Date().toISOString().split('T')[0],
       payment_method: props.editData.payment_method || 'cash',
       paid_to: props.editData.paid_to || '',
+      is_public: props.editData.is_public ?? false,
       budgeted_amount: null,
       name: '',
       category_description: '',
@@ -1357,6 +1392,7 @@ const populateEditData = () => {
       date: new Date().toISOString().split('T')[0],
       payment_method: 'cash',
       paid_to: '',
+      is_public: false,
       budgeted_amount: props.editData.budgeted_amount ? parseFloat(props.editData.budgeted_amount) : null,
       name: '',
       category_description: '',

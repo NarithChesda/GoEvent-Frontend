@@ -292,10 +292,18 @@
                         <div v-if="expense.paid_to" class="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
                           <span class="truncate max-w-[100px]">{{ expense.paid_to }}</span>
                         </div>
-                        <div v-if="expense.receipt" class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium">
+                        <a
+                          v-if="expense.receipt"
+                          :href="expense.receipt"
+                          target="_blank"
+                          @click.stop
+                          class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                          title="Click to view receipt"
+                        >
                           <Paperclip class="w-3 h-3" />
                           <span>Receipt</span>
-                        </div>
+                          <Eye class="w-3 h-3 opacity-60" />
+                        </a>
                       </div>
                     </div>
 
@@ -431,7 +439,8 @@ import {
   ChevronDown,
   Plus,
   Paperclip,
-  Filter
+  Filter,
+  Eye
 } from 'lucide-vue-next'
 import {
   expenseBudgetsService,

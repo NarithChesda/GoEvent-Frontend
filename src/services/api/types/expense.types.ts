@@ -80,6 +80,7 @@ export interface ExpenseRecord {
   payment_method: 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other'
   receipt?: string
   notes?: string
+  is_public: boolean
   added_by: number
   added_by_info?: {
     id: number
@@ -102,6 +103,7 @@ export interface CreateExpenseRecordRequest {
   paid_to?: string
   payment_method: 'cash' | 'bank_transfer' | 'credit_card' | 'mobile_payment' | 'check' | 'other'
   notes?: string
+  is_public?: boolean
 }
 
 export interface ExpenseFilters extends QueryParams {

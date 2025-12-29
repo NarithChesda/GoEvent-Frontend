@@ -160,18 +160,16 @@
               <!-- Receipt & Actions -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <div v-if="expense.receipt" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg">
-                    <Paperclip class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">Receipt Attached</span>
-                  </div>
                   <a
                     v-if="expense.receipt"
                     :href="expense.receipt"
                     target="_blank"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg cursor-pointer transition-all"
+                    title="Click to view receipt"
                   >
-                    <Eye class="w-3.5 h-3.5" />
-                    <span class="text-xs font-medium">View</span>
+                    <Paperclip class="w-3.5 h-3.5" />
+                    <span class="text-xs font-medium">Receipt Attached</span>
+                    <Eye class="w-3.5 h-3.5 ml-1 opacity-60" />
                   </a>
                   <div v-else class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg">
                     <AlertCircle class="w-3.5 h-3.5" />
