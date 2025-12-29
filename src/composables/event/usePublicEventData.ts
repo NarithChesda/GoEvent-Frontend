@@ -8,8 +8,9 @@
  */
 
 import { ref, computed } from 'vue'
-import { eventsService, donationService, type Event, type EventRegistration } from '@/services/api'
+import { eventsService, donationService, expensesService, type Event, type EventRegistration } from '@/services/api'
 import type { FundraisingProgress, DonationCategorySummary, EventDonation } from '@/services/api/types/donation.types'
+import type { PublicExpenseRecord } from '@/services/api/types/expense.types'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
 import { useAuthStore } from '@/stores/auth'
 import { apiClient } from '@/services/api'
@@ -28,6 +29,7 @@ export function usePublicEventData() {
   const recentCashDonations = ref<EventDonation[]>([])
   const recentItemDonations = ref<EventDonation[]>([])
   const topDonors = ref<EventDonation[]>([])
+  const publicExpenses = ref<PublicExpenseRecord[]>([])
 
   // Banner image fallback state
   const primaryBannerError = ref(false)
@@ -184,7 +186,7 @@ export function usePublicEventData() {
         // Load fundraising progress and item categories if fundraising is enabled
         if (event.value.is_fundraising) {
           try {
-            const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse, topDonorsResponse] = await Promise.all([
+            const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse, topDonorsResponse, expensesResponse] = await Promise.all([
               donationService.getFundraisingProgress(eventId),
               donationService.getItemCategorySummary(eventId),
               donationService.getDonations(eventId, {
@@ -205,7 +207,9 @@ export function usePublicEventData() {
                 status: 'verified',
                 ordering: '-amount',
                 page_size: 10
-              })
+              }),
+              // Fetch public expenses for transparency
+              expensesService.getPublicExpenses(eventId)
             ])
 
             if (progressResponse.success && progressResponse.data) {
@@ -227,6 +231,10 @@ export function usePublicEventData() {
             if (topDonorsResponse.success && topDonorsResponse.data?.results) {
               topDonors.value = topDonorsResponse.data.results
             }
+
+            if (expensesResponse.success && expensesResponse.data) {
+              publicExpenses.value = expensesResponse.data
+            }
           } catch (err) {
             console.warn('Could not load fundraising data:', err)
           }
@@ -245,7 +253,7 @@ export function usePublicEventData() {
     if (!event.value?.is_fundraising) return
 
     try {
-      const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse, topDonorsResponse] = await Promise.all([
+      const [progressResponse, categoriesResponse, cashDonationsResponse, itemDonationsResponse, topDonorsResponse, expensesResponse] = await Promise.all([
         donationService.getFundraisingProgress(eventId),
         donationService.getItemCategorySummary(eventId),
         donationService.getDonations(eventId, {
@@ -266,7 +274,9 @@ export function usePublicEventData() {
           status: 'verified',
           ordering: '-amount',
           page_size: 10
-        })
+        }),
+        // Fetch public expenses for transparency
+        expensesService.getPublicExpenses(eventId)
       ])
 
       if (progressResponse.success && progressResponse.data) {
@@ -287,6 +297,10 @@ export function usePublicEventData() {
 
       if (topDonorsResponse.success && topDonorsResponse.data?.results) {
         topDonors.value = topDonorsResponse.data.results
+      }
+
+      if (expensesResponse.success && expensesResponse.data) {
+        publicExpenses.value = expensesResponse.data
       }
     } catch (err) {
       console.warn('Could not refresh fundraising data:', err)
@@ -321,6 +335,7 @@ export function usePublicEventData() {
     recentCashDonations,
     recentItemDonations,
     topDonors,
+    publicExpenses,
     primaryBannerError,
     fallbackBannerError,
 

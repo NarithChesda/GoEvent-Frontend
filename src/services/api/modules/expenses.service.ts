@@ -15,6 +15,7 @@ import type {
   CreateExpenseRecordRequest,
   ExpenseFilters,
   ExpenseSummary,
+  PublicExpenseRecord,
 } from '../types'
 
 // Expense Categories Service
@@ -212,5 +213,10 @@ export const expensesService = {
   // Get expense summary for an event
   async getExpenseSummary(eventId: string): Promise<ApiResponse<ExpenseSummary>> {
     return apiClient.get<ExpenseSummary>(`/api/events/${eventId}/expenses/summary/`)
+  },
+
+  // Get public expenses for transparency display (no auth required)
+  async getPublicExpenses(eventId: string): Promise<ApiResponse<PublicExpenseRecord[]>> {
+    return apiClient.getPublic<PublicExpenseRecord[]>(`/api/events/${eventId}/expenses/public/`)
   },
 }

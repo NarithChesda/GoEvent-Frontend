@@ -244,6 +244,12 @@
                 @see-all="handleSeeAllDonors('cash')"
               />
 
+              <!-- Public Expenses / Spending Transparency (Fundraising only) -->
+              <PublicEventExpenseSection
+                v-if="isFundraisingEnabled && publicExpenses.length > 0"
+                :expenses="publicExpenses"
+              />
+
               <!-- Share Banner -->
               <div class="border-t border-slate-100 pt-4">
                 <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-5 text-white">
@@ -311,6 +317,7 @@ import PublicEventAgenda from './event/PublicEventAgenda.vue'
 import PublicEventQRModal from './event/PublicEventQRModal.vue'
 import AllDonorsModal from './event/AllDonorsModal.vue'
 import TopDonorsSection from './event/TopDonorsSection.vue'
+import PublicEventExpenseSection from './event/PublicEventExpenseSection.vue'
 
 // Composables
 import {
@@ -363,6 +370,7 @@ const {
   recentCashDonations,
   recentItemDonations,
   topDonors: topDonorsData,
+  publicExpenses,
   currentUser,
   organizerName,
   isEventFull,

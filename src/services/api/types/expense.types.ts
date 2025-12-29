@@ -137,3 +137,28 @@ export interface ExpenseSummary {
     }
   }
 }
+
+/**
+ * Public expense record for transparency display
+ */
+export interface PublicExpenseRecord {
+  id: number
+  category_info: {
+    id: number
+    name: string
+    description?: string
+    icon?: string
+    color: string
+    is_active: boolean
+    created_by: number
+    created_at: string
+    updated_at: string
+  }
+  description: string
+  amount: string
+  currency: string
+  date: string
+  receipt: string | null
+  source_donation_display: string | null
+  created_at: string
+}
