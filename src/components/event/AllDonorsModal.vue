@@ -3,121 +3,134 @@
     <Transition name="fade">
       <div
         v-if="show"
-        class="fixed inset-0 bg-black/60 z-[1000] flex items-end md:items-center justify-center"
+        class="fixed inset-0 bg-black/50 z-[1000] flex items-end md:items-center justify-center"
         @click.self="emit('close')"
       >
         <Transition name="slide-up">
           <div
             v-if="show"
-            class="bg-white w-full md:w-[500px] md:max-w-[90vw] max-h-[85vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden"
+            class="bg-white w-full md:w-[480px] md:max-w-[90vw] max-h-[85vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
             @click.stop
           >
             <!-- Header -->
-            <div class="flex-shrink-0 border-b border-slate-200 px-4 py-3">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-slate-900">All Supporters</h2>
+            <div class="flex-shrink-0 bg-white">
+              <!-- Title Row -->
+              <div class="flex items-center justify-between px-5 pt-4 pb-3">
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">All Supporters</h2>
+                  <p class="text-xs text-slate-500 mt-0.5">{{ totalCount }} contributions</p>
+                </div>
                 <button
                   @click="emit('close')"
-                  class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  class="p-2 -mr-2 hover:bg-slate-100 rounded-xl transition-colors"
                 >
-                  <X class="w-5 h-5 text-slate-500" />
+                  <X class="w-5 h-5 text-slate-400" />
                 </button>
               </div>
 
-              <!-- Tabs -->
-              <div v-if="hasItemDonations" class="flex gap-1 mt-3">
-                <button
-                  @click="activeTab = 'cash'"
-                  class="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-                  :class="activeTab === 'cash' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-slate-100'"
-                >
-                  <div class="flex items-center justify-center gap-1.5">
+              <!-- Tabs (matching fundraising card style) -->
+              <div v-if="hasItemDonations" class="border-b border-slate-200">
+                <div class="flex px-1">
+                  <button
+                    @click="activeTab = 'cash'"
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
+                    :class="activeTab === 'cash'
+                      ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50'
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'"
+                  >
                     <Banknote class="w-4 h-4" />
-                    <span>Money</span>
-                    <span class="text-xs opacity-70">({{ cashDonorCount }})</span>
-                  </div>
-                </button>
-                <button
-                  @click="activeTab = 'item'"
-                  class="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-                  :class="activeTab === 'item' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-slate-100'"
-                >
-                  <div class="flex items-center justify-center gap-1.5">
-                    <Package class="w-4 h-4" />
-                    <span>Items</span>
-                    <span class="text-xs opacity-70">({{ itemDonorCount }})</span>
-                  </div>
-                </button>
+                    Money
+                    <span class="text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'cash' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                      {{ cashDonorCount }}
+                    </span>
+                  </button>
+                  <button
+                    @click="activeTab = 'item'"
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
+                    :class="activeTab === 'item'
+                      ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50'
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'"
+                  >
+                    <Gift class="w-4 h-4" />
+                    Items
+                    <span class="text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'item' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                      {{ itemDonorCount }}
+                    </span>
+                  </button>
+                </div>
               </div>
+              <div v-else class="border-b border-slate-200"></div>
 
-              <!-- Sort Options -->
-              <div class="flex items-center gap-2 mt-3">
-                <span class="text-xs text-slate-500">Sort by:</span>
-                <button
-                  @click="sortBy = '-amount'"
-                  class="px-2 py-1 text-xs rounded-md transition-colors"
-                  :class="sortBy === '-amount' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                >
-                  Top Amount
-                </button>
-                <button
-                  @click="sortBy = '-created_at'"
-                  class="px-2 py-1 text-xs rounded-md transition-colors"
-                  :class="sortBy === '-created_at' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                >
-                  Most Recent
-                </button>
+              <!-- Sort Options (minimal, inline) -->
+              <div class="flex items-center justify-between px-5 py-2.5 bg-slate-50/80">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sort by</span>
+                <div class="flex items-center gap-1">
+                  <button
+                    @click="sortBy = '-amount'"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+                    :class="sortBy === '-amount'
+                      ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'"
+                  >
+                    Top
+                  </button>
+                  <button
+                    @click="sortBy = '-created_at'"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+                    :class="sortBy === '-created_at'
+                      ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'"
+                  >
+                    Recent
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- Content -->
-            <div ref="scrollContainerRef" class="flex-1 overflow-y-auto overscroll-contain">
+            <div ref="scrollContainerRef" class="flex-1 overflow-y-auto overscroll-contain bg-slate-50/50">
               <!-- Loading State -->
-              <div v-if="loading && donations.length === 0" class="p-4 space-y-3">
-                <div v-for="i in 5" :key="i" class="animate-pulse flex items-center gap-3">
-                  <div class="w-10 h-10 bg-slate-200 rounded-lg"></div>
+              <div v-if="loading && donations.length === 0" class="p-4 space-y-2">
+                <div v-for="i in 5" :key="i" class="animate-pulse flex items-center gap-3 p-3 bg-white rounded-xl">
+                  <div class="w-10 h-10 bg-slate-100 rounded-lg"></div>
                   <div class="flex-1">
-                    <div class="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                    <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+                    <div class="h-4 bg-slate-100 rounded w-2/3 mb-2"></div>
+                    <div class="h-3 bg-slate-100 rounded w-1/3"></div>
                   </div>
-                  <div class="h-4 bg-slate-200 rounded w-16"></div>
+                  <div class="h-5 bg-slate-100 rounded w-16"></div>
                 </div>
               </div>
 
               <!-- Empty State -->
-              <div v-else-if="!loading && donations.length === 0" class="p-8 text-center">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart class="w-8 h-8 text-slate-400" />
+              <div v-else-if="!loading && donations.length === 0" class="py-16 px-8 text-center">
+                <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Heart class="w-7 h-7 text-slate-300" />
                 </div>
-                <h3 class="text-base font-medium text-slate-900 mb-1">No donations yet</h3>
+                <h3 class="text-base font-semibold text-slate-900 mb-1">No donations yet</h3>
                 <p class="text-sm text-slate-500">Be the first to support this campaign!</p>
               </div>
 
               <!-- Donors List -->
-              <div v-else class="divide-y divide-slate-100">
+              <div v-else class="p-3 space-y-2">
                 <div
                   v-for="(donation, index) in donations"
                   :key="donation.id"
-                  class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+                  class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-sm transition-all"
                 >
-                  <!-- Rank Badge (for top donors) -->
-                  <div class="w-6 flex-shrink-0 text-center">
+                  <!-- Avatar (matching card style) -->
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold flex-shrink-0 relative"
+                    :class="activeTab === 'item' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-50 text-emerald-700'"
+                  >
+                    {{ getInitials(donation.display_name || 'Anonymous') }}
+                    <!-- Top 3 indicator -->
                     <div
                       v-if="sortBy === '-amount' && index < 3"
-                      class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                      class="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm"
                       :class="getRankBadgeClass(index)"
                     >
                       {{ index + 1 }}
                     </div>
-                    <span v-else class="text-xs text-slate-400">{{ index + 1 }}</span>
-                  </div>
-
-                  <!-- Avatar -->
-                  <div
-                    class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold flex-shrink-0"
-                    :class="getAvatarClass(index)"
-                  >
-                    {{ getInitials(donation.display_name || 'Anonymous') }}
                   </div>
 
                   <!-- Info -->
@@ -125,21 +138,26 @@
                     <p class="text-sm font-medium text-slate-900 truncate">
                       {{ donation.display_name || 'Anonymous' }}
                     </p>
-                    <p class="text-xs text-slate-500">{{ formatRelativeTime(donation.created_at) }}</p>
-                    <p v-if="donation.message" class="text-xs text-slate-600 mt-0.5 line-clamp-1 italic">
+                    <p class="text-xs text-slate-400">{{ formatRelativeTime(donation.created_at) }}</p>
+                    <p v-if="donation.message" class="text-xs text-slate-500 mt-1 line-clamp-1 italic">
                       "{{ donation.message }}"
                     </p>
                   </div>
 
-                  <!-- Amount / Item -->
+                  <!-- Amount / Item (matching card style) -->
                   <div class="text-right flex-shrink-0">
-                    <div v-if="donation.amount" class="text-sm font-semibold text-slate-900">
+                    <div v-if="donation.amount" class="text-sm font-semibold text-emerald-600">
                       {{ formatCurrency(parseFloat(donation.amount), donation.currency) }}
                     </div>
                     <div v-else-if="donation.item_quantity">
-                      <p class="text-xs text-slate-500">{{ getItemDisplayName(donation) }}</p>
-                      <p class="text-sm font-semibold text-slate-900">
-                        {{ donation.item_quantity }} {{ donation.item_unit }}
+                      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 rounded-lg">
+                        <Gift class="w-3 h-3 text-purple-500" />
+                        <span class="text-xs font-semibold text-purple-700">
+                          {{ donation.item_quantity }} {{ donation.item_unit }}
+                        </span>
+                      </div>
+                      <p class="text-[10px] text-slate-400 mt-1 truncate max-w-[100px]">
+                        {{ getItemDisplayName(donation) }}
                       </p>
                     </div>
                   </div>
@@ -148,31 +166,34 @@
                 <!-- Infinite Scroll Sentinel -->
                 <div
                   ref="sentinelRef"
-                  class="p-4 flex items-center justify-center"
-                  :class="{ 'h-1': !loadingMore && !hasMore }"
+                  class="py-4 flex items-center justify-center"
+                  :class="{ 'py-1': !loadingMore && !hasMore }"
                 >
                   <!-- Loading more indicator -->
-                  <div v-if="loadingMore" class="flex items-center gap-2 text-sm text-slate-500">
+                  <div v-if="loadingMore" class="flex items-center gap-2 text-sm text-slate-400">
                     <Loader2 class="w-4 h-4 animate-spin" />
                     <span>Loading more...</span>
                   </div>
                   <!-- End of list message -->
-                  <div v-else-if="!hasMore && donations.length > 0" class="text-xs text-slate-400">
-                    You've reached the end
+                  <div v-else-if="!hasMore && donations.length > 0" class="text-xs text-slate-300">
+                    End of list
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Summary Footer -->
-            <div v-if="donations.length > 0" class="flex-shrink-0 border-t border-slate-200 px-4 py-3 bg-slate-50">
-              <div class="flex items-center justify-between text-sm">
-                <div class="text-slate-600">
-                  <span class="font-semibold text-slate-900">{{ totalCount }}</span>
-                  {{ activeTab === 'cash' ? 'monetary donations' : 'item donations' }}
+            <div v-if="donations.length > 0" class="flex-shrink-0 border-t border-slate-100 px-5 py-3 bg-white">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full" :class="activeTab === 'item' ? 'bg-purple-400' : 'bg-emerald-400'"></div>
+                  <span class="text-sm text-slate-600">
+                    <span class="font-semibold text-slate-900">{{ totalCount }}</span>
+                    {{ activeTab === 'cash' ? 'donations' : 'item donations' }}
+                  </span>
                 </div>
-                <div v-if="activeTab === 'cash' && averageAmount > 0" class="text-slate-600">
-                  Avg: <span class="font-semibold text-slate-900">{{ formatCurrency(averageAmount, currency) }}</span>
+                <div v-if="activeTab === 'cash' && averageAmount > 0" class="text-sm text-slate-500">
+                  Avg <span class="font-semibold text-slate-700">{{ formatCurrency(averageAmount, currency) }}</span>
                 </div>
               </div>
             </div>
@@ -184,8 +205,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { X, Heart, Banknote, Package, Loader2 } from 'lucide-vue-next'
+import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
+import { X, Heart, Banknote, Gift, Loader2 } from 'lucide-vue-next'
 import { donationService } from '@/services/api'
 import type { EventDonation } from '@/services/api/types/donation.types'
 import { useEventDateFormatters } from '@/composables/event'
@@ -279,20 +300,6 @@ const getRankBadgeClass = (index: number): string => {
     default:
       return 'bg-slate-100 text-slate-600'
   }
-}
-
-const getAvatarClass = (index: number): string => {
-  if (sortBy.value === '-amount' && index < 3) {
-    switch (index) {
-      case 0:
-        return 'bg-amber-100 text-amber-700'
-      case 1:
-        return 'bg-slate-200 text-slate-700'
-      case 2:
-        return 'bg-amber-100 text-amber-800'
-    }
-  }
-  return 'bg-slate-100 text-slate-700'
 }
 
 const loadDonations = async (reset = true) => {
