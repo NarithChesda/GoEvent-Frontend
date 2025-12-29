@@ -23,12 +23,17 @@ export interface ApiResponse<T = unknown> {
 
 /**
  * Paginated response wrapper for list endpoints
+ * Supports both standard pagination and InfiniteScrollPagination format
  */
 export interface PaginatedResponse<T = unknown> {
   count: number
   next: string | null
   previous: string | null
   results: T[]
+  // InfiniteScrollPagination fields (optional)
+  limit?: number
+  offset?: number
+  has_more?: boolean
 }
 
 /**

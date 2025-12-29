@@ -71,7 +71,7 @@
             </div>
 
             <!-- Content -->
-            <div class="flex-1 overflow-y-auto overscroll-contain">
+            <div ref="scrollContainerRef" class="flex-1 overflow-y-auto overscroll-contain">
               <!-- Loading State -->
               <div v-if="loading && donations.length === 0" class="p-4 space-y-3">
                 <div v-for="i in 5" :key="i" class="animate-pulse flex items-center gap-3">
@@ -145,19 +145,21 @@
                   </div>
                 </div>
 
-                <!-- Load More -->
-                <div v-if="hasMore" class="p-4">
-                  <button
-                    @click="loadMore"
-                    :disabled="loadingMore"
-                    class="w-full py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    <span v-if="loadingMore" class="flex items-center justify-center gap-2">
-                      <Loader2 class="w-4 h-4 animate-spin" />
-                      Loading...
-                    </span>
-                    <span v-else>Load More</span>
-                  </button>
+                <!-- Infinite Scroll Sentinel -->
+                <div
+                  ref="sentinelRef"
+                  class="p-4 flex items-center justify-center"
+                  :class="{ 'h-1': !loadingMore && !hasMore }"
+                >
+                  <!-- Loading more indicator -->
+                  <div v-if="loadingMore" class="flex items-center gap-2 text-sm text-slate-500">
+                    <Loader2 class="w-4 h-4 animate-spin" />
+                    <span>Loading more...</span>
+                  </div>
+                  <!-- End of list message -->
+                  <div v-else-if="!hasMore && donations.length > 0" class="text-xs text-slate-400">
+                    You've reached the end
+                  </div>
                 </div>
               </div>
             </div>
@@ -182,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { X, Heart, Banknote, Package, Loader2 } from 'lucide-vue-next'
 import { donationService } from '@/services/api'
 import type { EventDonation } from '@/services/api/types/donation.types'
@@ -215,14 +217,19 @@ const sortBy = ref<'-amount' | '-created_at'>('-amount')
 const donations = ref<EventDonation[]>([])
 const loading = ref(false)
 const loadingMore = ref(false)
-const currentPage = ref(1)
+const currentOffset = ref(0)
 const totalCount = ref(0)
 const cashDonorCount = ref(props.totalCashDonors)
 const itemDonorCount = ref(props.totalItemDonors)
-const pageSize = 20
+const hasMore = ref(false)
+const limit = 20
+
+// Refs for infinite scroll
+const scrollContainerRef = ref<HTMLElement | null>(null)
+const sentinelRef = ref<HTMLElement | null>(null)
+let intersectionObserver: IntersectionObserver | null = null
 
 // Computed
-const hasMore = computed(() => donations.value.length < totalCount.value)
 const averageAmount = computed(() => {
   if (activeTab.value !== 'cash' || donations.value.length === 0) return 0
   const total = donations.value.reduce((sum, d) => sum + parseFloat(d.amount || '0'), 0)
@@ -291,7 +298,7 @@ const getAvatarClass = (index: number): string => {
 const loadDonations = async (reset = true) => {
   if (reset) {
     loading.value = true
-    currentPage.value = 1
+    currentOffset.value = 0
     donations.value = []
   } else {
     loadingMore.value = true
@@ -302,8 +309,8 @@ const loadDonations = async (reset = true) => {
       donation_type: activeTab.value,
       status: 'verified',
       ordering: sortBy.value,
-      page: currentPage.value,
-      page_size: pageSize,
+      limit: limit,
+      offset: currentOffset.value,
     })
 
     if (response.success && response.data) {
@@ -314,11 +321,20 @@ const loadDonations = async (reset = true) => {
       }
       totalCount.value = response.data.count
 
+      // Use has_more from API if available, otherwise calculate from count
+      hasMore.value = response.data.has_more ?? (donations.value.length < response.data.count)
+
       // Update the count for the current tab from API
       if (activeTab.value === 'cash') {
         cashDonorCount.value = response.data.count
       } else {
         itemDonorCount.value = response.data.count
+      }
+
+      // Setup intersection observer after data is loaded
+      if (reset) {
+        await nextTick()
+        setupIntersectionObserver()
       }
     }
   } catch (err) {
@@ -336,12 +352,12 @@ const loadTabCounts = async () => {
       donationService.getDonations(props.eventId, {
         donation_type: 'cash',
         status: 'verified',
-        page_size: 1,
+        limit: 1,
       }),
       donationService.getDonations(props.eventId, {
         donation_type: 'item',
         status: 'verified',
-        page_size: 1,
+        limit: 1,
       }),
     ])
 
@@ -358,8 +374,41 @@ const loadTabCounts = async () => {
 
 const loadMore = () => {
   if (hasMore.value && !loadingMore.value) {
-    currentPage.value++
+    currentOffset.value += limit
     loadDonations(false)
+  }
+}
+
+// Intersection Observer for infinite scroll
+const setupIntersectionObserver = () => {
+  // Clean up existing observer
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+  }
+
+  if (!sentinelRef.value) return
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      const [entry] = entries
+      if (entry.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
+        loadMore()
+      }
+    },
+    {
+      root: scrollContainerRef.value,
+      rootMargin: '100px', // Start loading when sentinel is 100px from viewport
+      threshold: 0,
+    }
+  )
+
+  intersectionObserver.observe(sentinelRef.value)
+}
+
+const cleanupIntersectionObserver = () => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+    intersectionObserver = null
   }
 }
 
@@ -374,6 +423,9 @@ watch(
       if (props.hasItemDonations) {
         loadTabCounts()
       }
+    } else {
+      // Cleanup when modal closes
+      cleanupIntersectionObserver()
     }
   }
 )
@@ -382,6 +434,11 @@ watch([activeTab, sortBy], () => {
   if (props.show) {
     loadDonations()
   }
+})
+
+// Lifecycle
+onUnmounted(() => {
+  cleanupIntersectionObserver()
 })
 </script>
 
