@@ -93,7 +93,7 @@
           <!-- Expense Info -->
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-slate-900">{{ expense.description }}</p>
-            <div class="flex items-center gap-2 mt-1">
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
               <span
                 class="text-xs px-1.5 py-0.5 rounded"
                 :style="{
@@ -104,6 +104,18 @@
                 {{ expense.category_info.name }}
               </span>
               <span class="text-xs text-slate-400">{{ formatDate(expense.date) }}</span>
+              <!-- Receipt Badge -->
+              <a
+                v-if="expense.receipt"
+                :href="getMediaUrl(expense.receipt)"
+                target="_blank"
+                class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                title="Click to view receipt"
+              >
+                <Paperclip class="w-3 h-3" />
+                <span>Receipt</span>
+                <Eye class="w-3 h-3 opacity-60" />
+              </a>
             </div>
             <p v-if="expense.source_donation_display" class="text-xs text-emerald-600 mt-1">
               From: {{ expense.source_donation_display }}
@@ -136,6 +148,7 @@ import {
   Receipt,
   ShieldCheck,
   Eye,
+  Paperclip,
   Package,
   Truck,
   Home,
@@ -157,6 +170,9 @@ import {
   type LucideIcon,
 } from 'lucide-vue-next'
 import type { PublicExpenseRecord } from '@/services/api/types/expense.types'
+import { useMediaUrl } from '@/composables/useMediaUrl'
+
+const { getMediaUrl } = useMediaUrl()
 
 interface Props {
   expenses: PublicExpenseRecord[]
