@@ -4,106 +4,101 @@
     v-if="registrationRequired && isRegistered"
     class="bg-white rounded-xl border border-slate-200 overflow-hidden"
   >
-    <!-- Header with avatar and status -->
-    <div class="p-4">
-      <div class="flex items-center gap-3 mb-3">
-        <div
-          class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700 text-lg font-semibold"
+    <!-- Header Row -->
+    <div class="px-4 pt-4 pb-3 flex items-center justify-between">
+      <!-- Status Badges -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span :class="statusBadgeClass" class="px-2.5 py-1 text-xs font-medium rounded-full">
+          {{ statusLabel }}
+        </span>
+        <span
+          v-if="isOngoing"
+          class="px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700"
         >
-          {{ userInitials }}
-        </div>
-        <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-slate-900">You're Registered</h3>
-          <!-- Status Badge -->
-          <span :class="statusBadgeClass" class="inline-block px-2 py-0.5 text-xs font-medium rounded-full mt-1">
-            {{ statusLabel }}
-          </span>
-        </div>
+          Happening Now
+        </span>
+        <span
+          v-else-if="timeUntilEvent"
+          class="px-2.5 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-600"
+        >
+          Starts in {{ timeUntilEvent }}
+        </span>
       </div>
-
-      <!-- Event countdown -->
-      <div v-if="timeUntilEvent || isOngoing" class="bg-slate-50 rounded-lg p-3 mb-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 text-slate-600">
-            <Clock class="w-4 h-4" />
-            <span class="text-sm">{{ isOngoing ? 'Event is happening now' : 'Event starts in' }}</span>
-          </div>
-          <span v-if="timeUntilEvent" class="text-sm font-semibold text-emerald-600">{{
-            timeUntilEvent
-          }}</span>
-        </div>
-        <p v-if="isVirtual && virtualLink" class="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200">
-          The join button will appear when the event is about to start
-        </p>
-      </div>
-
-      <!-- Action buttons -->
-      <div class="flex gap-2">
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-1 shrink-0">
         <button
           @click="emit('toggle-calendar')"
-          class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 transition-colors"
+          class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          title="Add to Calendar"
         >
           <CalendarPlus class="w-4 h-4" />
-          Calendar
         </button>
         <button
           @click="emit('share')"
-          class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 transition-colors"
+          class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          title="Share Event"
         >
           <Share2 class="w-4 h-4" />
-          Share
-        </button>
-      </div>
-
-      <!-- Calendar Options Dropdown -->
-      <div v-if="showCalendarOptions" class="mt-3 flex flex-wrap gap-2">
-        <button
-          @click="emit('add-to-google')"
-          class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          Google
-        </button>
-        <button
-          @click="emit('add-to-outlook')"
-          class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          Outlook
-        </button>
-        <button
-          @click="emit('download-ics')"
-          class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          Download .ics
         </button>
       </div>
     </div>
 
-    <!-- Confirmation code (if available) -->
-    <div v-if="confirmationCode" class="border-t border-slate-100 px-4 py-3 bg-slate-50">
-      <div class="flex items-center justify-between">
+    <!-- Calendar Options Dropdown -->
+    <div v-if="showCalendarOptions" class="px-4 pb-3 flex gap-2">
+      <button
+        @click="emit('add-to-google')"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+      >
+        Google
+      </button>
+      <button
+        @click="emit('add-to-outlook')"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+      >
+        Outlook
+      </button>
+      <button
+        @click="emit('download-ics')"
+        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+      >
+        .ics
+      </button>
+    </div>
+
+    <div class="px-4 pb-4">
+      <!-- Main Info -->
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+        <span class="text-sm font-medium text-slate-900">You're Registered</span>
+        <span v-if="isVirtual && virtualLink && !isOngoing" class="text-xs text-slate-400">
+          · Join link available when event starts
+        </span>
+      </div>
+
+      <!-- Confirmation Code -->
+      <div v-if="confirmationCode" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
         <div>
-          <p class="text-xs text-slate-500 mb-0.5">Confirmation Code</p>
-          <p class="text-sm font-mono font-semibold text-slate-900">{{ confirmationCode }}</p>
+          <p class="text-xs text-slate-500">Confirmation</p>
+          <p class="text-sm font-mono font-semibold text-slate-900 tracking-wide">{{ confirmationCode }}</p>
         </div>
         <button
           @click="emit('show-qr')"
-          class="p-2 hover:bg-slate-200 rounded-lg transition-colors"
+          class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
           title="Show QR Code"
         >
-          <QrCode class="w-5 h-5 text-slate-600" />
+          <QrCode class="w-5 h-5" />
         </button>
       </div>
     </div>
 
-    <!-- Cancel registration link -->
-    <div class="border-t border-slate-100 px-4 py-3 text-sm text-slate-600 text-center">
-      Can't attend?
+    <!-- Cancel -->
+    <div class="px-4 py-3 border-t border-slate-100">
       <button
         @click="emit('cancel-registration')"
         :disabled="isCancelling"
-        class="text-slate-700 hover:text-slate-900 font-medium underline underline-offset-2 disabled:opacity-50"
+        class="w-full text-xs text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
       >
-        {{ isCancelling ? 'Cancelling...' : 'Cancel registration' }}
+        {{ isCancelling ? 'Cancelling...' : "Can't attend? Cancel registration" }}
       </button>
     </div>
   </div>
@@ -167,7 +162,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Clock, CalendarPlus, Share2, QrCode } from 'lucide-vue-next'
+import { CalendarPlus, Share2, QrCode } from 'lucide-vue-next'
 import { useEventDateFormatters } from '@/composables/event'
 
 interface User {
