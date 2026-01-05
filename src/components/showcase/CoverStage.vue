@@ -227,14 +227,17 @@ const handleOpenEnvelope = () => {
       clearAfterTimeout()
     }
   } else {
-    // Decoration animation: set content hidden to trigger slide-out animations
-    videoState.isContentHidden.value = true
-
+    // Decoration animation behavior differs by display mode
     if (displayMode.value === 'basic') {
-      // Basic mode: skip directly to main content (no videos)
+      // Basic mode: set content hidden immediately and skip to main content
+      // No videos to wait for, so we can trigger the animation right away
+      videoState.isContentHidden.value = true
       videoState.skipToMainContent()
     }
-    // Standard mode: video will be started by parent component via startEventVideo()
+    // Standard mode: DO NOT set isContentHidden here!
+    // The video will be started by parent via startEventVideo(), and
+    // isContentHidden will be set AFTER the video starts playing
+    // to ensure smooth animation with no visual gap
   }
 }
 

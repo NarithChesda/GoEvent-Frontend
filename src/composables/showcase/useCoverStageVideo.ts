@@ -381,7 +381,9 @@ export function useCoverStageVideo(
   const playEventVideo = () => {
     if (!props.eventVideoUrl) return
 
-    isCoverVideoPlaying.value = false
+    // DON'T stop cover video yet - keep it playing until event video frames are visible
+    // This prevents the primary background color from flashing during the transition
+    // isCoverVideoPlaying.value = false  // <-- Moved to after frames are visible
     currentVideoPhase.value = 'event'
 
     const videoToUse = videoRefs.eventVideoPreloader() || videoRefs.sequentialVideoContainer()
@@ -401,6 +403,34 @@ export function useCoverStageVideo(
       videoToUse.src = props.eventVideoUrl
     }
 
+    // Fallback timeout in case timeupdate doesn't fire (edge cases)
+    let fallbackTimeout: ReturnType<typeof setTimeout> | null = null
+
+    // Use timeupdate event instead of playing event to ensure frames are actually rendered
+    // The 'playing' event fires when playback starts, but frames may not be painted yet
+    // The 'timeupdate' event fires when currentTime changes, meaning frames are rendering
+    const onVideoTimeUpdate = () => {
+      // Wait until video has progressed slightly to ensure frames are painted
+      if (videoToUse.currentTime > 0.01) {
+        videoToUse.removeEventListener('timeupdate', onVideoTimeUpdate)
+        if (fallbackTimeout) {
+          clearTimeout(fallbackTimeout)
+          fallbackTimeout = null
+        }
+        // NOW stop cover video and trigger animation - event video frames are visible
+        isCoverVideoPlaying.value = false
+        isContentHidden.value = true
+      }
+    }
+    videoToUse.addEventListener('timeupdate', onVideoTimeUpdate)
+
+    fallbackTimeout = setTimeout(() => {
+      videoToUse.removeEventListener('timeupdate', onVideoTimeUpdate)
+      isCoverVideoPlaying.value = false
+      isContentHidden.value = true
+      fallbackTimeout = null
+    }, 500)
+
     // Enhanced play handling for mobile
     const playVideo = async () => {
       try {
@@ -418,6 +448,11 @@ export function useCoverStageVideo(
           }, 500)
         }
       } catch (error) {
+        // If video fails to play, still hide content to show fallback
+        clearTimeout(fallbackTimeout)
+        videoToUse.removeEventListener('timeupdate', onVideoTimeUpdate)
+        isCoverVideoPlaying.value = false
+        isContentHidden.value = true
         handleSequentialVideoEnded()
       }
     }
