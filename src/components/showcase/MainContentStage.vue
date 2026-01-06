@@ -4,13 +4,14 @@
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
     <!-- Decoration Images (optimized via ImageKit for viewport size) -->
-    <!-- Left/Right decorations at z-[24], Top/Bottom at z-[25] so top/bottom appear above left/right -->
+    <!-- Z-indexes are dynamic via mainStageLayout prop (defaults: left/right=24, top/bottom=25) -->
     <img
       v-if="leftDecorationUrl"
       :src="leftDecorationUrl"
       alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none z-[24]"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none"
       :class="decorationAnimationClasses.left"
+      :style="{ zIndex: decorationZIndexes.left }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -18,8 +19,9 @@
       v-if="rightDecorationUrl"
       :src="rightDecorationUrl"
       alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none z-[24]"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none"
       :class="decorationAnimationClasses.right"
+      :style="{ zIndex: decorationZIndexes.right }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -27,8 +29,9 @@
       v-if="topDecorationUrl"
       :src="topDecorationUrl"
       alt="Top decoration"
-      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none"
       :class="decorationAnimationClasses.top"
+      :style="{ zIndex: decorationZIndexes.top }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -36,8 +39,9 @@
       v-if="bottomDecorationUrl"
       :src="bottomDecorationUrl"
       alt="Bottom decoration"
-      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none z-[25]"
+      class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none"
       :class="decorationAnimationClasses.bottom"
+      :style="{ zIndex: decorationZIndexes.bottom }"
       loading="eager"
       v-bind="protectionAttrs"
     />
@@ -863,6 +867,8 @@ import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimatio
 import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
+import type { CoverStageLayout } from '../../services/api/types/template.types'
 
 // Asset protection (production-only)
 const { protectionAttrs } = useAssetProtection()
@@ -928,9 +934,17 @@ interface Props {
   rightDecoration?: string | null
   /** Showcase animation type from template_assets.showcase_animation_type */
   animationType?: 'decoration' | 'door'
+  /** Main stage layout configuration for decoration z-indexes */
+  mainStageLayout?: CoverStageLayout
 }
 
 const props = defineProps<Props>()
+
+// Main stage layout configuration (for decoration z-indexes)
+const { decorationZIndexes } = useCoverStageLayout(
+  computed(() => props.mainStageLayout),
+  computed(() => undefined)
+)
 
 // Animation type from prop with fallback to 'decoration'
 const currentAnimationType = computed(() => props.animationType || 'decoration')

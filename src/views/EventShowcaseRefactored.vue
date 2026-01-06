@@ -91,6 +91,7 @@
             :left-decoration="event.template_assets?.assets?.left_decoration || event.left_decoration"
             :right-decoration="event.template_assets?.assets?.right_decoration || event.right_decoration"
             :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
+            :main-stage-layout="event.template_assets?.cover_stage_layout"
             @open-map="openGoogleMap"
             @open-photo="openPhotoModal"
             @register="registerForEvent"
