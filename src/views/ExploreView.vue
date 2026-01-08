@@ -42,7 +42,7 @@
           />
 
           <!-- Loading State -->
-          <EventsLoadingSkeleton v-if="loading" />
+          <EventsLoadingSkeleton v-if="isLoading" />
 
           <!-- Events Timeline -->
           <EventTimeline
@@ -145,11 +145,13 @@ import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useCategoryFilter } from '@/composables/useCategoryFilter'
 import { useStickyDateHeaders } from '@/composables/useStickyDateHeaders'
 import { groupEventsByDate } from '@/composables/useEventFormatters'
-import { type Event, type EventFilters as EventFiltersType } from '@/services/api'
+import { type Event, type EventFilters as EventFiltersType, eventsService } from '@/services/api'
 import { useEventsData } from '@/composables/useEventsData'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
@@ -158,12 +160,23 @@ const { open: openSearch } = useGlobalSearch()
 const { categories, categoryFilter, loadCategories } = useCategoryFilter()
 
 // Date filter
-type DateFilterValue = 'upcoming' | 'all'
+type DateFilterValue = 'upcoming' | 'all' | 'liked'
 const dateFilter = ref<DateFilterValue>('upcoming')
-const dateFilterOptions = [
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'all', label: 'All' },
-]
+const dateFilterOptions = computed(() => {
+  const options = [
+    { value: 'upcoming', label: 'Upcoming' },
+    { value: 'all', label: 'All' },
+  ]
+  // Only show Liked tab when user is authenticated
+  if (authStore.isAuthenticated) {
+    options.push({ value: 'liked', label: 'Liked' })
+  }
+  return options
+})
+
+// Liked events state
+const likedEvents = ref<Event[]>([])
+const likedEventsLoading = ref(false)
 
 // API filters
 const filters = ref<EventFiltersType>({})
@@ -181,12 +194,35 @@ const selectedEventIndex = ref<number>(-1)
 const { events, loading, hasMore, isLoadingMore, loadEvents, loadMoreEvents } =
   useEventsData(computed(() => true)) // Always pass true since explore doesn't require auth
 
+// Load liked events
+const loadLikedEvents = async () => {
+  if (!authStore.isAuthenticated) return
+
+  likedEventsLoading.value = true
+  try {
+    const response = await eventsService.getMyLikedEvents()
+    if (response.success && response.data) {
+      likedEvents.value = response.data
+    }
+  } catch (error) {
+    console.error('Failed to load liked events:', error)
+  } finally {
+    likedEventsLoading.value = false
+  }
+}
+
 // Group events by date
 const groupedByDate = computed(() => {
   // Filter events based on date filter
   const now = new Date()
   // Get start of today (midnight) for date-only comparison
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  // Use liked events when on liked tab
+  if (dateFilter.value === 'liked') {
+    return groupEventsByDate(likedEvents.value, 'asc')
+  }
+
   let filteredEvents = events.value
 
   if (dateFilter.value === 'upcoming') {
@@ -204,6 +240,9 @@ const groupedByDate = computed(() => {
 
 // Computed properties
 const hasEvents = computed(() => {
+  if (dateFilter.value === 'liked') {
+    return likedEvents.value.length > 0
+  }
   if (dateFilter.value === 'upcoming') {
     const now = new Date()
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -215,7 +254,13 @@ const hasEvents = computed(() => {
   }
   return events.value.length > 0
 })
-const isEmpty = computed(() => !loading.value && !hasEvents.value)
+const isLoading = computed(() => {
+  if (dateFilter.value === 'liked') {
+    return likedEventsLoading.value
+  }
+  return loading.value
+})
+const isEmpty = computed(() => !isLoading.value && !hasEvents.value)
 
 // Sticky date headers
 const { setupStickyObserver } = useStickyDateHeaders(groupedByDate)
@@ -322,6 +367,13 @@ watch(
   },
   { deep: true }
 )
+
+// Watch for date filter changes to load liked events
+watch(dateFilter, async (newValue) => {
+  if (newValue === 'liked') {
+    await loadLikedEvents()
+  }
+})
 
 // Handle event query parameter from search
 const openEventFromQuery = () => {
