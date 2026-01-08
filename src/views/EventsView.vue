@@ -48,6 +48,7 @@
             :date-groups="groupedByDate"
             :show-manage-button="true"
             :show-missing-location="true"
+            :show-like-button="false"
             @event-click="viewEvent"
             @event-manage="manageEvent"
           />

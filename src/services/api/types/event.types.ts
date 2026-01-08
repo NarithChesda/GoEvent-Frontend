@@ -81,6 +81,9 @@ export interface Event {
   } | null
   collaborators_count: number
   registrations_count: number
+  // Like feature fields
+  likes_count?: number
+  is_liked?: boolean
   is_ongoing: boolean
   is_upcoming: boolean
   is_past: boolean
@@ -363,6 +366,12 @@ export interface CommentFilters extends QueryParams {
   event?: string
   page?: number
   page_size?: number
+}
+
+// Like feature types
+export interface EventLikeResponse {
+  liked: boolean
+  likes_count: number
 }
 
 // Import template types from template.types.ts to avoid duplication

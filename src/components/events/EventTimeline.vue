@@ -34,8 +34,11 @@
             variant="mobile"
             :show-manage-button="showManageButton && canManageEvent(event)"
             :show-missing-location="showMissingLocation"
+            :show-like-button="showLikeButton"
             @click="$emit('event-click', event)"
             @manage="$emit('event-manage', event)"
+            @login-required="$emit('login-required')"
+            @like-changed="(isLiked, likesCount) => $emit('like-changed', event.id, isLiked, likesCount)"
           />
         </div>
       </div>
@@ -73,8 +76,11 @@
             variant="desktop"
             :show-manage-button="showManageButton && canManageEvent(event)"
             :show-missing-location="showMissingLocation"
+            :show-like-button="showLikeButton"
             @click="$emit('event-click', event)"
             @manage="$emit('event-manage', event)"
+            @login-required="$emit('login-required')"
+            @like-changed="(isLiked, likesCount) => $emit('like-changed', event.id, isLiked, likesCount)"
           />
         </div>
       </div>
@@ -93,16 +99,20 @@ const props = withDefaults(
     dateGroups: DateGroup[]
     showManageButton?: boolean
     showMissingLocation?: boolean
+    showLikeButton?: boolean
   }>(),
   {
     showManageButton: false,
     showMissingLocation: false,
+    showLikeButton: true,
   }
 )
 
 defineEmits<{
   'event-click': [event: Event]
   'event-manage': [event: Event]
+  'login-required': []
+  'like-changed': [eventId: string, isLiked: boolean, likesCount: number]
 }>()
 
 const authStore = useAuthStore()

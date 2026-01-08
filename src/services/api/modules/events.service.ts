@@ -13,6 +13,7 @@ import type {
   EventCollaborator,
   MyEventsResponse,
   EventPhoto,
+  EventLikeResponse,
 } from '../types'
 
 export const eventsService = {
@@ -203,5 +204,15 @@ export const eventsService = {
     params?: { lang?: string; guest_name?: string },
   ): Promise<ApiResponse<unknown>> {
     return apiClient.getPublic<unknown>(`/api/events/${eventId}/showcase/`, params)
+  },
+
+  // Toggle like on an event (like if not liked, unlike if already liked)
+  async toggleLike(eventId: string): Promise<ApiResponse<EventLikeResponse>> {
+    return apiClient.post<EventLikeResponse>(`/api/events/${eventId}/like/`, {})
+  },
+
+  // Get current user's liked events
+  async getMyLikedEvents(): Promise<ApiResponse<Event[]>> {
+    return apiClient.get<Event[]>('/api/events/my-liked/')
   },
 }

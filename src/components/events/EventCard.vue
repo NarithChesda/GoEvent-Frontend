@@ -58,10 +58,35 @@
           </template>
         </div>
 
-        <!-- Guest Count -->
-        <div class="flex items-center gap-1.5 text-sm text-slate-400">
-          <Users class="w-3.5 h-3.5" />
-          <span>{{ guestCount }}</span>
+        <!-- Guest Count and Like -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5 text-sm text-slate-400">
+            <Users class="w-3.5 h-3.5" />
+            <span>{{ guestCount }}</span>
+          </div>
+
+          <!-- Like Button (Mobile) - Only for public events -->
+          <button
+            v-if="showLikeButton && event.privacy === 'public'"
+            @click.stop="handleLikeClick"
+            :disabled="isLikeLoading"
+            class="flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-200"
+            :class="[
+              isLiked
+                ? 'text-red-500 bg-red-50'
+                : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
+            ]"
+            :aria-label="isLiked ? 'Unlike event' : 'Like event'"
+          >
+            <Heart
+              class="w-4 h-4 transition-transform duration-200"
+              :class="[
+                isLiked ? 'fill-current scale-110' : '',
+                isLikeLoading ? 'animate-pulse' : ''
+              ]"
+            />
+            <span v-if="likesCount > 0" class="text-xs font-medium">{{ likesCount }}</span>
+          </button>
         </div>
 
         <!-- Manage Button (only for events user can edit) -->
@@ -165,10 +190,35 @@
           </template>
         </div>
 
-        <!-- Guest Count -->
-        <div class="flex items-center gap-2 text-sm text-slate-500">
-          <Users class="w-4 h-4" />
-          <span>{{ guestCount }}</span>
+        <!-- Guest Count and Like -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sm text-slate-500">
+            <Users class="w-4 h-4" />
+            <span>{{ guestCount }}</span>
+          </div>
+
+          <!-- Like Button (Desktop) - Only for public events -->
+          <button
+            v-if="showLikeButton && event.privacy === 'public'"
+            @click.stop="handleLikeClick"
+            :disabled="isLikeLoading"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200"
+            :class="[
+              isLiked
+                ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
+            ]"
+            :aria-label="isLiked ? 'Unlike event' : 'Like event'"
+          >
+            <Heart
+              class="w-4 h-4 transition-transform duration-200"
+              :class="[
+                isLiked ? 'fill-current scale-110' : '',
+                isLikeLoading ? 'animate-pulse' : ''
+              ]"
+            />
+            <span v-if="likesCount > 0" class="text-sm font-medium">{{ likesCount }}</span>
+          </button>
         </div>
 
         <!-- Manage Button (only for events user can edit) -->
@@ -205,13 +255,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   MapPin,
   Users,
   ArrowRight,
   AlertTriangle,
   CalendarDays,
+  Heart,
 } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
 import {
@@ -224,6 +275,7 @@ import {
   getEventCategory,
   getEventFallbackImage,
 } from '@/composables/useEventFormatters'
+import { useEventLike } from '@/composables/useEventLike'
 
 const props = withDefaults(
   defineProps<{
@@ -231,18 +283,46 @@ const props = withDefaults(
     variant?: 'mobile' | 'desktop'
     showManageButton?: boolean
     showMissingLocation?: boolean
+    showLikeButton?: boolean
   }>(),
   {
     variant: 'desktop',
     showManageButton: false,
     showMissingLocation: false,
+    showLikeButton: true,
   }
 )
 
-defineEmits<{
+const emit = defineEmits<{
   click: []
   manage: []
+  'login-required': []
+  'like-changed': [isLiked: boolean, likesCount: number]
 }>()
+
+// Like functionality
+const { isLiked, likesCount, isLoading: isLikeLoading, toggleLike, updateState } = useEventLike(
+  props.event.id,
+  props.event.is_liked ?? false,
+  props.event.likes_count ?? 0,
+  {
+    onLoginRequired: () => emit('login-required'),
+    onSuccess: (liked, count) => emit('like-changed', liked, count),
+  }
+)
+
+// Watch for external event data changes
+watch(
+  () => ({ isLiked: props.event.is_liked, likesCount: props.event.likes_count }),
+  ({ isLiked, likesCount }) => {
+    updateState(isLiked ?? false, likesCount ?? 0)
+  }
+)
+
+const handleLikeClick = async (e: MouseEvent) => {
+  e.stopPropagation()
+  await toggleLike()
+}
 
 // Track image load errors - two stages: primary image, then fallback image
 const primaryImageError = ref(false)

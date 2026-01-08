@@ -51,6 +51,7 @@
             :show-manage-button="false"
             :show-missing-location="false"
             @event-click="viewEvent"
+            @login-required="handleLoginRequired"
           />
 
           <!-- Infinite Scroll Loading Indicator -->
@@ -254,6 +255,7 @@ const handleEventRegistered = () => {
 
 const handleLoginRequired = () => {
   showEventDrawer.value = false
+  router.push(`/signin?redirect=${encodeURIComponent(route.fullPath)}`)
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
