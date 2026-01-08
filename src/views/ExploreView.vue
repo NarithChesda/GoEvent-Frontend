@@ -177,6 +177,7 @@ const dateFilterOptions = computed(() => {
 // Liked events state
 const likedEvents = ref<Event[]>([])
 const likedEventsLoading = ref(false)
+const likedEventsLoaded = ref(false) // Track if liked events have been loaded at least once
 
 // API filters
 const filters = ref<EventFiltersType>({})
@@ -198,11 +199,15 @@ const { events, loading, hasMore, isLoadingMore, loadEvents, loadMoreEvents } =
 const loadLikedEvents = async () => {
   if (!authStore.isAuthenticated) return
 
-  likedEventsLoading.value = true
+  // Only show loading skeleton on first load, not on refreshes
+  if (!likedEventsLoaded.value) {
+    likedEventsLoading.value = true
+  }
   try {
     const response = await eventsService.getMyLikedEvents()
     if (response.success && response.data) {
       likedEvents.value = response.data
+      likedEventsLoaded.value = true
     }
   } catch (error) {
     console.error('Failed to load liked events:', error)
