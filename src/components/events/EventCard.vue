@@ -58,35 +58,10 @@
           </template>
         </div>
 
-        <!-- Guest Count and Like -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5 text-sm text-slate-400">
-            <Users class="w-3.5 h-3.5" />
-            <span>{{ guestCount }}</span>
-          </div>
-
-          <!-- Like Button (Mobile) - Only for public events -->
-          <button
-            v-if="showLikeButton && event.privacy === 'public'"
-            @click.stop="handleLikeClick"
-            :disabled="isLikeLoading"
-            class="flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-200"
-            :class="[
-              isLiked
-                ? 'text-red-500 bg-red-50'
-                : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
-            ]"
-            :aria-label="isLiked ? 'Unlike event' : 'Like event'"
-          >
-            <Heart
-              class="w-4 h-4 transition-transform duration-200"
-              :class="[
-                isLiked ? 'fill-current scale-110' : '',
-                isLikeLoading ? 'animate-pulse' : ''
-              ]"
-            />
-            <span v-if="likesCount > 0" class="text-xs font-medium">{{ likesCount }}</span>
-          </button>
+        <!-- Guest Count -->
+        <div class="flex items-center gap-1.5 text-sm text-slate-400">
+          <Users class="w-3.5 h-3.5" />
+          <span>{{ guestCount }}</span>
         </div>
 
         <!-- Manage Button (only for events user can edit) -->
@@ -100,23 +75,49 @@
         </button>
       </div>
 
-      <!-- Event Image (square on mobile) -->
-      <div
-        class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100"
-      >
-        <img
-          v-if="!fallbackImageError"
-          :src="currentImageSrc"
-          :alt="event.title"
-          class="w-full h-full object-cover"
-          @error="handleImageError"
-        />
+      <!-- Right Column: Image + Like Button -->
+      <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <!-- Event Image (square on mobile) -->
         <div
-          v-else
-          class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+          class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100"
         >
-          <CalendarDays class="w-6 h-6 text-[#2ecc71]/60" />
+          <img
+            v-if="!fallbackImageError"
+            :src="currentImageSrc"
+            :alt="event.title"
+            class="w-full h-full object-cover"
+            @error="handleImageError"
+          />
+          <div
+            v-else
+            class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+          >
+            <CalendarDays class="w-6 h-6 text-[#2ecc71]/60" />
+          </div>
         </div>
+
+        <!-- Like Button (Mobile) -->
+        <button
+          v-if="showLikeButton && event.privacy === 'public'"
+          @click.stop="handleLikeClick"
+          :disabled="isLikeLoading"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-200"
+          :class="[
+            isLiked
+              ? 'text-red-500 bg-red-50'
+              : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
+          ]"
+          :aria-label="isLiked ? 'Unlike event' : 'Like event'"
+        >
+          <Heart
+            class="w-3.5 h-3.5 transition-transform duration-200"
+            :class="[
+              isLiked ? 'fill-current scale-110' : '',
+              isLikeLoading ? 'animate-pulse' : ''
+            ]"
+          />
+          <span v-if="likesCount > 0" class="text-xs font-medium">{{ likesCount }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -190,35 +191,10 @@
           </template>
         </div>
 
-        <!-- Guest Count and Like -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 text-sm text-slate-500">
-            <Users class="w-4 h-4" />
-            <span>{{ guestCount }}</span>
-          </div>
-
-          <!-- Like Button (Desktop) - Only for public events -->
-          <button
-            v-if="showLikeButton && event.privacy === 'public'"
-            @click.stop="handleLikeClick"
-            :disabled="isLikeLoading"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200"
-            :class="[
-              isLiked
-                ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
-            ]"
-            :aria-label="isLiked ? 'Unlike event' : 'Like event'"
-          >
-            <Heart
-              class="w-4 h-4 transition-transform duration-200"
-              :class="[
-                isLiked ? 'fill-current scale-110' : '',
-                isLikeLoading ? 'animate-pulse' : ''
-              ]"
-            />
-            <span v-if="likesCount > 0" class="text-sm font-medium">{{ likesCount }}</span>
-          </button>
+        <!-- Guest Count -->
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+          <Users class="w-4 h-4" />
+          <span>{{ guestCount }}</span>
         </div>
 
         <!-- Manage Button (only for events user can edit) -->
@@ -232,23 +208,49 @@
         </button>
       </div>
 
-      <!-- Event Image (landscape) -->
-      <div
-        class="w-44 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100"
-      >
-        <img
-          v-if="!fallbackImageError"
-          :src="currentImageSrc"
-          :alt="event.title"
-          class="w-full h-full object-cover"
-          @error="handleImageError"
-        />
+      <!-- Right Column: Image + Like Button -->
+      <div class="flex flex-col items-end gap-2 flex-shrink-0">
+        <!-- Event Image (landscape) -->
         <div
-          v-else
-          class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+          class="w-44 h-28 rounded-xl overflow-hidden bg-slate-100"
         >
-          <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
+          <img
+            v-if="!fallbackImageError"
+            :src="currentImageSrc"
+            :alt="event.title"
+            class="w-full h-full object-cover"
+            @error="handleImageError"
+          />
+          <div
+            v-else
+            class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
+          >
+            <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
+          </div>
         </div>
+
+        <!-- Like Button (Desktop) -->
+        <button
+          v-if="showLikeButton && event.privacy === 'public'"
+          @click.stop="handleLikeClick"
+          :disabled="isLikeLoading"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-200"
+          :class="[
+            isLiked
+              ? 'text-red-500 bg-red-50 hover:bg-red-100'
+              : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
+          ]"
+          :aria-label="isLiked ? 'Unlike event' : 'Like event'"
+        >
+          <Heart
+            class="w-4 h-4 transition-transform duration-200"
+            :class="[
+              isLiked ? 'fill-current scale-110' : '',
+              isLikeLoading ? 'animate-pulse' : ''
+            ]"
+          />
+          <span v-if="likesCount > 0" class="text-sm font-medium">{{ likesCount }}</span>
+        </button>
       </div>
     </div>
   </div>
