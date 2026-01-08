@@ -59,7 +59,7 @@
         </div>
 
         <!-- Guest Count -->
-        <div class="flex items-center gap-1.5 text-sm text-slate-400">
+        <div v-if="guestCount" class="flex items-center gap-1.5 text-sm text-slate-400">
           <Users class="w-3.5 h-3.5" />
           <span>{{ guestCount }}</span>
         </div>
@@ -192,7 +192,7 @@
         </div>
 
         <!-- Guest Count -->
-        <div class="flex items-center gap-2 text-sm text-slate-500">
+        <div v-if="guestCount" class="flex items-center gap-2 text-sm text-slate-500">
           <Users class="w-4 h-4" />
           <span>{{ guestCount }}</span>
         </div>

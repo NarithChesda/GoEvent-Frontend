@@ -147,16 +147,13 @@ export function formatEventTime(dateStr: string): string {
 
 /**
  * Get guest count display string
+ * Uses registrations_count from the API which represents users who registered for the event
+ * Returns null if no guests (to hide the display)
  */
-export function getGuestCount(event: Event): string {
-  const eventWithGuests = event as Event & {
-    guest_count?: number
-    registrations?: unknown[]
-  }
-  const count =
-    eventWithGuests.guest_count || eventWithGuests.registrations?.length || 0
+export function getGuestCount(event: Event): string | null {
+  const count = event.registrations_count || 0
 
-  if (count === 0) return 'No guests'
+  if (count === 0) return null
   if (count === 1) return '1 guest'
   return `${count} guests`
 }
