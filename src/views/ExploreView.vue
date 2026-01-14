@@ -52,6 +52,7 @@
             :show-missing-location="false"
             @event-click="viewEvent"
             @login-required="handleLoginRequired"
+            @like-changed="handleLikeChanged"
           />
 
           <!-- Infinite Scroll Loading Indicator -->
@@ -306,6 +307,50 @@ const handleEventRegistered = () => {
 const handleLoginRequired = () => {
   showEventDrawer.value = false
   router.push(`/signin?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+// Handle like changes - update both events and likedEvents arrays
+const handleLikeChanged = (eventId: string, isLiked: boolean, likesCount: number) => {
+  // Update the events array (used by All and Upcoming tabs)
+  const eventIndex = events.value.findIndex((e) => e.id === eventId)
+  if (eventIndex !== -1) {
+    events.value[eventIndex] = {
+      ...events.value[eventIndex],
+      is_liked: isLiked,
+      likes_count: likesCount,
+    }
+  }
+
+  // Update likedEvents array if it has been loaded
+  if (likedEventsLoaded.value) {
+    if (isLiked) {
+      // Add to liked events if not already present
+      const alreadyInLiked = likedEvents.value.some((e) => e.id === eventId)
+      if (!alreadyInLiked) {
+        // Find the event from the main events array to add to liked
+        const eventToAdd = events.value.find((e) => e.id === eventId)
+        if (eventToAdd) {
+          likedEvents.value = [
+            ...likedEvents.value,
+            { ...eventToAdd, is_liked: true, likes_count: likesCount },
+          ]
+        }
+      } else {
+        // Update likes_count for existing entry
+        const likedIndex = likedEvents.value.findIndex((e) => e.id === eventId)
+        if (likedIndex !== -1) {
+          likedEvents.value[likedIndex] = {
+            ...likedEvents.value[likedIndex],
+            is_liked: true,
+            likes_count: likesCount,
+          }
+        }
+      }
+    } else {
+      // Remove from liked events
+      likedEvents.value = likedEvents.value.filter((e) => e.id !== eventId)
+    }
+  }
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
