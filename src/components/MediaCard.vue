@@ -34,7 +34,7 @@
       <!-- Drag Handle (only visible if can edit and draggable) -->
       <div
         v-if="canEdit && draggable"
-        class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-0.5 sm:p-1 rounded-lg bg-black/50 backdrop-blur-sm"
+        class="hidden sm:block absolute top-1.5 right-1.5 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing p-0.5 sm:p-1 rounded-lg bg-black/50 backdrop-blur-sm"
       >
         <GripVertical class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
       </div>
@@ -54,6 +54,30 @@
         :class="imageError ? 'bg-black/30' : 'bg-black/40'"
       >
         <div class="flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto">
+          <!-- Move Up Button (mobile only) -->
+          <button
+            v-if="draggable"
+            @click="$emit('move-up')"
+            :disabled="isFirst"
+            class="sm:hidden p-1.5 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
+            :class="isFirst ? 'text-slate-200 cursor-not-allowed' : 'text-slate-500 hover:text-slate-700'"
+            title="Move up"
+          >
+            <ChevronUp class="w-3.5 h-3.5" />
+          </button>
+
+          <!-- Move Down Button (mobile only) -->
+          <button
+            v-if="draggable"
+            @click="$emit('move-down')"
+            :disabled="isLast"
+            class="sm:hidden p-1.5 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
+            :class="isLast ? 'text-slate-200 cursor-not-allowed' : 'text-slate-500 hover:text-slate-700'"
+            title="Move down"
+          >
+            <ChevronDown class="w-3.5 h-3.5" />
+          </button>
+
           <!-- Featured Toggle Button -->
           <button
             @click="$emit('set-featured', media)"
@@ -113,13 +137,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Trash2, Star, Calendar, ImageIcon, GripVertical } from 'lucide-vue-next'
+import { Trash2, Star, Calendar, ImageIcon, GripVertical, ChevronUp, ChevronDown } from 'lucide-vue-next'
 import type { EventPhoto } from '../services/api'
 
 interface Props {
   media: EventPhoto
   canEdit: boolean
   draggable?: boolean
+  isFirst?: boolean
+  isLast?: boolean
 }
 
 interface Emits {
@@ -127,6 +153,8 @@ interface Emits {
   'set-featured': [media: EventPhoto]
   'drag-start': [media: EventPhoto]
   'drag-end': [media: EventPhoto]
+  'move-up': []
+  'move-down': []
 }
 
 const props = defineProps<Props>()

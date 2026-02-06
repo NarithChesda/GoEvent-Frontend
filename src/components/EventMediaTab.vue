@@ -101,15 +101,19 @@
             <!-- Media Grid with Upload Card -->
             <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               <MediaCard
-                v-for="mediaItem in media"
+                v-for="(mediaItem, index) in media"
                 :key="mediaItem.id"
                 :media="mediaItem"
                 :can-edit="canEdit"
                 :draggable="canEdit"
+                :is-first="index === 0"
+                :is-last="index === media.length - 1"
                 @delete="deleteMedia"
                 @set-featured="toggleFeatured"
                 @drag-start="handleDragStart"
                 @drag-end="handleDragEnd"
+                @move-up="handleMoveUp(mediaItem)"
+                @move-down="handleMoveDown(mediaItem)"
                 class="media-item"
                 :data-id="mediaItem.id"
               />
@@ -239,6 +243,7 @@ const localEventData = ref<Event | undefined>(props.eventData ? { ...props.event
 
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)
+const isReordering = ref(false)
 
 // Template refs for sections
 const paymentMethodsSectionRef = ref<InstanceType<typeof PaymentMethodsSection> | null>(null)
@@ -448,6 +453,89 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
     showError('Network error while reordering media')
   } finally {
     draggedMedia.value = null
+  }
+}
+
+// Mobile move handlers
+const handleMoveUp = async (mediaItem: EventPhoto) => {
+  if (isReordering.value || !props.eventId) return
+
+  const currentIndex = media.value.findIndex((item) => item.id === mediaItem.id)
+  if (currentIndex <= 0) return
+
+  isReordering.value = true
+
+  const newMedia = [...media.value]
+  const targetIndex = currentIndex - 1
+
+  // Swap items
+  ;[newMedia[currentIndex], newMedia[targetIndex]] = [newMedia[targetIndex], newMedia[currentIndex]]
+
+  // Update order values on swapped items
+  newMedia[currentIndex].order = currentIndex
+  newMedia[targetIndex].order = targetIndex
+
+  // Optimistic UI update
+  media.value = [...newMedia]
+  emit('media-updated', media.value)
+
+  try {
+    const updates = [
+      { id: newMedia[currentIndex].id, order: currentIndex },
+      { id: newMedia[targetIndex].id, order: targetIndex },
+    ]
+    const response = await mediaService.bulkReorderEventMedia(props.eventId, { updates })
+    if (!response.success) {
+      await fetchMedia()
+      showError(response.message || 'Failed to reorder media')
+    }
+  } catch (err) {
+    console.error('Failed to reorder media:', err)
+    await fetchMedia()
+    showError('Network error while reordering media')
+  } finally {
+    isReordering.value = false
+  }
+}
+
+const handleMoveDown = async (mediaItem: EventPhoto) => {
+  if (isReordering.value || !props.eventId) return
+
+  const currentIndex = media.value.findIndex((item) => item.id === mediaItem.id)
+  if (currentIndex === -1 || currentIndex >= media.value.length - 1) return
+
+  isReordering.value = true
+
+  const newMedia = [...media.value]
+  const targetIndex = currentIndex + 1
+
+  // Swap items
+  ;[newMedia[currentIndex], newMedia[targetIndex]] = [newMedia[targetIndex], newMedia[currentIndex]]
+
+  // Update order values on swapped items
+  newMedia[currentIndex].order = currentIndex
+  newMedia[targetIndex].order = targetIndex
+
+  // Optimistic UI update
+  media.value = [...newMedia]
+  emit('media-updated', media.value)
+
+  try {
+    const updates = [
+      { id: newMedia[currentIndex].id, order: currentIndex },
+      { id: newMedia[targetIndex].id, order: targetIndex },
+    ]
+    const response = await mediaService.bulkReorderEventMedia(props.eventId, { updates })
+    if (!response.success) {
+      await fetchMedia()
+      showError(response.message || 'Failed to reorder media')
+    }
+  } catch (err) {
+    console.error('Failed to reorder media:', err)
+    await fetchMedia()
+    showError('Network error while reordering media')
+  } finally {
+    isReordering.value = false
   }
 }
 
