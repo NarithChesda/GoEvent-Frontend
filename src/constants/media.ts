@@ -47,6 +47,14 @@ export const MEDIA_ERROR_MESSAGES = {
   DELETE_FAILED: 'Failed to delete media',
 } as const
 
+// Image compression settings
+export const IMAGE_COMPRESSION = {
+  MAX_WIDTH: 1920,
+  MAX_HEIGHT: 1080,
+  QUALITY: 0.85,
+  OUTPUT_TYPE: 'image/jpeg',
+} as const
+
 // Media types
 export type MediaType = 'image' | 'video' | 'audio'
 export type MediaField = typeof MEDIA_FIELDS[keyof typeof MEDIA_FIELDS]

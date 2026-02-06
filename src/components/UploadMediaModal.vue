@@ -78,10 +78,16 @@
                         Drag and drop images here, or click to browse
                       </p>
                       <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-                        Supports: JPG, PNG, WebP (Max 10MB per file)
+                        Supports: JPG, PNG, WebP &mdash; images auto-optimized for upload
                       </p>
                     </div>
                   </div>
+                </div>
+
+                <!-- Compressing Indicator -->
+                <div v-if="compressing" class="flex items-center gap-2 p-3 bg-sky-50 border border-sky-200 rounded-xl">
+                  <Loader2 class="w-4 h-4 text-sky-600 animate-spin" />
+                  <p class="text-sm text-sky-700 font-medium">Optimizing images...</p>
                 </div>
 
                 <!-- Selected Files Preview -->
@@ -207,7 +213,7 @@
                 </button>
                 <button
                   type="submit"
-                  :disabled="selectedFiles.length === 0 || uploading"
+                  :disabled="selectedFiles.length === 0 || uploading || compressing"
                   class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <span
@@ -231,8 +237,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Upload, X, ImageIcon, AlertCircle, ImagePlus } from 'lucide-vue-next'
+import { Upload, X, ImageIcon, AlertCircle, ImagePlus, Loader2 } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
+import { compressImage } from '@/utils/imageCompression'
 
 interface Props {
   eventId: string
@@ -264,6 +271,7 @@ const currentUpload = ref(0)
 const error = ref<string | null>(null)
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
+const compressing = ref(false)
 
 // Methods
 const handleBackdropClick = (event: MouseEvent) => {
@@ -297,7 +305,7 @@ const handleDragLeave = (event: DragEvent) => {
   }
 }
 
-const addFiles = (files: File[]) => {
+const addFiles = async (files: File[]) => {
   const imageFiles = files.filter((file) => file.type.startsWith('image/'))
 
   if (imageFiles.length !== files.length) {
@@ -305,21 +313,29 @@ const addFiles = (files: File[]) => {
     setTimeout(() => (error.value = null), 3000)
   }
 
-  imageFiles.forEach((file) => {
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      error.value = `File "${file.name}" is too large. Maximum size is 10MB.`
-      return
-    }
+  if (imageFiles.length === 0) return
 
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      selectedFiles.value.push({
-        file,
-        preview: e.target?.result as string,
-      })
+  compressing.value = true
+  try {
+    const compressed = await Promise.all(imageFiles.map((file) => compressImage(file)))
+
+    for (const file of compressed) {
+      const preview = await readAsDataURL(file)
+      selectedFiles.value.push({ file, preview })
     }
+  } catch {
+    error.value = 'Failed to process images. Please try again.'
+    setTimeout(() => (error.value = null), 3000)
+  } finally {
+    compressing.value = false
+  }
+}
+
+const readAsDataURL = (file: File): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => resolve(e.target?.result as string ?? null)
+    reader.onerror = () => resolve(null)
     reader.readAsDataURL(file)
   })
 }
