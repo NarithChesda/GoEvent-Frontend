@@ -151,13 +151,62 @@
               </div>
             </div>
 
-            <!-- Empty State (no query) -->
-            <div v-else class="py-12 text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-slate-200/50">
-                <component :is="contextIcon" class="w-8 h-8 text-[#2ecc71]" />
+            <!-- Empty State (no query) - Video Guides -->
+            <div v-else class="py-2">
+              <div v-if="VIDEO_GUIDES.length > 0">
+                <div class="px-5 py-2 flex items-center gap-2">
+                  <PlayCircle class="w-4 h-4 text-slate-400" />
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Video Guides</span>
+                </div>
+                <div>
+                  <button
+                    v-for="guide in VIDEO_GUIDES"
+                    :key="guide.id"
+                    @click="toggleVideoGuide(guide.id)"
+                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-150"
+                    :class="expandedGuideId === guide.id ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
+                  >
+                    <div class="w-10 h-10 rounded-lg bg-white/40 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-slate-200/50">
+                      <PlayCircle class="w-5 h-5 text-slate-500" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-medium text-slate-900 truncate">{{ guide.question }}</div>
+                      <div v-if="guide.duration" class="text-sm text-slate-400">{{ guide.duration }}</div>
+                    </div>
+                    <ArrowRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </button>
+                </div>
+
+                <!-- Video Preview Pane -->
+                <Transition name="guide-preview">
+                  <div
+                    v-if="expandedGuideId"
+                    :key="expandedGuideId"
+                    class="border-t border-slate-200/50 bg-black/5"
+                  >
+                    <div class="relative w-full" style="padding-top: 56.25%">
+                      <iframe
+                        class="absolute inset-0 w-full h-full"
+                        :src="VIDEO_GUIDES.find(g => g.id === expandedGuideId)?.videoEmbedUrl"
+                        title="Video guide"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                      ></iframe>
+                    </div>
+                  </div>
+                </Transition>
               </div>
-              <p class="text-slate-600 font-medium">{{ emptyStateTitle }}</p>
-              <p class="text-sm text-slate-400 mt-1">{{ emptyStateSubtitle }}</p>
+
+              <!-- Fallback if no guides -->
+              <div v-else class="py-10 text-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-slate-200/50">
+                  <component :is="contextIcon" class="w-8 h-8 text-[#2ecc71]" />
+                </div>
+                <p class="text-slate-600 font-medium">{{ emptyStateTitle }}</p>
+                <p class="text-sm text-slate-400 mt-1">{{ emptyStateSubtitle }}</p>
+              </div>
             </div>
           </div>
 
@@ -199,9 +248,11 @@ import {
   MapPin,
   ArrowRight,
   Sparkles,
-  SearchX
+  SearchX,
+  PlayCircle
 } from 'lucide-vue-next'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
+import { VIDEO_GUIDES } from '@/constants/videoGuides'
 
 const {
   isOpen,
@@ -221,6 +272,13 @@ const {
 } = useGlobalSearch()
 
 const searchInput = ref<HTMLInputElement | null>(null)
+
+// Video guides
+const expandedGuideId = ref<string | null>(null)
+
+const toggleVideoGuide = (id: string) => {
+  expandedGuideId.value = expandedGuideId.value === id ? null : id
+}
 
 // Context-aware UI
 const showMyEventsSection = computed(() => {
@@ -287,11 +345,13 @@ const emptyStateSubtitle = computed(() => {
   }
 })
 
-// Focus input when modal opens
+// Focus input when modal opens, reset video guide state on close
 watch(isOpen, async (open) => {
   if (open) {
     await nextTick()
     searchInput.value?.focus()
+  } else {
+    expandedGuideId.value = null
   }
 })
 
@@ -388,6 +448,25 @@ const formatDate = (dateStr: string) => {
     opacity: 0;
     transform: scale(0.96) translateY(-10px);
   }
+}
+
+/* Video guide preview transition */
+.guide-preview-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.guide-preview-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.guide-preview-enter-from {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.guide-preview-leave-to {
+  opacity: 0;
+  transform: scale(0.98);
 }
 
 /* Smooth scrollbar */
