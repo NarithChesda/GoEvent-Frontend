@@ -102,11 +102,11 @@
                 <!-- Title -->
                 <h3
                   :class="[
-                    'font-regular leading-tight text-center capitalize mb-2',
+                    'font-regular leading-tight text-center capitalize mb-2 agenda-item-title',
                     currentLanguage === 'kh' && 'khmer-text-fix',
                     currentLanguage === 'kh'
-                      ? 'text-base sm:text-lg md:text-xl laptop-sm:text-base laptop-md:text-lg laptop-lg:text-xl'
-                      : 'text-lg sm:text-xl md:text-2xl laptop-sm:text-lg laptop-md:text-xl laptop-lg:text-2xl'
+                      ? 'text-sm sm:text-sm md:text-base'
+                      : 'text-sm sm:text-base md:text-lg'
                   ]"
                   :style="{
                     color: primaryColor,
@@ -119,9 +119,8 @@
                 <!-- Time -->
                 <div
                   :class="[
-                    'text-center',
+                    'text-center text-sm agenda-item-time',
                     currentLanguage === 'kh' && 'khmer-text-fix',
-                    'text-sm sm:text-base md:text-lg laptop-sm:text-sm laptop-md:text-base laptop-lg:text-lg'
                   ]"
                   :style="{
                     color: primaryColor,
@@ -431,7 +430,7 @@ watch(
   overflow-y: visible;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   display: flex;
   justify-content: center;
   padding: 0.5rem 0;
@@ -443,11 +442,17 @@ watch(
 
 .tab-bar {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-width: min-content;
   justify-content: center;
   flex-wrap: nowrap;
   padding: 0.25rem 0;
+}
+
+@media (min-width: 640px) {
+  .tab-bar {
+    gap: 0.75rem;
+  }
 }
 
 /* Fun Birthday Tab Buttons */
@@ -464,6 +469,12 @@ watch(
   font-weight: 600;
 }
 
+@media (min-width: 640px) {
+  .birthday-tab-button {
+    padding: 0.75rem 1.75rem;
+  }
+}
+
 .birthday-tab-button:hover {
   transform: translateY(-3px) scale(1.05);
 }
@@ -476,6 +487,12 @@ watch(
   font-size: 0.875rem;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .tab-date {
+    font-size: 1rem;
+  }
 }
 
 .tab-date.khmer-text-fix {
@@ -620,25 +637,40 @@ watch(
 
 /* Small laptops 13-inch (1024px-1365px) - Scaled to 67.5% matching mobile exactly */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match AgendaWedding */
   .agenda-header {
-    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching CommentSection */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    font-size: 1.25rem !important; /* 20px - match AgendaWedding header */
+    line-height: 1.25 !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0.3375rem !important;
   }
 
-  .tab-bar-scroll-wrapper {
-    margin-bottom: 1.5rem !important;
+  /* Description text - match AgendaWedding */
+  .tab-content-area h4 {
+    font-size: 0.75rem !important; /* 12px - match AgendaWedding description */
   }
 
-  /* Tab button compact sizing - matching AgendaWedding */
+  /* Tab bar compact sizing - match AgendaWedding */
+  .tab-bar {
+    gap: 0.375rem !important;
+  }
+
   .birthday-tab-button {
-    padding: 0.625rem 1.25rem !important;
+    padding: 0.4rem 0.875rem !important;
   }
 
   .tab-date {
-    font-size: 0.75rem !important;
+    font-size: 0.5625rem !important; /* 9px - match AgendaWedding */
+  }
+
+  /* Item title - match AgendaWedding AgendaItem h3 */
+  .agenda-item-title {
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
+  }
+
+  /* Item time - match AgendaWedding AgendaItem time */
+  .agenda-item-time {
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
   }
 
   .agenda-item-wrapper {
@@ -648,12 +680,40 @@ watch(
 
 /* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching mobile exactly */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
+  /* Header text - match AgendaWedding */
   .agenda-header {
-    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching CommentSection */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+    font-size: 1.25rem !important; /* 20px - match AgendaWedding header */
+    line-height: 1.25 !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0.375rem !important;
+  }
+
+  /* Description text - match AgendaWedding */
+  .tab-content-area h4 {
+    font-size: 0.75rem !important; /* 12px - match AgendaWedding description */
+  }
+
+  /* Tab bar compact sizing - match AgendaWedding */
+  .tab-bar {
+    gap: 0.5rem !important;
+  }
+
+  .birthday-tab-button {
+    padding: 0.5rem 1rem !important;
+  }
+
+  .tab-date {
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
+  }
+
+  /* Item title - match AgendaWedding AgendaItem h3 */
+  .agenda-item-title {
+    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
+  }
+
+  /* Item time - match AgendaWedding AgendaItem time */
+  .agenda-item-time {
+    font-size: 0.6875rem !important; /* 11px - match AgendaWedding */
   }
 
   .agenda-item-wrapper {

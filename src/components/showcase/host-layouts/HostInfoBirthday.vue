@@ -72,7 +72,7 @@
     <div v-if="hosts.length > 0" class="text-center space-y-1 sm:space-y-1.5 px-4">
       <!-- Title -->
       <p
-        :class="['text-sm sm:text-base opacity-75', getKhmerClass(currentLanguage)]"
+        :class="['birthday-title-text opacity-75', getKhmerClass(currentLanguage)]"
         :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
       >
         <span
@@ -211,6 +211,11 @@ const animationDelays = computed(() => {
   font-size: 1rem;
 }
 
+/* Title text - matches wedding parent-name-text sizes */
+.birthday-title-text {
+  font-size: 0.7906rem;
+}
+
 /* Large Profile Picture */
 .profile-picture-large {
   width: 200px;
@@ -287,6 +292,10 @@ const animationDelays = computed(() => {
     font-size: 1.125rem;
   }
 
+  .birthday-title-text {
+    font-size: 0.9344rem;
+  }
+
   .profile-picture-large {
     width: 250px;
     height: 250px;
@@ -303,6 +312,10 @@ const animationDelays = computed(() => {
     font-size: 1.25rem;
   }
 
+  .birthday-title-text {
+    font-size: 1.0781rem;
+  }
+
   .profile-picture-large {
     width: 280px;
     height: 280px;
@@ -315,8 +328,8 @@ const animationDelays = computed(() => {
   }
 }
 
-/* Laptop sizes: use mobile styling */
-@media (min-width: 1024px) and (max-width: 1919px) {
+/* Small laptops 13-inch (1024px - 1365px) */
+@media (min-width: 1024px) and (max-width: 1365px) {
   .host-info-birthday {
     padding: 1rem 0;
   }
@@ -330,17 +343,62 @@ const animationDelays = computed(() => {
   }
 
   .parent-name-text {
-    font-size: 1rem !important;
+    font-size: 0.55rem !important;
+  }
+
+  .birthday-title-text {
+    font-size: 0.55rem !important;
+  }
+
+  .host-info-birthday h3 {
+    font-size: 0.85rem !important;
   }
 
   .profile-picture-large {
-    width: 200px;
-    height: 200px;
-    padding: 4px;
+    width: 160px;
+    height: 160px;
+    padding: 3px;
+  }
+}
+
+/* Medium laptops 14-15 inch (1366px - 1919px) */
+@media (min-width: 1366px) and (max-width: 1919px) {
+  .host-info-birthday {
+    padding: 1rem 0;
+  }
+
+  .text-center.mb-6 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .parent-row {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .parent-name-text {
+    font-size: 0.55rem !important;
+  }
+
+  .birthday-title-text {
+    font-size: 0.55rem !important;
+  }
+
+  .host-info-birthday h3 {
+    font-size: 0.85rem !important;
+  }
+
+  .profile-picture-large {
+    width: 160px;
+    height: 160px;
+    padding: 3px;
   }
 }
 
 @media (min-width: 1920px) {
+  .birthday-title-text {
+    font-size: 1.0063rem;
+  }
+
   .profile-picture-large {
     width: 300px;
     height: 300px;
