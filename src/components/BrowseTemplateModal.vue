@@ -31,11 +31,36 @@
             <div class="hidden lg:flex w-52 bg-white flex-shrink-0 flex-col">
               <!-- Sidebar Header -->
               <div class="px-6 py-6">
-                <h2 id="browse-templates-title" class="text-2xl font-bold text-slate-900">Browse Templates</h2>
+                <h2 id="browse-templates-title" class="text-2xl font-bold text-slate-900">Templates</h2>
               </div>
 
-              <!-- Sidebar Navigation -->
-              <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Template filters">
+              <!-- Partner Tab (only for partner users) -->
+              <div v-if="isPartner" class="px-3 mb-2">
+                <div class="flex gap-1 p-1 bg-slate-100 rounded-lg">
+                  <button
+                    type="button"
+                    @click="activeTab = 'browse'"
+                    :class="[
+                      'flex-1 px-2 py-1.5 rounded-md text-xs font-semibold transition-all',
+                      activeTab === 'browse' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700',
+                    ]"
+                  >Browse</button>
+                  <button
+                    type="button"
+                    @click="activeTab = 'my-templates'"
+                    :class="[
+                      'flex-1 px-2 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1',
+                      activeTab === 'my-templates' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700',
+                    ]"
+                  >
+                    <LayoutTemplate class="w-3 h-3" />
+                    Mine
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sidebar Navigation (only when on browse tab) -->
+              <nav v-if="activeTab === 'browse'" class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Template filters">
                 <!-- Package Filter -->
                 <div class="mb-4">
                   <h3 class="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Package</h3>
@@ -132,8 +157,8 @@
 
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
-              <!-- Mobile Search Header with Close Button -->
-              <div class="lg:hidden px-4 pt-4 pb-2">
+              <!-- Mobile Search Header with Close Button (browse tab only) -->
+              <div v-if="activeTab === 'browse'" class="lg:hidden px-4 pt-4 pb-2">
                 <div class="flex items-center gap-3">
                   <!-- Search Input -->
                   <div class="relative flex-1">
@@ -159,8 +184,8 @@
                 </div>
               </div>
 
-              <!-- Desktop Search Header -->
-              <div class="hidden lg:block px-6 py-4">
+              <!-- Desktop Search Header (browse tab only) -->
+              <div v-if="activeTab === 'browse'" class="hidden lg:block px-6 py-4">
                 <div class="relative">
                   <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
                   <label for="template-search" class="sr-only">Search templates</label>
@@ -175,8 +200,45 @@
                 </div>
               </div>
 
-              <!-- Mobile Filter Chips (shown only on mobile) -->
-              <div class="lg:hidden px-4 pb-2 space-y-2">
+              <!-- Mobile Tab Switcher (partner users only) -->
+              <div v-if="isPartner" class="lg:hidden px-4 pb-2" :class="activeTab === 'my-templates' ? 'pt-4' : ''">
+                <div class="flex items-center gap-2">
+                  <div class="flex flex-1 gap-1 p-1 bg-slate-100 rounded-lg">
+                    <button
+                      type="button"
+                      @click="activeTab = 'browse'"
+                      :class="[
+                        'flex-1 py-1.5 rounded-md text-xs font-semibold transition-all',
+                        activeTab === 'browse' ? 'bg-white shadow text-slate-900' : 'text-slate-500',
+                      ]"
+                    >Browse All</button>
+                    <button
+                      type="button"
+                      @click="activeTab = 'my-templates'"
+                      :class="[
+                        'flex-1 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1',
+                        activeTab === 'my-templates' ? 'bg-white shadow text-slate-900' : 'text-slate-500',
+                      ]"
+                    >
+                      <LayoutTemplate class="w-3 h-3" />
+                      My Templates
+                    </button>
+                  </div>
+                  <!-- Close button visible only when search bar is hidden -->
+                  <button
+                    v-if="activeTab === 'my-templates'"
+                    @click="handleModalClose"
+                    class="flex-shrink-0 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all"
+                    aria-label="Close modal"
+                    type="button"
+                  >
+                    <X class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mobile Filter Chips (shown only on mobile browse tab) -->
+              <div v-if="activeTab === 'browse'" class="lg:hidden px-4 pb-2 space-y-2">
                 <!-- Package Filter Row -->
                 <div class="flex gap-2 overflow-x-auto no-scrollbar">
                   <button
@@ -253,8 +315,15 @@
                 </div>
               </div>
 
-              <!-- Templates Content -->
-              <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50">
+              <!-- My Templates Panel (partner users, my-templates tab) -->
+              <PartnerTemplatesPanel
+                v-if="isPartner && activeTab === 'my-templates'"
+                class="flex-1 overflow-hidden"
+                @template-selected="handlePartnerTemplateSelected"
+              />
+
+              <!-- Browse Templates Content -->
+              <div v-else class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50">
                 <!-- Loading State -->
                 <TemplateLoadingState v-if="loading" />
 
@@ -282,11 +351,11 @@
               <!-- Footer (only when template selected) -->
               <Transition name="footer">
                 <div
-                  v-if="hasSelection"
+                  v-if="activeHasSelection"
                   class="flex items-center justify-between px-4 lg:px-6 py-3 lg:py-4 border-t border-slate-200 bg-white"
                 >
                   <div class="text-sm text-slate-600 truncate mr-2">
-                    <span class="font-medium">{{ selectedTemplate?.name }}</span> selected
+                    <span class="font-medium">{{ activeSelectedTemplate?.name }}</span> selected
                   </div>
                   <button
                     ref="confirmButtonRef"
@@ -312,15 +381,19 @@
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
 import type { EventTemplate } from '../services/api'
+import type { PartnerTemplate } from '../services/api'
+import { eventTemplateService } from '../services/api'
 import { useTemplateApi } from '../composables/useTemplateApi'
 import { useTemplateFiltering } from '../composables/useTemplateFiltering'
 import { useTemplateSelection } from '../composables/useTemplateSelection'
+import { useAuthStore } from '../stores/auth'
 
 // Import child components
 import TemplateLoadingState from './template/TemplateLoadingState.vue'
 import TemplateGrid from './template/TemplateGrid.vue'
 import TemplateEmptyState from './template/TemplateEmptyState.vue'
 import TemplateMessage from './template/TemplateMessage.vue'
+import PartnerTemplatesPanel from './template/PartnerTemplatesPanel.vue'
 import {
   X,
   Search,
@@ -338,6 +411,7 @@ import {
   Cake,
   Layers,
   Crown,
+  LayoutTemplate,
   type LucideIcon,
 } from 'lucide-vue-next'
 
@@ -354,6 +428,13 @@ const emit = defineEmits<{
   close: []
   'template-selected': [template: EventTemplate]
 }>()
+
+// Auth store for partner check
+const authStore = useAuthStore()
+const isPartner = computed(() => !!authStore.user?.is_partner)
+
+// Active tab: 'browse' | 'my-templates'
+const activeTab = ref<'browse' | 'my-templates'>('browse')
 
 // Template refs for focus management
 const modalRef = ref<HTMLElement>()
@@ -424,6 +505,25 @@ const filteredTemplates = computed(() => {
 
 const { selectedTemplateId, selectedTemplate, hasSelection, selectTemplate, clearSelection } =
   useTemplateSelection(templates)
+
+// Track partner template selection separately (partner templates aren't in the browse list)
+const selectedPartnerTemplate = ref<PartnerTemplate | null>(null)
+
+// Unified selected template: either a browse template or a partner template
+const activeSelectedTemplate = computed(() => {
+  if (selectedPartnerTemplate.value) return selectedPartnerTemplate.value
+  return selectedTemplate.value
+})
+
+const activeHasSelection = computed(() => {
+  return !!selectedPartnerTemplate.value || hasSelection.value
+})
+
+const handlePartnerTemplateSelected = (template: PartnerTemplate): void => {
+  // Clear any browse template selection
+  clearSelection()
+  selectedPartnerTemplate.value = template
+}
 
 // Category icon mapping with cache for performance
 const categoryIcons: Record<string, LucideIcon> = {
@@ -513,6 +613,8 @@ const handleModalClose = (): void => {
 }
 
 const handleTemplateSelection = (template: EventTemplate): void => {
+  // Clear any partner template selection when selecting a browse template
+  selectedPartnerTemplate.value = null
   selectTemplate(template)
 }
 
@@ -521,8 +623,31 @@ const SELECTION_DELAY_SAME = 1000
 const SELECTION_DELAY_NEW = 2000
 
 const handleConfirmSelection = async (): Promise<void> => {
-  if (!selectedTemplate.value || selecting.value) return
+  const template = activeSelectedTemplate.value
+  if (!template || selecting.value) return
 
+  // Partner template: use the select-template endpoint directly
+  if (selectedPartnerTemplate.value) {
+    selecting.value = true
+    try {
+      const response = await eventTemplateService.selectEventTemplate(
+        props.eventId,
+        selectedPartnerTemplate.value.id,
+      )
+      if (response.success) {
+        setTimeout(() => {
+          emit('template-selected', selectedPartnerTemplate.value as unknown as EventTemplate)
+          handleModalClose()
+        }, SELECTION_DELAY_NEW)
+      }
+    } finally {
+      selecting.value = false
+    }
+    return
+  }
+
+  // Browse template: use the existing composable flow
+  if (!selectedTemplate.value) return
   const result = await selectTemplateApi(props.eventId, selectedTemplate.value.id)
 
   if (result.success && result.template) {
@@ -536,8 +661,10 @@ const handleConfirmSelection = async (): Promise<void> => {
 
 const resetModalState = (): void => {
   clearSelection()
+  selectedPartnerTemplate.value = null
   clearFilters()
   resetState()
+  activeTab.value = 'browse'
   isInitializing.value = false
 }
 

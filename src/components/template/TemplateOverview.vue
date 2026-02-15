@@ -213,7 +213,7 @@
                 class="flex items-center justify-between bg-slate-50 rounded-lg p-3"
               >
                 <div>
-                  <p class="font-medium text-slate-900">{{ fontItem.font.name }}</p>
+                  <p class="font-medium text-slate-900">{{ fontItem.font?.name ?? 'Unknown font' }}</p>
                   <p class="text-xs text-slate-600">{{ fontItem.language_display }}</p>
                 </div>
                 <span class="text-xs font-mono text-slate-500">{{

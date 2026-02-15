@@ -188,7 +188,8 @@ Optional env vars:
 
 ### Backend Testing Credential
 Email: admin@goevent.com
-Password: 2025Password@admin
+Password (local): 123123123@
+Password (production): 2025Password@admin
 
 ### API Response Format
 All API responses follow this structure:

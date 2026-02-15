@@ -69,9 +69,27 @@ export type {
   EventTemplateLanguageFont,
   EventTemplateColor,
   EventTemplatePackagePlan,
+  PackagePlan,
   EventTemplate,
   TemplateAssets,
+  CoverStageLayout,
   BrowseTemplatesResponse,
+  PartnerTemplate,
+  PartnerTemplateStatus,
+  PartnerTemplateCreatePayload,
+  SubmitForReviewResponse,
+  CustomFont,
+  CreateTemplateColorPayload,
+  UpdateTemplateColorPayload,
+  TemplateFontType,
+  TemplateLanguageCode,
+  CreateTemplateFontPayload,
+  UpdateTemplateFontPayload,
+} from './api/types/template.types'
+
+export {
+  FONT_TYPE_LABELS,
+  LANGUAGE_CODE_LABELS,
 } from './api/types/template.types'
 
 // Guest types
@@ -221,7 +239,7 @@ export { mediaService } from './api/modules/media.service'
 export { hostsService } from './api/modules/hosts.service'
 
 // Event templates service
-export { eventTemplateService } from './api/modules/templates.service'
+export { eventTemplateService, packagePlanService, partnerTemplateService, customFontsService } from './api/modules/templates.service'
 
 // Guest services
 export { guestService, guestGroupService } from './api/modules/guests.service'
