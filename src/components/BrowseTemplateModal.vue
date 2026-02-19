@@ -320,6 +320,8 @@
                 v-if="isPartner && activeTab === 'my-templates'"
                 class="flex-1 overflow-hidden"
                 @template-selected="handlePartnerTemplateSelected"
+                @form-opened="isPartnerFormOpen = true"
+                @form-closed="isPartnerFormOpen = false"
               />
 
               <!-- Browse Templates Content -->
@@ -508,6 +510,7 @@ const { selectedTemplateId, selectedTemplate, hasSelection, selectTemplate, clea
 
 // Track partner template selection separately (partner templates aren't in the browse list)
 const selectedPartnerTemplate = ref<PartnerTemplate | null>(null)
+const isPartnerFormOpen = ref(false)
 
 // Unified selected template: either a browse template or a partner template
 const activeSelectedTemplate = computed(() => {
@@ -516,6 +519,8 @@ const activeSelectedTemplate = computed(() => {
 })
 
 const activeHasSelection = computed(() => {
+  // Hide footer when partner template form is open (editing mode)
+  if (isPartnerFormOpen.value) return false
   return !!selectedPartnerTemplate.value || hasSelection.value
 })
 
@@ -662,6 +667,7 @@ const handleConfirmSelection = async (): Promise<void> => {
 const resetModalState = (): void => {
   clearSelection()
   selectedPartnerTemplate.value = null
+  isPartnerFormOpen.value = false
   clearFilters()
   resetState()
   activeTab.value = 'browse'

@@ -25,111 +25,293 @@
           <span>{{ error }}</span>
         </div>
 
-        <!-- Template Name -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-slate-700">
-            Template Name <span class="text-red-500">*</span>
-          </label>
-          <input
-            v-model="form.name"
-            type="text"
-            placeholder="e.g. Elegant Gold Wedding"
-            maxlength="100"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
-          />
-        </div>
-
-        <!-- Package Plan Selection -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-slate-700">
-            Package Plan <span class="text-red-500">*</span>
-          </label>
-          <select
-            v-model="form.package_plan_id"
-            class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400 bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
-            :disabled="plansLoading"
-          >
-            <option :value="null" disabled>
-              {{ plansLoading ? 'Loading plans...' : 'Select a package plan' }}
-            </option>
-            <option
-              v-for="plan in availablePlans"
-              :key="plan.id"
-              :value="plan.id"
-            >
-              {{ plan.name }} — ${{ plan.price }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Preview Image -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-slate-700">
-            Preview Image
-
-          </label>
-          <div
-            class="relative border-2 border-dashed rounded-lg overflow-hidden transition-colors"
-            :class="previewImagePreview || existingTemplate?.preview_image ? 'border-slate-200' : 'border-slate-300 hover:border-sky-400'"
-          >
-            <!-- Image preview -->
-            <div v-if="previewImagePreview || existingTemplate?.preview_image" class="relative aspect-[9/16] max-h-48 overflow-hidden">
-              <img
-                :src="previewImagePreview || existingTemplate?.preview_image || ''"
-                alt="Preview"
-                class="w-full h-full object-cover"
+        <!-- Two-column layout for basic info and preview -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Left column: Form fields (2/3 width) -->
+          <div class="space-y-4 lg:col-span-2">
+            <!-- Template Name -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-slate-700">
+                Template Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                v-model="form.name"
+                type="text"
+                placeholder="e.g. Elegant Gold Wedding"
+                maxlength="100"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
               />
-              <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                <label class="cursor-pointer px-3 py-1.5 bg-white/90 rounded-lg text-xs font-medium text-slate-700">
-                  Change
-                  <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
-                </label>
-              </div>
             </div>
-            <!-- Upload placeholder -->
-            <label v-else class="flex flex-col items-center justify-center py-8 cursor-pointer">
-              <Upload class="w-8 h-8 text-slate-400 mb-2" />
-              <span class="text-sm font-medium text-slate-500">Click to upload preview image</span>
-              <span class="text-xs text-slate-400 mt-1">Portrait format (9:16) recommended</span>
-              <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
+
+            <!-- Package Plan Selection -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-slate-700">
+                Package Plan <span class="text-red-500">*</span>
+              </label>
+              <select
+                v-model="form.package_plan_id"
+                class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400 bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+                :disabled="plansLoading"
+              >
+                <option :value="null" disabled>
+                  {{ plansLoading ? 'Loading plans...' : 'Select a package plan' }}
+                </option>
+                <option
+                  v-for="plan in availablePlans"
+                  :key="plan.id"
+                  :value="plan.id"
+                >
+                  {{ plan.category ? `${plan.category.name} - ` : '' }}{{ plan.name }} — ${{ plan.price }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Preview URL -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-slate-700">Preview URL</label>
+              <input
+                v-model="form.youtube_preview_url"
+                type="url"
+                placeholder="https://goevent.online/g/dPmdHn?lang=kh"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+              />
+            </div>
+
+            <!-- Template Colors -->
+            <details class="border border-slate-200 rounded-lg overflow-hidden">
+              <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+                <span>Template Colors ({{ colors.length }})</span>
+                <ChevronDown class="w-4 h-4 text-slate-400" />
+              </summary>
+              <div class="p-4 space-y-3 border-t border-slate-100">
+                <p v-if="!isEditing" class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                  Save the template first, then edit it to manage colors.
+                </p>
+                <template v-else>
+                  <!-- Existing colors list -->
+                  <div v-for="color in colors" :key="color.id" class="flex items-center gap-2 py-1.5">
+                    <span
+                      class="w-6 h-6 rounded-full border border-slate-200 flex-shrink-0"
+                      :style="{ backgroundColor: color.hex_color_code }"
+                    />
+                    <span class="text-sm text-slate-700 flex-1 truncate">
+                      {{ color.name }} <span class="text-slate-400">({{ color.hex_color_code }})</span>
+                    </span>
+                    <button
+                      type="button"
+                      @click="startEditColor(color)"
+                      class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      @click="handleDeleteColor(color.id)"
+                      class="text-xs text-red-500 hover:text-red-600 font-medium"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  <!-- Add / Edit color form -->
+                  <div class="flex items-end gap-2">
+                    <div class="space-y-1">
+                      <label class="block text-xs text-slate-500">Color</label>
+                      <input
+                        v-model="colorForm.hex_color_code"
+                        type="color"
+                        class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">Hex</label>
+                      <input
+                        v-model="colorForm.hex_color_code"
+                        type="text"
+                        maxlength="7"
+                        placeholder="#FF0000"
+                        class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                      />
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">Name</label>
+                      <input
+                        v-model="colorForm.name"
+                        type="text"
+                        maxlength="50"
+                        placeholder="Primary"
+                        class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      @click="handleSaveColor"
+                      :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
+                      class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                    >
+                      <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
+                      <template v-else>{{ editingColorId ? 'Update' : 'Add' }}</template>
+                    </button>
+                    <button
+                      v-if="editingColorId"
+                      type="button"
+                      @click="cancelEditColor"
+                      class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </template>
+              </div>
+            </details>
+
+            <!-- Template Fonts -->
+            <details class="border border-slate-200 rounded-lg overflow-hidden">
+              <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+                <span>Template Fonts ({{ fonts.length }})</span>
+                <ChevronDown class="w-4 h-4 text-slate-400" />
+              </summary>
+              <div class="p-4 space-y-3 border-t border-slate-100">
+                <p v-if="!isEditing" class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                  Save the template first, then edit it to manage fonts.
+                </p>
+                <template v-else>
+                  <!-- Existing fonts list -->
+                  <div v-for="f in fonts" :key="f.id" class="flex items-center gap-2 py-1.5">
+                    <span class="text-sm text-slate-700 flex-1 truncate">
+                      {{ f.language_display }} &mdash; {{ f.font?.name || 'Unknown font' }}
+                      <span class="text-slate-400">({{ f.font_type_display }})</span>
+                    </span>
+                    <button
+                      type="button"
+                      @click="startEditFont(f)"
+                      class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      @click="handleDeleteFont(f.id)"
+                      class="text-xs text-red-500 hover:text-red-600 font-medium"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  <!-- Add / Edit font form -->
+                  <div class="flex items-end gap-2">
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">Language</label>
+                      <select
+                        v-model="fontForm.language"
+                        :class="selectClass"
+                      >
+                        <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
+                          {{ label }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">Font</label>
+                      <select
+                        v-model="fontForm.font"
+                        :class="selectClass"
+                      >
+                        <option :value="null" disabled>{{ availableCustomFonts.length ? 'Select' : '...' }}</option>
+                        <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
+                          {{ cf.name }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">Type</label>
+                      <select
+                        v-model="fontForm.font_type"
+                        :class="selectClass"
+                      >
+                        <option v-for="(label, type) in FONT_TYPE_LABELS" :key="type" :value="type">
+                          {{ label }}
+                        </option>
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      @click="handleSaveFont"
+                      :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
+                      class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                    >
+                      <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
+                      <template v-else>{{ editingFontId ? 'Update' : 'Add' }}</template>
+                    </button>
+                    <button
+                      v-if="editingFontId"
+                      type="button"
+                      @click="cancelEditFont"
+                      class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </template>
+              </div>
+            </details>
+
+            <!-- Liquid Glass Toggle -->
+            <div class="flex items-center justify-between py-2 px-1">
+              <div>
+                <p class="text-sm font-medium text-slate-700">Liquid Glass Background</p>
+                <p class="text-xs text-slate-400">Show liquid glass visual effect</p>
+              </div>
+              <button
+                type="button"
+                @click="form.display_liquid_glass_background = !form.display_liquid_glass_background"
+                :class="[
+                  'relative w-10 h-6 rounded-full transition-colors',
+                  form.display_liquid_glass_background ? 'bg-sky-500' : 'bg-slate-300',
+                ]"
+                role="switch"
+                :aria-checked="form.display_liquid_glass_background"
+              >
+                <span
+                  :class="[
+                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
+                    form.display_liquid_glass_background ? 'left-5' : 'left-1',
+                  ]"
+                />
+              </button>
+            </div>
+          </div>
+
+          <!-- Right column: Preview Image (1/3 width) -->
+          <div class="space-y-1.5 lg:col-span-1">
+            <label class="block text-sm font-medium text-slate-700">
+              Preview Image
             </label>
+            <div
+              class="relative border-2 border-dashed rounded-lg overflow-hidden transition-colors"
+              :class="previewImagePreview || existingTemplate?.preview_image ? 'border-slate-200' : 'border-slate-300 hover:border-sky-400'"
+            >
+              <!-- Image preview -->
+              <div v-if="previewImagePreview || existingTemplate?.preview_image" class="relative aspect-[9/16] overflow-hidden">
+                <img
+                  :src="previewImagePreview || existingTemplate?.preview_image || ''"
+                  alt="Preview"
+                  class="w-full h-full object-cover"
+                />
+                <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <label class="cursor-pointer px-2 py-1 bg-white/90 rounded text-[10px] font-medium text-slate-700">
+                    Change
+                    <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
+                  </label>
+                </div>
+              </div>
+              <!-- Upload placeholder -->
+              <label v-else class="flex flex-col items-center justify-center py-8 cursor-pointer">
+                <Upload class="w-6 h-6 text-slate-400 mb-1" />
+                <span class="text-xs font-medium text-slate-500 text-center">Upload preview</span>
+                <span class="text-[10px] text-slate-400 mt-0.5 text-center">9:16 portrait</span>
+                <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
+              </label>
+            </div>
           </div>
-        </div>
-
-        <!-- YouTube Preview URL -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-slate-700">Preview URL</label>
-          <input
-            v-model="form.youtube_preview_url"
-            type="url"
-            placeholder="https://goevent.online/g/dPmdHn?lang=kh"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
-          />
-        </div>
-
-        <!-- Liquid Glass Toggle -->
-        <div class="flex items-center justify-between py-2">
-          <div>
-            <p class="text-sm font-medium text-slate-700">Liquid Glass Background</p>
-            <p class="text-xs text-slate-400">Show liquid glass visual effect</p>
-          </div>
-          <button
-            type="button"
-            @click="form.display_liquid_glass_background = !form.display_liquid_glass_background"
-            :class="[
-              'relative w-10 h-6 rounded-full transition-colors',
-              form.display_liquid_glass_background ? 'bg-sky-500' : 'bg-slate-300',
-            ]"
-            role="switch"
-            :aria-checked="form.display_liquid_glass_background"
-          >
-            <span
-              :class="[
-                'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                form.display_liquid_glass_background ? 'left-5' : 'left-1',
-              ]"
-            />
-          </button>
         </div>
 
         <!-- Background Stage (collapsible) -->
@@ -144,7 +326,8 @@
               v-if="isBasicPlan"
               label="Background Photo"
               accept="image/*"
-              :file-name="bgPhotoPreview ? 'Preview ready' : existingTemplate?.basic_background_photo ? 'Current file' : undefined"
+              :file-name="form.basic_background_photo?.name"
+              :has-existing-file="!!existingTemplate?.basic_background_photo"
               @change="handleFileChange('basic_background_photo', $event)"
             />
             <!-- Standard: Background Video -->
@@ -153,14 +336,15 @@
               label="Background Video"
               accept="video/*"
               :file-name="form.standard_background_video?.name"
+              :has-existing-file="!!existingTemplate?.standard_background_video"
               @change="handleFileChange('standard_background_video', $event)"
             />
             <!-- Decorations (basic plan only) -->
             <div v-if="isBasicPlan" class="grid grid-cols-2 gap-3">
-              <FileUploadField label="Top Decoration" accept="image/*" :file-name="form.top_decoration?.name" @change="handleFileChange('top_decoration', $event)" />
-              <FileUploadField label="Bottom Decoration" accept="image/*" :file-name="form.bottom_decoration?.name" @change="handleFileChange('bottom_decoration', $event)" />
-              <FileUploadField label="Left Decoration" accept="image/*" :file-name="form.left_decoration?.name" @change="handleFileChange('left_decoration', $event)" />
-              <FileUploadField label="Right Decoration" accept="image/*" :file-name="form.right_decoration?.name" @change="handleFileChange('right_decoration', $event)" />
+              <FileUploadField label="Top Decoration" accept="image/*" :file-name="form.top_decoration?.name" :has-existing-file="!!existingTemplate?.top_decoration" @change="handleFileChange('top_decoration', $event)" />
+              <FileUploadField label="Bottom Decoration" accept="image/*" :file-name="form.bottom_decoration?.name" :has-existing-file="!!existingTemplate?.bottom_decoration" @change="handleFileChange('bottom_decoration', $event)" />
+              <FileUploadField label="Left Decoration" accept="image/*" :file-name="form.left_decoration?.name" :has-existing-file="!!existingTemplate?.left_decoration" @change="handleFileChange('left_decoration', $event)" />
+              <FileUploadField label="Right Decoration" accept="image/*" :file-name="form.right_decoration?.name" :has-existing-file="!!existingTemplate?.right_decoration" @change="handleFileChange('right_decoration', $event)" />
             </div>
           </div>
         </details>
@@ -177,7 +361,8 @@
               v-if="isBasicPlan"
               label="Cover Stage Background"
               accept="image/*"
-              :file-name="form.basic_decoration_photo?.name || (existingTemplate?.basic_decoration_photo ? 'Current file' : undefined)"
+              :file-name="form.basic_decoration_photo?.name"
+              :has-existing-file="!!existingTemplate?.basic_decoration_photo"
               @change="handleFileChange('basic_decoration_photo', $event)"
             />
             <!-- Standard: Cover Background Video -->
@@ -185,19 +370,20 @@
               v-if="isStandardPlan"
               label="Cover Stage Background"
               accept="video/*"
-              :file-name="form.standard_cover_video?.name || (existingTemplate?.standard_cover_video ? 'Current file' : undefined)"
+              :file-name="form.standard_cover_video?.name"
+              :has-existing-file="!!existingTemplate?.standard_cover_video"
               @change="handleFileChange('standard_cover_video', $event)"
             />
             <div v-if="isBasicPlan" class="grid grid-cols-2 gap-3">
-              <FileUploadField label="Cover Top" accept="image/*" :file-name="form.cover_top_decoration?.name" @change="handleFileChange('cover_top_decoration', $event)" />
-              <FileUploadField label="Cover Bottom" accept="image/*" :file-name="form.cover_bottom_decoration?.name" @change="handleFileChange('cover_bottom_decoration', $event)" />
-              <FileUploadField label="Cover Left" accept="image/*" :file-name="form.cover_left_decoration?.name" @change="handleFileChange('cover_left_decoration', $event)" />
-              <FileUploadField label="Cover Right" accept="image/*" :file-name="form.cover_right_decoration?.name" @change="handleFileChange('cover_right_decoration', $event)" />
+              <FileUploadField label="Cover Top" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="!!existingTemplate?.cover_top_decoration" @change="handleFileChange('cover_top_decoration', $event)" />
+              <FileUploadField label="Cover Bottom" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="!!existingTemplate?.cover_bottom_decoration" @change="handleFileChange('cover_bottom_decoration', $event)" />
+              <FileUploadField label="Cover Left" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="!!existingTemplate?.cover_left_decoration" @change="handleFileChange('cover_left_decoration', $event)" />
+              <FileUploadField label="Cover Right" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="!!existingTemplate?.cover_right_decoration" @change="handleFileChange('cover_right_decoration', $event)" />
             </div>
             <div class="grid grid-cols-3 gap-3">
-              <FileUploadField label="Frame Left" accept="image/*" :file-name="form.guest_title_frame_left?.name" @change="handleFileChange('guest_title_frame_left', $event)" />
-              <FileUploadField label="Frame Mid" accept="image/*" :file-name="form.guest_title_frame_mid?.name" @change="handleFileChange('guest_title_frame_mid', $event)" />
-              <FileUploadField label="Frame Right" accept="image/*" :file-name="form.guest_title_frame_right?.name" @change="handleFileChange('guest_title_frame_right', $event)" />
+              <FileUploadField label="Frame Left" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_left" @change="handleFileChange('guest_title_frame_left', $event)" />
+              <FileUploadField label="Frame Mid" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_mid" @change="handleFileChange('guest_title_frame_mid', $event)" />
+              <FileUploadField label="Frame Right" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_right" @change="handleFileChange('guest_title_frame_right', $event)" />
             </div>
           </div>
         </details>
@@ -279,183 +465,6 @@
                 <input v-model.number="form.cover_stage_layout.bottomDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
               </div>
             </div>
-          </div>
-        </details>
-
-        <!-- Template Colors -->
-        <details class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
-            <span>Template Colors ({{ colors.length }})</span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-3 border-t border-slate-100">
-            <p v-if="!isEditing" class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-              Save the template first, then edit it to manage colors.
-            </p>
-            <template v-else>
-              <!-- Existing colors list -->
-              <div v-for="color in colors" :key="color.id" class="flex items-center gap-2 py-1.5">
-                <span
-                  class="w-6 h-6 rounded-full border border-slate-200 flex-shrink-0"
-                  :style="{ backgroundColor: color.hex_color_code }"
-                />
-                <span class="text-sm text-slate-700 flex-1 truncate">
-                  {{ color.name }} <span class="text-slate-400">({{ color.hex_color_code }})</span>
-                </span>
-                <button
-                  type="button"
-                  @click="startEditColor(color)"
-                  class="text-xs text-sky-600 hover:text-sky-700 font-medium"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  @click="handleDeleteColor(color.id)"
-                  class="text-xs text-red-500 hover:text-red-600 font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-              <!-- Add / Edit color form -->
-              <div class="flex items-end gap-2">
-                <div class="space-y-1">
-                  <label class="block text-xs text-slate-500">Color</label>
-                  <input
-                    v-model="colorForm.hex_color_code"
-                    type="color"
-                    class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
-                  />
-                </div>
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">Hex</label>
-                  <input
-                    v-model="colorForm.hex_color_code"
-                    type="text"
-                    maxlength="7"
-                    placeholder="#FF0000"
-                    class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
-                  />
-                </div>
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">Name</label>
-                  <input
-                    v-model="colorForm.name"
-                    type="text"
-                    maxlength="50"
-                    placeholder="Primary"
-                    class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
-                  />
-                </div>
-                <button
-                  type="button"
-                  @click="handleSaveColor"
-                  :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
-                  class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
-                >
-                  <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
-                  <template v-else>{{ editingColorId ? 'Update' : 'Add' }}</template>
-                </button>
-                <button
-                  v-if="editingColorId"
-                  type="button"
-                  @click="cancelEditColor"
-                  class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </template>
-          </div>
-        </details>
-
-        <!-- Template Fonts -->
-        <details class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
-            <span>Template Fonts ({{ fonts.length }})</span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-3 border-t border-slate-100">
-            <p v-if="!isEditing" class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-              Save the template first, then edit it to manage fonts.
-            </p>
-            <template v-else>
-              <!-- Existing fonts list -->
-              <div v-for="f in fonts" :key="f.id" class="flex items-center gap-2 py-1.5">
-                <span class="text-sm text-slate-700 flex-1 truncate">
-                  {{ f.language_display }} &mdash; {{ f.font?.name || 'Unknown font' }}
-                  <span class="text-slate-400">({{ f.font_type_display }})</span>
-                </span>
-                <button
-                  type="button"
-                  @click="startEditFont(f)"
-                  class="text-xs text-sky-600 hover:text-sky-700 font-medium"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  @click="handleDeleteFont(f.id)"
-                  class="text-xs text-red-500 hover:text-red-600 font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-              <!-- Add / Edit font form -->
-              <div class="flex items-end gap-2">
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">Language</label>
-                  <select
-                    v-model="fontForm.language"
-                    :class="selectClass"
-                  >
-                    <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
-                      {{ label }}
-                    </option>
-                  </select>
-                </div>
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">Font</label>
-                  <select
-                    v-model="fontForm.font"
-                    :class="selectClass"
-                  >
-                    <option :value="null" disabled>{{ availableCustomFonts.length ? 'Select' : '...' }}</option>
-                    <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
-                      {{ cf.name }}
-                    </option>
-                  </select>
-                </div>
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">Type</label>
-                  <select
-                    v-model="fontForm.font_type"
-                    :class="selectClass"
-                  >
-                    <option v-for="(label, type) in FONT_TYPE_LABELS" :key="type" :value="type">
-                      {{ label }}
-                    </option>
-                  </select>
-                </div>
-                <button
-                  type="button"
-                  @click="handleSaveFont"
-                  :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
-                  class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
-                >
-                  <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
-                  <template v-else>{{ editingFontId ? 'Update' : 'Add' }}</template>
-                </button>
-                <button
-                  v-if="editingFontId"
-                  type="button"
-                  @click="cancelEditFont"
-                  class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </template>
           </div>
         </details>
       </div>

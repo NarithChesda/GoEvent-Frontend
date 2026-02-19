@@ -9,7 +9,7 @@
         </div>
         <button
           type="button"
-          @click="showForm = true; editingTemplate = null"
+          @click="openForm(null)"
           class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-sm"
         >
           <Plus class="w-4 h-4" />
@@ -45,7 +45,7 @@
         </p>
         <button
           type="button"
-          @click="showForm = true; editingTemplate = null"
+          @click="openForm(null)"
           class="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all"
         >
           <Plus class="w-4 h-4" />
@@ -142,7 +142,7 @@
     <PartnerTemplateForm
       :is-open="showForm"
       :existing-template="editingTemplate"
-      @close="showForm = false"
+      @close="closeForm"
       @saved="handleSaved"
     />
   </div>
@@ -169,6 +169,8 @@ import PartnerTemplateForm from './PartnerTemplateForm.vue'
 
 const emit = defineEmits<{
   'template-selected': [template: PartnerTemplate]
+  'form-opened': []
+  'form-closed': []
 }>()
 
 const loading = ref(false)
@@ -229,9 +231,20 @@ function handleSelect(template: PartnerTemplate): void {
   emit('template-selected', template)
 }
 
-function handleEdit(template: PartnerTemplate): void {
+function openForm(template: PartnerTemplate | null): void {
   editingTemplate.value = template
   showForm.value = true
+  emit('form-opened')
+}
+
+function closeForm(): void {
+  showForm.value = false
+  editingTemplate.value = null
+  emit('form-closed')
+}
+
+function handleEdit(template: PartnerTemplate): void {
+  openForm(template)
 }
 
 async function handleSubmit(template: PartnerTemplate): Promise<void> {
@@ -279,8 +292,7 @@ function handleSaved(template: PartnerTemplate): void {
   } else {
     templates.value.unshift(template)
   }
-  showForm.value = false
-  editingTemplate.value = null
+  closeForm()
   showFeedback('success', wasEditing ? 'Template updated!' : 'Template created!')
 }
 

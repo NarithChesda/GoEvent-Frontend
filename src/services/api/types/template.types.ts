@@ -98,6 +98,11 @@ export interface PackagePlan {
   commission: string
   features: string[]
   is_active: boolean
+  category?: {
+    id: number
+    name: string
+    color: string
+  }
 }
 
 export interface BrowseTemplatesResponse {
