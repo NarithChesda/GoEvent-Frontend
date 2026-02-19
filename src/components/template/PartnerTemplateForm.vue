@@ -80,177 +80,169 @@
             <!-- Template Colors -->
             <details class="border border-slate-200 rounded-lg overflow-hidden">
               <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
-                <span>Template Colors ({{ colors.length }})</span>
+                <span>Template Colors ({{ pendingColors.length }})</span>
                 <ChevronDown class="w-4 h-4 text-slate-400" />
               </summary>
               <div class="p-4 space-y-3 border-t border-slate-100">
-                <p v-if="!isEditing" class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-                  Save the template first, then edit it to manage colors.
-                </p>
-                <template v-else>
-                  <!-- Existing colors list -->
-                  <div v-for="color in colors" :key="color.id" class="flex items-center gap-2 py-1.5">
-                    <span
-                      class="w-6 h-6 rounded-full border border-slate-200 flex-shrink-0"
-                      :style="{ backgroundColor: color.hex_color_code }"
+                <!-- Existing/Pending colors list -->
+                <div v-for="(color, index) in pendingColors" :key="isEditing ? (color as EventTemplateColor).id : index" class="flex items-center gap-2 py-1.5">
+                  <span
+                    class="w-6 h-6 rounded-full border border-slate-200 flex-shrink-0"
+                    :style="{ backgroundColor: color.hex_color_code }"
+                  />
+                  <span class="text-sm text-slate-700 flex-1 truncate">
+                    {{ color.name }} <span class="text-slate-400">({{ color.hex_color_code }})</span>
+                  </span>
+                  <button
+                    v-if="isEditing"
+                    type="button"
+                    @click="startEditColor(color as EventTemplateColor)"
+                    class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    @click="isEditing ? handleDeleteColor((color as EventTemplateColor).id) : removePendingColor(index)"
+                    class="text-xs text-red-500 hover:text-red-600 font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+                <!-- Add / Edit color form -->
+                <div class="flex items-end gap-2">
+                  <div class="space-y-1">
+                    <label class="block text-xs text-slate-500">Color</label>
+                    <input
+                      v-model="colorForm.hex_color_code"
+                      type="color"
+                      class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
                     />
-                    <span class="text-sm text-slate-700 flex-1 truncate">
-                      {{ color.name }} <span class="text-slate-400">({{ color.hex_color_code }})</span>
-                    </span>
-                    <button
-                      type="button"
-                      @click="startEditColor(color)"
-                      class="text-xs text-sky-600 hover:text-sky-700 font-medium"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      @click="handleDeleteColor(color.id)"
-                      class="text-xs text-red-500 hover:text-red-600 font-medium"
-                    >
-                      Delete
-                    </button>
                   </div>
-                  <!-- Add / Edit color form -->
-                  <div class="flex items-end gap-2">
-                    <div class="space-y-1">
-                      <label class="block text-xs text-slate-500">Color</label>
-                      <input
-                        v-model="colorForm.hex_color_code"
-                        type="color"
-                        class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
-                      />
-                    </div>
-                    <div class="space-y-1 flex-1">
-                      <label class="block text-xs text-slate-500">Hex</label>
-                      <input
-                        v-model="colorForm.hex_color_code"
-                        type="text"
-                        maxlength="7"
-                        placeholder="#FF0000"
-                        class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
-                      />
-                    </div>
-                    <div class="space-y-1 flex-1">
-                      <label class="block text-xs text-slate-500">Name</label>
-                      <input
-                        v-model="colorForm.name"
-                        type="text"
-                        maxlength="50"
-                        placeholder="Primary"
-                        class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      @click="handleSaveColor"
-                      :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
-                      class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
-                    >
-                      <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
-                      <template v-else>{{ editingColorId ? 'Update' : 'Add' }}</template>
-                    </button>
-                    <button
-                      v-if="editingColorId"
-                      type="button"
-                      @click="cancelEditColor"
-                      class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                  <div class="space-y-1 flex-1">
+                    <label class="block text-xs text-slate-500">Hex</label>
+                    <input
+                      v-model="colorForm.hex_color_code"
+                      type="text"
+                      maxlength="7"
+                      placeholder="#FF0000"
+                      class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                    />
                   </div>
-                </template>
+                  <div class="space-y-1 flex-1">
+                    <label class="block text-xs text-slate-500">Name</label>
+                    <input
+                      v-model="colorForm.name"
+                      type="text"
+                      maxlength="50"
+                      placeholder="Primary"
+                      class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    @click="handleAddOrUpdateColor"
+                    :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  >
+                    <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
+                    <template v-else>{{ editingColorId ? 'Update' : 'Add' }}</template>
+                  </button>
+                  <button
+                    v-if="editingColorId"
+                    type="button"
+                    @click="cancelEditColor"
+                    class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </details>
 
             <!-- Template Fonts -->
             <details class="border border-slate-200 rounded-lg overflow-hidden">
               <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
-                <span>Template Fonts ({{ fonts.length }})</span>
+                <span>Template Fonts ({{ pendingFonts.length }})</span>
                 <ChevronDown class="w-4 h-4 text-slate-400" />
               </summary>
               <div class="p-4 space-y-3 border-t border-slate-100">
-                <p v-if="!isEditing" class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-                  Save the template first, then edit it to manage fonts.
-                </p>
-                <template v-else>
-                  <!-- Existing fonts list -->
-                  <div v-for="f in fonts" :key="f.id" class="flex items-center gap-2 py-1.5">
-                    <span class="text-sm text-slate-700 flex-1 truncate">
-                      {{ f.language_display }} &mdash; {{ f.font?.name || 'Unknown font' }}
-                      <span class="text-slate-400">({{ f.font_type_display }})</span>
-                    </span>
-                    <button
-                      type="button"
-                      @click="startEditFont(f)"
-                      class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                <!-- Existing/Pending fonts list -->
+                <div v-for="(f, index) in pendingFonts" :key="isEditing ? (f as EventTemplateLanguageFont).id : index" class="flex items-center gap-2 py-1.5">
+                  <span class="text-sm text-slate-700 flex-1 truncate">
+                    {{ getFontLanguageDisplay(f.language) }} &mdash; {{ getFontNameDisplay(isEditing ? (f as EventTemplateLanguageFont).font : f.font) }}
+                    <span class="text-slate-400">({{ getFontTypeDisplay(f.font_type) }})</span>
+                  </span>
+                  <button
+                    v-if="isEditing"
+                    type="button"
+                    @click="startEditFont(f as EventTemplateLanguageFont)"
+                    class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    @click="isEditing ? handleDeleteFont((f as EventTemplateLanguageFont).id) : removePendingFont(index)"
+                    class="text-xs text-red-500 hover:text-red-600 font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+                <!-- Add / Edit font form -->
+                <div class="flex items-end gap-2">
+                  <div class="space-y-1 flex-1">
+                    <label class="block text-xs text-slate-500">Language</label>
+                    <select
+                      v-model="fontForm.language"
+                      :class="selectClass"
                     >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      @click="handleDeleteFont(f.id)"
-                      class="text-xs text-red-500 hover:text-red-600 font-medium"
-                    >
-                      Delete
-                    </button>
+                      <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
+                        {{ label }}
+                      </option>
+                    </select>
                   </div>
-                  <!-- Add / Edit font form -->
-                  <div class="flex items-end gap-2">
-                    <div class="space-y-1 flex-1">
-                      <label class="block text-xs text-slate-500">Language</label>
-                      <select
-                        v-model="fontForm.language"
-                        :class="selectClass"
-                      >
-                        <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
-                          {{ label }}
-                        </option>
-                      </select>
-                    </div>
-                    <div class="space-y-1 flex-1">
-                      <label class="block text-xs text-slate-500">Font</label>
-                      <select
-                        v-model="fontForm.font"
-                        :class="selectClass"
-                      >
-                        <option :value="null" disabled>{{ availableCustomFonts.length ? 'Select' : '...' }}</option>
-                        <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
-                          {{ cf.name }}
-                        </option>
-                      </select>
-                    </div>
-                    <div class="space-y-1 flex-1">
-                      <label class="block text-xs text-slate-500">Type</label>
-                      <select
-                        v-model="fontForm.font_type"
-                        :class="selectClass"
-                      >
-                        <option v-for="(label, type) in FONT_TYPE_LABELS" :key="type" :value="type">
-                          {{ label }}
-                        </option>
-                      </select>
-                    </div>
-                    <button
-                      type="button"
-                      @click="handleSaveFont"
-                      :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
-                      class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  <div class="space-y-1 flex-1">
+                    <label class="block text-xs text-slate-500">Font</label>
+                    <select
+                      v-model="fontForm.font"
+                      :class="selectClass"
                     >
-                      <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
-                      <template v-else>{{ editingFontId ? 'Update' : 'Add' }}</template>
-                    </button>
-                    <button
-                      v-if="editingFontId"
-                      type="button"
-                      @click="cancelEditFont"
-                      class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                      <option :value="null" disabled>{{ availableCustomFonts.length ? 'Select' : '...' }}</option>
+                      <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
+                        {{ cf.name }}
+                      </option>
+                    </select>
                   </div>
-                </template>
+                  <div class="space-y-1 flex-1">
+                    <label class="block text-xs text-slate-500">Type</label>
+                    <select
+                      v-model="fontForm.font_type"
+                      :class="selectClass"
+                    >
+                      <option v-for="(label, type) in FONT_TYPE_LABELS" :key="type" :value="type">
+                        {{ label }}
+                      </option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    @click="handleAddOrUpdateFont"
+                    :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  >
+                    <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
+                    <template v-else>{{ editingFontId ? 'Update' : 'Add' }}</template>
+                  </button>
+                  <button
+                    v-if="editingFontId"
+                    type="button"
+                    @click="cancelEditFont"
+                    class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </details>
 
@@ -644,12 +636,22 @@ const error = ref<string | null>(null)
 
 // --- Colors CRUD state ---
 const colors = ref<EventTemplateColor[]>([])
+const localColors = ref<Array<{ hex_color_code: string; name: string }>>([])
 const colorForm = reactive({ hex_color_code: '#000000', name: '' })
 const editingColorId = ref<number | null>(null)
 const colorSaving = ref(false)
 
+// Computed property that shows both saved colors (when editing) and pending colors (when creating)
+const pendingColors = computed(() => {
+  if (isEditing.value) {
+    return colors.value
+  }
+  return localColors.value
+})
+
 // --- Fonts CRUD state ---
 const fonts = ref<EventTemplateLanguageFont[]>([])
+const localFonts = ref<Array<{ language: TemplateLanguageCode; font: number; font_type: TemplateFontType }>>([])
 const availableCustomFonts = ref<CustomFont[]>([])
 const fontForm = reactive<{ language: TemplateLanguageCode; font: number | null; font_type: TemplateFontType }>({
   language: 'en',
@@ -658,6 +660,14 @@ const fontForm = reactive<{ language: TemplateLanguageCode; font: number | null;
 })
 const editingFontId = ref<number | null>(null)
 const fontSaving = ref(false)
+
+// Computed property that shows both saved fonts (when editing) and pending fonts (when creating)
+const pendingFonts = computed(() => {
+  if (isEditing.value) {
+    return fonts.value
+  }
+  return localFonts.value
+})
 
 // --- Colors handlers ---
 async function fetchColors(): Promise<void> {
@@ -672,8 +682,12 @@ async function fetchColors(): Promise<void> {
       } else if (data && typeof data === 'object' && 'results' in data) {
         colors.value = (data as { results: EventTemplateColor[] }).results
       }
+    } else {
+      console.warn('[PartnerTemplateForm] Failed to fetch colors:', res.message)
     }
-  } catch { /* ignore */ }
+  } catch (err) {
+    console.error('[PartnerTemplateForm] Error fetching colors:', err)
+  }
 }
 
 function startEditColor(color: EventTemplateColor): void {
@@ -688,33 +702,49 @@ function cancelEditColor(): void {
   colorForm.name = ''
 }
 
-async function handleSaveColor(): Promise<void> {
-  if (!props.existingTemplate || !colorForm.hex_color_code || !colorForm.name) return
-  colorSaving.value = true
-  try {
-    let res
-    if (editingColorId.value) {
-      res = await partnerTemplateService.updateColor(props.existingTemplate.id, editingColorId.value, {
-        hex_color_code: colorForm.hex_color_code,
-        name: colorForm.name,
-      })
-    } else {
-      res = await partnerTemplateService.createColor(props.existingTemplate.id, {
-        hex_color_code: colorForm.hex_color_code,
-        name: colorForm.name,
-      })
+// Add or update color (handles both editing mode with API and creation mode with local state)
+async function handleAddOrUpdateColor(): Promise<void> {
+  if (!colorForm.hex_color_code || !colorForm.name) return
+
+  // If editing an existing template, save to API
+  if (isEditing.value && props.existingTemplate) {
+    colorSaving.value = true
+    try {
+      let res
+      if (editingColorId.value) {
+        res = await partnerTemplateService.updateColor(props.existingTemplate.id, editingColorId.value, {
+          hex_color_code: colorForm.hex_color_code,
+          name: colorForm.name,
+        })
+      } else {
+        res = await partnerTemplateService.createColor(props.existingTemplate.id, {
+          hex_color_code: colorForm.hex_color_code,
+          name: colorForm.name,
+        })
+      }
+      if (res.success) {
+        cancelEditColor()
+        await fetchColors()
+      } else {
+        error.value = res.message || 'Failed to save color.'
+      }
+    } catch {
+      error.value = 'Unable to save color. Please check your connection.'
+    } finally {
+      colorSaving.value = false
     }
-    if (res.success) {
-      cancelEditColor()
-      await fetchColors()
-    } else {
-      error.value = res.message || 'Failed to save color.'
-    }
-  } catch {
-    error.value = 'Unable to save color. Please check your connection.'
-  } finally {
-    colorSaving.value = false
+  } else {
+    // If creating a new template, add to local state
+    localColors.value.push({
+      hex_color_code: colorForm.hex_color_code,
+      name: colorForm.name,
+    })
+    cancelEditColor()
   }
+}
+
+function removePendingColor(index: number): void {
+  localColors.value.splice(index, 1)
 }
 
 async function handleDeleteColor(colorId: number): Promise<void> {
@@ -739,8 +769,12 @@ async function fetchFonts(): Promise<void> {
     const res = await partnerTemplateService.getTemplate(props.existingTemplate.id)
     if (res.success && res.data) {
       fonts.value = res.data.template_fonts ?? []
+    } else {
+      console.warn('[PartnerTemplateForm] Failed to fetch template for fonts:', res.message)
     }
-  } catch { /* ignore */ }
+  } catch (err) {
+    console.error('[PartnerTemplateForm] Error fetching fonts:', err)
+  }
 }
 
 async function fetchCustomFonts(): Promise<void> {
@@ -758,6 +792,22 @@ async function fetchCustomFonts(): Promise<void> {
   } catch { /* ignore */ }
 }
 
+// Helper functions to display font information
+function getFontLanguageDisplay(language: string | TemplateLanguageCode): string {
+  return LANGUAGE_CODE_LABELS[language as TemplateLanguageCode] || language
+}
+
+function getFontNameDisplay(fontId: number | { id: number; name: string } | null): string {
+  if (!fontId) return 'Unknown font'
+  if (typeof fontId === 'object' && 'name' in fontId) return fontId.name
+  const font = availableCustomFonts.value.find(f => f.id === fontId)
+  return font?.name || 'Unknown font'
+}
+
+function getFontTypeDisplay(fontType: string | TemplateFontType): string {
+  return FONT_TYPE_LABELS[fontType as TemplateFontType] || fontType
+}
+
 function startEditFont(f: EventTemplateLanguageFont): void {
   editingFontId.value = f.id
   fontForm.language = f.language as TemplateLanguageCode
@@ -772,35 +822,52 @@ function cancelEditFont(): void {
   fontForm.font_type = 'primary'
 }
 
-async function handleSaveFont(): Promise<void> {
-  if (!props.existingTemplate || !fontForm.font || !fontForm.language || !fontForm.font_type) return
-  fontSaving.value = true
-  try {
-    let res
-    if (editingFontId.value) {
-      res = await partnerTemplateService.updateFont(props.existingTemplate.id, editingFontId.value, {
-        language: fontForm.language,
-        font: fontForm.font,
-        font_type: fontForm.font_type,
-      })
-    } else {
-      res = await partnerTemplateService.createFont(props.existingTemplate.id, {
-        language: fontForm.language,
-        font: fontForm.font,
-        font_type: fontForm.font_type,
-      })
+// Add or update font (handles both editing mode with API and creation mode with local state)
+async function handleAddOrUpdateFont(): Promise<void> {
+  if (!fontForm.font || !fontForm.language || !fontForm.font_type) return
+
+  // If editing an existing template, save to API
+  if (isEditing.value && props.existingTemplate) {
+    fontSaving.value = true
+    try {
+      let res
+      if (editingFontId.value) {
+        res = await partnerTemplateService.updateFont(props.existingTemplate.id, editingFontId.value, {
+          language: fontForm.language,
+          font: fontForm.font,
+          font_type: fontForm.font_type,
+        })
+      } else {
+        res = await partnerTemplateService.createFont(props.existingTemplate.id, {
+          language: fontForm.language,
+          font: fontForm.font,
+          font_type: fontForm.font_type,
+        })
+      }
+      if (res.success) {
+        cancelEditFont()
+        await fetchFonts()
+      } else {
+        error.value = res.message || 'Failed to save font.'
+      }
+    } catch {
+      error.value = 'Unable to save font. Please check your connection.'
+    } finally {
+      fontSaving.value = false
     }
-    if (res.success) {
-      cancelEditFont()
-      await fetchFonts()
-    } else {
-      error.value = res.message || 'Failed to save font.'
-    }
-  } catch {
-    error.value = 'Unable to save font. Please check your connection.'
-  } finally {
-    fontSaving.value = false
+  } else {
+    // If creating a new template, add to local state
+    localFonts.value.push({
+      language: fontForm.language,
+      font: fontForm.font,
+      font_type: fontForm.font_type,
+    })
+    cancelEditFont()
   }
+}
+
+function removePendingFont(index: number): void {
+  localFonts.value.splice(index, 1)
 }
 
 async function handleDeleteFont(fontId: number): Promise<void> {
@@ -837,9 +904,13 @@ watch(
       // Load colors and fonts from existing template
       colors.value = template.template_colors ?? []
       fonts.value = template.template_fonts ?? []
+      localColors.value = []
+      localFonts.value = []
     } else {
       colors.value = []
       fonts.value = []
+      localColors.value = []
+      localFonts.value = []
     }
   },
   { immediate: true },
@@ -858,6 +929,12 @@ watch(
         error.value = null
         colors.value = []
         fonts.value = []
+        localColors.value = []
+        localFonts.value = []
+      } else {
+        // If opening in edit mode, fetch the latest colors and fonts
+        fetchColors()
+        fetchFonts()
       }
     }
     if (!open) {
@@ -918,7 +995,61 @@ async function handleSave(): Promise<void> {
     }
 
     if (response.success && response.data) {
-      emit('saved', response.data)
+      let finalTemplate = response.data
+
+      // If creating a new template, save pending colors and fonts
+      if (!isEditing.value && (localColors.value.length > 0 || localFonts.value.length > 0)) {
+        let colorErrors = 0
+        let fontErrors = 0
+
+        // Create colors
+        for (const color of localColors.value) {
+          try {
+            const colorRes = await partnerTemplateService.createColor(finalTemplate.id, color)
+            if (!colorRes.success) {
+              colorErrors++
+              console.warn('[PartnerTemplateForm] Failed to create color:', color.name, colorRes.message)
+            }
+          } catch (err) {
+            colorErrors++
+            console.error('[PartnerTemplateForm] Error creating color:', color.name, err)
+          }
+        }
+
+        // Create fonts
+        for (const font of localFonts.value) {
+          try {
+            const fontRes = await partnerTemplateService.createFont(finalTemplate.id, font)
+            if (!fontRes.success) {
+              fontErrors++
+              console.warn('[PartnerTemplateForm] Failed to create font:', font.language, fontRes.message)
+            }
+          } catch (err) {
+            fontErrors++
+            console.error('[PartnerTemplateForm] Error creating font:', font.language, err)
+          }
+        }
+
+        // Show warning if some colors/fonts failed
+        if (colorErrors > 0 || fontErrors > 0) {
+          const warnings = []
+          if (colorErrors > 0) warnings.push(`${colorErrors} color(s)`)
+          if (fontErrors > 0) warnings.push(`${fontErrors} font(s)`)
+          error.value = `Template created, but failed to save ${warnings.join(' and ')}. You can add them again by editing the template.`
+        }
+
+        // Re-fetch the complete template with all colors and fonts
+        try {
+          const completeTemplateResponse = await partnerTemplateService.getTemplate(finalTemplate.id)
+          if (completeTemplateResponse.success && completeTemplateResponse.data) {
+            finalTemplate = completeTemplateResponse.data
+          }
+        } catch (err) {
+          console.error('[PartnerTemplateForm] Failed to re-fetch template:', err)
+        }
+      }
+
+      emit('saved', finalTemplate)
     } else {
       error.value = response.message || 'Failed to save template. Please try again.'
     }
