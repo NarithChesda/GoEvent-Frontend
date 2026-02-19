@@ -78,7 +78,7 @@
             </div>
 
             <!-- Template Colors -->
-            <details class="border border-slate-200 rounded-lg overflow-hidden">
+            <details :open="detailsOpenState.colors" @toggle="(e) => detailsOpenState.colors = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
               <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
                 <span>Template Colors ({{ pendingColors.length }})</span>
                 <ChevronDown class="w-4 h-4 text-slate-400" />
@@ -161,7 +161,7 @@
             </details>
 
             <!-- Template Fonts -->
-            <details class="border border-slate-200 rounded-lg overflow-hidden">
+            <details :open="detailsOpenState.fonts" @toggle="(e) => detailsOpenState.fonts = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
               <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
                 <span>Template Fonts ({{ pendingFonts.length }})</span>
                 <ChevronDown class="w-4 h-4 text-slate-400" />
@@ -307,7 +307,7 @@
         </div>
 
         <!-- Background Stage (collapsible) -->
-        <details v-if="form.package_plan_id" class="border border-slate-200 rounded-lg overflow-hidden" open>
+        <details v-if="form.package_plan_id" :open="detailsOpenState.backgroundStage" @toggle="(e) => detailsOpenState.backgroundStage = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
           <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
             <span>Background Stage</span>
             <ChevronDown class="w-4 h-4 text-slate-400" />
@@ -342,7 +342,7 @@
         </details>
 
         <!-- Cover Stage Decorations (collapsible) -->
-        <details v-if="form.package_plan_id" class="border border-slate-200 rounded-lg overflow-hidden">
+        <details v-if="form.package_plan_id" :open="detailsOpenState.coverDecorations" @toggle="(e) => detailsOpenState.coverDecorations = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
           <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
             <span>Cover Stage Decorations</span>
             <ChevronDown class="w-4 h-4 text-slate-400" />
@@ -381,7 +381,7 @@
         </details>
 
         <!-- Cover Stage Layout (collapsible) -->
-        <details class="border border-slate-200 rounded-lg overflow-hidden">
+        <details :open="detailsOpenState.coverLayout" @toggle="(e) => detailsOpenState.coverLayout = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
           <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
             <span>Cover Stage Layout</span>
             <ChevronDown class="w-4 h-4 text-slate-400" />
@@ -667,6 +667,15 @@ const pendingFonts = computed(() => {
     return fonts.value
   }
   return localFonts.value
+})
+
+// Track open state of details elements
+const detailsOpenState = reactive({
+  colors: false,
+  fonts: false,
+  backgroundStage: true,  // Open by default
+  coverDecorations: false,
+  coverLayout: false,
 })
 
 // --- Colors handlers ---
