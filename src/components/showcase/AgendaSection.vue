@@ -11,6 +11,7 @@ import { computed } from 'vue'
 // Import all layout variants
 import AgendaWedding from './agenda-layouts/AgendaWedding.vue'
 import AgendaBirthday from './agenda-layouts/AgendaBirthday.vue'
+import AgendaFuneral from './agenda-layouts/AgendaFuneral.vue'
 import AgendaDefault from './agenda-layouts/AgendaDefault.vue'
 
 interface AgendaItemIcon {
@@ -61,13 +62,16 @@ const layoutComponent = computed(() => {
   const eventType = props.eventType?.toLowerCase() || 'default'
 
   // Map event types to layout components
-  const layoutMap: Record<string, typeof AgendaDefault | typeof AgendaWedding | typeof AgendaBirthday> = {
+  const layoutMap: Record<string, typeof AgendaDefault | typeof AgendaWedding | typeof AgendaBirthday | typeof AgendaFuneral> = {
     // Wedding events - Elegant timeline layout
     'wedding': AgendaWedding,
 
     // Birthday events - Fun card-based layout
     'birthday': AgendaBirthday,
     'birthday party': AgendaBirthday,
+
+    // Funeral events
+    'funeral': AgendaFuneral,
 
     // Corporate events (use default for now, can create custom later)
     'corporate': AgendaDefault,
