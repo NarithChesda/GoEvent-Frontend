@@ -218,7 +218,7 @@ const statusLabel = computed(() => {
 })
 
 // Categories that support showcase preview
-const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming']
+const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral']
 
 // Check if event category supports showcase preview
 const canPreviewShowcase = computed(() => {

@@ -538,7 +538,7 @@ const canViewRestrictedTabs = computed(() => {
 })
 
 // Categories that support showcase/template features
-const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming']
+const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral']
 
 const canViewMedia = computed(() => {
   // Show showcase/media tab for all events that the user can edit
