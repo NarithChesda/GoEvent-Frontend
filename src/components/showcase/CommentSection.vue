@@ -501,6 +501,7 @@ interface Props {
   secondaryFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
+  eventType?: string
 }
 
 const props = defineProps<Props>()
@@ -547,6 +548,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
   > = {
     comment_header: 'comment_header',
     comment_placeholder: 'comment_placeholder',
+    comment_placeholder_funeral: 'comment_placeholder_funeral',
     comment_signin_prompt: 'comment_signin_prompt',
     comment_signin_button: 'comment_signin_button',
     comment_post_button: 'comment_post_button',
@@ -568,9 +570,12 @@ const getTextContent = (textType: string, fallback = ''): string => {
 
 // Computed properties for all translatable text
 const commentHeaderText = computed(() => getTextContent('comment_header', 'Comments & Wishes'))
-const commentPlaceholderText = computed(() =>
-  getTextContent('comment_placeholder', 'Share your thoughts, wishes, or congratulations...'),
-)
+const commentPlaceholderText = computed(() => {
+  if (props.eventType?.toLowerCase() === 'funeral') {
+    return getTextContent('comment_placeholder_funeral', 'Share your thoughts and condolences')
+  }
+  return getTextContent('comment_placeholder', 'Share your thoughts, wishes, or congratulations...')
+})
 const commentSigninPromptText = computed(() =>
   getTextContent('comment_signin_prompt', 'Please sign in to leave a comment'),
 )

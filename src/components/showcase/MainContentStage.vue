@@ -354,6 +354,7 @@
                     :secondary-font="secondaryFont"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
+                    :event-type="eventType"
                     @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
                   />
                 </div>

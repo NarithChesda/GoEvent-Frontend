@@ -84,6 +84,7 @@ export const rsvpTranslations: Record<
     // Comment section
     comment_header: string
     comment_placeholder: string
+    comment_placeholder_funeral: string
     comment_signin_prompt: string
     comment_signin_button: string
     comment_post_button: string
@@ -241,6 +242,7 @@ export const rsvpTranslations: Record<
     // Comment section
     comment_header: 'Comments & Wishes',
     comment_placeholder: 'Share your thoughts, wishes, or congratulations...',
+    comment_placeholder_funeral: 'Share your thoughts and condolences',
     comment_signin_prompt: 'Please sign in to leave a comment',
     comment_signin_button: 'Sign In to Comment',
     comment_post_button: 'Post Comment',
@@ -398,6 +400,7 @@ export const rsvpTranslations: Record<
     // Comment section
     comment_header: 'សារជូនពរ',
     comment_placeholder: 'សរសេរសារជូនពររបស់អ្នកនៅទីនេះ',
+    comment_placeholder_funeral: 'ចែករំលែកគំនិត និងការចូលរួមរំលែកទុក្ខរបស់អ្នក',
     comment_signin_prompt: 'សូមចូលគណនី ដើម្បីជូនពរ',
     comment_signin_button: 'ចូលគណនី',
     comment_post_button: 'បញ្ចូន',
@@ -555,6 +558,7 @@ export const rsvpTranslations: Record<
     // Comment section
     comment_header: '评论与祈愿',
     comment_placeholder: '分享您的想法、祈愿或祝贺...',
+    comment_placeholder_funeral: '分享您的想法和哀思',
     comment_signin_prompt: '请登录后留言',
     comment_signin_button: '登录评论',
     comment_post_button: '发表评论',
