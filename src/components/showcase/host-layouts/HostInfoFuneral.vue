@@ -61,9 +61,9 @@
         :style="{ animationDelay: `${animationDelays.profile}s` }"
       />
 
-      <!-- Profile image or event initial: with gradient circle -->
+      <!-- Profile image: with gradient circle -->
       <div
-        v-else
+        v-else-if="hosts[0]?.profile_image"
         class="profile-picture-large bounce-in-element"
         :style="{
           background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
@@ -71,16 +71,22 @@
         }"
       >
         <img
-          v-if="hosts[0]?.profile_image"
           :src="getMediaUrl(hosts[0].profile_image)"
           :alt="`${hosts[0]?.name} profile`"
           class="profile-image"
         />
-        <span
-          v-else
-          class="profile-initial"
-          :style="{ fontFamily: primaryFont || currentFont }"
-        >{{ eventInitial }}</span>
+      </div>
+
+      <!-- SVG logo fallback when no profile image and no logo URL -->
+      <div
+        v-else
+        class="fallback-logo-wrapper bounce-in-element"
+        :style="{ ...fallbackLogoStyle, animationDelay: `${animationDelays.profile}s` }"
+      >
+        <div
+          class="fallback-logo-svg"
+          v-html="fallbackLogoSvgContent"
+        />
       </div>
     </div>
 
@@ -140,8 +146,13 @@ import {
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from './shared'
+import { useFallbackLogo } from '@/composables/showcase/useHostInfoUtils'
 
 const props = defineProps<HostInfoProps>()
+
+const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
+  computed(() => props.primaryColor)
+)
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
@@ -269,15 +280,36 @@ const animationDelays = computed(() => {
   object-fit: contain;
 }
 
-.profile-initial {
-  font-size: 4rem;
-  font-weight: bold;
-  color: white;
+.fallback-logo-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  max-width: 100%;
+  height: auto;
+  overflow: hidden;
+  padding-bottom: 1.5rem;
+}
+
+.fallback-logo-svg {
+  transition: transform 0.3s ease;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(330px, 95%);
+  max-height: 180px;
+}
+
+.fallback-logo-svg:hover {
+  transform: scale(1.05);
+}
+
+.fallback-logo-svg :deep(svg) {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: min(330px, 95vw);
+  max-height: 180px;
 }
 
 /* Bounce In Animation */
