@@ -215,4 +215,27 @@ export const eventsService = {
   async getMyLikedEvents(): Promise<ApiResponse<Event[]>> {
     return apiClient.get<Event[]>('/api/events/my-liked/')
   },
+
+  // Check populate template availability and existing data counts
+  async checkPopulateTemplate(eventId: string): Promise<ApiResponse<{
+    category: string
+    template_available: boolean
+    existing_data: { texts: number; hosts: number; agenda: number; has_data: boolean }
+  }>> {
+    return apiClient.get(`/api/events/${eventId}/populate-template/`)
+  },
+
+  // Populate event with category template data
+  async populateTemplate(eventId: string, mode: 'skip' | 'overwrite'): Promise<ApiResponse<{
+    populated: boolean
+    category: string
+    mode: 'skip' | 'overwrite'
+    results: {
+      texts: { created: number; skipped: number }
+      hosts: { created: number; skipped: number }
+      agenda: { created: number; skipped: number }
+    }
+  }>> {
+    return apiClient.post(`/api/events/${eventId}/populate-template/`, { mode })
+  },
 }
