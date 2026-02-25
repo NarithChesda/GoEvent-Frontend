@@ -435,6 +435,7 @@ interface EventFormData {
   is_free?: boolean
   timezone?: string
   status?: string
+  auto_populate?: boolean
 }
 
 const handleEventCreate = async (formData: EventFormData) => {
@@ -464,6 +465,7 @@ const handleEventCreate = async (formData: EventFormData) => {
       registration_required: formData.registration_required || false,
       registration_deadline: formData.registration_deadline || null,
       timezone: formData.timezone || 'UTC',
+      ...(formData.auto_populate && { auto_populate: true }),
     }
 
     const response = await eventsService.createEvent(eventData)

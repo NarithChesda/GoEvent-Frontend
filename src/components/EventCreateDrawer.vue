@@ -73,6 +73,38 @@
                   </div>
                 </div>
 
+                <!-- Auto Populate (shown when category is selected) -->
+                <Transition name="slide-fade">
+                  <div
+                    v-if="form.category && form.category !== ''"
+                    @click="form.auto_populate = !form.auto_populate"
+                    class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div class="p-2 bg-white rounded-lg shadow-sm">
+                        <Sparkles class="w-4 h-4 text-sky-500" />
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-slate-700">Auto-populate event data</p>
+                        <p class="text-xs text-slate-500">Fill in hosts, agenda & texts from category template</p>
+                      </div>
+                    </div>
+                    <div
+                      role="switch"
+                      :aria-checked="form.auto_populate"
+                      :class="[
+                        'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                        form.auto_populate ? 'bg-sky-500' : 'bg-slate-200'
+                      ]"
+                    >
+                      <span
+                        class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                        :style="{ transform: form.auto_populate ? 'translateX(20px)' : 'translateX(0)' }"
+                      />
+                    </div>
+                  </div>
+                </Transition>
+
                 <!-- Description -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">Full Description *</label>
@@ -241,7 +273,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
-import { ArrowRight, Loader, ChevronDown, Save, ClipboardList, Globe, Lock } from 'lucide-vue-next'
+import { ArrowRight, Loader, ChevronDown, Save, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
@@ -261,6 +293,8 @@ interface EventFormData {
   registration_required: boolean
   registration_deadline: string
   max_attendees: number | null
+  // Auto populate
+  auto_populate: boolean
   // Additional fields that will be added during submission
   short_description?: string
   is_virtual?: boolean
@@ -304,6 +338,7 @@ const form = reactive<EventFormData>({
   registration_required: false,
   registration_deadline: '',
   max_attendees: null,
+  auto_populate: false,
 })
 
 // Timezone data
@@ -361,6 +396,7 @@ const resetForm = () => {
     registration_required: false,
     registration_deadline: '',
     max_attendees: null,
+    auto_populate: false,
   })
   // Reset default dates
   setDefaultDates()
@@ -418,6 +454,7 @@ const handleSubmit = async () => {
       category: categoryValue,
       banner_image: null,
       timezone: formData.timezone || getUserTimezone(),
+      auto_populate: formData.auto_populate,
     }
 
     emit('submit', eventData)
