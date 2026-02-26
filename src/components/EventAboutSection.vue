@@ -371,7 +371,6 @@ import { type Event, guestService, type GuestStats, eventsService } from '../ser
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import type { EventAgendaItem } from '../services/api/types/event.types'
-import { createEventDescription } from '../utils/metaUtils'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import GuestStatsCard from './invitation/GuestStatsCard.vue'
 
@@ -519,7 +518,7 @@ const metaTitle = computed(() => {
 
 const metaDescription = computed(() => {
   if (!props.event) return 'Event description will appear here.'
-  return createEventDescription(props.event as unknown as Record<string, unknown>)
+  return props.event.short_description?.trim() || 'Event description will appear here.'
 })
 
 const previewImage = computed(() => {
