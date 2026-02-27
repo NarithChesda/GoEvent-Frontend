@@ -105,18 +105,6 @@
                   </div>
                 </Transition>
 
-                <!-- Description -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Full Description *</label>
-                  <div
-                    contenteditable="true"
-                    ref="descriptionEditor"
-                    @input="handleDescriptionInput"
-                    @blur="handleDescriptionBlur"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[140px] max-h-[320px] overflow-y-auto"
-                    :data-placeholder="form.description ? '' : 'Detailed event description'"
-                  ></div>
-                </div>
               </div>
 
               <!-- Date and Time -->
@@ -174,6 +162,21 @@
                     />
                   </div>
                 </div>
+
+                <!-- Full Description (public events only) -->
+                <Transition name="slide-fade">
+                  <div v-if="form.privacy === 'public'">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">About Event</label>
+                    <div
+                      contenteditable="true"
+                      ref="descriptionEditor"
+                      @input="handleDescriptionInput"
+                      @blur="handleDescriptionBlur"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[140px] max-h-[320px] overflow-y-auto"
+                      :data-placeholder="form.description ? '' : 'Detailed event description'"
+                    ></div>
+                  </div>
+                </Transition>
               </div>
 
               <!-- Registration Settings -->
@@ -444,8 +447,7 @@ const handleSubmit = async () => {
       start_date: startDate,
       end_date: endDate,
       // Set defaults for required fields
-      short_description:
-        formData.description.substring(0, 150) + (formData.description.length > 150 ? '...' : ''),
+      short_description: '',
       is_virtual: false,
       virtual_link: '', // API expects empty string, not null
       registration_required: formData.registration_required,
