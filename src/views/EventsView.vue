@@ -443,10 +443,7 @@ const handleEventCreate = async (formData: EventFormData) => {
     const eventData = {
       title: formData.title,
       description: formData.description,
-      short_description:
-        formData.short_description ||
-        formData.description.substring(0, 150) +
-          (formData.description.length > 150 ? '...' : ''),
+      short_description: formData.short_description || '',
       start_date: formData.start_date,
       end_date: formData.end_date,
       location: formData.location || '',
