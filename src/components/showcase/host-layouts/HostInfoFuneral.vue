@@ -55,17 +55,18 @@
         <li
           v-for="(host, hostIndex) in hosts"
           :key="host.id"
-          :class="['host-list-item text-center', getKhmerClass(currentLanguage)]"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+          class="host-list-item text-center"
+          :style="{ animationDelay: `${animationDelays.hostItems[hostIndex]}s` }"
         >
-          <span
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.hostItems[hostIndex]}s` }"
-          >
-            <span class="host-name">{{ host.name }}</span>
-            <span v-if="host.title" class="host-title-separator"> - </span>
-            <span v-if="host.title" class="host-title">{{ host.title }}</span>
-          </span>
+          <p
+            v-if="host.title"
+            :class="['host-title', getKhmerClass(currentLanguage)]"
+            :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+          >{{ host.title }}</p>
+          <p
+            :class="['host-name', getKhmerClass(currentLanguage)]"
+            :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
+          >{{ host.name }}</p>
         </li>
       </ul>
     </div>
@@ -83,6 +84,7 @@ import {
   getTextAnimationDuration,
 } from './shared'
 import { useFallbackLogo } from '@/composables/showcase/useHostInfoUtils'
+import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
 
 const props = defineProps<HostInfoProps>()
 
@@ -94,8 +96,8 @@ const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 const hostsHeaderText = computed(() => {
-  if (props.currentLanguage === 'kh') return 'ម្ចាស់ពិធី'
-  return 'Event Hosts'
+  const lang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('hosts_header_funeral', lang)
 })
 
 // Animation delays calculation
@@ -166,23 +168,27 @@ const animationDelays = computed(() => {
 }
 
 .host-list-item {
-  padding: 0.25rem 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.host-name {
-  font-weight: 600;
-}
-
-.host-title-separator {
-  opacity: 0.5;
-  margin: 0 0.15rem;
+  padding: 0.5rem 0;
+  display: block;
+  opacity: 0;
+  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .host-title {
-  opacity: 0.75;
+  font-size: 0.8rem;
   font-weight: 400;
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.host-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .logo-fallback {
@@ -276,8 +282,12 @@ const animationDelays = computed(() => {
     font-size: 1.25rem;
   }
 
-  .host-list-item {
-    font-size: 1.05rem;
+  .host-title {
+    font-size: 0.875rem;
+  }
+
+  .host-name {
+    font-size: 1.125rem;
   }
 
   .logo-fallback {
@@ -295,8 +305,12 @@ const animationDelays = computed(() => {
     font-size: 1.375rem;
   }
 
-  .host-list-item {
-    font-size: 1.125rem;
+  .host-title {
+    font-size: 0.95rem;
+  }
+
+  .host-name {
+    font-size: 1.25rem;
   }
 
   .logo-fallback {
@@ -316,8 +330,15 @@ const animationDelays = computed(() => {
   }
 
   .host-list-item {
+    padding: 0.25rem 0;
+  }
+
+  .host-title {
+    font-size: 0.5rem;
+  }
+
+  .host-name {
     font-size: 0.65rem;
-    padding: 0.125rem 0;
   }
 
   .logo-fallback {
@@ -337,8 +358,15 @@ const animationDelays = computed(() => {
   }
 
   .host-list-item {
+    padding: 0.25rem 0;
+  }
+
+  .host-title {
+    font-size: 0.5rem;
+  }
+
+  .host-name {
     font-size: 0.65rem;
-    padding: 0.125rem 0;
   }
 
   .logo-fallback {
@@ -356,7 +384,8 @@ const animationDelays = computed(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .bounce-in-element,
-  .bounce-word {
+  .bounce-word,
+  .host-list-item {
     animation: none;
     opacity: 1;
     transform: none;

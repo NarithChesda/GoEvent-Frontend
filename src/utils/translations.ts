@@ -64,6 +64,9 @@ export const rsvpTranslations: Record<
     rsvp_guest_update_success: string
     rsvp_thank_you_simple: string
 
+    // Host section
+    hosts_header_funeral: string
+
     // Agenda section
     agenda_header: string
     agenda_header_wedding: string
@@ -221,6 +224,9 @@ export const rsvpTranslations: Record<
     rsvp_unregister_success: "We're sorry you can't make it. Thank you for letting us know.",
     rsvp_guest_update_success: 'Updated guest count to {count} {unit}',
     rsvp_thank_you_simple: 'Thank you for your response.',
+
+    // Host section
+    hosts_header_funeral: 'Event Hosts',
 
     // Agenda section
     agenda_header: 'Event Schedule',
@@ -380,6 +386,9 @@ export const rsvpTranslations: Record<
     rsvp_guest_update_success: 'បានកែប្រែចំនួនភ្ញៀវទៅ {count} {unit}',
     rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។',
 
+    // Host section
+    hosts_header_funeral: 'អ្នកផ្តើមបុណ្យ',
+
     // Agenda section
     agenda_header: 'កម្មវិធី',
     agenda_header_wedding: 'កម្មវិធីសិរីមង្គល',
@@ -537,6 +546,9 @@ export const rsvpTranslations: Record<
     rsvp_unregister_success: '很遗憾您无法参加。感谢您告知我们。',
     rsvp_guest_update_success: '已将客人数量更新为{count}{unit}',
     rsvp_thank_you_simple: '谢谢您的回复。',
+
+    // Host section
+    hosts_header_funeral: '活动主持人',
 
     // Agenda section
     agenda_header: '活动日程',
