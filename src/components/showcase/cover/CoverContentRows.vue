@@ -11,7 +11,6 @@
     >
       <div
         class="header-content-container flex items-center justify-center px-4 w-full"
-        style="height: 60%"
       >
         <h1
           class="scaled-header font-regular capitalize khmer-text-fix text-center"
@@ -180,6 +179,7 @@ const displayInviteText = computed(() => getTextContent('invite_text', "You're I
 const headerTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.currentFont,
   color: props.primaryColor,
+  whiteSpace: 'pre-line' as const,
 }))
 
 // Invite text style

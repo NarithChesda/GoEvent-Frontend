@@ -269,6 +269,11 @@ p {
   overflow: hidden;
 }
 
+/* Allow header row to show multiline titles without clipping */
+.content-row-header {
+  overflow: visible;
+}
+
 /* Auto-scaling text for long content */
 .scaled-header,
 .scaled-guest-name {
@@ -301,7 +306,6 @@ p {
   .content-row-header .scaled-header {
     font-size: clamp(0.78125rem, 3.125vh, 1.5rem);
     line-height: 1.05;
-    max-height: 90%;
   }
 
   .content-row-guest .scaled-guest-name {
@@ -315,7 +319,6 @@ p {
   .content-row-header .scaled-header {
     font-size: clamp(0.625rem, 2.5vh, 1.2rem);
     line-height: 1.05;
-    max-height: 90%;
   }
 
   .content-row-invite .scaled-invite-text {
