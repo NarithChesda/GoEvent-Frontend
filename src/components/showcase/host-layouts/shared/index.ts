@@ -12,6 +12,7 @@ export { default as AutoFitText } from './AutoFitText.vue'
 export {
   getMediaUrl,
   splitToWords,
+  splitToLines,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
   useFallbackLogo,

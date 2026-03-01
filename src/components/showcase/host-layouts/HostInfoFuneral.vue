@@ -36,6 +36,28 @@
       </div>
     </div>
 
+    <!-- Instruction Text -->
+    <div v-if="instructionText" class="instruction-section px-4 mt-4">
+      <p
+        :class="['instruction-text text-center', getKhmerClass(currentLanguage)]"
+        :style="{
+          fontFamily: secondaryFont || currentFont,
+          color: primaryColor,
+          whiteSpace: 'pre-line',
+        }"
+      >
+        <template v-for="(line, lineIndex) in splitToLines(instructionText)" :key="`instruction-line-${currentLanguage}-${lineIndex}`">
+          <br v-if="lineIndex > 0" />
+          <span
+            v-for="(word, wordIndex) in line"
+            :key="`instruction-${currentLanguage}-${lineIndex}-${wordIndex}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.instruction + getGlobalWordIndex(splitToLines(instructionText), lineIndex, wordIndex) * WORD_DELAY}s` }"
+          >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
+        </template>
+      </p>
+    </div>
+
     <!-- Event Hosts Header -->
     <div v-if="hosts.length > 0" class="hosts-section px-4 mt-4">
       <h3
@@ -80,6 +102,7 @@ import {
   WelcomeHeader,
   getKhmerClass,
   splitToWords,
+  splitToLines,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from './shared'
@@ -94,6 +117,14 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
+
+const getGlobalWordIndex = (lines: string[][], lineIndex: number, wordIndex: number): number => {
+  let count = 0
+  for (let i = 0; i < lineIndex; i++) {
+    count += lines[i].length
+  }
+  return count + wordIndex
+}
 
 const hostsHeaderText = computed(() => {
   const lang = (props.currentLanguage as SupportedLanguage) || 'en'
@@ -115,6 +146,7 @@ const animationDelays = computed(() => {
   const welcome = getNextDelay(props.welcomeMessage || 'In Loving Memory')
   const logo = currentDelay
   currentDelay += 0.25
+  const instruction = getNextDelay(props.instructionText)
   const header = getNextDelay(hostsHeaderText.value)
 
   // Each host item gets a staggered delay
@@ -127,6 +159,7 @@ const animationDelays = computed(() => {
   return {
     welcome,
     logo,
+    instruction,
     header,
     hostItems,
   }
@@ -147,6 +180,16 @@ const animationDelays = computed(() => {
 
 .host-info-funeral :deep(.welcome-content) {
   margin-top: 0;
+}
+
+/* Instruction Text */
+.instruction-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.9;
+  white-space: pre-line;
+  word-wrap: break-word;
+  max-width: 100%;
 }
 
 /* Hosts Section */
@@ -278,6 +321,10 @@ const animationDelays = computed(() => {
 
 /* Responsive adjustments */
 @media (min-width: 640px) {
+  .instruction-text {
+    font-size: 1rem;
+  }
+
   .hosts-header {
     font-size: 1.25rem;
   }
@@ -325,6 +372,10 @@ const animationDelays = computed(() => {
     padding: 0.25rem 0 1rem;
   }
 
+  .instruction-text {
+    font-size: 0.6rem;
+  }
+
   .hosts-header {
     font-size: 0.75rem;
   }
@@ -351,6 +402,10 @@ const animationDelays = computed(() => {
 @media (min-width: 1366px) and (max-width: 1919px) {
   .host-info-funeral {
     padding: 0.25rem 0 1rem;
+  }
+
+  .instruction-text {
+    font-size: 0.6rem;
   }
 
   .hosts-header {

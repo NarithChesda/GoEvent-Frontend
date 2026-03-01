@@ -73,43 +73,51 @@
           <!-- Date Text -->
           <p
             :class="[
-              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap text-white',
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-line text-white',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               fontFamily: secondaryFont || currentFont,
+              whiteSpace: 'pre-line',
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
             v-if="dateText"
           >
-            <span
-              v-for="(word, index) in splitToWords(dateText)"
-              :key="`date-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.date + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(dateText).length - 1 ? '\u00A0' : '' }}</span>
+            <template v-for="(line, lineIndex) in splitToLines(dateText)" :key="`date-line-${currentLanguage}-${lineIndex}`">
+              <br v-if="lineIndex > 0" />
+              <span
+                v-for="(word, wordIndex) in line"
+                :key="`date-${currentLanguage}-${lineIndex}-${wordIndex}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.date + getGlobalWordIndex(splitToLines(dateText), lineIndex, wordIndex) * WORD_DELAY}s` }"
+              >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
 
           <!-- Location Text -->
           <p
             :class="[
-              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap text-white',
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-line text-white',
               currentLanguage === 'kh' && 'khmer-text-fix',
             ]"
             :style="{
               fontFamily: secondaryFont || currentFont,
+              whiteSpace: 'pre-line',
               wordWrap: 'break-word',
               hyphens: 'auto',
             }"
             v-if="locationText"
           >
-            <span
-              v-for="(word, index) in splitToWords(locationText)"
-              :key="`location-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.location + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(locationText).length - 1 ? '\u00A0' : '' }}</span>
+            <template v-for="(line, lineIndex) in splitToLines(locationText)" :key="`location-line-${currentLanguage}-${lineIndex}`">
+              <br v-if="lineIndex > 0" />
+              <span
+                v-for="(word, wordIndex) in line"
+                :key="`location-${currentLanguage}-${lineIndex}-${wordIndex}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.location + getGlobalWordIndex(splitToLines(locationText), lineIndex, wordIndex) * WORD_DELAY}s` }"
+              >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
 
           <!-- Google Map Embed -->
@@ -236,6 +244,7 @@ import { useCountdown } from '../../composables/useCountdown'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import {
   splitToWords,
+  splitToLines,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
@@ -390,6 +399,15 @@ const capitalizedDescription = computed(() => {
   if (text.length === 0) return ''
   return text.charAt(0).toUpperCase() + text.slice(1)
 })
+
+// Helper to get global word index across lines for animation delay
+const getGlobalWordIndex = (lines: string[][], lineIndex: number, wordIndex: number): number => {
+  let count = 0
+  for (let i = 0; i < lineIndex; i++) {
+    count += lines[i].length
+  }
+  return count + wordIndex
+}
 
 // Countdown header and labels
 const countdownHeader = computed(() => {

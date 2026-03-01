@@ -121,6 +121,7 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :welcome-message="getWelcomeMessage()"
+                    :instruction-text="getInstructionText()"
                     :current-language="currentLanguage"
                     :event-type="eventType"
                   />
@@ -1285,6 +1286,7 @@ const getTimeText = (): string | undefined => findEventText('time_text')?.conten
 const getLocationText = (): string | undefined => findEventText('location_text')?.content
 const getDescriptionText = (): string | undefined => findEventText('description')?.content
 const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
+const getInstructionText = (): string | undefined => findEventText('instructions')?.content
 
 // Computed property for footer text with fallback
 const footerThankYouText = computed(() =>

@@ -22,6 +22,15 @@ export function splitToWords(text: string | null | undefined): string[] {
 }
 
 /**
+ * Split text into lines of words for animation while preserving newlines.
+ * Returns an array of lines, each containing an array of words.
+ */
+export function splitToLines(text: string | null | undefined): string[][] {
+  if (!text) return []
+  return text.split(/\r?\n/).map(line => line.split(/\s+/).filter(Boolean))
+}
+
+/**
  * Animation timing constants
  */
 export const ANIMATION_CONSTANTS = {

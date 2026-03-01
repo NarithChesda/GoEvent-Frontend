@@ -27,6 +27,7 @@ interface Props {
   primaryFont?: string
   secondaryFont?: string
   welcomeMessage?: string
+  instructionText?: string
   currentLanguage?: string
   eventType?: string  // NEW: Event category name for auto-detection
 }

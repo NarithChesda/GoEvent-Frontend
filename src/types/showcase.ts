@@ -264,6 +264,7 @@ export interface HostInfoProps {
   primaryFont?: string
   secondaryFont?: string
   welcomeMessage?: string
+  instructionText?: string
   currentLanguage?: string
 }
 
