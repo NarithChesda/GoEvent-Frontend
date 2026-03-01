@@ -11,77 +11,23 @@
       :base-delay="animationDelays.welcome"
     />
 
-    <!-- Parent Names Row (Two-column layout) -->
+    <!-- Event Logo (Centered) -->
     <div
-      v-if="hosts.length > 0 && (hosts[0].parent_a_name || hosts[0].parent_b_name)"
-      class="parent-row"
-    >
-      <div class="host-parent-left">
-        <p
-          v-if="hosts[0].parent_a_name"
-          :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-          :style="parentTextStyle"
-        >
-          <span
-            v-for="(word, index) in splitToWords(hosts[0].parent_a_name)"
-            :key="`parent-a-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.parentA + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(hosts[0].parent_a_name).length - 1 ? '\u00A0' : '' }}</span>
-        </p>
-      </div>
-      <div class="center-spacer"></div>
-      <div class="host-parent-right">
-        <p
-          v-if="hosts[0].parent_b_name"
-          :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-          :style="parentTextStyle"
-        >
-          <span
-            v-for="(word, index) in splitToWords(hosts[0].parent_b_name)"
-            :key="`parent-b-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.parentB + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(hosts[0].parent_b_name).length - 1 ? '\u00A0' : '' }}</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Single Host Profile Picture (Large & Centered) with logo fallback -->
-    <div
-      :key="`profile-${currentLanguage}`"
+      :key="`logo-${currentLanguage}`"
       class="flex justify-center mb-0"
     >
-      <!-- Logo fallback: no background circle -->
       <img
-        v-if="!hosts[0]?.profile_image && logoUrl"
+        v-if="logoUrl"
         :src="logoUrl"
         alt="Event Logo"
         class="logo-fallback bounce-in-element"
-        :style="{ animationDelay: `${animationDelays.profile}s` }"
+        :style="{ animationDelay: `${animationDelays.logo}s` }"
       />
 
-      <!-- Profile image: with gradient circle -->
-      <div
-        v-else-if="hosts[0]?.profile_image"
-        class="profile-picture-large bounce-in-element"
-        :style="{
-          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-          animationDelay: `${animationDelays.profile}s`
-        }"
-      >
-        <img
-          :src="getMediaUrl(hosts[0].profile_image)"
-          :alt="`${hosts[0]?.name} profile`"
-          class="profile-image"
-        />
-      </div>
-
-      <!-- SVG logo fallback when no profile image and no logo URL -->
       <div
         v-else
         class="fallback-logo-wrapper bounce-in-element"
-        :style="{ ...fallbackLogoStyle, animationDelay: `${animationDelays.profile}s` }"
+        :style="{ ...fallbackLogoStyle, animationDelay: `${animationDelays.logo}s` }"
       >
         <div
           class="fallback-logo-svg"
@@ -90,47 +36,38 @@
       </div>
     </div>
 
-    <!-- Host Title & Name (Centered) -->
-    <div v-if="hosts.length > 0" class="text-center space-y-1 sm:space-y-1.5 px-4 -mt-4">
-      <!-- Title -->
-      <p
-        :class="['funeral-title-text opacity-75', getKhmerClass(currentLanguage)]"
-        :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-      >
-        <span
-          v-for="(word, index) in splitToWords(hosts[0]?.title || 'Beloved')"
-          :key="`title-${currentLanguage}-${index}`"
-          class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
-        >{{ word }}{{ index < splitToWords(hosts[0]?.title || 'Beloved').length - 1 ? '\u00A0' : '' }}</span>
-      </p>
-
-      <!-- Name -->
+    <!-- Event Hosts Header -->
+    <div v-if="hosts.length > 0" class="hosts-section px-4 mt-4">
       <h3
-        :class="['text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold leading-tight', getKhmerClass(currentLanguage)]"
+        :class="['hosts-header text-center', getKhmerClass(currentLanguage)]"
         :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
       >
         <span
-          v-for="(word, index) in splitToWords(hosts[0].name)"
-          :key="`name-${currentLanguage}-${index}`"
+          v-for="(word, index) in splitToWords(hostsHeaderText)"
+          :key="`header-${currentLanguage}-${index}`"
           class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.name + index * WORD_DELAY}s` }"
-        >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span>
+          :style="{ animationDelay: `${animationDelays.header + index * WORD_DELAY}s` }"
+        >{{ word }}{{ index < splitToWords(hostsHeaderText).length - 1 ? '\u00A0' : '' }}</span>
       </h3>
 
-      <!-- Bio (if available) -->
-      <p
-        v-if="hosts[0]?.bio"
-        :class="['text-base sm:text-lg opacity-90 mt-4 max-w-md mx-auto', getKhmerClass(currentLanguage)]"
-        :style="{ color: primaryColor, fontFamily: currentFont }"
-      >
-        <span
-          v-for="(word, index) in splitToWords(hosts[0].bio)"
-          :key="`bio-${currentLanguage}-${index}`"
-          class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.bio + index * WORD_DELAY}s` }"
-        >{{ word }}{{ index < splitToWords(hosts[0].bio).length - 1 ? '\u00A0' : '' }}</span>
-      </p>
+      <!-- Host List -->
+      <ul class="host-list mt-3">
+        <li
+          v-for="(host, hostIndex) in hosts"
+          :key="host.id"
+          :class="['host-list-item text-center', getKhmerClass(currentLanguage)]"
+          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+        >
+          <span
+            class="bounce-word"
+            :style="{ animationDelay: `${animationDelays.hostItems[hostIndex]}s` }"
+          >
+            <span class="host-name">{{ host.name }}</span>
+            <span v-if="host.title" class="host-title-separator"> - </span>
+            <span v-if="host.title" class="host-title">{{ host.title }}</span>
+          </span>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -141,7 +78,6 @@ import type { HostInfoProps } from '@/types/showcase'
 import {
   WelcomeHeader,
   getKhmerClass,
-  getMediaUrl,
   splitToWords,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
@@ -157,12 +93,10 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
-const parentTextStyle = computed(() => ({
-  color: props.primaryColor,
-  fontFamily: props.primaryFont || props.currentFont,
-  wordWrap: 'break-word' as const,
-  hyphens: 'auto' as const,
-}))
+const hostsHeaderText = computed(() => {
+  if (props.currentLanguage === 'kh') return 'ម្ចាស់ពិធី'
+  return 'Event Hosts'
+})
 
 // Animation delays calculation
 const animationDelays = computed(() => {
@@ -177,22 +111,22 @@ const animationDelays = computed(() => {
   }
 
   const welcome = getNextDelay(props.welcomeMessage || 'In Loving Memory')
-  const parentA = getNextDelay(props.hosts[0]?.parent_a_name)
-  const parentB = getNextDelay(props.hosts[0]?.parent_b_name)
-  const profile = currentDelay
+  const logo = currentDelay
   currentDelay += 0.25
-  const title = getNextDelay(props.hosts[0]?.title || 'Beloved')
-  const name = getNextDelay(props.hosts[0]?.name)
-  const bio = getNextDelay(props.hosts[0]?.bio)
+  const header = getNextDelay(hostsHeaderText.value)
+
+  // Each host item gets a staggered delay
+  const hostItems: number[] = []
+  for (let i = 0; i < props.hosts.length; i++) {
+    hostItems.push(currentDelay)
+    currentDelay += 0.1
+  }
 
   return {
     welcome,
-    parentA,
-    parentB,
-    profile,
-    title,
-    name,
-    bio,
+    logo,
+    header,
+    hostItems,
   }
 })
 </script>
@@ -213,65 +147,42 @@ const animationDelays = computed(() => {
   margin-top: 0;
 }
 
-/* Parent Names Row Layout */
-.parent-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  width: 100%;
-  align-items: center;
-  overflow: hidden;
-  box-sizing: border-box;
-  margin-bottom: 1rem;
+/* Hosts Section */
+.hosts-section {
+  margin-top: 1rem;
 }
 
-.host-parent-left,
-.host-parent-right {
-  text-align: center;
-  overflow: hidden;
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
+.hosts-header {
+  font-size: 1.125rem;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
 }
 
-.center-spacer {
-  width: 1rem;
-  flex-shrink: 0;
+.host-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.khmer-text .center-spacer {
-  width: 0.5rem;
+.host-list-item {
+  padding: 0.25rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
-.parent-name-text {
-  font-size: 1rem;
+.host-name {
+  font-weight: 600;
 }
 
-/* Title text - matches birthday title sizes */
-.funeral-title-text {
-  font-size: 0.7906rem;
+.host-title-separator {
+  opacity: 0.5;
+  margin: 0 0.15rem;
 }
 
-/* Large Profile Picture */
-.profile-picture-large {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  padding: 4px;
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.profile-picture-large:hover {
-  transform: scale(1.05);
-}
-
-.profile-image {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
+.host-title {
+  opacity: 0.75;
+  font-weight: 400;
 }
 
 .logo-fallback {
@@ -361,18 +272,12 @@ const animationDelays = computed(() => {
 
 /* Responsive adjustments */
 @media (min-width: 640px) {
-  .parent-name-text {
-    font-size: 1.125rem;
+  .hosts-header {
+    font-size: 1.25rem;
   }
 
-  .funeral-title-text {
-    font-size: 0.9344rem;
-  }
-
-  .profile-picture-large {
-    width: 250px;
-    height: 250px;
-    padding: 5px;
+  .host-list-item {
+    font-size: 1.05rem;
   }
 
   .logo-fallback {
@@ -386,28 +291,17 @@ const animationDelays = computed(() => {
     padding: 0.25rem 0 2rem;
   }
 
-  .parent-name-text {
-    font-size: 1.25rem;
+  .hosts-header {
+    font-size: 1.375rem;
   }
 
-  .funeral-title-text {
-    font-size: 1.0781rem;
-  }
-
-  .profile-picture-large {
-    width: 280px;
-    height: 280px;
+  .host-list-item {
+    font-size: 1.125rem;
   }
 
   .logo-fallback {
     width: 420px;
     height: 420px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .parent-name-text {
-    font-size: 1.5rem;
   }
 }
 
@@ -417,30 +311,13 @@ const animationDelays = computed(() => {
     padding: 0.25rem 0 1rem;
   }
 
-  .text-center.mb-6 {
-    margin-bottom: 0.75rem !important;
+  .hosts-header {
+    font-size: 0.75rem;
   }
 
-  .parent-row {
-    margin-bottom: 0.5rem !important;
-  }
-
-  .parent-name-text {
-    font-size: 0.55rem !important;
-  }
-
-  .funeral-title-text {
-    font-size: 0.55rem !important;
-  }
-
-  .host-info-funeral h3 {
-    font-size: 0.85rem !important;
-  }
-
-  .profile-picture-large {
-    width: 160px;
-    height: 160px;
-    padding: 3px;
+  .host-list-item {
+    font-size: 0.65rem;
+    padding: 0.125rem 0;
   }
 
   .logo-fallback {
@@ -455,30 +332,13 @@ const animationDelays = computed(() => {
     padding: 0.25rem 0 1rem;
   }
 
-  .text-center.mb-6 {
-    margin-bottom: 0.75rem !important;
+  .hosts-header {
+    font-size: 0.75rem;
   }
 
-  .parent-row {
-    margin-bottom: 0.5rem !important;
-  }
-
-  .parent-name-text {
-    font-size: 0.55rem !important;
-  }
-
-  .funeral-title-text {
-    font-size: 0.55rem !important;
-  }
-
-  .host-info-funeral h3 {
-    font-size: 0.85rem !important;
-  }
-
-  .profile-picture-large {
-    width: 160px;
-    height: 160px;
-    padding: 3px;
+  .host-list-item {
+    font-size: 0.65rem;
+    padding: 0.125rem 0;
   }
 
   .logo-fallback {
@@ -488,15 +348,6 @@ const animationDelays = computed(() => {
 }
 
 @media (min-width: 1920px) {
-  .funeral-title-text {
-    font-size: 1.0063rem;
-  }
-
-  .profile-picture-large {
-    width: 300px;
-    height: 300px;
-  }
-
   .logo-fallback {
     width: 420px;
     height: 420px;
@@ -504,7 +355,6 @@ const animationDelays = computed(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profile-picture-large,
   .bounce-in-element,
   .bounce-word {
     animation: none;
