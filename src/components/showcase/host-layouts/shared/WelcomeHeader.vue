@@ -10,16 +10,20 @@
         :style="{
           fontFamily: fontFamily,
           color: color,
+          whiteSpace: 'pre-line' as const,
         }"
       >
         <!-- Animated words mode -->
         <template v-if="animated">
-          <span
-            v-for="(word, index) in words"
-            :key="`welcome-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${baseDelay + index * wordDelay}s` }"
-          >{{ word }}{{ index < words.length - 1 ? '\u00A0' : '' }}</span>
+          <template v-for="(line, lineIndex) in lines" :key="`line-${currentLanguage}-${lineIndex}`">
+            <br v-if="lineIndex > 0" />
+            <span
+              v-for="(word, wordIndex) in line.words"
+              :key="`welcome-${currentLanguage}-${line.startIndex + wordIndex}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${baseDelay + (line.startIndex + wordIndex) * wordDelay}s` }"
+            >{{ word }}{{ wordIndex < line.words.length - 1 ? '\u00A0' : '' }}</span>
+          </template>
         </template>
         <!-- Static text mode -->
         <template v-else>
@@ -32,7 +36,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { splitToWords, ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
+import { ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {
   message?: string
@@ -54,7 +58,16 @@ const props = withDefaults(defineProps<Props>(), {
 
 const displayMessage = computed(() => props.message || props.defaultMessage)
 
-const words = computed(() => splitToWords(displayMessage.value))
+const lines = computed(() => {
+  const text = displayMessage.value
+  let wordCounter = 0
+  return text.split('\n').map((line) => {
+    const lineWords = line.split(/\s+/).filter(Boolean)
+    const startIndex = wordCounter
+    wordCounter += lineWords.length
+    return { words: lineWords, startIndex }
+  })
+})
 
 const wordDelay = ANIMATION_CONSTANTS.WORD_DELAY
 </script>
