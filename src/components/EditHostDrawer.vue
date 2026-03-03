@@ -109,6 +109,7 @@
                   v-model:bio="formData.bio"
                   :field-errors="fieldErrors"
                   :bio-open="bioOpen"
+                  :show-parent-fields="showParentFields"
                   @update:bio-open="bioOpen = $event"
                 />
               </div>
@@ -132,6 +133,7 @@
                   :bio="translation.bio"
                   :language-name="getLanguageName(translation.language)"
                   :bio-open="bioOpen"
+                  :show-parent-fields="showParentFields"
                   @update:bio-open="bioOpen = $event"
                   @update:title="(val) => translation.title = val"
                   @update:name="(val) => translation.name = val"
@@ -234,6 +236,7 @@ interface Props {
   modelValue: boolean
   eventId: string
   host?: EventHost
+  eventCategory?: string
 }
 
 interface Emits {
@@ -302,6 +305,12 @@ const {
   openCropperWithExistingImage,
   resetProfilePicture,
 } = useProfilePictureUpload(props.host?.profile_image || undefined, true) // Enable cropping
+
+// Show parent fields only for wedding and birthday events
+const showParentFields = computed(() => {
+  const category = props.eventCategory?.toLowerCase() || ''
+  return category === 'wedding' || category === 'birthday'
+})
 
 // Local UI state
 const bioOpen = ref(false)

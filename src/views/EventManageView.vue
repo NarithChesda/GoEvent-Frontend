@@ -126,6 +126,7 @@
                 ref="hostsTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
+                :event-category="event.category_details?.name || event.category_name || ''"
               />
             </div>
 

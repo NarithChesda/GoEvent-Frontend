@@ -168,12 +168,14 @@
     <EditHostDrawer
       v-model="showCreateModal"
       :event-id="eventId"
+      :event-category="eventCategory"
       @created="handleHostCreated"
     />
 
     <EditHostDrawer
       v-model="showEditModal"
       :event-id="eventId"
+      :event-category="eventCategory"
       :host="selectedHost || undefined"
       @updated="handleHostUpdated"
     />
@@ -216,6 +218,7 @@ import DeleteConfirmModal from './DeleteConfirmModal.vue'
 interface Props {
   eventId: string
   canEdit: boolean
+  eventCategory?: string
 }
 
 const props = defineProps<Props>()

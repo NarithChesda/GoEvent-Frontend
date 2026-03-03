@@ -43,8 +43,8 @@
       </div>
     </div>
 
-    <!-- Parent Names -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+    <!-- Parent Names (only for wedding and birthday events) -->
+    <div v-if="showParentFields" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Parent A Name
@@ -119,6 +119,7 @@ interface Props {
   parentBName: string
   bio: string
   bioOpen: boolean
+  showParentFields?: boolean
   languageName?: string
   fieldErrors?: Record<string, string[]>
 }
