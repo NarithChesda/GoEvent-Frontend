@@ -83,6 +83,7 @@
       :has-payment="paymentMethods.length > 0"
       :has-rsvp="event.rsvp_enabled !== false"
       :has-comments="event.comments_enabled !== false"
+      :event-type="eventType"
       @language-change="handleLanguageChange"
       @music-toggle="handleMusicToggle"
       @rsvp="handleRSVP"

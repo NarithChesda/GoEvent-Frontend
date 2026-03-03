@@ -87,6 +87,7 @@ export const rsvpTranslations: Record<
 
     // Comment section
     comment_header: string
+    comment_header_funeral: string
     comment_placeholder: string
     comment_placeholder_funeral: string
     comment_signin_prompt: string
@@ -120,6 +121,7 @@ export const rsvpTranslations: Record<
     floating_menu_dress_code: string
     floating_menu_gift: string
     floating_menu_comment: string
+    floating_menu_comment_funeral: string
     floating_menu_logout: string
     floating_menu_select_language: string
 
@@ -249,6 +251,7 @@ export const rsvpTranslations: Record<
 
     // Comment section
     comment_header: 'Comments & Wishes',
+    comment_header_funeral: 'Condolence Message',
     comment_placeholder: 'Share your thoughts, wishes, or congratulations...',
     comment_placeholder_funeral: 'Share your thoughts and condolences',
     comment_signin_prompt: 'Please sign in to leave a comment',
@@ -282,6 +285,7 @@ export const rsvpTranslations: Record<
     floating_menu_dress_code: 'Dress Code',
     floating_menu_gift: 'Gift',
     floating_menu_comment: 'Comment',
+    floating_menu_comment_funeral: 'Condolence',
     floating_menu_logout: 'Logout',
     floating_menu_select_language: 'Select Language',
 
@@ -411,6 +415,7 @@ export const rsvpTranslations: Record<
 
     // Comment section
     comment_header: 'សារជូនពរ',
+    comment_header_funeral: 'សាររំលែកទុក្ខ',
     comment_placeholder: 'សរសេរសារជូនពររបស់អ្នកនៅទីនេះ',
     comment_placeholder_funeral: 'ចែករំលែកគំនិត និងការចូលរួមរំលែកទុក្ខរបស់អ្នក',
     comment_signin_prompt: 'សូមចូលគណនី ដើម្បីជូនពរ',
@@ -444,6 +449,7 @@ export const rsvpTranslations: Record<
     floating_menu_dress_code: 'ការស្លៀកពាក់',
     floating_menu_gift: 'ចំណងដៃ',
     floating_menu_comment: 'ជូនពរ',
+    floating_menu_comment_funeral: 'រំលែកទុក្ខ',
     floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
 
@@ -573,6 +579,7 @@ export const rsvpTranslations: Record<
 
     // Comment section
     comment_header: '评论与祈愿',
+    comment_header_funeral: '吊唁留言',
     comment_placeholder: '分享您的想法、祈愿或祝贺...',
     comment_placeholder_funeral: '分享您的想法和哀思',
     comment_signin_prompt: '请登录后留言',
@@ -606,6 +613,7 @@ export const rsvpTranslations: Record<
     floating_menu_dress_code: '着装要求',
     floating_menu_gift: '礼物',
     floating_menu_comment: '评论',
+    floating_menu_comment_funeral: '吊唁',
     floating_menu_logout: '退出',
     floating_menu_select_language: '选择语言',
 

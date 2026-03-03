@@ -218,6 +218,7 @@ interface Props {
   hasPayment?: boolean
   hasRsvp?: boolean
   hasComments?: boolean
+  eventType?: string
 }
 
 interface Language {
@@ -295,7 +296,10 @@ const translations = computed(() => ({
   video: translateRSVP('floating_menu_video', currentLang.value),
   gallery: translateRSVP('floating_menu_gallery', currentLang.value),
   gift: translateRSVP('floating_menu_gift', currentLang.value),
-  comment: translateRSVP('floating_menu_comment', currentLang.value),
+  comment: translateRSVP(
+    props.eventType?.toLowerCase() === 'funeral' ? 'floating_menu_comment_funeral' : 'floating_menu_comment',
+    currentLang.value,
+  ),
   logout: translateRSVP('floating_menu_logout', currentLang.value),
   selectLanguage: translateRSVP('floating_menu_select_language', currentLang.value),
 }))

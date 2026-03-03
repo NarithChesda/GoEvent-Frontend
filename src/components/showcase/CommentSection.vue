@@ -547,6 +547,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
     keyof typeof import('../../utils/translations').rsvpTranslations.en
   > = {
     comment_header: 'comment_header',
+    comment_header_funeral: 'comment_header_funeral',
     comment_placeholder: 'comment_placeholder',
     comment_placeholder_funeral: 'comment_placeholder_funeral',
     comment_signin_prompt: 'comment_signin_prompt',
@@ -569,7 +570,12 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 // Computed properties for all translatable text
-const commentHeaderText = computed(() => getTextContent('comment_header', 'Comments & Wishes'))
+const commentHeaderText = computed(() => {
+  if (props.eventType?.toLowerCase() === 'funeral') {
+    return getTextContent('comment_header_funeral', 'Condolence Message')
+  }
+  return getTextContent('comment_header', 'Comments & Wishes')
+})
 const commentPlaceholderText = computed(() => {
   if (props.eventType?.toLowerCase() === 'funeral') {
     return getTextContent('comment_placeholder_funeral', 'Share your thoughts and condolences')
