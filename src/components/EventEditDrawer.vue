@@ -1031,11 +1031,6 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!form.description.trim()) {
-    showMessage('error', 'Event description is required')
-    return
-  }
-
   if (!form.start_date || !form.end_date) {
     showMessage('error', 'Start date and end date are required')
     return
