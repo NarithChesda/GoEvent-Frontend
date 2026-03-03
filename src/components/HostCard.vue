@@ -10,7 +10,7 @@
     @touchstart.passive="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend.passive="handleTouchEnd"
-    class="host-card group relative bg-white/80 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-200"
+    class="host-card group relative bg-white/80 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 overflow-hidden"
     :class="[
       isDragging ? 'opacity-75 transform rotate-1 scale-[1.01] dragging' : '',
       isDraggedOver && !isDragging ? 'drop-target' : '',
@@ -65,8 +65,8 @@
       </div>
 
       <!-- Host Information -->
-      <div class="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
-        <div>
+      <div class="flex-1 min-w-0 w-full space-y-1.5 sm:space-y-2">
+        <div class="min-w-0">
           <h4 class="text-base sm:text-lg font-semibold text-slate-900 truncate">{{ host.name }}</h4>
           <p v-if="host.title" class="text-xs sm:text-sm font-medium text-sky-700 truncate">
             {{ host.title }}
