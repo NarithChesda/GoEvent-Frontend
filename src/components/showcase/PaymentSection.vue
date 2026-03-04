@@ -419,6 +419,7 @@ const getTextContent = (textType: string, fallback = ''): string => {
   > = {
     payment_wedding_gift: 'payment_wedding_gift',
     payment_birthday_gift: 'payment_birthday_gift',
+    payment_funeral_gift: 'payment_funeral_gift',
   }
 
   const translationKey = keyMap[textType]
@@ -470,6 +471,10 @@ const paymentSectionTitle = computed(() => {
 
   if (categoryName === 'birthday') {
     return getTextContent('payment_birthday_gift', 'Birthday Gift')
+  }
+
+  if (categoryName === 'funeral') {
+    return getTextContent('payment_funeral_gift', 'Condolence Contribution')
   }
 
   // For other recognized categories, create a generic gift translation
@@ -535,6 +540,10 @@ const getPaymentTypeLabel = (method: EventPaymentMethod): string => {
 
   if (categoryName === 'birthday') {
     return getTextContent('payment_birthday_gift', 'Birthday Gift')
+  }
+
+  if (categoryName === 'funeral') {
+    return getTextContent('payment_funeral_gift', 'Condolence Contribution')
   }
 
   if (categoryName) {
