@@ -83,10 +83,12 @@ const isEnglishGuestName = computed(() => {
   return /^[a-zA-Z\s\-'.,()&]+$/.test(props.guestName.trim())
 })
 
-// Capitalize words for English names
+// Title-case English names (handles ALL CAPS input like "JOHN DOE" → "John Doe")
 const formattedGuestName = computed(() => {
   if (isEnglishGuestName.value) {
-    return props.guestName.replace(/\b\w/g, (char) => char.toUpperCase())
+    return props.guestName
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase())
   }
   return props.guestName
 })
