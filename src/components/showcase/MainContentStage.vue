@@ -3,6 +3,14 @@
     <!-- Background handled by CoverStage - transparent div maintains z-index stacking -->
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
+    <!-- Falling Particle Effect (petals, confetti, custom image, etc.) -->
+    <FallingEffect
+      :config="fallingEffect"
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :get-media-url="getMediaUrl"
+    />
+
     <!-- Decoration Images (optimized via ImageKit for viewport size) -->
     <!-- Z-indexes are dynamic via mainStageLayout prop (defaults: left/right=24, top/bottom=25) -->
     <img
@@ -871,7 +879,7 @@ import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
-import type { CoverStageLayout } from '../../services/api/types/template.types'
+import type { CoverStageLayout, FallingEffectConfig } from '../../services/api/types/template.types'
 
 // Asset protection (production-only)
 const { protectionAttrs } = useAssetProtection()
@@ -889,6 +897,7 @@ import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
 import WeddingSectionDivider from './WeddingSectionDivider.vue'
+import FallingEffect from './FallingEffect.vue'
 
 // Asset imports
 import WhiteLogoSvg from '../../assets/white-kh-logo.svg'
@@ -939,6 +948,8 @@ interface Props {
   animationType?: 'decoration' | 'door'
   /** Main stage layout configuration for decoration z-indexes */
   mainStageLayout?: CoverStageLayout
+  /** Falling particle effect configuration from template */
+  fallingEffect?: FallingEffectConfig | null
 }
 
 const props = defineProps<Props>()

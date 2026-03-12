@@ -90,6 +90,39 @@ export interface CoverStageLayout {
   showcaseAnimationType?: 'decoration' | 'door'  // default: 'decoration'
 }
 
+/**
+ * Built-in falling particle effect types.
+ * Each maps to a predefined SVG shape in the particle registry.
+ */
+export type FallingEffectType = 'petals' | 'confetti' | 'snowflakes' | 'stars' | 'leaves' | 'none'
+
+/**
+ * Configuration for the falling particle effect on the showcase main stage.
+ *
+ * Supports two rendering modes:
+ * 1. **Built-in SVG shapes** — set `type` to a preset (petals, confetti, etc.)
+ * 2. **Custom image** — set `custom_image` to a URL of a transparent PNG/SVG
+ *    uploaded via the template. When `custom_image` is set, `type` is ignored
+ *    for rendering but still useful for labeling/categorization.
+ *
+ * Recommended custom image specs:
+ * - Format: PNG with transparency or SVG
+ * - Size: 64×64 px to 128×128 px
+ * - File size: under 20 KB for performance
+ */
+export interface FallingEffectConfig {
+  /** Which built-in particle shape to use (ignored when custom_image is set) */
+  type: FallingEffectType
+  /** URL to a custom particle image — overrides the built-in SVG shape */
+  custom_image?: string | null
+  /** Where to source the particle color (only applies to built-in SVG shapes) */
+  color_source?: 'primary' | 'accent' | 'custom'
+  /** Hex color when color_source is 'custom' */
+  custom_color?: string | null
+  /** Controls spawn rate and max particles on screen */
+  intensity?: 'light' | 'normal' | 'heavy'
+}
+
 export interface PackagePlan {
   id: number
   name: string
@@ -130,6 +163,7 @@ export interface PartnerTemplate {
   template_colors: EventTemplateColor[]
   template_fonts: EventTemplateLanguageFont[]
   cover_stage_layout: CoverStageLayout | null
+  falling_effect: FallingEffectConfig | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
   basic_decoration_photo: string | null
@@ -174,6 +208,9 @@ export interface PartnerTemplateCreatePayload {
   display_liquid_glass_background?: boolean
   open_envelope_button?: File
   cover_stage_layout?: CoverStageLayout
+  falling_effect?: FallingEffectConfig
+  /** Custom particle image file (uploaded as part of template creation) */
+  falling_effect_custom_image?: File
 }
 
 // Custom fonts (available via core-data endpoint)

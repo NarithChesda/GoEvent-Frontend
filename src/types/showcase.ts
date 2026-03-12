@@ -3,7 +3,7 @@
  * These types ensure type safety across the refactored showcase system
  */
 
-import type { CoverStageLayout } from '@/services/api/types/template.types'
+import type { CoverStageLayout, FallingEffectConfig } from '@/services/api/types/template.types'
 
 // Core showcase data types
 export interface Host {
@@ -92,6 +92,8 @@ export interface TemplateAssets {
   /** Comprehensive cover stage layout configuration */
   cover_stage_layout?: CoverStageLayout
   display_liquid_glass_background?: boolean
+  /** Falling particle effect configuration (petals, confetti, custom image, etc.) */
+  falling_effect?: FallingEffectConfig | null
 }
 
 export interface EventPhoto {
