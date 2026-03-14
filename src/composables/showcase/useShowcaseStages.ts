@@ -1,7 +1,7 @@
 import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { useVideoResourceManager } from './useVideoResourceManager'
 
-export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
+export type ShowcaseStage = 'cover' | 'transition' | 'event_video' | 'main_content'
 
 /**
  * Showcase Stages Composable
@@ -42,6 +42,7 @@ export function useShowcaseStages() {
    * Computed properties for stage checks
    */
   const isCoverStage = computed(() => currentShowcaseStage.value === 'cover')
+  const isTransitionStage = computed(() => currentShowcaseStage.value === 'transition')
   const isEventVideoStage = computed(() => currentShowcaseStage.value === 'event_video')
   const isMainContentStage = computed(() => currentShowcaseStage.value === 'main_content')
 
@@ -123,8 +124,19 @@ export function useShowcaseStages() {
    *
    * Opens the envelope and transitions through stages
    */
-  const openEnvelope = async (eventVideoUrl?: string, eventMusicUrl?: string): Promise<void> => {
+  const openEnvelope = async (
+    eventVideoUrl?: string,
+    eventMusicUrl?: string,
+    options?: { useTransitionStage?: boolean },
+  ): Promise<void> => {
     isEnvelopeOpened.value = true
+
+    // For transition stage flow (basic wedding events):
+    // Go directly to transition stage, defer music to after transition completes
+    if (options?.useTransitionStage) {
+      currentShowcaseStage.value = 'transition'
+      return
+    }
 
     // Transition to event video stage
     currentShowcaseStage.value = 'event_video'
@@ -198,6 +210,20 @@ export function useShowcaseStages() {
     currentShowcaseStage.value = 'main_content'
 
     // Ensure audio is still available as fallback
+    if (!audioRef.value && eventMusicUrl) {
+      initializeAudio(eventMusicUrl)
+      playMusic()
+    }
+  }
+
+  /**
+   * Handle transition stage animation completion
+   * Moves from transition stage to main content
+   */
+  const onTransitionComplete = (eventMusicUrl?: string): void => {
+    currentShowcaseStage.value = 'main_content'
+
+    // Start music if not already playing
     if (!audioRef.value && eventMusicUrl) {
       initializeAudio(eventMusicUrl)
       playMusic()
@@ -323,6 +349,7 @@ export function useShowcaseStages() {
 
     // Computed
     isCoverStage,
+    isTransitionStage,
     isEventVideoStage,
     isMainContentStage,
 
@@ -337,6 +364,7 @@ export function useShowcaseStages() {
     onVideoCanPlay,
     onEventVideoEnded,
     onEventVideoError,
+    onTransitionComplete,
     handleCoverStageReady,
     setStage,
     resetStages,

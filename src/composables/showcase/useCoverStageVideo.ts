@@ -2,7 +2,7 @@ import { ref, computed, onUnmounted, nextTick, watch, readonly, type Ref } from 
 import { useVideoResourceManager } from './useVideoResourceManager'
 
 export type VideoPhase = 'none' | 'event' | 'background'
-export type ShowcaseStage = 'cover' | 'event_video' | 'main_content'
+export type ShowcaseStage = 'cover' | 'transition' | 'event_video' | 'main_content'
 
 interface VideoElementRefs {
   eventVideoPreloader: () => HTMLVideoElement | null

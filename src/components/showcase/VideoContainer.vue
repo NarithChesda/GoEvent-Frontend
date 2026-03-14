@@ -51,18 +51,26 @@
     <!-- COVER STAGE BACKGROUND (when decoration is visible, i.e., NOT isContentHidden) -->
     <!-- Background Color Layer for Cover Stage - templateColor or white fallback -->
     <div
-      v-if="!isContentHidden && !templateAssets?.standard_cover_video"
+      v-if="(!isContentHidden || keepDecorationBackground) && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
     />
 
     <!-- Decoration Photo (optimized via ImageKit) - Shows in Cover Stage, swipes up to reveal main content -->
     <!-- For door animation: don't apply swipe-up, just hide instantly when content is hidden -->
+    <!-- When keepDecorationBackground is true (transition stage), keep decoration photo visible -->
+    <!-- When skipDecorationSlideUp is true (after transition stage), hide instantly without slide-up -->
     <div
       v-if="optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
-      class="absolute inset-0 transition-all duration-700 ease-out"
-      :class="{ 'swipe-up-hidden': isContentHidden && isDecorationAnimation }"
-      :style="{ zIndex: 0, opacity: isContentHidden && !isDecorationAnimation ? 0 : 1 }"
+      class="absolute inset-0"
+      :class="{
+        'transition-all duration-700 ease-out': !skipDecorationSlideUp,
+        'swipe-up-hidden': isContentHidden && isDecorationAnimation && !keepDecorationBackground && !skipDecorationSlideUp,
+      }"
+      :style="{
+        zIndex: 0,
+        opacity: (isContentHidden && !keepDecorationBackground && (skipDecorationSlideUp || !isDecorationAnimation)) ? 0 : 1,
+      }"
     >
       <img
         :src="optimizedDecorationPhotoUrl"
@@ -74,9 +82,10 @@
     </div>
 
     <!-- MAIN CONTENT STAGE BACKGROUND (when decoration is hidden, i.e., isContentHidden) -->
+    <!-- Not shown when keepDecorationBackground is true (transition stage keeps decoration photo) -->
     <!-- Background Photo Layer (optimized via ImageKit) for Main Content Stage -->
     <div
-      v-if="isContentHidden && optimizedBackgroundPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && optimizedBackgroundPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="z-index: -1"
     >
@@ -91,14 +100,14 @@
 
     <!-- Fallback 1: Template Color for Main Content Stage when no background photo -->
     <div
-      v-if="isContentHidden && !optimizedBackgroundPhotoUrl && templateColor && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !optimizedBackgroundPhotoUrl && templateColor && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       :style="{ backgroundColor: templateColor, zIndex: -1 }"
     />
 
     <!-- Fallback 2: Use Decoration Photo when no background photo AND no templateColor -->
     <div
-      v-if="isContentHidden && !optimizedBackgroundPhotoUrl && !templateColor && optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !optimizedBackgroundPhotoUrl && !templateColor && optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="z-index: -1"
     >
@@ -113,7 +122,7 @@
 
     <!-- Fallback 3: White color when no background photo, no templateColor, and no decoration photo -->
     <div
-      v-if="isContentHidden && !optimizedBackgroundPhotoUrl && !templateColor && !optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !optimizedBackgroundPhotoUrl && !templateColor && !optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="background-color: #ffffff; z-index: -1"
     />
@@ -177,6 +186,10 @@ interface Props {
   getMediaUrl: (url: string) => string
   /** Animation type for cover-to-content transition */
   animationType?: ShowcaseAnimationType
+  /** When true, keep decoration photo visible even when isContentHidden (used during transition stage) */
+  keepDecorationBackground?: boolean
+  /** When true, skip the slide-up animation for decoration photo (instant hide instead) */
+  skipDecorationSlideUp?: boolean
 }
 
 const props = defineProps<Props>()

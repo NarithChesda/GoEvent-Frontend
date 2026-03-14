@@ -1095,6 +1095,8 @@ export function useEventShowcase() {
     onVideoCanPlay: stageManager.onVideoCanPlay,
     onEventVideoEnded: stageManager.onEventVideoEnded,
     onEventVideoError: stageManager.onEventVideoError,
+    onTransitionComplete: stageManager.onTransitionComplete,
+    isTransitionStage: stageManager.isTransitionStage,
     getMediaUrl: templateProcessor.getMediaUrl,
     openGoogleMap,
     openPhotoModal,

@@ -18,6 +18,8 @@
       :get-media-url="getMediaUrl"
       :is-content-hidden="videoState.isContentHidden.value"
       :animation-type="animationType"
+      :keep-decoration-background="keepDecorationBackground"
+      :skip-decoration-slide-up="skipDecorationSlideUp"
       @sequential-video-ended="videoState.handleSequentialVideoEnded"
       @sequential-video-error="videoState.handleSequentialVideoError"
       @event-video-preloaded="videoState.handleEventVideoPreloaded"
@@ -134,6 +136,8 @@ interface Props {
   coverRightDecoration?: string | null
   /** Showcase animation type from template_assets.showcase_animation_type */
   animationType?: ShowcaseAnimationType
+  /** When true, basic mode will only animate decorations out without transitioning to main content */
+  useTransitionStage?: boolean
 }
 
 const props = defineProps<Props>()
@@ -192,6 +196,17 @@ const { isDoorAnimation, isDoorAnimationInProgress, startDoorAnimation, clearAft
   currentVideoPhase: videoState.currentVideoPhase,
 })
 
+// Keep decoration photo background during transition stage
+const keepDecorationBackground = computed(() => {
+  return props.useTransitionStage && props.currentShowcaseStage === 'transition'
+})
+
+// Skip slide-up animation for decoration photo when using transition stage
+// (after transition completes, hide instantly instead of sliding up)
+const skipDecorationSlideUp = computed(() => {
+  return props.useTransitionStage === true
+})
+
 // Computed visibility flags
 const shouldShowCoverContent = computed(() => {
   return (videoState.currentVideoPhase.value === 'none' || isDoorAnimationInProgress.value)
@@ -222,17 +237,23 @@ const handleOpenEnvelope = () => {
     startDoorAnimation()
 
     if (displayMode.value === 'basic') {
-      videoState.skipToMainContent()
+      if (!props.useTransitionStage) {
+        videoState.skipToMainContent()
+      }
     } else {
       clearAfterTimeout()
     }
   } else {
     // Decoration animation behavior differs by display mode
     if (displayMode.value === 'basic') {
-      // Basic mode: set content hidden immediately and skip to main content
-      // No videos to wait for, so we can trigger the animation right away
+      // Basic mode: set content hidden immediately to animate decorations out
       videoState.isContentHidden.value = true
-      videoState.skipToMainContent()
+
+      // When using transition stage, only animate decorations out
+      // Do NOT skip to main content — the transition stage handles timing
+      if (!props.useTransitionStage) {
+        videoState.skipToMainContent()
+      }
     }
     // Standard mode: DO NOT set isContentHidden here!
     // The video will be started by parent via startEventVideo(), and
@@ -246,8 +267,14 @@ const startEventVideo = () => {
   videoState.startEventVideo()
 }
 
+// Reveal main content (used after transition stage completes)
+const revealMainContent = () => {
+  videoState.skipToMainContent()
+}
+
 defineExpose({
   startEventVideo,
+  revealMainContent,
 })
 
 // Initialize video state and notify parent

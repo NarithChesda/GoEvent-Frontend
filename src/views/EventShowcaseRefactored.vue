@@ -52,6 +52,7 @@
         :cover-left-decoration="event.template_assets?.assets?.cover_left_decoration"
         :cover-right-decoration="event.template_assets?.assets?.cover_right_decoration"
         :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
+        :use-transition-stage="isBasicWedding"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelopeWithVideoSync"
         @cover-stage-ready="handleCoverStageReady"
@@ -107,6 +108,23 @@
         </template>
       </CoverStage>
 
+      <!-- Transition Stage (basic wedding events only) -->
+      <TransitionStage
+        v-if="isTransitionStage && isBasicWedding"
+        :event-title="event.title"
+        :event-logo="event.logo_one"
+        :event-start-date="event.start_date"
+        :primary-color="primaryColor"
+        :secondary-color="secondaryColor"
+        :accent-color="accentColor"
+        :background-color="backgroundColor"
+        :current-font="currentFont"
+        :primary-font="primaryFont"
+        :secondary-font="secondaryFont"
+        :get-media-url="getMediaUrl"
+        @transition-complete="handleTransitionComplete"
+      />
+
       <!-- Auth Modal -->
       <AuthModal
         :is-visible="showAuthModal"
@@ -129,7 +147,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch, provide, nextTick, ref } from 'vue'
+import { onMounted, onUnmounted, watch, provide, nextTick, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -151,6 +169,7 @@ import CoverStage from '../components/showcase/CoverStage.vue'
 import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
+import TransitionStage from '../components/showcase/TransitionStage.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuthModal } from '../composables/useAuthModal'
@@ -204,6 +223,8 @@ const {
   openEnvelope,
   onVideoCanPlay,
   onEventVideoEnded,
+  onTransitionComplete,
+  isTransitionStage,
   getMediaUrl,
   openGoogleMap,
   openPhotoModal,
@@ -255,8 +276,23 @@ const handleCommentSubmitted = () => {
   markMainContentSeen()
 }
 
+// Check if this is a wedding event with basic template (needs transition stage)
+const isBasicWedding = computed(() => {
+  const isBasicMode = Boolean(templateAssets.value?.basic_decoration_photo)
+  const categoryName = (event.value.category_details?.name || event.value.category_name || '').toLowerCase()
+  return isBasicMode && categoryName === 'wedding'
+})
+
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
+  // For basic wedding events, use the transition stage with logo + save the date animation
+  if (isBasicWedding.value) {
+    await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
+      useTransitionStage: true,
+    })
+    return
+  }
+
   // First call the original openEnvelope function which handles music
   // Pass the required parameters for music to work
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
@@ -269,6 +305,15 @@ const openEnvelopeWithVideoSync = async () => {
   if (!isBasicMode && coverStageRef.value && eventVideoUrl.value) {
     coverStageRef.value.startEventVideo()
   }
+}
+
+const handleTransitionComplete = () => {
+  // Tell CoverStage to reveal the main content slot (triggers video phase change)
+  if (coverStageRef.value) {
+    coverStageRef.value.revealMainContent()
+  }
+  // Set stage to main_content and start music
+  onTransitionComplete(eventMusicUrl.value || undefined)
 }
 
 const handleMainContentViewed = () => {
