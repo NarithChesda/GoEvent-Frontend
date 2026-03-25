@@ -1,14 +1,14 @@
 <template>
   <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
-    <!-- Couple Photo: fills the viewport -->
+    <!-- Feature Image: fills the viewport -->
     <div
-      v-if="couplePhotoUrl"
+      v-if="featureImageUrl"
       class="couple-photo-container"
       :class="{ 'show': isCouplePhotoVisible }"
     >
       <img
-        :src="couplePhotoUrl"
-        :alt="eventTitle + ' couple'"
+        :src="featureImageUrl"
+        :alt="eventTitle"
         class="couple-photo"
       />
     </div>
@@ -59,7 +59,6 @@ import type { EventPhoto } from '@/types/showcase'
 interface Props {
   eventTitle: string
   eventLogo?: string | null
-  couplePhoto?: string | null
   eventPhotos?: EventPhoto[]
   eventStartDate?: string | null
   primaryColor: string
@@ -87,17 +86,12 @@ let couplePhotoTimer: ReturnType<typeof setTimeout> | null = null
 let fadeOutTimer: ReturnType<typeof setTimeout> | null = null
 let completeTimer: ReturnType<typeof setTimeout> | null = null
 
-const couplePhotoUrl = computed(() => {
-  // Priority: first featured photo → banner_image → test fallback
+const featureImageUrl = computed(() => {
   const featuredPhoto = props.eventPhotos?.find((p) => p.is_featured)
   if (featuredPhoto) {
     return props.getMediaUrl(featuredPhoto.image)
   }
-  if (props.couplePhoto) {
-    return props.getMediaUrl(props.couplePhoto)
-  }
-  // TODO: Remove test fallback once banner_image is set on events
-  return '/images/test-couple-photo.png'
+  return null
 })
 
 const cloudMistStyle = computed(() => {

@@ -109,12 +109,11 @@
         </template>
       </CoverStage>
 
-      <!-- Transition Stage (basic wedding events only) -->
+      <!-- Transition Stage (basic wedding events only, requires a featured photo) -->
       <TransitionStage
-        v-if="isTransitionStage && isBasicWedding"
+        v-if="isTransitionStage && isBasicWedding && hasFeaturedPhoto"
         :event-title="event.title"
         :event-logo="event.logo_one"
-        :couple-photo="event.banner_image"
         :event-photos="eventPhotos"
         :event-start-date="event.start_date"
         :primary-color="primaryColor"
@@ -286,13 +285,24 @@ const isBasicWedding = computed(() => {
   return isBasicMode && categoryName === 'wedding'
 })
 
+const hasFeaturedPhoto = computed(() => {
+  return eventPhotos.value?.some((p) => p.is_featured) ?? false
+})
+
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
-  // For basic wedding events, use the transition stage with logo + save the date animation
-  if (isBasicWedding.value) {
+  // For basic wedding events with a featured photo, use the transition stage
+  if (isBasicWedding.value && hasFeaturedPhoto.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
     })
+    return
+  }
+
+  // For basic wedding events without a featured photo, skip transition and go straight to main content
+  if (isBasicWedding.value) {
+    await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
+    handleTransitionComplete()
     return
   }
 
