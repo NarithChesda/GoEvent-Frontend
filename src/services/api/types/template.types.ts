@@ -59,6 +59,7 @@ export interface TemplateAssets {
   basic_background_photo?: string
   standard_cover_video?: string
   standard_background_video?: string
+  ambient_creatures?: AmbientCreaturesConfig | null
   [key: string]: unknown
 }
 
@@ -123,6 +124,51 @@ export interface FallingEffectConfig {
   intensity?: 'light' | 'normal' | 'heavy'
 }
 
+/**
+ * Ambient creature types available for the cover stage effect.
+ * Each maps to a pure SVG creature with animated wings/glow.
+ */
+export type AmbientCreatureEffectType = 'butterfly' | 'dove' | 'firefly' | 'dragonfly'
+
+/**
+ * A single creature entry in the ambient creatures configuration.
+ * Defines which creature type to include, its relative spawn weight,
+ * and optional size overrides.
+ */
+export interface AmbientCreatureEntry {
+  /** Which creature SVG to render */
+  type: AmbientCreatureEffectType
+  /** Relative spawn weight (1–10). Higher = more of this type in the mix. Default: 1 */
+  weight?: number
+  /** Minimum creature size in pixels. Overrides built-in default when set. */
+  min_size?: number | null
+  /** Maximum creature size in pixels. Overrides built-in default when set. */
+  max_size?: number | null
+}
+
+/**
+ * Configuration for ambient creature animations on the cover stage.
+ *
+ * Controls which creature types appear, their proportions, sizes, count,
+ * speed, and color. The `creatures` array defines a weighted spawn pool —
+ * each entry's `weight` determines how frequently that type is chosen.
+ *
+ * Example: `{ creatures: [{ type: "butterfly", weight: 2 }, { type: "firefly", weight: 3 }], count: 6 }`
+ * creates a pool of ~2 butterflies and ~3 fireflies out of 6 total.
+ */
+export interface AmbientCreaturesConfig {
+  /** Which creature types to include and their configuration. At least one entry required. */
+  creatures: AmbientCreatureEntry[]
+  /** Total number of creatures to spawn on screen (1–15). Default: 6 */
+  count?: number
+  /** Global flight speed preset. Default: 'normal' */
+  speed?: 'slow' | 'normal' | 'fast'
+  /** Which template color to use for SVG creature fill. Default: 'accent' */
+  color_source?: 'primary' | 'accent' | 'custom'
+  /** Hex color when color_source is 'custom' */
+  custom_color?: string | null
+}
+
 export interface PackagePlan {
   id: number
   name: string
@@ -164,6 +210,7 @@ export interface PartnerTemplate {
   template_fonts: EventTemplateLanguageFont[]
   cover_stage_layout: CoverStageLayout | null
   falling_effect: FallingEffectConfig | null
+  ambient_creatures: AmbientCreaturesConfig | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
   basic_decoration_photo: string | null
@@ -211,6 +258,7 @@ export interface PartnerTemplateCreatePayload {
   falling_effect?: FallingEffectConfig
   /** Custom particle image file (uploaded as part of template creation) */
   falling_effect_custom_image?: File
+  ambient_creatures?: AmbientCreaturesConfig
 }
 
 // Custom fonts (available via core-data endpoint)

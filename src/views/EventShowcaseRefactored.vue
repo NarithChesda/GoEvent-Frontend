@@ -52,6 +52,7 @@
         :cover-left-decoration="event.template_assets?.assets?.cover_left_decoration"
         :cover-right-decoration="event.template_assets?.assets?.cover_right_decoration"
         :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
+        :ambient-creatures="event.template_assets?.ambient_creatures"
         :use-transition-stage="isBasicWedding"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelopeWithVideoSync"

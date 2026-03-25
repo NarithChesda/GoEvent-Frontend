@@ -58,7 +58,7 @@
       :cover-left-decoration="coverLeftDecoration"
       :cover-right-decoration="coverRightDecoration"
       :animation-type="animationType"
-      :show-ambient-effect="displayMode === 'basic'"
+      :ambient-creatures="props.ambientCreatures"
       @open-envelope="handleOpenEnvelope"
     />
 
@@ -76,7 +76,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import { useCoverStageVideo, type ShowcaseStage } from '@/composables/showcase/useCoverStageVideo'
 import { useDoorAnimation } from '@/composables/showcase/useDoorAnimation'
-import type { CoverStageLayout } from '@/services/api/types/template.types'
+import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
 import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
@@ -137,6 +137,8 @@ interface Props {
   coverRightDecoration?: string | null
   /** Showcase animation type from template_assets.showcase_animation_type */
   animationType?: ShowcaseAnimationType
+  /** Ambient creature effect config from template_assets. Only renders when provided. */
+  ambientCreatures?: AmbientCreaturesConfig | null
   /** When true, basic mode will only animate decorations out without transitioning to main content */
   useTransitionStage?: boolean
 }

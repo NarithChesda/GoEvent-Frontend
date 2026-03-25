@@ -12,10 +12,10 @@
       :is-decoration-animation="isDecorationAnimation"
     />
 
-    <!-- Ambient creature effect (butterflies hovering near decorations) — basic mode only -->
+    <!-- Ambient creature effect (butterflies hovering near decorations) — only when template has config -->
     <AmbientEffect
-      v-if="showAmbientEffect"
-      type="mixed"
+      v-if="ambientCreatures"
+      :config="ambientCreatures"
       :primary-color="primaryColor"
       :accent-color="accentColor"
       :hidden="isContentHidden"
@@ -143,7 +143,7 @@ import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/
 import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
-import type { CoverStageLayout } from '@/services/api/types/template.types'
+import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
 import { CoverDecorations, CoverContentRows, DoorPanel, SwipeUpArrow } from './cover'
 import AmbientEffect from './AmbientEffect.vue'
 
@@ -191,8 +191,8 @@ interface Props {
   coverLeftDecoration?: string | null
   coverRightDecoration?: string | null
   animationType?: ShowcaseAnimationType
-  /** Show ambient creature animation (basic mode only) */
-  showAmbientEffect?: boolean
+  /** Ambient creature effect config from template. Only renders when provided. */
+  ambientCreatures?: AmbientCreaturesConfig | null
 }
 
 const props = defineProps<Props>()

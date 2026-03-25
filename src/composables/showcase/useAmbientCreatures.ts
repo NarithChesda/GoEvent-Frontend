@@ -1,18 +1,12 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
-
-export type AmbientCreatureType =
-  | 'butterfly'
-  | 'dove'
-  | 'firefly'
-  | 'dragonfly'
-  | 'mixed'
-  | 'none'
+import type { AmbientCreatureEntry, AmbientCreatureEffectType } from '@/services/api/types/template.types'
 
 export interface AmbientCreaturesOptions {
-  type?: AmbientCreatureType
+  /** Backend-driven creature entries with weights and optional size overrides */
+  creatures: AmbientCreatureEntry[]
   /** Creature fill color */
   color?: () => string
-  /** Number of creatures to spawn (default: 5) */
+  /** Number of creatures to spawn (default: 6) */
   count?: number
   /** Flight speed preset (default: 'normal') */
   speed?: 'slow' | 'normal' | 'fast'
@@ -24,9 +18,9 @@ const SPEED_PRESETS = {
   fast: { baseSpeed: 0.8, wobbleFreq: 0.003 },
 } as const
 
-/** Per-creature-type size ranges and speed multipliers */
-const CREATURE_CONFIG: Record<
-  Exclude<AmbientCreatureType, 'mixed' | 'none'>,
+/** Per-creature-type default size ranges and speed multipliers */
+const CREATURE_DEFAULTS: Record<
+  AmbientCreatureEffectType,
   { minSize: number; maxSize: number; speedMul: number }
 > = {
   butterfly: { minSize: 20, maxSize: 70, speedMul: 1.0 },
@@ -34,16 +28,6 @@ const CREATURE_CONFIG: Record<
   firefly: { minSize: 8, maxSize: 16, speedMul: 0.6 },
   dragonfly: { minSize: 22, maxSize: 38, speedMul: 1.2 },
 }
-
-/** Weighted pool for mixed mode — controls creature distribution */
-const MIXED_POOL: Exclude<AmbientCreatureType, 'mixed' | 'none'>[] = [
-  'butterfly',
-  'butterfly',
-  'dove',
-  'firefly',
-  'firefly',
-  'dragonfly',
-]
 
 interface CreatureState {
   element: HTMLDivElement
@@ -345,9 +329,7 @@ function createDragonflySVG(color: string, size: number): HTMLDivElement {
 
 // ── Creator registry ────────────────────────────────────────────────
 
-type SingleType = Exclude<AmbientCreatureType, 'mixed' | 'none'>
-
-const CREATORS: Record<SingleType, (color: string, size: number) => HTMLDivElement> = {
+const CREATORS: Record<AmbientCreatureEffectType, (color: string, size: number) => HTMLDivElement> = {
   butterfly: createButterflySVG,
   dove: createDoveSVG,
   firefly: createFireflySVG,
@@ -365,21 +347,30 @@ const CREATORS: Record<SingleType, (color: string, size: number) => HTMLDivEleme
  * flight paths use requestAnimationFrame.
  *
  * All creatures are pure SVG — no image assets required.
- * Use `type: 'mixed'` for a random assortment of all creature types.
+ * Configuration is driven by the backend `ambient_creatures` template field.
  */
 export function useAmbientCreatures(
   containerRef: Ref<HTMLElement | undefined>,
-  options: AmbientCreaturesOptions = {},
+  options: AmbientCreaturesOptions,
 ) {
   const {
-    type = 'butterfly',
+    creatures: creatureEntries,
     color = () => '#e91e63',
-    count = 5,
+    count = 6,
     speed = 'normal',
   } = options
 
-  if (type === 'none') {
+  if (!creatureEntries || creatureEntries.length === 0) {
     return { isActive: ref(false), start: () => {}, stop: () => {}, cleanup: () => {} }
+  }
+
+  // Build weighted spawn pool from creature entries
+  const weightedPool: AmbientCreatureEntry[] = []
+  for (const entry of creatureEntries) {
+    const w = entry.weight ?? 1
+    for (let i = 0; i < w; i++) {
+      weightedPool.push(entry)
+    }
   }
 
   const isActive = ref(false)
@@ -461,12 +452,9 @@ export function useAmbientCreatures(
     }
   }
 
-  /** Resolve which creature type to spawn for this instance */
-  function resolveType(): SingleType {
-    if (type === 'mixed') {
-      return MIXED_POOL[Math.floor(Math.random() * MIXED_POOL.length)]
-    }
-    return type
+  /** Pick a random creature entry from the weighted pool */
+  function pickCreatureEntry(): AmbientCreatureEntry {
+    return weightedPool[Math.floor(Math.random() * weightedPool.length)]
   }
 
   function spawnCreature() {
@@ -475,10 +463,12 @@ export function useAmbientCreatures(
 
     const cw = container.offsetWidth
     const ch = container.offsetHeight
-    const creatureType = resolveType()
-    const cfg = CREATURE_CONFIG[creatureType]
+    const entry = pickCreatureEntry()
+    const defaults = CREATURE_DEFAULTS[entry.type]
 
-    const size = cfg.minSize + Math.random() * (cfg.maxSize - cfg.minSize)
+    const minSize = entry.min_size ?? defaults.minSize
+    const maxSize = entry.max_size ?? defaults.maxSize
+    const size = minSize + Math.random() * (maxSize - minSize)
 
     // Assign a home decoration zone and start near it
     const zones = getDecorationZones(container)
@@ -494,18 +484,12 @@ export function useAmbientCreatures(
     }
     const target = pickTarget(cw, ch, homeZone)
 
-    const element = CREATORS[creatureType](color(), size)
+    const element = CREATORS[entry.type](color(), size)
 
     // Randomize wing flap / glow phase so creatures aren't in sync
     const animated = element.querySelectorAll('[style*="animation"]')
     const phaseOffset = Math.random() * 800
-    animated.forEach((el) => {
-      const current = (el as HTMLElement).style.animation
-      // Prepend a negative delay to offset the phase
-      ;(el as HTMLElement).style.animation = current.replace(
-        /infinite/,
-        `infinite`,
-      )
+    animated.forEach((el: Element) => {
       ;(el as HTMLElement).style.animationDelay = `-${phaseOffset}ms`
     })
 
@@ -523,7 +507,7 @@ export function useAmbientCreatures(
       y: startY,
       targetX: target.x,
       targetY: target.y,
-      speed: preset.baseSpeed * cfg.speedMul * (0.6 + Math.random() * 0.8),
+      speed: preset.baseSpeed * defaults.speedMul * (0.6 + Math.random() * 0.8),
       wobbleOffset: Math.random() * Math.PI * 2,
       wobbleAmp: 0.4 + Math.random() * 0.4,
       angle: Math.random() * 360,
