@@ -12,6 +12,15 @@
       :is-decoration-animation="isDecorationAnimation"
     />
 
+    <!-- Ambient creature effect (butterflies hovering near decorations) — basic mode only -->
+    <AmbientEffect
+      v-if="showAmbientEffect"
+      type="mixed"
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :hidden="isContentHidden"
+    />
+
     <!-- DOOR ANIMATION: 3D perspective container for door panels -->
     <div v-if="isDoorAnimation" class="door-perspective-container">
       <!-- Left Door Panel -->
@@ -136,6 +145,7 @@ import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
 import type { CoverStageLayout } from '@/services/api/types/template.types'
 import { CoverDecorations, CoverContentRows, DoorPanel, SwipeUpArrow } from './cover'
+import AmbientEffect from './AmbientEffect.vue'
 
 // Local interface for template assets (component-specific subset)
 interface CoverTemplateAssets {
@@ -181,6 +191,8 @@ interface Props {
   coverLeftDecoration?: string | null
   coverRightDecoration?: string | null
   animationType?: ShowcaseAnimationType
+  /** Show ambient creature animation (basic mode only) */
+  showAmbientEffect?: boolean
 }
 
 const props = defineProps<Props>()

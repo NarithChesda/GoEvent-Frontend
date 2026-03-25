@@ -1,48 +1,6 @@
 <template>
   <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
-    <!-- Upper content: Logo + Save the Date text -->
-    <div class="transition-upper-content" :class="{ 'show': isContentVisible }">
-      <!-- Event Logo -->
-      <div class="logo-container">
-        <img
-          v-if="eventLogo"
-          :src="getMediaUrl(eventLogo)"
-          :alt="eventTitle"
-          class="event-logo"
-        />
-        <div
-          v-else
-          class="fallback-logo"
-          :style="fallbackLogoStyle"
-          v-html="processedFallbackLogo"
-        />
-      </div>
-
-      <!-- Save the Date Text -->
-      <div class="save-the-date-container">
-        <p
-          class="save-the-date-label"
-          :style="{
-            fontFamily: secondaryFont || currentFont,
-            color: accentColor || '#c9a96e',
-          }"
-        >
-          Save the Date
-        </p>
-        <p
-          v-if="formattedDate"
-          class="event-date"
-          :style="{
-            fontFamily: primaryFont || currentFont,
-            color: secondaryColor || primaryColor || '#fff',
-          }"
-        >
-          {{ formattedDate }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Couple Photo: anchored to the bottom -->
+    <!-- Couple Photo: fills the viewport -->
     <div
       v-if="couplePhotoUrl"
       class="couple-photo-container"
@@ -54,17 +12,55 @@
         class="couple-photo"
       />
     </div>
+
+    <!-- Cloud blur footer overlay -->
+    <div class="cloud-footer" :class="{ 'show': isContentVisible }">
+      <!-- Blur layer: blurs the couple photo behind it -->
+      <div class="cloud-blur-layer" />
+      <!-- Gradient mist overlay for the cloudy feel -->
+      <div
+        class="cloud-mist-layer"
+        :style="cloudMistStyle"
+      />
+
+      <!-- Save the Date text on top of the cloud -->
+      <div class="save-the-date-container">
+        <!-- Decorative flourish above -->
+        <div class="flourish" :style="{ color: accentColor || '#c9a96e' }">
+          &#8212;&thinsp;&#10045;&thinsp;&#8212;
+        </div>
+        <p
+          class="save-the-date-label"
+          :style="{
+            color: accentColor || '#c9a96e',
+          }"
+        >
+          Save the Date
+        </p>
+        <p
+          v-if="formattedDate"
+          class="event-date"
+          :style="{
+            fontFamily: primaryFont || currentFont,
+            color: secondaryColor || primaryColor || '#333',
+          }"
+        >
+          {{ formattedDate }}
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
+import type { EventPhoto } from '@/types/showcase'
 
 interface Props {
   eventTitle: string
   eventLogo?: string | null
   couplePhoto?: string | null
+  eventPhotos?: EventPhoto[]
   eventStartDate?: string | null
   primaryColor: string
   secondaryColor?: string | null
@@ -91,22 +87,23 @@ let couplePhotoTimer: ReturnType<typeof setTimeout> | null = null
 let fadeOutTimer: ReturnType<typeof setTimeout> | null = null
 let completeTimer: ReturnType<typeof setTimeout> | null = null
 
-// Fallback logo SVG processing
-const processedFallbackLogo = computed(() => {
-  return fallbackLogoSvg.replace(/<path /g, '<path fill="currentColor" ')
-})
-
-const fallbackLogoStyle = computed(() => ({
-  color: props.accentColor || props.primaryColor || '#c9a96e',
-  filter: `drop-shadow(0 4px 20px ${props.accentColor || props.primaryColor || '#c9a96e'}40)`,
-}))
-
 const couplePhotoUrl = computed(() => {
+  // Priority: first featured photo → banner_image → test fallback
+  const featuredPhoto = props.eventPhotos?.find((p) => p.is_featured)
+  if (featuredPhoto) {
+    return props.getMediaUrl(featuredPhoto.image)
+  }
   if (props.couplePhoto) {
     return props.getMediaUrl(props.couplePhoto)
   }
   // TODO: Remove test fallback once banner_image is set on events
   return '/images/test-couple-photo.png'
+})
+
+const cloudMistStyle = computed(() => {
+  return {
+    background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.3) 25%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.92) 70%, #fff 85%)',
+  }
 })
 
 const formattedDate = computed(() => {
@@ -125,22 +122,22 @@ const formattedDate = computed(() => {
 })
 
 // Animation timeline:
-// 0ms       - TransitionStage mounts (transparent overlay, cover decorations animating out)
-// 1300ms    - Upper content (logo + text) starts fading in
-// 1600ms    - Couple photo starts sliding up from bottom
+// 0ms       - TransitionStage mounts (cover decorations animating out)
+// 1000ms    - Couple photo starts scaling in from bottom
+// 1500ms    - Cloud footer + save the date text fades in
 // ~2800ms   - All content fully visible
 // 5000ms    - Everything starts fading out
 // 6200ms    - Fully faded out → emit transitionComplete
 onMounted(() => {
-  // Wait for cover decorations to finish (0.8s animation + 0.4s max delay = 1.2s)
-  fadeInTimer = setTimeout(() => {
-    isContentVisible.value = true
-  }, 1300)
-
-  // Couple photo slides up slightly after text appears
+  // Couple photo appears first
   couplePhotoTimer = setTimeout(() => {
     isCouplePhotoVisible.value = true
-  }, 1600)
+  }, 1000)
+
+  // Cloud footer with text fades in over the photo
+  fadeInTimer = setTimeout(() => {
+    isContentVisible.value = true
+  }, 1500)
 
   // After holding, start fading out all content
   fadeOutTimer = setTimeout(() => {
@@ -169,121 +166,123 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   overflow: hidden;
   pointer-events: none;
 }
 
-/* Upper content: logo + save the date */
-.transition-upper-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.25rem;
-  padding-top: 25vh;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
-  z-index: 2;
-  position: relative;
-}
-
-.transition-upper-content.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Fade out upper content */
-.stage-fade-out .transition-upper-content {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.logo-container {
-  width: 35vw;
-  max-width: 150px;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.event-logo {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-/* Fallback logo styling */
-.fallback-logo {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fallback-logo :deep(svg) {
-  width: 100%;
-  height: 100%;
-}
-
-.save-the-date-container {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.save-the-date-label {
-  font-size: 1.35rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  margin: 0;
-  font-weight: 300;
-}
-
-.event-date {
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  margin: 0;
-  font-weight: 400;
-  opacity: 0.85;
-}
-
-/* Couple photo: anchored to bottom, scale-up reveal */
+/* Couple photo: fills entire stage, centered with cover */
 .couple-photo-container {
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%) scale(0.85);
-  width: 85%;
-  max-width: 400px;
+  inset: 0;
   opacity: 0;
+  transform: scale(1.05);
   transition: opacity 1.5s ease-out, transform 1.5s ease-out;
   z-index: 1;
 }
 
 .couple-photo-container.show {
   opacity: 1;
-  transform: translateX(-50%) scale(1);
+  transform: scale(1);
 }
 
-/* Fade out couple photo */
 .stage-fade-out .couple-photo-container {
   opacity: 0;
-  transform: translateX(-50%) scale(1.03);
+  transform: scale(1.03);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
 }
 
 .couple-photo {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  object-fit: contain;
-  /* Mask to fade the top edge into the background */
-  mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Cloud blur footer: overlays the bottom of the couple photo */
+.cloud-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38vh;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8vh;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.4s ease-out, transform 1.4s ease-out;
+}
+
+.cloud-footer.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stage-fade-out .cloud-footer {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+
+/* Backdrop blur layer: creates the frosted glass effect over the photo */
+.cloud-blur-layer {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  /* Gradient mask: transparent at top → opaque at bottom, so blur fades in smoothly */
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.9) 65%, black 80%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.9) 65%, black 80%);
+}
+
+/* Mist overlay: adds colored fog/cloud feeling */
+.cloud-mist-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Save the date text */
+.save-the-date-container {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Decorative flourish */
+.flourish {
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  opacity: 0.7;
+  margin-bottom: 0.1rem;
+}
+
+/* Elegant script for "Save the Date" */
+.save-the-date-label {
+  font-family: 'Great Vibes', cursive;
+  font-size: 2.4rem;
+  line-height: 1.2;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Clean, readable date */
+.event-date {
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: 500;
+  opacity: 0.75;
+  margin-top: 0.15rem;
 }
 </style>

@@ -58,6 +58,7 @@
       :cover-left-decoration="coverLeftDecoration"
       :cover-right-decoration="coverRightDecoration"
       :animation-type="animationType"
+      :show-ambient-effect="displayMode === 'basic'"
       @open-envelope="handleOpenEnvelope"
     />
 

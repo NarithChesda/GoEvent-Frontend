@@ -114,6 +114,7 @@
         :event-title="event.title"
         :event-logo="event.logo_one"
         :couple-photo="event.banner_image"
+        :event-photos="eventPhotos"
         :event-start-date="event.start_date"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
