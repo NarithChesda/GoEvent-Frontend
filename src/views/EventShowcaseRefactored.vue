@@ -124,6 +124,7 @@
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
         :get-media-url="getMediaUrl"
+        :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
         @transition-complete="handleTransitionComplete"
       />
 

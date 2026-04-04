@@ -212,11 +212,20 @@ const skipDecorationSlideUp = computed(() => {
 
 // Computed visibility flags
 const shouldShowCoverContent = computed(() => {
+  // Hide cover once the main content stage is active
+  if (props.currentShowcaseStage === 'main_content') return false
   return (videoState.currentVideoPhase.value === 'none' || isDoorAnimationInProgress.value)
     && !props.shouldSkipToMainContent
 })
 
 const shouldShowMainContent = computed(() => {
+  // Always show main content when stage has already transitioned
+  if (props.currentShowcaseStage === 'main_content') return true
+  // When transition stage is responsible for revealing main content, don't render
+  // main content during the door animation — TransitionStage sits at z-35 above
+  // CoverStage (z-10) but starts transparent, so rendering main content here would
+  // show through it as the door opens.
+  if (props.useTransitionStage && isDoorAnimationInProgress.value) return false
   return videoState.currentVideoPhase.value === 'background'
     || props.shouldSkipToMainContent
     || isDoorAnimationInProgress.value

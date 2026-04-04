@@ -4,7 +4,7 @@
     <div
       v-if="featureImageUrl"
       class="couple-photo-container"
-      :class="{ 'show': isCouplePhotoVisible }"
+      :class="[{ 'show': isCouplePhotoVisible }, { 'door-mode': animationType === 'door' }]"
     >
       <img
         :src="featureImageUrl"
@@ -69,6 +69,8 @@ interface Props {
   primaryFont?: string
   secondaryFont?: string
   getMediaUrl: (url: string) => string
+  /** Controls animation timing. Door mode starts photo immediately so it's visible as the door opens. */
+  animationType?: 'decoration' | 'door'
 }
 
 const props = defineProps<Props>()
@@ -115,33 +117,44 @@ const formattedDate = computed(() => {
   }
 })
 
-// Animation timeline:
-// 0ms       - TransitionStage mounts (cover decorations animating out)
-// 1000ms    - Couple photo starts scaling in from bottom
-// 1500ms    - Cloud footer + save the date text fades in
-// ~2800ms   - All content fully visible
-// 5000ms    - Everything starts fading out
-// 6200ms    - Fully faded out → emit transitionComplete
+// Animation timelines:
+//
+// Decoration mode (default):
+//   0ms    - TransitionStage mounts (cover decorations animating out)
+//   1000ms - Couple photo starts fading/scaling in
+//   1500ms - Cloud footer + save the date text fades in
+//   5000ms - Everything starts fading out
+//   6200ms - Fully faded out → emit transitionComplete
+//
+// Door mode:
+//   0ms    - TransitionStage mounts simultaneously as door starts opening (1.2s)
+//   0ms    - Couple photo starts fading in immediately (visible as door swings open)
+//   900ms  - Cloud footer fades in (door is ~75% open at this point)
+//   4500ms - Everything starts fading out
+//   5700ms - Fully faded out → emit transitionComplete
 onMounted(() => {
-  // Couple photo appears first
+  const isDoor = props.animationType === 'door'
+
+  // Photo appears first — immediately for door so it's revealed as the door opens,
+  // delayed for decoration so it appears after decorations have slid out
   couplePhotoTimer = setTimeout(() => {
     isCouplePhotoVisible.value = true
-  }, 1000)
+  }, isDoor ? 0 : 1000)
 
-  // Cloud footer with text fades in over the photo
+  // Cloud footer with text
   fadeInTimer = setTimeout(() => {
     isContentVisible.value = true
-  }, 1500)
+  }, isDoor ? 900 : 1500)
 
-  // After holding, start fading out all content
+  // Start fading out
   fadeOutTimer = setTimeout(() => {
     isStageFadingOut.value = true
-  }, 5000)
+  }, isDoor ? 4500 : 5000)
 
   // Emit completion after fade-out finishes
   completeTimer = setTimeout(() => {
     emit('transitionComplete')
-  }, 6200)
+  }, isDoor ? 5700 : 6200)
 })
 
 onUnmounted(() => {
@@ -180,6 +193,12 @@ onUnmounted(() => {
   transform: scale(1);
 }
 
+/* Door mode: photo fades in over the door animation duration (1.2s),
+   so it's fully visible by the time the door completes */
+.couple-photo-container.door-mode {
+  transition: opacity 1.2s ease-in-out, transform 1.2s ease-out;
+}
+
 .stage-fade-out .couple-photo-container {
   opacity: 0;
   transform: scale(1.03);
@@ -208,8 +227,11 @@ onUnmounted(() => {
   justify-content: flex-end;
   padding-bottom: 8vh;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 1.4s ease-out, transform 1.4s ease-out;
+  /* Small translateY avoids the snap-to-place visible with larger distances */
+  transform: translateY(6px);
+  /* ease-in-out decelerates gently into final position; avoids the hard stop of ease-out */
+  transition: opacity 1.6s ease-in-out, transform 1.6s ease-in-out;
+  will-change: opacity, transform;
 }
 
 .cloud-footer.show {
@@ -219,8 +241,9 @@ onUnmounted(() => {
 
 .stage-fade-out .cloud-footer {
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+  /* Match the incoming translateY so fade-out is the mirror of fade-in */
+  transform: translateY(6px);
+  transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
 }
 
 /* Backdrop blur layer: creates the frosted glass effect over the photo */
@@ -232,6 +255,9 @@ onUnmounted(() => {
   /* Gradient mask: transparent at top → opaque at bottom, so blur fades in smoothly */
   mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.9) 65%, black 80%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.9) 65%, black 80%);
+  /* Promote to its own layer so GPU handles blur independently from opacity animation */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Mist overlay: adds colored fog/cloud feeling */
