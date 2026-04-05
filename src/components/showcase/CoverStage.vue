@@ -212,6 +212,10 @@ const skipDecorationSlideUp = computed(() => {
 
 // Computed visibility flags
 const shouldShowCoverContent = computed(() => {
+  // During door animation, keep cover content (including door panels) visible
+  // so the CSS 3D rotation transition can complete, regardless of showcase stage.
+  // The doors are at z-28 and will visually hide main content at z-20 behind them.
+  if (isDoorAnimation.value && isDoorAnimationInProgress.value) return true
   // Hide cover once the main content stage is active
   if (props.currentShowcaseStage === 'main_content') return false
   return (videoState.currentVideoPhase.value === 'none' || isDoorAnimationInProgress.value)

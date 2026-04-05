@@ -300,10 +300,22 @@ const openEnvelopeWithVideoSync = async () => {
     return
   }
 
-  // For basic wedding events without a featured photo, skip transition and go straight to main content
+  // For basic wedding events without a featured photo, still use transition stage
+  // so the door/decoration animation plays, then auto-complete after animation finishes
   if (isBasicWedding.value) {
-    await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
-    handleTransitionComplete()
+    await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
+      useTransitionStage: true,
+    })
+    // No TransitionStage component renders (no featured photo).
+    // Door animation: trigger main content at 700ms so it renders behind the
+    // still-opening doors (z-20 behind door panels at z-28). The doors' CSS
+    // transition is 1.2s; isDoorAnimationInProgress keeps them visible until done.
+    // Decoration animation: wait for decorations to finish sliding out (~1.2s).
+    const animationType = event.value.template_assets?.cover_stage_layout?.showcaseAnimationType
+    const delay = animationType === 'door' ? 700 : 1400
+    setTimeout(() => {
+      handleTransitionComplete()
+    }, delay)
     return
   }
 
