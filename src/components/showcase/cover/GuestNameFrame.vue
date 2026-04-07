@@ -17,24 +17,31 @@
       <h2
         ref="guestNameElementRef"
         class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
-        :style="[textStyle, scaleStyle]"
+        :class="{ 'is-marquee': isOverflowing }"
+        :style="[textStyle, scaleStyle, widthCapStyle]"
       >
-        <template v-if="isEnglishGuestName">
-          <span
-            v-for="(char, index) in guestNameChars"
-            :key="index"
-            class="bounce-char"
-            :style="{ animationDelay: `${1 + index * 0.05}s` }"
-          >{{ char === ' ' ? '\u00A0' : char }}</span>
+        <template v-if="!isOverflowing">
+          <template v-if="isEnglishGuestName">
+            <span
+              v-for="(char, index) in guestNameChars"
+              :key="index"
+              class="bounce-char"
+              :style="{ animationDelay: `${1 + index * 0.05}s` }"
+            >{{ char === ' ' ? '\u00A0' : char }}</span>
+          </template>
+          <template v-else>
+            <span
+              v-for="(word, index) in guestNameWords"
+              :key="index"
+              class="bounce-word"
+              :style="{ animationDelay: `${1 + index * 0.15}s` }"
+            >{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span>
+          </template>
         </template>
-        <template v-else>
-          <span
-            v-for="(word, index) in guestNameWords"
-            :key="index"
-            class="bounce-word"
-            :style="{ animationDelay: `${1 + index * 0.15}s` }"
-          >{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span>
-        </template>
+        <span v-else class="marquee-track">
+          <span class="marquee-item">{{ formattedGuestName }}</span>
+          <span class="marquee-item" aria-hidden="true">{{ formattedGuestName }}</span>
+        </span>
       </h2>
     </div>
   </div>
@@ -66,11 +73,17 @@ interface Props {
   guestTitleFrameRight?: string | null
   /** External scale value (optional, for controlled scaling) */
   scale?: number
+  /** Whether the guest name overflows the max width and should marquee */
+  isOverflowing?: boolean
+  /** Pixel cap on the guest name width (60% of background) */
+  maxWidthPx?: number | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   scale: 1,
+  isOverflowing: false,
+  maxWidthPx: null,
 })
 
 const { protectionAttrs } = useAssetProtection()
@@ -117,6 +130,20 @@ const scaleStyle = computed(() => ({
   transformOrigin: 'center center',
 }))
 
+// Pixel max-width / width cap from parent (overrides CSS percentage constraint)
+const widthCapStyle = computed(() => {
+  if (props.maxWidthPx == null) return {}
+  if (props.isOverflowing) {
+    return {
+      maxWidth: `${props.maxWidthPx}px`,
+      width: `${props.maxWidthPx}px`,
+    }
+  }
+  return {
+    maxWidth: `${props.maxWidthPx}px`,
+  }
+})
+
 // Frame style
 const frameStyle = computed(() => ({
   '--primary-color': props.primaryColor,
@@ -157,7 +184,7 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   gap: 0;
-  max-width: 95%;
+  max-width: 70%;
 }
 
 /* Premium Name Frame */
@@ -262,6 +289,44 @@ defineExpose({
   animation: bounceInChar 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+/* Marquee mode: shown when guest name overflows the 60% cap */
+.scaled-guest-name.is-marquee {
+  display: block !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+  text-align: left;
+}
+
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marquee-loop-ltr 14s linear infinite;
+  will-change: transform;
+}
+
+.marquee-item {
+  display: inline-block;
+  flex-shrink: 0;
+  padding-right: 3rem;
+}
+
+@keyframes marquee-loop-ltr {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 @keyframes bounceInChar {
   0% {
     opacity: 0;
@@ -319,7 +384,7 @@ defineExpose({
 
   .guest-name-container {
     gap: 0;
-    max-width: 90%;
+    max-width: 70%;
   }
 
   .guest-name-container.english-name .premium-name-frame {

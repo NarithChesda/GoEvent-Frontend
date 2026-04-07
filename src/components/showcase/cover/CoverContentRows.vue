@@ -73,7 +73,7 @@
       <div class="guest-content-container flex items-center justify-center px-4 w-full">
         <GuestNameFrame
           ref="guestNameFrameRef"
-          :guest-name="guestName"
+          :guest-name="guestName || ''"
           :primary-color="primaryColor"
           :guestname-color="guestnameColor"
           :primary-font="primaryFont"
@@ -83,7 +83,8 @@
           :guest-title-frame-left="guestTitleFrameLeft"
           :guest-title-frame-mid="guestTitleFrameMid"
           :guest-title-frame-right="guestTitleFrameRight"
-          :scale="guestNameScale"
+          :is-overflowing="isGuestNameOverflowing"
+          :max-width-px="guestNameMaxWidthPx"
         />
       </div>
     </div>
@@ -140,10 +141,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { protectionAttrs } = useAssetProtection()
 
-// Refs for guest name scaling
+// Refs for guest name overflow detection
 const guestContainerRef = ref<HTMLElement | null>(null)
 const guestNameFrameRef = ref<InstanceType<typeof GuestNameFrame> | null>(null)
-const guestNameScale = ref(1)
+const isGuestNameOverflowing = ref(false)
+const guestNameMaxWidthPx = ref<number | null>(null)
 
 // Text content helpers
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -200,26 +202,33 @@ const fallbackLogoStyle = computed(() => ({
   filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
 }))
 
-// Guest name scale calculation
-const calculateGuestNameScale = () => {
+// Detect if guest name overflows the 60% max width and compute the pixel cap
+const checkGuestNameOverflow = () => {
   if (!guestContainerRef.value || !guestNameFrameRef.value?.guestNameElementRef) return
 
-  guestNameScale.value = 1
+  const fullName = props.guestName || ''
+  const containerWidth = guestContainerRef.value.offsetWidth
+  const maxWidth = containerWidth * 0.6
+  guestNameMaxWidthPx.value = maxWidth
 
-  nextTick(() => {
-    if (!guestContainerRef.value || !guestNameFrameRef.value?.guestNameElementRef) return
+  if (!fullName) {
+    isGuestNameOverflowing.value = false
+    return
+  }
 
-    const containerWidth = guestContainerRef.value.offsetWidth
-    const maxWidth = containerWidth * 0.6
-    const textWidth = guestNameFrameRef.value.guestNameElementRef.scrollWidth
+  // Measure text width via canvas using the h2 element's computed font
+  const el = guestNameFrameRef.value.guestNameElementRef
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    isGuestNameOverflowing.value = false
+    return
+  }
 
-    if (textWidth > maxWidth && textWidth > 0) {
-      const scale = maxWidth / textWidth
-      guestNameScale.value = Math.max(0.4, Math.min(1, scale))
-    } else {
-      guestNameScale.value = 1
-    }
-  })
+  const styles = window.getComputedStyle(el)
+  ctx.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`
+
+  isGuestNameOverflowing.value = ctx.measureText(fullName).width > maxWidth
 }
 
 // ResizeObserver for responsive scaling
@@ -227,12 +236,12 @@ let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   nextTick(() => {
-    calculateGuestNameScale()
+    checkGuestNameOverflow()
   })
 
   if (guestContainerRef.value) {
     resizeObserver = new ResizeObserver(() => {
-      calculateGuestNameScale()
+      checkGuestNameOverflow()
     })
     resizeObserver.observe(guestContainerRef.value)
   }
@@ -248,7 +257,7 @@ onUnmounted(() => {
 // Watch for guest name changes
 watch(() => props.guestName, () => {
   nextTick(() => {
-    calculateGuestNameScale()
+    checkGuestNameOverflow()
   })
 })
 </script>
