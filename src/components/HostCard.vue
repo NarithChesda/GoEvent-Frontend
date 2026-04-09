@@ -67,23 +67,23 @@
       <!-- Host Information -->
       <div class="flex-1 min-w-0 w-full space-y-1.5 sm:space-y-2">
         <div class="min-w-0">
-          <h4 class="text-base sm:text-lg font-semibold text-slate-900 truncate">{{ host.name }}</h4>
-          <p v-if="host.title" class="text-xs sm:text-sm font-medium text-sky-700 truncate">
-            {{ host.title }}
+          <h4 class="text-base sm:text-lg font-semibold text-slate-900 truncate">{{ localizedHost.name }}</h4>
+          <p v-if="localizedHost.title" class="text-xs sm:text-sm font-medium text-sky-700 truncate">
+            {{ localizedHost.title }}
           </p>
         </div>
 
         <!-- Parents Names (if provided) -->
-        <div v-if="host.parent_a_name || host.parent_b_name" class="text-[11px] sm:text-xs text-slate-500">
-          <span v-if="host.parent_a_name">{{ host.parent_a_name }}</span>
-          <span v-if="host.parent_a_name && host.parent_b_name"> & </span>
-          <span v-if="host.parent_b_name">{{ host.parent_b_name }}</span>
+        <div v-if="localizedHost.parent_a_name || localizedHost.parent_b_name" class="text-[11px] sm:text-xs text-slate-500">
+          <span v-if="localizedHost.parent_a_name">{{ localizedHost.parent_a_name }}</span>
+          <span v-if="localizedHost.parent_a_name && localizedHost.parent_b_name"> & </span>
+          <span v-if="localizedHost.parent_b_name">{{ localizedHost.parent_b_name }}</span>
         </div>
 
         <!-- Bio -->
-        <div v-if="host.bio" class="space-y-1">
+        <div v-if="localizedHost.bio" class="space-y-1">
           <p :class="['text-xs sm:text-sm text-slate-600 leading-relaxed', expanded ? '' : 'line-clamp-4']">
-            {{ host.bio }}
+            {{ localizedHost.bio }}
           </p>
           <button
             v-if="showReadMore"
@@ -92,7 +92,7 @@
             :aria-expanded="expanded ? 'true' : 'false'"
             type="button"
           >
-            {{ expanded ? 'Show less' : 'Read more' }}
+            {{ expanded ? t('management.hosts.showLess') : t('management.hosts.readMore') }}
           </button>
         </div>
       </div>
@@ -150,7 +150,7 @@
       >
         <Languages class="w-4 h-4 text-slate-400 mr-1" />
         <span class="text-xs text-slate-500">
-          {{ host.translations.length }} language{{ host.translations.length !== 1 ? 's' : '' }}
+          {{ host.translations.length }} {{ host.translations.length !== 1 ? t('management.hosts.languages.many') : t('management.hosts.languages.one') }}
         </span>
       </div>
     </div>
@@ -175,6 +175,9 @@ import {
   Twitter,
 } from 'lucide-vue-next'
 import { apiService, type EventHost } from '../services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { locale, t } = useAppLanguage()
 
 interface Props {
   host: EventHost
@@ -195,6 +198,20 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+// Pick the translation for the active locale; fall back to root English fields
+const localizedHost = computed(() => {
+  const translation = props.host.translations?.find((tr) => tr.language === locale.value)
+  const pick = (translated: string | undefined, fallback: string | undefined) =>
+    translated?.trim() ? translated : (fallback ?? '')
+  return {
+    name: pick(translation?.name, props.host.name),
+    title: pick(translation?.title, props.host.title ?? ''),
+    bio: pick(translation?.bio, props.host.bio ?? ''),
+    parent_a_name: pick(translation?.parent_a_name, props.host.parent_a_name ?? ''),
+    parent_b_name: pick(translation?.parent_b_name, props.host.parent_b_name ?? ''),
+  }
+})
+
 // Drag state
 const isDragging = ref(false)
 const isDraggedOver = ref(false)
@@ -212,7 +229,7 @@ const hasSocialLinks = computed(() => {
 })
 
 const initials = computed(() => {
-  const name = (props.host.name || '').trim()
+  const name = (localizedHost.value.name || '').trim()
   if (!name) return ' '
   const parts = name.split(/\s+/)
   const first = parts[0]?.[0] || ''
@@ -221,7 +238,7 @@ const initials = computed(() => {
 })
 
 const showReadMore = computed(() => {
-  return props.host.bio && props.host.bio.length > 200
+  return localizedHost.value.bio && localizedHost.value.bio.length > 200
 })
 
 // Utility method to get full URL for media

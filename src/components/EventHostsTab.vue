@@ -5,20 +5,20 @@
       <div class="flex items-start sm:items-center justify-between gap-3">
         <div>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-            Hosts & Speakers
+            {{ t('management.hosts.title') }}
           </h2>
           <p class="text-xs sm:text-sm text-slate-600 mt-1">
-            {{ canEdit ? 'Add and manage your event lineup. Drag to reorder when using Display Order.' : 'Meet the people behind this event.' }}
+            {{ canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView') }}
           </p>
         </div>
         <button
           v-if="canEdit"
           @click="showCreateModal = true"
           class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
-          aria-label="Add host"
+          :aria-label="t('management.hosts.addBtn')"
         >
           <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-          <span class="hidden sm:inline">Add Host</span>
+          <span class="hidden sm:inline">{{ t('management.hosts.addBtn') }}</span>
 
         </button>
       </div>
@@ -30,9 +30,9 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search hosts..."
+              :placeholder="t('management.hosts.searchPlaceholder')"
               class="w-full rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm px-10 py-2 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-              aria-label="Search hosts"
+              :aria-label="t('management.hosts.searchPlaceholder')"
             />
             <svg class="absolute left-3 top-2.5 h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
           </div>
@@ -41,32 +41,32 @@
             <select
               v-model="sortBy"
               class="appearance-none rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm pl-3 pr-9 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-200"
-              aria-label="Sort hosts"
+              :aria-label="t('management.hosts.sortLabel')"
             >
-              <option value="order">Display Order</option>
-              <option value="name_asc">Name A-Z</option>
-              <option value="name_desc">Name Z-A</option>
+              <option value="order">{{ t('management.hosts.sortOrder') }}</option>
+              <option value="name_asc">{{ t('management.hosts.sortNameAsc') }}</option>
+              <option value="name_desc">{{ t('management.hosts.sortNameDesc') }}</option>
             </select>
             <svg class="pointer-events-none absolute right-2 top-2.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
           </div>
         </div>
 
         <div class="flex items-center justify-between sm:justify-end gap-2">
-          <span class="text-xs sm:text-sm text-slate-500">{{ filteredCount }} {{ filteredCount === 1 ? 'Host' : 'Hosts' }}</span>
+          <span class="text-xs sm:text-sm text-slate-500">{{ filteredCount }} {{ filteredCount === 1 ? t('management.hosts.count.one') : t('management.hosts.count.many') }}</span>
           <div class="hidden sm:block h-4 w-px bg-slate-200"></div>
           <div class="inline-flex rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm p-1">
             <button
               class="px-3 py-1.5 rounded-lg text-sm transition-colors"
               :class="viewMode === 'grid' ? 'bg-sky-50 text-sky-700' : 'text-slate-600 hover:bg-slate-50'"
               @click="userChangedViewMode = true; viewMode = 'grid'"
-              aria-label="Grid view"
-            >Grid</button>
+              :aria-label="t('management.hosts.viewGrid')"
+            >{{ t('management.hosts.viewGrid') }}</button>
             <button
               class="px-3 py-1.5 rounded-lg text-sm transition-colors"
               :class="viewMode === 'list' ? 'bg-sky-50 text-sky-700' : 'text-slate-600 hover:bg-slate-50'"
               @click="userChangedViewMode = true; viewMode = 'list'"
-              aria-label="List view"
-            >List</button>
+              :aria-label="t('management.hosts.viewList')"
+            >{{ t('management.hosts.viewList') }}</button>
           </div>
         </div>
       </div>
@@ -91,13 +91,13 @@
       <div class="space-y-4">
         <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
           <Users class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1.5 sm:mr-2" />
-          {{ canEdit ? 'All Hosts' : 'Hosts' }} ({{ visibleHostsCount }})
+          {{ canEdit ? t('management.hosts.allHosts') : t('management.hosts.hostsLabel') }} ({{ visibleHostsCount }})
         </h3>
 
         <!-- Admin tip when reordering disabled by sort/list -->
         <div v-if="canEdit && (sortBy !== 'order' || viewMode !== 'grid')" class="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-3 sm:p-4 flex items-start gap-2">
           <Info class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5" />
-          <p class="text-xs sm:text-sm">Drag-to-reorder is available only in Grid view with Sort set to Display Order.</p>
+          <p class="text-xs sm:text-sm">{{ t('management.hosts.reorderTip') }}</p>
         </div>
 
         <div
@@ -132,12 +132,12 @@
               <Users v-else class="w-6 h-6 text-slate-400" />
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-900 truncate">{{ host.name }}</p>
-              <p v-if="host.title" class="text-xs text-sky-700 truncate">{{ host.title }}</p>
+              <p class="text-sm font-semibold text-slate-900 truncate">{{ getLocalizedHost(host).name }}</p>
+              <p v-if="getLocalizedHost(host).title" class="text-xs text-sky-700 truncate">{{ getLocalizedHost(host).title }}</p>
             </div>
             <div class="flex items-center gap-1" v-if="canEdit">
-              <button @click="editHost(host)" class="px-2 py-1 text-slate-500 hover:text-sky-700 rounded-lg hover:bg-slate-50 text-xs">Edit</button>
-              <button @click="confirmDeleteHost(host)" class="px-2 py-1 text-red-600 hover:bg-red-50 rounded-lg text-xs">Delete</button>
+              <button @click="editHost(host)" class="px-2 py-1 text-slate-500 hover:text-sky-700 rounded-lg hover:bg-slate-50 text-xs">{{ t('management.hosts.listEdit') }}</button>
+              <button @click="confirmDeleteHost(host)" class="px-2 py-1 text-red-600 hover:bg-red-50 rounded-lg text-xs">{{ t('management.hosts.listDelete') }}</button>
             </div>
           </div>
         </div>
@@ -150,9 +150,9 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
       <Users class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ canEdit ? 'No Hosts Added Yet' : 'No Hosts Available' }}</h3>
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ canEdit ? t('management.hosts.empty.titleEdit') : t('management.hosts.empty.titleView') }}</h3>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
-        {{ canEdit ? 'Add hosts and speakers to showcase your event team.' : 'Hosts will appear here once added by the organizers.' }}
+        {{ canEdit ? t('management.hosts.empty.descriptionEdit') : t('management.hosts.empty.descriptionView') }}
       </p>
       <button
         v-if="canEdit"
@@ -160,7 +160,7 @@
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
         <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Add Your First Host
+        {{ t('management.hosts.empty.addBtn') }}
       </button>
     </div>
 
@@ -184,9 +184,9 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="isDeleting"
-      title="Remove Host"
+      :title="t('management.hosts.deleteModal.title')"
       :item-name="hostToDelete?.name || ''"
-      message="This will remove this person from your event hosts."
+      :message="t('management.hosts.deleteModal.message')"
       @confirm="deleteHost"
       @cancel="closeDeleteModal"
     />
@@ -214,6 +214,19 @@ import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
 import EditHostDrawer from './EditHostDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { locale, t } = useAppLanguage()
+
+const getLocalizedHost = (host: EventHost) => {
+  const translation = host.translations?.find((tr) => tr.language === locale.value)
+  const pick = (translated: string | undefined, fallback: string | undefined) =>
+    translated?.trim() ? translated : (fallback ?? '')
+  return {
+    name: pick(translation?.name, host.name),
+    title: pick(translation?.title, host.title ?? ''),
+  }
+}
 
 interface Props {
   eventId: string
@@ -290,11 +303,11 @@ const loadHosts = async () => {
     if (response.success && response.data) {
       hosts.value = response.data.results || []
     } else {
-      showMessage('error', response.message || 'Failed to load hosts')
+      showMessage('error', response.message || t('management.hosts.toast.loadError'))
     }
   } catch (error) {
     console.error('Error loading hosts:', error)
-    showMessage('error', 'An error occurred while loading hosts')
+    showMessage('error', t('management.hosts.toast.loadErrorGeneric'))
   } finally {
     loading.value = false
   }
@@ -330,15 +343,15 @@ const deleteHost = async () => {
   try {
     const response = await hostsService.deleteHost(props.eventId, hostToDelete.value.id)
     if (response.success) {
-      showMessage('success', 'Host removed successfully')
+      showMessage('success', t('management.hosts.toast.deleteSuccess'))
       hosts.value = hosts.value.filter((host) => host.id !== hostToDelete.value!.id)
       closeDeleteModal()
     } else {
-      showMessage('error', response.message || 'Failed to remove host')
+      showMessage('error', response.message || t('management.hosts.toast.deleteFailed'))
     }
   } catch (error) {
     console.error('Error deleting host:', error)
-    showMessage('error', 'An error occurred while removing the host')
+    showMessage('error', t('management.hosts.toast.deleteErrorGeneric'))
   } finally {
     isDeleting.value = false
   }
@@ -420,9 +433,9 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
     if (!response.success) {
       // Rollback on failure
       await loadHosts()
-      showMessage('error', response.message || 'Failed to reorder hosts')
+      showMessage('error', response.message || t('management.hosts.toast.reorderFailed'))
     } else {
-      showMessage('success', 'Hosts reordered successfully')
+      showMessage('success', t('management.hosts.toast.reorderSuccess'))
       // Force a refresh from server to ensure UI is in sync
       setTimeout(async () => {
         await loadHosts()
@@ -431,7 +444,7 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
   } catch (err) {
     // Rollback on failure
     await loadHosts()
-    showMessage('error', 'Failed to reorder hosts')
+    showMessage('error', t('management.hosts.toast.reorderFailed'))
   } finally {
     draggedHost.value = null
   }

@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col items-center space-y-4 py-4">
-    <h4 class="font-semibold text-slate-900 self-start">Profile Picture</h4>
+    <h4 class="font-semibold text-slate-900 self-start">{{ t('management.hostsDrawer.profilePicture.label') }}</h4>
 
     <!-- Circular Avatar Preview -->
     <div class="relative">
@@ -39,7 +39,7 @@
           class="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
         >
           <Upload class="w-4 h-4" />
-          <span>{{ profilePictureUploading ? 'Uploading...' : 'Upload Photo' }}</span>
+          <span>{{ profilePictureUploading ? t('management.hostsDrawer.profilePicture.uploading') : t('management.hostsDrawer.profilePicture.upload') }}</span>
         </button>
         <button
           v-if="profilePicturePreview || (profileImage && profileImage !== '')"
@@ -48,7 +48,7 @@
           class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
         >
           <Crop class="w-4 h-4" />
-          <span>Crop</span>
+          <span>{{ t('management.hostsDrawer.profilePicture.crop') }}</span>
         </button>
         <button
           v-if="profilePicturePreview || (profileImage && profileImage !== '')"
@@ -56,10 +56,10 @@
           @click="$emit('remove-image')"
           class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
         >
-          Remove
+          {{ t('management.hostsDrawer.profilePicture.remove') }}
         </button>
       </div>
-      <p class="text-xs text-slate-500 text-center">JPG, PNG, or WebP. Max 3MB.</p>
+      <p class="text-xs text-slate-500 text-center">{{ t('management.hostsDrawer.profilePicture.hint') }}</p>
     </div>
   </div>
 </template>
@@ -67,6 +67,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { User, Upload, Crop } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Props {
   profilePicturePreview: string | null

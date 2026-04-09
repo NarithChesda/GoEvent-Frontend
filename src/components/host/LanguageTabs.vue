@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <h4 class="font-semibold text-slate-900 flex items-center">
         <Languages class="w-4 h-4 mr-2" />
-        Language
+        {{ t('management.languageTabs.header') }}
       </h4>
       <button
         type="button"
@@ -11,7 +11,7 @@
         class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center space-x-1"
       >
         <Plus class="w-4 h-4" />
-        <span>Add Language</span>
+        <span>{{ t('management.languageTabs.addLanguageBtn') }}</span>
       </button>
     </div>
 
@@ -36,8 +36,8 @@
         ]"
       >
         <span class="flex items-center gap-2">
-          <span>English</span>
-          <span class="text-xs text-slate-500">(Default)</span>
+          <span>{{ t('management.languageTabs.englishLabel') }}</span>
+          <span class="text-xs text-slate-500">({{ t('management.languageTabs.defaultBadge') }})</span>
         </span>
       </button>
 
@@ -66,7 +66,7 @@
           <button
             type="button"
             @click.stop="$emit('remove-translation', index)"
-            :aria-label="'Remove translation'"
+            :aria-label="t('management.languageTabs.removeAriaLabel')"
             class="opacity-0 group-hover:opacity-100 transition-opacity"
             :class="activeTab === translation.language ? 'opacity-100' : ''"
           >
@@ -76,7 +76,7 @@
             v-if="translation.id"
             class="text-xs text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full font-medium"
           >
-            Saved
+            {{ t('management.languageTabs.savedBadge') }}
           </span>
         </span>
       </button>
@@ -88,7 +88,7 @@
       class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
     >
       <div class="flex items-center justify-between mb-3">
-        <h5 class="font-medium text-slate-900">Add Language</h5>
+        <h5 class="font-medium text-slate-900">{{ t('management.languageTabs.modal.title') }}</h5>
         <button
           type="button"
           @click="$emit('update:show-add-translation', false)"
@@ -101,7 +101,7 @@
       <div class="space-y-3">
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            Select Language
+            {{ t('management.languageTabs.modal.selectLabel') }}
           </label>
           <div class="relative">
             <select
@@ -109,7 +109,7 @@
               @input="$emit('update:new-translation', { ...newTranslation, language: ($event.target as HTMLSelectElement).value })"
               class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent appearance-none bg-white"
             >
-              <option value="">Choose a language...</option>
+              <option value="">{{ t('management.languageTabs.modal.selectPlaceholder') }}</option>
               <option
                 v-for="lang in availableLanguagesForAdd"
                 :key="lang.code"
@@ -129,14 +129,14 @@
             :disabled="!newTranslation.language"
             class="px-4 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            Add Language
+            {{ t('management.languageTabs.modal.addBtn') }}
           </button>
           <button
             type="button"
             @click="$emit('update:show-add-translation', false)"
             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
           >
-            Cancel
+            {{ t('management.languageTabs.modal.cancelBtn') }}
           </button>
         </div>
       </div>
@@ -146,6 +146,9 @@
 
 <script setup lang="ts">
 import { Languages, Plus, X, ChevronDown } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Translation {
   id?: number

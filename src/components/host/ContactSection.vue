@@ -8,7 +8,7 @@
       aria-controls="contact-section"
     >
       <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-slate-700">Contact & Social Media</span>
+        <span class="text-sm font-medium text-slate-700">{{ t('management.hostsDrawer.contact.label') }}</span>
         <span class="hidden sm:inline text-xs text-slate-500">{{ contactSummary }}</span>
       </div>
       <svg
@@ -25,7 +25,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <!-- Email -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5"> Email </label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.hostsDrawer.contact.email') }}</label>
             <input
               :value="email"
               @input="$emit('update:email', ($event.target as HTMLInputElement).value)"
@@ -50,7 +50,7 @@
           <!-- LinkedIn -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">
-              LinkedIn URL
+              {{ t('management.hostsDrawer.contact.linkedin') }}
             </label>
             <input
               :value="linkedinUrl"
@@ -64,7 +64,7 @@
           <!-- Twitter -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">
-              Twitter URL
+              {{ t('management.hostsDrawer.contact.twitter') }}
             </label>
             <input
               :value="twitterUrl"
@@ -78,7 +78,7 @@
           <!-- Website -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">
-              Website URL
+              {{ t('management.hostsDrawer.contact.website') }}
             </label>
             <input
               :value="websiteUrl"
@@ -96,6 +96,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Props {
   email: string
@@ -121,7 +124,7 @@ defineEmits<Emits>()
 const contactSummary = computed(() => {
   const items = [props.email, props.linkedinUrl, props.twitterUrl, props.websiteUrl]
   const count = items.filter((v) => v && String(v).trim() !== '').length
-  return count > 0 ? `${count} ${count === 1 ? 'link' : 'links'}` : 'No links'
+  return count > 0 ? `${count} ${count === 1 ? t('management.hostsDrawer.contact.link') : t('management.hostsDrawer.contact.links')}` : t('management.hostsDrawer.contact.noLinks')
 })
 </script>
 

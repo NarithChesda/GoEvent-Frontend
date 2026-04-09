@@ -395,6 +395,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, defineAsyncComponent, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSidebar } from '../composables/useSidebar'
+import { useAppLanguage } from '../composables/useAppLanguage'
 import {
   Lock,
   Pencil,
@@ -441,6 +442,7 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const { isCollapsed } = useSidebar()
+const { t } = useAppLanguage()
 
 // Inject home sidebar state from MainLayout (with default value to prevent warnings)
 const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))
@@ -509,19 +511,19 @@ const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> |
 const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
 
 // Navigation tabs configuration - optimized for user flow
-const navigationTabs = ref<TabConfig[]>([
-  { id: 'overview', label: 'Overview', icon: 'file-text' },
-  { id: 'agenda', label: 'Agenda', icon: 'calendar' },
-  { id: 'hosts', label: 'Hosts & Speakers', icon: 'users', mobileLabel: 'Hosts' },
-  { id: 'media', label: 'Showcase', icon: 'image' },
-  { id: 'template-payment', label: 'Template & Payment', icon: 'credit-card', mobileLabel: 'Template' },
-  { id: 'guest-management', label: 'Guest Management', icon: 'users', mobileLabel: 'Guests' },
-  { id: 'expenses', label: 'Expense Tracking', icon: 'wallet', mobileLabel: 'Expenses' },
-  { id: 'donation', label: 'Donations', icon: 'heart', mobileLabel: 'Donations' },
-  { id: 'registration', label: 'Registration', icon: 'user-plus' },
-  { id: 'analytics', label: 'Analytics', icon: 'bar-chart', mobileLabel: 'Analytics' },
-  { id: 'collaborator', label: 'Collaborators', icon: 'users', mobileLabel: 'Team' },
-  { id: 'review', label: 'Event Review', icon: 'star', mobileLabel: 'Review' },
+const navigationTabs = computed<TabConfig[]>(() => [
+  { id: 'overview', label: t('management.tabs.overview'), icon: 'file-text' },
+  { id: 'agenda', label: t('management.tabs.agenda'), icon: 'calendar' },
+  { id: 'hosts', label: t('management.tabs.hostsLabel'), icon: 'users', mobileLabel: t('management.tabs.hosts') },
+  { id: 'media', label: t('management.tabs.showcase'), icon: 'image' },
+  { id: 'template-payment', label: t('management.tabs.templatePayment'), icon: 'credit-card', mobileLabel: t('management.tabs.templateMobile') },
+  { id: 'guest-management', label: t('management.tabs.guestManagement'), icon: 'users', mobileLabel: t('management.tabs.guests') },
+  { id: 'expenses', label: t('management.tabs.expenseTracking'), icon: 'wallet', mobileLabel: t('management.tabs.expensesMobile') },
+  { id: 'donation', label: t('management.tabs.donations'), icon: 'heart', mobileLabel: t('management.tabs.donations') },
+  { id: 'registration', label: t('management.tabs.registration'), icon: 'user-plus' },
+  { id: 'analytics', label: t('management.tabs.analytics'), icon: 'bar-chart', mobileLabel: t('management.tabs.analytics') },
+  { id: 'collaborator', label: t('management.tabs.collaborators'), icon: 'users', mobileLabel: t('management.tabs.teamMobile') },
+  { id: 'review', label: t('management.tabs.eventReview'), icon: 'star', mobileLabel: t('management.tabs.reviewMobile') },
 ])
 
 // Computed properties

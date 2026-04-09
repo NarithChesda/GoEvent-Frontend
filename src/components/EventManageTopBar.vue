@@ -11,8 +11,8 @@
         <button
           @click="goBackToEvents"
           class="flex-shrink-0 flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 rounded-xl hover:bg-slate-50/80 transition-all duration-200"
-          aria-label="Back to Events"
-          title="Back to Events"
+          :aria-label="t('management.topBar.backToEvents')"
+          :title="t('management.topBar.backToEvents')"
         >
           <ArrowLeft class="w-5 h-5 lg:w-5 lg:h-5 text-slate-600" />
         </button>
@@ -45,7 +45,7 @@
           <div class="flex items-center gap-2.5">
             <!-- Event Title -->
             <h1 class="text-base lg:text-lg font-semibold text-slate-900 truncate">
-              {{ eventTitle || 'Event Details' }}
+              {{ eventTitle || t('management.topBar.eventDetailsFallback') }}
             </h1>
             <!-- Event Status Badge (hidden on mobile) -->
             <span
@@ -60,7 +60,7 @@
           </div>
           <!-- Organizer name (hidden on mobile) -->
           <p v-if="organizerName" class="hidden md:block text-xs text-slate-500 truncate mt-0.5">
-            by {{ organizerName }}
+            {{ t('management.topBar.organizedBy', { name: organizerName }) }}
           </p>
         </div>
       </div>
@@ -71,7 +71,7 @@
         <button
           @click="toggleLanguage"
           class="topbar-outline-btn flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
-          :title="locale === 'en' ? 'Switch to Khmer' : 'Switch to English'"
+          :title="locale === 'en' ? t('management.topBar.switchToKhmer') : t('management.topBar.switchToEnglish')"
         >
           <span class="text-base leading-none">{{ locale === 'en' ? '🇺🇸' : '🇰🇭' }}</span>
         </button>
@@ -81,10 +81,10 @@
           v-if="canEdit && eventId && canPreviewShowcase"
           @click="previewShowcase"
           class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
-          title="Preview showcase"
+          :title="t('management.topBar.previewTitle')"
         >
           <Eye class="w-4 h-4" />
-          <span class="hidden md:inline">Preview</span>
+          <span class="hidden md:inline">{{ t('management.topBar.previewBtn') }}</span>
         </button>
 
         <!-- Publish Button (for public draft events) -->
@@ -92,10 +92,10 @@
           v-if="canEdit && eventId && eventPrivacy === 'public' && actualEventStatus === 'draft'"
           @click="publishEvent"
           class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
-          title="Publish event"
+          :title="t('management.topBar.publishTitle')"
         >
           <Globe class="w-4 h-4" />
-          <span class="hidden md:inline">Publish</span>
+          <span class="hidden md:inline">{{ t('management.topBar.publishBtn') }}</span>
         </button>
 
         <!-- Edit Event Button -->
@@ -105,7 +105,7 @@
           class="flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] rounded-lg transition-all duration-200 shadow-sm"
         >
           <Pencil class="w-4 h-4" />
-          <span class="hidden sm:inline">Edit</span>
+          <span class="hidden sm:inline">{{ t('management.topBar.editBtn') }}</span>
         </button>
       </div>
     </div>
@@ -135,7 +135,7 @@ interface Props {
   eventCategory?: string | null
 }
 
-const { locale, setLocale } = useAppLanguage()
+const { locale, t, setLocale } = useAppLanguage()
 
 const toggleLanguage = () => {
   setLocale(locale.value === 'en' ? 'kh' : 'en')
@@ -227,10 +227,10 @@ const statusClasses = computed(() => {
   }
 })
 
-// Status label with proper capitalization
+// Status label with translation
 const statusLabel = computed(() => {
   if (!props.eventStatus) return ''
-  return props.eventStatus.charAt(0).toUpperCase() + props.eventStatus.slice(1)
+  return t(`management.topBar.status.${props.eventStatus}`)
 })
 
 // Categories that support showcase preview

@@ -4,20 +4,20 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-          Title/Position
+          {{ t('management.hostsDrawer.fields.title') }}
         </label>
         <input
           :value="title"
           @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `Enter title in ${languageName}` : 'e.g., Chief Technology Officer'"
+          :placeholder="languageName ? t('management.hostsDrawer.fields.titlePlaceholderLang', { lang: languageName }) : t('management.hostsDrawer.fields.titlePlaceholder')"
         />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-          Name <span class="text-red-500">*</span>
+          {{ t('management.hostsDrawer.fields.name') }} <span class="text-red-500">*</span>
         </label>
         <input
           :value="name"
@@ -33,7 +33,7 @@
               : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400',
             'bg-white/90'
           ]"
-          :placeholder="languageName ? `Enter name in ${languageName}` : 'Enter host name'"
+          :placeholder="languageName ? t('management.hostsDrawer.fields.namePlaceholderLang', { lang: languageName }) : t('management.hostsDrawer.fields.namePlaceholder')"
         />
         <div v-if="fieldErrors?.name" id="name-error" role="alert" class="mt-1">
           <p v-for="error in fieldErrors.name" :key="error" class="text-xs text-red-600">
@@ -47,27 +47,27 @@
     <div v-if="showParentFields" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-          Parent A Name
+          {{ t('management.hostsDrawer.fields.parentAName') }}
         </label>
         <input
           :value="parentAName"
           @input="$emit('update:parent-a-name', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `First parent's name in ${languageName}` : `First parent's name`"
+          :placeholder="languageName ? t('management.hostsDrawer.fields.parentANamePlaceholderLang', { lang: languageName }) : t('management.hostsDrawer.fields.parentANamePlaceholder')"
         />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-          Parent B Name
+          {{ t('management.hostsDrawer.fields.parentBName') }}
         </label>
         <input
           :value="parentBName"
           @input="$emit('update:parent-b-name', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `Second parent's name in ${languageName}` : `Second parent's name`"
+          :placeholder="languageName ? t('management.hostsDrawer.fields.parentBNamePlaceholderLang', { lang: languageName }) : t('management.hostsDrawer.fields.parentBNamePlaceholder')"
         />
       </div>
     </div>
@@ -82,7 +82,7 @@
         :aria-controls="languageName ? `bio-section-${languageName}` : 'bio-section'"
       >
         <div class="flex items-center gap-2">
-          <span class="text-sm font-medium text-slate-700">Biography</span>
+          <span class="text-sm font-medium text-slate-700">{{ t('management.hostsDrawer.fields.biography') }}</span>
           <span class="hidden sm:inline text-xs text-slate-500">{{ bioSummary }}</span>
         </div>
         <svg
@@ -101,7 +101,7 @@
             @input="$emit('update:bio', ($event.target as HTMLTextAreaElement).value)"
             rows="4"
             class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-            :placeholder="languageName ? `Enter biography in ${languageName}` : 'Brief biography or description'"
+            :placeholder="languageName ? t('management.hostsDrawer.fields.biographyPlaceholderLang', { lang: languageName }) : t('management.hostsDrawer.fields.biographyPlaceholder')"
           ></textarea>
         </div>
       </Transition>
@@ -111,6 +111,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Props {
   title: string
@@ -138,7 +141,7 @@ defineEmits<Emits>()
 
 const bioSummary = computed(() => {
   const text = (props.bio || '').trim()
-  if (!text) return 'No bio'
+  if (!text) return t('management.hostsDrawer.fields.noBio')
   return text.length > 60 ? text.slice(0, 60) + '…' : text
 })
 </script>

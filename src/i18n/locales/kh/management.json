@@ -177,14 +177,161 @@
       "reorderNetworkError": "កំហុសបណ្ដាញក្នុងការរៀបលំដាប់ធាតុកម្មវិធី"
     }
   },
+  "hosts": {
+    "title": "ម្ចាស់ផ្ទះ និងវាគ្មិន",
+    "subtitleEdit": "បន្ថែម និងគ្រប់គ្រងតារាងព្រឹត្តិការណ៍។ អូសដើម្បីរៀបលំដាប់នៅពេលប្រើ លំដាប់បង្ហាញ។",
+    "subtitleView": "ជួបប្រទះអ្នកដែលនៅពីក្រោយព្រឹត្តិការណ៍នេះ។",
+    "addBtn": "បន្ថែមម្ចាស់ផ្ទះ",
+    "searchPlaceholder": "ស្វែងរកម្ចាស់ផ្ទះ...",
+    "sortLabel": "តម្រៀបម្ចាស់ផ្ទះ",
+    "sortOrder": "លំដាប់បង្ហាញ",
+    "sortNameAsc": "ឈ្មោះ ក-ឃ",
+    "sortNameDesc": "ឈ្មោះ ឃ-ក",
+    "count": {
+      "one": "ម្ចាស់ផ្ទះ",
+      "many": "ម្ចាស់ផ្ទះ"
+    },
+    "viewGrid": "ក្រឡាចត្រង្គ",
+    "viewList": "បញ្ជី",
+    "allHosts": "ម្ចាស់ផ្ទះទាំងអស់",
+    "hostsLabel": "ម្ចាស់ផ្ទះ",
+    "reorderTip": "អូសដើម្បីរៀបលំដាប់ មានតែក្នុងទិដ្ឋភាពក្រឡាចត្រង្គ និងតម្រៀបតាម លំដាប់បង្ហាញ ប៉ុណ្ណោះ។",
+    "listEdit": "កែប្រែ",
+    "listDelete": "លុប",
+    "empty": {
+      "titleEdit": "មិនទាន់មានម្ចាស់ផ្ទះ",
+      "titleView": "មិនមានម្ចាស់ផ្ទះ",
+      "descriptionEdit": "បន្ថែមម្ចាស់ផ្ទះ និងវាគ្មិន ដើម្បីបង្ហាញក្រុមព្រឹត្តិការណ៍របស់អ្នក។",
+      "descriptionView": "ម្ចាស់ផ្ទះនឹងបង្ហាញនៅទីនេះ នៅពេលបន្ថែមដោយអ្នករៀបចំ។",
+      "addBtn": "បន្ថែមម្ចាស់ផ្ទះដំបូងរបស់អ្នក"
+    },
+    "readMore": "អានបន្ថែម",
+    "showLess": "បង្ហាញតិច",
+    "languages": {
+      "one": "ភាសា",
+      "many": "ភាសា"
+    },
+    "toast": {
+      "loadError": "បានបរាជ័យក្នុងការផ្ទុកម្ចាស់ផ្ទះ",
+      "loadErrorGeneric": "មានកំហុសក្នុងការផ្ទុកម្ចាស់ផ្ទះ",
+      "deleteSuccess": "បានដកម្ចាស់ផ្ទះចេញដោយជោគជ័យ",
+      "deleteFailed": "បានបរាជ័យក្នុងការដកម្ចាស់ផ្ទះ",
+      "deleteErrorGeneric": "មានកំហុសក្នុងការដកម្ចាស់ផ្ទះ",
+      "reorderSuccess": "បានរៀបលំដាប់ម្ចាស់ផ្ទះដោយជោគជ័យ",
+      "reorderFailed": "បានបរាជ័យក្នុងការរៀបលំដាប់ម្ចាស់ផ្ទះ"
+    },
+    "deleteModal": {
+      "title": "ដកម្ចាស់ផ្ទះ",
+      "message": "វានឹងដកបុគ្គលនេះចេញពីម្ចាស់ផ្ទះព្រឹត្តិការណ៍របស់អ្នក។"
+    }
+  },
+  "topBar": {
+    "backToEvents": "ត្រលប់ទៅព្រឹត្តិការណ៍",
+    "organizedBy": "ដោយ {name}",
+    "eventDetailsFallback": "ព័ត៌មានព្រឹត្តិការណ៍",
+    "switchToKhmer": "ប្តូរទៅភាសាខ្មែរ",
+    "switchToEnglish": "ប្តូរទៅភាសាអង់គ្លេស",
+    "previewBtn": "មើលជាមុន",
+    "previewTitle": "មើលជាមុននូវវ៉ែបសាយ",
+    "publishBtn": "ផ្សព្វផ្សាយ",
+    "publishTitle": "ផ្សព្វផ្សាយព្រឹត្តិការណ៍",
+    "editBtn": "កែប្រែ",
+    "status": {
+      "upcoming": "ខាងមុខ",
+      "ongoing": "កំពុងដំណើរការ",
+      "past": "កន្លងហើយ",
+      "draft": "ព្រាង"
+    }
+  },
+  "languageTabs": {
+    "header": "ភាសា",
+    "addLanguageBtn": "បន្ថែមភាសា",
+    "englishLabel": "អង់គ្លេស",
+    "defaultBadge": "លំនាំដើម",
+    "savedBadge": "បានរក្សាទុក",
+    "removeAriaLabel": "លុបការបកប្រែ",
+    "modal": {
+      "title": "បន្ថែមភាសា",
+      "selectLabel": "ជ្រើសរើសភាសា",
+      "selectPlaceholder": "ជ្រើសរើសភាសា...",
+      "addBtn": "បន្ថែមភាសា",
+      "cancelBtn": "បោះបង់"
+    }
+  },
+  "hostsDrawer": {
+    "titleEdit": "កែប្រែម្ចាស់ផ្ទះ",
+    "titleAdd": "បន្ថែមម្ចាស់ផ្ទះ",
+    "close": "បិទ",
+    "cancel": "បោះបង់",
+    "updating": "កំពុងធ្វើបច្ចុប្បន្នភាព...",
+    "creating": "កំពុងបង្កើត...",
+    "updateBtn": "ធ្វើបច្ចុប្បន្នភាពម្ចាស់ផ្ទះ",
+    "createBtn": "បង្កើតម្ចាស់ផ្ទះ",
+    "dismiss": "ច្រានចោល",
+    "toast": {
+      "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពម្ចាស់ផ្ទះដោយជោគជ័យ!",
+      "createSuccess": "បានបង្កើតម្ចាស់ផ្ទះដោយជោគជ័យ!",
+      "noChanges": "គ្មានការផ្លាស់ប្ដូរដើម្បីរក្សាទុក",
+      "error": "មានបញ្ហាកើតឡើង"
+    },
+    "profilePicture": {
+      "label": "រូបភាពប្រវត្តិរូប",
+      "upload": "បញ្ចូលរូបភាព",
+      "uploading": "កំពុងបញ្ចូល...",
+      "crop": "កាត់",
+      "remove": "លុប",
+      "hint": "JPG, PNG, ឬ WebP។ អតិបរមា 3MB។"
+    },
+    "fields": {
+      "title": "មុខតំណែង",
+      "titlePlaceholder": "ឧ. នាយកប្រតិបត្តិផ្នែកបច្ចេកវិទ្យា",
+      "titlePlaceholderLang": "បញ្ចូលមុខតំណែងជា {lang}",
+      "name": "ឈ្មោះ",
+      "namePlaceholder": "បញ្ចូលឈ្មោះម្ចាស់ផ្ទះ",
+      "namePlaceholderLang": "បញ្ចូលឈ្មោះជា {lang}",
+      "parentAName": "ឈ្មោះមាតាបិតា ក",
+      "parentANamePlaceholder": "ឈ្មោះឪពុក/ម្ដាយទីមួយ",
+      "parentANamePlaceholderLang": "ឈ្មោះឪពុក/ម្ដាយទីមួយជា {lang}",
+      "parentBName": "ឈ្មោះមាតាបិតា ខ",
+      "parentBNamePlaceholder": "ឈ្មោះឪពុក/ម្ដាយទីពីរ",
+      "parentBNamePlaceholderLang": "ឈ្មោះឪពុក/ម្ដាយទីពីរជា {lang}",
+      "biography": "ប្រវត្តិរូបសង្ខេប",
+      "biographyPlaceholder": "ប្រវត្តិរូបសង្ខេប ឬការពិពណ៌នា",
+      "biographyPlaceholderLang": "បញ្ចូលប្រវត្តិរូបសង្ខេបជា {lang}",
+      "noBio": "គ្មានប្រវត្តិរូបសង្ខេប"
+    },
+    "contact": {
+      "label": "ទំនាក់ទំនង និងបណ្តាញសង្គម",
+      "noLinks": "គ្មានតំណភ្ជាប់",
+      "link": "តំណភ្ជាប់",
+      "links": "តំណភ្ជាប់",
+      "email": "អ៊ីម៉ែល",
+      "linkedin": "LinkedIn URL",
+      "twitter": "Twitter URL",
+      "website": "Website URL"
+    }
+  },
   "tabs": {
     "overview": "ទិដ្ឋភាពទូទៅ",
     "details": "ព័ត៌មានលម្អិត",
     "agenda": "កម្មវិធី",
     "hosts": "ម្ចាស់ផ្ទះ",
+    "hostsLabel": "ម្ចាស់ផ្ទះ & វាគ្មិន",
     "guests": "ភ្ញៀវ",
     "media": "មេឌៀ",
+    "showcase": "តាំងបង្ហាញ",
+    "templatePayment": "គំរូ & ការទូទាត់",
+    "templateMobile": "គំរូ",
+    "guestManagement": "គ្រប់គ្រងភ្ញៀវ",
+    "expenseTracking": "តាមដានចំណាយ",
+    "expensesMobile": "ចំណាយ",
+    "donations": "ការបរិច្ចាគ",
+    "registration": "ការចុះឈ្មោះ",
     "registrations": "ការចុះឈ្មោះ",
+    "analytics": "វិភាគ",
+    "teamMobile": "ក្រុម",
+    "eventReview": "ការពិនិត្យព្រឹត្តិការណ៍",
+    "reviewMobile": "ពិនិត្យ",
     "payment": "ការទូទាត់",
     "expenses": "ការចំណាយ",
     "collaborators": "អ្នកសហការ",

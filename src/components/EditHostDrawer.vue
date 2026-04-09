@@ -24,13 +24,13 @@
               <button
                 @click="closeDrawer"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.hostsDrawer.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
                 <h2 class="text-base font-semibold text-white">
-                  {{ isEditMode ? 'Edit Host' : 'Add Host' }}
+                  {{ isEditMode ? t('management.hostsDrawer.titleEdit') : t('management.hostsDrawer.titleAdd') }}
                 </h2>
               </div>
             </div>
@@ -49,7 +49,7 @@
                 @click="generalError = ''"
                 class="text-xs text-red-600 hover:text-red-700 underline mt-1"
               >
-                Dismiss
+                {{ t('management.hostsDrawer.dismiss') }}
               </button>
             </div>
           </div>
@@ -170,7 +170,7 @@
             >
               <Loader v-if="loading" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Host' : 'Create Host') }}</span>
+              <span>{{ loading ? (isEditMode ? t('management.hostsDrawer.updating') : t('management.hostsDrawer.creating')) : (isEditMode ? t('management.hostsDrawer.updateBtn') : t('management.hostsDrawer.createBtn')) }}</span>
             </button>
 
             <button
@@ -178,7 +178,7 @@
               @click="closeDrawer"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('management.hostsDrawer.cancel') }}
             </button>
           </div>
         </div>
@@ -219,6 +219,9 @@ import { ref, computed, onMounted, toRef, watch } from 'vue'
 import { ArrowRight, UserPen, UserPlus, AlertCircle, CheckCircle, Loader, Save } from 'lucide-vue-next'
 import type { EventHost, HostTranslation } from '@/services/api'
 import { apiService } from '@/services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 // Composables
 import { useHostForm } from '@/composables/useHostForm'
@@ -376,20 +379,20 @@ const handleSubmit = async () => {
       // Actual update/create happened
       if (isEditMode.value) {
         emit('updated', result.data)
-        showMessage('success', 'Host updated successfully!')
+        showMessage('success', t('management.hostsDrawer.toast.updateSuccess'))
       } else {
         emit('created', result.data)
-        showMessage('success', 'Host created successfully!')
+        showMessage('success', t('management.hostsDrawer.toast.createSuccess'))
       }
       setTimeout(() => {
         closeDrawer()
       }, 1000)
     } else if (result.message === 'No changes to save') {
       // No changes were made - just inform user, don't close
-      showMessage('success', 'No changes to save')
+      showMessage('success', t('management.hostsDrawer.toast.noChanges'))
     }
   } else {
-    showMessage('error', result.message || 'An error occurred')
+    showMessage('error', result.message || t('management.hostsDrawer.toast.error'))
   }
 }
 

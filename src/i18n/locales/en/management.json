@@ -177,14 +177,161 @@
       "reorderNetworkError": "Network error while reordering agenda items"
     }
   },
+  "hosts": {
+    "title": "Hosts & Speakers",
+    "subtitleEdit": "Add and manage your event lineup. Drag to reorder when using Display Order.",
+    "subtitleView": "Meet the people behind this event.",
+    "addBtn": "Add Host",
+    "searchPlaceholder": "Search hosts...",
+    "sortLabel": "Sort hosts",
+    "sortOrder": "Display Order",
+    "sortNameAsc": "Name A-Z",
+    "sortNameDesc": "Name Z-A",
+    "count": {
+      "one": "Host",
+      "many": "Hosts"
+    },
+    "viewGrid": "Grid",
+    "viewList": "List",
+    "allHosts": "All Hosts",
+    "hostsLabel": "Hosts",
+    "reorderTip": "Drag-to-reorder is available only in Grid view with Sort set to Display Order.",
+    "listEdit": "Edit",
+    "listDelete": "Delete",
+    "empty": {
+      "titleEdit": "No Hosts Added Yet",
+      "titleView": "No Hosts Available",
+      "descriptionEdit": "Add hosts and speakers to showcase your event team.",
+      "descriptionView": "Hosts will appear here once added by the organizers.",
+      "addBtn": "Add Your First Host"
+    },
+    "readMore": "Read more",
+    "showLess": "Show less",
+    "languages": {
+      "one": "language",
+      "many": "languages"
+    },
+    "toast": {
+      "loadError": "Failed to load hosts",
+      "loadErrorGeneric": "An error occurred while loading hosts",
+      "deleteSuccess": "Host removed successfully",
+      "deleteFailed": "Failed to remove host",
+      "deleteErrorGeneric": "An error occurred while removing the host",
+      "reorderSuccess": "Hosts reordered successfully",
+      "reorderFailed": "Failed to reorder hosts"
+    },
+    "deleteModal": {
+      "title": "Remove Host",
+      "message": "This will remove this person from your event hosts."
+    }
+  },
+  "topBar": {
+    "backToEvents": "Back to Events",
+    "organizedBy": "by {name}",
+    "eventDetailsFallback": "Event Details",
+    "switchToKhmer": "Switch to Khmer",
+    "switchToEnglish": "Switch to English",
+    "previewBtn": "Preview",
+    "previewTitle": "Preview showcase",
+    "publishBtn": "Publish",
+    "publishTitle": "Publish event",
+    "editBtn": "Edit",
+    "status": {
+      "upcoming": "Upcoming",
+      "ongoing": "Ongoing",
+      "past": "Past",
+      "draft": "Draft"
+    }
+  },
+  "languageTabs": {
+    "header": "Language",
+    "addLanguageBtn": "Add Language",
+    "englishLabel": "English",
+    "defaultBadge": "Default",
+    "savedBadge": "Saved",
+    "removeAriaLabel": "Remove translation",
+    "modal": {
+      "title": "Add Language",
+      "selectLabel": "Select Language",
+      "selectPlaceholder": "Choose a language...",
+      "addBtn": "Add Language",
+      "cancelBtn": "Cancel"
+    }
+  },
+  "hostsDrawer": {
+    "titleEdit": "Edit Host",
+    "titleAdd": "Add Host",
+    "close": "Close",
+    "cancel": "Cancel",
+    "updating": "Updating...",
+    "creating": "Creating...",
+    "updateBtn": "Update Host",
+    "createBtn": "Create Host",
+    "dismiss": "Dismiss",
+    "toast": {
+      "updateSuccess": "Host updated successfully!",
+      "createSuccess": "Host created successfully!",
+      "noChanges": "No changes to save",
+      "error": "An error occurred"
+    },
+    "profilePicture": {
+      "label": "Profile Picture",
+      "upload": "Upload Photo",
+      "uploading": "Uploading...",
+      "crop": "Crop",
+      "remove": "Remove",
+      "hint": "JPG, PNG, or WebP. Max 3MB."
+    },
+    "fields": {
+      "title": "Title/Position",
+      "titlePlaceholder": "e.g., Chief Technology Officer",
+      "titlePlaceholderLang": "Enter title in {lang}",
+      "name": "Name",
+      "namePlaceholder": "Enter host name",
+      "namePlaceholderLang": "Enter name in {lang}",
+      "parentAName": "Parent A Name",
+      "parentANamePlaceholder": "First parent's name",
+      "parentANamePlaceholderLang": "First parent's name in {lang}",
+      "parentBName": "Parent B Name",
+      "parentBNamePlaceholder": "Second parent's name",
+      "parentBNamePlaceholderLang": "Second parent's name in {lang}",
+      "biography": "Biography",
+      "biographyPlaceholder": "Brief biography or description",
+      "biographyPlaceholderLang": "Enter biography in {lang}",
+      "noBio": "No bio"
+    },
+    "contact": {
+      "label": "Contact & Social Media",
+      "noLinks": "No links",
+      "link": "link",
+      "links": "links",
+      "email": "Email",
+      "linkedin": "LinkedIn URL",
+      "twitter": "Twitter URL",
+      "website": "Website URL"
+    }
+  },
   "tabs": {
     "overview": "Overview",
     "details": "Details",
     "agenda": "Agenda",
     "hosts": "Hosts",
+    "hostsLabel": "Hosts & Speakers",
     "guests": "Guests",
     "media": "Media",
+    "showcase": "Showcase",
+    "templatePayment": "Template & Payment",
+    "templateMobile": "Template",
+    "guestManagement": "Guest Management",
+    "expenseTracking": "Expense Tracking",
+    "expensesMobile": "Expenses",
+    "donations": "Donations",
+    "registration": "Registration",
     "registrations": "Registrations",
+    "analytics": "Analytics",
+    "teamMobile": "Team",
+    "eventReview": "Event Review",
+    "reviewMobile": "Review",
     "payment": "Payment",
     "expenses": "Expenses",
     "collaborators": "Collaborators",
