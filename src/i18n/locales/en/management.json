@@ -352,6 +352,158 @@
     "declined": "Declined",
     "checkedIn": "Checked In"
   },
+  "media": {
+    "title": "Event Showcase",
+    "subtitle": "Manage all visual content and media for your event showcase or invitation",
+    "accessRestricted": {
+      "title": "Access Restricted",
+      "description": "Only the event organizer and collaborators can view and manage event media."
+    },
+    "loading": "Loading media...",
+    "photos": {
+      "title": "Event Photos",
+      "description": "Photos will be displayed on the event showcase page in order. Drag and drop to reorder.",
+      "tryAgain": "Try Again",
+      "empty": {
+        "title": "No photos added",
+        "description": "Upload photos to showcase your event's atmosphere and venue",
+        "hint": "Click to add photos"
+      },
+      "addPhotos": "Add photos",
+      "count": "{count} photos",
+      "untitled": "Untitled Media"
+    },
+    "deleteModal": {
+      "title": "Delete Media"
+    },
+    "mediaUploads": {
+      "card": {
+        "replace": "Replace",
+        "crop": "Crop",
+        "delete": "Delete",
+        "clickToUpload": "Click to upload"
+      },
+      "primaryLogo": {
+        "title": "Primary Logo",
+        "description": "Main event or organization logo. For best results, use a transparent image (PNG, WebP)",
+        "empty": "No logo uploaded",
+        "hover": "Primary Logo",
+        "deleteTitle": "Delete Primary Logo"
+      },
+      "secondaryLogo": {
+        "title": "Secondary Logo",
+        "description": "Displayed when showcase is in other languages (English, etc.). Use transparent image (PNG, WebP)",
+        "empty": "No logo uploaded",
+        "hover": "Secondary Logo",
+        "deleteTitle": "Delete Secondary Logo"
+      },
+      "video": {
+        "title": "Event Video",
+        "description": "Upload a promotional or highlight video (Max 10MB)",
+        "empty": "No video uploaded",
+        "emptySub": "Consider using YouTube embed for large files",
+        "deleteTitle": "Delete Event Video"
+      },
+      "music": {
+        "title": "Event Music",
+        "description": "Background music for your event showcase",
+        "deleteTitle": "Delete Event Music",
+        "library": {
+          "badge": "From Library",
+          "unknown": "Unknown Track",
+          "browse": "Browse Music Library",
+          "browseSub": "Choose from our curated collection",
+          "remove": "Remove Music"
+        },
+        "custom": {
+          "badge": "Custom Upload",
+          "filename": "Custom Music",
+          "delete": "Delete Music",
+          "upload": "Upload Your Own",
+          "uploadSub": "MP3, OGG, M4A, WebM (Max 20MB)",
+          "uploading": "Uploading..."
+        },
+        "empty": "No music added",
+        "emptySub": "Background music not configured"
+      }
+    },
+    "musicModal": {
+      "title": "Select Background Music",
+      "subtitle": "Choose from our music library",
+      "searchPlaceholder": "Search music by name...",
+      "allCategories": "All",
+      "updating": "Updating...",
+      "loading": "Loading music...",
+      "empty": {
+        "title": "No music found",
+        "searchResult": "No results for \"{query}\"",
+        "categoryResult": "No tracks in this category",
+        "generic": "Music library is empty",
+        "clearFilters": "Clear filters"
+      },
+      "loadingMore": "Loading more...",
+      "tracksLoaded": "{count} tracks loaded",
+      "removeCurrent": "Remove Current",
+      "cancel": "Cancel",
+      "selecting": "Selecting...",
+      "select": "Select",
+      "categories": {
+        "wedding": "Wedding",
+        "corporate": "Corporate",
+        "party": "Party",
+        "ambient": "Ambient",
+        "classical": "Classical",
+        "jazz": "Jazz",
+        "pop": "Pop",
+        "traditional": "Traditional"
+      }
+    },
+    "uploadModal": {
+      "title": "Upload Media",
+      "selectImages": "Select Images",
+      "dropActive": "Drop your images here",
+      "dropIdle": "Upload your images",
+      "dropHint": "Drag and drop images here, or click to browse",
+      "formatHint": "Supports: JPG, PNG, WebP — images auto-optimized for upload",
+      "optimizing": "Optimizing images...",
+      "selectedFiles": "Selected Files ({count})",
+      "options": {
+        "title": "Upload Options",
+        "captionLabel": "Default Caption (Optional)",
+        "captionPlaceholder": "Enter a caption for all images",
+        "captionHint": "This caption will be applied to all uploaded images",
+        "featuredLabel": "Mark as featured content"
+      },
+      "error": {
+        "title": "Upload Error",
+        "onlyImages": "Only image files are allowed",
+        "processFailed": "Failed to process images. Please try again.",
+        "uploadFailed": "Upload failed. Please try again."
+      },
+      "progress": {
+        "uploadingOne": "Uploading 1 photo...",
+        "uploadingMany": "Uploading {count} photos..."
+      },
+      "cancel": "Cancel",
+      "uploading": "Uploading...",
+      "submitOne": "Upload 1 File",
+      "submitMany": "Upload {count} Files"
+    },
+    "toast": {
+      "loadError": "Failed to load media",
+      "loadNetworkError": "Network error while loading media",
+      "deleteSuccess": "Photo deleted successfully",
+      "deleteError": "Failed to delete media",
+      "deleteNetworkError": "Network error while deleting media",
+      "featuredUpdated": "Featured status updated",
+      "featuredError": "Failed to update featured status",
+      "featuredNetworkError": "Network error while updating featured status",
+      "uploadSuccessOne": "1 photo uploaded successfully",
+      "uploadSuccessMany": "{count} photos uploaded successfully",
+      "reorderError": "Failed to reorder media",
+      "reorderNetworkError": "Network error while reordering media"
+    }
+  },
   "messages": {
     "updateSuccess": "Event updated successfully",
     "updateError": "Failed to update event",

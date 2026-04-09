@@ -38,7 +38,7 @@
             class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload class="w-4 h-4" />
-            <span>Replace</span>
+            <span>{{ t('management.media.mediaUploads.card.replace') }}</span>
           </button>
           <button
             v-if="enableCropping && contentType === 'image'"
@@ -47,7 +47,7 @@
             class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Crop class="w-4 h-4" />
-            <span>Crop</span>
+            <span>{{ t('management.media.mediaUploads.card.crop') }}</span>
           </button>
           <button
             @click="emit('remove'); emit('close-dropdown')"
@@ -55,7 +55,7 @@
             class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X class="w-4 h-4" />
-            <span>Delete</span>
+            <span>{{ t('management.media.mediaUploads.card.delete') }}</span>
           </button>
         </div>
       </div>
@@ -143,7 +143,7 @@
             >
               {{ emptyStateText }}
             </p>
-            <p v-if="canEdit" class="text-xs text-slate-400 leading-none mt-0.5">Click to upload</p>
+            <p v-if="canEdit" class="text-xs text-slate-400 leading-none mt-0.5">{{ t('management.media.mediaUploads.card.clickToUpload') }}</p>
           </div>
         </div>
       </slot>
@@ -154,6 +154,9 @@
 <script setup lang="ts">
 import { ref, computed, type Component } from 'vue'
 import { Upload, X, MoreHorizontal, Plus, ImageIcon, Play, Music, Crop } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Props {
   title: string

@@ -19,7 +19,7 @@
                   <div class="w-9 h-9 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
                     <ImagePlus class="w-4.5 h-4.5" />
                   </div>
-                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Upload Media</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold text-slate-900">{{ t('management.media.uploadModal.title') }}</h2>
                 </div>
                 <button
                   @click="$emit('close')"
@@ -38,7 +38,7 @@
                 <div class="space-y-3 sm:space-y-4">
                   <h4 class="text-sm font-semibold text-slate-900 flex items-center">
                     <ImageIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    Select Images
+                    {{ t('management.media.uploadModal.selectImages') }}
                   </h4>
 
                 <!-- Drop Zone -->
@@ -72,13 +72,13 @@
 
                     <div>
                       <p class="text-sm sm:text-base md:text-lg font-medium text-slate-900 mb-0.5 sm:mb-1">
-                        {{ isDragging ? 'Drop your images here' : 'Upload your images' }}
+                        {{ isDragging ? t('management.media.uploadModal.dropActive') : t('management.media.uploadModal.dropIdle') }}
                       </p>
                       <p class="text-xs sm:text-sm text-slate-600">
-                        Drag and drop images here, or click to browse
+                        {{ t('management.media.uploadModal.dropHint') }}
                       </p>
                       <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-                        Supports: JPG, PNG, WebP &mdash; images auto-optimized for upload
+                        {{ t('management.media.uploadModal.formatHint') }}
                       </p>
                     </div>
                   </div>
@@ -87,13 +87,13 @@
                 <!-- Compressing Indicator -->
                 <div v-if="compressing" class="flex items-center gap-2 p-3 bg-sky-50 border border-sky-200 rounded-xl">
                   <Loader2 class="w-4 h-4 text-sky-600 animate-spin" />
-                  <p class="text-sm text-sky-700 font-medium">Optimizing images...</p>
+                  <p class="text-sm text-sky-700 font-medium">{{ t('management.media.uploadModal.optimizing') }}</p>
                 </div>
 
                 <!-- Selected Files Preview -->
                 <div v-if="selectedFiles.length > 0" class="space-y-3">
                   <h4 class="text-sm font-medium text-slate-700">
-                    Selected Files ({{ selectedFiles.length }})
+                    {{ t('management.media.uploadModal.selectedFiles', { count: selectedFiles.length }) }}
                   </h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div
@@ -137,7 +137,7 @@
 
                 <!-- Upload Options -->
                 <div class="space-y-3 sm:space-y-4">
-                  <h4 class="text-sm font-semibold text-slate-900">Upload Options</h4>
+                  <h4 class="text-sm font-semibold text-slate-900">{{ t('management.media.uploadModal.options.title') }}</h4>
 
                   <!-- Default Caption -->
                   <div>
@@ -145,17 +145,17 @@
                       for="defaultCaption"
                       class="block text-sm font-medium text-slate-700 mb-2"
                     >
-                      Default Caption (Optional)
+                      {{ t('management.media.uploadModal.options.captionLabel') }}
                     </label>
                     <input
                       id="defaultCaption"
                       v-model="defaultCaption"
                       type="text"
-                      placeholder="Enter a caption for all images"
+                      :placeholder="t('management.media.uploadModal.options.captionPlaceholder')"
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     />
                     <p class="text-xs text-slate-500 mt-1">
-                      This caption will be applied to all uploaded images
+                      {{ t('management.media.uploadModal.options.captionHint') }}
                     </p>
                   </div>
 
@@ -168,7 +168,7 @@
                       class="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-200"
                     />
                     <label for="markAsFeatured" class="text-sm font-medium text-slate-700">
-                      Mark as featured content
+                      {{ t('management.media.uploadModal.options.featuredLabel') }}
                     </label>
                   </div>
                 </div>
@@ -178,7 +178,7 @@
                   <div class="flex items-start space-x-3">
                     <AlertCircle class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                     <div>
-                      <p class="text-sm font-medium text-red-800">Upload Error</p>
+                      <p class="text-sm font-medium text-red-800">{{ t('management.media.uploadModal.error.title') }}</p>
                       <p class="text-sm text-red-600 mt-1">{{ error }}</p>
                     </div>
                   </div>
@@ -188,7 +188,7 @@
                 <div v-if="uploading" class="space-y-3">
                   <div class="flex items-center justify-between">
                     <p class="text-sm font-medium text-slate-700">
-                      Uploading {{ selectedFiles.length }} {{ selectedFiles.length === 1 ? 'photo' : 'photos' }}...
+                      {{ selectedFiles.length === 1 ? t('management.media.uploadModal.progress.uploadingOne') : t('management.media.uploadModal.progress.uploadingMany', { count: selectedFiles.length }) }}
                     </p>
                     <p class="text-sm text-slate-500">{{ Math.round(uploadProgress) }}%</p>
                   </div>
@@ -209,7 +209,7 @@
                   :disabled="uploading"
                   class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                 >
-                  Cancel
+                  {{ t('management.media.uploadModal.cancel') }}
                 </button>
                 <button
                   type="submit"
@@ -222,8 +222,10 @@
                   ></span>
                   {{
                     uploading
-                      ? 'Uploading...'
-                      : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'File' : 'Files'}`
+                      ? t('management.media.uploadModal.uploading')
+                      : selectedFiles.length === 1
+                        ? t('management.media.uploadModal.submitOne')
+                        : t('management.media.uploadModal.submitMany', { count: selectedFiles.length })
                   }}
                 </button>
               </div>
@@ -240,6 +242,7 @@ import { ref } from 'vue'
 import { Upload, X, ImageIcon, AlertCircle, ImagePlus, Loader2 } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
 import { compressImage } from '@/utils/imageCompression'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   eventId: string
@@ -257,6 +260,8 @@ interface FileWithPreview {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
 
 // Refs
 const modalRef = ref<HTMLElement>()
@@ -309,7 +314,7 @@ const addFiles = async (files: File[]) => {
   const imageFiles = files.filter((file) => file.type.startsWith('image/'))
 
   if (imageFiles.length !== files.length) {
-    error.value = 'Only image files are allowed'
+    error.value = t('management.media.uploadModal.error.onlyImages')
     setTimeout(() => (error.value = null), 3000)
   }
 
@@ -324,7 +329,7 @@ const addFiles = async (files: File[]) => {
       selectedFiles.value.push({ file, preview })
     }
   } catch {
-    error.value = 'Failed to process images. Please try again.'
+    error.value = t('management.media.uploadModal.error.processFailed')
     setTimeout(() => (error.value = null), 3000)
   } finally {
     compressing.value = false
@@ -395,11 +400,11 @@ const uploadFiles = async () => {
       // Close modal after successful upload
       emit('close')
     } else {
-      error.value = response.message || 'Upload failed. Please try again.'
+      error.value = response.message || t('management.media.uploadModal.error.uploadFailed')
     }
   } catch (err) {
     console.error('Upload error:', err)
-    error.value = 'Upload failed. Please try again.'
+    error.value = t('management.media.uploadModal.error.uploadFailed')
   } finally {
     uploading.value = false
     currentUpload.value = 0

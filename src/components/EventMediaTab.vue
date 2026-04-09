@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Showcase</h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage all visual content and media for your event showcase or invitation</p>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.media.title') }}</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.media.subtitle') }}</p>
       </div>
     </div>
 
@@ -15,7 +15,7 @@
         <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
           <div class="flex items-center justify-center">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-            <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading media...</span>
+            <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.media.loading') }}</span>
           </div>
         </div>
         <BasicMediaSection
@@ -32,8 +32,8 @@
         <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
           <!-- Header -->
           <div class="mb-6">
-            <h5 class="font-semibold text-slate-900">Event Photos</h5>
-            <p class="text-sm text-slate-600">Photos will be displayed on the event showcase page in order. Drag and drop to reorder.</p>
+            <h5 class="font-semibold text-slate-900">{{ t('management.media.photos.title') }}</h5>
+            <p class="text-sm text-slate-600">{{ t('management.media.photos.description') }}</p>
           </div>
 
           <!-- Loading State -->
@@ -59,7 +59,7 @@
                 @click="fetchMedia"
                 class="mt-3 sm:mt-4 bg-red-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl hover:bg-red-700 transition-colors duration-200 text-sm sm:text-base"
               >
-                Try Again
+                {{ t('management.media.photos.tryAgain') }}
               </button>
             </div>
           </div>
@@ -91,9 +91,9 @@
                   <p :class="[
                     'font-semibold transition-colors',
                     canEdit && eventData && props.eventId ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
-                  ]">No photos added</p>
-                  <p class="text-sm text-slate-500 mt-1">Upload photos to showcase your event's atmosphere and venue</p>
-                  <p v-if="canEdit && eventData && props.eventId" class="text-xs text-slate-400 mt-1">Click to add photos</p>
+                  ]">{{ t('management.media.photos.empty.title') }}</p>
+                  <p class="text-sm text-slate-500 mt-1">{{ t('management.media.photos.empty.description') }}</p>
+                  <p v-if="canEdit && eventData && props.eventId" class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.empty.hint') }}</p>
                 </div>
               </div>
             </div>
@@ -127,8 +127,8 @@
                 <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
                   <Upload class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                 </div>
-                <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">Add photos</p>
-                <p class="text-xs text-slate-400 mt-1">{{ media.length }} photos</p>
+                <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">{{ t('management.media.photos.addPhotos') }}</p>
+                <p class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.count', { count: media.length }) }}</p>
               </div>
             </div>
           </div>
@@ -177,8 +177,8 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="deleting"
-      title="Delete Media"
-      :item-name="mediaToDelete?.caption || 'Untitled Media'"
+      :title="t('management.media.deleteModal.title')"
+      :item-name="mediaToDelete?.caption || t('management.media.photos.untitled')"
       @confirm="confirmDelete"
       @cancel="showDeleteModal = false"
     />
@@ -204,6 +204,7 @@ import { ref, onMounted, watch } from 'vue'
 import { Upload, ImageIcon, AlertCircle, CheckCircle } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
@@ -225,6 +226,8 @@ const emit = defineEmits<{
   (e: 'media-updated', media: EventPhoto[]): void
   (e: 'event-updated', event: Event): void
 }>()
+
+const { t } = useAppLanguage()
 
 // Toast notifications with automatic cleanup
 const { message, showSuccess, showError } = useToast()
@@ -285,12 +288,12 @@ const fetchMedia = async () => {
         ? response.data.sort((a, b) => a.order - b.order)
         : []
     } else {
-      showError(response.message || 'Failed to load media')
+      showError(response.message || t('management.media.toast.loadError'))
       media.value = []
     }
   } catch (err) {
     console.error('Failed to fetch media:', err)
-    showError('Network error while loading media')
+    showError(t('management.media.toast.loadNetworkError'))
     media.value = []
   } finally {
     loading.value = false
@@ -319,13 +322,13 @@ const confirmDelete = async () => {
       mediaToDelete.value = null
       // Emit updated media to parent
       emit('media-updated', media.value)
-      showSuccess('Photo deleted successfully')
+      showSuccess(t('management.media.toast.deleteSuccess'))
     } else {
-      showError(response.message || 'Failed to delete media')
+      showError(response.message || t('management.media.toast.deleteError'))
     }
   } catch (err) {
     console.error('Failed to delete media:', err)
-    showError('Network error while deleting media')
+    showError(t('management.media.toast.deleteNetworkError'))
   } finally {
     deleting.value = false
   }
@@ -345,14 +348,14 @@ const toggleFeatured = async (mediaItem: EventPhoto) => {
         media.value[index] = response.data
         // Emit updated media to parent
         emit('media-updated', media.value)
-        showSuccess('Featured status updated')
+        showSuccess(t('management.media.toast.featuredUpdated'))
       }
     } else {
-      showError(response.message || 'Failed to update featured status')
+      showError(response.message || t('management.media.toast.featuredError'))
     }
   } catch (err) {
     console.error('Failed to update featured status:', err)
-    showError('Network error while updating featured status')
+    showError(t('management.media.toast.featuredNetworkError'))
   }
 }
 
@@ -378,7 +381,11 @@ watch(showUploadModal, (newValue, oldValue) => {
     const uploadedCount = media.value.length - uploadBatchStart.value
 
     if (uploadedCount > 0) {
-      showSuccess(`${uploadedCount} ${uploadedCount === 1 ? 'photo' : 'photos'} uploaded successfully`)
+      showSuccess(
+        uploadedCount === 1
+          ? t('management.media.toast.uploadSuccessOne')
+          : t('management.media.toast.uploadSuccessMany', { count: uploadedCount }),
+      )
     }
 
     // Reset the batch counter
@@ -444,13 +451,13 @@ const handleDragEnd = async (targetMedia: EventPhoto | null) => {
     if (!response.success) {
       // Rollback on failure - refetch media
       await fetchMedia()
-      showError(response.message || 'Failed to reorder media')
+      showError(response.message || t('management.media.toast.reorderError'))
     }
   } catch (err) {
     console.error('Failed to reorder media:', err)
     // Rollback on failure - refetch media
     await fetchMedia()
-    showError('Network error while reordering media')
+    showError(t('management.media.toast.reorderNetworkError'))
   } finally {
     draggedMedia.value = null
   }
@@ -487,12 +494,12 @@ const handleMoveUp = async (mediaItem: EventPhoto) => {
     const response = await mediaService.bulkReorderEventMedia(props.eventId, { updates })
     if (!response.success) {
       await fetchMedia()
-      showError(response.message || 'Failed to reorder media')
+      showError(response.message || t('management.media.toast.reorderError'))
     }
   } catch (err) {
     console.error('Failed to reorder media:', err)
     await fetchMedia()
-    showError('Network error while reordering media')
+    showError(t('management.media.toast.reorderNetworkError'))
   } finally {
     isReordering.value = false
   }
@@ -528,12 +535,12 @@ const handleMoveDown = async (mediaItem: EventPhoto) => {
     const response = await mediaService.bulkReorderEventMedia(props.eventId, { updates })
     if (!response.success) {
       await fetchMedia()
-      showError(response.message || 'Failed to reorder media')
+      showError(response.message || t('management.media.toast.reorderError'))
     }
   } catch (err) {
     console.error('Failed to reorder media:', err)
     await fetchMedia()
-    showError('Network error while reordering media')
+    showError(t('management.media.toast.reorderNetworkError'))
   } finally {
     isReordering.value = false
   }

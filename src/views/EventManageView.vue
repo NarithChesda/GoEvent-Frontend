@@ -160,9 +160,9 @@
                 >
                   <Lock class="w-8 h-8 text-slate-400" />
                 </div>
-                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.media.accessRestricted.title') }}</h3>
                 <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view and manage event media.
+                  {{ t('management.media.accessRestricted.description') }}
                 </p>
               </div>
               <EventMediaTab

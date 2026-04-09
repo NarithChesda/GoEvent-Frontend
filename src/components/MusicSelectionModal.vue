@@ -12,8 +12,8 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
               <div>
-                <h3 class="text-lg font-bold text-slate-900">Select Background Music</h3>
-                <p class="text-sm text-slate-500 mt-0.5">Choose from our music library</p>
+                <h3 class="text-lg font-bold text-slate-900">{{ t('management.media.musicModal.title') }}</h3>
+                <p class="text-sm text-slate-500 mt-0.5">{{ t('management.media.musicModal.subtitle') }}</p>
               </div>
               <button
                 @click="handleClose"
@@ -30,7 +30,7 @@
                 <input
                   v-model="searchQuery"
                   type="text"
-                  placeholder="Search music by name..."
+                  :placeholder="t('management.media.musicModal.searchPlaceholder')"
                   class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 />
                 <button
@@ -55,7 +55,7 @@
                       : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                   ]"
                 >
-                  All
+                  {{ t('management.media.musicModal.allCategories') }}
                 </button>
                 <button
                   v-for="category in categories"
@@ -68,7 +68,7 @@
                       : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                   ]"
                 >
-                  {{ category.label }}
+                  {{ t(`management.media.musicModal.categories.${category.value}`, category.label) }}
                   <span class="ml-1 opacity-70">({{ category.count }})</span>
                 </button>
               </div>
@@ -88,7 +88,7 @@
                 >
                   <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md">
                     <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span class="text-sm text-slate-600">Updating...</span>
+                    <span class="text-sm text-slate-600">{{ t('management.media.musicModal.updating') }}</span>
                   </div>
                 </div>
               </Transition>
@@ -96,7 +96,7 @@
               <!-- Initial Loading State (only when no content exists) -->
               <div v-if="initialLoading && musicList.length === 0" class="flex flex-col items-center justify-center py-16">
                 <div class="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-sm text-slate-500 mt-3">Loading music...</p>
+                <p class="text-sm text-slate-500 mt-3">{{ t('management.media.musicModal.loading') }}</p>
               </div>
 
               <!-- Empty State -->
@@ -104,16 +104,16 @@
                 <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                   <Music class="w-7 h-7 text-slate-400" />
                 </div>
-                <p class="text-slate-600 font-medium">No music found</p>
+                <p class="text-slate-600 font-medium">{{ t('management.media.musicModal.empty.title') }}</p>
                 <p class="text-sm text-slate-400 mt-1 text-center">
                   <template v-if="searchQuery">
-                    No results for "{{ searchQuery }}"
+                    {{ t('management.media.musicModal.empty.searchResult', { query: searchQuery }) }}
                   </template>
                   <template v-else-if="selectedCategory">
-                    No tracks in this category
+                    {{ t('management.media.musicModal.empty.categoryResult') }}
                   </template>
                   <template v-else>
-                    Music library is empty
+                    {{ t('management.media.musicModal.empty.generic') }}
                   </template>
                 </p>
                 <button
@@ -121,7 +121,7 @@
                   @click="clearFilters"
                   class="mt-4 px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg font-medium transition-colors"
                 >
-                  Clear filters
+                  {{ t('management.media.musicModal.empty.clearFilters') }}
                 </button>
               </div>
 
@@ -197,13 +197,13 @@
                 >
                   <div v-if="loadingMore" class="flex items-center gap-2 text-slate-500">
                     <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span class="text-sm">Loading more...</span>
+                    <span class="text-sm">{{ t('management.media.musicModal.loadingMore') }}</span>
                   </div>
                 </div>
 
                 <!-- End of List -->
                 <div v-if="!hasMore && musicList.length > 0" class="py-4 text-center">
-                  <span class="text-xs text-slate-400">{{ totalCount }} tracks loaded</span>
+                  <span class="text-xs text-slate-400">{{ t('management.media.musicModal.tracksLoaded', { count: totalCount }) }}</span>
                 </div>
               </div>
             </div>
@@ -216,7 +216,7 @@
                 :disabled="saving"
                 class="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                Remove Current
+                {{ t('management.media.musicModal.removeCurrent') }}
               </button>
               <div v-else></div>
 
@@ -226,7 +226,7 @@
                   :disabled="saving"
                   class="px-4 py-2 text-sm text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  Cancel
+                  {{ t('management.media.musicModal.cancel') }}
                 </button>
                 <button
                   @click="handleConfirm"
@@ -237,7 +237,7 @@
                     v-if="saving"
                     class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
                   ></div>
-                  <span>{{ saving ? 'Selecting...' : 'Select' }}</span>
+                  <span>{{ saving ? t('management.media.musicModal.selecting') : t('management.media.musicModal.select') }}</span>
                 </button>
               </div>
             </div>
@@ -257,6 +257,7 @@ import { X, Music, Play, Pause, Check, Search } from 'lucide-vue-next'
 import { backgroundMusicService } from '@/services/api'
 import type { BackgroundMusic, BackgroundMusicCategory, BackgroundMusicCategoryInfo } from '@/services/api'
 import { useMediaUrl } from '@/composables/useMediaUrl'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   show: boolean
@@ -277,6 +278,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { getMediaUrl } = useMediaUrl()
+const { t } = useAppLanguage()
 
 // Constants
 const PAGE_SIZE = 20

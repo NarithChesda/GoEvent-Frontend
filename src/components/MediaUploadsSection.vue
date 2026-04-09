@@ -4,8 +4,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Primary Logo -->
       <MediaUploadCard
-        title="Primary Logo"
-        description="Main event or organization logo. For best results, use a transparent image (PNG, WebP)"
+        :title="t('management.media.mediaUploads.primaryLogo.title')"
+        :description="t('management.media.mediaUploads.primaryLogo.description')"
         :media-url="getMediaUrl(eventData?.logo_one)"
         :can-edit="canEdit"
         :is-uploading="mediaUpload.isUploading.value('logo_one')"
@@ -13,9 +13,9 @@
         accept-types="image/*"
         content-type="image"
         image-class="h-[100px] object-contain bg-slate-50 p-4"
-        empty-state-text="No logo uploaded"
+        :empty-state-text="t('management.media.mediaUploads.primaryLogo.empty')"
         @upload="(file) => handleUpload('logo_one', file, 'image')"
-        @remove="confirmRemove('logo_one', 'Delete Primary Logo', 'Primary Logo')"
+        @remove="confirmRemove('logo_one', t('management.media.mediaUploads.primaryLogo.deleteTitle'), t('management.media.mediaUploads.primaryLogo.title'))"
         @toggle-dropdown="dropdownManager.toggleDropdown('logoOne')"
         @close-dropdown="dropdownManager.closeAllDropdowns()"
       >
@@ -29,7 +29,7 @@
               />
             </div>
             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
-              <p class="text-white font-medium">Primary Logo</p>
+              <p class="text-white font-medium">{{ t('management.media.mediaUploads.primaryLogo.hover') }}</p>
             </div>
           </div>
         </template>
@@ -56,17 +56,17 @@
                 canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
               ]"
             >
-              No logo uploaded
+              {{ t('management.media.mediaUploads.primaryLogo.empty') }}
             </p>
-            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">{{ t('management.media.mediaUploads.card.clickToUpload') }}</p>
           </div>
         </template>
       </MediaUploadCard>
 
       <!-- Secondary Logo -->
       <MediaUploadCard
-        title="Secondary Logo"
-        description="Displayed when showcase is in other languages (English, etc.). Use transparent image (PNG, WebP)"
+        :title="t('management.media.mediaUploads.secondaryLogo.title')"
+        :description="t('management.media.mediaUploads.secondaryLogo.description')"
         :media-url="getMediaUrl(eventData?.logo_two)"
         :can-edit="canEdit"
         :is-uploading="mediaUpload.isUploading.value('logo_two')"
@@ -74,9 +74,9 @@
         accept-types="image/*"
         content-type="image"
         image-class="h-[100px] object-contain bg-slate-50 p-4"
-        empty-state-text="No logo uploaded"
+        :empty-state-text="t('management.media.mediaUploads.secondaryLogo.empty')"
         @upload="(file) => handleUpload('logo_two', file, 'image')"
-        @remove="confirmRemove('logo_two', 'Delete Secondary Logo', 'Secondary Logo')"
+        @remove="confirmRemove('logo_two', t('management.media.mediaUploads.secondaryLogo.deleteTitle'), t('management.media.mediaUploads.secondaryLogo.title'))"
         @toggle-dropdown="dropdownManager.toggleDropdown('logoTwo')"
         @close-dropdown="dropdownManager.closeAllDropdowns()"
       >
@@ -90,7 +90,7 @@
               />
             </div>
             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
-              <p class="text-white font-medium">Secondary Logo</p>
+              <p class="text-white font-medium">{{ t('management.media.mediaUploads.secondaryLogo.hover') }}</p>
             </div>
           </div>
         </template>
@@ -117,9 +117,9 @@
                 canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
               ]"
             >
-              No logo uploaded
+              {{ t('management.media.mediaUploads.secondaryLogo.empty') }}
             </p>
-            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to upload</p>
+            <p v-if="canEdit" class="text-xs text-slate-400 mt-1">{{ t('management.media.mediaUploads.card.clickToUpload') }}</p>
           </div>
         </template>
       </MediaUploadCard>
@@ -128,18 +128,18 @@
     <!-- Event Video (only shown for Standard template when active) -->
     <MediaUploadCard
       v-if="shouldShowVideoSection"
-      title="Event Video"
-      description="Upload a promotional or highlight video (Max 10MB)"
+      :title="t('management.media.mediaUploads.video.title')"
+      :description="t('management.media.mediaUploads.video.description')"
       :media-url="getMediaUrl(eventData?.event_video)"
       :can-edit="canEdit"
       :is-uploading="mediaUpload.isUploading.value('event_video')"
       :show-dropdown="dropdownManager.isOpen('video')"
       accept-types="video/*"
       content-type="video"
-      empty-state-text="No video uploaded"
-      empty-state-subtext="Consider using YouTube embed for large files"
+      :empty-state-text="t('management.media.mediaUploads.video.empty')"
+      :empty-state-subtext="t('management.media.mediaUploads.video.emptySub')"
       @upload="(file) => handleUpload('event_video', file, 'video')"
-      @remove="confirmRemove('event_video', 'Delete Event Video', 'Event Video')"
+      @remove="confirmRemove('event_video', t('management.media.mediaUploads.video.deleteTitle'), t('management.media.mediaUploads.video.title'))"
       @toggle-dropdown="dropdownManager.toggleDropdown('video')"
       @close-dropdown="dropdownManager.closeAllDropdowns()"
     />
@@ -149,8 +149,8 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h5 class="font-semibold text-slate-900">Event Music</h5>
-          <p class="text-sm text-slate-600">Background music for your event showcase</p>
+          <h5 class="font-semibold text-slate-900">{{ t('management.media.mediaUploads.music.title') }}</h5>
+          <p class="text-sm text-slate-600">{{ t('management.media.mediaUploads.music.description') }}</p>
         </div>
 
         <!-- Options button when content exists -->
@@ -183,7 +183,7 @@
                 class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Library class="w-4 h-4 text-slate-500" />
-                <span>Browse Library</span>
+                <span>{{ t('management.media.mediaUploads.music.library.browse') }}</span>
               </button>
               <button
                 v-if="musicSource === 'library'"
@@ -192,16 +192,16 @@
                 class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <X class="w-4 h-4" />
-                <span>Remove Music</span>
+                <span>{{ t('management.media.mediaUploads.music.library.remove') }}</span>
               </button>
               <button
                 v-if="musicSource === 'custom'"
-                @click="confirmRemove('music', 'Delete Event Music', 'Event Music'); dropdownManager.closeAllDropdowns()"
+                @click="confirmRemove('music', t('management.media.mediaUploads.music.deleteTitle'), t('management.media.mediaUploads.music.title')); dropdownManager.closeAllDropdowns()"
                 :disabled="mediaUpload.isUploading.value('music')"
                 class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <X class="w-4 h-4" />
-                <span>Delete Music</span>
+                <span>{{ t('management.media.mediaUploads.music.custom.delete') }}</span>
               </button>
             </div>
           </Transition>
@@ -230,9 +230,9 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-0.5">
                 <Library class="w-3.5 h-3.5 text-emerald-600" />
-                <span class="text-xs text-emerald-600 font-medium uppercase tracking-wide">From Library</span>
+                <span class="text-xs text-emerald-600 font-medium uppercase tracking-wide">{{ t('management.media.mediaUploads.music.library.badge') }}</span>
               </div>
-              <p class="font-semibold text-slate-900 truncate">{{ currentMusicName || 'Unknown Track' }}</p>
+              <p class="font-semibold text-slate-900 truncate">{{ currentMusicName || t('management.media.mediaUploads.music.library.unknown') }}</p>
               <p v-if="eventData?.selected_music_details?.category_display" class="text-sm text-slate-500 mt-0.5">
                 {{ eventData.selected_music_details.category_display }}
                 <span v-if="eventData.selected_music_details.duration_display" class="text-slate-400">
@@ -289,7 +289,7 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-0.5">
                 <Upload class="w-3.5 h-3.5 text-violet-600" />
-                <span class="text-xs text-violet-600 font-medium uppercase tracking-wide">Custom Upload</span>
+                <span class="text-xs text-violet-600 font-medium uppercase tracking-wide">{{ t('management.media.mediaUploads.music.custom.badge') }}</span>
               </div>
               <p class="font-semibold text-slate-900 truncate">{{ customMusicFilename }}</p>
               <p v-if="musicDuration > 0" class="text-sm text-slate-500 mt-0.5">
@@ -352,8 +352,8 @@
               <Library class="w-5 h-5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
             </div>
             <div class="flex-1">
-              <p class="text-sm font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Browse Music Library</p>
-              <p class="text-xs text-slate-400">Choose from our curated collection</p>
+              <p class="text-sm font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">{{ t('management.media.mediaUploads.music.library.browse') }}</p>
+              <p class="text-xs text-slate-400">{{ t('management.media.mediaUploads.music.library.browseSub') }}</p>
             </div>
             <ChevronRight class="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
           </div>
@@ -380,9 +380,9 @@
             </div>
             <div class="flex-1">
               <p class="text-sm font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">
-                {{ mediaUpload.isUploading.value('music') ? 'Uploading...' : 'Upload Your Own' }}
+                {{ mediaUpload.isUploading.value('music') ? t('management.media.mediaUploads.music.custom.uploading') : t('management.media.mediaUploads.music.custom.upload') }}
               </p>
-              <p class="text-xs text-slate-400">MP3, OGG, M4A, WebM (Max 20MB)</p>
+              <p class="text-xs text-slate-400">{{ t('management.media.mediaUploads.music.custom.uploadSub') }}</p>
             </div>
             <ChevronRight v-if="!mediaUpload.isUploading.value('music')" class="w-5 h-5 text-slate-300 group-hover:text-violet-500 transition-colors" />
           </div>
@@ -398,8 +398,8 @@
               <Music class="w-5 h-5 text-slate-400" />
             </div>
             <div>
-              <p class="text-sm font-semibold text-slate-600">No music added</p>
-              <p class="text-xs text-slate-400">Background music not configured</p>
+              <p class="text-sm font-semibold text-slate-600">{{ t('management.media.mediaUploads.music.empty') }}</p>
+              <p class="text-xs text-slate-400">{{ t('management.media.mediaUploads.music.emptySub') }}</p>
             </div>
           </div>
         </div>
@@ -439,6 +439,7 @@
 
 <script setup lang="ts">
 import { ref, toRef, watch, computed, reactive, onUnmounted } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { AlertCircle, Plus, ImageIcon, Music, Library, MoreHorizontal, Upload, X, Play, Pause, ChevronRight } from 'lucide-vue-next'
 import type { Event, BackgroundMusic } from '@/services/api'
 import { eventsService } from '@/services/api'
@@ -461,6 +462,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
 
 // Composables
 const eventDataRef = toRef(props, 'eventData')
@@ -559,18 +562,19 @@ const currentMusicName = computed(() => {
 
 // Extract filename from custom music URL
 const customMusicFilename = computed(() => {
-  if (!props.eventData?.music) return 'Custom Music'
+  const fallback = t('management.media.mediaUploads.music.custom.filename')
+  if (!props.eventData?.music) return fallback
   try {
     const url = props.eventData.music
     // Extract filename from URL path
     const pathname = url.includes('://') ? new URL(url).pathname : url
-    const filename = pathname.split('/').pop() || 'Custom Music'
+    const filename = pathname.split('/').pop() || fallback
     // Decode URI components and clean up the filename
     const decoded = decodeURIComponent(filename)
     // Remove any query parameters
-    return decoded.split('?')[0] || 'Custom Music'
+    return decoded.split('?')[0] || fallback
   } catch {
-    return 'Custom Music'
+    return fallback
   }
 })
 
