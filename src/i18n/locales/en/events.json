@@ -1,0 +1,80 @@
+{
+  "title": "Events",
+  "createEvent": "Create Event",
+  "createFirstEvent": "Create Your First Event",
+  "manageEvent": "Manage Event",
+  "filters": {
+    "recent": "Recent",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "allCategories": "All Categories"
+  },
+  "emptyState": {
+    "noUpcomingTitle": "No upcoming events",
+    "noPastTitle": "No past events",
+    "noEventsTitle": "No events created yet",
+    "noUpcomingDescription": "Start organizing amazing events and bring people together.",
+    "noPastDescription": "Your past events will appear here.",
+    "noEventsDescription": "Events you create will appear here, sorted by creation date.",
+    "signInTitle": "Ready to Create Your Event?",
+    "signInDescription": "Start organizing amazing events and bring people together. Sign in to get started."
+  },
+  "messages": {
+    "createSuccess": "Event created successfully!",
+    "createError": "Failed to create event",
+    "deleteSuccess": "Event deleted successfully",
+    "deleteError": "Failed to delete event",
+    "registerSuccess": "Successfully registered for the event!",
+    "networkError": "Network error: Failed to create event. Please check your connection and try again.",
+    "validationErrors": "Validation errors",
+    "endDateAfterStart": "End date must be after start date",
+    "createFailed": "Failed to create event. Please try again."
+  },
+  "deleteConfirm": {
+    "title": "Delete Event",
+    "message": "This will permanently delete this event and all associated data including guests, media, and agenda items."
+  },
+  "createDrawer": {
+    "title": "Create New Event",
+    "sections": {
+      "basicInfo": "Basic Information",
+      "privacy": "Privacy",
+      "registration": "Registration"
+    },
+    "fields": {
+      "eventTitle": "Event Title",
+      "titlePlaceholder": "Enter event title",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "startDateTime": "Start Date & Time",
+      "endDateTime": "End Date & Time",
+      "aboutEvent": "About Event",
+      "descriptionPlaceholder": "Detailed event description",
+      "registrationDeadline": "Registration Deadline",
+      "deadlinePlaceholder": "Optional deadline",
+      "deadlineHint": "Leave empty for no deadline",
+      "maxAttendees": "Max Attendees",
+      "maxAttendeesPlaceholder": "Unlimited",
+      "maxAttendeesHint": "Leave empty for unlimited"
+    },
+    "autoPopulate": {
+      "label": "Auto-populate event data",
+      "description": "Fill in hosts, agenda & texts from category template"
+    },
+    "privacyToggle": {
+      "publicLabel": "Public Event",
+      "privateLabel": "Private Event",
+      "publicDescription": "Anyone can view and register",
+      "privateDescription": "Only invited guests can access"
+    },
+    "requireRegistration": {
+      "label": "Require Registration",
+      "description": "Attendees must register to join"
+    },
+    "actions": {
+      "creating": "Creating...",
+      "create": "Create Event",
+      "cancel": "Cancel"
+    }
+  }
+}

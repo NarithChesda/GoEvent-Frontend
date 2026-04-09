@@ -14,7 +14,7 @@
             <h1
               class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
             >
-              Discover
+              {{ t('discover.title') }}
             </h1>
 
             <!-- Date Range Toggle -->
@@ -68,21 +68,21 @@
               <div
                 class="w-6 h-6 border-3 border-[#2ecc71] border-t-transparent rounded-full animate-spin"
               ></div>
-              <span class="text-sm font-medium">Loading more events...</span>
+              <span class="text-sm font-medium">{{ t('discover.loadingMore') }}</span>
             </div>
             <div
               v-else-if="!hasMore"
               class="text-sm text-slate-500 font-medium"
             >
-              No more events to load
+              {{ t('discover.noMore') }}
             </div>
           </div>
 
           <!-- Empty State -->
           <EventsEmptyState
             v-else-if="isEmpty"
-            title="No events found"
-            description="Try adjusting your filters or check back later for new events."
+            :title="t('discover.emptyState.title')"
+            :description="t('discover.emptyState.description')"
             :show-action="false"
           />
         </div>
@@ -149,10 +149,12 @@ import { groupEventsByDate } from '@/composables/useEventFormatters'
 import { type Event, type EventFilters as EventFiltersType, eventsService } from '@/services/api'
 import { useEventsData } from '@/composables/useEventsData'
 import { useAuthStore } from '@/stores/auth'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useAppLanguage()
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
@@ -165,12 +167,12 @@ type DateFilterValue = 'upcoming' | 'all' | 'liked'
 const dateFilter = ref<DateFilterValue>('upcoming')
 const dateFilterOptions = computed(() => {
   const options = [
-    { value: 'upcoming', label: 'Upcoming' },
-    { value: 'all', label: 'All' },
+    { value: 'upcoming', label: t('discover.tabs.upcoming') },
+    { value: 'all', label: t('discover.tabs.all') },
   ]
   // Only show Liked tab when user is authenticated
   if (authStore.isAuthenticated) {
-    options.push({ value: 'liked', label: 'Liked' })
+    options.push({ value: 'liked', label: t('discover.tabs.liked') })
   }
   return options
 })
@@ -300,7 +302,7 @@ const handleDrawerNext = () => {
 }
 
 const handleEventRegistered = () => {
-  showMessage('success', 'Successfully registered for the event!')
+  showMessage('success', t('events.messages.registerSuccess'))
   loadEvents('all', filters.value)
 }
 

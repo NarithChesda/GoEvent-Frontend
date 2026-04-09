@@ -13,7 +13,7 @@
             : 'text-slate-600 hover:text-slate-800'
         ]"
       >
-        {{ category.name }}
+        {{ category.id === 'all' ? t('categories.allCategories') : translateServiceCategory(category.name) }}
       </button>
     </div>
   </div>
@@ -21,6 +21,11 @@
 
 <script setup lang="ts">
 import type { ServiceCategory } from './types'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { t } = useAppLanguage()
+const { translateServiceCategory } = useCategoryTranslation()
 
 defineProps<{
   modelValue: string

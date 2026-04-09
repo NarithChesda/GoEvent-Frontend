@@ -1,0 +1,27 @@
+{
+  "title": "Discover",
+  "subtitle": "Find events happening near you",
+  "tabs": {
+    "upcoming": "Upcoming",
+    "all": "All",
+    "liked": "Liked"
+  },
+  "search": {
+    "placeholder": "Search events...",
+    "noResults": "No events found matching your search",
+    "tryDifferent": "Try a different search term or filter"
+  },
+  "filters": {
+    "all": "All",
+    "nearby": "Nearby",
+    "thisWeek": "This Week",
+    "freeEvents": "Free Events",
+    "popular": "Popular"
+  },
+  "emptyState": {
+    "title": "No events found",
+    "description": "Try adjusting your filters or check back later for new events."
+  },
+  "loadingMore": "Loading more events...",
+  "noMore": "No more events to load"
+}

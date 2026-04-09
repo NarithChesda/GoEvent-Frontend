@@ -44,7 +44,7 @@
         class="w-full h-full bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 flex flex-col items-center justify-center"
       >
         <Calendar class="w-12 h-12 text-[#2ecc71]/40 mb-2" />
-        <span class="text-sm text-slate-400">{{ event.category_name || 'Event' }}</span>
+        <span class="text-sm text-slate-400">{{ event.category_name ? translateEventCategory(event.category_name) : 'Event' }}</span>
       </div>
 
       <!-- Category Badge (Top Right) -->
@@ -59,7 +59,7 @@
           <div
             class="w-1.5 h-1.5 rounded-full mr-1 sm:mr-1.5 bg-white"
           ></div>
-          {{ event.category_name }}
+          {{ translateEventCategory(event.category_name) }}
         </span>
       </div>
 
@@ -220,6 +220,9 @@ import {
 } from 'lucide-vue-next'
 import type { Event } from '../services/api'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { translateEventCategory } = useCategoryTranslation()
 
 interface Props {
   event: Event

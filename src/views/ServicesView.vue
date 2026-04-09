@@ -10,7 +10,7 @@
           <!-- Header -->
           <div class="flex items-center justify-between mb-6 sm:mb-8 lg:mb-10">
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
-              Services
+              {{ t('services.title') }}
             </h1>
 
             <!-- Category Filter Dropdown - Desktop only -->
@@ -44,7 +44,7 @@
                       ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5'
                       : 'text-slate-700'"
                   >
-                    {{ category.name }}
+                    {{ category.id === 'all' ? t('categories.allCategories') : translateServiceCategory(category.name) }}
                   </button>
                 </div>
               </Transition>
@@ -73,7 +73,7 @@
           <div v-if="isLoadingListings && filteredListings.length === 0" class="py-12">
             <div class="flex flex-col items-center justify-center gap-4">
               <div class="w-12 h-12 border-4 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
-              <p class="text-slate-600">Loading services...</p>
+              <p class="text-slate-600">{{ t('services.loadingServices') }}</p>
             </div>
           </div>
 
@@ -101,8 +101,8 @@
 
           <!-- Empty State -->
           <div v-if="!isLoadingListings && filteredListings.length === 0" class="py-12 text-center">
-            <p class="text-slate-600 text-lg">No services found.</p>
-            <p class="text-slate-500 text-sm mt-2">Try adjusting your filters or check back later.</p>
+            <p class="text-slate-600 text-lg">{{ t('services.emptyState.title') }}</p>
+            <p class="text-slate-500 text-sm mt-2">{{ t('services.emptyState.description') }}</p>
           </div>
 
         </div>
@@ -116,13 +116,13 @@
         v-if="isVerifiedVendor"
         @click="handleListService"
         class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
-        aria-label="List Your Service"
+        :aria-label="t('services.listYourService')"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
         <div
           class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
         >
-          List Your Service
+          {{ t('services.listYourService') }}
         </div>
       </button>
 
@@ -186,6 +186,11 @@ import {
 } from '@/components/services'
 import { useServices } from '@/composables/useServices'
 import { useVendorProfile } from '@/composables/settings'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { t } = useAppLanguage()
+const { translateServiceCategory } = useCategoryTranslation()
 
 // Use the services composable
 const {
@@ -253,18 +258,19 @@ const isLoadingDisplayedVendors = computed(() =>
 )
 
 // Sort options
-const sortOptions = [
-  { value: 'featured', label: 'Featured First' },
-  { value: '-created_at', label: 'Newest First' },
-  { value: 'price_min', label: 'Price: Low to High' },
-  { value: '-price_min', label: 'Price: High to Low' },
-  { value: 'title', label: 'A to Z' },
-]
+const sortOptions = computed(() => [
+  { value: 'featured', label: t('services.sort.featured') },
+  { value: '-created_at', label: t('services.sort.newest') },
+  { value: 'price_min', label: t('services.sort.priceLow') },
+  { value: '-price_min', label: t('services.sort.priceHigh') },
+  { value: 'title', label: t('services.sort.alphabetical') },
+])
 
 // Computed for category name display
 const selectedCategoryName = computed(() => {
   const cat = serviceCategories.value.find(c => c.id === selectedCategory.value)
-  return cat?.id === 'all' ? 'All Categories' : cat?.name || 'All Categories'
+  if (!cat || cat.id === 'all') return t('categories.allCategories')
+  return translateServiceCategory(cat.name)
 })
 
 // Category selection method
@@ -340,19 +346,19 @@ const handleListService = () => {
 }
 
 const handleListingCreated = (listing: Listing) => {
-  showMessage('success', `Listing "${listing.title}" created successfully!`)
+  showMessage('success', t('services.messages.listingCreated', { title: listing.title }))
   // Refresh listings
   fetchListings()
 }
 
 const handleListingUpdated = (listing: Listing) => {
-  showMessage('success', `Listing "${listing.title}" updated successfully!`)
+  showMessage('success', t('services.messages.listingUpdated', { title: listing.title }))
   // Refresh listings
   fetchListings()
 }
 
 const handleListingDeleted = () => {
-  showMessage('info', `Listing deleted successfully`)
+  showMessage('info', t('services.messages.listingDeleted'))
   // Refresh listings
   fetchListings()
 }
@@ -380,7 +386,7 @@ const handleContactVendor = async (type: string) => {
     // Track contact click
     await trackContact(selectedListing.value.id, type)
   }
-  showMessage('success', `Contact via ${type} initiated!`)
+  showMessage('success', t('services.messages.contactInitiated', { type }))
 }
 
 const loadMore = async () => {

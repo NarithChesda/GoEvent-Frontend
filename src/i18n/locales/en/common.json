@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "events": "Events",
+    "discover": "Discover",
+    "services": "Services",
+    "settings": "Settings",
+    "commission": "Commission",
+    "myListings": "My Listings",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "createEvent": "Create Event"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "submit": "Submit",
+    "apply": "Apply",
+    "reset": "Reset",
+    "upload": "Upload",
+    "download": "Download",
+    "copy": "Copy",
+    "share": "Share",
+    "viewAll": "View all",
+    "seeMore": "See more",
+    "showLess": "Show less"
+  },
+  "status": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "loading": "Loading",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "updating": "Updating...",
+    "updated": "Updated",
+    "deleting": "Deleting...",
+    "deleted": "Deleted"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "validation": "Please check the form for errors.",
+    "timeout": "Request timed out. Please try again."
+  },
+  "time": {
+    "now": "Now",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "nextWeek": "Next week",
+    "thisMonth": "This month"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "khmer": "ខ្មែរ",
+    "chinese": "中文"
+  }
+}

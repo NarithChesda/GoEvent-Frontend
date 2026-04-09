@@ -1,0 +1,44 @@
+{
+  "title": "ការកំណត់",
+  "tabs": {
+    "profile": "ប្រវត្តិរូប",
+    "account": "គណនី",
+    "security": "សុវត្ថិភាព",
+    "notifications": "ការជូនដំណឹង",
+    "preferences": "ចំណូលចិត្ត",
+    "language": "ភាសា",
+    "listings": "បញ្ជី",
+    "paymentMethods": "វិធីទូទាត់",
+    "commission": "កម្រៃជើងសារ"
+  },
+  "profile": {
+    "title": "ព័ត៌មានប្រវត្តិរូប",
+    "firstName": "នាមខ្លួន",
+    "lastName": "នាមត្រកូល",
+    "email": "អ៊ីមែល",
+    "phone": "ទូរស័ព្ទ",
+    "bio": "ប្រវត្តិរូបសង្ខេប",
+    "profilePicture": "រូបភាពប្រវត្តិរូប",
+    "changePhoto": "ផ្លាស់ប្តូររូបភាព",
+    "removePhoto": "លុបរូបភាព"
+  },
+  "security": {
+    "title": "សុវត្ថិភាព",
+    "changePassword": "ផ្លាស់ប្តូរពាក្យសម្ងាត់",
+    "currentPassword": "ពាក្យសម្ងាត់បច្ចុប្បន្ន",
+    "newPassword": "ពាក្យសម្ងាត់ថ្មី",
+    "confirmNewPassword": "បញ្ជាក់ពាក្យសម្ងាត់ថ្មី",
+    "twoFactor": "ការផ្ទៀងផ្ទាត់ពីរកត្តា"
+  },
+  "preferences": {
+    "title": "ចំណូលចិត្ត",
+    "language": "ភាសាបង្ហាញ",
+    "timezone": "តំបន់ពេលវេលា",
+    "dateFormat": "ទម្រង់កាលបរិច្ឆេទ",
+    "theme": "រូបរាង"
+  },
+  "messages": {
+    "saveSuccess": "បានរក្សាទុកការកំណត់ដោយជោគជ័យ",
+    "saveError": "បរាជ័យក្នុងការរក្សាទុកការកំណត់"
+  }
+}

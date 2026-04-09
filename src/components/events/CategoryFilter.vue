@@ -13,7 +13,7 @@
           : 'text-slate-700'
       "
     >
-      <span>{{ modelValue || 'All Categories' }}</span>
+      <span>{{ modelValue ? translateEventCategory(modelValue) : t('categories.allCategories') }}</span>
       <ChevronDown
         class="w-4 h-4 transition-transform duration-200"
         :class="showMenu ? 'rotate-180' : ''"
@@ -35,7 +35,7 @@
               : 'text-slate-700'
           "
         >
-          All Categories
+          {{ t('categories.allCategories') }}
         </button>
         <button
           v-for="category in categories"
@@ -48,7 +48,7 @@
               : 'text-slate-700'
           "
         >
-          {{ category.name }}
+          {{ translateEventCategory(category.name) }}
         </button>
       </div>
     </Transition>
@@ -69,7 +69,7 @@
             : 'glass-pill text-slate-600',
         ]"
       >
-        All
+        {{ t('discover.filters.all') }}
       </button>
       <button
         v-for="category in categories"
@@ -82,7 +82,7 @@
             : 'glass-pill text-slate-600',
         ]"
       >
-        {{ category.name }}
+        {{ translateEventCategory(category.name) }}
       </button>
     </div>
   </div>
@@ -92,6 +92,11 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { t } = useAppLanguage()
+const { translateEventCategory } = useCategoryTranslation()
 
 const props = withDefaults(
   defineProps<{

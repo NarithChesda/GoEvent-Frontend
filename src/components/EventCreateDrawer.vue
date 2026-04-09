@@ -28,7 +28,7 @@
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">Create New Event</h2>
+              <h2 class="text-base font-semibold text-white">{{ t('events.createDrawer.title') }}</h2>
             </div>
           </div>
         </div>
@@ -39,33 +39,33 @@
             <div class="space-y-5">
               <!-- Basic Information -->
               <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.basicInfo') }}</h3>
 
                 <!-- Title and Category Row -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <!-- Title -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Event Title *</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.eventTitle') }} *</label>
                     <input
                       v-model="form.title"
                       type="text"
                       required
-                      placeholder="Enter event title"
+                      :placeholder="t('events.createDrawer.fields.titlePlaceholder')"
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                   </div>
 
                   <!-- Category -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.category') }}</label>
                     <div class="relative">
                       <select
                         v-model="form.category"
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                       >
-                        <option value="">Select a category</option>
+                        <option value="">{{ t('events.createDrawer.fields.categoryPlaceholder') }}</option>
                         <option v-for="category in categories" :key="category.id" :value="category.id">
-                          {{ category.name }}
+                          {{ translateEventCategory(category.name) }}
                         </option>
                       </select>
                       <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -85,8 +85,8 @@
                         <Sparkles class="w-4 h-4 text-sky-500" />
                       </div>
                       <div>
-                        <p class="text-sm font-medium text-slate-700">Auto-populate event data</p>
-                        <p class="text-xs text-slate-500">Fill in hosts, agenda & texts from category template</p>
+                        <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.autoPopulate.label') }}</p>
+                        <p class="text-xs text-slate-500">{{ t('events.createDrawer.autoPopulate.description') }}</p>
                       </div>
                     </div>
                     <div
@@ -111,7 +111,7 @@
               <div class="space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Start Date & Time *</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.startDateTime') }} *</label>
                     <input
                       v-model="form.start_date"
                       type="datetime-local"
@@ -120,7 +120,7 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">End Date & Time *</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.endDateTime') }} *</label>
                     <input
                       v-model="form.end_date"
                       type="datetime-local"
@@ -133,7 +133,7 @@
 
               <!-- Privacy Settings -->
               <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Privacy</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.privacy') }}</h3>
 
                 <div
                   @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
@@ -144,8 +144,8 @@
                       <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? 'Public Event' : 'Private Event' }}</p>
-                      <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? 'Anyone can view and register' : 'Only invited guests can access' }}</p>
+                      <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicLabel') : t('events.createDrawer.privacyToggle.privateLabel') }}</p>
+                      <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicDescription') : t('events.createDrawer.privacyToggle.privateDescription') }}</p>
                     </div>
                   </div>
                   <div
@@ -166,14 +166,14 @@
                 <!-- Full Description (public events only) -->
                 <Transition name="slide-fade">
                   <div v-if="form.privacy === 'public'">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">About Event</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.aboutEvent') }}</label>
                     <div
                       contenteditable="true"
                       ref="descriptionEditor"
                       @input="handleDescriptionInput"
                       @blur="handleDescriptionBlur"
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[140px] max-h-[320px] overflow-y-auto"
-                      :data-placeholder="form.description ? '' : 'Detailed event description'"
+                      :data-placeholder="form.description ? '' : t('events.createDrawer.fields.descriptionPlaceholder')"
                     ></div>
                   </div>
                 </Transition>
@@ -181,7 +181,7 @@
 
               <!-- Registration Settings -->
               <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registration</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.registration') }}</h3>
 
                 <!-- Require Registration Toggle -->
                 <div
@@ -193,8 +193,8 @@
                       <ClipboardList class="w-4 h-4 text-sky-500" />
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-slate-700">Require Registration</p>
-                      <p class="text-xs text-slate-500">Attendees must register to join</p>
+                      <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.requireRegistration.label') }}</p>
+                      <p class="text-xs text-slate-500">{{ t('events.createDrawer.requireRegistration.description') }}</p>
                     </div>
                   </div>
                   <div
@@ -217,28 +217,28 @@
                   <div v-if="form.registration_required" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- Registration Deadline -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Registration Deadline</label>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.registrationDeadline') }}</label>
                       <input
                         v-model="form.registration_deadline"
                         type="datetime-local"
                         :max="form.start_date"
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                        placeholder="Optional deadline"
+                        :placeholder="t('events.createDrawer.fields.deadlinePlaceholder')"
                       />
-                      <p class="text-xs text-slate-500 mt-1">Leave empty for no deadline</p>
+                      <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.deadlineHint') }}</p>
                     </div>
 
                     <!-- Max Attendees -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Max Attendees</label>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.maxAttendees') }}</label>
                       <input
                         v-model.number="form.max_attendees"
                         type="number"
                         min="1"
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                        placeholder="Unlimited"
+                        :placeholder="t('events.createDrawer.fields.maxAttendeesPlaceholder')"
                       />
-                      <p class="text-xs text-slate-500 mt-1">Leave empty for unlimited</p>
+                      <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.maxAttendeesHint') }}</p>
                     </div>
                   </div>
                 </Transition>
@@ -257,7 +257,7 @@
             >
               <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ isSubmitting ? 'Creating...' : 'Create Event' }}</span>
+              <span>{{ isSubmitting ? t('events.createDrawer.actions.creating') : t('events.createDrawer.actions.create') }}</span>
             </button>
 
             <button
@@ -265,7 +265,7 @@
               @click="$emit('close')"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('events.createDrawer.actions.cancel') }}
             </button>
           </div>
         </div>
@@ -277,6 +277,11 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
 import { ArrowRight, Loader, ChevronDown, Save, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { t } = useAppLanguage()
+const { translateEventCategory } = useCategoryTranslation()
 import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
@@ -411,7 +416,7 @@ const handleSubmit = async () => {
   try {
     // Validate end date is after start date
     if (new Date(form.end_date) <= new Date(form.start_date)) {
-      alert('End date must be after start date')
+      alert(t('events.messages.endDateAfterStart'))
       return
     }
 
@@ -464,7 +469,7 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     console.error('Error creating event:', error)
-    alert('Failed to create event. Please try again.')
+    alert(t('events.messages.createFailed'))
   } finally {
     isSubmitting.value = false
   }

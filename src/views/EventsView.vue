@@ -12,7 +12,7 @@
             <h1
               class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
             >
-              Events
+              {{ t('events.title') }}
             </h1>
 
             <!-- Upcoming/Past/Recent Toggle (authenticated only) -->
@@ -56,9 +56,9 @@
           <!-- Login Required State -->
           <EventsEmptyState
             v-else-if="!authStore.isAuthenticated"
-            title="Ready to Create Your Event?"
-            description="Start organizing amazing events and bring people together. Sign in to get started."
-            action-label="Create Event"
+            :title="t('events.emptyState.signInTitle')"
+            :description="t('events.emptyState.signInDescription')"
+            :action-label="t('events.createEvent')"
             :show-action="true"
             @action="handleCreateEventClick"
           />
@@ -68,7 +68,7 @@
             v-else-if="isEmpty"
             :title="emptyStateTitle"
             :description="emptyStateDescription"
-            action-label="Create Your First Event"
+            :action-label="t('events.createFirstEvent')"
             :show-action="timeFilter === 'upcoming' || timeFilter === 'recent'"
             @action="handleCreateEventClick"
           />
@@ -101,7 +101,7 @@
       <button
         @click="handleCreateEventClick"
         class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
-        aria-label="Create Event"
+        :aria-label="t('events.createEvent')"
       >
         <Plus
           class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90"
@@ -109,7 +109,7 @@
         <div
           class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
         >
-          Create Event
+          {{ t('events.createEvent') }}
         </div>
       </button>
 
@@ -124,9 +124,9 @@
       <DeleteConfirmModal
         :show="showDeleteModal"
         :loading="isDeleting"
-        title="Delete Event"
+        :title="t('events.deleteConfirm.title')"
         :item-name="eventToDelete?.title"
-        message="This will permanently delete this event and all associated data including guests, media, and agenda items."
+        :message="t('events.deleteConfirm.message')"
         @confirm="handleDeleteConfirm"
         @cancel="closeDeleteModal"
       />
@@ -171,10 +171,12 @@ import { useStickyDateHeaders } from '@/composables/useStickyDateHeaders'
 import { groupEventsByDate } from '@/composables/useEventFormatters'
 import { eventsService, type Event } from '@/services/api'
 import { useEventsData } from '@/composables/useEventsData'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { t } = useAppLanguage()
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
@@ -185,11 +187,11 @@ const { categories, categoryFilter, loadCategories } = useCategoryFilter()
 // Time filter
 type TimeFilterValue = 'upcoming' | 'past' | 'recent'
 const timeFilter = ref<TimeFilterValue>('recent')
-const timeFilterOptions = [
-  { value: 'recent', label: 'Recent' },
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'past', label: 'Past' },
-]
+const timeFilterOptions = computed(() => [
+  { value: 'recent', label: t('events.filters.recent') },
+  { value: 'upcoming', label: t('events.filters.upcoming') },
+  { value: 'past', label: t('events.filters.past') },
+])
 
 // UI state
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -273,16 +275,15 @@ const isEmpty = computed(
 
 // Empty state messages
 const emptyStateTitle = computed(() => {
-  if (timeFilter.value === 'upcoming') return 'No upcoming events'
-  if (timeFilter.value === 'past') return 'No past events'
-  return 'No events created yet'
+  if (timeFilter.value === 'upcoming') return t('events.emptyState.noUpcomingTitle')
+  if (timeFilter.value === 'past') return t('events.emptyState.noPastTitle')
+  return t('events.emptyState.noEventsTitle')
 })
 
 const emptyStateDescription = computed(() => {
-  if (timeFilter.value === 'upcoming')
-    return 'Start organizing amazing events and bring people together.'
-  if (timeFilter.value === 'past') return 'Your past events will appear here.'
-  return 'Events you create will appear here, sorted by creation date.'
+  if (timeFilter.value === 'upcoming') return t('events.emptyState.noUpcomingDescription')
+  if (timeFilter.value === 'past') return t('events.emptyState.noPastDescription')
+  return t('events.emptyState.noEventsDescription')
 })
 
 // Sticky date headers
@@ -331,7 +332,7 @@ const handleDrawerNext = () => {
 }
 
 const handleEventRegistered = () => {
-  showMessage('success', 'Successfully registered for the event!')
+  showMessage('success', t('events.messages.registerSuccess'))
   loadEvents('my', {})
 }
 
@@ -357,18 +358,18 @@ const handleDeleteConfirm = async () => {
   try {
     const response = await eventsService.deleteEvent(eventToDelete.value.id)
     if (response.success) {
-      showMessage('success', 'Event deleted successfully')
+      showMessage('success', t('events.messages.deleteSuccess'))
       closeDeleteModal()
       await loadEvents('my', {})
     } else {
-      showMessage('error', response.message || 'Failed to delete event')
+      showMessage('error', response.message || t('events.messages.deleteError'))
       isDeleting.value = false
     }
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error('Error deleting event:', error)
     }
-    showMessage('error', 'An error occurred while deleting the event')
+    showMessage('error', t('events.messages.deleteError'))
     isDeleting.value = false
   }
 }
@@ -468,11 +469,11 @@ const handleEventCreate = async (formData: EventFormData) => {
     const response = await eventsService.createEvent(eventData)
 
     if (response.success && response.data) {
-      showMessage('success', 'Event created successfully!')
+      showMessage('success', t('events.messages.createSuccess'))
       timeFilter.value = 'recent'
       await loadEvents('my', {})
     } else {
-      let errorMessage = response.message || 'Failed to create event'
+      let errorMessage = response.message || t('events.messages.createError')
 
       if (response.errors) {
         const errorDetails = Object.entries(response.errors)
@@ -481,7 +482,7 @@ const handleEventCreate = async (formData: EventFormData) => {
               `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
           )
           .join('; ')
-        errorMessage = `Validation errors: ${errorDetails}`
+        errorMessage = `${t('events.messages.validationErrors')}: ${errorDetails}`
       }
 
       showMessage('error', errorMessage)
@@ -490,10 +491,7 @@ const handleEventCreate = async (formData: EventFormData) => {
     if (import.meta.env.DEV) {
       console.error('Error creating event:', error)
     }
-    showMessage(
-      'error',
-      'Network error: Failed to create event. Please check your connection and try again.'
-    )
+    showMessage('error', t('events.messages.networkError'))
   }
 }
 

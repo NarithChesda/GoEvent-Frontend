@@ -1,0 +1,37 @@
+{
+  "title": "Event Management",
+  "tabs": {
+    "overview": "Overview",
+    "details": "Details",
+    "agenda": "Agenda",
+    "hosts": "Hosts",
+    "guests": "Guests",
+    "media": "Media",
+    "registrations": "Registrations",
+    "payment": "Payment",
+    "expenses": "Expenses",
+    "collaborators": "Collaborators",
+    "settings": "Settings"
+  },
+  "actions": {
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "preview": "Preview",
+    "duplicate": "Duplicate",
+    "archive": "Archive",
+    "deleteEvent": "Delete Event"
+  },
+  "stats": {
+    "totalGuests": "Total Guests",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "declined": "Declined",
+    "checkedIn": "Checked In"
+  },
+  "messages": {
+    "updateSuccess": "Event updated successfully",
+    "updateError": "Failed to update event",
+    "publishSuccess": "Event published successfully",
+    "unpublishSuccess": "Event unpublished successfully"
+  }
+}

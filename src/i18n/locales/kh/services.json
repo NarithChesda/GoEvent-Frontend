@@ -1,0 +1,25 @@
+{
+  "title": "សេវាកម្ម",
+  "listYourService": "ចុះបញ្ជីសេវាកម្មរបស់អ្នក",
+  "loadingServices": "កំពុងផ្ទុកសេវាកម្ម...",
+  "loadMore": "ផ្ទុកសេវាកម្មបន្ថែម",
+  "allServices": "សេវាកម្មទាំងអស់",
+  "categoryServices": "សេវាកម្ម{category}",
+  "emptyState": {
+    "title": "រកមិនឃើញសេវាកម្ម។",
+    "description": "សូមព្យាយាមកែតម្រងរបស់អ្នក ឬត្រឡប់មកវិញពេលក្រោយ។"
+  },
+  "sort": {
+    "featured": "លេចធ្លោមុន",
+    "newest": "ថ្មីបំផុតមុន",
+    "priceLow": "តម្លៃ៖ ទាបទៅខ្ពស់",
+    "priceHigh": "តម្លៃ៖ ខ្ពស់ទៅទាប",
+    "alphabetical": "អក្ខរានុក្រម"
+  },
+  "messages": {
+    "listingCreated": "បានបង្កើតបញ្ជី \"{title}\" ដោយជោគជ័យ!",
+    "listingUpdated": "បានធ្វើបច្ចុប្បន្នភាពបញ្ជី \"{title}\" ដោយជោគជ័យ!",
+    "listingDeleted": "បានលុបបញ្ជីដោយជោគជ័យ",
+    "contactInitiated": "បានចាប់ផ្តើមទំនាក់ទំនងតាមរយៈ {type}!"
+  }
+}

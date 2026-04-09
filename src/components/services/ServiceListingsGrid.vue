@@ -2,7 +2,7 @@
   <div class="mb-6">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-slate-900">
-        {{ categoryName }} Services
+        {{ categoryHeading }}
         <span class="text-slate-400 font-normal text-sm ml-2">({{ listings.length }})</span>
       </h2>
 
@@ -55,7 +55,7 @@
         @click="$emit('load-more')"
         class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors flex items-center gap-2"
       >
-        <span>Load More Services</span>
+        <span>{{ t('services.loadMore') }}</span>
         <ChevronDown class="w-4 h-4" />
       </button>
     </div>
@@ -67,6 +67,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowUpDown, ChevronDown } from 'lucide-vue-next'
 import ServiceCard from './ServiceCard.vue'
 import type { Listing, ServiceCategory, SortOption } from './types'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { t } = useAppLanguage()
+const { translateServiceCategory } = useCategoryTranslation()
 
 const props = withDefaults(
   defineProps<{
@@ -91,9 +96,10 @@ const emit = defineEmits<{
 
 const showSortMenu = ref(false)
 
-const categoryName = computed(() => {
+const categoryHeading = computed(() => {
   const cat = props.categories.find(c => c.id === props.selectedCategory)
-  return cat?.id === 'all' ? 'All' : cat?.name || 'All'
+  if (!cat || cat.id === 'all') return t('services.allServices')
+  return t('services.categoryServices', { category: translateServiceCategory(cat.name) })
 })
 
 const currentSortLabel = computed(() => {

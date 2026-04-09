@@ -21,7 +21,7 @@
       <!-- Category Badge -->
       <div class="absolute top-2 right-2">
         <div class="px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium rounded-full">
-          {{ listing.category }}
+          {{ translateServiceCategory(listing.category) }}
         </div>
       </div>
       <!-- Price Tag -->
@@ -96,6 +96,9 @@ import {
   getCategoryFallbackImage,
   getVendorLogoFallback,
 } from '@/utils/serviceFallbackImages'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+
+const { translateServiceCategory } = useCategoryTranslation()
 
 const props = defineProps<{
   listing: Listing

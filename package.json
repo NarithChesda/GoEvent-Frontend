@@ -32,6 +32,7 @@
     "vue": "^3.5.17",
     "vue-advanced-cropper": "^2.8.9",
     "vue-chartjs": "^5.3.2",
+    "vue-i18n": "^11.3.2",
     "vue-router": "^4.5.1",
     "vue3-google-login": "^2.0.33",
     "xlsx": "^0.18.5"

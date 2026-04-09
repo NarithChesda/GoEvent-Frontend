@@ -70,7 +70,7 @@
           @click.stop="$emit('manage')"
           class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
         >
-          Manage Event
+          {{ t('events.manageEvent') }}
           <ArrowRight class="w-3.5 h-3.5" />
         </button>
       </div>
@@ -140,7 +140,7 @@
             v-if="category"
             class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium"
           >
-            {{ category }}
+            {{ translateEventCategory(category) }}
           </span>
         </div>
 
@@ -203,7 +203,7 @@
           @click.stop="$emit('manage')"
           class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
         >
-          Manage Event
+          {{ t('events.manageEvent') }}
           <ArrowRight class="w-4 h-4" />
         </button>
       </div>
@@ -278,6 +278,11 @@ import {
   getEventFallbackImage,
 } from '@/composables/useEventFormatters'
 import { useEventLike } from '@/composables/useEventLike'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { translateEventCategory } = useCategoryTranslation()
+const { t } = useAppLanguage()
 
 const props = withDefaults(
   defineProps<{

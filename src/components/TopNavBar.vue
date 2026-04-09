@@ -63,7 +63,7 @@
           to="/events?createEvent=true"
           class="px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200"
         >
-          Create Event
+          {{ t('common.nav.createEvent') }}
         </RouterLink>
 
         <!-- Icon Button Group -->
@@ -106,11 +106,11 @@
                 class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[140px] z-[100]"
               >
                 <button
-                  v-for="lang in languages"
+                  v-for="lang in availableLocales"
                   :key="lang.code"
                   @click="selectLanguage(lang.code)"
                   class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
-                  :class="currentLanguage === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+                  :class="locale === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
                 >
                   <span>{{ lang.flag }}</span>
                   <span>{{ lang.name }}</span>
@@ -151,10 +151,10 @@
             v-else
             :to="signinLink"
             class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium hover:shadow-md hover:shadow-[#2ecc71]/20 transition-all duration-200"
-            aria-label="Sign in"
+            :aria-label="t('common.nav.signIn')"
           >
             <User class="w-3.5 h-3.5" />
-            <span>Sign In</span>
+            <span>{{ t('common.nav.signIn') }}</span>
           </RouterLink>
 
           <!-- User Dropdown Menu -->
@@ -203,7 +203,7 @@
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
-                  My Listings
+                  {{ t('common.nav.myListings') }}
                 </RouterLink>
                 <RouterLink
                   to="/settings"
@@ -211,7 +211,7 @@
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
-                  Settings
+                  {{ t('common.nav.settings') }}
                 </RouterLink>
                 <RouterLink
                   v-if="authStore.user?.is_partner"
@@ -220,14 +220,14 @@
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
-                  Commission
+                  {{ t('common.nav.commission') }}
                 </RouterLink>
                 <button
                   @click="handleLogout"
                   class="w-full text-left px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
-                  Sign Out
+                  {{ t('common.nav.signOut') }}
                 </button>
               </div>
             </div>
@@ -260,6 +260,8 @@ import { sanitizePlainText } from '@/utils/sanitize'
 import GlobalSearchModal from './GlobalSearchModal.vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import type { AppLocale } from '@/i18n'
 
 const router = useRouter()
 const route = useRoute()
@@ -277,20 +279,16 @@ const userMenuRef = ref<HTMLElement>()
 const currentTime = ref('')
 const isScrolled = ref(false)
 
-// Language state
+// Language state — backed by the i18n store
+const { t, locale, setLocale, availableLocales } = useAppLanguage()
 const showLanguageMenu = ref(false)
-const currentLanguage = ref('en')
-const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'km', name: 'ខ្មែរ', flag: '🇰🇭' },
-]
 
-// Navigation items matching the screenshot
-const navigationItems = [
-  { path: '/events', label: 'Events', icon: Ticket },
-  { path: '/explore', label: 'Discover', icon: Compass },
-  { path: '/services', label: 'Services', icon: Sparkles }
-]
+// Navigation items — labels come from common.nav.* translations
+const navigationItems = computed(() => [
+  { path: '/events', label: t('common.nav.events'), icon: Ticket },
+  { path: '/explore', label: t('common.nav.discover'), icon: Compass },
+  { path: '/services', label: t('common.nav.services'), icon: Sparkles }
+])
 
 // Check if route is active
 const isActiveRoute = (path: string) => {
@@ -363,10 +361,9 @@ const toggleLanguageMenu = () => {
 }
 
 // Select language
-const selectLanguage = (code: string) => {
-  currentLanguage.value = code
+const selectLanguage = (code: AppLocale) => {
+  setLocale(code)
   showLanguageMenu.value = false
-  // TODO: Implement actual language switching logic
 }
 
 // Handle logout

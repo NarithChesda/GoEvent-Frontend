@@ -1,0 +1,25 @@
+{
+  "title": "Services",
+  "listYourService": "List Your Service",
+  "loadingServices": "Loading services...",
+  "loadMore": "Load More Services",
+  "allServices": "All Services",
+  "categoryServices": "{category} Services",
+  "emptyState": {
+    "title": "No services found.",
+    "description": "Try adjusting your filters or check back later."
+  },
+  "sort": {
+    "featured": "Featured First",
+    "newest": "Newest First",
+    "priceLow": "Price: Low to High",
+    "priceHigh": "Price: High to Low",
+    "alphabetical": "A to Z"
+  },
+  "messages": {
+    "listingCreated": "Listing \"{title}\" created successfully!",
+    "listingUpdated": "Listing \"{title}\" updated successfully!",
+    "listingDeleted": "Listing deleted successfully",
+    "contactInitiated": "Contact via {type} initiated!"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "profile": "Profile",
+    "account": "Account",
+    "security": "Security",
+    "notifications": "Notifications",
+    "preferences": "Preferences",
+    "language": "Language",
+    "listings": "Listings",
+    "paymentMethods": "Payment Methods",
+    "commission": "Commission"
+  },
+  "profile": {
+    "title": "Profile Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "bio": "Bio",
+    "profilePicture": "Profile Picture",
+    "changePhoto": "Change Photo",
+    "removePhoto": "Remove Photo"
+  },
+  "security": {
+    "title": "Security",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "twoFactor": "Two-Factor Authentication"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "language": "Display Language",
+    "timezone": "Timezone",
+    "dateFormat": "Date Format",
+    "theme": "Theme"
+  },
+  "messages": {
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Failed to save settings"
+  }
+}
