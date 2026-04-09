@@ -17,7 +17,7 @@
                     <Shirt class="w-4.5 h-4.5" />
                   </div>
                   <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
-                    {{ isEditing ? 'Edit Dress Code' : 'Create Dress Code' }}
+                    {{ isEditing ? t('management.dressCode.modal.titleEdit') : t('management.dressCode.modal.titleCreate') }}
                   </h2>
                 </div>
                 <button
@@ -58,7 +58,7 @@
                 <!-- Dress Code Type -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Dress Code Type <span class="text-red-500">*</span>
+                    {{ t('management.dressCode.modal.fields.dressCodeType') }} <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
@@ -66,8 +66,8 @@
                       required
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                     >
-                      <option value="">Select dress code type</option>
-                      <option v-for="(label, value) in DRESS_CODE_TYPE_LABELS" :key="value" :value="value">
+                      <option value="">{{ t('management.dressCode.modal.fields.selectDressCodeType') }}</option>
+                      <option v-for="(label, value) in translatedDressCodeTypes" :key="value" :value="value">
                         {{ label }}
                       </option>
                     </select>
@@ -78,13 +78,13 @@
                 <!-- Custom Title (Optional) -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Custom Title <span class="text-xs text-slate-500">(Optional)</span>
+                    {{ t('management.dressCode.modal.fields.customTitle') }} <span class="text-xs text-slate-500">({{ t('management.dressCode.modal.fields.customTitleOptional') }})</span>
                   </label>
                   <input
                     v-model="formData.title"
                     type="text"
                     maxlength="100"
-                    placeholder="e.g., Ceremony Attire"
+                    :placeholder="t('management.dressCode.modal.fields.customTitlePlaceholder')"
                     class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                   />
                 </div>
@@ -95,7 +95,7 @@
                 <!-- Time Period -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Time Period <span class="text-red-500">*</span>
+                    {{ t('management.dressCode.modal.fields.timePeriod') }} <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
@@ -103,8 +103,8 @@
                       required
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                     >
-                      <option value="">Select time period</option>
-                      <option v-for="(label, value) in TIME_PERIOD_LABELS" :key="value" :value="value">
+                      <option value="">{{ t('management.dressCode.modal.fields.selectTimePeriod') }}</option>
+                      <option v-for="(label, value) in translatedTimePeriods" :key="value" :value="value">
                         {{ label }}
                       </option>
                     </select>
@@ -115,7 +115,7 @@
                 <!-- Gender -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Gender <span class="text-red-500">*</span>
+                    {{ t('management.dressCode.modal.fields.gender') }} <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
@@ -123,8 +123,8 @@
                       required
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                     >
-                      <option value="">Select gender</option>
-                      <option v-for="(label, value) in GENDER_LABELS" :key="value" :value="value">
+                      <option value="">{{ t('management.dressCode.modal.fields.selectGender') }}</option>
+                      <option v-for="(label, value) in translatedGenders" :key="value" :value="value">
                         {{ label }}
                       </option>
                     </select>
@@ -141,11 +141,11 @@
                   @click="descriptionOpen = !descriptionOpen"
                 >
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-slate-700">Description</span>
+                    <span class="text-sm font-medium text-slate-700">{{ t('management.dressCode.modal.description.label') }}</span>
                     <span class="hidden sm:inline text-xs text-slate-500">
                       {{ formData.description && formData.description.trim()
                         ? (formData.description.length > 60 ? formData.description.slice(0, 60) + '…' : formData.description)
-                        : 'Optional guidelines' }}
+                        : t('management.dressCode.modal.description.hint') }}
                     </span>
                   </div>
                   <svg
@@ -161,7 +161,7 @@
                     <textarea
                       v-model="formData.description"
                       rows="3"
-                      placeholder="Detailed dress code instructions and guidelines..."
+                      :placeholder="t('management.dressCode.modal.description.placeholder')"
                       class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
                     ></textarea>
                   </div>
@@ -173,7 +173,7 @@
                 <div class="px-4 py-3 border-b border-slate-100">
                   <div class="flex items-center gap-2">
                     <Palette class="w-3.5 h-3.5 mr-1.5" />
-                    <span class="text-sm font-medium text-slate-700">Display Options</span>
+                    <span class="text-sm font-medium text-slate-700">{{ t('management.dressCode.modal.displayOptions.label') }}</span>
                   </div>
                 </div>
                 <div class="px-4 pb-4 pt-3">
@@ -182,7 +182,7 @@
                     <!-- Theme Color -->
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Theme Color
+                        {{ t('management.dressCode.modal.displayOptions.themeColor') }}
                       </label>
                       <div class="flex items-center gap-3">
                         <input
@@ -200,14 +200,14 @@
                           title="Enter a hex color (e.g., #3498db)"
                         />
                       </div>
-                      <p class="text-xs text-slate-500 mt-1.5">Color for visual indicators</p>
+                      <p class="text-xs text-slate-500 mt-1.5">{{ t('management.dressCode.modal.displayOptions.themeColorHint') }}</p>
                     </div>
 
                     <!-- Active Status -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Active Status</label>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.dressCode.modal.displayOptions.activeStatus') }}</label>
                       <div class="flex items-center justify-between h-10">
-                        <p class="text-xs text-slate-500">Inactive dress codes won't be shown to guests</p>
+                        <p class="text-xs text-slate-500">{{ t('management.dressCode.modal.displayOptions.activeStatusHint') }}</p>
                         <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                           <input
                             v-model="formData.is_active"
@@ -227,9 +227,9 @@
                 <div class="px-4 py-3 border-b border-slate-100">
                   <div class="flex items-center gap-2">
                     <ImageIcon class="w-3.5 h-3.5 mr-1.5" />
-                    <span class="text-sm font-medium text-slate-700">Reference Image</span>
+                    <span class="text-sm font-medium text-slate-700">{{ t('management.dressCode.modal.referenceImage.label') }}</span>
                     <span class="hidden sm:inline text-xs text-slate-500">
-                      {{ (isEditing && dressCode?.image && !shouldRemoveImage) || imagePreview ? 'Image attached' : 'Optional' }}
+                      {{ (isEditing && dressCode?.image && !shouldRemoveImage) || imagePreview ? t('management.dressCode.modal.referenceImage.attached') : t('management.dressCode.modal.referenceImage.optional') }}
                     </span>
                   </div>
                 </div>
@@ -250,7 +250,7 @@
                         <X class="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1.5">Current image (click X to remove)</p>
+                    <p class="text-xs text-slate-500 mt-1.5">{{ t('management.dressCode.modal.referenceImage.currentImageHint') }}</p>
                   </div>
 
                   <!-- New Image Preview -->
@@ -269,7 +269,7 @@
                         <X class="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1.5">New image preview</p>
+                    <p class="text-xs text-slate-500 mt-1.5">{{ t('management.dressCode.modal.referenceImage.newImagePreview') }}</p>
                   </div>
 
                   <!-- Upload Button -->
@@ -279,9 +279,9 @@
                   >
                     <Upload class="w-6 h-6 text-slate-400 group-hover:text-sky-600 mx-auto mb-2" />
                     <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
-                      Click to upload image
+                      {{ t('management.dressCode.modal.referenceImage.uploadClick') }}
                     </p>
-                    <p class="text-xs text-slate-400 mt-1">JPG, PNG, GIF, WebP (Max 5MB)</p>
+                    <p class="text-xs text-slate-400 mt-1">{{ t('management.dressCode.modal.referenceImage.uploadFormat') }}</p>
                   </div>
                   <input
                     ref="fileInput"
@@ -301,7 +301,7 @@
                   :disabled="loading"
                   class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
                 >
-                  Cancel
+                  {{ t('management.dressCode.modal.actions.cancel') }}
                 </button>
                 <button
                   type="submit"
@@ -312,7 +312,7 @@
                     v-if="loading"
                     class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
-                  {{ loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Dress Code' : 'Create Dress Code') }}
+                  {{ loading ? (isEditing ? t('management.dressCode.modal.actions.updating') : t('management.dressCode.modal.actions.creating')) : (isEditing ? t('management.dressCode.modal.actions.update') : t('management.dressCode.modal.actions.create')) }}
                 </button>
               </div>
             </form>
@@ -326,11 +326,9 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { X, Upload, Shirt, ChevronDown, Palette, ImageIcon } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   dressCodeService,
-  DRESS_CODE_TYPE_LABELS,
-  TIME_PERIOD_LABELS,
-  GENDER_LABELS,
   type EventDressCode,
   type CreateDressCodeRequest,
   type DressCodeType,
@@ -351,6 +349,41 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
+
+const translatedDressCodeTypes = computed<Record<DressCodeType, string>>(() => ({
+  white_tie: t('management.dressCode.modal.fields.types.white_tie'),
+  black_tie: t('management.dressCode.modal.fields.types.black_tie'),
+  black_tie_optional: t('management.dressCode.modal.fields.types.black_tie_optional'),
+  formal: t('management.dressCode.modal.fields.types.formal'),
+  cocktail: t('management.dressCode.modal.fields.types.cocktail'),
+  semi_formal: t('management.dressCode.modal.fields.types.semi_formal'),
+  business_formal: t('management.dressCode.modal.fields.types.business_formal'),
+  business_casual: t('management.dressCode.modal.fields.types.business_casual'),
+  smart_casual: t('management.dressCode.modal.fields.types.smart_casual'),
+  casual: t('management.dressCode.modal.fields.types.casual'),
+  beach_formal: t('management.dressCode.modal.fields.types.beach_formal'),
+  beach_casual: t('management.dressCode.modal.fields.types.beach_casual'),
+  festive: t('management.dressCode.modal.fields.types.festive'),
+  traditional: t('management.dressCode.modal.fields.types.traditional'),
+  themed: t('management.dressCode.modal.fields.types.themed'),
+  custom: t('management.dressCode.modal.fields.types.custom'),
+}))
+
+const translatedTimePeriods = computed<Record<TimePeriod, string>>(() => ({
+  all_day: t('management.dressCode.modal.fields.timePeriods.all_day'),
+  morning: t('management.dressCode.modal.fields.timePeriods.morning'),
+  afternoon: t('management.dressCode.modal.fields.timePeriods.afternoon'),
+  evening: t('management.dressCode.modal.fields.timePeriods.evening'),
+  night: t('management.dressCode.modal.fields.timePeriods.night'),
+}))
+
+const translatedGenders = computed<Record<Gender, string>>(() => ({
+  all: t('management.dressCode.modal.fields.genders.all'),
+  male: t('management.dressCode.modal.fields.genders.male'),
+  female: t('management.dressCode.modal.fields.genders.female'),
+}))
 
 const isEditing = computed(() => !!props.dressCode)
 
@@ -444,14 +477,14 @@ const handleFileChange = (event: Event) => {
 
   // Validate file size (5MB max)
   if (file.size > 5 * 1024 * 1024) {
-    error.value = 'Image size must be under 5MB'
+    error.value = t('management.dressCode.modal.errors.imageTooLarge')
     return
   }
 
   // Validate file type
   const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
   if (!validTypes.includes(file.type)) {
-    error.value = 'Invalid image format. Allowed: JPG, PNG, GIF, WebP'
+    error.value = t('management.dressCode.modal.errors.invalidFormat')
     return
   }
 
@@ -524,7 +557,7 @@ const handleSubmit = async () => {
 
   // Validation
   if (!formData.value.dress_code_type || !formData.value.time_period || !formData.value.gender) {
-    error.value = 'Please fill in all required fields'
+    error.value = t('management.dressCode.modal.errors.required')
     return
   }
 
@@ -581,10 +614,10 @@ const handleSubmit = async () => {
       emit('success', response.data)
       emit('close')
     } else {
-      error.value = response.message || 'Failed to save dress code'
+      error.value = response.message || t('management.dressCode.modal.errors.saveFailed')
     }
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'An error occurred while saving the dress code'
+    const errorMessage = err instanceof Error ? err.message : t('management.dressCode.modal.errors.saveError')
     error.value = errorMessage
   } finally {
     loading.value = false

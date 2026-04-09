@@ -2,8 +2,8 @@
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
     <div class="mb-6">
-      <h5 class="font-semibold text-slate-900">Dress Code Guidelines</h5>
-      <p class="text-sm text-slate-600">Manage dress code suggestions for your event</p>
+      <h5 class="font-semibold text-slate-900">{{ t('management.dressCode.section.title') }}</h5>
+      <p class="text-sm text-slate-600">{{ t('management.dressCode.section.subtitle') }}</p>
     </div>
 
     <!-- Loading State -->
@@ -30,7 +30,7 @@
           @click="fetchDressCodes"
           class="mt-3 sm:mt-4 bg-red-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl hover:bg-red-700 transition-colors duration-200 text-sm sm:text-base"
         >
-          Try Again
+          {{ t('management.dressCode.section.tryAgain') }}
         </button>
       </div>
     </div>
@@ -59,9 +59,9 @@
         <p :class="[
           'font-semibold transition-colors',
           canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
-        ]">No dress codes added</p>
-        <p class="text-sm text-slate-500 mt-1">Add dress code guidelines to help guests prepare for your event</p>
-        <p v-if="canEdit" class="text-xs text-slate-400 mt-1">Click to add a dress code</p>
+        ]">{{ t('management.dressCode.section.empty.title') }}</p>
+        <p class="text-sm text-slate-500 mt-1">{{ t('management.dressCode.section.empty.description') }}</p>
+        <p v-if="canEdit" class="text-xs text-slate-400 mt-1">{{ t('management.dressCode.section.empty.hint') }}</p>
       </div>
     </div>
 
@@ -90,8 +90,8 @@
           <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
             <Shirt class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
           </div>
-          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">Add dress code</p>
-          <p class="text-xs text-slate-400 mt-1">{{ dressCodes.length }} dress code{{ dressCodes.length !== 1 ? 's' : '' }}</p>
+          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">{{ t('management.dressCode.section.addCard.label') }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ dressCodes.length !== 1 ? t('management.dressCode.section.addCard.countPlural', { count: dressCodes.length }) : t('management.dressCode.section.addCard.count', { count: dressCodes.length }) }}</p>
         </div>
       </div>
     </div>
@@ -108,8 +108,8 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="deleting"
-      title="Delete Dress Code"
-      :item-name="dressCodeToDelete?.title || dressCodeToDelete?.dress_code_type_display || 'this dress code'"
+      :title="t('management.dressCode.section.deleteModal.title')"
+      :item-name="dressCodeToDelete?.title || dressCodeToDelete?.dress_code_type_display || t('management.dressCode.section.deleteModal.title')"
       @confirm="confirmDelete"
       @cancel="showDeleteModal = false"
     />
@@ -134,6 +134,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { Shirt, AlertCircle, CheckCircle } from 'lucide-vue-next'
 import { dressCodeService, type EventDressCode } from '../services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import DressCodeCard from './DressCodeCard.vue'
 import DressCodeModal from './DressCodeModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
@@ -144,6 +145,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { t } = useAppLanguage()
 
 // State
 const dressCodes = ref<EventDressCode[]>([])
@@ -183,11 +186,11 @@ const fetchDressCodes = async () => {
         dressCodes.value = []
       }
     } else {
-      error.value = response.message || 'Failed to load dress codes'
+      error.value = response.message || t('management.dressCode.section.toast.loadFailed')
       dressCodes.value = []
     }
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Network error while loading dress codes'
+    const errorMessage = err instanceof Error ? err.message : t('management.dressCode.section.toast.loadNetworkError')
     error.value = errorMessage
     dressCodes.value = []
   } finally {
@@ -214,7 +217,7 @@ const handleDressCodeSaved = async () => {
   // Refresh the list
   await fetchDressCodes()
 
-  showMessage('success', selectedDressCode.value ? 'Dress code updated successfully' : 'Dress code added successfully')
+  showMessage('success', selectedDressCode.value ? t('management.dressCode.section.toast.updated') : t('management.dressCode.section.toast.added'))
 }
 
 const openDeleteModal = (dressCode: EventDressCode) => {
@@ -234,12 +237,12 @@ const confirmDelete = async () => {
       dressCodes.value = dressCodes.value.filter((dc) => dc.id !== dressCodeToDelete.value!.id)
       showDeleteModal.value = false
       dressCodeToDelete.value = null
-      showMessage('success', 'Dress code deleted successfully')
+      showMessage('success', t('management.dressCode.section.toast.deleted'))
     } else {
-      showMessage('error', response.message || 'Failed to delete dress code')
+      showMessage('error', response.message || t('management.dressCode.section.toast.deleteFailed'))
     }
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Network error while deleting dress code'
+    const errorMessage = err instanceof Error ? err.message : t('management.dressCode.section.toast.deleteNetworkError')
     showMessage('error', errorMessage)
   } finally {
     deleting.value = false
@@ -294,12 +297,12 @@ const handleDragEnd = async (targetDressCode: EventDressCode | null) => {
     if (!response.success) {
       // Rollback on failure
       await fetchDressCodes()
-      showMessage('error', response.message || 'Failed to reorder dress codes')
+      showMessage('error', response.message || t('management.dressCode.section.toast.reorderFailed'))
     }
   } catch (err) {
     // Rollback on failure
     await fetchDressCodes()
-    const errorMessage = err instanceof Error ? err.message : 'Network error while reordering dress codes'
+    const errorMessage = err instanceof Error ? err.message : t('management.dressCode.section.toast.reorderNetworkError')
     showMessage('error', errorMessage)
   } finally {
     draggedDressCode.value = null

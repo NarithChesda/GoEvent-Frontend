@@ -27,7 +27,7 @@
       >
         <div class="flex flex-col items-center gap-2 text-white/80">
           <ImageIcon class="h-10 w-10" />
-          <p class="text-xs font-medium uppercase tracking-wider">No Image</p>
+          <p class="text-xs font-medium uppercase tracking-wider">{{ t('management.dressCode.card.noImage') }}</p>
         </div>
       </div>
 
@@ -50,7 +50,7 @@
           v-if="!dressCode.is_active"
           class="inline-flex items-center rounded-lg bg-red-500/95 px-2.5 py-1 text-xs font-medium text-white shadow-sm backdrop-blur-sm"
         >
-          Inactive
+          {{ t('management.dressCode.card.inactive') }}
         </span>
       </div>
 
@@ -62,24 +62,24 @@
         <button
           v-if="draggable"
           class="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-          title="Drag to reorder"
-          aria-label="Drag to reorder"
+          :title="t('management.dressCode.card.dragToReorder')"
+          :aria-label="t('management.dressCode.card.dragToReorder')"
         >
           <GripVertical class="h-4 w-4" />
         </button>
         <button
           @click.stop="$emit('edit', dressCode)"
           class="rounded-md p-1.5 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-          title="Edit dress code"
-          aria-label="Edit dress code"
+          :title="t('management.dressCode.card.edit')"
+          :aria-label="t('management.dressCode.card.edit')"
         >
           <Edit class="h-4 w-4" />
         </button>
         <button
           @click.stop="$emit('delete', dressCode)"
           class="rounded-md p-1.5 text-slate-600 hover:bg-red-50 hover:text-red-500 transition-colors"
-          title="Delete dress code"
-          aria-label="Delete dress code"
+          :title="t('management.dressCode.card.delete')"
+          :aria-label="t('management.dressCode.card.delete')"
         >
           <Trash2 class="h-4 w-4" />
         </button>
@@ -117,6 +117,7 @@
 import { ref } from 'vue'
 import { Clock, Users, Edit, Trash2, ImageIcon, GripVertical } from 'lucide-vue-next'
 import type { EventDressCode } from '../services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   dressCode: EventDressCode
@@ -136,6 +137,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
 
 const isDragging = ref(false)
 

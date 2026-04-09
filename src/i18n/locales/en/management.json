@@ -509,5 +509,123 @@
     "updateError": "Failed to update event",
     "publishSuccess": "Event published successfully",
     "unpublishSuccess": "Event unpublished successfully"
+  },
+  "dressCode": {
+    "section": {
+      "title": "Dress Code Guidelines",
+      "subtitle": "Manage dress code suggestions for your event",
+      "tryAgain": "Try Again",
+      "empty": {
+        "title": "No dress codes added",
+        "description": "Add dress code guidelines to help guests prepare for your event",
+        "hint": "Click to add a dress code"
+      },
+      "addCard": {
+        "label": "Add dress code",
+        "count": "{count} dress code",
+        "countPlural": "{count} dress codes"
+      },
+      "deleteModal": {
+        "title": "Delete Dress Code"
+      },
+      "toast": {
+        "updated": "Dress code updated successfully",
+        "added": "Dress code added successfully",
+        "deleted": "Dress code deleted successfully",
+        "deleteFailed": "Failed to delete dress code",
+        "deleteNetworkError": "Network error while deleting dress code",
+        "reorderFailed": "Failed to reorder dress codes",
+        "reorderNetworkError": "Network error while reordering dress codes",
+        "loadFailed": "Failed to load dress codes",
+        "loadNetworkError": "Network error while loading dress codes"
+      }
+    },
+    "card": {
+      "noImage": "No Image",
+      "inactive": "Inactive",
+      "dragToReorder": "Drag to reorder",
+      "edit": "Edit dress code",
+      "delete": "Delete dress code"
+    },
+    "modal": {
+      "titleEdit": "Edit Dress Code",
+      "titleCreate": "Create Dress Code",
+      "fields": {
+        "dressCodeType": "Dress Code Type",
+        "selectDressCodeType": "Select dress code type",
+        "customTitle": "Custom Title",
+        "customTitleOptional": "Optional",
+        "customTitlePlaceholder": "e.g., Ceremony Attire",
+        "timePeriod": "Time Period",
+        "selectTimePeriod": "Select time period",
+        "gender": "Gender",
+        "selectGender": "Select gender",
+        "types": {
+          "white_tie": "White Tie",
+          "black_tie": "Black Tie",
+          "black_tie_optional": "Black Tie Optional",
+          "formal": "Formal / Evening Wear",
+          "cocktail": "Cocktail Attire",
+          "semi_formal": "Semi-Formal",
+          "business_formal": "Business Formal",
+          "business_casual": "Business Casual",
+          "smart_casual": "Smart Casual",
+          "casual": "Casual",
+          "beach_formal": "Beach Formal",
+          "beach_casual": "Beach Casual",
+          "festive": "Festive Attire",
+          "traditional": "Traditional Attire",
+          "themed": "Themed / Costume",
+          "custom": "Custom"
+        },
+        "timePeriods": {
+          "all_day": "All Day",
+          "morning": "Morning",
+          "afternoon": "Afternoon",
+          "evening": "Evening",
+          "night": "Night"
+        },
+        "genders": {
+          "all": "All Genders",
+          "male": "Male",
+          "female": "Female"
+        }
+      },
+      "description": {
+        "label": "Description",
+        "hint": "Optional guidelines",
+        "placeholder": "Detailed dress code instructions and guidelines..."
+      },
+      "displayOptions": {
+        "label": "Display Options",
+        "themeColor": "Theme Color",
+        "themeColorHint": "Color for visual indicators",
+        "activeStatus": "Active Status",
+        "activeStatusHint": "Inactive dress codes won't be shown to guests"
+      },
+      "referenceImage": {
+        "label": "Reference Image",
+        "attached": "Image attached",
+        "optional": "Optional",
+        "currentImageHint": "Current image (click X to remove)",
+        "newImagePreview": "New image preview",
+        "uploadClick": "Click to upload image",
+        "uploadFormat": "JPG, PNG, GIF, WebP (Max 5MB)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "updating": "Updating...",
+        "creating": "Creating...",
+        "update": "Update Dress Code",
+        "create": "Create Dress Code"
+      },
+      "errors": {
+        "required": "Please fill in all required fields",
+        "saveFailed": "Failed to save dress code",
+        "saveError": "An error occurred while saving the dress code",
+        "imageTooLarge": "Image size must be under 5MB",
+        "invalidFormat": "Invalid image format. Allowed: JPG, PNG, GIF, WebP"
+      }
+    }
   }
 }
