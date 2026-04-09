@@ -37,10 +37,10 @@
       <!-- Time Section -->
       <div class="flex-shrink-0 text-left sm:text-center w-[68px] sm:w-auto sm:min-w-[68px]">
         <div class="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">
-          {{ item.start_time_text || 'TBD' }}
+          {{ localizedItem.start_time_text || 'TBD' }}
         </div>
-        <div v-if="item.end_time_text" class="text-[10px] sm:text-xs text-slate-500">
-          {{ item.end_time_text }}
+        <div v-if="localizedItem.end_time_text" class="text-[10px] sm:text-xs text-slate-500">
+          {{ localizedItem.end_time_text }}
         </div>
         <div
           v-if="item.agenda_type"
@@ -56,7 +56,7 @@
         <!-- Title Row -->
         <div class="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
           <h3 class="text-sm sm:text-base font-semibold text-slate-900 leading-snug line-clamp-2">
-            {{ item.title }}
+            {{ localizedItem.title }}
           </h3>
           <Star
             v-if="item.is_featured"
@@ -75,23 +75,23 @@
 
         <!-- Description -->
         <p
-          v-if="item.description"
+          v-if="localizedItem.description"
           class="text-xs sm:text-sm text-slate-600 leading-snug line-clamp-2"
         >
-          {{ item.description }}
+          {{ localizedItem.description }}
         </p>
 
         <!-- Details Row -->
         <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] sm:text-xs text-slate-600">
           <!-- Speaker -->
-          <div v-if="item.speaker" class="flex items-center gap-1.5">
+          <div v-if="localizedItem.speaker" class="flex items-center gap-1.5">
             <div
               class="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-medium"
               :style="{ backgroundColor: accentColor }"
             >
-              {{ getInitials(item.speaker) }}
+              {{ getInitials(localizedItem.speaker) }}
             </div>
-            <span class="font-medium truncate max-w-[140px]" :title="item.speaker">{{ item.speaker }}</span>
+            <span class="font-medium truncate max-w-[140px]" :title="localizedItem.speaker">{{ localizedItem.speaker }}</span>
           </div>
 
           <!-- Location -->
@@ -151,6 +151,7 @@ import {
 } from 'lucide-vue-next'
 import type { EventAgendaItem } from '../services/api'
 import { sanitizeSvg } from '@/utils/sanitize'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   item: EventAgendaItem
@@ -165,8 +166,23 @@ interface Emits {
 }
 
 const props = defineProps<Props>()
-
 const emit = defineEmits<Emits>()
+
+const { locale, t } = useAppLanguage()
+
+// Pick the translation for the active locale; fall back to root English fields
+const localizedItem = computed(() => {
+  const translation = props.item.translations?.find((tr) => tr.language === locale.value)
+  const pick = (translated: string | undefined, fallback: string | undefined) =>
+    translated?.trim() ? translated : (fallback ?? '')
+  return {
+    title: pick(translation?.title, props.item.title),
+    description: pick(translation?.description, props.item.description),
+    speaker: pick(translation?.speaker, props.item.speaker),
+    start_time_text: pick(translation?.start_time_text, props.item.start_time_text),
+    end_time_text: pick(translation?.end_time_text, props.item.end_time_text),
+  }
+})
 
 // Desktop detection - only enable drag on screens >= 640px (sm breakpoint)
 const isDesktop = ref(false)
@@ -236,17 +252,13 @@ const sanitizedIconSvg = computed(() => {
 })
 
 // Helper functions
+const KNOWN_AGENDA_TYPES = ['session', 'keynote', 'workshop', 'panel', 'break', 'networking', 'other']
+
 const getAgendaTypeLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    session: 'Session',
-    break: 'Break',
-    networking: 'Networking',
-    keynote: 'Keynote',
-    workshop: 'Workshop',
-    panel: 'Panel Discussion',
-    other: 'Other',
+  if (KNOWN_AGENDA_TYPES.includes(type)) {
+    return t(`management.agendaDrawer.schedule.types.${type}`)
   }
-  return labels[type] || type
+  return type
 }
 
 const getInitials = (name: string): string => {
@@ -314,7 +326,7 @@ const createDragPreview = (): HTMLElement => {
     text-overflow: ellipsis;
     margin-bottom: 2px;
   `
-  title.textContent = props.item.title
+  title.textContent = localizedItem.value.title
   content.appendChild(title)
 
   // Time
@@ -326,7 +338,7 @@ const createDragPreview = (): HTMLElement => {
     align-items: center;
     gap: 4px;
   `
-  time.textContent = props.item.start_time_text || 'TBD'
+  time.textContent = localizedItem.value.start_time_text || 'TBD'
   content.appendChild(time)
 
   preview.appendChild(content)

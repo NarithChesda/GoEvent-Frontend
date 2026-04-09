@@ -18,7 +18,7 @@
           <div class="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-emerald-50 to-sky-50 border border-emerald-100 rounded-xl">
             <div class="flex items-center gap-2 min-w-0">
               <Wand2 class="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span class="text-sm font-medium text-slate-700 truncate">Auto-fill from category template</span>
+              <span class="text-sm font-medium text-slate-700 truncate">{{ t('management.overview.populate.label') }}</span>
             </div>
             <button
               @click="handlePopulateClick"
@@ -27,7 +27,7 @@
             >
               <Loader2 v-if="populateLoading" class="w-3.5 h-3.5 animate-spin" />
               <Wand2 v-else class="w-3.5 h-3.5" />
-              {{ populateLoading ? 'Loading…' : 'Populate' }}
+              {{ populateLoading ? t('management.overview.populate.loading') : t('management.overview.populate.btn') }}
             </button>
           </div>
           <!-- Feedback message -->
@@ -98,7 +98,7 @@
               class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
             >
               <CalendarPlus class="w-4 h-4" />
-              Add to Calendar
+              {{ t('management.overview.calendar.addToCalendar') }}
             </button>
             <!-- Calendar Options Dropdown -->
             <div v-if="showCalendarOptions" class="mt-2 flex flex-wrap gap-2">
@@ -106,19 +106,19 @@
                 @click="addToGoogleCalendar"
                 class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
               >
-                Google
+                {{ t('management.overview.calendar.google') }}
               </button>
               <button
                 @click="addToOutlookCalendar"
                 class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
               >
-                Outlook
+                {{ t('management.overview.calendar.outlook') }}
               </button>
               <button
                 @click="downloadICSFile"
                 class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
               >
-                Download .ics
+                {{ t('management.overview.calendar.downloadIcs') }}
               </button>
             </div>
           </div>
@@ -132,7 +132,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-slate-900">
-              {{ event.is_virtual ? 'Virtual Event' : (event.location || 'Location TBD') }}
+              {{ event.is_virtual ? t('management.overview.location.virtual') : (event.location || t('management.overview.location.tbd')) }}
             </p>
             <p v-if="event.is_virtual && event.virtual_link" class="text-sm text-slate-600 truncate">
               {{ event.virtual_link }}
@@ -143,7 +143,7 @@
               class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
             >
               <ExternalLink class="w-4 h-4" />
-              View on Map
+              {{ t('management.overview.location.viewOnMap') }}
             </button>
             <button
               v-if="event.is_virtual && event.virtual_link"
@@ -151,20 +151,20 @@
               class="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 font-medium"
             >
               <ExternalLink class="w-4 h-4" />
-              Join Virtual Event
+              {{ t('management.overview.location.joinVirtual') }}
             </button>
           </div>
         </div>
 
         <!-- About Event -->
         <div v-if="event.description" class="border-t border-slate-100 pt-6">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">About Event</h3>
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ t('management.overview.sections.aboutEvent') }}</h3>
           <div class="prose prose-sm max-w-none text-slate-700" v-html="sanitizedDescription" />
         </div>
 
         <!-- Agenda -->
         <div v-if="event.agenda_items && event.agenda_items.length > 0" class="border-t border-slate-100 pt-6">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Agenda</h3>
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ t('management.overview.sections.agenda') }}</h3>
           <div class="space-y-3">
             <div
               v-for="(group, dateKey) in groupedAgendaItems"
@@ -189,7 +189,7 @@
                   </div>
                   <div class="text-left">
                     <p class="font-medium text-slate-900 text-sm">{{ group.displayDate }}</p>
-                    <p class="text-xs text-slate-500">{{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'items' }}</p>
+                    <p class="text-xs text-slate-500">{{ group.items.length }} {{ group.items.length === 1 ? t('management.overview.agendaCount.item') : t('management.overview.agendaCount.items') }}</p>
                   </div>
                 </div>
                 <ChevronDown
@@ -223,7 +223,7 @@
 
         <!-- Location Map -->
         <div v-if="googleMapEmbedUrl" class="border-t border-slate-100 pt-6">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Location</h3>
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ t('management.overview.sections.location') }}</h3>
           <div class="rounded-xl overflow-hidden border border-slate-200">
             <iframe
               :src="googleMapEmbedUrl"
@@ -240,7 +240,7 @@
 
         <!-- Hosts -->
         <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-100 pt-6">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Hosted By</h3>
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ t('management.overview.sections.hostedBy') }}</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div
               v-for="host in event.hosts"
@@ -267,9 +267,9 @@
 
         <!-- Social Media Preview -->
         <div class="border-t border-slate-100 pt-6">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Social Media Preview</h3>
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ t('management.overview.sections.socialPreview') }}</h3>
           <p class="text-sm text-slate-600 mb-4">
-            Preview how your event showcase will appear when shared on social media
+            {{ t('management.overview.sections.socialPreviewDesc') }}
           </p>
 
           <!-- Facebook Preview Card -->
@@ -295,7 +295,7 @@
 
         <!-- Guest Overview -->
         <div v-if="event.can_edit && hasTemplatePayment" class="border-t border-slate-100 pt-6">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Guest Overview</h3>
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ t('management.overview.sections.guestOverview') }}</h3>
           <GuestStatsCard :stats="guestStats" :loading="loadingStats" compact />
         </div>
       </div>
@@ -313,16 +313,16 @@
               <AlertTriangle class="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h3 class="font-semibold text-slate-900">Event already has content</h3>
+              <h3 class="font-semibold text-slate-900">{{ t('management.overview.dialog.title') }}</h3>
               <p class="text-sm text-slate-600 mt-1">
-                This event already contains:
+                {{ t('management.overview.dialog.contains') }}
               </p>
               <ul class="text-sm text-slate-700 mt-2 space-y-0.5">
-                <li v-if="populateDialog.existing_data.texts">Texts: <strong>{{ populateDialog.existing_data.texts }}</strong></li>
-                <li v-if="populateDialog.existing_data.hosts">Hosts: <strong>{{ populateDialog.existing_data.hosts }}</strong></li>
-                <li v-if="populateDialog.existing_data.agenda">Agenda items: <strong>{{ populateDialog.existing_data.agenda }}</strong></li>
+                <li v-if="populateDialog.existing_data.texts">{{ t('management.overview.dialog.texts') }} <strong>{{ populateDialog.existing_data.texts }}</strong></li>
+                <li v-if="populateDialog.existing_data.hosts">{{ t('management.overview.dialog.hosts') }} <strong>{{ populateDialog.existing_data.hosts }}</strong></li>
+                <li v-if="populateDialog.existing_data.agenda">{{ t('management.overview.dialog.agendaItems') }} <strong>{{ populateDialog.existing_data.agenda }}</strong></li>
               </ul>
-              <p class="text-sm text-slate-600 mt-3">How would you like to proceed?</p>
+              <p class="text-sm text-slate-600 mt-3">{{ t('management.overview.dialog.howToProceed') }}</p>
             </div>
           </div>
           <div class="flex flex-col gap-2 pt-2">
@@ -331,20 +331,20 @@
               :disabled="populateLoading"
               class="w-full px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-60"
             >
-              Skip existing — only fill gaps
+              {{ t('management.overview.dialog.skipExisting') }}
             </button>
             <button
               @click="runPopulate('overwrite')"
               :disabled="populateLoading"
               class="w-full px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors disabled:opacity-60"
             >
-              Overwrite all — replace everything
+              {{ t('management.overview.dialog.overwriteAll') }}
             </button>
             <button
               @click="populateDialog = null"
               class="w-full px-4 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
             >
-              Cancel
+              {{ t('common.actions.cancel') }}
             </button>
           </div>
         </div>
@@ -372,6 +372,7 @@ import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import type { EventAgendaItem } from '../services/api/types/event.types'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
+import { useAppLanguage } from '../composables/useAppLanguage'
 import GuestStatsCard from './invitation/GuestStatsCard.vue'
 
 interface Props {
@@ -383,6 +384,7 @@ interface Emits {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 defineEmits<Emits>()
 
 // Use payment template integration composable

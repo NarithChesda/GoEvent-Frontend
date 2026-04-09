@@ -3,7 +3,7 @@
     <!-- Title -->
     <div>
       <label class="block text-sm font-medium text-slate-700 mb-1.5">
-        Title <span v-if="!languageName" class="text-red-500">*</span>
+        {{ t('management.agendaDrawer.fields.title') }} <span v-if="!languageName" class="text-red-500">*</span>
       </label>
       <input
         :value="title"
@@ -11,7 +11,7 @@
         type="text"
         :required="!languageName"
         class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-        :placeholder="languageName ? `Enter title in ${languageName}` : 'Enter agenda item title'"
+        :placeholder="languageName ? t('management.agendaDrawer.fields.titlePlaceholderLang', { lang: languageName }) : t('management.agendaDrawer.fields.titlePlaceholder')"
       />
       <p v-if="fieldErrors?.title" class="mt-1 text-xs text-red-600">
         {{ fieldErrors.title }}
@@ -22,27 +22,27 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-          Start Time
+          {{ t('management.agendaDrawer.fields.startTime') }}
         </label>
         <input
           :value="startTimeText"
           @input="$emit('update:start-time-text', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `Start time in ${languageName}` : 'e.g., 9:00 AM'"
+          :placeholder="languageName ? t('management.agendaDrawer.fields.startTimePlaceholderLang', { lang: languageName }) : t('management.agendaDrawer.fields.startTimePlaceholder')"
         />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-          End Time
+          {{ t('management.agendaDrawer.fields.endTime') }}
         </label>
         <input
           :value="endTimeText"
           @input="$emit('update:end-time-text', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-          :placeholder="languageName ? `End time in ${languageName}` : 'e.g., 10:00 AM'"
+          :placeholder="languageName ? t('management.agendaDrawer.fields.endTimePlaceholderLang', { lang: languageName }) : t('management.agendaDrawer.fields.endTimePlaceholder')"
         />
       </div>
     </div>
@@ -57,7 +57,7 @@
         :aria-controls="descriptionSectionId"
       >
         <div class="flex items-center gap-2">
-          <span class="text-sm font-medium text-slate-700">Description</span>
+          <span class="text-sm font-medium text-slate-700">{{ t('management.agendaDrawer.fields.description') }}</span>
           <span class="hidden sm:inline text-xs text-slate-500">{{ descriptionSummary }}</span>
         </div>
         <svg
@@ -81,7 +81,7 @@
             @input="$emit('update:description', ($event.target as HTMLTextAreaElement).value)"
             rows="3"
             class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
-            :placeholder="languageName ? `Description in ${languageName}` : 'Describe this agenda item'"
+            :placeholder="languageName ? t('management.agendaDrawer.fields.descriptionPlaceholderLang', { lang: languageName }) : t('management.agendaDrawer.fields.descriptionPlaceholder')"
           ></textarea>
         </div>
       </Transition>
@@ -97,7 +97,7 @@
         :aria-controls="speakerSectionId"
       >
         <div class="flex items-center gap-2">
-          <span class="text-sm font-medium text-slate-700">Speaker(s)</span>
+          <span class="text-sm font-medium text-slate-700">{{ t('management.agendaDrawer.fields.speakers') }}</span>
           <span class="hidden sm:inline text-xs text-slate-500">{{ speakerSummary }}</span>
         </div>
         <svg
@@ -121,7 +121,7 @@
             @input="$emit('update:speaker', ($event.target as HTMLInputElement).value)"
             type="text"
             class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-            :placeholder="languageName ? `Speaker name(s) in ${languageName}` : 'e.g., Dr. Jane Smith, CEO of TechCorp'"
+            :placeholder="languageName ? t('management.agendaDrawer.fields.speakerPlaceholderLang', { lang: languageName }) : t('management.agendaDrawer.fields.speakerPlaceholder')"
           />
         </div>
       </Transition>
@@ -131,6 +131,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   title: string
@@ -156,6 +157,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 defineEmits<Emits>()
+const { t } = useAppLanguage()
 
 const descriptionSectionId = computed(() =>
   props.languageName ? `description-section-${props.languageName}` : 'description-section',
@@ -167,13 +169,13 @@ const speakerSectionId = computed(() =>
 
 const descriptionSummary = computed(() => {
   const text = (props.description || '').trim()
-  if (!text) return 'No description'
+  if (!text) return t('management.agendaDrawer.fields.noDescription')
   return text.length > 60 ? text.slice(0, 60) + '...' : text
 })
 
 const speakerSummary = computed(() => {
   const text = (props.speaker || '').trim()
-  if (!text) return 'No speaker'
+  if (!text) return t('management.agendaDrawer.fields.noSpeaker')
   return text.length > 60 ? text.slice(0, 60) + '...' : text
 })
 </script>

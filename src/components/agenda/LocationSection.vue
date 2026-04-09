@@ -9,7 +9,7 @@
     >
       <div class="flex items-center gap-2">
         <MapPin class="w-3.5 h-3.5 mr-1.5" />
-        <span class="text-sm font-medium text-slate-700">Location</span>
+        <span class="text-sm font-medium text-slate-700">{{ t('management.agendaDrawer.location.label') }}</span>
         <span class="hidden sm:inline text-xs text-slate-500">{{ locationSummary }}</span>
       </div>
       <svg
@@ -31,19 +31,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <!-- Physical Location -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Physical Location</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.agendaDrawer.location.physical') }}</label>
             <input
               :value="location"
               @input="$emit('update:location', ($event.target as HTMLInputElement).value)"
               type="text"
               class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
-              placeholder="e.g., Conference Room A"
+              :placeholder="t('management.agendaDrawer.location.physicalPlaceholder')"
             />
           </div>
 
           <!-- Virtual Link -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Link</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.agendaDrawer.location.virtual') }}</label>
             <input
               :value="virtualLink"
               @input="$emit('update:virtual-link', ($event.target as HTMLInputElement).value)"
@@ -69,6 +69,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { MapPin } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   location: string
@@ -85,11 +86,14 @@ interface Emits {
 
 const props = defineProps<Props>()
 defineEmits<Emits>()
+const { t } = useAppLanguage()
 
 const locationSummary = computed(() => {
   const items = [props.location, props.virtualLink]
   const count = items.filter((v) => v && String(v).trim() !== '').length
-  return count > 0 ? `${count} ${count === 1 ? 'location' : 'locations'}` : 'No locations'
+  return count > 0
+    ? `${count} ${count === 1 ? t('management.agendaDrawer.location.locationNoun') : t('management.agendaDrawer.location.locationsNoun')}`
+    : t('management.agendaDrawer.location.noLocations')
 })
 </script>
 

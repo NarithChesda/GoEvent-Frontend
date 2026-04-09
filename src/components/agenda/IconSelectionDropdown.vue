@@ -3,7 +3,7 @@
     <label class="block text-sm font-medium text-slate-700 mb-1.5">
       <span class="flex items-center gap-1.5">
         <Sparkles class="w-3.5 h-3.5" />
-        Icon
+        {{ t('management.agendaDrawer.icon.label') }}
       </span>
     </label>
 
@@ -23,7 +23,7 @@
         <div v-else class="w-6 h-6 flex items-center justify-center">
           <X class="w-5 h-5 text-slate-400" />
         </div>
-        <span class="text-slate-700">{{ selectedIcon?.name || 'No icon' }}</span>
+        <span class="text-slate-700">{{ selectedIcon?.name || t('management.agendaDrawer.icon.noIcon') }}</span>
       </div>
       <ChevronDown
         class="w-4 h-4 text-slate-400 transition-transform"
@@ -53,7 +53,7 @@
             <div class="w-6 h-6 flex items-center justify-center">
               <X class="w-5 h-5 text-slate-400" />
             </div>
-            <span class="text-sm">No icon</span>
+            <span class="text-sm">{{ t('management.agendaDrawer.icon.noIcon') }}</span>
             <Check v-if="iconId === null" class="w-4 h-4 ml-auto text-sky-600" />
           </button>
 
@@ -83,6 +83,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Sparkles, ChevronDown, X, Check } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import type { AgendaIcon } from '@/services/api'
 import { sanitizeSvg } from '@/utils/sanitize'
 
@@ -98,6 +99,7 @@ interface Emits {
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useAppLanguage()
 
 const isOpen = ref(false)
 const triggerRef = ref<HTMLButtonElement | null>(null)

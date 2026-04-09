@@ -3,24 +3,24 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Event Agenda</h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage your event schedule and agenda items</p>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.agenda.title') }}</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.agenda.subtitle') }}</p>
         <!-- Drag and Drop Hint (Desktop Only) -->
         <div v-if="canEdit && agendaItems.length > 0" class="hidden sm:flex items-center gap-1.5 mt-2 text-xs text-slate-500">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
           </svg>
-          <span>Drag items to reorder or move between dates</span>
+          <span>{{ t('management.agenda.dragHint') }}</span>
         </div>
       </div>
       <button
         v-if="canEdit"
         @click="openCreateDrawer"
         class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold p-2 sm:py-2 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center justify-center"
-        title="Add Agenda Item"
+        :title="t('management.agenda.addBtn')"
       >
         <Plus class="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
-        <span class="hidden sm:inline">Add Agenda Item</span>
+        <span class="hidden sm:inline">{{ t('management.agenda.addBtn') }}</span>
       </button>
     </div>
 
@@ -37,8 +37,8 @@
             class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
           ></div>
           <div class="flex flex-col">
-            <span class="text-base font-semibold text-slate-900">Reordering agenda...</span>
-            <span class="text-xs text-slate-600">Please wait</span>
+            <span class="text-base font-semibold text-slate-900">{{ t('management.agenda.reordering') }}</span>
+            <span class="text-xs text-slate-600">{{ t('management.agenda.pleaseWait') }}</span>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
     >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading agenda...</span>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.agenda.loadingText') }}</span>
       </div>
     </div>
 
@@ -91,7 +91,7 @@
               </div>
               <div>
                 <h3 class="text-base sm:text-xl font-bold text-slate-900">{{ formatDayHeader(day.date) }}</h3>
-                <p class="text-xs sm:text-sm text-slate-600">{{ day.items.length }} agenda items</p>
+                <p class="text-xs sm:text-sm text-slate-600">{{ day.items.length }} {{ t('management.agenda.agendaItems') }}</p>
               </div>
             </div>
             <div class="flex items-center gap-1 sm:gap-2">
@@ -162,15 +162,15 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
       <Calendar class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Agenda Items Yet</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">Start building your event schedule by adding agenda items.</p>
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ t('management.agenda.empty.title') }}</h3>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">{{ t('management.agenda.empty.description') }}</p>
       <button
         v-if="canEdit"
         @click="openCreateDrawer"
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
         <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Add Your First Agenda Item
+        {{ t('management.agenda.empty.addBtn') }}
       </button>
     </div>
 
@@ -180,7 +180,7 @@
     >
       <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
         <Info class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-        Session Types
+        {{ t('management.agenda.sessionTypes.title') }}
       </h3>
       <ul class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 list-none p-0 m-0">
         <li
@@ -203,7 +203,7 @@
               v-if="legend.count"
               class="text-[9px] sm:text-[10px] text-slate-500 font-medium whitespace-nowrap"
             >
-              {{ legend.count }} {{ legend.count === 1 ? 'item' : 'items' }}
+              {{ legend.count }} {{ legend.count === 1 ? t('management.agenda.count.item') : t('management.agenda.count.items') }}
             </span>
           </div>
           <p class="text-[10px] sm:text-xs text-slate-600 leading-snug">
@@ -228,9 +228,9 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="isDeleting"
-      title="Delete Agenda Item"
-      :item-name="itemToDelete?.title || 'this agenda item'"
-      message="This will permanently remove this item from your event agenda."
+      :title="t('management.agenda.deleteModal.title')"
+      :item-name="itemToDelete?.title || t('management.agenda.deleteModal.fallbackName')"
+      :message="t('management.agenda.deleteModal.message')"
       @confirm="deleteAgendaItem"
       @cancel="closeDeleteModal"
     />
@@ -239,9 +239,9 @@
     <DeleteConfirmModal
       :show="showDeleteDateGroupModal"
       :loading="isDeletingDateGroup"
-      title="Delete All Items in Date Group"
-      :item-name="dateGroupToDelete ? `all ${dateGroupToDelete.itemCount} agenda items on ${formatDayHeader(dateGroupToDelete.date)}` : ''"
-      message="This will permanently delete all agenda items scheduled for this date. This action cannot be undone."
+      :title="t('management.agenda.deleteDateGroupModal.title')"
+      :item-name="dateGroupToDelete ? t('management.agenda.deleteDateGroupModal.itemName', { count: dateGroupToDelete.itemCount, date: formatDayHeader(dateGroupToDelete.date) }) : ''"
+      :message="t('management.agenda.deleteDateGroupModal.message')"
       @confirm="deleteDateGroup"
       @cancel="closeDeleteDateGroupModal"
     />
@@ -275,6 +275,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, toRef } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle, Edit2, Trash2 } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
@@ -291,6 +292,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 
 // State
 const agendaItems = ref<EventAgendaItem[]>([])
@@ -338,36 +340,36 @@ interface LegendItem {
   count: number
 }
 
-const DEFAULT_LEGEND: LegendItem[] = [
+const DEFAULT_LEGEND = computed<LegendItem[]>(() => [
   {
     type: 'keynote',
-    label: 'Keynote',
-    description: 'Main presentations and headline talks',
+    label: t('management.agenda.sessionTypes.keynote.label'),
+    description: t('management.agenda.sessionTypes.keynote.description'),
     color: '#1e90ff',
     count: 0,
   },
   {
     type: 'workshop',
-    label: 'Workshop',
-    description: 'Hands-on or interactive learning sessions',
+    label: t('management.agenda.sessionTypes.workshop.label'),
+    description: t('management.agenda.sessionTypes.workshop.description'),
     color: '#8B5CF6',
     count: 0,
   },
   {
     type: 'break',
-    label: 'Break',
-    description: 'Rest, networking, or informal moments',
+    label: t('management.agenda.sessionTypes.break.label'),
+    description: t('management.agenda.sessionTypes.break.description'),
     color: '#22c55e',
     count: 0,
   },
   {
     type: 'panel',
-    label: 'Panel',
-    description: 'Facilitated group discussions or Q&A',
+    label: t('management.agenda.sessionTypes.panel.label'),
+    description: t('management.agenda.sessionTypes.panel.description'),
     color: '#f97316',
     count: 0,
   },
-]
+])
 
 const normalizeHex = (color: string): string | null => {
   if (!color || !color.startsWith('#')) return null
@@ -428,11 +430,11 @@ const legendItems = computed<LegendItem[]>(() => {
     if (!item) return
     const typeKey = (item.agenda_type || 'other').toLowerCase()
     const base =
-      DEFAULT_LEGEND.find((entry) => entry.type === typeKey) ||
+      DEFAULT_LEGEND.value.find((entry) => entry.type === typeKey) ||
       {
         type: typeKey,
-        label: item.agenda_type || 'Other',
-        description: 'Additional sessions',
+        label: item.agenda_type || t('management.agenda.sessionTypes.other.label'),
+        description: t('management.agenda.sessionTypes.other.description'),
         color: '#64748b',
         count: 0,
       }
@@ -450,12 +452,12 @@ const legendItems = computed<LegendItem[]>(() => {
   })
 
   if (byType.size === 0) {
-    return DEFAULT_LEGEND.map((entry) => ({ ...entry }))
+    return DEFAULT_LEGEND.value.map((entry) => ({ ...entry }))
   }
 
   const ordered: LegendItem[] = []
 
-  DEFAULT_LEGEND.forEach((entry) => {
+  DEFAULT_LEGEND.value.forEach((entry) => {
     if (byType.has(entry.type)) {
       const value = byType.get(entry.type)!
       ordered.push({ ...entry, color: value.color, count: value.count })
@@ -484,11 +486,11 @@ const loadAgenda = async () => {
     if (response.success && response.data) {
       agendaItems.value = response.data.results || []
     } else {
-      toast.showError(response.message || 'Failed to load agenda')
+      toast.showError(response.message || t('management.agenda.toast.loadError'))
     }
   } catch (error) {
     console.error('Error loading agenda:', error)
-    toast.showError('An error occurred while loading the agenda')
+    toast.showError(t('management.agenda.toast.loadErrorGeneric'))
   } finally {
     loading.value = false
   }
@@ -514,7 +516,7 @@ const getDayOfMonth = (dateStr: string): string => {
 
 const formatDayHeader = (date: string): string => {
   if (isUnscheduled(date)) {
-    return 'Unscheduled Items'
+    return t('management.agenda.unscheduled')
   }
   const dateObj = new Date(date)
   return dateObj.toLocaleDateString([], {
@@ -552,15 +554,15 @@ const deleteAgendaItem = async () => {
   try {
     const response = await agendaService.deleteAgendaItem(props.eventId, itemToDelete.value.id)
     if (response.success) {
-      toast.showSuccess('Agenda item deleted successfully')
+      toast.showSuccess(t('management.agenda.toast.deleteSuccess'))
       agendaItems.value = agendaItems.value.filter((item) => item.id !== itemToDelete.value!.id)
       closeDeleteModal()
     } else {
-      toast.showError(response.message || 'Failed to delete agenda item')
+      toast.showError(response.message || t('management.agenda.toast.deleteFailed'))
     }
   } catch (error) {
     console.error('Error deleting agenda item:', error)
-    toast.showError('An error occurred while deleting the agenda item')
+    toast.showError(t('management.agenda.toast.deleteErrorGeneric'))
   } finally {
     isDeleting.value = false
   }
@@ -671,15 +673,15 @@ const handleDragEnd = async (targetItem: EventAgendaItem | null, targetDate?: st
       toast.showError(response.message || 'Failed to reorder agenda items')
     } else {
       if (isChangingDate) {
-        toast.showSuccess('Agenda item moved to new date successfully')
+        toast.showSuccess(t('management.agenda.toast.movedSuccess'))
       } else {
-        toast.showSuccess('Agenda items reordered successfully')
+        toast.showSuccess(t('management.agenda.toast.reorderedSuccess'))
       }
     }
   } catch (err) {
     agendaItems.value = originalItems
     await nextTick()
-    toast.showError('Network error while reordering agenda items')
+    toast.showError(t('management.agenda.toast.reorderNetworkError'))
     console.error('Error reordering agenda items:', err)
   } finally {
     isReordering.value = false

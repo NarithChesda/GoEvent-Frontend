@@ -1,5 +1,182 @@
 {
   "title": "គ្រប់គ្រងព្រឹត្តិការណ៍",
+  "overview": {
+    "populate": {
+      "label": "បំពេញស្វ័យប្រវត្តិពីគំរូប្រភេទ",
+      "btn": "បំពេញ",
+      "loading": "កំពុងផ្ទុក…"
+    },
+    "calendar": {
+      "addToCalendar": "បន្ថែមទៅប្រតិទិន",
+      "google": "Google",
+      "outlook": "Outlook",
+      "downloadIcs": "ទាញយក .ics"
+    },
+    "location": {
+      "virtual": "ព្រឹត្តិការណ៍អនឡាញ",
+      "tbd": "ទីតាំងនឹងជូនដំណឹងក្រោយ",
+      "viewOnMap": "មើលលើផែនទី",
+      "joinVirtual": "ចូលរួមព្រឹត្តិការណ៍អនឡាញ"
+    },
+    "sections": {
+      "aboutEvent": "អំពីព្រឹត្តិការណ៍",
+      "agenda": "កម្មវិធី",
+      "location": "ទីតាំង",
+      "hostedBy": "រៀបចំដោយ",
+      "socialPreview": "មើលជាមុននៅលើបណ្តាញសង្គម",
+      "socialPreviewDesc": "មើលជាមុននូវវិធីដែលការបង្ហាញព្រឹត្តិការណ៍របស់អ្នកនឹងបង្ហាញនៅលើបណ្តាញសង្គម",
+      "guestOverview": "ទិដ្ឋភាពទូទៅភ្ញៀវ"
+    },
+    "agendaCount": {
+      "item": "ធាតុ",
+      "items": "ធាតុ"
+    },
+    "dialog": {
+      "title": "ព្រឹត្តិការណ៍មានមាតិការស្រាប់",
+      "contains": "ព្រឹត្តិការណ៍នេះមានស្រាប់ហើយ៖",
+      "texts": "អត្ថបទ៖",
+      "hosts": "ម្ចាស់ផ្ទះ៖",
+      "agendaItems": "ធាតុកម្មវិធី៖",
+      "howToProceed": "តើអ្នកចង់ដំណើរការយ៉ាងដូចម្ដេច?",
+      "skipExisting": "រំលងដែលមានស្រាប់ — តែបំពេញចន្លោះ",
+      "overwriteAll": "សរសេរជាន់គ្រប់ — ជំនួសអ្វីៗទាំងអស់"
+    }
+  },
+  "agendaDrawer": {
+    "titleEdit": "កែប្រែធាតុកម្មវិធី",
+    "titleAdd": "បន្ថែមធាតុកម្មវិធី",
+    "close": "បិទ",
+    "dismiss": "ច្រានចោល",
+    "deleteBtn": "លុបធាតុកម្មវិធី",
+    "updating": "កំពុងធ្វើបច្ចុប្បន្នភាព...",
+    "creating": "កំពុងបង្កើត...",
+    "updateBtn": "ធ្វើបច្ចុប្បន្នភាពកម្មវិធី",
+    "createBtn": "បង្កើតកម្មវិធី",
+    "toast": {
+      "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពធាតុកម្មវិធីដោយជោគជ័យ!",
+      "createSuccess": "បានបង្កើតធាតុកម្មវិធីដោយជោគជ័យ!",
+      "error": "មានបញ្ហាកើតឡើង"
+    },
+    "fields": {
+      "title": "ចំណងជើង",
+      "titlePlaceholder": "បញ្ចូលចំណងជើងធាតុកម្មវិធី",
+      "titlePlaceholderLang": "បញ្ចូលចំណងជើងជា {lang}",
+      "startTime": "ម៉ោងចាប់ផ្ដើម",
+      "startTimePlaceholder": "ឧ. 9:00 AM",
+      "startTimePlaceholderLang": "ម៉ោងចាប់ផ្ដើមជា {lang}",
+      "endTime": "ម៉ោងបញ្ចប់",
+      "endTimePlaceholder": "ឧ. 10:00 AM",
+      "endTimePlaceholderLang": "ម៉ោងបញ្ចប់ជា {lang}",
+      "description": "ការពិពណ៌នា",
+      "descriptionPlaceholder": "ពិពណ៌នាអំពីធាតុកម្មវិធីនេះ",
+      "descriptionPlaceholderLang": "ការពិពណ៌នាជា {lang}",
+      "noDescription": "គ្មានការពិពណ៌នា",
+      "speakers": "វាគ្មិន",
+      "speakerPlaceholder": "ឧ. Dr. Jane Smith, CEO of TechCorp",
+      "speakerPlaceholderLang": "ឈ្មោះវាគ្មិនជា {lang}",
+      "noSpeaker": "គ្មានវាគ្មិន"
+    },
+    "schedule": {
+      "date": "កាលបរិច្ឆេទ",
+      "type": "ប្រភេទ",
+      "displayPosition": "ទីតាំងបង្ហាញ",
+      "of": "នៃ",
+      "moveToFirst": "ផ្លាស់ទៅដំបូង",
+      "moveUp": "ផ្លាស់ទៅឡើង",
+      "moveDown": "ផ្លាស់ទៅចុះ",
+      "moveToLast": "ផ្លាស់ទៅចុងក្រោយ",
+      "types": {
+        "session": "វគ្គ",
+        "keynote": "ការបង្ហាញសំខាន់",
+        "workshop": "វគ្គបណ្ដុះបណ្ដាល",
+        "panel": "ក្រុមពិភាក្សា",
+        "break": "ការសម្រាក",
+        "networking": "ភ្ជាប់បណ្ដាញ",
+        "other": "ផ្សេងៗ"
+      }
+    },
+    "location": {
+      "label": "ទីតាំង",
+      "noLocations": "គ្មានទីតាំង",
+      "locationNoun": "ទីតាំង",
+      "locationsNoun": "ទីតាំង",
+      "physical": "ទីតាំងជាក់ស្ដែង",
+      "physicalPlaceholder": "ឧ. បន្ទប់ប្រជុំ A",
+      "virtual": "តំណភ្ជាប់អនឡាញ"
+    },
+    "display": {
+      "label": "ជម្រើសបង្ហាញ",
+      "themeColor": "ពណ៌ប្រធានបទ",
+      "featured": "សម្គាល់ជាធាតុពិសេស"
+    },
+    "icon": {
+      "label": "រូបតំណាង",
+      "noIcon": "គ្មានរូបតំណាង"
+    }
+  },
+  "agenda": {
+    "title": "កម្មវិធីព្រឹត្តិការណ៍",
+    "subtitle": "គ្រប់គ្រងកាលវិភាគ និងធាតុកម្មវិធីរបស់ព្រឹត្តិការណ៍",
+    "dragHint": "អូសធាតុដើម្បីរៀបលំដាប់ ឬផ្លាស់ប្តូររវាងកាលបរិច្ឆេទ",
+    "addBtn": "បន្ថែមធាតុកម្មវិធី",
+    "reordering": "កំពុងរៀបលំដាប់កម្មវិធី...",
+    "pleaseWait": "សូមរង់ចាំ",
+    "loadingText": "កំពុងផ្ទុកកម្មវិធី...",
+    "unscheduled": "ធាតុដែលមិនទាន់កំណត់ពេល",
+    "agendaItems": "ធាតុកម្មវិធី",
+    "count": {
+      "item": "ធាតុ",
+      "items": "ធាតុ"
+    },
+    "empty": {
+      "title": "មិនទាន់មានធាតុកម្មវិធី",
+      "description": "ចាប់ផ្ដើមបង្កើតកាលវិភាគព្រឹត្តិការណ៍ដោយបន្ថែមធាតុកម្មវិធី។",
+      "addBtn": "បន្ថែមធាតុកម្មវិធីដំបូងរបស់អ្នក"
+    },
+    "sessionTypes": {
+      "title": "ប្រភេទវគ្គ",
+      "keynote": {
+        "label": "ការបង្ហាញសំខាន់",
+        "description": "ការបង្ហាញសំខាន់ និងការនិយាយឈានមុខ"
+      },
+      "workshop": {
+        "label": "វគ្គបណ្ដុះបណ្ដាល",
+        "description": "វគ្គសិក្សាជាក់ស្ដែង ឬអន្តរកម្ម"
+      },
+      "break": {
+        "label": "ការសម្រាក",
+        "description": "ការសម្រាក ភ្ជាប់បណ្ដាញ ឬពេលវេលាក្រៅផ្លូវការ"
+      },
+      "panel": {
+        "label": "ក្រុមពិភាក្សា",
+        "description": "ការពិភាក្សាជាក្រុម ឬសំណួរ-ចម្លើយ"
+      },
+      "other": {
+        "label": "ផ្សេងៗ",
+        "description": "វគ្គបន្ថែម"
+      }
+    },
+    "deleteModal": {
+      "title": "លុបធាតុកម្មវិធី",
+      "fallbackName": "ធាតុកម្មវិធីនេះ",
+      "message": "វានឹងលុបធាតុនេះចេញពីកម្មវិធីព្រឹត្តិការណ៍ជាអចិន្ត្រៃយ៍។"
+    },
+    "deleteDateGroupModal": {
+      "title": "លុបធាតុទាំងអស់ក្នុងក្រុមកាលបរិច្ឆេទ",
+      "itemName": "ធាតុកម្មវិធីទាំង {count} នៅ {date}",
+      "message": "វានឹងលុបធាតុកម្មវិធីទាំងអស់ដែលកំណត់សម្រាប់កាលបរិច្ឆេទនេះជាអចិន្ត្រៃយ៍។ សកម្មភាពនេះមិនអាចត្រឡប់វិញបានឡើយ។"
+    },
+    "toast": {
+      "loadError": "បានបរាជ័យក្នុងការផ្ទុកកម្មវិធី",
+      "loadErrorGeneric": "មានកំហុសក្នុងការផ្ទុកកម្មវិធី",
+      "deleteSuccess": "បានលុបធាតុកម្មវិធីដោយជោគជ័យ",
+      "deleteFailed": "បានបរាជ័យក្នុងការលុបធាតុកម្មវិធី",
+      "deleteErrorGeneric": "មានកំហុសក្នុងការលុបធាតុកម្មវិធី",
+      "movedSuccess": "បានផ្លាស់ប្ដូរធាតុកម្មវិធីទៅកាលបរិច្ឆេទថ្មីដោយជោគជ័យ",
+      "reorderedSuccess": "បានរៀបលំដាប់ធាតុកម្មវិធីដោយជោគជ័យ",
+      "reorderNetworkError": "កំហុសបណ្ដាញក្នុងការរៀបលំដាប់ធាតុកម្មវិធី"
+    }
+  },
   "tabs": {
     "overview": "ទិដ្ឋភាពទូទៅ",
     "details": "ព័ត៌មានលម្អិត",

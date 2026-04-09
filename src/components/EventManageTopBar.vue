@@ -67,6 +67,15 @@
 
       <!-- Right Section: Actions -->
       <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- Language Toggle -->
+        <button
+          @click="toggleLanguage"
+          class="topbar-outline-btn flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
+          :title="locale === 'en' ? 'Switch to Khmer' : 'Switch to English'"
+        >
+          <span class="text-base leading-none">{{ locale === 'en' ? '🇺🇸' : '🇰🇭' }}</span>
+        </button>
+
         <!-- Preview Showcase Button (only for wedding, birthday, housewarming) -->
         <button
           v-if="canEdit && eventId && canPreviewShowcase"
@@ -110,6 +119,7 @@
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Pencil, Eye, ArrowLeft, Globe } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   eventId?: string
@@ -123,6 +133,12 @@ interface Props {
   organizerAvatar?: string
   /** Event category name (e.g., 'wedding', 'birthday', 'housewarming') */
   eventCategory?: string | null
+}
+
+const { locale, setLocale } = useAppLanguage()
+
+const toggleLanguage = () => {
+  setLocale(locale.value === 'en' ? 'kh' : 'en')
 }
 
 const props = withDefaults(defineProps<Props>(), {

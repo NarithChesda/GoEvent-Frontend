@@ -1,5 +1,182 @@
 {
   "title": "Event Management",
+  "overview": {
+    "populate": {
+      "label": "Auto-fill from category template",
+      "btn": "Populate",
+      "loading": "Loading…"
+    },
+    "calendar": {
+      "addToCalendar": "Add to Calendar",
+      "google": "Google",
+      "outlook": "Outlook",
+      "downloadIcs": "Download .ics"
+    },
+    "location": {
+      "virtual": "Virtual Event",
+      "tbd": "Location TBD",
+      "viewOnMap": "View on Map",
+      "joinVirtual": "Join Virtual Event"
+    },
+    "sections": {
+      "aboutEvent": "About Event",
+      "agenda": "Agenda",
+      "location": "Location",
+      "hostedBy": "Hosted By",
+      "socialPreview": "Social Media Preview",
+      "socialPreviewDesc": "Preview how your event showcase will appear when shared on social media",
+      "guestOverview": "Guest Overview"
+    },
+    "agendaCount": {
+      "item": "item",
+      "items": "items"
+    },
+    "dialog": {
+      "title": "Event already has content",
+      "contains": "This event already contains:",
+      "texts": "Texts:",
+      "hosts": "Hosts:",
+      "agendaItems": "Agenda items:",
+      "howToProceed": "How would you like to proceed?",
+      "skipExisting": "Skip existing — only fill gaps",
+      "overwriteAll": "Overwrite all — replace everything"
+    }
+  },
+  "agendaDrawer": {
+    "titleEdit": "Edit Agenda Item",
+    "titleAdd": "Add Agenda Item",
+    "close": "Close",
+    "dismiss": "Dismiss",
+    "deleteBtn": "Delete Agenda Item",
+    "updating": "Updating...",
+    "creating": "Creating...",
+    "updateBtn": "Update Agenda",
+    "createBtn": "Create Agenda",
+    "toast": {
+      "updateSuccess": "Agenda item updated successfully!",
+      "createSuccess": "Agenda item created successfully!",
+      "error": "An error occurred"
+    },
+    "fields": {
+      "title": "Title",
+      "titlePlaceholder": "Enter agenda item title",
+      "titlePlaceholderLang": "Enter title in {lang}",
+      "startTime": "Start Time",
+      "startTimePlaceholder": "e.g., 9:00 AM",
+      "startTimePlaceholderLang": "Start time in {lang}",
+      "endTime": "End Time",
+      "endTimePlaceholder": "e.g., 10:00 AM",
+      "endTimePlaceholderLang": "End time in {lang}",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe this agenda item",
+      "descriptionPlaceholderLang": "Description in {lang}",
+      "noDescription": "No description",
+      "speakers": "Speaker(s)",
+      "speakerPlaceholder": "e.g., Dr. Jane Smith, CEO of TechCorp",
+      "speakerPlaceholderLang": "Speaker name(s) in {lang}",
+      "noSpeaker": "No speaker"
+    },
+    "schedule": {
+      "date": "Date",
+      "type": "Type",
+      "displayPosition": "Display Position",
+      "of": "of",
+      "moveToFirst": "Move to first",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moveToLast": "Move to last",
+      "types": {
+        "session": "Session",
+        "keynote": "Keynote",
+        "workshop": "Workshop",
+        "panel": "Panel Discussion",
+        "break": "Break",
+        "networking": "Networking",
+        "other": "Other"
+      }
+    },
+    "location": {
+      "label": "Location",
+      "noLocations": "No locations",
+      "locationNoun": "location",
+      "locationsNoun": "locations",
+      "physical": "Physical Location",
+      "physicalPlaceholder": "e.g., Conference Room A",
+      "virtual": "Virtual Link"
+    },
+    "display": {
+      "label": "Display Options",
+      "themeColor": "Theme Color",
+      "featured": "Mark as featured item"
+    },
+    "icon": {
+      "label": "Icon",
+      "noIcon": "No icon"
+    }
+  },
+  "agenda": {
+    "title": "Event Agenda",
+    "subtitle": "Manage your event schedule and agenda items",
+    "dragHint": "Drag items to reorder or move between dates",
+    "addBtn": "Add Agenda Item",
+    "reordering": "Reordering agenda...",
+    "pleaseWait": "Please wait",
+    "loadingText": "Loading agenda...",
+    "unscheduled": "Unscheduled Items",
+    "agendaItems": "agenda items",
+    "count": {
+      "item": "item",
+      "items": "items"
+    },
+    "empty": {
+      "title": "No Agenda Items Yet",
+      "description": "Start building your event schedule by adding agenda items.",
+      "addBtn": "Add Your First Agenda Item"
+    },
+    "sessionTypes": {
+      "title": "Session Types",
+      "keynote": {
+        "label": "Keynote",
+        "description": "Main presentations and headline talks"
+      },
+      "workshop": {
+        "label": "Workshop",
+        "description": "Hands-on or interactive learning sessions"
+      },
+      "break": {
+        "label": "Break",
+        "description": "Rest, networking, or informal moments"
+      },
+      "panel": {
+        "label": "Panel",
+        "description": "Facilitated group discussions or Q&A"
+      },
+      "other": {
+        "label": "Other",
+        "description": "Additional sessions"
+      }
+    },
+    "deleteModal": {
+      "title": "Delete Agenda Item",
+      "fallbackName": "this agenda item",
+      "message": "This will permanently remove this item from your event agenda."
+    },
+    "deleteDateGroupModal": {
+      "title": "Delete All Items in Date Group",
+      "itemName": "all {count} agenda items on {date}",
+      "message": "This will permanently delete all agenda items scheduled for this date. This action cannot be undone."
+    },
+    "toast": {
+      "loadError": "Failed to load agenda",
+      "loadErrorGeneric": "An error occurred while loading the agenda",
+      "deleteSuccess": "Agenda item deleted successfully",
+      "deleteFailed": "Failed to delete agenda item",
+      "deleteErrorGeneric": "An error occurred while deleting the agenda item",
+      "movedSuccess": "Agenda item moved to new date successfully",
+      "reorderedSuccess": "Agenda items reordered successfully",
+      "reorderNetworkError": "Network error while reordering agenda items"
+    }
+  },
   "tabs": {
     "overview": "Overview",
     "details": "Details",

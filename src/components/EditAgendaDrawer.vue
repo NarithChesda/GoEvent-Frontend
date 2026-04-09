@@ -24,13 +24,13 @@
               <button
                 @click="closeDrawer"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.agendaDrawer.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
                 <h2 class="text-base font-semibold text-white">
-                  {{ isEditMode ? 'Edit Agenda Item' : 'Add Agenda Item' }}
+                  {{ isEditMode ? t('management.agendaDrawer.titleEdit') : t('management.agendaDrawer.titleAdd') }}
                 </h2>
               </div>
             </div>
@@ -52,7 +52,7 @@
                 @click="generalError = ''"
                 class="text-xs text-red-600 hover:text-red-700 underline mt-1"
               >
-                Dismiss
+                {{ t('management.agendaDrawer.dismiss') }}
               </button>
             </div>
           </div>
@@ -164,7 +164,7 @@
                 class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-sm font-semibold rounded-lg transition-colors border border-red-200"
               >
                 <Trash2 class="w-4 h-4" />
-                <span>Delete Agenda Item</span>
+                <span>{{ t('management.agendaDrawer.deleteBtn') }}</span>
               </button>
             </div>
           </form>
@@ -183,11 +183,11 @@
               <span>{{
                 loading
                   ? isEditMode
-                    ? 'Updating...'
-                    : 'Creating...'
+                    ? t('management.agendaDrawer.updating')
+                    : t('management.agendaDrawer.creating')
                   : isEditMode
-                    ? 'Update Agenda'
-                    : 'Create Agenda'
+                    ? t('management.agendaDrawer.updateBtn')
+                    : t('management.agendaDrawer.createBtn')
               }}</span>
             </button>
 
@@ -196,7 +196,7 @@
               @click="closeDrawer"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('common.actions.cancel') }}
             </button>
           </div>
         </div>
@@ -234,6 +234,7 @@ import type { EventAgendaItem, AgendaTranslation } from '@/services/api'
 // Composables
 import { useAgendaForm } from '@/composables/useAgendaForm'
 import { useTranslations } from '@/composables/useTranslations'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 // Child components
 import LanguageTabs from './host/LanguageTabs.vue'
@@ -259,6 +260,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useAppLanguage()
 
 // Message state for toast notifications
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -335,16 +337,16 @@ const handleSubmit = async () => {
   if (result.success && result.data) {
     if (isEditMode.value) {
       emit('updated', result.data)
-      showMessage('success', 'Agenda item updated successfully!')
+      showMessage('success', t('management.agendaDrawer.toast.updateSuccess'))
     } else {
       emit('created', result.data)
-      showMessage('success', 'Agenda item created successfully!')
+      showMessage('success', t('management.agendaDrawer.toast.createSuccess'))
     }
     setTimeout(() => {
       closeDrawer()
     }, 1000)
   } else {
-    showMessage('error', result.message || 'An error occurred')
+    showMessage('error', result.message || t('management.agendaDrawer.toast.error'))
   }
 }
 

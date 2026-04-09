@@ -3,7 +3,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       <!-- Date -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.agendaDrawer.schedule.date') }}</label>
         <input
           :value="date"
           @input="$emit('update:date', ($event.target as HTMLInputElement).value)"
@@ -14,20 +14,20 @@
 
       <!-- Agenda Type -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Type</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.agendaDrawer.schedule.type') }}</label>
         <div class="relative">
           <select
             :value="agendaType"
             @input="$emit('update:agenda-type', ($event.target as HTMLSelectElement).value)"
             class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
           >
-            <option value="session">Session</option>
-            <option value="keynote">Keynote</option>
-            <option value="workshop">Workshop</option>
-            <option value="panel">Panel Discussion</option>
-            <option value="break">Break</option>
-            <option value="networking">Networking</option>
-            <option value="other">Other</option>
+            <option value="session">{{ t('management.agendaDrawer.schedule.types.session') }}</option>
+            <option value="keynote">{{ t('management.agendaDrawer.schedule.types.keynote') }}</option>
+            <option value="workshop">{{ t('management.agendaDrawer.schedule.types.workshop') }}</option>
+            <option value="panel">{{ t('management.agendaDrawer.schedule.types.panel') }}</option>
+            <option value="break">{{ t('management.agendaDrawer.schedule.types.break') }}</option>
+            <option value="networking">{{ t('management.agendaDrawer.schedule.types.networking') }}</option>
+            <option value="other">{{ t('management.agendaDrawer.schedule.types.other') }}</option>
           </select>
           <ChevronDown
             class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -41,7 +41,7 @@
       <label class="block text-sm font-medium text-slate-700 mb-2">
         <span class="flex items-center gap-1.5">
           <ArrowUpDown class="w-3.5 h-3.5" />
-          Display Position
+          {{ t('management.agendaDrawer.schedule.displayPosition') }}
         </span>
       </label>
       <div class="flex items-center gap-2">
@@ -54,7 +54,7 @@
           :class="order <= 0
             ? 'border-slate-200 text-slate-300 cursor-not-allowed'
             : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
-          title="Move to first"
+          :title="t('management.agendaDrawer.schedule.moveToFirst')"
         >
           <ChevronsUp class="w-4 h-4" />
         </button>
@@ -68,7 +68,7 @@
           :class="order <= 0
             ? 'border-slate-200 text-slate-300 cursor-not-allowed'
             : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
-          title="Move up"
+          :title="t('management.agendaDrawer.schedule.moveUp')"
         >
           <ChevronUp class="w-4 h-4" />
         </button>
@@ -77,7 +77,7 @@
         <div class="flex-1 text-center">
           <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 rounded-lg">
             <span class="text-sm font-semibold text-slate-900">{{ order + 1 }}</span>
-            <span class="text-xs text-slate-500">of {{ maxOrder + 1 }}</span>
+            <span class="text-xs text-slate-500">{{ t('management.agendaDrawer.schedule.of') }} {{ maxOrder + 1 }}</span>
           </span>
         </div>
 
@@ -90,7 +90,7 @@
           :class="order >= maxOrder
             ? 'border-slate-200 text-slate-300 cursor-not-allowed'
             : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
-          title="Move down"
+          :title="t('management.agendaDrawer.schedule.moveDown')"
         >
           <ChevronDownIcon class="w-4 h-4" />
         </button>
@@ -104,7 +104,7 @@
           :class="order >= maxOrder
             ? 'border-slate-200 text-slate-300 cursor-not-allowed'
             : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
-          title="Move to last"
+          :title="t('management.agendaDrawer.schedule.moveToLast')"
         >
           <ChevronsDown class="w-4 h-4" />
         </button>
@@ -122,6 +122,7 @@ import {
   ChevronDown as ChevronDownIcon,
   ArrowUpDown
 } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   date: string
@@ -138,6 +139,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useAppLanguage()
 
 // Move order control functions
 const moveUp = () => {
