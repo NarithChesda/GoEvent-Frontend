@@ -23,7 +23,7 @@
                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
               >
                 <Package class="w-3 h-3 mr-1" />
-                {{ selectedTemplate.package_plan?.name || 'Standard Plan' }}
+                {{ selectedTemplate.package_plan?.name || t('management.templateStatusCards.previewMode.standardPlan') }}
               </span>
               <span
                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
@@ -34,7 +34,7 @@
               <span
                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-[#E6F4FF]0 text-white"
               >
-                Preview Mode
+                {{ t('management.templateStatusCards.previewMode.previewMode') }}
               </span>
             </div>
           </div>
@@ -45,13 +45,12 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex-1">
               <p class="text-slate-600 mb-3">
-                You've selected this template for your event. Complete payment to activate all
-                features.
+                {{ t('management.templateStatusCards.previewMode.description') }}
               </p>
 
               <!-- Features Preview -->
               <div v-if="selectedTemplate?.package_plan?.features" class="space-y-1">
-                <h4 class="text-sm font-semibold text-slate-900 mb-2">Included Features:</h4>
+                <h4 class="text-sm font-semibold text-slate-900 mb-2">{{ t('management.templateStatusCards.previewMode.features') }}</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
                   <div
                     v-for="(feature, index) in selectedTemplate.package_plan.features.slice(0, 4)"
@@ -66,7 +65,7 @@
                   v-if="selectedTemplate.package_plan.features.length > 4"
                   class="text-sm text-[#1e90ff] font-medium mt-2"
                 >
-                  +{{ selectedTemplate.package_plan.features.length - 4 }} more features
+                  {{ t('management.templateStatusCards.previewMode.moreFeatures', { count: selectedTemplate.package_plan.features.length - 4 }) }}
                 </p>
               </div>
             </div>
@@ -76,13 +75,13 @@
                 @click="$emit('change-template')"
                 class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl transition-all duration-200"
               >
-                Change Template
+                {{ t('management.templateStatusCards.previewMode.changeTemplateBtn') }}
               </button>
               <button
                 @click="$emit('initiate-payment')"
                 class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30"
               >
-                Proceed to Payment
+                {{ t('management.templateStatusCards.previewMode.proceedBtn') }}
               </button>
             </div>
           </div>
@@ -101,10 +100,9 @@
         >
           <Package class="w-8 h-8 text-[#1e90ff]" />
         </div>
-        <h3 class="text-lg font-semibold text-slate-900 mb-2">Template Selected</h3>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.templateStatusCards.simpleSelection.title') }}</h3>
         <p class="text-slate-600 mb-4">
-          A template has been selected for your event. Complete payment to enable advanced
-          customization features.
+          {{ t('management.templateStatusCards.simpleSelection.description') }}
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <button
@@ -133,17 +131,16 @@
       >
         <Palette class="w-10 h-10 text-slate-400" />
       </div>
-      <h3 class="text-xl font-semibold text-slate-900 mb-3">No Template Selected</h3>
+      <h3 class="text-xl font-semibold text-slate-900 mb-3">{{ t('management.templateStatusCards.noTemplate.title') }}</h3>
       <p class="text-slate-600 mb-6 max-w-md mx-auto">
-        Choose from our collection of professional templates to enhance your event's visual appeal
-        and user experience.
+        {{ t('management.templateStatusCards.noTemplate.description') }}
       </p>
       <button
         v-if="canEdit"
         @click="$emit('browse-templates')"
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30"
       >
-        Browse Templates
+        {{ t('management.templateStatusCards.noTemplate.browseBtn') }}
       </button>
     </div>
 
@@ -161,23 +158,22 @@
             <Clock class="w-6 h-6 text-yellow-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">Payment Pending</h3>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.templateStatusCards.paymentPending.title') }}</h3>
             <p class="text-slate-700 mb-4">
-              Your payment is being processed. We'll notify you once it's confirmed and your
-              template is activated.
+              {{ t('management.templateStatusCards.paymentPending.description') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-3">
               <button
                 @click="$emit('view-payment-details')"
                 class="bg-white hover:bg-yellow-50 text-slate-700 border border-yellow-200 font-semibold py-2 px-4 rounded-lg transition-colors"
               >
-                View Payment Details
+                {{ t('management.templateStatusCards.paymentPending.viewDetailsBtn') }}
               </button>
               <button
                 @click="$emit('refresh-status')"
                 class="text-yellow-700 hover:text-yellow-800 font-medium"
               >
-                Refresh Status
+                {{ t('management.templateStatusCards.paymentPending.refreshBtn') }}
               </button>
             </div>
           </div>
@@ -196,23 +192,22 @@
             <AlertCircle class="w-6 h-6 text-red-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">Payment Failed</h3>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.templateStatusCards.paymentFailed.title') }}</h3>
             <p class="text-slate-700 mb-4">
-              There was an issue with your payment. Please try again or contact support for
-              assistance.
+              {{ t('management.templateStatusCards.paymentFailed.description') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-3">
               <button
                 @click="$emit('retry-payment')"
                 class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
               >
-                Try Again
+                {{ t('management.templateStatusCards.paymentFailed.retryBtn') }}
               </button>
               <button
                 @click="$emit('view-payment-details')"
                 class="bg-white hover:bg-red-50 text-slate-700 border border-red-200 font-semibold py-2 px-4 rounded-lg transition-colors"
               >
-                View Details
+                {{ t('management.templateStatusCards.paymentFailed.viewDetailsBtn') }}
               </button>
             </div>
           </div>
@@ -231,16 +226,15 @@
             <CheckCircle class="w-6 h-6 text-green-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">Template Activated!</h3>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.templateStatusCards.paymentConfirmed.title') }}</h3>
             <p class="text-slate-700 mb-4">
-              Your payment has been confirmed and your template is now active. All premium features
-              are available.
+              {{ t('management.templateStatusCards.paymentConfirmed.description') }}
             </p>
             <button
               @click="$emit('view-template-details')"
               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
             >
-              View Template Details
+              {{ t('management.templateStatusCards.paymentConfirmed.viewDetailsBtn') }}
             </button>
           </div>
         </div>
@@ -251,6 +245,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Package, DollarSign, CheckCircle, Palette, Clock, AlertCircle } from 'lucide-vue-next'
 import type { Event, EventTemplate } from '@/services/api'
 
@@ -260,6 +255,8 @@ interface Props {
   canEdit: boolean
   paymentStatus?: string | null
 }
+
+const { t } = useI18n()
 
 const props = defineProps<Props>()
 

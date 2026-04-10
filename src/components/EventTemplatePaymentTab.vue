@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Template & Payment
+          {{ t('management.templatePaymentTab.header.title') }}
         </h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">
           {{ headerDescription }}
@@ -16,8 +16,8 @@
         class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
       >
         <Palette class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        <span>Browse</span>
-        <span class="hidden sm:inline ml-1">Templates</span>
+        <span>{{ t('management.templatePaymentTab.browseBtn.browse') }}</span>
+        <span class="hidden sm:inline ml-1">{{ t('management.templatePaymentTab.browseBtn.templates') }}</span>
       </button>
     </div>
 
@@ -49,10 +49,9 @@
       >
         <Palette class="w-8 h-8 sm:w-10 sm:h-10 text-slate-400" />
       </div>
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Template Selected</h3>
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ t('management.templatePaymentTab.noTemplate.title') }}</h3>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
-        Choose a professional template to enhance your event's visual appeal and provide a better
-        experience for your attendees.
+        {{ t('management.templatePaymentTab.noTemplate.description') }}
       </p>
       <button
         v-if="canEdit"
@@ -60,7 +59,7 @@
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 sm:py-3 sm:px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
         <Palette class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-        Browse Templates
+        {{ t('management.templatePaymentTab.noTemplate.browseBtn') }}
       </button>
     </div>
 
@@ -76,16 +75,16 @@
           <Package class="w-5 h-5 sm:w-6 sm:h-6 text-[#1e90ff]" />
         </div>
         <div class="flex-1">
-          <h3 class="text-base sm:text-lg font-semibold text-slate-900">Template Selected</h3>
+          <h3 class="text-base sm:text-lg font-semibold text-slate-900">{{ t('management.templatePaymentTab.templateSelected.title') }}</h3>
           <p class="text-xs sm:text-sm text-slate-600 mt-1">
-            You have selected template ID {{ event.event_template }}. Complete payment to activate it.
+            {{ t('management.templatePaymentTab.templateSelected.description', { id: event.event_template }) }}
           </p>
           <button
             @click="handleStartPayment"
             class="mt-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
           >
             <CreditCard class="w-4 h-4 mr-2" />
-            Make Payment
+            {{ t('management.templatePaymentTab.templateSelected.makePaymentBtn') }}
           </button>
         </div>
       </div>
@@ -109,7 +108,7 @@
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
           <CreditCard class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-          Payment Status
+          {{ t('management.templatePaymentTab.paymentStatus.title') }}
         </h3>
         <button
           v-if="canStartNewPayment"
@@ -117,8 +116,8 @@
           class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm"
         >
           <CreditCard class="w-4 h-4 mr-2" />
-          <span class="hidden sm:inline">Make New Payment</span>
-          <span class="sm:hidden">New Payment</span>
+          <span class="hidden sm:inline">{{ t('management.templatePaymentTab.paymentStatus.makeNewPayment') }}</span>
+          <span class="sm:hidden">{{ t('management.templatePaymentTab.paymentStatus.newPayment') }}</span>
         </button>
       </div>
 
@@ -129,9 +128,9 @@
       >
         <CheckCircle class="w-5 h-5 text-emerald-500 flex-shrink-0" />
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-emerald-800">Payment Confirmed</p>
+          <p class="text-sm font-medium text-emerald-800">{{ t('management.templatePaymentTab.paymentStatus.confirmed') }}</p>
           <p class="text-xs text-emerald-600 mt-0.5">
-            {{ currentPayment.plan_name || templatePackageDetails?.name || 'Template package' }} - ${{ currentPayment.amount }}
+            {{ currentPayment.plan_name || templatePackageDetails?.name || t('management.templatePaymentTab.paymentStatus.templatePackage') }} - ${{ currentPayment.amount }}
           </p>
         </div>
       </div>
@@ -143,12 +142,12 @@
       >
         <Clock class="w-5 h-5 text-amber-500 flex-shrink-0" />
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-amber-800">Payment Pending Review</p>
+          <p class="text-sm font-medium text-amber-800">{{ t('management.templatePaymentTab.paymentStatus.pending') }}</p>
           <p class="text-xs text-amber-600 mt-0.5">
-            {{ currentPayment.plan_name || templatePackageDetails?.name || 'Template package' }} - ${{ currentPayment.amount }}
+            {{ currentPayment.plan_name || templatePackageDetails?.name || t('management.templatePaymentTab.paymentStatus.templatePackage') }} - ${{ currentPayment.amount }}
           </p>
           <p class="text-xs text-slate-500 mt-1">
-            You can update the existing payment or submit a new one.
+            {{ t('management.templatePaymentTab.paymentStatus.pendingHint') }}
           </p>
         </div>
       </div>
@@ -209,7 +208,7 @@
                   >
                     {{ templateName }}
                   </p>
-                  <h2 class="text-base font-semibold text-white leading-tight">Make Payment</h2>
+                  <h2 class="text-base font-semibold text-white leading-tight">{{ t('management.templatePaymentTab.paymentDrawer.title') }}</h2>
                 </div>
               </div>
             </div>
@@ -223,7 +222,7 @@
                     class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 flex items-start justify-between gap-3"
                   >
                     <div class="min-w-0">
-                      <p class="text-xs sm:text-sm font-medium text-slate-700">Current payment</p>
+                      <p class="text-xs sm:text-sm font-medium text-slate-700">{{ t('management.templatePaymentTab.paymentDrawer.currentPayment') }}</p>
                       <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
                         {{ currentPayment.plan_name }}
                       </p>
@@ -242,7 +241,7 @@
                       <!-- Amount Display -->
                       <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                         <div>
-                          <p class="text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wide">{{ templatePackageDetails?.name || 'Total' }}</p>
+                          <p class="text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wide">{{ templatePackageDetails?.name || t('management.templatePaymentTab.paymentDrawer.total') }}</p>
                           <div class="flex items-baseline gap-1">
                             <p class="text-base sm:text-xl font-bold text-slate-900">${{ finalAmount }}</p>
                             <p v-if="promoDiscount" class="text-[10px] sm:text-xs text-slate-400 line-through">${{ promoDiscount.original }}</p>
@@ -279,7 +278,7 @@
                             type="button"
                             @click="removePromoCode"
                             class="p-0.5 sm:p-1 hover:bg-emerald-100 rounded-md transition-colors flex-shrink-0"
-                            title="Remove promo code"
+                            :title="t('management.templatePaymentTab.paymentDrawer.removePromoTitle')"
                           >
                             <X class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-emerald-600" />
                           </button>
@@ -294,7 +293,7 @@
                                 v-model="promoCodeInput"
                                 type="text"
                                 class="w-full pl-6 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase placeholder:normal-case"
-                                placeholder="Promo"
+                                :placeholder="t('management.templatePaymentTab.paymentDrawer.promoPlaceholder')"
                                 @keyup.enter="validatePromoCode"
                               />
                             </div>
@@ -305,7 +304,7 @@
                               class="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
                             >
                               <Loader v-if="validatingPromoCode" class="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-spin" />
-                              <span>{{ validatingPromoCode ? '...' : 'Apply' }}</span>
+                              <span>{{ validatingPromoCode ? t('management.templatePaymentTab.paymentDrawer.applyingPromo') : t('management.templatePaymentTab.paymentDrawer.applyPromo') }}</span>
                             </button>
                           </div>
                           <p v-if="promoCodeError" class="text-[10px] sm:text-[11px] text-red-600 pl-1">{{ promoCodeError }}</p>
@@ -316,7 +315,7 @@
 
                   <section class="space-y-3">
                     <div class="flex items-center justify-between">
-                      <h3 class="text-sm sm:text-base font-semibold text-slate-800">Payment method</h3>
+                      <h3 class="text-sm sm:text-base font-semibold text-slate-800">{{ t('management.templatePaymentTab.paymentDrawer.paymentMethod') }}</h3>
                       <span v-if="selectedMethod" class="text-[11px] sm:text-xs text-slate-500">
                         {{ selectedMethod.payment_type_display }}
                       </span>
@@ -324,14 +323,14 @@
 
                     <div v-if="loadingMethods" class="text-center py-8">
                       <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1e90ff] mx-auto"></div>
-                      <p class="text-slate-500 text-xs sm:text-sm mt-3">Loading methods...</p>
+                      <p class="text-slate-500 text-xs sm:text-sm mt-3">{{ t('management.templatePaymentTab.paymentDrawer.loadingMethods') }}</p>
                     </div>
 
                     <div
                       v-else-if="paymentMethods.length === 0"
                       class="rounded-xl border border-slate-200 bg-white/80 p-4 text-center text-xs sm:text-sm text-slate-500"
                     >
-                      No payment methods available for this event yet.
+                      {{ t('management.templatePaymentTab.paymentDrawer.noMethods') }}
                     </div>
 
                     <div v-else class="space-y-2">
@@ -375,7 +374,7 @@
                         <Banknote class="w-4 h-4 text-[#1e90ff]" />
                       </div>
                       <div>
-                        <h3 class="text-sm sm:text-base font-semibold text-slate-800">How to Pay</h3>
+                        <h3 class="text-sm sm:text-base font-semibold text-slate-800">{{ t('management.templatePaymentTab.paymentDrawer.howToPay') }}</h3>
                         <p class="text-[11px] text-slate-500">{{ selectedMethod.name }}</p>
                       </div>
                     </div>
@@ -387,7 +386,7 @@
                         <div class="w-0.5 flex-1 bg-slate-200 mt-1"></div>
                       </div>
                       <div class="flex-1 pb-4">
-                        <p class="text-sm font-medium text-slate-800 mb-2">Copy the payment amount</p>
+                        <p class="text-sm font-medium text-slate-800 mb-2">{{ t('management.templatePaymentTab.paymentDrawer.step1.title') }}</p>
                         <div class="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2">
                           <span class="text-lg font-semibold text-slate-900">${{ finalAmount }}</span>
                           <button
@@ -400,7 +399,7 @@
                           >
                             <Check v-if="copiedField === 'amount'" class="w-3.5 h-3.5" />
                             <Copy v-else class="w-3.5 h-3.5" />
-                            {{ copiedField === 'amount' ? 'Copied!' : 'Copy' }}
+                            {{ copiedField === 'amount' ? t('management.templatePaymentTab.paymentDrawer.copied') : t('management.templatePaymentTab.paymentDrawer.copy') }}
                           </button>
                         </div>
                       </div>
@@ -413,7 +412,7 @@
                         <div class="w-0.5 flex-1 bg-slate-200 mt-1"></div>
                       </div>
                       <div class="flex-1 pb-4">
-                        <p class="text-sm font-medium text-slate-800 mb-2">Transfer to this account</p>
+                        <p class="text-sm font-medium text-slate-800 mb-2">{{ t('management.templatePaymentTab.paymentDrawer.step2.title') }}</p>
 
                         <!-- QR Code (Primary - always show if available) -->
                         <div
@@ -427,7 +426,7 @@
                             loading="lazy"
                             @error="handleImageError"
                           />
-                          <p class="text-xs text-slate-500 mt-2">Scan with your banking app</p>
+                          <p class="text-xs text-slate-500 mt-2">{{ t('management.templatePaymentTab.paymentDrawer.step2.scanQr') }}</p>
                         </div>
 
                         <!-- Payment Link Button - Only show on mobile devices with bank apps -->
@@ -438,7 +437,7 @@
                           class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] text-white font-semibold px-4 py-3 rounded-xl transition-all shadow-md hover:shadow-lg text-sm mt-3"
                         >
                           <Smartphone class="w-4 h-4" />
-                          Open in Bank App
+                          {{ t('management.templatePaymentTab.paymentDrawer.step2.openBankApp') }}
                           <ExternalLink class="w-3.5 h-3.5 ml-1" />
                         </button>
 
@@ -447,13 +446,13 @@
                           v-if="selectedMethod.bank_name || selectedMethod.account_number || selectedMethod.account_name"
                           class="mt-3 space-y-2 rounded-xl border border-slate-200 bg-white p-3"
                         >
-                          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Bank Details</p>
+                          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">{{ t('management.templatePaymentTab.paymentDrawer.step2.bankDetails') }}</p>
                           <div v-if="selectedMethod.bank_name" class="text-sm text-slate-700">
-                            <span class="text-slate-500">Bank:</span> {{ selectedMethod.bank_name }}
+                            <span class="text-slate-500">{{ t('management.templatePaymentTab.paymentDrawer.step2.bank') }}</span> {{ selectedMethod.bank_name }}
                           </div>
                           <div v-if="selectedMethod.account_number" class="flex items-center justify-between gap-2">
                             <div class="text-sm">
-                              <span class="text-slate-500">Account:</span>
+                              <span class="text-slate-500">{{ t('management.templatePaymentTab.paymentDrawer.step2.account') }}</span>
                               <span class="font-mono font-medium text-slate-800 ml-1">{{ selectedMethod.account_number }}</span>
                             </div>
                             <button
@@ -466,12 +465,12 @@
                             >
                               <Check v-if="copiedField === 'account'" class="w-3 h-3" />
                               <Copy v-else class="w-3 h-3" />
-                              {{ copiedField === 'account' ? 'Copied!' : 'Copy' }}
+                              {{ copiedField === 'account' ? t('management.templatePaymentTab.paymentDrawer.copied') : t('management.templatePaymentTab.paymentDrawer.copy') }}
                             </button>
                           </div>
                           <div v-if="selectedMethod.account_name" class="flex items-center justify-between gap-2">
                             <div class="text-sm">
-                              <span class="text-slate-500">Name:</span>
+                              <span class="text-slate-500">{{ t('management.templatePaymentTab.paymentDrawer.step2.name') }}</span>
                               <span class="font-medium text-slate-800 ml-1">{{ selectedMethod.account_name }}</span>
                             </div>
                             <button
@@ -484,7 +483,7 @@
                             >
                               <Check v-if="copiedField === 'name'" class="w-3 h-3" />
                               <Copy v-else class="w-3 h-3" />
-                              {{ copiedField === 'name' ? 'Copied!' : 'Copy' }}
+                              {{ copiedField === 'name' ? t('management.templatePaymentTab.paymentDrawer.copied') : t('management.templatePaymentTab.paymentDrawer.copy') }}
                             </button>
                           </div>
                         </div>
@@ -497,8 +496,8 @@
                         <div class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center">3</div>
                       </div>
                       <div class="flex-1">
-                        <p class="text-sm font-medium text-slate-800 mb-1">Upload payment receipt</p>
-                        <p class="text-[11px] text-slate-500 mb-2">Screenshot your transfer confirmation for faster verification</p>
+                        <p class="text-sm font-medium text-slate-800 mb-1">{{ t('management.templatePaymentTab.paymentDrawer.step3.title') }}</p>
+                        <p class="text-[11px] text-slate-500 mb-2">{{ t('management.templatePaymentTab.paymentDrawer.step3.hint') }}</p>
                         <div class="relative">
                           <input
                             id="paymentProof"
@@ -526,9 +525,9 @@
                                 class="text-sm font-medium truncate"
                                 :class="paymentForm.payment_proof ? 'text-emerald-700' : 'text-slate-700'"
                               >
-                                {{ paymentForm.payment_proof ? paymentForm.payment_proof.name : 'Choose file or drag here' }}
+                                {{ paymentForm.payment_proof ? paymentForm.payment_proof.name : t('management.templatePaymentTab.paymentDrawer.step3.chooseFile') }}
                               </p>
-                              <p class="text-[11px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
+                              <p class="text-[11px] text-slate-500">{{ t('management.templatePaymentTab.paymentDrawer.step3.fileTypes') }}</p>
                             </div>
                           </div>
                         </div>
@@ -552,8 +551,8 @@
                     <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
                       <CreditCard class="w-6 h-6 text-slate-400" />
                     </div>
-                    <p class="text-sm font-medium text-slate-600">Select a payment method</p>
-                    <p class="text-xs text-slate-500 mt-1">Choose from the options above to see payment instructions</p>
+                    <p class="text-sm font-medium text-slate-600">{{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.title') }}</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.hint') }}</p>
                   </div>
 
                   <!-- Additional Details (Collapsible) -->
@@ -564,7 +563,7 @@
                       class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50/80 hover:bg-slate-100/80 transition-colors text-left"
                     >
                       <span class="text-xs sm:text-sm font-medium text-slate-700">
-                        Additional Details <span class="text-slate-400">(Optional)</span>
+                        {{ t('management.templatePaymentTab.paymentDrawer.additionalDetails') }} <span class="text-slate-400">({{ t('management.templatePaymentTab.paymentDrawer.optional') }})</span>
                       </span>
                       <ChevronDown
                         class="w-4 h-4 text-slate-500 transition-transform duration-200"
@@ -577,27 +576,27 @@
                     >
                       <div class="space-y-1.5">
                         <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-600">
-                          Transaction Reference
+                          {{ t('management.templatePaymentTab.paymentDrawer.transactionRef') }}
                         </label>
                         <input
                           id="transactionRef"
                           v-model="paymentForm.transaction_reference"
                           type="text"
                           class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white"
-                          placeholder="Enter transaction ID"
+                          :placeholder="t('management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder')"
                         />
                       </div>
 
                       <div class="space-y-1.5">
                         <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-600">
-                          Notes
+                          {{ t('management.templatePaymentTab.paymentDrawer.notes') }}
                         </label>
                         <textarea
                           id="paymentNotes"
                           v-model="paymentForm.user_notes"
                           rows="2"
                           class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white resize-none"
-                          placeholder="Any additional notes for the host"
+                          :placeholder="t('management.templatePaymentTab.paymentDrawer.notesPlaceholder')"
                         ></textarea>
                       </div>
                     </div>
@@ -614,7 +613,7 @@
             >
               <Loader v-if="submittingPayment" class="w-4 h-4 animate-spin" />
               <CheckCircle v-else class="w-4 h-4" />
-              <span>{{ submittingPayment ? 'Submitting...' : 'Submit Payment' }}</span>
+              <span>{{ submittingPayment ? t('management.templatePaymentTab.paymentDrawer.submitting') : t('management.templatePaymentTab.paymentDrawer.submitBtn') }}</span>
             </button>
           </div>
         </div>
@@ -639,7 +638,7 @@
                   <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                     <Pencil class="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <h2 class="text-lg sm:text-2xl font-bold truncate">Update Payment</h2>
+                  <h2 class="text-lg sm:text-2xl font-bold truncate">{{ t('management.templatePaymentTab.updateModal.title') }}</h2>
                 </div>
                 <button
                   @click="cancelUpdate"
@@ -654,19 +653,19 @@
               <form @submit.prevent="updatePayment" class="space-y-4 sm:space-y-6">
                 <div>
                   <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                    Transaction Reference <span class="text-slate-400">(Optional)</span>
+                    {{ t('management.templatePaymentTab.updateModal.transactionRef') }} <span class="text-slate-400">({{ t('management.templatePaymentTab.updateModal.optional') }})</span>
                   </label>
                   <input
                     v-model="updateForm.transaction_reference"
                     type="text"
                     class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm text-sm sm:text-base"
-                    placeholder="Enter transaction ID"
+                    :placeholder="t('management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder')"
                   />
                 </div>
 
                 <div>
                   <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                    Payment Notes
+                    {{ t('management.templatePaymentTab.updateModal.notes') }}
                   </label>
                   <textarea
                     v-model="updateForm.user_notes"
@@ -677,7 +676,7 @@
 
                 <div>
                   <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                    Payment Proof <span class="text-slate-500">(Optional)</span>
+                    {{ t('management.templatePaymentTab.updateModal.proof') }} <span class="text-slate-500">({{ t('management.templatePaymentTab.updateModal.optional') }})</span>
                   </label>
                   <input
                     ref="updateFileInput"
@@ -694,14 +693,14 @@
                     @click="cancelUpdate"
                     class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 text-sm sm:text-base"
                   >
-                    Cancel
+                    {{ t('management.templatePaymentTab.updateModal.cancelBtn') }}
                   </button>
                   <button
                     type="submit"
                     :disabled="updatingPayment"
                     class="flex-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
-                    {{ updatingPayment ? 'Updating...' : 'Update Payment' }}
+                    {{ updatingPayment ? t('management.templatePaymentTab.updateModal.updating') : t('management.templatePaymentTab.updateModal.updateBtn') }}
                   </button>
                 </div>
               </form>
@@ -729,6 +728,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Palette,
   Package,
@@ -792,6 +792,8 @@ const emit = defineEmits<{
   'template-updated': [template: EventTemplate]
   'event-updated': [event: Event]
 }>()
+
+const { t } = useI18n()
 
 // Composables
 const {
@@ -881,12 +883,12 @@ let abortController: AbortController | null = null
 // Computed properties
 const headerDescription = computed((): string => {
   if (isTemplateActivated.value) {
-    return 'Your template is active and ready to use'
+    return t('management.templatePaymentTab.header.descActive')
   }
   if (props.event.event_template) {
-    return 'Complete payment to activate your template'
+    return t('management.templatePaymentTab.header.descPendingPayment')
   }
-  return 'Select a template and complete payment'
+  return t('management.templatePaymentTab.header.descNoTemplate')
 })
 
 const hasSelectedTemplate = computed(() => Boolean(props.event.event_template))
@@ -1511,17 +1513,17 @@ const getStatusBadgeClass = (status?: string) => {
 const getStatusDisplay = (status?: string) => {
   switch (status) {
     case 'pending':
-      return 'Pending Review'
+      return t('management.paymentHistoryList.status.pending')
     case 'confirmed':
-      return 'Confirmed'
+      return t('management.paymentHistoryList.status.confirmed')
     case 'failed':
-      return 'Rejected'
+      return t('management.paymentHistoryList.status.failed')
     case 'cancelled':
-      return 'Cancelled'
+      return t('management.paymentHistoryList.status.cancelled')
     case 'refunded':
-      return 'Refunded'
+      return t('management.paymentHistoryList.status.refunded')
     default:
-      return 'Unknown'
+      return t('management.paymentHistoryList.status.unknown')
   }
 }
 

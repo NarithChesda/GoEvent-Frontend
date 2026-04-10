@@ -1023,5 +1023,239 @@
       "savedSuccess": "All changes saved successfully!",
       "networkError": "Network error while saving"
     }
+  },
+  "templateStatusCards": {
+    "previewMode": {
+      "standardPlan": "Standard Plan",
+      "previewMode": "Preview Mode",
+      "description": "You've selected this template for your event. Complete payment to activate all features.",
+      "features": "Included Features:",
+      "moreFeatures": "+{count} more features",
+      "changeTemplateBtn": "Change Template",
+      "proceedBtn": "Proceed to Payment"
+    },
+    "simpleSelection": {
+      "title": "Template Selected",
+      "description": "A template has been selected for your event. Complete payment to enable advanced customization features.",
+      "changeTemplateBtn": "Change Template",
+      "proceedBtn": "Proceed to Payment"
+    },
+    "noTemplate": {
+      "title": "No Template Selected",
+      "description": "Choose from our collection of professional templates to enhance your event's visual appeal and user experience.",
+      "browseBtn": "Browse Templates"
+    },
+    "paymentPending": {
+      "title": "Payment Pending",
+      "description": "Your payment is being processed. We'll notify you once it's confirmed and your template is activated.",
+      "viewDetailsBtn": "View Payment Details",
+      "refreshBtn": "Refresh Status"
+    },
+    "paymentFailed": {
+      "title": "Payment Failed",
+      "description": "There was an issue with your payment. Please try again or contact support for assistance.",
+      "retryBtn": "Try Again",
+      "viewDetailsBtn": "View Details"
+    },
+    "paymentConfirmed": {
+      "title": "Template Activated!",
+      "description": "Your payment has been confirmed and your template is now active. All premium features are available.",
+      "viewDetailsBtn": "View Template Details"
+    }
+  },
+  "paymentHistoryList": {
+    "title": "Payment History",
+    "loading": "Loading payment history...",
+    "empty": "No payments found for this event.",
+    "paymentFallback": "Payment",
+    "na": "N/A",
+    "discount": "(-${amount} discount)",
+    "receiptUploaded": "Receipt uploaded",
+    "updateDetails": "Update Payment Details",
+    "updateWithReceipt": "Update Payment / Upload Receipt",
+    "status": {
+      "pending": "Pending Review",
+      "confirmed": "Confirmed",
+      "failed": "Rejected",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "unknown": "Unknown"
+    }
+  },
+  "eventReferrerSection": {
+    "title": "Event Referrer",
+    "subtitle": "Manage who referred this event",
+    "editTitle": "Edit referrer",
+    "removeTitle": "Remove referrer",
+    "noReferrer": "No referrer has been set for this event",
+    "addReferrerBtn": "Add Referrer",
+    "form": {
+      "emailLabel": "Referrer Email",
+      "emailPlaceholder": "Enter referrer's email address",
+      "emailHint": "The referrer must have an account in the system and is our partner",
+      "cancelBtn": "Cancel",
+      "savingLong": "Saving...",
+      "savingShort": "Saving",
+      "updateReferrer": "Update Referrer",
+      "addReferrer": "Add Referrer",
+      "update": "Update",
+      "add": "Add"
+    },
+    "info": {
+      "title": "About Event Referrers",
+      "body": "A referrer is the person or vendor who introduced you to our platform. They may earn rewards or commissions based on your purchases.",
+      "note": "Note: The referrer must have an existing account in the system and is our partner to be assigned."
+    },
+    "removeModal": {
+      "title": "Remove Referrer?",
+      "body": "Are you sure you want to remove {name} as the referrer for this event?",
+      "cancelBtn": "Cancel",
+      "removingBtn": "Removing...",
+      "removeBtn": "Remove"
+    },
+    "notifications": {
+      "referrerUpdatedTitle": "Referrer Updated",
+      "referrerAddedTitle": "Referrer Added",
+      "referrerUpdatedBody": "Updated referrer successfully",
+      "referrerAddedBody": "Added referrer successfully",
+      "referrerRemovedTitle": "Referrer Removed",
+      "referrerRemovedBody": "Referrer has been removed from this event",
+      "updateFailedTitle": "Update Failed",
+      "removeFailedTitle": "Remove Failed",
+      "invalidEmail": "Please enter a valid email address",
+      "failedToUpdate": "Failed to update referrer. Please try again.",
+      "failedToRemove": "Failed to remove referrer. Please try again."
+    }
+  },
+  "browseTemplateModal": {
+    "title": "Templates",
+    "closeModal": "Close modal",
+    "tabs": {
+      "browse": "Browse",
+      "browseAll": "Browse All",
+      "mine": "Mine",
+      "myTemplates": "My Templates"
+    },
+    "sidebar": {
+      "packageLabel": "Package",
+      "categoryLabel": "Category"
+    },
+    "filters": {
+      "all": "All",
+      "basic": "Basic",
+      "standard": "Standard"
+    },
+    "search": {
+      "placeholder": "Search templates...",
+      "ariaLabel": "Search templates by name or category",
+      "srLabel": "Search templates"
+    },
+    "footer": {
+      "selected": "{name} selected",
+      "useTemplate": "Use this template",
+      "use": "Use",
+      "applying": "Applying...",
+      "applyingShort": "..."
+    }
+  },
+  "templateDisplayCard": {
+    "templatePlan": "Template Plan",
+    "plan": "Plan",
+    "status": {
+      "active": "Active",
+      "preview": "Preview"
+    },
+    "oneTime": "one-time",
+    "features": "Included Features:",
+    "makePaymentBtn": "Make Payment",
+    "makePaymentHint": "Complete payment to activate this template",
+    "watchPreviewBtn": "Watch Template Preview",
+    "activeHint": "Template is active and ready to use"
+  },
+  "templatePaymentTab": {
+    "header": {
+      "title": "Template & Payment",
+      "descActive": "Your template is active and ready to use",
+      "descPendingPayment": "Complete payment to activate your template",
+      "descNoTemplate": "Select a template and complete payment"
+    },
+    "browseBtn": {
+      "browse": "Browse",
+      "templates": "Templates"
+    },
+    "noTemplate": {
+      "title": "No Template Selected",
+      "description": "Choose a professional template to enhance your event's visual appeal and provide a better experience for your attendees.",
+      "browseBtn": "Browse Templates"
+    },
+    "templateSelected": {
+      "title": "Template Selected",
+      "description": "You have selected template ID {id}. Complete payment to activate it.",
+      "makePaymentBtn": "Make Payment"
+    },
+    "paymentStatus": {
+      "title": "Payment Status",
+      "makeNewPayment": "Make New Payment",
+      "newPayment": "New Payment",
+      "confirmed": "Payment Confirmed",
+      "pending": "Payment Pending Review",
+      "pendingHint": "You can update the existing payment or submit a new one.",
+      "templatePackage": "Template package"
+    },
+    "paymentDrawer": {
+      "title": "Make Payment",
+      "currentPayment": "Current payment",
+      "total": "Total",
+      "promoPlaceholder": "Promo",
+      "applyPromo": "Apply",
+      "applyingPromo": "...",
+      "removePromoTitle": "Remove promo code",
+      "paymentMethod": "Payment method",
+      "loadingMethods": "Loading methods...",
+      "noMethods": "No payment methods available for this event yet.",
+      "howToPay": "How to Pay",
+      "step1": {
+        "title": "Copy the payment amount"
+      },
+      "step2": {
+        "title": "Transfer to this account",
+        "scanQr": "Scan with your banking app",
+        "openBankApp": "Open in Bank App",
+        "bankDetails": "Bank Details",
+        "bank": "Bank:",
+        "account": "Account:",
+        "name": "Name:"
+      },
+      "step3": {
+        "title": "Upload payment receipt",
+        "hint": "Screenshot your transfer confirmation for faster verification",
+        "chooseFile": "Choose file or drag here",
+        "fileTypes": "JPG, PNG, PDF up to 10MB"
+      },
+      "copied": "Copied!",
+      "copy": "Copy",
+      "noMethodSelected": {
+        "title": "Select a payment method",
+        "hint": "Choose from the options above to see payment instructions"
+      },
+      "additionalDetails": "Additional Details",
+      "optional": "Optional",
+      "transactionRef": "Transaction Reference",
+      "transactionRefPlaceholder": "Enter transaction ID",
+      "notes": "Notes",
+      "notesPlaceholder": "Any additional notes for the host",
+      "submitBtn": "Submit Payment",
+      "submitting": "Submitting..."
+    },
+    "updateModal": {
+      "title": "Update Payment",
+      "transactionRef": "Transaction Reference",
+      "optional": "Optional",
+      "notes": "Payment Notes",
+      "proof": "Payment Proof",
+      "cancelBtn": "Cancel",
+      "updateBtn": "Update Payment",
+      "updating": "Updating..."
+    }
   }
 }

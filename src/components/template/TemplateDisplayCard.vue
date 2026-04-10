@@ -23,7 +23,7 @@
               class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
             >
               <Package class="w-3.5 h-3.5 mr-1.5" />
-              {{ template.package_plan?.name || 'Template Plan' }}
+              {{ template.package_plan?.name || t('management.templateDisplayCard.templatePlan') }}
             </span>
           </div>
           <!-- Play button overlay for video preview -->
@@ -56,7 +56,7 @@
                 {{ template.name }}
               </h3>
               <p class="text-sm sm:text-base text-slate-600 mt-1">
-                {{ template.package_plan?.name || 'Plan' }}
+                {{ template.package_plan?.name || t('management.templateDisplayCard.plan') }}
               </p>
             </div>
             <span
@@ -64,26 +64,26 @@
               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 flex-shrink-0"
             >
               <CheckCircle class="w-4 h-4 mr-1.5" />
-              Active
+              {{ t('management.templateDisplayCard.status.active') }}
             </span>
             <span
               v-else-if="status === 'preview'"
               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800 flex-shrink-0"
             >
               <Eye class="w-4 h-4 mr-1.5" />
-              Preview
+              {{ t('management.templateDisplayCard.status.preview') }}
             </span>
           </div>
           <!-- Price display for preview mode -->
           <div v-if="status === 'preview' && template.package_plan?.price" class="mt-2">
             <span class="text-2xl sm:text-3xl font-bold text-slate-900">${{ template.package_plan.price }}</span>
-            <span class="text-sm text-slate-500 ml-2">one-time</span>
+            <span class="text-sm text-slate-500 ml-2">{{ t('management.templateDisplayCard.oneTime') }}</span>
           </div>
         </div>
 
         <!-- Features -->
         <div v-if="template.package_plan?.features" class="flex-1">
-          <h4 class="text-base font-semibold text-slate-900 mb-3">Included Features:</h4>
+          <h4 class="text-base font-semibold text-slate-900 mb-3">{{ t('management.templateDisplayCard.features') }}</h4>
           <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <li
               v-for="feature in template.package_plan.features"
@@ -105,10 +105,10 @@
               class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm sm:text-base"
             >
               <CreditCard class="w-5 h-5 mr-2" />
-              Make Payment
+              {{ t('management.templateDisplayCard.makePaymentBtn') }}
             </button>
             <p class="text-xs sm:text-sm text-slate-500 text-center mt-2">
-              Complete payment to activate this template
+              {{ t('management.templateDisplayCard.makePaymentHint') }}
             </p>
           </div>
 
@@ -119,13 +119,13 @@
               class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center text-sm"
             >
               <PlayCircle class="w-5 h-5 mr-2" />
-              Watch Template Preview
+              {{ t('management.templateDisplayCard.watchPreviewBtn') }}
             </button>
           </div>
 
           <!-- Active Mode: No video available -->
           <div v-else-if="status === 'active'" class="text-center">
-            <p class="text-sm text-slate-500">Template is active and ready to use</p>
+            <p class="text-sm text-slate-500">{{ t('management.templateDisplayCard.activeHint') }}</p>
           </div>
         </div>
       </div>
@@ -135,7 +135,10 @@
 
 <script setup lang="ts">
 import { Package, Eye, Palette, CheckCircle, PlayCircle, CreditCard } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import type { EventTemplate } from '../../services/api'
+
+const { t } = useI18n()
 
 interface Props {
   template: EventTemplate

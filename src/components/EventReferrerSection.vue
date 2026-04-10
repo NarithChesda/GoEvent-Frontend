@@ -4,9 +4,9 @@
       <div>
         <h3 class="text-lg font-bold text-slate-900 flex items-center">
           <UserPlus class="w-5 h-5 text-[#1e90ff] mr-2" />
-          Event Referrer
+          {{ t('management.eventReferrerSection.title') }}
         </h3>
-        <p class="text-sm text-slate-600 mt-1">Manage who referred this event</p>
+        <p class="text-sm text-slate-600 mt-1">{{ t('management.eventReferrerSection.subtitle') }}</p>
       </div>
     </div>
 
@@ -31,14 +31,14 @@
             <button
               @click="startEditing"
               class="p-2 text-[#1e90ff] hover:bg-[#B0E0E6] rounded-lg transition-colors"
-              title="Edit referrer"
+              :title="t('management.eventReferrerSection.editTitle')"
             >
               <Pencil class="w-4 h-4" />
             </button>
             <button
               @click="confirmRemoveReferrer"
               class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-              title="Remove referrer"
+              :title="t('management.eventReferrerSection.removeTitle')"
             >
               <Trash2 class="w-4 h-4" />
             </button>
@@ -51,14 +51,14 @@
     <div v-else-if="!referrerDetails && !isEditing" class="mb-4">
       <div class="p-8 bg-slate-50/50 rounded-2xl border border-slate-200/50 text-center">
         <UserX class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p class="text-slate-600 mb-4">No referrer has been set for this event</p>
+        <p class="text-slate-600 mb-4">{{ t('management.eventReferrerSection.noReferrer') }}</p>
         <button
           v-if="canEdit"
           @click="startEditing"
           class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
         >
           <UserPlus class="w-4 h-4 mr-2" />
-          Add Referrer
+          {{ t('management.eventReferrerSection.addReferrerBtn') }}
         </button>
       </div>
     </div>
@@ -68,7 +68,7 @@
       <form @submit.prevent="saveReferrer" class="space-y-4">
         <div>
           <label for="referrerEmail" class="block text-sm font-medium text-slate-700 mb-2">
-            Referrer Email <span class="text-red-500">*</span>
+            {{ t('management.eventReferrerSection.form.emailLabel') }} <span class="text-red-500">*</span>
           </label>
           <div class="relative">
             <input
@@ -78,13 +78,13 @@
               required
               :disabled="isSaving"
               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm disabled:opacity-50"
-              placeholder="Enter referrer's email address"
+              :placeholder="t('management.eventReferrerSection.form.emailPlaceholder')"
             />
             <Mail
               class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2"
             />
           </div>
-          <p class="text-xs text-slate-500 mt-1">The referrer must have an account in the system and is our partner</p>
+          <p class="text-xs text-slate-500 mt-1">{{ t('management.eventReferrerSection.form.emailHint') }}</p>
           <p v-if="error" class="text-xs text-red-600 mt-1">{{ error }}</p>
         </div>
 
@@ -95,7 +95,7 @@
             :disabled="isSaving"
             class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
           >
-            Cancel
+            {{ t('management.eventReferrerSection.form.cancelBtn') }}
           </button>
           <button
             type="submit"
@@ -104,13 +104,13 @@
           >
             <span v-if="isSaving" class="flex items-center">
               <div class="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-b-2 border-white mr-1.5 sm:mr-2"></div>
-              <span class="hidden sm:inline">Saving...</span>
-              <span class="sm:hidden">Saving</span>
+              <span class="hidden sm:inline">{{ t('management.eventReferrerSection.form.savingLong') }}</span>
+              <span class="sm:hidden">{{ t('management.eventReferrerSection.form.savingShort') }}</span>
             </span>
             <span v-else class="flex items-center">
               <Check class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              <span class="hidden sm:inline">{{ referrerDetails ? 'Update' : 'Add' }} Referrer</span>
-              <span class="sm:hidden">{{ referrerDetails ? 'Update' : 'Add' }}</span>
+              <span class="hidden sm:inline">{{ referrerDetails ? t('management.eventReferrerSection.form.updateReferrer') : t('management.eventReferrerSection.form.addReferrer') }}</span>
+              <span class="sm:hidden">{{ referrerDetails ? t('management.eventReferrerSection.form.update') : t('management.eventReferrerSection.form.add') }}</span>
             </span>
           </button>
         </div>
@@ -122,11 +122,11 @@
       <div class="flex items-start space-x-3">
         <Info class="w-5 h-5 text-[#1e90ff] flex-shrink-0 mt-0.5" />
         <div class="text-sm text-slate-700">
-          <p class="font-medium mb-1">About Event Referrers</p>
+          <p class="font-medium mb-1">{{ t('management.eventReferrerSection.info.title') }}</p>
           <p>
-            A referrer is the person or vendor who introduced you to our platform. They may earn rewards or commissions based on your purchases.
+            {{ t('management.eventReferrerSection.info.body') }}
             <br />
-            <span class="italic">Note: The referrer must have an existing account in the system and is our partner to be assigned.</span>
+            <span class="italic">{{ t('management.eventReferrerSection.info.note') }}</span>
           </p>
         </div>
       </div>
@@ -151,28 +151,24 @@
                 <AlertTriangle class="w-6 h-6 text-red-600" />
               </div>
               <h3 class="text-lg font-semibold text-slate-900 text-center mb-2">
-                Remove Referrer?
+                {{ t('management.eventReferrerSection.removeModal.title') }}
               </h3>
               <p class="text-sm text-slate-600 text-center mb-6">
-                Are you sure you want to remove
-                <span class="font-medium"
-                  >{{ referrerDetails?.first_name }} {{ referrerDetails?.last_name }}</span
-                >
-                as the referrer for this event?
+                {{ t('management.eventReferrerSection.removeModal.body', { name: `${referrerDetails?.first_name} ${referrerDetails?.last_name}` }) }}
               </p>
               <div class="flex space-x-3">
                 <button
                   @click="cancelRemove"
                   class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-xl transition-all duration-200"
                 >
-                  Cancel
+                  {{ t('management.eventReferrerSection.removeModal.cancelBtn') }}
                 </button>
                 <button
                   @click="removeReferrer"
                   :disabled="isRemoving"
                   class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-slate-400 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200"
                 >
-                  {{ isRemoving ? 'Removing...' : 'Remove' }}
+                  {{ isRemoving ? t('management.eventReferrerSection.removeModal.removingBtn') : t('management.eventReferrerSection.removeModal.removeBtn') }}
                 </button>
               </div>
             </div>
@@ -185,6 +181,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   UserPlus,
   User,
@@ -222,6 +219,7 @@ const emit = defineEmits<{
   'referrer-updated': [referrerDetails: unknown]
 }>()
 
+const { t } = useI18n()
 const { success: showSuccess, error: showError } = useNotifications()
 
 // State
@@ -255,7 +253,7 @@ const saveReferrer = async () => {
 
   // Validate email format
   if (!validateEmail(referrerEmail.value)) {
-    error.value = 'Please enter a valid email address'
+    error.value = t('management.eventReferrerSection.notifications.invalidEmail')
     return
   }
 
@@ -271,8 +269,12 @@ const saveReferrer = async () => {
 
     if (response.success && response.data) {
       showSuccess(
-        props.referrerDetails ? 'Referrer Updated' : 'Referrer Added',
-        `${props.referrerDetails ? 'Updated' : 'Added'} referrer successfully`,
+        props.referrerDetails
+          ? t('management.eventReferrerSection.notifications.referrerUpdatedTitle')
+          : t('management.eventReferrerSection.notifications.referrerAddedTitle'),
+        props.referrerDetails
+          ? t('management.eventReferrerSection.notifications.referrerUpdatedBody')
+          : t('management.eventReferrerSection.notifications.referrerAddedBody'),
       )
 
       // Log the response to debug
@@ -313,10 +315,10 @@ const saveReferrer = async () => {
     } else if (apiError.response?.data?.detail) {
       error.value = apiError.response.data.detail
     } else {
-      error.value = apiError.message || 'Failed to update referrer. Please try again.'
+      error.value = apiError.message || t('management.eventReferrerSection.notifications.failedToUpdate')
     }
 
-    showError('Update Failed', error.value)
+    showError(t('management.eventReferrerSection.notifications.updateFailedTitle'), error.value)
   } finally {
     isSaving.value = false
   }
@@ -344,7 +346,10 @@ const removeReferrer = async () => {
     const response = await apiService.patch(`/api/events/${props.eventId}/`, payload)
 
     if (response.success) {
-      showSuccess('Referrer Removed', 'Referrer has been removed from this event')
+      showSuccess(
+        t('management.eventReferrerSection.notifications.referrerRemovedTitle'),
+        t('management.eventReferrerSection.notifications.referrerRemovedBody'),
+      )
       emit('referrer-updated', { ...(response.data || {}), referrer_details: null })
       showRemoveConfirm.value = false
     } else {
@@ -353,8 +358,8 @@ const removeReferrer = async () => {
   } catch (err) {
     console.error('Error removing referrer:', err)
     const apiError = err as { message?: string }
-    const errorMessage = apiError.message || 'Failed to remove referrer. Please try again.'
-    showError('Remove Failed', errorMessage)
+    const errorMessage = apiError.message || t('management.eventReferrerSection.notifications.failedToRemove')
+    showError(t('management.eventReferrerSection.notifications.removeFailedTitle'), errorMessage)
   } finally {
     isRemoving.value = false
   }

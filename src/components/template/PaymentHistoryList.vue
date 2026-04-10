@@ -2,17 +2,17 @@
   <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
     <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
       <History class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-      Payment History
+      {{ t('management.paymentHistoryList.title') }}
     </h3>
 
     <div v-if="loading" class="text-center py-6 sm:py-8">
       <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff] mx-auto"></div>
-      <p class="text-xs sm:text-sm text-slate-600 mt-2">Loading payment history...</p>
+      <p class="text-xs sm:text-sm text-slate-600 mt-2">{{ t('management.paymentHistoryList.loading') }}</p>
     </div>
 
     <div v-else-if="payments.length === 0" class="text-center py-6 sm:py-8">
       <History class="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2 sm:mb-3" />
-      <p class="text-xs sm:text-sm text-slate-500">No payments found for this event.</p>
+      <p class="text-xs sm:text-sm text-slate-500">{{ t('management.paymentHistoryList.empty') }}</p>
     </div>
 
     <div v-else class="space-y-3 sm:space-y-4">
@@ -25,7 +25,7 @@
         <div class="flex items-start justify-between gap-3 mb-3">
           <div class="flex-1 min-w-0">
             <h4 class="font-semibold text-slate-900 text-sm sm:text-base">
-              {{ payment.plan_name || 'Payment' }}
+              {{ payment.plan_name || t('management.paymentHistoryList.paymentFallback') }}
             </h4>
             <p v-if="payment.template_name" class="text-xs sm:text-sm text-slate-500 mt-0.5">
               {{ payment.template_name }}
@@ -54,7 +54,7 @@
           <!-- Payment Method -->
           <div class="flex items-center gap-2 text-slate-600">
             <CreditCard class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <span class="truncate">{{ payment.payment_method_name || 'N/A' }}</span>
+            <span class="truncate">{{ payment.payment_method_name || t('management.paymentHistoryList.na') }}</span>
           </div>
 
           <!-- Transaction Reference -->
@@ -74,7 +74,7 @@
             <Tag class="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
             <span>
               <span class="line-through text-slate-400">${{ payment.original_price }}</span>
-              <span class="text-green-600 ml-1">(-${{ payment.discount_amount }} discount)</span>
+              <span class="text-green-600 ml-1">{{ t('management.paymentHistoryList.discount', { amount: payment.discount_amount }) }}</span>
             </span>
           </div>
 
@@ -87,7 +87,7 @@
           <!-- Payment Proof Indicator -->
           <div v-if="payment.payment_proof" class="flex items-center gap-2 text-slate-600">
             <ImageIcon class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <span class="text-green-600">Receipt uploaded</span>
+            <span class="text-green-600">{{ t('management.paymentHistoryList.receiptUploaded') }}</span>
           </div>
         </div>
 
@@ -98,7 +98,7 @@
             class="inline-flex items-center gap-1.5 text-[#1e90ff] hover:text-[#1873cc] text-xs sm:text-sm font-medium transition-colors"
           >
             <Pencil class="w-3.5 h-3.5" />
-            {{ payment.payment_proof ? 'Update Payment Details' : 'Update Payment / Upload Receipt' }}
+            {{ payment.payment_proof ? t('management.paymentHistoryList.updateDetails') : t('management.paymentHistoryList.updateWithReceipt') }}
           </button>
         </div>
       </div>
@@ -123,8 +123,11 @@ import {
   MessageSquare,
   ImageIcon,
 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import type { Payment } from '../../types/payment'
 import type { Component } from 'vue'
+
+const { t } = useI18n()
 
 interface Props {
   payments: readonly Payment[]
@@ -184,17 +187,17 @@ const getStatusBadgeClass = (status?: string) => {
 const getStatusDisplay = (status?: string) => {
   switch (status) {
     case 'pending':
-      return 'Pending Review'
+      return t('management.paymentHistoryList.status.pending')
     case 'confirmed':
-      return 'Confirmed'
+      return t('management.paymentHistoryList.status.confirmed')
     case 'failed':
-      return 'Rejected'
+      return t('management.paymentHistoryList.status.failed')
     case 'cancelled':
-      return 'Cancelled'
+      return t('management.paymentHistoryList.status.cancelled')
     case 'refunded':
-      return 'Refunded'
+      return t('management.paymentHistoryList.status.refunded')
     default:
-      return 'Unknown'
+      return t('management.paymentHistoryList.status.unknown')
   }
 }
 </script>
