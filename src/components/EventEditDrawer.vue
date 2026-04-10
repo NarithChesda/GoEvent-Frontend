@@ -24,11 +24,11 @@
               <button
                 @click="closeDrawer"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.editEventDrawer.header.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">Edit Event</h2>
+              <h2 class="text-base font-semibold text-white">{{ t('management.editEventDrawer.header.title') }}</h2>
             </div>
 
             <!-- Right: Delete button -->
@@ -37,7 +37,7 @@
               @click="showDeleteConfirm = true"
               :disabled="isSubmitting || isDeleting"
               class="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Delete event"
+              :title="t('management.editEventDrawer.header.deleteTitle')"
             >
               <Trash2 class="w-5 h-5 text-white" />
             </button>
@@ -64,13 +64,13 @@
             <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle class="w-8 h-8 text-red-500" />
             </div>
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">Unable to Load Event</h3>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.editEventDrawer.error.title') }}</h3>
             <p class="text-slate-600 mb-4">{{ error }}</p>
             <button
               @click="loadEvent"
               class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
             >
-              Try Again
+              {{ t('management.editEventDrawer.error.tryAgain') }}
             </button>
           </div>
 
@@ -79,7 +79,7 @@
             <!-- Banner Image Upload -->
             <div class="space-y-2">
               <div class="flex items-center justify-between">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event Banner</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.banner.label') }}</h3>
                 <!-- Options button when banner exists -->
                 <div v-if="event?.banner_image" class="relative">
                   <button
@@ -101,7 +101,7 @@
                       class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                     >
                       <Upload class="w-4 h-4" />
-                      <span>Replace</span>
+                      <span>{{ t('management.editEventDrawer.banner.replace') }}</span>
                     </button>
                     <button
                       @click="openBannerCropper(); showBannerDropdown = false"
@@ -109,7 +109,7 @@
                       class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                     >
                       <Crop class="w-4 h-4" />
-                      <span>Crop</span>
+                      <span>{{ t('management.editEventDrawer.banner.crop') }}</span>
                     </button>
                     <button
                       @click="removeBanner"
@@ -117,7 +117,7 @@
                       class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                     >
                       <X class="w-4 h-4" />
-                      <span>Remove</span>
+                      <span>{{ t('management.editEventDrawer.banner.remove') }}</span>
                     </button>
                   </div>
                 </div>
@@ -161,8 +161,8 @@
                     <ImageIcon class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                   </div>
                   <div>
-                    <p class="text-xs font-medium text-slate-600 group-hover:text-slate-900">Click to upload banner</p>
-                    <p class="text-[10px] text-slate-400">1200x630px recommended</p>
+                    <p class="text-xs font-medium text-slate-600 group-hover:text-slate-900">{{ t('management.editEventDrawer.banner.uploadClick') }}</p>
+                    <p class="text-[10px] text-slate-400">{{ t('management.editEventDrawer.banner.uploadHint') }}</p>
                   </div>
                 </div>
                 <!-- Loading state -->
@@ -174,54 +174,54 @@
 
             <!-- Basic Information -->
             <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Basic Information</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.basicInfo.heading') }}</h3>
 
               <!-- Title -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Event Title *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.titleLabel') }}</label>
                 <input
                   v-model="form.title"
                   type="text"
                   required
-                  placeholder="Enter event title"
+                  :placeholder="t('management.editEventDrawer.basicInfo.titlePlaceholder')"
                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
               </div>
 
               <!-- Short Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Short Description</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.shortDescLabel') }}</label>
                 <input
                   v-model="form.short_description"
                   type="text"
                   maxlength="300"
-                  placeholder="Brief description for event cards"
+                  :placeholder="t('management.editEventDrawer.basicInfo.shortDescPlaceholder')"
                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
                 <p class="text-xs text-slate-500 mt-1">
-                  {{ form.short_description?.length || 0 }}/300 characters
+                  {{ t('management.editEventDrawer.basicInfo.shortDescCount', { count: form.short_description?.length || 0 }) }}
                 </p>
               </div>
 
               <!-- Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Full Description *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.fullDescLabel') }}</label>
                 <RichTextEditor
                   v-model="form.description"
-                  placeholder="Detailed event description"
+                  :placeholder="t('management.editEventDrawer.basicInfo.fullDescPlaceholder')"
                   min-height="120px"
                 />
               </div>
 
               <!-- Category -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.categoryLabel') }}</label>
                 <div class="relative">
                   <select
                     v-model="form.category"
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
                   >
-                    <option value="">Select a category</option>
+                    <option value="">{{ t('management.editEventDrawer.basicInfo.categoryPlaceholder') }}</option>
                     <option v-for="category in categories" :key="category.id" :value="category.id">
                       {{ category.name }}
                     </option>
@@ -233,12 +233,12 @@
 
             <!-- Date and Time -->
             <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.dateTime.heading') }}</h3>
 
               <!-- Start Date/Time -->
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.startDateLabel') }}</label>
                   <input
                     v-model="startDate"
                     type="date"
@@ -247,7 +247,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Start Time *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.startTimeLabel') }}</label>
                   <input
                     v-model="startTime"
                     type="time"
@@ -260,7 +260,7 @@
               <!-- End Date/Time -->
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Date *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.endDateLabel') }}</label>
                   <input
                     v-model="endDate"
                     type="date"
@@ -269,7 +269,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">End Time *</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.endTimeLabel') }}</label>
                   <input
                     v-model="endTime"
                     type="time"
@@ -281,7 +281,7 @@
 
               <!-- Timezone -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Timezone</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.timezoneLabel') }}</label>
                 <div class="relative">
                   <select
                     v-model="form.timezone"
@@ -308,7 +308,7 @@
 
             <!-- Location -->
             <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.location.heading') }}</h3>
 
               <!-- Virtual Event Toggle -->
               <div
@@ -320,8 +320,8 @@
                     <component :is="form.is_virtual ? Video : MapPin" class="w-4 h-4 text-sky-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">{{ form.is_virtual ? 'Virtual Event' : 'In-Person Event' }}</p>
-                    <p class="text-xs text-slate-500">{{ form.is_virtual ? 'Event will be held online' : 'Event will be held at a physical location' }}</p>
+                    <p class="text-sm font-medium text-slate-700">{{ form.is_virtual ? t('management.editEventDrawer.location.virtualLabel') : t('management.editEventDrawer.location.inPersonLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ form.is_virtual ? t('management.editEventDrawer.location.virtualDesc') : t('management.editEventDrawer.location.inPersonDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -343,13 +343,13 @@
               <Transition name="slide-fade">
               <div v-if="!form.is_virtual" class="space-y-3">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.addressLabel') }}</label>
                   <div class="relative">
                     <MapPin class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       v-model="form.location"
                       type="text"
-                      placeholder="Enter location address"
+                      :placeholder="t('management.editEventDrawer.location.addressPlaceholder')"
                       class="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                     <button
@@ -365,7 +365,7 @@
 
                 <!-- Google Maps Embed -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Map</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.mapLabel') }}</label>
 
                   <!-- Map Preview -->
                   <div v-if="form.google_map_embed_link" class="relative mb-2">
@@ -390,13 +390,13 @@
                     <input
                       v-model="form.google_map_embed_link"
                       type="text"
-                      placeholder="Paste Google Maps embed URL"
+                      :placeholder="t('management.editEventDrawer.location.mapPlaceholder')"
                       @paste="handleMapsPaste"
                       class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                   </div>
                   <p class="text-xs text-slate-500 mt-1">
-                    Paste Google Maps embed code or URL
+                    {{ t('management.editEventDrawer.location.mapHint') }}
                   </p>
                 </div>
               </div>
@@ -405,7 +405,7 @@
               <!-- Virtual Link Input -->
               <Transition name="slide-fade">
               <div v-if="form.is_virtual">
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Virtual Meeting Link</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.virtualLinkLabel') }}</label>
                 <div class="relative">
                   <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
@@ -421,7 +421,7 @@
 
             <!-- Privacy Settings -->
             <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Privacy</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.privacy.heading') }}</h3>
 
               <div
                 @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
@@ -432,8 +432,8 @@
                     <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? 'Public Event' : 'Private Event' }}</p>
-                    <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? 'Anyone can view and register' : 'Only invited guests can access' }}</p>
+                    <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? t('management.editEventDrawer.privacy.publicLabel') : t('management.editEventDrawer.privacy.privateLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? t('management.editEventDrawer.privacy.publicDesc') : t('management.editEventDrawer.privacy.privateDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -454,7 +454,7 @@
 
             <!-- Registration Settings -->
             <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registration</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.registration.heading') }}</h3>
 
               <!-- Require Registration Toggle -->
               <div
@@ -466,8 +466,8 @@
                     <ClipboardList class="w-4 h-4 text-sky-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">Require Registration</p>
-                    <p class="text-xs text-slate-500">Attendees must register to join</p>
+                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.registration.requireLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.registration.requireDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -490,28 +490,28 @@
                 <div v-if="form.registration_required" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <!-- Registration Deadline -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Registration Deadline</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.deadlineLabel') }}</label>
                     <input
                       v-model="form.registration_deadline"
                       type="datetime-local"
                       :max="form.start_date"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                      placeholder="Optional deadline"
+                      :placeholder="t('management.editEventDrawer.registration.deadlinePlaceholder')"
                     />
-                    <p class="text-xs text-slate-500 mt-1">Leave empty for no deadline</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.deadlineHint') }}</p>
                   </div>
 
                   <!-- Max Attendees -->
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Max Attendees</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.maxAttendeesLabel') }}</label>
                     <input
                       v-model.number="form.max_attendees"
                       type="number"
                       min="1"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                      placeholder="Unlimited"
+                      :placeholder="t('management.editEventDrawer.registration.maxAttendeesPlaceholder')"
                     />
-                    <p class="text-xs text-slate-500 mt-1">Leave empty for unlimited</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.maxAttendeesHint') }}</p>
                   </div>
                 </div>
               </Transition>
@@ -519,7 +519,7 @@
 
             <!-- Display Settings -->
             <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Display Settings</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.displaySettings.heading') }}</h3>
 
               <!-- RSVP Enabled Toggle -->
               <div
@@ -531,8 +531,8 @@
                     <UserCheck class="w-4 h-4 text-sky-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">Show RSVP Section</p>
-                    <p class="text-xs text-slate-500">Allow guests to RSVP on event page</p>
+                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.displaySettings.rsvpLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.displaySettings.rsvpDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -560,8 +560,8 @@
                     <MessageSquare class="w-4 h-4 text-sky-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">Show Comments Section</p>
-                    <p class="text-xs text-slate-500">Allow comments on event page</p>
+                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.displaySettings.commentsLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.displaySettings.commentsDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -589,8 +589,8 @@
                     <Timer class="w-4 h-4 text-sky-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">Show Countdown Timer</p>
-                    <p class="text-xs text-slate-500">Display countdown to event start</p>
+                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.displaySettings.countdownLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.displaySettings.countdownDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -611,7 +611,7 @@
 
             <!-- Fundraising Settings -->
             <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fundraising</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.fundraising.heading') }}</h3>
 
               <!-- Enable Fundraising Toggle -->
               <div
@@ -623,8 +623,8 @@
                     <Heart class="w-4 h-4 text-pink-500" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-700">Enable Fundraising</p>
-                    <p class="text-xs text-slate-500">Accept donations for this event</p>
+                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.enableLabel') }}</p>
+                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.enableDesc') }}</p>
                   </div>
                 </div>
                 <div
@@ -652,7 +652,7 @@
                       <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         <div class="flex items-center gap-1.5">
                           <Target class="w-3.5 h-3.5 text-slate-400" />
-                          <span>Fundraising Goal</span>
+                          <span>{{ t('management.editEventDrawer.fundraising.goalLabel') }}</span>
                         </div>
                       </label>
                       <input
@@ -660,15 +660,15 @@
                         type="number"
                         min="0"
                         step="0.01"
-                        placeholder="e.g., 10000"
+                        :placeholder="t('management.editEventDrawer.fundraising.goalPlaceholder')"
                         class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 bg-white"
                       />
-                      <p class="text-xs text-slate-500 mt-1">Leave empty for no goal</p>
+                      <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.fundraising.goalHint') }}</p>
                     </div>
 
                     <!-- Currency -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1.5">Currency</label>
+                      <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.fundraising.currencyLabel') }}</label>
                       <div class="relative">
                         <select
                           v-model="form.fundraising_currency"
@@ -690,8 +690,8 @@
                     <div class="flex items-center gap-3">
                       <TrendingUp class="w-4 h-4 text-slate-500" />
                       <div>
-                        <p class="text-sm font-medium text-slate-700">Show Progress Bar</p>
-                        <p class="text-xs text-slate-500">Display donation progress publicly</p>
+                        <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.progressLabel') }}</p>
+                        <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.progressDesc') }}</p>
                       </div>
                     </div>
                     <div
@@ -717,8 +717,8 @@
                     <div class="flex items-center gap-3">
                       <Users class="w-4 h-4 text-slate-500" />
                       <div>
-                        <p class="text-sm font-medium text-slate-700">Show Donor List</p>
-                        <p class="text-xs text-slate-500">Display verified donors publicly</p>
+                        <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.donorsLabel') }}</p>
+                        <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.donorsDesc') }}</p>
                       </div>
                     </div>
                     <div
@@ -751,7 +751,7 @@
             >
               <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ isSubmitting ? 'Saving...' : 'Update Event' }}</span>
+              <span>{{ isSubmitting ? t('management.editEventDrawer.footer.saving') : t('management.editEventDrawer.footer.saveBtn') }}</span>
             </button>
 
             <button
@@ -759,7 +759,7 @@
               @click="closeDrawer"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('management.editEventDrawer.footer.cancel') }}
             </button>
           </div>
         </div>
@@ -787,10 +787,10 @@
     v-if="showBannerCropper"
     :show="showBannerCropper"
     :image-source="bannerCropperImage"
-    title="Crop Banner Image"
+    :title="t('management.editEventDrawer.cropperModal.title')"
     :aspect-ratio="BANNER_ASPECT_RATIO"
     cropper-height="400px"
-    help-text="Adjust the crop area to frame your banner image (1200x630px ratio)"
+    :help-text="t('management.editEventDrawer.cropperModal.helpText')"
     @close="closeBannerCropper"
     @apply="handleBannerCropApply"
     @update:cropper-ref="setBannerCropperRef"
@@ -800,9 +800,9 @@
   <DeleteConfirmModal
     :show="showDeleteConfirm"
     :loading="isDeleting"
-    title="Delete Event"
+    :title="t('management.editEventDrawer.deleteModal.title')"
     :item-name="event?.title"
-    message="This will permanently delete this event and all associated data including guests, media, and agenda items."
+    :message="t('management.editEventDrawer.deleteModal.message')"
     @confirm="handleDeleteConfirm"
     @cancel="showDeleteConfirm = false"
   />
@@ -810,6 +810,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   X,
   Loader,
@@ -864,6 +865,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useI18n()
 
 // State
 const event = ref<Event | null>(null)

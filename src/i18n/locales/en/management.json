@@ -875,6 +875,111 @@
       "vn": "Vietnamese"
     }
   },
+  "editEventDrawer": {
+    "header": {
+      "title": "Edit Event",
+      "closeTitle": "Close",
+      "deleteTitle": "Delete event"
+    },
+    "error": {
+      "title": "Unable to Load Event",
+      "tryAgain": "Try Again"
+    },
+    "banner": {
+      "label": "Event Banner",
+      "replace": "Replace",
+      "crop": "Crop",
+      "remove": "Remove",
+      "uploadClick": "Click to upload banner",
+      "uploadHint": "1200x630px recommended"
+    },
+    "basicInfo": {
+      "heading": "Basic Information",
+      "titleLabel": "Event Title *",
+      "titlePlaceholder": "Enter event title",
+      "shortDescLabel": "Short Description",
+      "shortDescPlaceholder": "Brief description for event cards",
+      "shortDescCount": "{count}/300 characters",
+      "fullDescLabel": "Full Description *",
+      "fullDescPlaceholder": "Detailed event description",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "Select a category"
+    },
+    "dateTime": {
+      "heading": "Date & Time",
+      "startDateLabel": "Start Date *",
+      "startTimeLabel": "Start Time *",
+      "endDateLabel": "End Date *",
+      "endTimeLabel": "End Time *",
+      "timezoneLabel": "Timezone"
+    },
+    "location": {
+      "heading": "Location",
+      "virtualLabel": "Virtual Event",
+      "inPersonLabel": "In-Person Event",
+      "virtualDesc": "Event will be held online",
+      "inPersonDesc": "Event will be held at a physical location",
+      "addressLabel": "Address",
+      "addressPlaceholder": "Enter location address",
+      "mapLabel": "Map",
+      "mapPlaceholder": "Paste Google Maps embed URL",
+      "mapHint": "Paste Google Maps embed code or URL",
+      "virtualLinkLabel": "Virtual Meeting Link"
+    },
+    "privacy": {
+      "heading": "Privacy",
+      "publicLabel": "Public Event",
+      "privateLabel": "Private Event",
+      "publicDesc": "Anyone can view and register",
+      "privateDesc": "Only invited guests can access"
+    },
+    "registration": {
+      "heading": "Registration",
+      "requireLabel": "Require Registration",
+      "requireDesc": "Attendees must register to join",
+      "deadlineLabel": "Registration Deadline",
+      "deadlinePlaceholder": "Optional deadline",
+      "deadlineHint": "Leave empty for no deadline",
+      "maxAttendeesLabel": "Max Attendees",
+      "maxAttendeesPlaceholder": "Unlimited",
+      "maxAttendeesHint": "Leave empty for unlimited"
+    },
+    "displaySettings": {
+      "heading": "Display Settings",
+      "rsvpLabel": "Show RSVP Section",
+      "rsvpDesc": "Allow guests to RSVP on event page",
+      "commentsLabel": "Show Comments Section",
+      "commentsDesc": "Allow comments on event page",
+      "countdownLabel": "Show Countdown Timer",
+      "countdownDesc": "Display countdown to event start"
+    },
+    "fundraising": {
+      "heading": "Fundraising",
+      "enableLabel": "Enable Fundraising",
+      "enableDesc": "Accept donations for this event",
+      "goalLabel": "Fundraising Goal",
+      "goalPlaceholder": "e.g., 10000",
+      "goalHint": "Leave empty for no goal",
+      "currencyLabel": "Currency",
+      "progressLabel": "Show Progress Bar",
+      "progressDesc": "Display donation progress publicly",
+      "donorsLabel": "Show Donor List",
+      "donorsDesc": "Display verified donors publicly"
+    },
+    "footer": {
+      "saving": "Saving...",
+      "saveBtn": "Update Event",
+      "cancel": "Cancel"
+    },
+    "cropperModal": {
+      "title": "Crop Banner Image",
+      "helpText": "Adjust the crop area to frame your banner image (1200x630px ratio)"
+    },
+    "deleteModal": {
+      "title": "Delete Event",
+      "message": "This will permanently delete this event and all associated data including guests, media, and agenda items."
+    }
+  },
   "editEventTextDrawer": {
     "header": {
       "title": "Event Text Content",

@@ -875,6 +875,111 @@
       "vn": "វៀតណាម"
     }
   },
+  "editEventDrawer": {
+    "header": {
+      "title": "កែប្រែព្រឹត្តិការណ៍",
+      "closeTitle": "បិទ",
+      "deleteTitle": "លុបព្រឹត្តិការណ៍"
+    },
+    "error": {
+      "title": "មិនអាចផ្ទុកព្រឹត្តិការណ៍",
+      "tryAgain": "ព្យាយាមម្ដងទៀត"
+    },
+    "banner": {
+      "label": "បដាព្រឹត្តិការណ៍",
+      "replace": "ជំនួស",
+      "crop": "កាត់",
+      "remove": "លុបចេញ",
+      "uploadClick": "ចុចដើម្បីបញ្ចូលបដា",
+      "uploadHint": "ណែនាំ 1200x630 ភីក្សែល"
+    },
+    "basicInfo": {
+      "heading": "ព័ត៌មានជាមូលដ្ឋាន",
+      "titleLabel": "ចំណងជើងព្រឹត្តិការណ៍ *",
+      "titlePlaceholder": "បញ្ចូលចំណងជើងព្រឹត្តិការណ៍",
+      "shortDescLabel": "ការពិពណ៌នាខ្លី",
+      "shortDescPlaceholder": "ការពិពណ៌នាខ្លីសម្រាប់កាតព្រឹត្តិការណ៍",
+      "shortDescCount": "{count}/300 តួអក្សរ",
+      "fullDescLabel": "ការពិពណ៌នាពេញ *",
+      "fullDescPlaceholder": "ការពិពណ៌នាលម្អិតព្រឹត្តិការណ៍",
+      "categoryLabel": "ប្រភេទ",
+      "categoryPlaceholder": "ជ្រើសរើសប្រភេទ"
+    },
+    "dateTime": {
+      "heading": "កាលបរិច្ឆេទ និងម៉ោង",
+      "startDateLabel": "កាលបរិច្ឆេទចាប់ផ្ដើម *",
+      "startTimeLabel": "ម៉ោងចាប់ផ្ដើម *",
+      "endDateLabel": "កាលបរិច្ឆេទបញ្ចប់ *",
+      "endTimeLabel": "ម៉ោងបញ្ចប់ *",
+      "timezoneLabel": "តំបន់ម៉ោង"
+    },
+    "location": {
+      "heading": "ទីតាំង",
+      "virtualLabel": "ព្រឹត្តិការណ៍អនឡាញ",
+      "inPersonLabel": "ព្រឹត្តិការណ៍ផ្ទាល់ខ្លួន",
+      "virtualDesc": "ព្រឹត្តិការណ៍នឹងប្រព្រឹត្តទៅតាមអនឡាញ",
+      "inPersonDesc": "ព្រឹត្តិការណ៍នឹងប្រព្រឹត្តទៅនៅទីកន្លែងជាក់លាក់",
+      "addressLabel": "អាសយដ្ឋាន",
+      "addressPlaceholder": "បញ្ចូលអាសយដ្ឋានទីតាំង",
+      "mapLabel": "ផែនទី",
+      "mapPlaceholder": "បិទភ្ជាប់ URL ការបង្កប់ Google Maps",
+      "mapHint": "បិទភ្ជាប់កូដបង្កប់ ឬ URL Google Maps",
+      "virtualLinkLabel": "តំណប្រជុំអនឡាញ"
+    },
+    "privacy": {
+      "heading": "ភាពឯកជន",
+      "publicLabel": "ព្រឹត្តិការណ៍សាធារណៈ",
+      "privateLabel": "ព្រឹត្តិការណ៍ឯកជន",
+      "publicDesc": "អ្នកណាក៏អាចមើល និងចុះឈ្មោះបាន",
+      "privateDesc": "មានតែភ្ញៀវដែលត្រូវបានអញ្ជើញប៉ុណ្ណោះ"
+    },
+    "registration": {
+      "heading": "ការចុះឈ្មោះ",
+      "requireLabel": "តម្រូវឱ្យចុះឈ្មោះ",
+      "requireDesc": "អ្នកចូលរួមត្រូវចុះឈ្មោះដើម្បីចូលរួម",
+      "deadlineLabel": "កំណត់ពេលចុះឈ្មោះ",
+      "deadlinePlaceholder": "កំណត់ពេលស្រេចចិត្ត",
+      "deadlineHint": "ទុកឱ្យទទេប្រសិនបើគ្មានកំណត់ពេល",
+      "maxAttendeesLabel": "ចំនួនអ្នកចូលរួមអតិបរមា",
+      "maxAttendeesPlaceholder": "គ្មានដែនកំណត់",
+      "maxAttendeesHint": "ទុកឱ្យទទេប្រសិនបើគ្មានដែនកំណត់"
+    },
+    "displaySettings": {
+      "heading": "ការកំណត់បង្ហាញ",
+      "rsvpLabel": "បង្ហាញផ្នែក RSVP",
+      "rsvpDesc": "អនុញ្ញាតឱ្យភ្ញៀវ RSVP នៅលើទំព័រព្រឹត្តិការណ៍",
+      "commentsLabel": "បង្ហាញផ្នែកមតិយោបល់",
+      "commentsDesc": "អនុញ្ញាតឱ្យធ្វើមតិយោបល់នៅលើទំព័រព្រឹត្តិការណ៍",
+      "countdownLabel": "បង្ហាញម៉ោងរាប់ថយក្រោយ",
+      "countdownDesc": "បង្ហាញការរាប់ថយក្រោយដល់ការចាប់ផ្ដើមព្រឹត្តិការណ៍"
+    },
+    "fundraising": {
+      "heading": "ការប្រមូលទុន",
+      "enableLabel": "បើកការប្រមូលទុន",
+      "enableDesc": "ទទួលការបរិច្ចាគសម្រាប់ព្រឹត្តិការណ៍នេះ",
+      "goalLabel": "គោលដៅប្រមូលទុន",
+      "goalPlaceholder": "ឧ. 10000",
+      "goalHint": "ទុកឱ្យទទេប្រសិនបើគ្មានគោលដៅ",
+      "currencyLabel": "រូបិយប័ណ្ណ",
+      "progressLabel": "បង្ហាញរបារវឌ្ឍនភាព",
+      "progressDesc": "បង្ហាញវឌ្ឍនភាពការបរិច្ចាគជាសាធារណៈ",
+      "donorsLabel": "បង្ហាញបញ្ជីអ្នកបរិច្ចាគ",
+      "donorsDesc": "បង្ហាញអ្នកបរិច្ចាគដែលបានផ្ទៀងផ្ទាត់ជាសាធារណៈ"
+    },
+    "footer": {
+      "saving": "កំពុងរក្សាទុក...",
+      "saveBtn": "អាប់ដេតព្រឹត្តិការណ៍",
+      "cancel": "បោះបង់"
+    },
+    "cropperModal": {
+      "title": "កាត់រូបបដា",
+      "helpText": "លៃតម្រូវតំបន់ការកាត់ដើម្បីស៊ុមរូបបដារបស់អ្នក (សមាមាត្រ 1200x630px)"
+    },
+    "deleteModal": {
+      "title": "លុបព្រឹត្តិការណ៍",
+      "message": "វានឹងលុបចោលព្រឹត្តិការណ៍នេះជាអចិន្ត្រៃយ៍ ព្រមទាំងទិន្នន័យទាំងអស់ដូចជា ភ្ញៀវ មីឌៀ និងធាតុកម្មវិធី។"
+    }
+  },
   "editEventTextDrawer": {
     "header": {
       "title": "មាតិកាអត្ថបទព្រឹត្តិការណ៍",
