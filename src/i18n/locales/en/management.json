@@ -1257,5 +1257,90 @@
       "updateBtn": "Update Payment",
       "updating": "Updating..."
     }
+  },
+  "guestGroupsView": {
+    "header": {
+      "title": "Guest Management",
+      "subtitle": "Manage event invitations and guest responses"
+    },
+    "emptyState": {
+      "title": "Add First Guest",
+      "subtitle": "Start building your guest list for the event"
+    },
+    "filterBar": {
+      "searchPlaceholder": "Search guests...",
+      "searchAriaLabel": "Search guests by name, email, or phone",
+      "allGroups": "All Groups",
+      "select": "Select",
+      "helpTitle": "How to manage guests",
+      "addGuestAriaLabel": "Add Guest",
+      "addGuest": "Add Guest",
+      "guestsPanelSuffix": "guests"
+    },
+    "selectionBar": {
+      "selected": "selected",
+      "markSent": "Mark Sent",
+      "delete": "Delete"
+    },
+    "guestList": {
+      "loadingMore": "Loading more guests...",
+      "allLoaded": "All {count} guests loaded",
+      "empty": {
+        "title": "No Guests Found",
+        "searchHint": "Try adjusting your search",
+        "emptyHint": "No guests in this group yet"
+      }
+    },
+    "guideModal": {
+      "title": "Guest Management Guide",
+      "intro": "Here's how to manage your event guests:",
+      "steps": {
+        "addGuests": {
+          "title": "Add Guests",
+          "descPre": "Click the",
+          "btnLabel": "Add Guest",
+          "descPost": "button to add individual guests with their contact details."
+        },
+        "bulkImport": {
+          "title": "Bulk Import",
+          "descPre": "Use the",
+          "btnLabel": "Import",
+          "descPost": "feature to add multiple guests at once from a spreadsheet."
+        },
+        "copyLinks": {
+          "title": "Copy Invitation Links",
+          "descPre": "Click the",
+          "btnLabel": "Link",
+          "descPost": "icon on any guest to copy their personalized invitation link.",
+          "messengerNoteLabel": "Note:",
+          "messengerNotePre": "When sharing links via",
+          "messengerPlatformLabel": "Facebook Messenger on desktop",
+          "messengerNoteMid": ", the link preview may not display. For the best experience with preview cards, use the",
+          "messengerAppLabel": "Messenger mobile app",
+          "messengerNotePost": "instead."
+        },
+        "trackInvitations": {
+          "title": "Track Invitations",
+          "descPre": "After sending invitations, click",
+          "btnLabel": "Mark Sent",
+          "descPost": "to track which guests have received their invites."
+        },
+        "cashGift": {
+          "title": "Cash Gift Journal",
+          "descPre": "Record cash gifts received from guests by editing their profile. Add the",
+          "btnLabel": "Amount",
+          "descPost": "and currency to track contributions."
+        },
+        "bulkActions": {
+          "title": "Bulk Actions",
+          "description": "Select multiple guests using checkboxes to perform bulk actions like marking sent or deleting."
+        }
+      },
+      "proTip": {
+        "label": "Pro Tip:",
+        "description": "Organize guests into groups to easily manage different invitation lists (e.g., Family, Friends, Colleagues)."
+      },
+      "closeBtn": "Got it"
+    }
   }
 }

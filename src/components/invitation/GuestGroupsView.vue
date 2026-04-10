@@ -2,8 +2,8 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Guest Management</h2>
-      <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage event invitations and guest responses</p>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.guestGroupsView.header.title') }}</h2>
+      <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.guestGroupsView.header.subtitle') }}</p>
     </div>
 
     <!-- Guest Statistics Card -->
@@ -26,8 +26,8 @@
         <div class="w-16 h-16 bg-slate-200 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300">
           <UserPlus class="w-8 h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
         </div>
-        <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Add First Guest</h4>
-        <p class="text-sm text-slate-400 mt-1">Start building your guest list for the event</p>
+        <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">{{ t('management.guestGroupsView.emptyState.title') }}</h4>
+        <p class="text-sm text-slate-400 mt-1">{{ t('management.guestGroupsView.emptyState.subtitle') }}</p>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
       v-else
       id="guests-panel"
       role="tabpanel"
-      :aria-label="`${activeFilter === 'all' ? 'All groups' : groups.find(g => g.id.toString() === activeFilter)?.name || ''} guests`"
+      :aria-label="`${activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || ''} ${t('management.guestGroupsView.filterBar.guestsPanelSuffix')}`"
       class="space-y-4"
     >
       <!-- Filter and Actions Bar - Clean Minimalist Design -->
@@ -52,8 +52,8 @@
                 type="text"
                 v-model="groupSearchQuery"
                 @input="handleGroupSearch"
-                placeholder="Search guests..."
-                aria-label="Search guests by name, email, or phone"
+                :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
+                :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
                 class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
               />
               <button
@@ -93,7 +93,7 @@
               >
                 <Filter class="w-4 h-4 flex-shrink-0" :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'" />
                 <span class="truncate max-w-[100px] sm:max-w-[160px]">
-                  {{ activeFilter === 'all' ? 'All Groups' : groups.find(g => g.id.toString() === activeFilter)?.name || 'Select' }}
+                  {{ activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
                 </span>
                 <ChevronDown class="w-4 h-4 transition-transform flex-shrink-0" :class="[{ 'rotate-180': isDropdownOpen }, activeFilter === 'all' ? 'text-slate-400' : 'text-white/80']" />
               </button>
@@ -116,7 +116,7 @@
                           : 'text-slate-700 hover:bg-slate-50'
                       ]"
                     >
-                      <span class="flex-1 text-left">All Groups</span>
+                      <span class="flex-1 text-left">{{ t('management.guestGroupsView.filterBar.allGroups') }}</span>
                       <span class="text-xs text-slate-400 tabular-nums">{{ totalGuestCount }}</span>
                     </button>
 
@@ -166,8 +166,8 @@
                   type="text"
                   v-model="groupSearchQuery"
                   @input="handleGroupSearch"
-                  placeholder="Search guests..."
-                  aria-label="Search guests by name, email, or phone"
+                  :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
+                  :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
                   class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
                 />
                 <button
@@ -194,7 +194,7 @@
             <button
               @click="showInstructionModal = true"
               class="hidden sm:flex items-center justify-center p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
-              title="How to manage guests"
+              :title="t('management.guestGroupsView.filterBar.helpTitle')"
             >
               <Info class="w-4 h-4" />
             </button>
@@ -203,10 +203,10 @@
             <button
               @click="$emit('add-guest')"
               class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
-              :aria-label="'Add Guest'"
+              :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
             >
               <UserPlus class="w-4 h-4" />
-              <span class="hidden sm:inline">Add Guest</span>
+              <span class="hidden sm:inline">{{ t('management.guestGroupsView.filterBar.addGuest') }}</span>
             </button>
           </div>
 
@@ -218,7 +218,7 @@
             >
               <div class="flex items-center gap-2">
                 <span class="text-sm text-slate-600">
-                  <span class="font-semibold text-slate-900">{{ totalSelectedCount }}</span> selected
+                  <span class="font-semibold text-slate-900">{{ totalSelectedCount }}</span> {{ t('management.guestGroupsView.selectionBar.selected') }}
                 </span>
               </div>
               <div class="flex items-center gap-1">
@@ -227,14 +227,14 @@
                   class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                 >
                   <Send class="w-3.5 h-3.5" />
-                  <span class="hidden xs:inline">Mark Sent</span>
+                  <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.markSent') }}</span>
                 </button>
                 <button
                   @click="handleBulkDelete"
                   class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
-                  <span class="hidden xs:inline">Delete</span>
+                  <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.delete') }}</span>
                 </button>
               </div>
             </div>
@@ -275,11 +275,11 @@
             <!-- Loading more indicator -->
             <div v-if="isLoadingMore" class="flex items-center gap-2">
               <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-sm text-slate-500">Loading more guests...</span>
+              <span class="text-sm text-slate-500">{{ t('management.guestGroupsView.guestList.loadingMore') }}</span>
             </div>
             <!-- End of list indicator -->
             <div v-else-if="!hasMoreToLoad && allFilteredGuests.length > 0" class="text-sm text-slate-400">
-              All {{ paginationTotal }} guests loaded
+              {{ t('management.guestGroupsView.guestList.allLoaded', { count: paginationTotal }) }}
             </div>
           </div>
         </div>
@@ -288,8 +288,8 @@
       <!-- Empty State -->
       <div v-else class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 text-center">
         <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-        <h4 class="font-semibold text-slate-600 mb-1">No Guests Found</h4>
-        <p class="text-sm text-slate-400">{{ groupSearchQuery ? 'Try adjusting your search' : 'No guests in this group yet' }}</p>
+        <h4 class="font-semibold text-slate-600 mb-1">{{ t('management.guestGroupsView.guestList.empty.title') }}</h4>
+        <p class="text-sm text-slate-400">{{ groupSearchQuery ? t('management.guestGroupsView.guestList.empty.searchHint') : t('management.guestGroupsView.guestList.empty.emptyHint') }}</p>
       </div>
     </div>
 
@@ -310,7 +310,7 @@
                   <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
                     <Users class="w-5 h-5 text-emerald-600" />
                   </div>
-                  <h3 class="text-lg font-semibold text-slate-900">Guest Management Guide</h3>
+                  <h3 class="text-lg font-semibold text-slate-900">{{ t('management.guestGroupsView.guideModal.title') }}</h3>
                 </div>
                 <button
                   @click="showInstructionModal = false"
@@ -324,42 +324,42 @@
               <div class="space-y-4">
                 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                   <p class="text-sm text-emerald-900 mb-3 font-medium">
-                    Here's how to manage your event guests:
+                    {{ t('management.guestGroupsView.guideModal.intro') }}
                   </p>
 
                   <div class="space-y-3">
                     <div>
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">1</span>
-                        Add Guests
+                        {{ t('management.guestGroupsView.guideModal.steps.addGuests.title') }}
                       </h4>
                       <p class="text-sm text-emerald-800 ml-7">
-                        Click the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><UserPlus class="w-3 h-3" /> Add Guest</span> button to add individual guests with their contact details.
+                        {{ t('management.guestGroupsView.guideModal.steps.addGuests.descPre') }} <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><UserPlus class="w-3 h-3" /> {{ t('management.guestGroupsView.guideModal.steps.addGuests.btnLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.addGuests.descPost') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">2</span>
-                        Bulk Import
+                        {{ t('management.guestGroupsView.guideModal.steps.bulkImport.title') }}
                       </h4>
                       <p class="text-sm text-emerald-800 ml-7">
-                        Use the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><FileSpreadsheet class="w-3 h-3" /> Import</span> feature to add multiple guests at once from a spreadsheet.
+                        {{ t('management.guestGroupsView.guideModal.steps.bulkImport.descPre') }} <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><FileSpreadsheet class="w-3 h-3" /> {{ t('management.guestGroupsView.guideModal.steps.bulkImport.btnLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.bulkImport.descPost') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">3</span>
-                        Copy Invitation Links
+                        {{ t('management.guestGroupsView.guideModal.steps.copyLinks.title') }}
                       </h4>
                       <p class="text-sm text-emerald-800 ml-7">
-                        Click the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><Link class="w-3 h-3" /> Link</span> icon on any guest to copy their personalized invitation link.
+                        {{ t('management.guestGroupsView.guideModal.steps.copyLinks.descPre') }} <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><Link class="w-3 h-3" /> {{ t('management.guestGroupsView.guideModal.steps.copyLinks.btnLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.copyLinks.descPost') }}
                       </p>
                       <!-- Facebook Messenger Note -->
                       <div class="ml-7 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
                         <p class="text-xs text-amber-800">
-                          <span class="font-semibold">Note:</span> When sharing links via <span class="font-semibold text-amber-900 bg-amber-100 px-1 rounded">Facebook Messenger on desktop</span>, the link preview may not display. For the best experience with preview cards, use the <span class="font-semibold text-amber-900 bg-amber-100 px-1 rounded">Messenger mobile app</span> instead.
+                          <span class="font-semibold">{{ t('management.guestGroupsView.guideModal.steps.copyLinks.messengerNoteLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.copyLinks.messengerNotePre') }} <span class="font-semibold text-amber-900 bg-amber-100 px-1 rounded">{{ t('management.guestGroupsView.guideModal.steps.copyLinks.messengerPlatformLabel') }}</span>{{ t('management.guestGroupsView.guideModal.steps.copyLinks.messengerNoteMid') }} <span class="font-semibold text-amber-900 bg-amber-100 px-1 rounded">{{ t('management.guestGroupsView.guideModal.steps.copyLinks.messengerAppLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.copyLinks.messengerNotePost') }}
                         </p>
                       </div>
                     </div>
@@ -367,40 +367,40 @@
                     <div>
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">4</span>
-                        Track Invitations
+                        {{ t('management.guestGroupsView.guideModal.steps.trackInvitations.title') }}
                       </h4>
                       <p class="text-sm text-emerald-800 ml-7">
-                        After sending invitations, click <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><Mail class="w-3 h-3" /> Mark Sent</span> to track which guests have received their invites.
+                        {{ t('management.guestGroupsView.guideModal.steps.trackInvitations.descPre') }} <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><Mail class="w-3 h-3" /> {{ t('management.guestGroupsView.guideModal.steps.trackInvitations.btnLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.trackInvitations.descPost') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">5</span>
-                        Cash Gift Journal
+                        {{ t('management.guestGroupsView.guideModal.steps.cashGift.title') }}
                       </h4>
                       <p class="text-sm text-emerald-800 ml-7">
-                        Record cash gifts received from guests by editing their profile. Add the <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><DollarSign class="w-3 h-3" /> Amount</span> and currency to track contributions.
+                        {{ t('management.guestGroupsView.guideModal.steps.cashGift.descPre') }} <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-medium"><DollarSign class="w-3 h-3" /> {{ t('management.guestGroupsView.guideModal.steps.cashGift.btnLabel') }}</span> {{ t('management.guestGroupsView.guideModal.steps.cashGift.descPost') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-xs">6</span>
-                        Bulk Actions
+                        {{ t('management.guestGroupsView.guideModal.steps.bulkActions.title') }}
                       </h4>
                       <p class="text-sm text-emerald-800 ml-7">
-                        Select multiple guests using checkboxes to perform bulk actions like marking sent or deleting.
+                        {{ t('management.guestGroupsView.guideModal.steps.bulkActions.description') }}
                       </p>
                     </div>
 
                     <div class="pt-3 border-t border-emerald-200">
                       <h4 class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-1.5">
                         <span>💡</span>
-                        <span>Pro Tip:</span>
+                        <span>{{ t('management.guestGroupsView.guideModal.proTip.label') }}</span>
                       </h4>
                       <p class="text-sm text-emerald-800">
-                        Organize guests into groups to easily manage different invitation lists (e.g., Family, Friends, Colleagues).
+                        {{ t('management.guestGroupsView.guideModal.proTip.description') }}
                       </p>
                     </div>
                   </div>
@@ -412,7 +412,7 @@
                     @click="showInstructionModal = false"
                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors duration-200"
                   >
-                    Got it
+                    {{ t('management.guestGroupsView.guideModal.closeBtn') }}
                   </button>
                 </div>
               </div>
@@ -426,6 +426,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
@@ -460,6 +461,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'add-guest': []
