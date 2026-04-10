@@ -550,6 +550,158 @@
       "invalidUrl": "Please enter a valid YouTube embed URL (https://www.youtube.com/embed/VIDEO_ID)"
     }
   },
+  "paymentMethods": {
+    "header": {
+      "title": "Payment Methods",
+      "lockedBadge": "Locked",
+      "subtitle": "Add payment options for gifts, donations, and sponsorships",
+      "lockedDescription": "Payment methods are currently locked. Only administrators can unlock to make changes.",
+      "lockHelpTitle": "Learn about the lock feature",
+      "processing": "Processing...",
+      "unlock": "Unlock",
+      "lock": "Lock"
+    },
+    "lockError": {
+      "title": "Permission Denied",
+      "description": "Only administrators can unlock payment methods.",
+      "contact": "Please contact an administrator if you need to make changes to payment methods.",
+      "dismiss": "Dismiss"
+    },
+    "error": {
+      "tryAgain": "Try again",
+      "loadFailed": "Failed to load payment methods",
+      "loadNetworkError": "Network error while loading payment methods",
+      "lockNetworkError": "Network error while updating payment lock"
+    },
+    "empty": {
+      "title": "No payment methods added",
+      "description": "Add payment options for gifts, donations, and sponsorships",
+      "clickToAdd": "Click to add"
+    },
+    "card": {
+      "inactive": "Inactive",
+      "bank": "Bank",
+      "account": "Account",
+      "qrCodeAvailable": "QR Code Available",
+      "onlinePayment": "Online Payment",
+      "manualTransferOnly": "Manual Transfer Only",
+      "qrCodePayment": "QR Code Payment",
+      "titleLockedEdit": "Locked - Cannot edit",
+      "titleEdit": "Edit",
+      "titleLockedDelete": "Locked - Cannot delete",
+      "titleDelete": "Delete",
+      "titleViewQr": "View QR Code",
+      "titleOpenLink": "Open Payment Link"
+    },
+    "mobile": {
+      "qr": "QR",
+      "link": "Link",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "addAnother": {
+      "title": "Add Another Payment Method",
+      "clickToAdd": "Click to add"
+    },
+    "deleteModal": {
+      "title": "Delete Payment Method"
+    },
+    "helpModal": {
+      "title": "About the Lock Feature",
+      "intro": "Use the lock feature to prevent accidental changes to payment methods and maintain control over sensitive financial information.",
+      "whenLockedTitle": "When Locked:",
+      "whenLocked": {
+        "item1": "Collaborators cannot add, edit, or delete payment methods",
+        "item2": "Payment methods remain visible to all with access",
+        "item3": "Editing controls are disabled for non-administrators",
+        "item4": "Only Platform administrators can unlock to make changes"
+      },
+      "bestPracticesTitle": "Best Practices:",
+      "bestPractices": {
+        "item1": "Lock payment methods before sharing event access with collaborators",
+        "item2": "Review and finalize payment details before locking",
+        "item3": "Keep locked during event to prevent unwanted modifications"
+      },
+      "gotIt": "Got it"
+    },
+    "lockConfirmModal": {
+      "titleUnlock": "Unlock Payment Methods?",
+      "titleLock": "Lock Payment Methods?",
+      "descriptionUnlock": "Are you sure you want to unlock payment methods? This will allow collaborators to make changes.",
+      "descriptionLock": "Are you sure you want to lock payment methods? This will prevent collaborators from making changes.",
+      "noteUnlock": "Once unlocked, any collaborator with edit access can add, modify, or delete payment methods.",
+      "noteLock": "Once locked, only administrators will be able to unlock and make changes to payment methods.",
+      "cancel": "Cancel",
+      "processing": "Processing..."
+    },
+    "methods": {
+      "bankTransfer": "Bank Transfer",
+      "qrCode": "QR Code",
+      "paymentUrl": "Payment URL"
+    },
+    "modal": {
+      "titleEdit": "Edit Payment Method",
+      "titleAdd": "Add Payment Method",
+      "close": "Close",
+      "dismiss": "Dismiss",
+      "saving": "Saving...",
+      "update": "Update",
+      "create": "Create",
+      "cancel": "Cancel",
+      "additionalOptions": "Additional Options",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "e.g., Wedding Gift Fund, ABA Bank",
+        "type": "Type",
+        "typeSelect": "Select",
+        "typeDonation": "Donation",
+        "typeGift": "Gift",
+        "typeSponsorship": "Sponsorship",
+        "method": "Method",
+        "methodSelect": "Select",
+        "methodBankTransfer": "Bank Transfer",
+        "methodQrCode": "QR Code",
+        "methodPaymentUrl": "Payment URL",
+        "currency": "Currency",
+        "active": "Active",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional instructions"
+      },
+      "bankDetails": {
+        "title": "Bank Details",
+        "bank": "Bank",
+        "bankPlaceholder": "e.g., ABA Bank",
+        "accountName": "Account Name",
+        "accountNamePlaceholder": "Account holder",
+        "accountNumber": "Account Number",
+        "accountNumberPlaceholder": "Account number",
+        "paymentLink": "Payment Link"
+      },
+      "qrCode": {
+        "title": "QR Code",
+        "upload": "Upload",
+        "change": "Change",
+        "hint": "Optional. Max 10MB",
+        "altPreview": "Your QR Code",
+        "crop": "Crop",
+        "referenceLabel": "Reference:",
+        "referenceAlt": "QR Code Example",
+        "referenceHint": "Upload only the QR code pattern. Crop out text/logos.",
+        "cropperTitle": "Crop QR Code",
+        "cropperHelp": "Crop to include only the QR code pattern",
+        "qrCodeHint": "For bank QR codes, use \"Bank Transfer\" method instead.",
+        "paymentUrlHint": "For banking links, use \"Bank Transfer\" method instead."
+      },
+      "errors": {
+        "invalidFileType": "Invalid file type. Please upload JPG, PNG, GIF, or WebP images.",
+        "fileTooLarge": "File too large. Maximum size is 10MB.",
+        "cropLoadFailed": "Failed to load image for cropping. Please try uploading a new image.",
+        "createFailed": "Failed to create payment method",
+        "updateFailed": "Failed to update payment method",
+        "networkError": "Network error occurred while saving payment method"
+      }
+    }
+  },
   "dressCode": {
     "section": {
       "title": "Dress Code Guidelines",

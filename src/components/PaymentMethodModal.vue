@@ -24,13 +24,13 @@
               <button
                 @click="$emit('close')"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.paymentMethods.modal.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
                 <h2 class="text-base font-semibold text-white">
-                  {{ isEditing ? 'Edit Payment Method' : 'Add Payment Method' }}
+                  {{ isEditing ? t('management.paymentMethods.modal.titleEdit') : t('management.paymentMethods.modal.titleAdd') }}
                 </h2>
               </div>
             </div>
@@ -52,7 +52,7 @@
                 @click="error = null"
                 class="text-xs text-red-600 hover:text-red-700 underline mt-1"
               >
-                Dismiss
+                {{ t('management.paymentMethods.modal.dismiss') }}
               </button>
             </div>
           </div>
@@ -64,14 +64,14 @@
               <!-- Name -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                  Name <span class="text-red-500">*</span>
+                  {{ t('management.paymentMethods.modal.fields.name') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="formData.name"
                   type="text"
                   required
                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  placeholder="e.g., Wedding Gift Fund, ABA Bank"
+                  :placeholder="t('management.paymentMethods.modal.fields.namePlaceholder')"
                 />
               </div>
 
@@ -79,7 +79,7 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Type <span class="text-red-500">*</span>
+                    {{ t('management.paymentMethods.modal.fields.type') }} <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
@@ -87,10 +87,10 @@
                       required
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-8"
                     >
-                      <option value="">Select</option>
-                      <option value="donation">Donation</option>
-                      <option value="gift">Gift</option>
-                      <option value="sponsorship">Sponsorship</option>
+                      <option value="">{{ t('management.paymentMethods.modal.fields.typeSelect') }}</option>
+                      <option value="donation">{{ t('management.paymentMethods.modal.fields.typeDonation') }}</option>
+                      <option value="gift">{{ t('management.paymentMethods.modal.fields.typeGift') }}</option>
+                      <option value="sponsorship">{{ t('management.paymentMethods.modal.fields.typeSponsorship') }}</option>
                     </select>
                     <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
@@ -98,7 +98,7 @@
 
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Method <span class="text-red-500">*</span>
+                    {{ t('management.paymentMethods.modal.fields.method') }} <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <select
@@ -107,10 +107,10 @@
                       @change="handlePaymentMethodChange"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-8"
                     >
-                      <option value="">Select</option>
-                      <option value="bank_transfer">Bank Transfer</option>
-                      <option value="qr_code">QR Code</option>
-                      <option value="payment_url">Payment URL</option>
+                      <option value="">{{ t('management.paymentMethods.modal.fields.methodSelect') }}</option>
+                      <option value="bank_transfer">{{ t('management.paymentMethods.modal.fields.methodBankTransfer') }}</option>
+                      <option value="qr_code">{{ t('management.paymentMethods.modal.fields.methodQrCode') }}</option>
+                      <option value="payment_url">{{ t('management.paymentMethods.modal.fields.methodPaymentUrl') }}</option>
                     </select>
                     <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
@@ -125,7 +125,7 @@
                 class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
                 @click="optionsOpen = !optionsOpen"
               >
-                <span class="text-sm font-medium text-slate-700">Additional Options</span>
+                <span class="text-sm font-medium text-slate-700">{{ t('management.paymentMethods.modal.additionalOptions') }}</span>
                 <ChevronDown
                   class="w-4 h-4 text-slate-400 transition-transform"
                   :class="optionsOpen ? 'rotate-180' : ''"
@@ -138,7 +138,7 @@
                     <div class="grid grid-cols-2 gap-3">
                       <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                          Currency
+                          {{ t('management.paymentMethods.modal.fields.currency') }}
                         </label>
                         <div class="relative">
                           <select
@@ -164,7 +164,7 @@
                             type="checkbox"
                             class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
                           />
-                          <span class="ml-2 text-sm font-medium text-slate-700">Active</span>
+                          <span class="ml-2 text-sm font-medium text-slate-700">{{ t('management.paymentMethods.modal.fields.active') }}</span>
                         </label>
                       </div>
                     </div>
@@ -172,13 +172,13 @@
                     <!-- Description -->
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Description
+                        {{ t('management.paymentMethods.modal.fields.description') }}
                       </label>
                       <textarea
                         v-model="formData.description"
                         rows="2"
                         class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
-                        placeholder="Optional instructions"
+                        :placeholder="t('management.paymentMethods.modal.fields.descriptionPlaceholder')"
                       ></textarea>
                     </div>
                   </div>
@@ -190,34 +190,34 @@
             <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-4">
               <h4 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <Building2 class="w-4 h-4 text-[#1e90ff]" />
-                Bank Details
+                {{ t('management.paymentMethods.modal.bankDetails.title') }}
               </h4>
 
               <!-- Bank and Account Name -->
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Bank <span class="text-red-500">*</span>
+                    {{ t('management.paymentMethods.modal.bankDetails.bank') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.bank_name"
                     type="text"
                     required
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                    placeholder="e.g., ABA Bank"
+                    :placeholder="t('management.paymentMethods.modal.bankDetails.bankPlaceholder')"
                   />
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Account Name <span class="text-red-500">*</span>
+                    {{ t('management.paymentMethods.modal.bankDetails.accountName') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.account_name"
                     type="text"
                     required
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                    placeholder="Account holder"
+                    :placeholder="t('management.paymentMethods.modal.bankDetails.accountNamePlaceholder')"
                   />
                 </div>
               </div>
@@ -226,20 +226,20 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Account Number <span class="text-red-500">*</span>
+                    {{ t('management.paymentMethods.modal.bankDetails.accountNumber') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.account_number"
                     type="text"
                     required
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                    placeholder="Account number"
+                    :placeholder="t('management.paymentMethods.modal.bankDetails.accountNumberPlaceholder')"
                   />
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Payment Link
+                    {{ t('management.paymentMethods.modal.bankDetails.paymentLink') }}
                   </label>
                   <input
                     v-model="formData.payment_url"
@@ -255,7 +255,7 @@
             <div v-if="formData.payment_method === 'bank_transfer'" class="space-y-3">
               <h4 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <QrCode class="w-4 h-4 text-[#1e90ff]" />
-                QR Code
+                {{ t('management.paymentMethods.modal.qrCode.title') }}
               </h4>
 
               <div class="grid grid-cols-2 gap-3">
@@ -274,9 +274,9 @@
                     class="w-full px-3 py-2 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center gap-2"
                   >
                     <Upload class="w-4 h-4" />
-                    <span>{{ qrCodeFile ? 'Change' : 'Upload' }}</span>
+                    <span>{{ qrCodeFile ? t('management.paymentMethods.modal.qrCode.change') : t('management.paymentMethods.modal.qrCode.upload') }}</span>
                   </button>
-                  <p class="text-xs text-slate-500 text-center">Optional. Max 10MB</p>
+                  <p class="text-xs text-slate-500 text-center">{{ t('management.paymentMethods.modal.qrCode.hint') }}</p>
 
                   <!-- Uploaded Preview -->
                   <div
@@ -285,7 +285,7 @@
                   >
                     <img
                       :src="qrCodePreview || getMediaUrl(existingPaymentMethod?.qr_code_image)"
-                      alt="Your QR Code"
+                      :alt="t('management.paymentMethods.modal.qrCode.altPreview')"
                       class="w-full h-32 object-contain border border-slate-200 rounded-lg bg-white"
                     />
                     <button
@@ -296,7 +296,7 @@
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                       </svg>
-                      <span>Crop</span>
+                      <span>{{ t('management.paymentMethods.modal.qrCode.crop') }}</span>
                     </button>
                   </div>
                 </div>
@@ -304,14 +304,14 @@
                 <!-- Reference Image Section -->
                 <div>
                   <div class="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                    <p class="text-xs font-semibold text-blue-900 mb-1.5">Reference:</p>
+                    <p class="text-xs font-semibold text-blue-900 mb-1.5">{{ t('management.paymentMethods.modal.qrCode.referenceLabel') }}</p>
                     <img
                       src="/images/qr-code-reference.png"
-                      alt="QR Code Example"
+                      :alt="t('management.paymentMethods.modal.qrCode.referenceAlt')"
                       class="w-full h-32 object-contain border border-blue-300 rounded-lg bg-white"
                     />
                     <p class="text-[10px] text-blue-800 mt-1.5 leading-relaxed">
-                      Upload only the QR code pattern. Crop out text/logos.
+                      {{ t('management.paymentMethods.modal.qrCode.referenceHint') }}
                     </p>
                   </div>
                 </div>
@@ -322,9 +322,9 @@
             <ImageCropperModal
               :show="showCropper"
               :image-source="cropperImage || ''"
-              title="Crop QR Code"
+              :title="t('management.paymentMethods.modal.qrCode.cropperTitle')"
               :aspect-ratio="1"
-              help-text="Crop to include only the QR code pattern"
+              :help-text="t('management.paymentMethods.modal.qrCode.cropperHelp')"
               @close="closeCropper"
               @apply="applyCrop"
               @update:cropper-ref="setCropperRef"
@@ -333,13 +333,13 @@
             <!-- Info for other payment methods -->
             <div v-if="formData.payment_method === 'qr_code'" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p class="text-amber-800 text-sm">
-                For bank QR codes, use "Bank Transfer" method instead.
+                {{ t('management.paymentMethods.modal.qrCode.qrCodeHint') }}
               </p>
             </div>
 
             <div v-if="formData.payment_method === 'payment_url'" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p class="text-amber-800 text-sm">
-                For banking links, use "Bank Transfer" method instead.
+                {{ t('management.paymentMethods.modal.qrCode.paymentUrlHint') }}
               </p>
             </div>
           </form>
@@ -355,7 +355,7 @@
             >
               <Loader v-if="loading" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ loading ? 'Saving...' : (isEditing ? 'Update' : 'Create') }}</span>
+              <span>{{ loading ? t('management.paymentMethods.modal.saving') : (isEditing ? t('management.paymentMethods.modal.update') : t('management.paymentMethods.modal.create')) }}</span>
             </button>
 
             <button
@@ -363,7 +363,7 @@
               @click="$emit('close')"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('management.paymentMethods.modal.cancel') }}
             </button>
           </div>
         </div>
@@ -382,6 +382,7 @@ import {
 } from '../services/api'
 import ImageCropperModal from './common/ImageCropperModal.vue'
 import { useImageCropper } from '@/composables/useImageCropper'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   eventId: string
@@ -393,6 +394,8 @@ interface Emits {
   close: []
   saved: [paymentMethod: EventPaymentMethod]
 }
+
+const { t } = useAppLanguage()
 
 const props = withDefaults(defineProps<Props>(), {
   show: true
@@ -484,12 +487,12 @@ const validateFile = (file: File): boolean => {
   const maxSize = 10 * 1024 * 1024 // 10MB
 
   if (!validTypes.includes(file.type)) {
-    error.value = 'Invalid file type. Please upload JPG, PNG, GIF, or WebP images.'
+    error.value = t('management.paymentMethods.modal.errors.invalidFileType')
     return false
   }
 
   if (file.size > maxSize) {
-    error.value = 'File too large. Maximum size is 10MB.'
+    error.value = t('management.paymentMethods.modal.errors.fileTooLarge')
     return false
   }
 
@@ -580,7 +583,7 @@ const handleCropExistingImage = async () => {
     openCropper(imageUrl, file)
   } catch (err) {
     console.error('Error loading image for cropping:', err)
-    error.value = 'Failed to load image for cropping. Please try uploading a new image.'
+    error.value = t('management.paymentMethods.modal.errors.cropLoadFailed')
   }
 }
 
@@ -703,11 +706,11 @@ const savePaymentMethod = async () => {
       emit('saved', response.data)
     } else {
       error.value =
-        response.message || `Failed to ${isEditing.value ? 'update' : 'create'} payment method`
+        response.message || (isEditing.value ? t('management.paymentMethods.modal.errors.updateFailed') : t('management.paymentMethods.modal.errors.createFailed'))
     }
   } catch (err) {
     console.error('Error saving payment method:', err)
-    error.value = 'Network error occurred while saving payment method'
+    error.value = t('management.paymentMethods.modal.errors.networkError')
   } finally {
     loading.value = false
   }

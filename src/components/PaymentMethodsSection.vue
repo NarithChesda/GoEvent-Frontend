@@ -5,18 +5,18 @@
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
           <div class="flex items-center gap-2">
-            <h5 class="font-semibold text-slate-900">Payment Methods</h5>
+            <h5 class="font-semibold text-slate-900">{{ t('management.paymentMethods.header.title') }}</h5>
             <span
               v-if="isPaymentLocked"
               class="inline-flex items-center px-2 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-medium"
             >
               <Lock class="w-3 h-3 mr-1" />
-              Locked
+              {{ t('management.paymentMethods.header.lockedBadge') }}
             </span>
           </div>
-          <p class="text-sm text-slate-600">Add payment options for gifts, donations, and sponsorships</p>
+          <p class="text-sm text-slate-600">{{ t('management.paymentMethods.header.subtitle') }}</p>
           <p v-if="isPaymentLocked" class="text-xs text-amber-700 mt-1">
-            Payment methods are currently locked. Only administrators can unlock to make changes.
+            {{ t('management.paymentMethods.header.lockedDescription') }}
           </p>
         </div>
 
@@ -27,7 +27,7 @@
             v-if="canEdit"
             @click="showLockHelpModal = true"
             class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            title="Learn about the lock feature"
+            :title="t('management.paymentMethods.header.lockHelpTitle')"
           >
             <Info class="w-4 h-4" />
           </button>
@@ -54,7 +54,7 @@
                 isToggling ? 'animate-spin rounded-full border-2 border-current border-t-transparent' : ''
               ]"
             />
-            <span class="hidden sm:inline">{{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}</span>
+            <span class="hidden sm:inline">{{ isToggling ? t('management.paymentMethods.header.processing') : (isPaymentLocked ? t('management.paymentMethods.header.unlock') : t('management.paymentMethods.header.lock')) }}</span>
           </button>
         </div>
       </div>
@@ -66,18 +66,18 @@
         <div class="flex items-start space-x-3">
           <Lock class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div class="flex-1">
-            <p class="text-sm text-amber-900 font-semibold mb-2">Permission Denied</p>
+            <p class="text-sm text-amber-900 font-semibold mb-2">{{ t('management.paymentMethods.lockError.title') }}</p>
             <p class="text-sm text-amber-800 mb-1">
-              Only administrators can unlock payment methods.
+              {{ t('management.paymentMethods.lockError.description') }}
             </p>
             <p class="text-xs text-amber-700">
-              Please contact an administrator if you need to make changes to payment methods.
+              {{ t('management.paymentMethods.lockError.contact') }}
             </p>
             <button
               @click="lockError = null"
               class="text-amber-700 text-xs hover:text-amber-900 font-medium underline mt-3"
             >
-              Dismiss
+              {{ t('management.paymentMethods.lockError.dismiss') }}
             </button>
           </div>
         </div>
@@ -102,7 +102,7 @@
               @click="loadPaymentMethods"
               class="text-red-600 text-sm hover:text-red-700 underline mt-1"
             >
-              Try again
+              {{ t('management.paymentMethods.error.tryAgain') }}
             </button>
           </div>
         </div>
@@ -134,9 +134,9 @@
           <p :class="[
             'font-semibold transition-colors',
             canEditPayments ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
-          ]">No payment methods added</p>
-          <p class="text-sm text-slate-500 mt-1">Add payment options for gifts, donations, and sponsorships</p>
-          <p v-if="canEditPayments" class="text-xs text-slate-400 mt-1">Click to add</p>
+          ]">{{ t('management.paymentMethods.empty.title') }}</p>
+          <p class="text-sm text-slate-500 mt-1">{{ t('management.paymentMethods.empty.description') }}</p>
+          <p v-if="canEditPayments" class="text-xs text-slate-400 mt-1">{{ t('management.paymentMethods.empty.clickToAdd') }}</p>
         </div>
       </div>
     </div>
@@ -196,7 +196,7 @@
                       v-if="!paymentMethod.is_active"
                       class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium whitespace-nowrap"
                     >
-                      Inactive
+                      {{ t('management.paymentMethods.card.inactive') }}
                     </span>
                   </div>
 
@@ -215,10 +215,10 @@
                     class="space-y-1 mt-2"
                   >
                     <div class="text-xs text-slate-600">
-                      <span class="font-medium">Bank:</span> {{ paymentMethod.bank_name }}
+                      <span class="font-medium">{{ t('management.paymentMethods.card.bank') }}:</span> {{ paymentMethod.bank_name }}
                     </div>
                     <div class="text-xs text-slate-600">
-                      <span class="font-medium">Account:</span> {{ paymentMethod.account_name }} -
+                      <span class="font-medium">{{ t('management.paymentMethods.card.account') }}:</span> {{ paymentMethod.account_name }} -
                       {{ paymentMethod.account_number }}
                     </div>
 
@@ -229,21 +229,21 @@
                         class="inline-flex items-center px-2 py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-xs"
                       >
                         <QrCode class="w-3 h-3 mr-1" />
-                        QR Code Available
+                        {{ t('management.paymentMethods.card.qrCodeAvailable') }}
                       </span>
                       <span
                         v-if="paymentMethod.payment_url"
                         class="inline-flex items-center px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs"
                       >
                         <Link class="w-3 h-3 mr-1" />
-                        Online Payment
+                        {{ t('management.paymentMethods.card.onlinePayment') }}
                       </span>
                       <span
                         v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
                         class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs"
                       >
                         <Building2 class="w-3 h-3 mr-1" />
-                        Manual Transfer Only
+                        {{ t('management.paymentMethods.card.manualTransferOnly') }}
                       </span>
                     </div>
                   </div>
@@ -257,7 +257,7 @@
                     v-else-if="paymentMethod.payment_method === 'qr_code'"
                     class="text-xs text-slate-500 mt-1"
                   >
-                    QR Code Payment
+                    {{ t('management.paymentMethods.card.qrCodePayment') }}
                   </div>
 
                   <p v-if="paymentMethod.description" class="text-sm text-slate-600 mt-2">
@@ -278,7 +278,7 @@
                 "
                 @click="showQRPreview(paymentMethod)"
                 class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
-                title="View QR Code"
+                :title="t('management.paymentMethods.card.titleViewQr')"
               >
                 <QrCode class="w-4 h-4" />
               </button>
@@ -288,7 +288,7 @@
                 v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
                 :href="paymentMethod.payment_url"
                 class="text-slate-400 hover:text-purple-600 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
-                title="Open Payment Link"
+                :title="t('management.paymentMethods.card.titleOpenLink')"
                 @click.stop
               >
                 <ExternalLink class="w-4 h-4" />
@@ -304,7 +304,7 @@
                     ? 'text-slate-300 cursor-not-allowed'
                     : 'text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF]'
                 ]"
-                :title="isPaymentLocked ? 'Locked - Cannot edit' : 'Edit'"
+                :title="isPaymentLocked ? t('management.paymentMethods.card.titleLockedEdit') : t('management.paymentMethods.card.titleEdit')"
               >
                 <Edit class="w-4 h-4" />
               </button>
@@ -319,7 +319,7 @@
                     ? 'text-slate-300 cursor-not-allowed'
                     : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
                 ]"
-                :title="isPaymentLocked ? 'Locked - Cannot delete' : 'Delete'"
+                :title="isPaymentLocked ? t('management.paymentMethods.card.titleLockedDelete') : t('management.paymentMethods.card.titleDelete')"
               >
                 <Trash2 class="w-4 h-4" />
               </button>
@@ -402,7 +402,7 @@
                   v-else-if="paymentMethod.payment_method === 'qr_code'"
                   class="text-[11px] text-slate-500"
                 >
-                  QR Code Payment
+                  {{ t('management.paymentMethods.card.qrCodePayment') }}
                 </div>
 
                 <p v-if="paymentMethod.description" class="text-xs text-slate-600 mt-2">
@@ -425,7 +425,7 @@
                   class="flex items-center gap-1.5 px-2.5 py-1.5 text-[#1e90ff] bg-[#E6F4FF] rounded-lg text-xs font-medium transition-colors duration-200"
                 >
                   <QrCode class="w-3.5 h-3.5" />
-                  <span>QR</span>
+                  <span>{{ t('management.paymentMethods.mobile.qr') }}</span>
                 </button>
 
                 <!-- Payment URL -->
@@ -436,7 +436,7 @@
                   @click.stop
                 >
                   <ExternalLink class="w-3.5 h-3.5" />
-                  <span>Link</span>
+                  <span>{{ t('management.paymentMethods.mobile.link') }}</span>
                 </a>
 
                 <!-- Edit Button -->
@@ -451,7 +451,7 @@
                   ]"
                 >
                   <Edit class="w-3.5 h-3.5" />
-                  <span>Edit</span>
+                  <span>{{ t('management.paymentMethods.mobile.edit') }}</span>
                 </button>
 
                 <!-- Delete Button -->
@@ -466,7 +466,7 @@
                   ]"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
-                  <span>Delete</span>
+                  <span>{{ t('management.paymentMethods.mobile.delete') }}</span>
                 </button>
               </div>
             </div>
@@ -483,8 +483,8 @@
             <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
               <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
             </div>
-            <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">Add Another Payment Method</p>
-            <p class="text-xs text-slate-400 mt-1">Click to add</p>
+            <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">{{ t('management.paymentMethods.addAnother.title') }}</p>
+            <p class="text-xs text-slate-400 mt-1">{{ t('management.paymentMethods.addAnother.clickToAdd') }}</p>
           </div>
         </div>
       </div>
@@ -539,7 +539,7 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="deleting"
-      :title="'Delete Payment Method'"
+      :title="t('management.paymentMethods.deleteModal.title')"
       :item-name="deletingPaymentMethod?.name"
       @confirm="handleDeleteConfirm"
       @cancel="showDeleteModal = false"
@@ -562,7 +562,7 @@
                   <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
                     <Lock class="w-5 h-5 text-blue-600" />
                   </div>
-                  <h3 class="text-lg font-semibold text-slate-900">About the Lock Feature</h3>
+                  <h3 class="text-lg font-semibold text-slate-900">{{ t('management.paymentMethods.helpModal.title') }}</h3>
                 </div>
                 <button
                   @click="showLockHelpModal = false"
@@ -576,28 +576,28 @@
               <div class="space-y-4">
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <p class="text-sm text-blue-900 mb-3">
-                    Use the lock feature to prevent accidental changes to payment methods and maintain control over sensitive financial information.
+                    {{ t('management.paymentMethods.helpModal.intro') }}
                   </p>
 
                   <div class="space-y-3">
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2">When Locked:</h4>
+                      <h4 class="text-sm font-semibold text-blue-900 mb-2">{{ t('management.paymentMethods.helpModal.whenLockedTitle') }}</h4>
                       <ul class="space-y-1.5 text-sm text-blue-800">
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Collaborators cannot add, edit, or delete payment methods</span>
+                          <span>{{ t('management.paymentMethods.helpModal.whenLocked.item1') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Payment methods remain visible to all with access</span>
+                          <span>{{ t('management.paymentMethods.helpModal.whenLocked.item2') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Editing controls are disabled for non-administrators</span>
+                          <span>{{ t('management.paymentMethods.helpModal.whenLocked.item3') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Only Platform administrators can unlock to make changes</span>
+                          <span>{{ t('management.paymentMethods.helpModal.whenLocked.item4') }}</span>
                         </li>
                       </ul>
                     </div>
@@ -605,20 +605,20 @@
                     <div class="pt-3 border-t border-blue-200">
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
                         <span>💡</span>
-                        <span>Best Practices:</span>
+                        <span>{{ t('management.paymentMethods.helpModal.bestPracticesTitle') }}</span>
                       </h4>
                       <ul class="space-y-1.5 text-sm text-blue-800">
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Lock payment methods before sharing event access with collaborators</span>
+                          <span>{{ t('management.paymentMethods.helpModal.bestPractices.item1') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Review and finalize payment details before locking</span>
+                          <span>{{ t('management.paymentMethods.helpModal.bestPractices.item2') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="text-blue-600 mt-0.5">•</span>
-                          <span>Keep locked during event to prevent unwanted modifications</span>
+                          <span>{{ t('management.paymentMethods.helpModal.bestPractices.item3') }}</span>
                         </li>
                       </ul>
                     </div>
@@ -631,7 +631,7 @@
                     @click="showLockHelpModal = false"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
                   >
-                    Got it
+                    {{ t('management.paymentMethods.helpModal.gotIt') }}
                   </button>
                 </div>
               </div>
@@ -670,7 +670,7 @@
                     />
                   </div>
                   <h3 class="text-lg font-semibold text-slate-900">
-                    {{ isPaymentLocked ? 'Unlock Payment Methods?' : 'Lock Payment Methods?' }}
+                    {{ isPaymentLocked ? t('management.paymentMethods.lockConfirmModal.titleUnlock') : t('management.paymentMethods.lockConfirmModal.titleLock') }}
                   </h3>
                 </div>
                 <button
@@ -685,8 +685,8 @@
               <div class="mb-6">
                 <p class="text-sm text-slate-600 mb-3">
                   {{ isPaymentLocked
-                    ? 'Are you sure you want to unlock payment methods? This will allow collaborators to make changes.'
-                    : 'Are you sure you want to lock payment methods? This will prevent collaborators from making changes.'
+                    ? t('management.paymentMethods.lockConfirmModal.descriptionUnlock')
+                    : t('management.paymentMethods.lockConfirmModal.descriptionLock')
                   }}
                 </p>
                 <div
@@ -699,8 +699,8 @@
                 >
                   <p class="text-xs text-slate-700">
                     {{ isPaymentLocked
-                      ? 'Once unlocked, any collaborator with edit access can add, modify, or delete payment methods.'
-                      : 'Once locked, only administrators will be able to unlock and make changes to payment methods.'
+                      ? t('management.paymentMethods.lockConfirmModal.noteUnlock')
+                      : t('management.paymentMethods.lockConfirmModal.noteLock')
                     }}
                   </p>
                 </div>
@@ -712,7 +712,7 @@
                   @click="showLockConfirmModal = false"
                   class="px-4 py-2 border-2 border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors duration-200"
                 >
-                  Cancel
+                  {{ t('management.paymentMethods.lockConfirmModal.cancel') }}
                 </button>
                 <button
                   @click="handleLockConfirm"
@@ -725,7 +725,7 @@
                     isToggling ? 'opacity-50 cursor-not-allowed' : ''
                   ]"
                 >
-                  {{ isToggling ? 'Processing...' : (isPaymentLocked ? 'Unlock' : 'Lock') }}
+                  {{ isToggling ? t('management.paymentMethods.lockConfirmModal.processing') : (isPaymentLocked ? t('management.paymentMethods.header.unlock') : t('management.paymentMethods.header.lock')) }}
                 </button>
               </div>
             </div>
@@ -755,6 +755,7 @@ import {
   Info,
 } from 'lucide-vue-next'
 import { paymentMethodsService, eventsService, type EventPaymentMethod, type Event } from '../services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import PaymentMethodModal from './PaymentMethodModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -763,6 +764,8 @@ interface Props {
   canEdit: boolean
   event?: Event
 }
+
+const { t } = useAppLanguage()
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -879,11 +882,11 @@ const formatPaymentType = (type: string) => {
 const formatPaymentMethod = (method: string) => {
   switch (method) {
     case 'bank_transfer':
-      return 'Bank Transfer'
+      return t('management.paymentMethods.methods.bankTransfer')
     case 'qr_code':
-      return 'QR Code'
+      return t('management.paymentMethods.methods.qrCode')
     case 'payment_url':
-      return 'Payment URL'
+      return t('management.paymentMethods.methods.paymentUrl')
     default:
       return method
   }
@@ -899,11 +902,11 @@ const loadPaymentMethods = async () => {
     if (response.success && response.data) {
       paymentMethods.value = response.data.results.sort((a, b) => a.order - b.order)
     } else {
-      error.value = response.message || 'Failed to load payment methods'
+      error.value = response.message || t('management.paymentMethods.error.loadFailed')
     }
   } catch (err) {
     console.error('Error loading payment methods:', err)
-    error.value = 'Network error while loading payment methods'
+    error.value = t('management.paymentMethods.error.loadNetworkError')
   } finally {
     loading.value = false
   }
@@ -971,7 +974,7 @@ const handleLockConfirm = async () => {
     }
   } catch (err) {
     console.error('Error toggling payment lock:', err)
-    error.value = 'Network error while updating payment lock'
+    error.value = t('management.paymentMethods.error.lockNetworkError')
     showLockConfirmModal.value = false
   } finally {
     isToggling.value = false
