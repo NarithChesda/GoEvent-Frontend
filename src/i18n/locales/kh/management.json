@@ -819,5 +819,104 @@
         "invalidFormat": "ទម្រង់រូបភាពមិនត្រឹមត្រូវ។ ដែលអនុញ្ញាត: JPG, PNG, GIF, WebP"
       }
     }
+  },
+  "eventTextTab": {
+    "header": {
+      "title": "អត្ថបទផ្តល់ជូន",
+      "subtitle": "បន្ថែមមាតិកាអត្ថបទពហុភាសាសម្រាប់ការបង្ហាញព្រឹត្តិការណ៍",
+      "edit": "កែប្រែ"
+    },
+    "error": {
+      "tryAgain": "ព្យាយាមម្តងទៀត",
+      "loadFailed": "បរាជ័យក្នុងការផ្ទុកមាតិកាអត្ថបទ",
+      "loadNetworkError": "បញ្ហាបណ្តាញពេលផ្ទុកមាតិកាអត្ថបទ",
+      "deleteFailed": "បរាជ័យក្នុងការលុបមាតិកាអត្ថបទ",
+      "deleteNetworkError": "បញ្ហាបណ្តាញពេលលុបមាតិកាអត្ថបទ"
+    },
+    "empty": {
+      "title": "មិនមានមាតិកាអត្ថបទ",
+      "description": "បន្ថែមមាតិកាអត្ថបទពហុភាសាសម្រាប់ការបង្ហាញព្រឹត្តិការណ៍",
+      "clickToAdd": "ចុចដើម្បីបន្ថែម"
+    },
+    "content": {
+      "languageTabsLabel": "ផ្ទាំងភាសា",
+      "inactive": "មិនសកម្ម",
+      "deleteAriaLabel": "លុប {type}",
+      "emptyForLanguage": "មិនមានមាតិកាអត្ថបទសម្រាប់ {language}"
+    },
+    "addAnother": {
+      "title": "បន្ថែម ឬ កែប្រែមាតិកាអត្ថបទ",
+      "clickToManage": "ចុចដើម្បីគ្រប់គ្រង"
+    },
+    "deleteModal": {
+      "title": "លុបមាតិកាអត្ថបទ"
+    },
+    "textTypes": {
+      "cover_header": "ចំណងជើងផ្នែកខាងមុខ",
+      "welcome_message": "សារស្វាគមន៍",
+      "instructions": "ការណែនាំ",
+      "description": "ការពិពណ៌នា",
+      "short_description": "ការពិពណ៌នាខ្លី",
+      "date_text": "អត្ថបទកាលបរិច្ឆេទ",
+      "time_text": "អត្ថបទពេលវេលា",
+      "location_text": "អត្ថបទទីតាំង",
+      "thank_you_message": "សារថ្លែងអំណរគុណ",
+      "sorry_message": "សារសុំទោស",
+      "custom": "មាតិកាតាមការចង់បាន"
+    },
+    "languages": {
+      "en": "អង់គ្លេស",
+      "kh": "ខ្មែរ",
+      "fr": "បារាំង",
+      "ja": "ជប៉ុន",
+      "ko": "កូរ៉េ",
+      "zh-cn": "ចិន (សាមញ្ញ)",
+      "th": "ថៃ",
+      "vn": "វៀតណាម"
+    }
+  },
+  "editEventTextDrawer": {
+    "header": {
+      "title": "មាតិកាអត្ថបទព្រឹត្តិការណ៍",
+      "closeTitle": "បិទ"
+    },
+    "error": {
+      "dismiss": "បោះបង់"
+    },
+    "language": {
+      "heading": "ភាសា",
+      "addBtn": "បន្ថែមភាសា",
+      "tabsAriaLabel": "ភាសាអត្ថបទព្រឹត្តិការណ៍",
+      "defaultBadge": "លំនាំដើម",
+      "removeAriaLabel": "លុប {language}"
+    },
+    "addLanguagePopup": {
+      "title": "បន្ថែមភាសា",
+      "selectLabel": "ជ្រើសរើសភាសា",
+      "selectPlaceholder": "ជ្រើសរើសភាសា...",
+      "addBtn": "បន្ថែមភាសា",
+      "cancelBtn": "បោះបង់"
+    },
+    "textFields": {
+      "titleLabel": "ចំណងជើង",
+      "titleOptional": "ស្រេចចិត្ត",
+      "titlePlaceholder": "បញ្ចូលចំណងជើងសម្រាប់ {type}",
+      "contentLabel": "មាតិកា",
+      "contentPlaceholder": "បញ្ចូលមាតិកា {type}...",
+      "characters": "តួអក្សរ {count}",
+      "deleteBtn": "លុបអត្ថបទនេះ"
+    },
+    "footer": {
+      "saving": "កំពុងរក្សាទុក...",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "cancel": "បោះបង់"
+    },
+    "messages": {
+      "deleteOnSave": "អត្ថបទនឹងត្រូវបានលុបពេលអ្នករក្សាទុក",
+      "noChanges": "មិនមានការផ្លាស់ប្តូរដើម្បីរក្សាទុក",
+      "operationsFailed": "ប្រតិបត្តិការណ៍ {count} បានបរាជ័យ",
+      "savedSuccess": "បានរក្សាទុករាល់ការផ្លាស់ប្តូរដោយជោគជ័យ!",
+      "networkError": "បញ្ហាបណ្តាញពេលរក្សាទុក"
+    }
   }
 }

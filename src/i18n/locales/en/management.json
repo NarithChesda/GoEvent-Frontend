@@ -819,5 +819,104 @@
         "invalidFormat": "Invalid image format. Allowed: JPG, PNG, GIF, WebP"
       }
     }
+  },
+  "eventTextTab": {
+    "header": {
+      "title": "Showcase Texts",
+      "subtitle": "Add multi-language text content for your event showcase",
+      "edit": "Edit"
+    },
+    "error": {
+      "tryAgain": "Try again",
+      "loadFailed": "Failed to load text content",
+      "loadNetworkError": "Network error while loading text content",
+      "deleteFailed": "Failed to delete text content",
+      "deleteNetworkError": "Network error while deleting text content"
+    },
+    "empty": {
+      "title": "No text content added",
+      "description": "Add multi-language text for your event showcase",
+      "clickToAdd": "Click to add"
+    },
+    "content": {
+      "languageTabsLabel": "Language tabs",
+      "inactive": "Inactive",
+      "deleteAriaLabel": "Delete {type}",
+      "emptyForLanguage": "No text content for {language}"
+    },
+    "addAnother": {
+      "title": "Add or Edit Text Content",
+      "clickToManage": "Click to manage"
+    },
+    "deleteModal": {
+      "title": "Delete Text Content"
+    },
+    "textTypes": {
+      "cover_header": "Cover Header",
+      "welcome_message": "Welcome Message",
+      "instructions": "Instructions",
+      "description": "Description",
+      "short_description": "Short Description",
+      "date_text": "Date Text",
+      "time_text": "Time Text",
+      "location_text": "Location Text",
+      "thank_you_message": "Thank You Message",
+      "sorry_message": "Sorry Message",
+      "custom": "Custom Content"
+    },
+    "languages": {
+      "en": "English",
+      "kh": "Khmer",
+      "fr": "French",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "zh-cn": "Chinese (Simplified)",
+      "th": "Thai",
+      "vn": "Vietnamese"
+    }
+  },
+  "editEventTextDrawer": {
+    "header": {
+      "title": "Event Text Content",
+      "closeTitle": "Close"
+    },
+    "error": {
+      "dismiss": "Dismiss"
+    },
+    "language": {
+      "heading": "Language",
+      "addBtn": "Add Language",
+      "tabsAriaLabel": "Event text languages",
+      "defaultBadge": "Default",
+      "removeAriaLabel": "Remove {language}"
+    },
+    "addLanguagePopup": {
+      "title": "Add Language",
+      "selectLabel": "Select Language",
+      "selectPlaceholder": "Choose a language...",
+      "addBtn": "Add Language",
+      "cancelBtn": "Cancel"
+    },
+    "textFields": {
+      "titleLabel": "Title",
+      "titleOptional": "optional",
+      "titlePlaceholder": "Enter title for {type}",
+      "contentLabel": "Content",
+      "contentPlaceholder": "Enter {type} content...",
+      "characters": "{count} characters",
+      "deleteBtn": "Delete this text"
+    },
+    "footer": {
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "deleteOnSave": "Text will be deleted when you save changes",
+      "noChanges": "No changes to save",
+      "operationsFailed": "{count} operation(s) failed",
+      "savedSuccess": "All changes saved successfully!",
+      "networkError": "Network error while saving"
+    }
   }
 }

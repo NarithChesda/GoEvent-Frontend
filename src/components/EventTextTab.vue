@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex items-start justify-between mb-6">
       <div>
-        <h5 class="font-semibold text-slate-900">Showcase Texts</h5>
-        <p class="text-sm text-slate-600">Add multi-language text content for your event showcase</p>
+        <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
+        <p class="text-sm text-slate-600">{{ t('management.eventTextTab.header.subtitle') }}</p>
       </div>
       <button
         v-if="allTexts.length > 0"
@@ -12,7 +12,7 @@
         class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500"
       >
         <Pencil class="w-4 h-4" />
-        <span>Edit</span>
+        <span>{{ t('management.eventTextTab.header.edit') }}</span>
       </button>
     </div>
 
@@ -34,7 +34,7 @@
               @click="fetchTexts"
               class="text-red-600 text-sm hover:text-red-700 underline mt-1"
             >
-              Try again
+              {{ t('management.eventTextTab.error.tryAgain') }}
             </button>
           </div>
         </div>
@@ -51,9 +51,9 @@
           <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
             <Plus class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
           </div>
-          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900">No text content added</p>
-          <p class="text-sm text-slate-500 mt-1">Add multi-language text for your event showcase</p>
-          <p class="text-xs text-slate-400 mt-1">Click to add</p>
+          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900">{{ t('management.eventTextTab.empty.title') }}</p>
+          <p class="text-sm text-slate-500 mt-1">{{ t('management.eventTextTab.empty.description') }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ t('management.eventTextTab.empty.clickToAdd') }}</p>
         </div>
       </div>
     </div>
@@ -62,7 +62,7 @@
     <div v-else class="space-y-3 sm:space-y-4">
       <!-- Language Tabs -->
       <div class="bg-white rounded-xl sm:rounded-2xl border border-gray-200 overflow-hidden">
-        <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" aria-label="Language tabs">
+        <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" :aria-label="t('management.eventTextTab.content.languageTabsLabel')">
           <div class="flex overflow-x-auto scrollbar-hide">
             <button
               v-for="lang in availableLanguages"
@@ -117,7 +117,7 @@
                     v-if="!text.is_active"
                     class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500"
                   >
-                    Inactive
+                    {{ t('management.eventTextTab.content.inactive') }}
                   </span>
                 </div>
 
@@ -137,7 +137,7 @@
                 <button
                   @click.stop="deleteText(text.id)"
                   class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                  :aria-label="`Delete ${getTextTypeLabel(text.text_type)}`"
+                  :aria-label="t('management.eventTextTab.content.deleteAriaLabel', { type: getTextTypeLabel(text.text_type) })"
                 >
                   <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
                 </button>
@@ -147,7 +147,7 @@
 
           <!-- Empty state for selected language -->
           <div v-if="textsForSelectedLanguage.length === 0" class="p-6 text-center">
-            <p class="text-sm text-slate-500">No text content for {{ getLanguageName(selectedLanguage) }}</p>
+            <p class="text-sm text-slate-500">{{ t('management.eventTextTab.content.emptyForLanguage', { language: getLanguageName(selectedLanguage) }) }}</p>
           </div>
         </div>
       </div>
@@ -161,8 +161,8 @@
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
             <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
           </div>
-          <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">Add or Edit Text Content</p>
-          <p class="text-xs text-slate-400 mt-1">Click to manage</p>
+          <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">{{ t('management.eventTextTab.addAnother.title') }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ t('management.eventTextTab.addAnother.clickToManage') }}</p>
         </div>
       </div>
     </div>
@@ -179,7 +179,7 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :loading="deleteLoading"
-      title="Delete Text Content"
+      :title="t('management.eventTextTab.deleteModal.title')"
       :item-name="
         textToDelete?.title ||
         (textToDelete?.content
@@ -211,12 +211,15 @@ import {
 import { eventTextsService, type EventText } from '../services/api'
 import EditEventTextDrawer from './EditEventTextDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   eventId: string
 }
 
 const props = defineProps<Props>()
+
+const { t } = useAppLanguage()
 
 // Track component mount state to prevent state updates after unmount
 let isMounted = true
@@ -238,30 +241,7 @@ const textToDelete = ref<EventText | null>(null)
 // Constants
 const LANGUAGE_PRIORITY = ['en', 'kh', 'fr', 'ja', 'ko', 'zh-cn', 'th', 'vn'] as const
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English',
-  kh: 'Khmer',
-  fr: 'French',
-  ja: 'Japanese',
-  ko: 'Korean',
-  'zh-cn': 'Chinese (Simplified)',
-  th: 'Thai',
-  vn: 'Vietnamese',
-}
 
-const TEXT_TYPE_LABELS: Record<string, string> = {
-  cover_header: 'Cover Header',
-  welcome_message: 'Welcome Message',
-  instructions: 'Instructions',
-  description: 'Description',
-  short_description: 'Short Description',
-  date_text: 'Date Text',
-  time_text: 'Time Text',
-  location_text: 'Location Text',
-  thank_you_message: 'Thank You Message',
-  sorry_message: 'Sorry Message',
-  custom: 'Custom Content',
-}
 
 const TEXT_TYPE_PRIORITY = [
   'cover_header',
@@ -326,11 +306,13 @@ const textsForSelectedLanguage = computed(() => {
 })
 
 // Helper functions
-const getTextTypeLabel = (textType: string): string => TEXT_TYPE_LABELS[textType] || textType
+const getTextTypeLabel = (textType: string): string =>
+  t(`management.eventTextTab.textTypes.${textType}`, textType)
 
 const getTextTypeIcon = (textType: string): Component => TEXT_TYPE_ICONS[textType] || FileText
 
-const getLanguageName = (code: string): string => LANGUAGE_NAMES[code] || code.toUpperCase()
+const getLanguageName = (code: string): string =>
+  t(`management.eventTextTab.languages.${code}`, code.toUpperCase())
 
 // Methods
 const fetchTexts = async () => {
@@ -349,11 +331,11 @@ const fetchTexts = async () => {
         allTexts.value = []
       }
     } else {
-      error.value = response.message || 'Failed to load text content'
+      error.value = response.message || t('management.eventTextTab.error.loadFailed')
     }
   } catch {
     if (!isMounted) return
-    error.value = 'Network error while loading text content'
+    error.value = t('management.eventTextTab.error.loadNetworkError')
   } finally {
     if (isMounted) {
       loading.value = false
@@ -386,11 +368,11 @@ const confirmDelete = async () => {
       showDeleteModal.value = false
       textToDelete.value = null
     } else {
-      deleteError.value = response.message || 'Failed to delete text content'
+      deleteError.value = response.message || t('management.eventTextTab.error.deleteFailed')
     }
   } catch {
     if (!isMounted) return
-    deleteError.value = 'Network error while deleting text content'
+    deleteError.value = t('management.eventTextTab.error.deleteNetworkError')
   } finally {
     if (isMounted) {
       deleteLoading.value = false

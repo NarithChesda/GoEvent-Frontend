@@ -24,13 +24,13 @@
               <button
                 @click="closeDrawer"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.editEventTextDrawer.header.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
                 <h2 class="text-base font-semibold text-white">
-                  Event Text Content
+                  {{ t('management.editEventTextDrawer.header.title') }}
                 </h2>
               </div>
             </div>
@@ -52,7 +52,7 @@
                 @click="generalError = ''"
                 class="text-xs text-red-600 hover:text-red-700 underline mt-1"
               >
-                Dismiss
+                {{ t('management.editEventTextDrawer.error.dismiss') }}
               </button>
             </div>
           </div>
@@ -64,7 +64,7 @@
               <div class="flex items-center justify-between">
                 <h4 class="font-semibold text-slate-900 flex items-center">
                   <Languages class="w-4 h-4 mr-2" />
-                  Language
+                  {{ t('management.editEventTextDrawer.language.heading') }}
                 </h4>
                 <button
                   type="button"
@@ -72,12 +72,12 @@
                   class="text-[#1e90ff] hover:text-[#1873cc] text-sm font-medium flex items-center space-x-1"
                 >
                   <Plus class="w-4 h-4" />
-                  <span>Add Language</span>
+                  <span>{{ t('management.editEventTextDrawer.language.addBtn') }}</span>
                 </button>
               </div>
 
               <!-- Language Tab Headers -->
-              <div role="tablist" aria-label="Event text languages" class="flex overflow-x-auto border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
+              <div role="tablist" :aria-label="t('management.editEventTextDrawer.language.tabsAriaLabel')" class="flex overflow-x-auto border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
                 <button
                   v-for="lang in availableLanguages"
                   :key="lang"
@@ -97,12 +97,12 @@
                 >
                   <span class="flex items-center gap-2">
                     <span>{{ getLanguageName(lang) }}</span>
-                    <span v-if="lang === 'en'" class="text-xs text-slate-500">(Default)</span>
+                    <span v-if="lang === 'en'" class="text-xs text-slate-500">({{ t('management.editEventTextDrawer.language.defaultBadge') }})</span>
                     <button
                       v-if="lang !== 'en' && canRemoveLanguage(lang)"
                       type="button"
                       @click.stop="removeLanguage(lang)"
-                      :aria-label="'Remove ' + getLanguageName(lang)"
+                      :aria-label="t('management.editEventTextDrawer.language.removeAriaLabel', { language: getLanguageName(lang) })"
                       class="opacity-0 group-hover:opacity-100 transition-opacity"
                       :class="activeLanguage === lang ? 'opacity-100' : ''"
                     >
@@ -118,7 +118,7 @@
                 class="bg-[#E6F4FF] border border-[#87CEEB] rounded-xl p-4"
               >
                 <div class="flex items-center justify-between mb-3">
-                  <h5 class="font-medium text-slate-900">Add Language</h5>
+                  <h5 class="font-medium text-slate-900">{{ t('management.editEventTextDrawer.addLanguagePopup.title') }}</h5>
                   <button
                     type="button"
                     @click="showAddLanguage = false"
@@ -131,14 +131,14 @@
                 <div class="space-y-3">
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
-                      Select Language
+                      {{ t('management.editEventTextDrawer.addLanguagePopup.selectLabel') }}
                     </label>
                     <div class="relative">
                       <select
                         v-model="newLanguage"
                         class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent appearance-none bg-white"
                       >
-                        <option value="">Choose a language...</option>
+                        <option value="">{{ t('management.editEventTextDrawer.addLanguagePopup.selectPlaceholder') }}</option>
                         <option
                           v-for="lang in languagesForAdd"
                           :key="lang.code"
@@ -158,14 +158,14 @@
                       :disabled="!newLanguage"
                       class="px-4 py-2 bg-[#1e90ff] text-white rounded-lg hover:bg-[#1873cc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                     >
-                      Add Language
+                      {{ t('management.editEventTextDrawer.addLanguagePopup.addBtn') }}
                     </button>
                     <button
                       type="button"
                       @click="showAddLanguage = false"
                       class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
                     >
-                      Cancel
+                      {{ t('management.editEventTextDrawer.addLanguagePopup.cancelBtn') }}
                     </button>
                   </div>
                 </div>
@@ -225,30 +225,30 @@
                   <!-- Title -->
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                      Title
-                      <span class="text-slate-400 font-normal">(optional)</span>
+                      {{ t('management.editEventTextDrawer.textFields.titleLabel') }}
+                      <span class="text-slate-400 font-normal">({{ t('management.editEventTextDrawer.textFields.titleOptional') }})</span>
                     </label>
                     <input
                       v-model="getTextData(lang, textType.value).title"
                       type="text"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                      :placeholder="'Enter title for ' + textType.label.toLowerCase()"
+                      :placeholder="t('management.editEventTextDrawer.textFields.titlePlaceholder', { type: textType.label.toLowerCase() })"
                     />
                   </div>
 
                   <!-- Content -->
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                      Content
+                      {{ t('management.editEventTextDrawer.textFields.contentLabel') }}
                     </label>
                     <textarea
                       v-model="getTextData(lang, textType.value).content"
                       rows="4"
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
-                      :placeholder="'Enter ' + textType.label.toLowerCase() + ' content...'"
+                      :placeholder="t('management.editEventTextDrawer.textFields.contentPlaceholder', { type: textType.label.toLowerCase() })"
                     ></textarea>
                     <div class="mt-1 text-xs text-slate-500">
-                      {{ getTextData(lang, textType.value).content?.length || 0 }} characters
+                      {{ t('management.editEventTextDrawer.textFields.characters', { count: getTextData(lang, textType.value).content?.length || 0 }) }}
                     </div>
                   </div>
 
@@ -263,7 +263,7 @@
                       class="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
                     >
                       <Trash2 class="w-3.5 h-3.5" />
-                      <span>Delete this text</span>
+                      <span>{{ t('management.editEventTextDrawer.textFields.deleteBtn') }}</span>
                     </button>
                   </div>
                 </div>
@@ -282,7 +282,7 @@
             >
               <Loader v-if="loading" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ loading ? 'Saving...' : 'Save Changes' }}</span>
+              <span>{{ loading ? t('management.editEventTextDrawer.footer.saving') : t('management.editEventTextDrawer.footer.saveChanges') }}</span>
             </button>
 
             <button
@@ -290,7 +290,7 @@
               @click="closeDrawer"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('management.editEventTextDrawer.footer.cancel') }}
             </button>
           </div>
         </div>
@@ -335,33 +335,27 @@ import {
   Heart,
 } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '@/services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
-// Text types configuration
-const TEXT_TYPES: { value: string; label: string; icon: Component }[] = [
-  { value: 'cover_header', label: 'Cover Header', icon: FileText },
-  { value: 'welcome_message', label: 'Welcome Message', icon: MessageSquare },
-  { value: 'description', label: 'Description', icon: FileText },
-  { value: 'date_text', label: 'Date Text', icon: Calendar },
-  { value: 'time_text', label: 'Time Text', icon: Clock },
-  { value: 'location_text', label: 'Location Text', icon: MapPin },
-  { value: 'thank_you_message', label: 'Thank You Message', icon: Heart },
-  { value: 'sorry_message', label: 'Sorry Message', icon: MessageSquare },
-  { value: 'short_description', label: 'Short Description', icon: FileText },
-  { value: 'instructions', label: 'Instructions', icon: Info },
-  { value: 'custom', label: 'Custom Content', icon: FileText },
+const { t } = useAppLanguage()
+
+// Text types configuration — labels resolved via i18n at render time
+const TEXT_TYPE_VALUES: { value: string; icon: Component }[] = [
+  { value: 'cover_header', icon: FileText },
+  { value: 'welcome_message', icon: MessageSquare },
+  { value: 'description', icon: FileText },
+  { value: 'date_text', icon: Calendar },
+  { value: 'time_text', icon: Clock },
+  { value: 'location_text', icon: MapPin },
+  { value: 'thank_you_message', icon: Heart },
+  { value: 'sorry_message', icon: MessageSquare },
+  { value: 'short_description', icon: FileText },
+  { value: 'instructions', icon: Info },
+  { value: 'custom', icon: FileText },
 ]
 
-// Language configuration
-const ALL_LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'kh', name: 'Khmer' },
-  { code: 'fr', name: 'French' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'zh-cn', name: 'Chinese (Simplified)' },
-  { code: 'th', name: 'Thai' },
-  { code: 'vn', name: 'Vietnamese' },
-]
+// Language configuration — names resolved via i18n at render time
+const ALL_LANGUAGE_CODES = ['en', 'kh', 'fr', 'ja', 'ko', 'zh-cn', 'th', 'vn']
 
 interface Props {
   modelValue: boolean
@@ -404,6 +398,14 @@ const formData = reactive<Record<string, TextFormData>>({})
 // Track original data to detect changes
 const originalData = ref<Record<string, TextFormData>>({})
 
+// Computed: text types with translated labels
+const TEXT_TYPES = computed(() =>
+  TEXT_TYPE_VALUES.map(tt => ({
+    ...tt,
+    label: t(`management.eventTextTab.textTypes.${tt.value}`, tt.value),
+  }))
+)
+
 // Computed: available languages (languages that have any content or are added)
 const availableLanguages = computed(() => {
   const langs = new Set<string>(['en']) // Always include English
@@ -427,8 +429,8 @@ const availableLanguages = computed(() => {
   })
 
   return Array.from(langs).sort((a, b) => {
-    const aIdx = ALL_LANGUAGES.findIndex(l => l.code === a)
-    const bIdx = ALL_LANGUAGES.findIndex(l => l.code === b)
+    const aIdx = ALL_LANGUAGE_CODES.indexOf(a)
+    const bIdx = ALL_LANGUAGE_CODES.indexOf(b)
     if (aIdx === -1 && bIdx === -1) return a.localeCompare(b)
     if (aIdx === -1) return 1
     if (bIdx === -1) return -1
@@ -436,10 +438,12 @@ const availableLanguages = computed(() => {
   })
 })
 
-// Computed: languages available to add
-const languagesForAdd = computed(() => {
-  return ALL_LANGUAGES.filter(lang => !availableLanguages.value.includes(lang.code))
-})
+// Computed: languages available to add (with translated names)
+const languagesForAdd = computed(() =>
+  ALL_LANGUAGE_CODES
+    .filter(code => !availableLanguages.value.includes(code))
+    .map(code => ({ code, name: t(`management.eventTextTab.languages.${code}`, code.toUpperCase()) }))
+)
 
 // Computed: check if there are unsaved changes
 const hasChanges = computed(() => {
@@ -470,9 +474,8 @@ const hasChanges = computed(() => {
 })
 
 // Helper functions
-const getLanguageName = (code: string): string => {
-  return ALL_LANGUAGES.find(l => l.code === code)?.name || code.toUpperCase()
-}
+const getLanguageName = (code: string): string =>
+  t(`management.eventTextTab.languages.${code}`, code.toUpperCase())
 
 const getFormKey = (lang: string, textType: string): string => {
   return `${lang}:${textType}`
@@ -521,7 +524,7 @@ const addLanguage = () => {
     // Track this language so it stays visible
     addedLanguages.value.add(langToAdd)
     // Initialize empty entries for all text types
-    TEXT_TYPES.forEach(tt => {
+    TEXT_TYPE_VALUES.forEach(tt => {
       const key = getFormKey(langToAdd, tt.value)
       if (!formData[key]) {
         formData[key] = { title: '', content: '' }
@@ -539,7 +542,7 @@ const removeLanguage = (lang: string) => {
   addedLanguages.value.delete(lang)
 
   // Remove all form data for this language
-  TEXT_TYPES.forEach(tt => {
+  TEXT_TYPE_VALUES.forEach(tt => {
     const key = getFormKey(lang, tt.value)
     delete formData[key]
     delete openSections.value[key]
@@ -558,7 +561,7 @@ const deleteText = async (lang: string, textType: string) => {
   if (data?.id) {
     // Mark for deletion by clearing content
     formData[key] = { title: '', content: '', id: data.id }
-    showMessage('success', 'Text will be deleted when you save changes')
+    showMessage('success', t('management.editEventTextDrawer.messages.deleteOnSave'))
   }
 }
 
@@ -590,7 +593,7 @@ const initializeFormData = () => {
   })
 
   // Ensure English has entries for all text types
-  TEXT_TYPES.forEach(tt => {
+  TEXT_TYPE_VALUES.forEach(tt => {
     const key = getFormKey('en', tt.value)
     if (!formData[key]) {
       formData[key] = { title: '', content: '' }
@@ -662,7 +665,7 @@ const saveAllChanges = async () => {
     }
 
     if (operations.length === 0) {
-      showMessage('success', 'No changes to save')
+      showMessage('success', t('management.editEventTextDrawer.messages.noChanges'))
       loading.value = false
       return
     }
@@ -673,9 +676,9 @@ const saveAllChanges = async () => {
     // Check for errors
     const errors = results.filter(r => !r.success)
     if (errors.length > 0) {
-      showMessage('error', `${errors.length} operation(s) failed`)
+      showMessage('error', t('management.editEventTextDrawer.messages.operationsFailed', { count: errors.length }))
     } else {
-      showMessage('success', 'All changes saved successfully!')
+      showMessage('success', t('management.editEventTextDrawer.messages.savedSuccess'))
       emit('saved')
       setTimeout(() => {
         closeDrawer()
@@ -683,7 +686,7 @@ const saveAllChanges = async () => {
     }
   } catch (error) {
     console.error('Error saving texts:', error)
-    showMessage('error', 'Network error while saving')
+    showMessage('error', t('management.editEventTextDrawer.messages.networkError'))
   } finally {
     loading.value = false
   }
