@@ -510,6 +510,46 @@
     "publishSuccess": "Event published successfully",
     "unpublishSuccess": "Event unpublished successfully"
   },
+  "embeds": {
+    "youtube": {
+      "title": "YouTube Video",
+      "description": "Embed a YouTube video for your event",
+      "helpButtonTitle": "Learn how to get YouTube embed link",
+      "empty": "No YouTube video embedded",
+      "inputPlaceholder": "Paste YouTube embed code or URL here",
+      "saving": "Saving...",
+      "saveBtn": "Save Changes",
+      "successMessage": "Embed links updated successfully!"
+    },
+    "helpModal": {
+      "title": "How to Get YouTube Embed Link",
+      "intro": "Follow these simple steps to embed a YouTube video:",
+      "step1Title": "Go to Your YouTube Video",
+      "step1Desc": "Open the YouTube video you want to embed in your browser.",
+      "step2Title": "Click the Share Button",
+      "step2Desc": "Under the video player, click the \"Share\" button.",
+      "step3Title": "Select Embed",
+      "step3Desc": "In the share dialog, click the \"Embed\" option.",
+      "step4Title": "Copy the Embed Code",
+      "step4Desc": "Copy the entire <iframe> code that appears, or just copy the URL from the src=\"\" attribute.",
+      "step5Title": "Paste Here",
+      "step5Desc": "Paste either the full iframe code or just the URL into the input field above. Our system will automatically extract the correct embed URL.",
+      "exampleLabel": "Example:",
+      "exampleHint": "The embed URL should look like:",
+      "gotIt": "Got it"
+    },
+    "deleteModal": {
+      "title": "Remove YouTube Video",
+      "itemName": "YouTube Video Embed"
+    },
+    "errors": {
+      "updateFailed": "Failed to update embed links",
+      "updateNetworkError": "Network error while updating embed links",
+      "removeFailed": "Failed to remove embed",
+      "removeNetworkError": "Network error while removing embed",
+      "invalidUrl": "Please enter a valid YouTube embed URL (https://www.youtube.com/embed/VIDEO_ID)"
+    }
+  },
   "dressCode": {
     "section": {
       "title": "Dress Code Guidelines",

@@ -5,15 +5,15 @@
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1">
-            <h5 class="font-semibold text-slate-900">YouTube Video</h5>
-            <p class="text-sm text-slate-600">Embed a YouTube video for your event</p>
+            <h5 class="font-semibold text-slate-900">{{ t('management.embeds.youtube.title') }}</h5>
+            <p class="text-sm text-slate-600">{{ t('management.embeds.youtube.description') }}</p>
           </div>
 
           <!-- Help Button -->
           <button
             @click="showYouTubeHelpModal = true"
             class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            title="Learn how to get YouTube embed link"
+            :title="t('management.embeds.youtube.helpButtonTitle')"
           >
             <Info class="w-4 h-4" />
           </button>
@@ -40,7 +40,7 @@
 
         <div v-else class="border-2 border-dashed border-slate-300 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
           <Youtube class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2" />
-          <p class="text-xs sm:text-sm text-slate-600">No YouTube video embedded</p>
+          <p class="text-xs sm:text-sm text-slate-600">{{ t('management.embeds.youtube.empty') }}</p>
         </div>
 
         <div>
@@ -48,7 +48,7 @@
             v-model="formData.youtube_embed_link"
             type="url"
             :disabled="!canEdit"
-            placeholder="Paste YouTube embed code or URL here"
+            :placeholder="t('management.embeds.youtube.inputPlaceholder')"
             @paste="handleYouTubePaste"
             class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
@@ -68,7 +68,7 @@
           class="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
         ></div>
         <Save v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-        <span>{{ saving ? 'Saving...' : 'Save Changes' }}</span>
+        <span>{{ saving ? t('management.embeds.youtube.saving') : t('management.embeds.youtube.saveBtn') }}</span>
       </button>
     </div>
 
@@ -76,7 +76,7 @@
     <div v-if="showSuccess" class="bg-green-50 border border-green-200 rounded-xl sm:rounded-2xl p-3 sm:p-4">
       <div class="flex items-center space-x-2 sm:space-x-3">
         <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-        <p class="text-xs sm:text-sm text-green-700 font-medium">Embed links updated successfully!</p>
+        <p class="text-xs sm:text-sm text-green-700 font-medium">{{ t('management.embeds.youtube.successMessage') }}</p>
       </div>
     </div>
 
@@ -115,7 +115,7 @@
                   <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
                     <Youtube class="w-5 h-5 text-red-600" />
                   </div>
-                  <h3 class="text-lg font-semibold text-slate-900">How to Get YouTube Embed Link</h3>
+                  <h3 class="text-lg font-semibold text-slate-900">{{ t('management.embeds.helpModal.title') }}</h3>
                 </div>
                 <button
                   @click="showYouTubeHelpModal = false"
@@ -129,66 +129,66 @@
               <div class="space-y-4">
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <p class="text-sm text-blue-900 mb-3 font-medium">
-                    Follow these simple steps to embed a YouTube video:
+                    {{ t('management.embeds.helpModal.intro') }}
                   </p>
 
                   <div class="space-y-3">
                     <div>
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">1</span>
-                        Go to Your YouTube Video
+                        {{ t('management.embeds.helpModal.step1Title') }}
                       </h4>
                       <p class="text-sm text-blue-800 ml-7">
-                        Open the YouTube video you want to embed in your browser.
+                        {{ t('management.embeds.helpModal.step1Desc') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">2</span>
-                        Click the Share Button
+                        {{ t('management.embeds.helpModal.step2Title') }}
                       </h4>
                       <p class="text-sm text-blue-800 ml-7">
-                        Under the video player, click the "Share" button.
+                        {{ t('management.embeds.helpModal.step2Desc') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">3</span>
-                        Select Embed
+                        {{ t('management.embeds.helpModal.step3Title') }}
                       </h4>
                       <p class="text-sm text-blue-800 ml-7">
-                        In the share dialog, click the "Embed" option.
+                        {{ t('management.embeds.helpModal.step3Desc') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">4</span>
-                        Copy the Embed Code
+                        {{ t('management.embeds.helpModal.step4Title') }}
                       </h4>
                       <p class="text-sm text-blue-800 ml-7">
-                        Copy the entire <code class="bg-blue-100 px-1 rounded">&lt;iframe&gt;</code> code that appears, or just copy the URL from the <code class="bg-blue-100 px-1 rounded">src=""</code> attribute.
+                        {{ t('management.embeds.helpModal.step4Desc') }}
                       </p>
                     </div>
 
                     <div>
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">5</span>
-                        Paste Here
+                        {{ t('management.embeds.helpModal.step5Title') }}
                       </h4>
                       <p class="text-sm text-blue-800 ml-7">
-                        Paste either the full iframe code or just the URL into the input field above. Our system will automatically extract the correct embed URL.
+                        {{ t('management.embeds.helpModal.step5Desc') }}
                       </p>
                     </div>
 
                     <div class="pt-3 border-t border-blue-200">
                       <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
                         <span>💡</span>
-                        <span>Example:</span>
+                        <span>{{ t('management.embeds.helpModal.exampleLabel') }}</span>
                       </h4>
-                      <p class="text-xs text-blue-800 mb-2">The embed URL should look like:</p>
+                      <p class="text-xs text-blue-800 mb-2">{{ t('management.embeds.helpModal.exampleHint') }}</p>
                       <code class="block text-xs bg-blue-100 p-2 rounded text-blue-900 break-all">
                         https://www.youtube.com/embed/VIDEO_ID
                       </code>
@@ -202,7 +202,7 @@
                     @click="showYouTubeHelpModal = false"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
                   >
-                    Got it
+                    {{ t('management.embeds.helpModal.gotIt') }}
                   </button>
                 </div>
               </div>
@@ -221,6 +221,7 @@ import { Youtube, X, Save, CheckCircle, AlertCircle, Info } from 'lucide-vue-nex
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { extractYouTubeEmbedUrl } from '../utils/embedExtractor'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   eventData?: Event
@@ -233,6 +234,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
 
 // State
 const formData = ref({
@@ -296,10 +299,10 @@ const saveChanges = async () => {
         showSuccess.value = false
       }, 3000)
     } else {
-      error.value = response.message || 'Failed to update embed links'
+      error.value = response.message || t('management.embeds.errors.updateFailed')
     }
   } catch (err) {
-    error.value = 'Network error while updating embed links'
+    error.value = t('management.embeds.errors.updateNetworkError')
   } finally {
     saving.value = false
   }
@@ -308,8 +311,8 @@ const saveChanges = async () => {
 // Delete confirmation functions
 const confirmRemoveYouTube = () => {
   deleteModalData.value = {
-    title: 'Remove YouTube Video',
-    itemName: 'YouTube Video Embed',
+    title: t('management.embeds.deleteModal.title'),
+    itemName: t('management.embeds.deleteModal.itemName'),
     fieldToDelete: 'youtube_embed_link',
   }
   showDeleteModal.value = true
@@ -344,10 +347,10 @@ const handleDeleteConfirm = async () => {
         showSuccess.value = false
       }, 3000)
     } else {
-      error.value = response.message || 'Failed to remove embed'
+      error.value = response.message || t('management.embeds.errors.removeFailed')
     }
   } catch (err) {
-    error.value = 'Network error while removing embed'
+    error.value = t('management.embeds.errors.removeNetworkError')
   } finally {
     deleting.value = false
   }
@@ -380,8 +383,7 @@ watch(
   () => formData.value.youtube_embed_link,
   (newValue) => {
     if (newValue && !validateYouTubeUrl(newValue)) {
-      error.value =
-        'Please enter a valid YouTube embed URL (https://www.youtube.com/embed/VIDEO_ID)'
+      error.value = t('management.embeds.errors.invalidUrl')
     } else if (error.value?.includes('YouTube')) {
       error.value = null
     }
