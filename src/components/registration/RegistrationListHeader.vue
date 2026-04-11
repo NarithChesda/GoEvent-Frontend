@@ -131,8 +131,8 @@
               :value="searchQuery"
               @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
               type="text"
-              placeholder="Search registrations..."
-              aria-label="Search registrations by name, username, or code"
+              :placeholder="t('management.registrationList.searchPlaceholder')"
+              :aria-label="t('management.registrationList.searchAriaLabel')"
               class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
             />
             <button
