@@ -1828,7 +1828,7 @@
     "infoText": "Invite team members to help manage your event. They'll receive an email invitation.",
     "email": "Email Address",
     "askAdminHelp": "Ask Admin Help",
-    "emailPlaceholder": "collaborator@example.com",
+    "emailPlaceholder": "collaborator{'@'}example.com",
     "role": "Role",
     "roles": {
       "viewer": "Viewer - Read-only access",

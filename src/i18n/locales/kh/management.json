@@ -1828,7 +1828,7 @@
     "infoText": "អញ្ជើញសមាជិកក្រុមដើម្បីជួយគ្រប់គ្រងព្រឹត្តិការណ៍របស់អ្នក។ ពួកគេនឹងទទួលបានអ៊ីមែលអញ្ជើញ។",
     "email": "អាសយដ្ឋានអ៊ីមែល",
     "askAdminHelp": "សុំជំនួយអ្នកគ្រប់គ្រង",
-    "emailPlaceholder": "collaborator@example.com",
+    "emailPlaceholder": "collaborator{'@'}example.com",
     "role": "តួនាទី",
     "roles": {
       "viewer": "អ្នកមើល - ការចូលប្រើតែអាន",
