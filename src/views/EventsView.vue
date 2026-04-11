@@ -176,7 +176,7 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const { t } = useAppLanguage()
+const { t, locale } = useAppLanguage()
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
@@ -240,8 +240,10 @@ const filteredEvents = computed(() => {
   })
 })
 
-// Group events by date
+// Group events by date (re-computes when locale changes)
 const groupedByDate = computed(() => {
+  // Access locale so Vue tracks it as a dependency for re-computation on language switch
+  void locale.value
   // For "recent" filter, sort by created_at timestamp (most recent first)
   if (timeFilter.value === 'recent') {
     const sortedByCreated = [...filteredEvents.value].sort((a, b) => {
