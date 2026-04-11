@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-gray-900 mb-2">Your Profile</h2>
-    <p class="text-sm text-gray-500 mb-8">Choose how you are displayed as a host or guest.</p>
+    <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.account.title') }}</h2>
+    <p class="text-sm text-gray-500 mb-8">{{ t('settings.account.subtitle') }}</p>
 
     <form @submit.prevent="handleProfileUpdate" class="space-y-6">
       <!-- Success/Error Messages -->
@@ -28,7 +28,7 @@
           <div :class="isPartner ? 'grid grid-cols-2 gap-4' : 'flex justify-center'">
             <!-- Profile Picture for Mobile -->
             <div class="flex flex-col items-center">
-              <label class="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+              <label class="block text-sm font-medium text-gray-700 mb-3">{{ t('settings.account.profilePictureLabel') }}</label>
               <div class="relative w-28 h-28 mx-auto mb-2">
                 <!-- Partner Badge Ring -->
                 <div
@@ -71,7 +71,7 @@
 
             <!-- Partner Logo for Mobile (only for partners) -->
             <div v-if="isPartner" class="flex flex-col items-center">
-              <label class="block text-sm font-medium text-gray-700 mb-3">Partner Logo</label>
+              <label class="block text-sm font-medium text-gray-700 mb-3">{{ t('settings.account.partnerLogoLabel') }}</label>
               <div class="relative w-28 h-28 mx-auto mb-2">
                 <div
                   v-if="logoUrl"
@@ -90,7 +90,7 @@
                   v-else
                   class="relative w-28 h-28 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 font-medium text-xs border-2 border-gray-300 shadow-lg"
                 >
-                  No Logo
+                  {{ t('settings.account.noLogo') }}
                 </div>
 
                 <!-- Upload button overlay -->
@@ -114,91 +114,91 @@
           <!-- Name Fields -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.firstName') }}</label>
               <input
                 v-model="profileForm.first_name"
                 type="text"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                placeholder="Narith"
+                :placeholder="t('settings.account.firstNamePlaceholder')"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.lastName') }}</label>
               <input
                 v-model="profileForm.last_name"
                 type="text"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                placeholder="Chesda"
+                :placeholder="t('settings.account.lastNamePlaceholder')"
               />
             </div>
           </div>
 
           <!-- Email Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.emailAddress') }}</label>
             <input
               v-model="profileForm.email"
               type="email"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              placeholder="Enter your email"
+              :placeholder="t('settings.account.emailPlaceholder')"
             />
           </div>
 
           <!-- Username Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.username') }}</label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">@</span>
               <input
                 v-model="profileForm.username"
                 type="text"
                 class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                placeholder="username"
+                :placeholder="t('settings.account.usernamePlaceholder')"
               />
             </div>
           </div>
 
           <!-- Bio Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.bio') }}</label>
             <textarea
               v-model="profileForm.bio"
               rows="3"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
-              placeholder="Share a little about your background and interests."
+              :placeholder="t('settings.account.bioPlaceholder')"
             ></textarea>
           </div>
 
           <!-- Phone Number Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.phoneNumber') }}</label>
             <input
               v-model="profileForm.phone_number"
               type="tel"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              placeholder="Enter your phone number"
+              :placeholder="t('settings.account.phonePlaceholder')"
             />
           </div>
 
           <!-- Telegram URL Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Telegram URL</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.telegramUrl') }}</label>
             <input
               v-model="profileForm.telegram_link"
               type="text"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              placeholder="t.me/yourusername or @yourusername"
+              :placeholder="t('settings.account.telegramPlaceholder')"
             />
           </div>
 
           <!-- Payment URL Field (only for partners) -->
           <div v-if="isPartner">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Payment URL</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.paymentUrl') }}</label>
             <input
               v-model="profileForm.payment_link"
               type="text"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              placeholder="your-payment-platform.com/username"
+              :placeholder="t('settings.account.paymentPlaceholder')"
             />
           </div>
         </div>
@@ -208,7 +208,7 @@
           <div class="sticky top-8 space-y-8">
             <!-- Profile Picture Section -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">Profile Picture</label>
+              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.account.profilePictureLabel') }}</label>
 
               <!-- Current Profile Picture -->
               <div class="relative w-32 h-32 mx-auto mb-4">
@@ -261,7 +261,7 @@
 
             <!-- Partner Logo Section (only for partners) -->
             <div v-if="isPartner">
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">Partner Logo</label>
+              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.account.partnerLogoLabel') }}</label>
 
               <!-- Current Logo -->
               <div class="relative w-32 h-32 mx-auto mb-4">
@@ -282,7 +282,7 @@
                   v-else
                   class="relative w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 font-medium text-xs border-2 border-gray-300 shadow-lg"
                 >
-                  No Logo
+                  {{ t('settings.account.noLogo') }}
                 </div>
 
                 <!-- Upload button overlay -->
@@ -320,7 +320,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
           </svg>
-          {{ uploadLoading || isSubmitting ? 'Saving...' : 'Save Changes' }}
+          {{ uploadLoading || isSubmitting ? t('settings.account.saving') : t('settings.account.saveChanges') }}
         </button>
       </div>
 
@@ -330,11 +330,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileForm } from '@/composables/settings/useProfileForm'
 import { useProfilePictureUpload } from '@/composables/settings/useProfilePictureUpload'
 import { useLogoUpload } from '@/composables/settings/useLogoUpload'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 
 // Use profile form composable

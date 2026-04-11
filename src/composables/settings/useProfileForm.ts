@@ -1,5 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 
 export interface ProfileFormData {
@@ -22,6 +23,7 @@ export function useProfileForm(options: UseProfileFormOptions = {}) {
 
   const router = useRouter()
   const authStore = useAuthStore()
+  const { t } = useI18n()
 
   // Form state
   const profileForm = ref<ProfileFormData>({
@@ -126,7 +128,7 @@ export function useProfileForm(options: UseProfileFormOptions = {}) {
       const result = await authStore.updateProfile(updateData)
 
       if (result.success) {
-        successMessage.value = 'Profile updated successfully!'
+        successMessage.value = t('settings.account.messages.updateSuccess')
 
         setTimeout(() => {
           successMessage.value = ''
@@ -134,12 +136,12 @@ export function useProfileForm(options: UseProfileFormOptions = {}) {
 
         return { success: true }
       } else {
-        errorMessage.value = result.error || 'Failed to update profile'
+        errorMessage.value = result.error || t('settings.account.messages.updateFailed')
         return { success: false, error: errorMessage.value }
       }
     } catch (error) {
       console.error('Profile update error:', error)
-      errorMessage.value = 'An unexpected error occurred'
+      errorMessage.value = t('settings.account.messages.unexpectedError')
       return { success: false, error: errorMessage.value }
     } finally {
       isSubmitting.value = false

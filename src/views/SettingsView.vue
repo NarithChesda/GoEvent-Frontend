@@ -8,7 +8,7 @@
         <!-- Header with Tabs -->
         <div class="mb-8 sm:mb-10">
           <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
-            Settings
+            {{ t('settings.title') }}
           </h1>
 
           <!-- Tab Navigation -->
@@ -46,8 +46,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import MainLayout from '@/components/MainLayout.vue'
 import AccountTab from '@/components/settings/AccountTab.vue'
 import SecurityTab from '@/components/settings/SecurityTab.vue'
@@ -68,15 +69,16 @@ interface Tab {
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 // Tab configuration - easily extensible for future tabs
-const tabs: Tab[] = [
-  { id: 'account', label: 'Account' },
-  { id: 'security', label: 'Security' },
-  { id: 'vendor', label: 'Vendor' },
-  { id: 'donations', label: 'Donations' },
-  { id: 'listings', label: 'Listings' },
-]
+const tabs = computed<Tab[]>(() => [
+  { id: 'account', label: t('settings.tabs.account') },
+  { id: 'security', label: t('settings.tabs.security') },
+  { id: 'vendor', label: t('settings.tabs.vendor') },
+  { id: 'donations', label: t('settings.tabs.donations') },
+  { id: 'listings', label: t('settings.tabs.listings') },
+])
 
 // Valid tab IDs for validation
 const validTabIds: TabId[] = ['account', 'security', 'vendor', 'donations', 'listings']
