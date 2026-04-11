@@ -71,6 +71,43 @@
     "khmer": "ខ្មែរ",
     "chinese": "中文"
   },
+  "search": {
+    "placeholder": {
+      "events": "Search your events...",
+      "explore": "Search public events...",
+      "services": "Search services...",
+      "default": "Search events..."
+    },
+    "sections": {
+      "yourEvents": "Your Events",
+      "myEvents": "My Events",
+      "publicEvents": "Public Events",
+      "discover": "Discover",
+      "services": "Services",
+      "videoGuides": "Video Guides"
+    },
+    "serviceComingSoon": "Service search coming soon",
+    "virtual": "Virtual",
+    "noResults": "No results found",
+    "noResultsHint": "Try a different search term",
+    "emptyTitle": {
+      "events": "Search your events",
+      "explore": "Search public events",
+      "services": "Search services",
+      "default": "Search for events"
+    },
+    "emptySubtitle": {
+      "events": "Find your organized and collaborated events",
+      "explore": "Discover events by name, location, or category",
+      "services": "Find vendors and services for your events",
+      "default": "Find events by name, location, or category"
+    },
+    "hints": {
+      "navigate": "to navigate",
+      "select": "to select",
+      "close": "to close"
+    }
+  },
   "footer": {
     "home": "Home",
     "aboutUs": "About Us",

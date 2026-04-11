@@ -61,7 +61,7 @@
                 <div class="px-5 py-2 flex items-center gap-2">
                   <Ticket class="w-4 h-4 text-slate-400" />
                   <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    {{ currentContext === 'events' ? 'Your Events' : 'My Events' }}
+                    {{ currentContext === 'events' ? t('common.search.sections.yourEvents') : t('common.search.sections.myEvents') }}
                   </span>
                 </div>
                 <div>
@@ -93,7 +93,7 @@
                 <div class="px-5 py-2 flex items-center gap-2">
                   <Compass class="w-4 h-4 text-slate-400" />
                   <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    {{ currentContext === 'explore' ? 'Public Events' : 'Discover' }}
+                    {{ currentContext === 'explore' ? t('common.search.sections.publicEvents') : t('common.search.sections.discover') }}
                   </span>
                 </div>
                 <div>
@@ -116,7 +116,7 @@
                           <MapPin class="w-3 h-3" />
                           <span class="truncate max-w-[150px]">{{ result.location }}</span>
                         </template>
-                        <span v-else-if="result.isVirtual" class="text-blue-500">Virtual</span>
+                        <span v-else-if="result.isVirtual" class="text-blue-500">{{ t('common.search.virtual') }}</span>
                       </div>
                     </div>
                     <ArrowRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -128,12 +128,12 @@
               <div v-if="showServicesSection" class="mb-4">
                 <div class="px-5 py-2 flex items-center gap-2">
                   <Briefcase class="w-4 h-4 text-slate-400" />
-                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Services</span>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('common.search.sections.services') }}</span>
                 </div>
                 <div class="px-5 py-4 text-center">
                   <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/40 backdrop-blur-sm rounded-lg text-sm text-slate-500 border border-slate-200/50">
                     <Sparkles class="w-4 h-4" />
-                    <span>Service search coming soon</span>
+                    <span>{{ t('common.search.serviceComingSoon') }}</span>
                   </div>
                 </div>
               </div>
@@ -146,8 +146,8 @@
                 <div class="w-16 h-16 mx-auto mb-4 bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center border border-slate-200/50">
                   <SearchX class="w-8 h-8 text-slate-400" />
                 </div>
-                <p class="text-slate-600 font-medium">No results found</p>
-                <p class="text-sm text-slate-400 mt-1">Try a different search term</p>
+                <p class="text-slate-600 font-medium">{{ t('common.search.noResults') }}</p>
+                <p class="text-sm text-slate-400 mt-1">{{ t('common.search.noResultsHint') }}</p>
               </div>
             </div>
 
@@ -156,7 +156,7 @@
               <div v-if="VIDEO_GUIDES.length > 0">
                 <div class="px-5 py-2 flex items-center gap-2">
                   <PlayCircle class="w-4 h-4 text-slate-400" />
-                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Video Guides</span>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('common.search.sections.videoGuides') }}</span>
                 </div>
                 <div>
                   <button
@@ -216,15 +216,15 @@
               <span class="flex items-center gap-1">
                 <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">↑</kbd>
                 <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">↓</kbd>
-                <span class="ml-1">to navigate</span>
+                <span class="ml-1">{{ t('common.search.hints.navigate') }}</span>
               </span>
               <span class="flex items-center gap-1">
                 <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">↵</kbd>
-                <span class="ml-1">to select</span>
+                <span class="ml-1">{{ t('common.search.hints.select') }}</span>
               </span>
               <span class="flex items-center gap-1">
                 <kbd class="px-1.5 py-0.5 bg-white/40 backdrop-blur-sm rounded border border-slate-200/50">esc</kbd>
-                <span class="ml-1">to close</span>
+                <span class="ml-1">{{ t('common.search.hints.close') }}</span>
               </span>
             </div>
           </div>
@@ -236,6 +236,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Search,
   X,
@@ -253,6 +254,8 @@ import {
 } from 'lucide-vue-next'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { VIDEO_GUIDES } from '@/constants/videoGuides'
+
+const { t } = useI18n()
 
 const {
   isOpen,
@@ -296,13 +299,13 @@ const showServicesSection = computed(() => {
 const searchPlaceholder = computed(() => {
   switch (currentContext.value) {
     case 'events':
-      return 'Search your events...'
+      return t('common.search.placeholder.events')
     case 'explore':
-      return 'Search public events...'
+      return t('common.search.placeholder.explore')
     case 'services':
-      return 'Search services...'
+      return t('common.search.placeholder.services')
     default:
-      return 'Search events...'
+      return t('common.search.placeholder.default')
   }
 })
 
@@ -322,26 +325,26 @@ const contextIcon = computed(() => {
 const emptyStateTitle = computed(() => {
   switch (currentContext.value) {
     case 'events':
-      return 'Search your events'
+      return t('common.search.emptyTitle.events')
     case 'explore':
-      return 'Search public events'
+      return t('common.search.emptyTitle.explore')
     case 'services':
-      return 'Search services'
+      return t('common.search.emptyTitle.services')
     default:
-      return 'Search for events'
+      return t('common.search.emptyTitle.default')
   }
 })
 
 const emptyStateSubtitle = computed(() => {
   switch (currentContext.value) {
     case 'events':
-      return 'Find your organized and collaborated events'
+      return t('common.search.emptySubtitle.events')
     case 'explore':
-      return 'Discover events by name, location, or category'
+      return t('common.search.emptySubtitle.explore')
     case 'services':
-      return 'Find vendors and services for your events'
+      return t('common.search.emptySubtitle.services')
     default:
-      return 'Find events by name, location, or category'
+      return t('common.search.emptySubtitle.default')
   }
 })
 
