@@ -1,5 +1,12 @@
 {
   "title": "Events",
+  "card": {
+    "locationMissing": "Location Missing",
+    "hostedBy": "By {names}",
+    "guestCount": "{count} guest | {count} guests",
+    "hostOthers": "& {count} other | & {count} others",
+    "today": "Today"
+  },
   "createEvent": "Create Event",
   "createFirstEvent": "Create Your First Event",
   "manageEvent": "Manage Event",

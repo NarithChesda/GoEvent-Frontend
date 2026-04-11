@@ -8,6 +8,7 @@
  */
 
 import { apiService, type Event } from '@/services/api'
+import { i18n } from '@/i18n'
 import { isImageKitEnabled } from './useImageKitConfig'
 
 export interface EventHost {
@@ -154,8 +155,8 @@ export function getGuestCount(event: Event): string | null {
   const count = event.registrations_count || 0
 
   if (count === 0) return null
-  if (count === 1) return '1 guest'
-  return `${count} guests`
+  const t = i18n.global.t
+  return t('events.card.guestCount', { count }, count)
 }
 
 /**
@@ -342,7 +343,9 @@ export function formatHostNames(event: Event): string {
   if (hosts.length === 0) return ''
   if (hosts.length === 1) return hosts[0].name
   if (hosts.length === 2) return `${hosts[0].name}, ${hosts[1].name}`
-  return `${hosts[0].name}, ${hosts[1].name} & ${hosts.length - 2} other${hosts.length - 2 > 1 ? 's' : ''}`
+  const othersCount = hosts.length - 2
+  const t = i18n.global.t
+  return `${hosts[0].name}, ${hosts[1].name} ${t('events.card.hostOthers', { count: othersCount }, othersCount)}`
 }
 
 /**
@@ -413,7 +416,7 @@ export function groupEventsByDate(
     // Format date parts (uses local timezone)
     // Show "Today" for today's events, otherwise show month and day
     const monthDay = isToday
-      ? 'Today'
+      ? i18n.global.t('events.card.today')
       : eventDate.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',

@@ -43,7 +43,7 @@
               </div>
             </div>
           </div>
-          <span class="truncate">By {{ hostNames }}</span>
+          <span class="truncate">{{ t('events.card.hostedBy', { names: hostNames }) }}</span>
         </div>
 
         <!-- Location -->
@@ -54,7 +54,7 @@
           </template>
           <template v-else-if="showMissingLocation">
             <AlertTriangle class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-            <span class="text-amber-600">Location Missing</span>
+            <span class="text-amber-600">{{ t('events.card.locationMissing') }}</span>
           </template>
         </div>
 
@@ -176,7 +176,7 @@
               </div>
             </div>
           </div>
-          <span class="text-slate-600">By {{ hostNames }}</span>
+          <span class="text-slate-600">{{ t('events.card.hostedBy', { names: hostNames }) }}</span>
         </div>
 
         <!-- Location -->
@@ -187,7 +187,7 @@
           </template>
           <template v-else-if="showMissingLocation">
             <AlertTriangle class="w-4 h-4 text-amber-500" />
-            <span class="text-amber-600">Location Missing</span>
+            <span class="text-amber-600">{{ t('events.card.locationMissing') }}</span>
           </template>
         </div>
 

@@ -1,5 +1,12 @@
 {
   "title": "ព្រឹត្តិការណ៍",
+  "card": {
+    "locationMissing": "ទីតាំងបាត់",
+    "hostedBy": "ដោយ {names}",
+    "guestCount": "{count} ភ្ញៀវ",
+    "hostOthers": "& {count} នាក់ផ្សេងទៀត",
+    "today": "ថ្ងៃនេះ"
+  },
   "createEvent": "បង្កើតព្រឹត្តិការណ៍",
   "createFirstEvent": "បង្កើតព្រឹត្តិការណ៍ដំបូងរបស់អ្នក",
   "manageEvent": "គ្រប់គ្រងព្រឹត្តិការណ៍",
