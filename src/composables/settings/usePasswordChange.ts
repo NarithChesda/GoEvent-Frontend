@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { authService } from '@/services/auth'
 import { inputValidator, validationRules } from '@/utils/inputValidation'
 
@@ -20,6 +21,8 @@ export interface PasswordStrengthResult {
 }
 
 export function usePasswordChange() {
+  const { t } = useI18n()
+
   // Form state
   const passwordForm = ref<PasswordFormData>({
     old_password: '',
@@ -52,8 +55,14 @@ export function usePasswordChange() {
 
   // Computed: Password strength text label
   const passwordStrengthText = computed(() => {
-    const texts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong']
-    return texts[passwordStrength.value] || 'Very Weak'
+    const texts = [
+      t('settings.security.strengthLabel.veryWeak'),
+      t('settings.security.strengthLabel.weak'),
+      t('settings.security.strengthLabel.fair'),
+      t('settings.security.strengthLabel.good'),
+      t('settings.security.strengthLabel.strong'),
+    ]
+    return texts[passwordStrength.value] || t('settings.security.strengthLabel.veryWeak')
   })
 
   // Computed: Password strength color class
@@ -129,7 +138,7 @@ export function usePasswordChange() {
     // Rate limiting
     const clientId = navigator.userAgent + window.location.hostname
     if (inputValidator.isRateLimited(`password_change_${clientId}`, 3, 60 * 60 * 1000)) {
-      passwordErrorMessage.value = 'Too many password change attempts. Please try again in 1 hour.'
+      passwordErrorMessage.value = t('settings.security.messages.rateLimitExceeded')
       return { success: false, error: passwordErrorMessage.value }
     }
 
@@ -143,19 +152,19 @@ export function usePasswordChange() {
     // Additional validations
     if (passwordForm.value.new_password && passwordForm.value.new_password_confirm) {
       if (passwordForm.value.new_password !== passwordForm.value.new_password_confirm) {
-        validation.errors.new_password_confirm = ['Passwords do not match']
+        validation.errors.new_password_confirm = [t('settings.security.messages.passwordsDoNotMatch')]
         validation.isValid = false
       }
 
       if (passwordForm.value.old_password === passwordForm.value.new_password) {
-        validation.errors.new_password = ['New password must be different from current password']
+        validation.errors.new_password = [t('settings.security.messages.mustBeDifferent')]
         validation.isValid = false
       }
 
       if (!isPasswordStrongEnough.value) {
         validation.errors.new_password = [
           ...(validation.errors.new_password || []),
-          'Password must be at least "Good" strength (score 3/5)',
+          t('settings.security.messages.tooWeak'),
           ...passwordStrengthData.value.feedback,
         ]
         validation.isValid = false
@@ -164,7 +173,7 @@ export function usePasswordChange() {
 
     if (!validation.isValid) {
       fieldErrors.value = validation.errors
-      passwordErrorMessage.value = 'Please fix the validation errors below'
+      passwordErrorMessage.value = t('settings.security.messages.fixValidationErrors')
       return { success: false, error: passwordErrorMessage.value, fieldErrors: validation.errors }
     }
 
@@ -180,7 +189,7 @@ export function usePasswordChange() {
       if (response.success) {
         inputValidator.clearRateLimit(`password_change_${clientId}`)
 
-        passwordSuccessMessage.value = 'Password changed successfully!'
+        passwordSuccessMessage.value = t('settings.security.messages.changeSuccess')
         fieldErrors.value = {}
         passwordForm.value = {
           old_password: '',
@@ -194,12 +203,12 @@ export function usePasswordChange() {
 
         return { success: true }
       } else {
-        passwordErrorMessage.value = response.message || 'Failed to change password'
+        passwordErrorMessage.value = response.message || t('settings.security.messages.changeFailed')
         return { success: false, error: passwordErrorMessage.value }
       }
     } catch (error) {
       console.error('Password change error:', error)
-      passwordErrorMessage.value = 'An unexpected error occurred'
+      passwordErrorMessage.value = t('settings.security.messages.unexpectedError')
       return { success: false, error: passwordErrorMessage.value }
     } finally {
       isSubmitting.value = false

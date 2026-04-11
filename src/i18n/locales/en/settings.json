@@ -25,12 +25,38 @@
     "removePhoto": "Remove Photo"
   },
   "security": {
-    "title": "Security",
-    "changePassword": "Change Password",
+    "title": "Change Password",
+    "subtitle": "Update your password to keep your account secure.",
     "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
     "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
     "confirmNewPassword": "Confirm New Password",
-    "twoFactor": "Two-Factor Authentication"
+    "confirmNewPasswordPlaceholder": "Confirm your new password",
+    "strengthLabel": {
+      "veryWeak": "Very Weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "strengthEnough": "Strong enough",
+    "strengthTooWeak": "Too weak",
+    "requirementsLabel": "Requirements:",
+    "securityNotice": "Security Notice:",
+    "securityNoticeText": "Password must be at least \"Good\" strength (3/5) for account security.",
+    "changePassword": "Change Password",
+    "changingPassword": "Changing Password...",
+    "messages": {
+      "rateLimitExceeded": "Too many password change attempts. Please try again in 1 hour.",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "mustBeDifferent": "New password must be different from current password",
+      "tooWeak": "Password must be at least \"Good\" strength (score 3/5)",
+      "fixValidationErrors": "Please fix the validation errors below",
+      "changeSuccess": "Password changed successfully!",
+      "changeFailed": "Failed to change password",
+      "unexpectedError": "An unexpected error occurred"
+    }
   },
   "preferences": {
     "title": "Preferences",
