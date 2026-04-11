@@ -11,6 +11,11 @@ import { apiService, type Event } from '@/services/api'
 import { i18n } from '@/i18n'
 import { isImageKitEnabled } from './useImageKitConfig'
 
+/** Map app locale to BCP 47 locale for Intl date/time formatting */
+function getDateLocale(): string {
+  return i18n.global.locale.value === 'kh' ? 'km' : 'en-US'
+}
+
 export interface EventHost {
   name: string
   image: string | null
@@ -139,7 +144,7 @@ export interface DateGroup {
  */
 export function formatEventTime(dateStr: string): string {
   const date = new Date(dateStr)
-  return date.toLocaleTimeString('en-US', {
+  return date.toLocaleTimeString(getDateLocale(), {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -417,13 +422,13 @@ export function groupEventsByDate(
     // Show "Today" for today's events, otherwise show month and day
     const monthDay = isToday
       ? i18n.global.t('events.card.today')
-      : eventDate.toLocaleDateString('en-US', {
+      : eventDate.toLocaleDateString(getDateLocale(), {
           month: 'short',
           day: 'numeric',
         })
     const weekday = isToday
       ? ''
-      : eventDate.toLocaleDateString('en-US', { weekday: 'long' })
+      : eventDate.toLocaleDateString(getDateLocale(), { weekday: 'long' })
 
     const existingGroup = groups.find((g) => g.date === dateKey)
     if (existingGroup) {
