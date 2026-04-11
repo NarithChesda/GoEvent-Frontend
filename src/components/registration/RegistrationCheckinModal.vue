@@ -24,12 +24,12 @@
               <button
                 @click="handleClose"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.registrationCheckin.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
-                <h2 class="text-base font-semibold text-white">Check-in Attendee</h2>
+                <h2 class="text-base font-semibold text-white">{{ t('management.registrationCheckin.title') }}</h2>
               </div>
             </div>
           </div>
@@ -52,13 +52,13 @@
               <!-- Info Card -->
               <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-slate-600">
                 <UserCheck class="w-4 h-4 inline-block mr-1.5 text-emerald-600" />
-                Enter the attendee's confirmation code to check them in to the event.
+                {{ t('management.registrationCheckin.infoText') }}
               </div>
 
               <!-- Confirmation Code Input -->
               <div>
                 <label for="confirmationCode" class="block text-sm font-medium text-slate-700 mb-2">
-                  Confirmation Code <span class="text-red-500">*</span>
+                  {{ t('management.registrationCheckin.confirmationCode') }} <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <input
@@ -66,7 +66,7 @@
                     ref="codeInput"
                     v-model="localCode"
                     type="text"
-                    placeholder="Enter confirmation code..."
+                    :placeholder="t('management.registrationCheckin.codePlaceholder')"
                     :class="[
                       'w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200',
                       isMobile ? 'pr-12' : '',
@@ -82,13 +82,13 @@
                     @click.prevent="showQRScanner = true"
                     class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-emerald-600 transition-colors duration-200 rounded-lg hover:bg-slate-100 active:bg-slate-200"
                     :disabled="isChecking"
-                    title="Scan QR Code"
+                    :title="t('management.registrationCheckin.scanQR')"
                   >
                     <Camera class="w-5 h-5" />
                   </button>
                 </div>
                 <p class="text-xs text-slate-500 mt-2">
-                  {{ isMobile ? 'Enter code or tap camera icon to scan QR' : 'Enter the attendee\'s confirmation code' }}
+                  {{ isMobile ? t('management.registrationCheckin.codeHintMobile') : t('management.registrationCheckin.codeHintDesktop') }}
                 </p>
               </div>
 
@@ -100,7 +100,7 @@
                 class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
               >
                 <Camera class="w-4 h-4" />
-                Scan QR Code
+                {{ t('management.registrationCheckin.scanQR') }}
               </button>
             </div>
           </div>
@@ -120,7 +120,7 @@
                 class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
               ></span>
               <UserCheck v-else class="w-4 h-4" />
-              <span>{{ isChecking ? 'Checking in...' : 'Check In' }}</span>
+              <span>{{ isChecking ? t('management.registrationCheckin.checkingIn') : t('management.registrationCheckin.checkInBtn') }}</span>
             </button>
 
             <button
@@ -129,7 +129,7 @@
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
               :disabled="isChecking"
             >
-              Cancel
+              {{ t('management.registrationCheckin.cancel') }}
             </button>
           </div>
         </div>
@@ -141,6 +141,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { UserCheck, ArrowRight, Camera } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 import QRCodeScanner from '../QRCodeScanner.vue'
 
 // Props

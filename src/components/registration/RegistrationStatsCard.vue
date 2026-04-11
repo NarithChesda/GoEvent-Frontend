@@ -9,7 +9,7 @@
             compact ? 'text-xs font-medium tracking-wide text-slate-400' : 'text-xs font-semibold tracking-[0.2em] text-slate-400'
           ]"
         >
-          Registrations
+          {{ t('management.registrationStats.title') }}
         </p>
         <p
           :class="[
@@ -21,7 +21,7 @@
           {{ loading ? '...' : totalRegistrations }}
         </p>
         <p v-if="!compact" class="mt-1 text-sm text-slate-500">
-          Total attendees registered for your event.
+          {{ t('management.registrationStats.subtitle') }}
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
@@ -32,7 +32,7 @@
           ]"
         >
           <UserCheck :class="compact ? 'h-3.5 w-3.5' : 'h-4 w-4'" aria-hidden="true" />
-          <span>{{ loading ? '...' : `${checkedInCount} checked in` }}</span>
+          <span>{{ loading ? '...' : `${checkedInCount} ${t('management.registrationStats.checkedIn')}` }}</span>
         </div>
         <div
           v-if="totalAttendees > totalRegistrations"
@@ -42,7 +42,7 @@
           ]"
         >
           <Users :class="compact ? 'h-3.5 w-3.5' : 'h-4 w-4'" aria-hidden="true" />
-          <span>{{ loading ? '...' : `${totalAttendees} attendees` }}</span>
+          <span>{{ loading ? '...' : `${totalAttendees} ${t('management.registrationStats.attendees')}` }}</span>
         </div>
       </div>
     </div>
@@ -95,7 +95,7 @@
               compact ? 'font-medium text-emerald-700' : 'font-semibold uppercase tracking-wide text-emerald-600'
             ]"
           >
-            Checked In
+            {{ t('management.registrationStats.cards.checkedIn.label') }}
           </p>
           <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-emerald-600' : 'text-emerald-600']">
             {{ loading ? '...' : `${checkedInPercentage}%` }}
@@ -105,10 +105,10 @@
           {{ loading ? '...' : checkedInCount }}
         </p>
         <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-emerald-700/70 leading-tight mt-1">
-          Successfully checked in at the event.
+          {{ t('management.registrationStats.cards.checkedIn.description') }}
         </p>
         <p v-if="!compact" class="sm:hidden text-[9px] text-emerald-700/60 leading-tight mt-0.5">
-          Arrived
+          {{ t('management.registrationStats.cards.checkedIn.mobile') }}
         </p>
       </div>
 
@@ -126,7 +126,7 @@
               compact ? 'font-medium text-sky-700' : 'font-semibold uppercase tracking-wide text-sky-600'
             ]"
           >
-            Pending
+            {{ t('management.registrationStats.cards.pending.label') }}
           </p>
           <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-sky-600' : 'text-sky-600']">
             {{ loading ? '...' : `${pendingPercentage}%` }}
@@ -136,10 +136,10 @@
           {{ loading ? '...' : pendingCount }}
         </p>
         <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-sky-700/70 leading-tight mt-1">
-          Registered but not yet checked in.
+          {{ t('management.registrationStats.cards.pending.description') }}
         </p>
         <p v-if="!compact" class="sm:hidden text-[9px] text-sky-700/60 leading-tight mt-0.5">
-          Waiting
+          {{ t('management.registrationStats.cards.pending.mobile') }}
         </p>
       </div>
 
@@ -156,7 +156,7 @@
               compact ? 'font-medium text-red-700' : 'font-semibold uppercase tracking-wide text-red-600'
             ]"
           >
-            Cancelled
+            {{ t('management.registrationStats.cards.cancelled.label') }}
           </p>
           <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-red-600' : 'text-red-600']">
             {{ loading ? '...' : `${cancelledPercentage}%` }}
@@ -166,10 +166,10 @@
           {{ loading ? '...' : cancelledCount }}
         </p>
         <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-red-700/70 leading-tight mt-1">
-          Registration was cancelled.
+          {{ t('management.registrationStats.cards.cancelled.description') }}
         </p>
         <p v-if="!compact" class="sm:hidden text-[9px] text-red-700/60 leading-tight mt-0.5">
-          Cancelled
+          {{ t('management.registrationStats.cards.cancelled.mobile') }}
         </p>
       </div>
     </div>
@@ -179,6 +179,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UserCheck, Users } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Props {
   totalRegistrations: number

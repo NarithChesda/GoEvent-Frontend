@@ -1643,5 +1643,84 @@
       "requiredFields": "Please fill in all required fields",
       "categoryRequired": "Category name is required"
     }
+  },
+  "registrationTab": {
+    "title": "Event Registration",
+    "subtitle": "Manage registrations and check-ins",
+    "loading": "Loading registrations...",
+    "toast": {
+      "codeCopied": "Confirmation code copied",
+      "copyFailed": "Failed to copy code"
+    }
+  },
+  "registrationStats": {
+    "title": "Registrations",
+    "subtitle": "Total attendees registered for your event.",
+    "checkedIn": "checked in",
+    "attendees": "attendees",
+    "cards": {
+      "checkedIn": {
+        "label": "Checked In",
+        "description": "Successfully checked in at the event.",
+        "mobile": "Arrived"
+      },
+      "pending": {
+        "label": "Pending",
+        "description": "Registered but not yet checked in.",
+        "mobile": "Waiting"
+      },
+      "cancelled": {
+        "label": "Cancelled",
+        "description": "Registration was cancelled.",
+        "mobile": "Cancelled"
+      }
+    }
+  },
+  "registrationList": {
+    "searchPlaceholder": "Search registrations...",
+    "searchAriaLabel": "Search registrations by name, username, or code",
+    "clearSearch": "Clear search",
+    "filter": {
+      "all": "All",
+      "notCheckedIn": "Not Checked In",
+      "checkedIn": "Checked In",
+      "cancelled": "Cancelled"
+    },
+    "refresh": "Refresh registrations",
+    "toggleLive": "Toggle live updates",
+    "live": "Live",
+    "checkIn": "Check-in"
+  },
+  "registrationCard": {
+    "unknown": "Unknown",
+    "status": {
+      "checkedIn": "Checked In",
+      "registered": "Registered",
+      "cancelled": "Cancelled"
+    },
+    "clickToCopy": "Click to copy",
+    "copyCode": "Copy code",
+    "checkInMobile": "Check In",
+    "checkInAttendee": "Check in attendee"
+  },
+  "registrationEmpty": {
+    "noResults": "No registrations found",
+    "noRegistrations": "No registrations yet",
+    "noResultsDesc": "Try adjusting your search or filter criteria.",
+    "noRegistrationsDesc": "Share your event to start getting registrations!",
+    "clearFilters": "Clear Filters"
+  },
+  "registrationCheckin": {
+    "close": "Close",
+    "title": "Check-in Attendee",
+    "infoText": "Enter the attendee's confirmation code to check them in to the event.",
+    "confirmationCode": "Confirmation Code",
+    "codePlaceholder": "Enter confirmation code...",
+    "scanQR": "Scan QR Code",
+    "codeHintMobile": "Enter code or tap camera icon to scan QR",
+    "codeHintDesktop": "Enter the attendee's confirmation code",
+    "checkingIn": "Checking in...",
+    "checkInBtn": "Check In",
+    "cancel": "Cancel"
   }
 }

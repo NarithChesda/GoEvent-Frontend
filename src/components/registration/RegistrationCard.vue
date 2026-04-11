@@ -44,7 +44,7 @@
           <div
             class="hidden sm:flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-lg text-xs font-mono cursor-pointer hover:bg-slate-100 transition-colors"
             @click="handleCopyCode"
-            title="Click to copy"
+            :title="t('management.registrationCard.clickToCopy')"
           >
             <span>{{ registration.confirmation_code }}</span>
             <Copy class="w-3 h-3" />
@@ -62,7 +62,7 @@
         <span v-if="isChecking" class="flex items-center gap-1">
           <span class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></span>
         </span>
-        <span v-else>Check In</span>
+        <span v-else>{{ t('management.registrationCard.checkInMobile') }}</span>
       </button>
 
       <!-- Mobile: Copy code button (for already checked-in or cancelled) -->
@@ -70,7 +70,7 @@
         v-else
         @click="handleCopyCode"
         class="sm:hidden px-2 py-1.5 text-xs font-mono text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex-shrink-0"
-        title="Copy code"
+        :title="t('management.registrationCard.copyCode')"
       >
         {{ registration.confirmation_code }}
       </button>
@@ -81,7 +81,7 @@
         <button
           v-if="registration.status === 'registered' && canEdit"
           @click="handleCheckin"
-          title="Check in attendee"
+          :title="t('management.registrationCard.checkInAttendee')"
           class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="isChecking"
         >
@@ -113,6 +113,9 @@ import {
   Copy,
   UserCheck,
 } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 import type { EventRegistrationDetail } from '../../services/api'
 
 // Props
@@ -132,7 +135,7 @@ const emit = defineEmits<{
 const fullName = computed(() => {
   const firstName = props.registration.user_details?.first_name || ''
   const lastName = props.registration.user_details?.last_name || ''
-  return `${firstName} ${lastName}`.trim() || 'Unknown'
+  return `${firstName} ${lastName}`.trim() || t('management.registrationCard.unknown')
 })
 
 const initials = computed(() => {
@@ -146,13 +149,13 @@ const initials = computed(() => {
 const statusLabel = computed(() => {
   switch (props.registration.status) {
     case 'checked_in':
-      return 'Checked In'
+      return t('management.registrationCard.status.checkedIn')
     case 'registered':
-      return 'Registered'
+      return t('management.registrationCard.status.registered')
     case 'cancelled':
-      return 'Cancelled'
+      return t('management.registrationCard.status.cancelled')
     default:
-      return props.registration.status || 'Unknown'
+      return props.registration.status || t('management.registrationCard.unknown')
   }
 })
 

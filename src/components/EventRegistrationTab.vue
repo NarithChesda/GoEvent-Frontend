@@ -3,9 +3,9 @@
     <!-- Header -->
     <div>
       <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-        Event Registration
+        {{ t('management.registrationTab.title') }}
       </h2>
-      <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage registrations and check-ins</p>
+      <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.registrationTab.subtitle') }}</p>
     </div>
 
     <!-- Stats Card -->
@@ -51,7 +51,7 @@
     >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading registrations...</span>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.registrationTab.loading') }}</span>
       </div>
     </div>
 
@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { CheckCircle, AlertCircle } from 'lucide-vue-next'
 import type { EventRegistrationDetail } from '../services/api'
 
@@ -125,6 +126,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 
 // Use composables
 const {
@@ -212,9 +214,9 @@ const copyToClipboard = async (text: string) => {
       document.execCommand('copy')
       document.body.removeChild(el)
     }
-    showMessage('success', 'Confirmation code copied')
+    showMessage('success', t('management.registrationTab.toast.codeCopied'))
   } catch (e) {
-    showMessage('error', 'Failed to copy code')
+    showMessage('error', t('management.registrationTab.toast.copyFailed'))
   }
 }
 

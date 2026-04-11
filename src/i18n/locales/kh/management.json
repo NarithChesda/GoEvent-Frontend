@@ -1643,5 +1643,84 @@
       "requiredFields": "សូមបំពេញគ្រប់វាលដែលត្រូវការ",
       "categoryRequired": "ឈ្មោះប្រភេទត្រូវបានទាមទារ"
     }
+  },
+  "registrationTab": {
+    "title": "ការចុះឈ្មោះព្រឹត្តិការណ៍",
+    "subtitle": "គ្រប់គ្រងការចុះឈ្មោះ និងការចូលរួម",
+    "loading": "កំពុងផ្ទុកការចុះឈ្មោះ...",
+    "toast": {
+      "codeCopied": "បានចម្លងលេខកូដបញ្ជាក់",
+      "copyFailed": "បរាជ័យក្នុងការចម្លងលេខកូដ"
+    }
+  },
+  "registrationStats": {
+    "title": "ការចុះឈ្មោះ",
+    "subtitle": "អ្នកចូលរួមសរុបដែលបានចុះឈ្មោះសម្រាប់ព្រឹត្តិការណ៍របស់អ្នក។",
+    "checkedIn": "បានចូលរួម",
+    "attendees": "អ្នកចូលរួម",
+    "cards": {
+      "checkedIn": {
+        "label": "បានចូលរួម",
+        "description": "បានចូលរួមដោយជោគជ័យនៅក្នុងព្រឹត្តិការណ៍។",
+        "mobile": "បានមកដល់"
+      },
+      "pending": {
+        "label": "កំពុងរង់ចាំ",
+        "description": "បានចុះឈ្មោះប៉ុន្តែមិនទាន់បានចូលរួម។",
+        "mobile": "រង់ចាំ"
+      },
+      "cancelled": {
+        "label": "បានបោះបង់",
+        "description": "ការចុះឈ្មោះត្រូវបានបោះបង់។",
+        "mobile": "បានបោះបង់"
+      }
+    }
+  },
+  "registrationList": {
+    "searchPlaceholder": "ស្វែងរកការចុះឈ្មោះ...",
+    "searchAriaLabel": "ស្វែងរកការចុះឈ្មោះតាមឈ្មោះ ឈ្មោះអ្នកប្រើ ឬលេខកូដ",
+    "clearSearch": "សម្អាតការស្វែងរក",
+    "filter": {
+      "all": "ទាំងអស់",
+      "notCheckedIn": "មិនទាន់ចូលរួម",
+      "checkedIn": "បានចូលរួម",
+      "cancelled": "បានបោះបង់"
+    },
+    "refresh": "ផ្ទុកការចុះឈ្មោះឡើងវិញ",
+    "toggleLive": "បើក/បិទការធ្វើបច្ចុប្បន្នភាពផ្ទាល់",
+    "live": "ផ្ទាល់",
+    "checkIn": "ចូលរួម"
+  },
+  "registrationCard": {
+    "unknown": "មិនស្គាល់",
+    "status": {
+      "checkedIn": "បានចូលរួម",
+      "registered": "បានចុះឈ្មោះ",
+      "cancelled": "បានបោះបង់"
+    },
+    "clickToCopy": "ចុចដើម្បីចម្លង",
+    "copyCode": "ចម្លងលេខកូដ",
+    "checkInMobile": "ចូលរួម",
+    "checkInAttendee": "ចូលរួមអ្នកចូលរួម"
+  },
+  "registrationEmpty": {
+    "noResults": "រកមិនឃើញការចុះឈ្មោះ",
+    "noRegistrations": "មិនទាន់មានការចុះឈ្មោះ",
+    "noResultsDesc": "សាកល្បងកែប្រែការស្វែងរក ឬលក្ខណៈវិនិច្ឆ័យតម្រង។",
+    "noRegistrationsDesc": "ចែករំលែកព្រឹត្តិការណ៍របស់អ្នកដើម្បីចាប់ផ្តើមទទួលបានការចុះឈ្មោះ!",
+    "clearFilters": "សម្អាតតម្រង"
+  },
+  "registrationCheckin": {
+    "close": "បិទ",
+    "title": "ចូលរួមអ្នកចូលរួម",
+    "infoText": "បញ្ចូលលេខកូដបញ្ជាក់របស់អ្នកចូលរួមដើម្បីចូលរួមក្នុងព្រឹត្តិការណ៍។",
+    "confirmationCode": "លេខកូដបញ្ជាក់",
+    "codePlaceholder": "បញ្ចូលលេខកូដបញ្ជាក់...",
+    "scanQR": "ស្កេន QR កូដ",
+    "codeHintMobile": "បញ្ចូលលេខកូដ ឬចុចរូបកាមេរ៉ាដើម្បីស្កេន QR",
+    "codeHintDesktop": "បញ្ចូលលេខកូដបញ្ជាក់របស់អ្នកចូលរួម",
+    "checkingIn": "កំពុងចូលរួម...",
+    "checkInBtn": "ចូលរួម",
+    "cancel": "បោះបង់"
   }
 }

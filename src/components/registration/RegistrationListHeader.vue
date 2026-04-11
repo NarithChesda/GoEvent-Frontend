@@ -10,15 +10,15 @@
             :value="searchQuery"
             @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
             type="text"
-            placeholder="Search registrations..."
-            aria-label="Search registrations by name, username, or code"
+            :placeholder="t('management.registrationList.searchPlaceholder')"
+            :aria-label="t('management.registrationList.searchAriaLabel')"
             class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
           />
           <button
             v-if="searchQuery"
             @click="$emit('clear-search')"
             class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
-            aria-label="Clear search"
+            :aria-label="t('management.registrationList.clearSearch')"
           >
             <X class="w-3.5 h-3.5" />
           </button>
@@ -60,7 +60,7 @@
                       : 'text-slate-700 hover:bg-slate-50'
                   ]"
                 >
-                  <span class="flex-1 text-left">All</span>
+                  <span class="flex-1 text-left">{{ t('management.registrationList.filter.all') }}</span>
                   <span class="text-xs text-slate-400 tabular-nums">{{ allCount }}</span>
                 </button>
 
@@ -77,7 +77,7 @@
                     v-if="statusFilter !== 'registered'"
                     class="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-sky-500"
                   />
-                  <span class="flex-1 text-left">Not Checked In</span>
+                  <span class="flex-1 text-left">{{ t('management.registrationList.filter.notCheckedIn') }}</span>
                   <span class="text-xs tabular-nums" :class="statusFilter === 'registered' ? 'text-white/70' : 'text-slate-400'">{{ pendingCount }}</span>
                 </button>
 
@@ -91,7 +91,7 @@
                     v-if="statusFilter !== 'checked_in'"
                     class="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-emerald-500"
                   />
-                  <span class="flex-1 text-left">Checked In</span>
+                  <span class="flex-1 text-left">{{ t('management.registrationList.filter.checkedIn') }}</span>
                   <span class="text-xs tabular-nums" :class="statusFilter === 'checked_in' ? 'text-white/70' : 'text-slate-400'">{{ checkedInCount }}</span>
                 </button>
 
@@ -105,7 +105,7 @@
                     v-if="statusFilter !== 'cancelled'"
                     class="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-red-500"
                   />
-                  <span class="flex-1 text-left">Cancelled</span>
+                  <span class="flex-1 text-left">{{ t('management.registrationList.filter.cancelled') }}</span>
                   <span class="text-xs tabular-nums" :class="statusFilter === 'cancelled' ? 'text-white/70' : 'text-slate-400'">{{ cancelledCount }}</span>
                 </button>
               </div>
@@ -139,7 +139,7 @@
               v-if="searchQuery"
               @click="$emit('clear-search')"
               class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
-              aria-label="Clear search"
+              :aria-label="t('management.registrationList.clearSearch')"
             >
               <X class="w-3.5 h-3.5" />
             </button>
@@ -161,7 +161,7 @@
           @click="$emit('refresh')"
           class="flex items-center justify-center p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
           :disabled="loading"
-          title="Refresh registrations"
+          :title="t('management.registrationList.refresh')"
         >
           <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': loading }" />
         </button>
@@ -172,13 +172,13 @@
           class="flex items-center justify-center gap-1.5 px-2 py-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
           :class="{ 'bg-emerald-50 text-emerald-600': liveUpdates }"
           :aria-pressed="liveUpdates"
-          title="Toggle live updates"
+          :title="t('management.registrationList.toggleLive')"
         >
           <span
             class="inline-block w-2.5 h-2.5 rounded-full"
             :class="liveUpdates ? 'bg-green-500 animate-pulse' : 'bg-slate-300'"
           ></span>
-          <span class="hidden sm:inline text-sm">Live</span>
+          <span class="hidden sm:inline text-sm">{{ t('management.registrationList.live') }}</span>
         </button>
 
         <!-- Last Updated Text -->
@@ -193,7 +193,7 @@
           class="flex items-center gap-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 text-sm flex-shrink-0"
         >
           <UserCheck class="w-4 h-4" />
-          <span class="hidden sm:inline">Check-in</span>
+          <span class="hidden sm:inline">{{ t('management.registrationList.checkIn') }}</span>
         </button>
       </div>
     </div>
@@ -210,6 +210,9 @@ import {
   RefreshCw,
   UserCheck,
 } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 import type { RegistrationStatus } from '../../composables/registration'
 
 // Props
@@ -244,13 +247,13 @@ defineEmits<{
 const filterLabel = computed(() => {
   switch (props.statusFilter) {
     case 'registered':
-      return 'Not Checked In'
+      return t('management.registrationList.filter.notCheckedIn')
     case 'checked_in':
-      return 'Checked In'
+      return t('management.registrationList.filter.checkedIn')
     case 'cancelled':
-      return 'Cancelled'
+      return t('management.registrationList.filter.cancelled')
     default:
-      return 'All'
+      return t('management.registrationList.filter.all')
   }
 })
 

@@ -14,7 +14,7 @@
       @click="$emit('clear-filters')"
       class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm sm:text-base"
     >
-      Clear Filters
+      {{ t('management.registrationEmpty.clearFilters') }}
     </button>
   </div>
 </template>
@@ -22,6 +22,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Users } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 // Props
 const props = defineProps<{
@@ -35,12 +38,12 @@ defineEmits<{
 
 // Computed
 const title = computed(() => {
-  return props.hasActiveFilters ? 'No registrations found' : 'No registrations yet'
+  return props.hasActiveFilters ? t('management.registrationEmpty.noResults') : t('management.registrationEmpty.noRegistrations')
 })
 
 const description = computed(() => {
   return props.hasActiveFilters
-    ? 'Try adjusting your search or filter criteria.'
-    : 'Share your event to start getting registrations!'
+    ? t('management.registrationEmpty.noResultsDesc')
+    : t('management.registrationEmpty.noRegistrationsDesc')
 })
 </script>
