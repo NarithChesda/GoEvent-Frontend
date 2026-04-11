@@ -29,25 +29,25 @@
             to="/home"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
-            Home
+            {{ t('common.footer.home') }}
           </RouterLink>
           <RouterLink
             to="/about"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
-            About Us
+            {{ t('common.footer.aboutUs') }}
           </RouterLink>
           <RouterLink
             to="/home#pricing"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
-            Pricing
+            {{ t('common.footer.pricing') }}
           </RouterLink>
           <RouterLink
             to="/explore"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
-            Discover
+            {{ t('common.footer.discover') }}
           </RouterLink>
         </nav>
 
@@ -106,19 +106,19 @@
           to="/home"
           class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
         >
-          Home
+          {{ t('common.footer.home') }}
         </RouterLink>
         <RouterLink
           to="/home#pricing"
           class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
         >
-          Pricing
+          {{ t('common.footer.pricing') }}
         </RouterLink>
         <RouterLink
           to="/about"
           class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
         >
-          About Us
+          {{ t('common.footer.aboutUs') }}
         </RouterLink>
       </nav>
 
@@ -128,7 +128,7 @@
           to="/events?createEvent=true"
           class="inline-flex items-center text-sm font-medium text-[#2ecc71] hover:text-[#27ae60] transition-colors"
         >
-          Host your event with GoEvent
+          {{ t('common.footer.hostCta') }}
           <svg class="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="7" y1="17" x2="17" y2="7"></line>
             <polyline points="7 7 17 7 17 17"></polyline>
@@ -142,9 +142,11 @@
 
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import IconSvg from '@/assets/icon.svg'
 import LogoPng from '@/assets/logo.png'
 
+const { t } = useI18n()
 const router = useRouter()
 
 const handleLogoClick = () => {

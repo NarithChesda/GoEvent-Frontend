@@ -71,6 +71,13 @@
     "khmer": "ខ្មែរ",
     "chinese": "中文"
   },
+  "footer": {
+    "home": "ទំព័រដើម",
+    "aboutUs": "អំពីយើង",
+    "pricing": "តម្លៃ",
+    "discover": "ស្វែងរក",
+    "hostCta": "រៀបចំព្រឹត្តិការណ៍របស់អ្នកជាមួយ GoEvent"
+  },
   "deleteConfirmModal": {
     "title": "លុបធាតុ",
     "message": "តើអ្នកពិតជាចង់លុបធាតុនេះមែនទេ?",
