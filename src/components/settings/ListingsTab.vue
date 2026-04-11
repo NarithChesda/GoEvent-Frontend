@@ -12,13 +12,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load listings</h3>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('settings.listings.errorTitle') }}</h3>
       <p class="text-gray-500 mb-4">{{ error }}</p>
       <button
         @click="loadListings"
         class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
       >
-        Try Again
+        {{ t('settings.listings.tryAgain') }}
       </button>
     </div>
 
@@ -30,13 +30,12 @@
             <ShieldAlert class="w-7 h-7 text-amber-600" />
           </div>
           <div class="flex-1">
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">Verification Required</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.listings.verification.title') }}</h2>
             <p class="text-gray-600">
-              You need to be a verified vendor to create and manage service listings.
-              Please complete your vendor profile and wait for verification.
+              {{ t('settings.listings.verification.subtitle') }}
             </p>
             <div class="flex items-center gap-2 text-sm mt-3">
-              <span class="text-gray-500">Current status:</span>
+              <span class="text-gray-500">{{ t('settings.listings.verification.currentStatus') }}</span>
               <span
                 :class="[
                   'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
@@ -45,7 +44,7 @@
                   'bg-red-100 text-red-700'
                 ]"
               >
-                {{ vendorState === 'pending' ? 'Pending Review' : vendorState === 'not_vendor' ? 'Not a Vendor' : 'Unverified' }}
+                {{ vendorState === 'pending' ? t('settings.listings.verification.pendingReview') : vendorState === 'not_vendor' ? t('settings.listings.verification.notVendor') : t('settings.listings.verification.unverified') }}
               </span>
             </div>
           </div>
@@ -58,9 +57,9 @@
       <!-- Header -->
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
-          <h2 class="text-xl font-semibold text-gray-900">My Listings</h2>
+          <h2 class="text-xl font-semibold text-gray-900">{{ t('settings.listings.title') }}</h2>
           <p class="text-sm text-gray-500 mt-1">
-            Manage your service listings and track their performance
+            {{ t('settings.listings.subtitle') }}
           </p>
         </div>
         <button
@@ -68,20 +67,20 @@
           class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
         >
           <Plus class="w-5 h-5" />
-          <span>New Listing</span>
+          <span>{{ t('settings.listings.newListing') }}</span>
         </button>
       </div>
 
       <!-- Quick Stats (inline) -->
       <div v-if="listings.length > 0" class="flex items-center gap-6 text-sm">
         <span class="text-gray-500">
-          <span class="font-medium text-emerald-600">{{ activeCount }}</span> active
+          <span class="font-medium text-emerald-600">{{ activeCount }}</span> {{ t('settings.listings.stats.active') }}
         </span>
         <span class="text-gray-500">
-          <span class="font-medium text-amber-600">{{ pendingCount }}</span> pending
+          <span class="font-medium text-amber-600">{{ pendingCount }}</span> {{ t('settings.listings.stats.pending') }}
         </span>
         <span class="text-gray-500">
-          <span class="font-medium text-gray-600">{{ draftCount }}</span> draft
+          <span class="font-medium text-gray-600">{{ draftCount }}</span> {{ t('settings.listings.stats.draft') }}
         </span>
       </div>
 
@@ -92,9 +91,9 @@
             <Package class="w-7 h-7 text-sky-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">No listings yet</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.listings.empty.title') }}</h3>
             <p class="text-gray-600">
-              Create your first service listing to start reaching potential clients.
+              {{ t('settings.listings.empty.subtitle') }}
             </p>
           </div>
         </div>
@@ -104,7 +103,7 @@
             class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
           >
             <Plus class="w-5 h-5" />
-            <span>Create Your First Listing</span>
+            <span>{{ t('settings.listings.empty.createFirst') }}</span>
           </button>
         </div>
       </div>
@@ -135,7 +134,7 @@
                     v-if="listing.is_featured"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
                   >
-                    Featured
+                    {{ t('settings.listings.featured') }}
                   </span>
                 </div>
 
@@ -146,7 +145,7 @@
 
                 <!-- Price -->
                 <p class="text-sm font-medium text-sky-600 mb-1">
-                  {{ listing.price_display_text || 'Contact for price' }}
+                  {{ listing.price_display_text || t('settings.listings.contactForPrice') }}
                 </p>
 
                 <!-- Category -->
@@ -192,7 +191,7 @@
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <Pencil class="w-3.5 h-3.5" />
-                Edit
+                {{ t('settings.listings.edit') }}
               </button>
               <button
                 v-if="listing.status === 'draft'"
@@ -201,7 +200,7 @@
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 border border-sky-300 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Send class="w-3.5 h-3.5" />
-                {{ isSubmitting === listing.id ? '...' : 'Submit' }}
+                {{ isSubmitting === listing.id ? '...' : t('settings.listings.submit') }}
               </button>
             </div>
           </div>
@@ -225,7 +224,7 @@
                     v-if="listing.is_featured"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
                   >
-                    Featured
+                    {{ t('settings.listings.featured') }}
                   </span>
                   <span class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
                     {{ getCategoryName(listing) }}
@@ -244,18 +243,18 @@
 
                 <!-- Price -->
                 <p class="text-sm font-medium text-sky-600 mb-3">
-                  {{ listing.price_display_text || 'Contact for price' }}
+                  {{ listing.price_display_text || t('settings.listings.contactForPrice') }}
                 </p>
 
                 <!-- Stats -->
                 <div class="flex items-center gap-4 text-sm text-gray-500">
                   <span class="flex items-center gap-1.5">
                     <Eye class="w-4 h-4" />
-                    {{ listing.views_count || 0 }} views
+                    {{ listing.views_count || 0 }} {{ t('settings.listings.views') }}
                   </span>
                   <span class="flex items-center gap-1.5">
                     <MousePointerClick class="w-4 h-4" />
-                    {{ listing.contact_clicks_count || 0 }} clicks
+                    {{ listing.contact_clicks_count || 0 }} {{ t('settings.listings.clicks') }}
                   </span>
                 </div>
 
@@ -266,7 +265,7 @@
                     class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <Pencil class="w-4 h-4" />
-                    Edit
+                    {{ t('settings.listings.edit') }}
                   </button>
                   <button
                     v-if="listing.status === 'draft'"
@@ -275,14 +274,14 @@
                     class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-sky-700 border border-sky-300 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Send class="w-4 h-4" />
-                    {{ isSubmitting === listing.id ? 'Submitting...' : 'Submit for Review' }}
+                    {{ isSubmitting === listing.id ? t('settings.listings.submitting') : t('settings.listings.submitForReview') }}
                   </button>
                   <button
                     @click="viewAnalytics(listing)"
                     class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <BarChart3 class="w-4 h-4" />
-                    Analytics
+                    {{ t('settings.listings.analyticsBtn') }}
                   </button>
                 </div>
               </div>
@@ -313,7 +312,7 @@
             :disabled="isLoading"
             class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors disabled:opacity-50"
           >
-            {{ isLoading ? 'Loading...' : 'Load More' }}
+            {{ isLoading ? t('settings.listings.loading') : t('settings.listings.loadMore') }}
           </button>
         </div>
       </div>
@@ -338,7 +337,7 @@
         >
           <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-gray-900">Listing Analytics</h3>
+              <h3 class="text-lg font-semibold text-gray-900">{{ t('settings.listings.analyticsModal.title') }}</h3>
               <button
                 @click="showAnalyticsModal = false"
                 class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
@@ -351,7 +350,7 @@
 
               <div v-if="isLoadingAnalytics" class="py-8 text-center">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto"></div>
-                <p class="text-sm text-gray-500 mt-2">Loading analytics...</p>
+                <p class="text-sm text-gray-500 mt-2">{{ t('settings.listings.analyticsModal.loadingAnalytics') }}</p>
               </div>
 
               <div v-else-if="analytics" class="space-y-6">
@@ -359,18 +358,18 @@
                 <div class="grid grid-cols-2 gap-4">
                   <div class="bg-sky-50 rounded-lg p-4 text-center">
                     <p class="text-3xl font-bold text-sky-700">{{ analytics.total_views }}</p>
-                    <p class="text-sm text-sky-600">Total Views</p>
+                    <p class="text-sm text-sky-600">{{ t('settings.listings.analyticsModal.totalViews') }}</p>
                   </div>
                   <div class="bg-emerald-50 rounded-lg p-4 text-center">
                     <p class="text-3xl font-bold text-emerald-700">{{ analytics.total_contact_clicks }}</p>
-                    <p class="text-sm text-emerald-600">Contact Clicks</p>
+                    <p class="text-sm text-emerald-600">{{ t('settings.listings.analyticsModal.contactClicks') }}</p>
                   </div>
                 </div>
 
                 <!-- Conversion Rate -->
                 <div class="bg-slate-50 rounded-lg p-4">
                   <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Conversion Rate</span>
+                    <span class="text-sm text-slate-600">{{ t('settings.listings.analyticsModal.conversionRate') }}</span>
                     <span class="text-lg font-semibold text-slate-900">
                       {{ (analytics.conversion_rate * 100).toFixed(1) }}%
                     </span>
@@ -385,7 +384,7 @@
 
                 <!-- Trends -->
                 <div v-if="analytics.trends" class="bg-slate-50 rounded-lg p-4">
-                  <p class="text-sm text-slate-600 mb-2">View Trend (Last {{ analytics.trends.period_days }} days)</p>
+                  <p class="text-sm text-slate-600 mb-2">{{ t('settings.listings.analyticsModal.viewTrend', { days: analytics.trends.period_days }) }}</p>
                   <div class="flex items-center gap-2">
                     <TrendingUp
                       v-if="analytics.trends.view_change_percent >= 0"
@@ -408,7 +407,7 @@
 
                 <!-- Contact Types Breakdown -->
                 <div v-if="analytics.contact_clicks_by_type && Object.keys(analytics.contact_clicks_by_type).length > 0">
-                  <p class="text-sm font-medium text-slate-700 mb-3">Contact Method Breakdown</p>
+                  <p class="text-sm font-medium text-slate-700 mb-3">{{ t('settings.listings.analyticsModal.contactBreakdown') }}</p>
                   <div class="space-y-2">
                     <div
                       v-for="(count, type) in analytics.contact_clicks_by_type"
@@ -423,7 +422,7 @@
               </div>
 
               <div v-else class="py-8 text-center text-gray-500">
-                No analytics data available yet
+                {{ t('settings.listings.analyticsModal.noData') }}
               </div>
             </div>
           </div>
@@ -462,6 +461,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Plus,
   Pencil,
@@ -481,6 +481,8 @@ import { ListingFormDrawer } from '@/components/services'
 import { serviceListingsService, serviceCategoriesService, apiClient } from '@/services/api'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import type { ServiceListing, ServiceListingAnalytics, ServiceCategory } from '@/services/api/types'
+
+const { t } = useI18n()
 
 // Vendor profile state
 const { vendorState, loadProfile } = useVendorProfile({ autoLoad: false })
@@ -540,7 +542,7 @@ const getCategoryName = (listing: ServiceListing): string => {
       return category.name
     }
   }
-  return 'Uncategorized'
+  return t('settings.listings.uncategorized')
 }
 
 const loadCategories = async () => {
@@ -585,15 +587,15 @@ const getStatusClass = (status: string): string => {
 const getStatusLabel = (status: string): string => {
   switch (status) {
     case 'approved':
-      return 'Active'
+      return t('settings.listings.status.active')
     case 'pending_review':
-      return 'Pending Review'
+      return t('settings.listings.status.pendingReview')
     case 'draft':
-      return 'Draft'
+      return t('settings.listings.status.draft')
     case 'rejected':
-      return 'Rejected'
+      return t('settings.listings.status.rejected')
     case 'suspended':
-      return 'Suspended'
+      return t('settings.listings.status.suspended')
     default:
       return status
   }
@@ -622,10 +624,10 @@ const loadListings = async (page = 1) => {
       hasMore.value = !!response.data.next
       currentPage.value = page
     } else {
-      error.value = response.message || 'Failed to load listings'
+      error.value = response.message || t('settings.listings.messages.loadFailed')
     }
   } catch (err: any) {
-    error.value = err?.message || 'An unexpected error occurred'
+    error.value = err?.message || t('settings.listings.messages.unexpectedError')
     console.error('Error loading listings:', err)
   } finally {
     isLoading.value = false
@@ -659,12 +661,12 @@ const submitForReview = async (listing: ServiceListing) => {
       if (index !== -1) {
         listings.value[index] = response.data
       }
-      showToast('success', 'Listing submitted for review')
+      showToast('success', t('settings.listings.messages.submitSuccess'))
     } else {
-      showToast('error', response.message || 'Failed to submit for review')
+      showToast('error', response.message || t('settings.listings.messages.submitFailed'))
     }
   } catch (err: any) {
-    showToast('error', err?.message || 'Failed to submit for review')
+    showToast('error', err?.message || t('settings.listings.messages.submitFailed'))
   } finally {
     isSubmitting.value = null
   }

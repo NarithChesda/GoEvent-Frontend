@@ -240,6 +240,66 @@
       "fileTooLarge": "File size must be less than 10MB"
     }
   },
+  "listings": {
+    "errorTitle": "Failed to load listings",
+    "tryAgain": "Try Again",
+    "verification": {
+      "title": "Verification Required",
+      "subtitle": "You need to be a verified vendor to create and manage service listings. Please complete your vendor profile and wait for verification.",
+      "currentStatus": "Current status:",
+      "pendingReview": "Pending Review",
+      "notVendor": "Not a Vendor",
+      "unverified": "Unverified"
+    },
+    "title": "My Listings",
+    "subtitle": "Manage your service listings and track their performance",
+    "newListing": "New Listing",
+    "stats": {
+      "active": "active",
+      "pending": "pending",
+      "draft": "draft"
+    },
+    "empty": {
+      "title": "No listings yet",
+      "subtitle": "Create your first service listing to start reaching potential clients.",
+      "createFirst": "Create Your First Listing"
+    },
+    "status": {
+      "active": "Active",
+      "pendingReview": "Pending Review",
+      "draft": "Draft",
+      "rejected": "Rejected",
+      "suspended": "Suspended"
+    },
+    "featured": "Featured",
+    "contactForPrice": "Contact for price",
+    "uncategorized": "Uncategorized",
+    "edit": "Edit",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "submitForReview": "Submit for Review",
+    "analyticsBtn": "Analytics",
+    "views": "views",
+    "clicks": "clicks",
+    "loadMore": "Load More",
+    "loading": "Loading...",
+    "analyticsModal": {
+      "title": "Listing Analytics",
+      "loadingAnalytics": "Loading analytics...",
+      "totalViews": "Total Views",
+      "contactClicks": "Contact Clicks",
+      "conversionRate": "Conversion Rate",
+      "viewTrend": "View Trend (Last {days} days)",
+      "contactBreakdown": "Contact Method Breakdown",
+      "noData": "No analytics data available yet"
+    },
+    "messages": {
+      "loadFailed": "Failed to load listings",
+      "unexpectedError": "An unexpected error occurred",
+      "submitSuccess": "Listing submitted for review",
+      "submitFailed": "Failed to submit for review"
+    }
+  },
   "messages": {
     "saveSuccess": "Settings saved successfully",
     "saveError": "Failed to save settings"
