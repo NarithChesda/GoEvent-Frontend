@@ -70,5 +70,16 @@
     "english": "English",
     "khmer": "ខ្មែរ",
     "chinese": "中文"
+  },
+  "deleteConfirmModal": {
+    "title": "លុបធាតុ",
+    "message": "តើអ្នកពិតជាចង់លុបធាតុនេះមែនទេ?",
+    "confirmWithName": "តើអ្នកពិតជាចង់លុប \"{name}\" មែនទេ?",
+    "cannotBeUndone": "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "actions": {
+      "cancel": "បោះបង់",
+      "delete": "លុប",
+      "deleting": "កំពុងលុប..."
+    }
   }
 }

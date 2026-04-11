@@ -19,23 +19,22 @@
 
               <!-- Title -->
               <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">
-                {{ title }}
+                {{ displayTitle }}
               </h3>
 
               <!-- Message -->
               <p class="text-sm sm:text-base text-slate-600 mb-4 sm:mb-6">
                 <span v-if="itemName">
-                  Are you sure you want to delete "<strong>{{ itemName }}</strong
-                  >"?
+                  {{ t('common.deleteConfirmModal.confirmWithName', { name: itemName }) }}
                 </span>
                 <span v-else>
-                  {{ message }}
+                  {{ displayMessage }}
                 </span>
                 <br />
                 <span v-if="warningMessage" class="text-xs sm:text-sm text-red-600 font-semibold block mt-2">
                   ⚠️ {{ warningMessage }}
                 </span>
-                <span class="text-xs sm:text-sm">This action cannot be undone.</span>
+                <span class="text-xs sm:text-sm">{{ t('common.deleteConfirmModal.cannotBeUndone') }}</span>
               </p>
 
               <!-- Actions -->
@@ -45,7 +44,7 @@
                   :disabled="loading"
                   class="flex-1 px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg sm:rounded-xl font-medium transition-colors duration-200 disabled:opacity-50"
                 >
-                  Cancel
+                  {{ t('common.deleteConfirmModal.actions.cancel') }}
                 </button>
                 <button
                   @click="handleConfirm"
@@ -56,7 +55,7 @@
                     v-if="loading"
                     class="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
                   ></div>
-                  <span>{{ loading ? 'Deleting...' : 'Delete' }}</span>
+                  <span>{{ loading ? t('common.deleteConfirmModal.actions.deleting') : t('common.deleteConfirmModal.actions.delete') }}</span>
                 </button>
               </div>
             </div>
@@ -68,7 +67,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Trash2 } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 interface Props {
   show: boolean
@@ -85,10 +88,11 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Delete Item',
-  message: 'Are you sure you want to delete this item?',
   loading: false,
 })
+
+const displayTitle = computed(() => props.title || t('common.deleteConfirmModal.title'))
+const displayMessage = computed(() => props.message || t('common.deleteConfirmModal.message'))
 
 const emit = defineEmits<Emits>()
 

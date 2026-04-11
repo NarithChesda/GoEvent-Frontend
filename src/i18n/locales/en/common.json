@@ -70,5 +70,16 @@
     "english": "English",
     "khmer": "ខ្មែរ",
     "chinese": "中文"
+  },
+  "deleteConfirmModal": {
+    "title": "Delete Item",
+    "message": "Are you sure you want to delete this item?",
+    "confirmWithName": "Are you sure you want to delete \"{name}\"?",
+    "cannotBeUndone": "This action cannot be undone.",
+    "actions": {
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    }
   }
 }
