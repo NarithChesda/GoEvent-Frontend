@@ -73,7 +73,8 @@
           class="topbar-outline-btn flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
           :title="locale === 'en' ? t('management.topBar.switchToKhmer') : t('management.topBar.switchToEnglish')"
         >
-          <span class="text-base leading-none">{{ locale === 'en' ? '🇺🇸' : '🇰🇭' }}</span>
+          <Languages class="w-4 h-4" />
+          <span class="hidden md:inline">{{ locale === 'en' ? 'EN' : 'KH' }}</span>
         </button>
 
         <!-- Preview Showcase Button (only for wedding, birthday, housewarming) -->
@@ -118,7 +119,7 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Pencil, Eye, ArrowLeft, Globe } from 'lucide-vue-next'
+import { Pencil, Eye, ArrowLeft, Globe, Languages } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
