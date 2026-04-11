@@ -4,9 +4,9 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Team Collaboration
+          {{ t('management.collaboratorsTab.title') }}
         </h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage your event collaborators and team members</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.collaboratorsTab.subtitle') }}</p>
       </div>
       <button
         v-if="canInvite"
@@ -14,7 +14,7 @@
         class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold p-2 sm:py-2 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
       >
         <UserPlus class="w-4 h-4 sm:mr-2" />
-        <span class="hidden sm:inline">Invite Collaborator</span>
+        <span class="hidden sm:inline">{{ t('management.collaboratorsTab.inviteCollaborator') }}</span>
       </button>
     </div>
 
@@ -27,7 +27,7 @@
           </div>
           <div>
             <p class="text-lg sm:text-2xl font-bold text-slate-900">1</p>
-            <p class="text-xs sm:text-sm text-slate-600">Organizer</p>
+            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.organizer') }}</p>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
           </div>
           <div>
             <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ collaborators.length }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Collaborators</p>
+            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.collaborators') }}</p>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
           </div>
           <div>
             <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ acceptedCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Accepted</p>
+            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.accepted') }}</p>
           </div>
         </div>
       </div>
@@ -63,7 +63,7 @@
           </div>
           <div>
             <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ pendingCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">Pending</p>
+            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.pending') }}</p>
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@
     >
       <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
         <Crown class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1.5 sm:mr-2" />
-        Event Organizer
+        {{ t('management.collaboratorsTab.organizer.title') }}
       </h3>
       <div class="flex items-center space-x-3 sm:space-x-4">
         <div
@@ -101,7 +101,7 @@
           <span
             class="inline-block mt-1 px-2 py-0.5 sm:px-3 sm:py-1 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full"
           >
-            Organizer
+            {{ t('management.collaboratorsTab.organizer.badge') }}
           </span>
         </div>
       </div>
@@ -114,7 +114,7 @@
     >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading collaborators...</span>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.loading') }}</span>
       </div>
     </div>
 
@@ -124,13 +124,13 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8 text-center"
     >
       <AlertCircle class="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Failed to Load Collaborators</h3>
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ t('management.collaboratorsTab.error.title') }}</h3>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">{{ loadError }}</p>
       <button
         @click="retryLoadCollaborators"
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm sm:text-base"
       >
-        Try Again
+        {{ t('management.collaboratorsTab.error.tryAgain') }}
       </button>
     </div>
 
@@ -142,9 +142,9 @@
       <div class="flex items-center justify-between mb-3 sm:mb-4">
         <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
           <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-          Collaborators ({{ collaborators.length }})
+          {{ t('management.collaboratorsTab.list.title', { count: collaborators.length }) }}
         </h3>
-        <p v-if="canUpdateRole" class="text-[10px] sm:text-xs text-slate-500 italic">Click role badges to edit</p>
+        <p v-if="canUpdateRole" class="text-[10px] sm:text-xs text-slate-500 italic">{{ t('management.collaboratorsTab.list.clickToEdit') }}</p>
       </div>
       <div class="space-y-3 sm:space-y-4">
         <div
@@ -185,7 +185,7 @@
                 <span v-else>{{ collaborator.sanitizedEmail }}</span>
               </p>
               <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 truncate">
-                Invited by {{ collaborator.invited_by_name }} â€¢
+                {{ t('management.collaboratorsTab.list.invitedBy', { name: collaborator.invited_by_name }) }} ·
                 {{ collaborator.formattedInviteDate }}
               </p>
             </div>
@@ -217,7 +217,7 @@
                   @click="startRoleEdit(collaborator)"
                   class="inline-block px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full hover:ring-2 hover:ring-[#5eb3f6] transition-all duration-200"
                   :class="collaborator.roleColorClass"
-                  title="Click to change role"
+                  :title="t('management.collaboratorsTab.list.changeRole')"
                 >
                   {{ collaborator.role }}
                 </button>
@@ -233,7 +233,7 @@
                 class="text-[10px] sm:text-xs mt-0.5 sm:mt-1"
                 :class="collaborator.is_accepted ? 'text-green-600' : 'text-orange-600'"
               >
-                {{ collaborator.is_accepted ? 'Accepted' : 'Pending' }}
+                {{ collaborator.is_accepted ? t('management.collaboratorsTab.list.accepted') : t('management.collaboratorsTab.list.pending') }}
               </p>
             </div>
 
@@ -245,14 +245,14 @@
                   @click="saveRoleUpdate(collaborator)"
                   :disabled="isUpdatingRole"
                   class="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all duration-200 disabled:opacity-50"
-                  title="Save role change"
+                  :title="t('management.collaboratorsTab.list.saveRole')"
                 >
                   <CheckCircle class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
                 <button
                   @click="cancelRoleEdit"
                   class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded transition-all duration-200"
-                  title="Cancel"
+                  :title="t('management.collaboratorsTab.list.cancelEdit')"
                 >
                   <X class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
@@ -263,7 +263,7 @@
                 v-if="canRemoveCollaborator && editingRole !== collaborator.id"
                 @click="confirmRemoveCollaborator(collaborator)"
                 class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-                title="Remove collaborator"
+                :title="t('management.collaboratorsTab.list.removeCollaborator')"
               >
                 <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
@@ -279,9 +279,9 @@
       class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
       <Users class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Collaborators Yet</h3>
+      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ t('management.collaboratorsTab.empty.title') }}</h3>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
-        Start building your team by inviting collaborators to help manage this event.
+        {{ t('management.collaboratorsTab.empty.description') }}
       </p>
       <button
         v-if="canInvite"
@@ -289,7 +289,7 @@
         class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
       >
         <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Invite Your First Collaborator
+        {{ t('management.collaboratorsTab.empty.inviteFirst') }}
       </button>
     </div>
 
@@ -300,30 +300,30 @@
       <div class="flex items-center justify-between mb-3 sm:mb-4">
         <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center">
           <Shield class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-          Collaboration Roles
+          {{ t('management.collaboratorsTab.roles.title') }}
         </h3>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
         <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
           <div class="flex items-center mb-0.5 sm:mb-1">
             <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Admin</span>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.admin') }}</span>
           </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Full permissions, can invite other collaborators</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.adminDesc') }}</p>
         </div>
         <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
           <div class="flex items-center mb-0.5 sm:mb-1">
             <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#E6F4FF]0 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Editor</span>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.editor') }}</span>
           </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Can edit event details and manage content</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.editorDesc') }}</p>
         </div>
         <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
           <div class="flex items-center mb-0.5 sm:mb-1">
             <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">Viewer</span>
+            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.viewer') }}</span>
           </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">Read-only access to event information</p>
+          <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.viewerDesc') }}</p>
         </div>
       </div>
     </div>
@@ -341,7 +341,7 @@
     <DeleteConfirmModal
       :show="showRemoveModal"
       :loading="isRemoving"
-      title="Remove Collaborator"
+      :title="t('management.collaboratorsTab.removeModal.title')"
       :item-name="
         collaboratorToRemove
           ? collaboratorToRemove.user_details
@@ -349,7 +349,7 @@
             : sanitizePlainText(collaboratorToRemove.email, 254)
           : ''
       "
-      message="They will lose access to manage this event."
+      :message="t('management.collaboratorsTab.removeModal.message')"
       @confirm="removeCollaborator"
       @cancel="closeRemoveModal"
     />
@@ -372,6 +372,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   Users,
   UserPlus,
@@ -407,6 +408,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 const authStore = useAuthStore()
 
 // State
@@ -591,12 +593,12 @@ const loadCollaborators = async (): Promise<void> => {
       collaborators.value = response.data
       loadError.value = null
     } else {
-      loadError.value = response.message || 'Failed to load collaborators'
+      loadError.value = response.message || t('management.collaboratorsTab.error.loadFailed')
       showMessage('error', loadError.value)
     }
   } catch (error) {
     console.error('Error loading collaborators:', error)
-    loadError.value = 'An error occurred while loading collaborators. Please check your connection.'
+    loadError.value = t('management.collaboratorsTab.error.networkError')
     showMessage('error', loadError.value)
   } finally {
     loading.value = false
@@ -629,7 +631,7 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
 
   // Check message length after sanitization
   if (sanitizedMessage.length > 500) {
-    showMessage('error', 'Message must be no more than 500 characters')
+    showMessage('error', t('management.collaboratorsTab.toast.messageTooLong'))
     return
   }
 
@@ -642,7 +644,7 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
     })
 
     if (response.success && response.data) {
-      showMessage('success', 'Collaborator invited successfully!')
+      showMessage('success', t('management.collaboratorsTab.toast.invited'))
       collaborators.value.push(response.data)
 
       // Send Telegram notification if this is an admin help request
@@ -675,11 +677,11 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
 
       closeInviteModal()
     } else {
-      showMessage('error', response.message || 'Failed to invite collaborator')
+      showMessage('error', response.message || t('management.collaboratorsTab.toast.inviteFailed'))
     }
   } catch (error) {
     console.error('Error inviting collaborator:', error)
-    showMessage('error', 'An error occurred while sending the invitation')
+    showMessage('error', t('management.collaboratorsTab.toast.inviteError'))
   } finally {
     isInviting.value = false
   }
@@ -717,18 +719,18 @@ const removeCollaborator = async (): Promise<void> => {
     )
 
     if (response.success) {
-      showMessage('success', 'Collaborator removed successfully!')
+      showMessage('success', t('management.collaboratorsTab.toast.removed'))
       // Remove from local list
       collaborators.value = collaborators.value.filter(
         (c) => c.id !== collaboratorToRemove.value!.id,
       )
       closeRemoveModal()
     } else {
-      showMessage('error', response.message || 'Failed to remove collaborator')
+      showMessage('error', response.message || t('management.collaboratorsTab.toast.removeFailed'))
     }
   } catch (error) {
     console.error('Error removing collaborator:', error)
-    showMessage('error', 'Failed to remove collaborator. Please try again.')
+    showMessage('error', t('management.collaboratorsTab.toast.removeError'))
   } finally {
     isRemoving.value = false
   }

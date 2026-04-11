@@ -1761,5 +1761,85 @@
       "fromGuests": "From {count} guest · Avg {avg} | From {count} guests · Avg {avg}",
       "guestsContributed": "{count} guest contributed | {count} guests contributed"
     }
+  },
+  "collaboratorsTab": {
+    "title": "Team Collaboration",
+    "subtitle": "Manage your event collaborators and team members",
+    "inviteCollaborator": "Invite Collaborator",
+    "stats": {
+      "organizer": "Organizer",
+      "collaborators": "Collaborators",
+      "accepted": "Accepted",
+      "pending": "Pending"
+    },
+    "organizer": {
+      "title": "Event Organizer",
+      "badge": "Organizer"
+    },
+    "loading": "Loading collaborators...",
+    "error": {
+      "title": "Failed to Load Collaborators",
+      "tryAgain": "Try Again",
+      "loadFailed": "Failed to load collaborators",
+      "networkError": "An error occurred while loading collaborators. Please check your connection."
+    },
+    "list": {
+      "title": "Collaborators ({count})",
+      "clickToEdit": "Click role badges to edit",
+      "invitedBy": "Invited by {name}",
+      "accepted": "Accepted",
+      "pending": "Pending",
+      "saveRole": "Save role change",
+      "cancelEdit": "Cancel",
+      "changeRole": "Click to change role",
+      "removeCollaborator": "Remove collaborator"
+    },
+    "empty": {
+      "title": "No Collaborators Yet",
+      "description": "Start building your team by inviting collaborators to help manage this event.",
+      "inviteFirst": "Invite Your First Collaborator"
+    },
+    "roles": {
+      "title": "Collaboration Roles",
+      "admin": "Admin",
+      "adminDesc": "Full permissions, can invite other collaborators",
+      "editor": "Editor",
+      "editorDesc": "Can edit event details and manage content",
+      "viewer": "Viewer",
+      "viewerDesc": "Read-only access to event information"
+    },
+    "removeModal": {
+      "title": "Remove Collaborator",
+      "message": "They will lose access to manage this event."
+    },
+    "toast": {
+      "invited": "Collaborator invited successfully!",
+      "inviteFailed": "Failed to invite collaborator",
+      "inviteError": "An error occurred while sending the invitation",
+      "removed": "Collaborator removed successfully!",
+      "removeFailed": "Failed to remove collaborator",
+      "removeError": "Failed to remove collaborator. Please try again.",
+      "messageTooLong": "Message must be no more than 500 characters"
+    }
+  },
+  "inviteDrawer": {
+    "title": "Invite Collaborator",
+    "close": "Close",
+    "infoText": "Invite team members to help manage your event. They'll receive an email invitation.",
+    "email": "Email Address",
+    "askAdminHelp": "Ask Admin Help",
+    "emailPlaceholder": "collaborator@example.com",
+    "role": "Role",
+    "roles": {
+      "viewer": "Viewer - Read-only access",
+      "editor": "Editor - Can edit event details",
+      "admin": "Admin - Full permissions"
+    },
+    "message": "Message (Optional)",
+    "messagePlaceholder": "Add a personal message to your invitation...",
+    "characters": "{count}/500 characters",
+    "sending": "Sending...",
+    "sendInvitation": "Send Invitation",
+    "cancel": "Cancel"
   }
 }

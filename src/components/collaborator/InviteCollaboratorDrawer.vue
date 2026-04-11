@@ -24,12 +24,12 @@
               <button
                 @click="$emit('close')"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.inviteDrawer.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
-                <h2 class="text-base font-semibold text-white">Invite Collaborator</h2>
+                <h2 class="text-base font-semibold text-white">{{ t('management.inviteDrawer.title') }}</h2>
               </div>
             </div>
           </div>
@@ -41,14 +41,14 @@
             <!-- Info Card -->
             <div class="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-slate-600">
               <UserPlus class="w-4 h-4 inline-block mr-1.5 text-sky-600" />
-              Invite team members to help manage your event. They'll receive an email invitation.
+              {{ t('management.inviteDrawer.infoText') }}
             </div>
 
             <!-- Email Input -->
             <div>
               <div class="flex items-center justify-between mb-2">
                 <label for="collaboratorEmail" class="block text-sm font-medium text-slate-700">
-                  Email Address <span class="text-red-500">*</span>
+                  {{ t('management.inviteDrawer.email') }} <span class="text-red-500">*</span>
                 </label>
                 <button
                   type="button"
@@ -56,7 +56,7 @@
                   class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1 transition-colors"
                 >
                   <LifeBuoy class="w-3 h-3" />
-                  Ask Admin Help
+                  {{ t('management.inviteDrawer.askAdminHelp') }}
                 </button>
               </div>
               <input
@@ -67,7 +67,7 @@
                 required
                 @blur="validateEmail"
                 :aria-invalid="!!emailError"
-                placeholder="collaborator@example.com"
+                :placeholder="t('management.inviteDrawer.emailPlaceholder')"
                 :class="[
                   'w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200',
                   emailError
@@ -84,7 +84,7 @@
             <!-- Role Selection -->
             <div>
               <label for="collaboratorRole" class="block text-sm font-medium text-slate-700 mb-2">
-                Role <span class="text-red-500">*</span>
+                {{ t('management.inviteDrawer.role') }} <span class="text-red-500">*</span>
               </label>
               <div class="relative">
                 <select
@@ -92,9 +92,9 @@
                   v-model="localRole"
                   class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 hover:border-emerald-300 transition-all duration-200 appearance-none bg-white pr-10"
                 >
-                  <option value="viewer">Viewer - Read-only access</option>
-                  <option value="editor">Editor - Can edit event details</option>
-                  <option value="admin">Admin - Full permissions</option>
+                  <option value="viewer">{{ t('management.inviteDrawer.roles.viewer') }}</option>
+                  <option value="editor">{{ t('management.inviteDrawer.roles.editor') }}</option>
+                  <option value="admin">{{ t('management.inviteDrawer.roles.admin') }}</option>
                 </select>
                 <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
@@ -103,16 +103,16 @@
             <!-- Message -->
             <div>
               <label for="collaboratorMessage" class="block text-sm font-medium text-slate-700 mb-2">
-                Message (Optional)
+                {{ t('management.inviteDrawer.message') }}
               </label>
               <textarea
                 id="collaboratorMessage"
                 v-model="localMessage"
                 rows="3"
                 class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 hover:border-emerald-300 transition-all duration-200 resize-none"
-                placeholder="Add a personal message to your invitation..."
+                :placeholder="t('management.inviteDrawer.messagePlaceholder')"
               ></textarea>
-              <p class="text-xs text-slate-400 mt-1">{{ localMessage.length }}/500 characters</p>
+              <p class="text-xs text-slate-400 mt-1">{{ t('management.inviteDrawer.characters', { count: localMessage.length }) }}</p>
             </div>
           </div>
         </div>
@@ -131,7 +131,7 @@
                 class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
               ></span>
               <Send v-else class="w-4 h-4" />
-              <span>{{ isInviting ? 'Sending...' : 'Send Invitation' }}</span>
+              <span>{{ isInviting ? t('management.inviteDrawer.sending') : t('management.inviteDrawer.sendInvitation') }}</span>
             </button>
 
             <button
@@ -140,7 +140,7 @@
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
               :disabled="isInviting"
             >
-              Cancel
+              {{ t('management.inviteDrawer.cancel') }}
             </button>
           </div>
         </div>
@@ -151,6 +151,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { UserPlus, ArrowRight, AlertCircle, ChevronDown, Send, LifeBuoy } from 'lucide-vue-next'
 import { inputValidator } from '@/utils/inputValidation'
 
@@ -166,6 +167,8 @@ const emit = defineEmits<{
   'close': []
   'invite': [data: { email: string; role: 'admin' | 'editor' | 'viewer'; message?: string }]
 }>()
+
+const { t } = useAppLanguage()
 
 // Local state
 const localEmail = ref('')
