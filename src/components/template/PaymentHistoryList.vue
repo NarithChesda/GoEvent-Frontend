@@ -38,7 +38,7 @@
               :class="getStatusBadgeClass(payment.status)"
             >
               <component :is="getStatusIcon(payment.status)" class="w-3 h-3 mr-1" />
-              {{ payment.status_display || getStatusDisplay(payment.status) }}
+              {{ getStatusDisplay(payment.status) }}
             </span>
           </div>
         </div>
