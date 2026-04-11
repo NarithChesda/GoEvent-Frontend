@@ -2,21 +2,21 @@
   <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
     <!-- Header -->
     <div class="mb-6">
-      <p class="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">Cash Gift Analytics</p>
-      <p class="mt-1 text-sm text-slate-500">Distribution and insights across guest groups</p>
+      <p class="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">{{ t('management.cashGiftAnalytics.title') }}</p>
+      <p class="mt-1 text-sm text-slate-500">{{ t('management.cashGiftAnalytics.subtitle') }}</p>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
-      <span class="ml-3 text-sm text-slate-600">Loading analytics...</span>
+      <span class="ml-3 text-sm text-slate-600">{{ t('management.cashGiftAnalytics.loading') }}</span>
     </div>
 
     <!-- No Data State -->
     <div v-else-if="totalGifts === 0" class="text-center py-12">
       <Coins class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-      <p class="text-base text-slate-500">No cash gifts recorded yet</p>
-      <p class="text-sm text-slate-400 mt-1">Data will appear once guests add their gifts</p>
+      <p class="text-base text-slate-500">{{ t('management.cashGiftAnalytics.empty.title') }}</p>
+      <p class="text-sm text-slate-400 mt-1">{{ t('management.cashGiftAnalytics.empty.description') }}</p>
     </div>
 
     <!-- Data Visualization -->
@@ -26,29 +26,29 @@
         <!-- Total Gifts -->
         <div class="rounded-2xl border border-transparent bg-amber-50/80 p-4 shadow-sm shadow-amber-100/70">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Total Gifts</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">{{ t('management.cashGiftAnalytics.metrics.totalGifts') }}</p>
             <Coins class="h-4 w-4 text-amber-600" />
           </div>
-          <p class="mt-3 text-lg font-semibold text-slate-900">{{ totalGifts }} gifts</p>
+          <p class="mt-3 text-lg font-semibold text-slate-900">{{ t('management.cashGiftAnalytics.metrics.giftsCount', { count: totalGifts }) }}</p>
           <p class="text-xs text-amber-700/70">
-            Across {{ currencyBreakdown.length }} {{ currencyBreakdown.length === 1 ? 'currency' : 'currencies' }}
+            {{ t('management.cashGiftAnalytics.metrics.acrossCurrencies', { count: currencyBreakdown.length }, currencyBreakdown.length) }}
           </p>
         </div>
 
         <!-- Participation Rate -->
         <div class="rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Participation</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">{{ t('management.cashGiftAnalytics.metrics.participation') }}</p>
             <span class="text-xs font-semibold text-emerald-600">{{ giftParticipationPercentage }}%</span>
           </div>
-          <p class="mt-3 text-lg font-semibold text-slate-900">{{ totalGuestsWithGifts }} guests</p>
-          <p class="text-xs text-emerald-700/70">Out of {{ totalGuests }} total guests</p>
+          <p class="mt-3 text-lg font-semibold text-slate-900">{{ t('management.cashGiftAnalytics.metrics.guestsCount', { count: totalGuestsWithGifts }) }}</p>
+          <p class="text-xs text-emerald-700/70">{{ t('management.cashGiftAnalytics.metrics.outOfTotal', { count: totalGuests }) }}</p>
         </div>
 
         <!-- Currencies -->
         <div class="rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-sky-600">Currencies</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-sky-600">{{ t('management.cashGiftAnalytics.metrics.currencies') }}</p>
             <span class="text-xs font-semibold text-sky-600">{{ currencyBreakdown.length }}</span>
           </div>
           <p class="mt-3 text-lg font-semibold text-slate-900">
@@ -56,7 +56,7 @@
               {{ currency.code }}<span v-if="index < currencyBreakdown.length - 1">, </span>
             </span>
           </p>
-          <p class="text-xs text-sky-700/70">Active currency types</p>
+          <p class="text-xs text-sky-700/70">{{ t('management.cashGiftAnalytics.metrics.activeCurrencies') }}</p>
         </div>
       </div>
 
@@ -74,8 +74,7 @@
                 {{ formatCurrency(currencyData.totalAmount, currencyData.currency) }}
               </p>
               <p class="mt-1 text-sm text-slate-500">
-                From {{ currencyData.guestCount }} {{ currencyData.guestCount === 1 ? 'guest' : 'guests' }}
-                · Avg {{ formatCurrency(currencyData.totalAmount / currencyData.guestCount, currencyData.currency) }}
+                {{ t('management.cashGiftAnalytics.chart.fromGuests', { count: currencyData.guestCount, avg: formatCurrency(currencyData.totalAmount / currencyData.guestCount, currencyData.currency) }, currencyData.guestCount) }}
               </p>
             </div>
           </div>
@@ -111,7 +110,7 @@
                 <p class="mt-3 text-lg font-semibold text-slate-900">
                   {{ formatCurrency(group.total, currencyData.currency) }}
                 </p>
-                <p class="text-xs text-slate-600/80">{{ group.guestCount }} {{ group.guestCount === 1 ? 'guest' : 'guests' }} contributed</p>
+                <p class="text-xs text-slate-600/80">{{ t('management.cashGiftAnalytics.chart.guestsContributed', { count: group.guestCount }, group.guestCount) }}</p>
               </div>
             </div>
           </div>
@@ -132,6 +131,9 @@ import {
   type ChartOptions,
 } from 'chart.js'
 import { Coins } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 import { guestService, type GuestGroup } from '../../services/api'
 
 // Register Chart.js components

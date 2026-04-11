@@ -1722,5 +1722,44 @@
     "checkingIn": "កំពុងចូលរួម...",
     "checkInBtn": "ចូលរួម",
     "cancel": "បោះបង់"
+  },
+  "analyticsTab": {
+    "title": "ការវិភាគ",
+    "subtitle": "តាមដានរង្វាស់ និងការយល់ដឹងនៃព្រឹត្តិការណ៍",
+    "loading": "កំពុងផ្ទុកការវិភាគ...",
+    "noTemplate": {
+      "title": "មិនទាន់បានជ្រើសរើសគំរូ",
+      "description": "អ្នកត្រូវជ្រើសរើសគំរូព្រឹត្តិការណ៍មុនពេលអ្នកអាចមើលការវិភាគ។",
+      "selectTemplate": "ជ្រើសរើសគំរូ"
+    },
+    "paymentRequired": {
+      "title": "តម្រូវការទូទាត់គំរូ",
+      "description": "គំរូ {name} របស់អ្នកតម្រូវឱ្យទូទាត់មុនពេលអ្នកអាចមើលការវិភាគ។",
+      "completePayment": "បញ្ចប់ការទូទាត់",
+      "defaultTemplateName": "គំរូដែលបានជ្រើសរើស"
+    }
+  },
+  "cashGiftAnalytics": {
+    "title": "ការវិភាគអំណោយសាច់ប្រាក់",
+    "subtitle": "ការចែកចាយ និងការយល់ដឹងតាមក្រុមភ្ញៀវ",
+    "loading": "កំពុងផ្ទុកការវិភាគ...",
+    "empty": {
+      "title": "មិនទាន់មានអំណោយសាច់ប្រាក់កត់ត្រា",
+      "description": "ទិន្នន័យនឹងបង្ហាញនៅពេលភ្ញៀវបន្ថែមអំណោយរបស់ពួកគេ"
+    },
+    "metrics": {
+      "totalGifts": "អំណោយសរុប",
+      "giftsCount": "{count} អំណោយ",
+      "acrossCurrencies": "ឆ្លងកាត់ {count} រូបិយប័ណ្ណ",
+      "participation": "ការចូលរួម",
+      "guestsCount": "{count} ភ្ញៀវ",
+      "outOfTotal": "ក្នុងចំណោម {count} ភ្ញៀវសរុប",
+      "currencies": "រូបិយប័ណ្ណ",
+      "activeCurrencies": "ប្រភេទរូបិយប័ណ្ណសកម្ម"
+    },
+    "chart": {
+      "fromGuests": "ពី {count} ភ្ញៀវ · មធ្យម {avg}",
+      "guestsContributed": "{count} ភ្ញៀវបានរួមចំណែក"
+    }
   }
 }

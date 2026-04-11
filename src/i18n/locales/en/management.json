@@ -1722,5 +1722,44 @@
     "checkingIn": "Checking in...",
     "checkInBtn": "Check In",
     "cancel": "Cancel"
+  },
+  "analyticsTab": {
+    "title": "Analytics",
+    "subtitle": "Track event metrics and insights",
+    "loading": "Loading analytics...",
+    "noTemplate": {
+      "title": "No Template Selected",
+      "description": "You need to select an event template before you can view analytics.",
+      "selectTemplate": "Select Template"
+    },
+    "paymentRequired": {
+      "title": "Template Payment Required",
+      "description": "Your template {name} requires payment before you can view analytics.",
+      "completePayment": "Complete Payment",
+      "defaultTemplateName": "Selected Template"
+    }
+  },
+  "cashGiftAnalytics": {
+    "title": "Cash Gift Analytics",
+    "subtitle": "Distribution and insights across guest groups",
+    "loading": "Loading analytics...",
+    "empty": {
+      "title": "No cash gifts recorded yet",
+      "description": "Data will appear once guests add their gifts"
+    },
+    "metrics": {
+      "totalGifts": "Total Gifts",
+      "giftsCount": "{count} gifts",
+      "acrossCurrencies": "Across {count} currency | Across {count} currencies",
+      "participation": "Participation",
+      "guestsCount": "{count} guests",
+      "outOfTotal": "Out of {count} total guests",
+      "currencies": "Currencies",
+      "activeCurrencies": "Active currency types"
+    },
+    "chart": {
+      "fromGuests": "From {count} guest · Avg {avg} | From {count} guests · Avg {avg}",
+      "guestsContributed": "{count} guest contributed | {count} guests contributed"
+    }
   }
 }
